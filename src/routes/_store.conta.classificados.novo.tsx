@@ -595,6 +595,7 @@ function SpecializedClassifiedEditor({
  const [customSkillInput, setCustomSkillInput] = useState("");
  const [customHospAmenity, setCustomHospAmenity] = useState("");
  const [customReAmenity, setCustomReAmenity] = useState("");
+ const [customVehicleOption, setCustomVehicleOption] = useState("");
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
@@ -2752,6 +2753,80 @@ function SpecializedClassifiedEditor({
  />
  </div>
  </div>
+
+ {/* Comodidades & Diferenciais do Imóvel */}
+ <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3 pt-2">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs font-semibold text-foreground tracking-tight">Comodidades & Infraestrutura do Imóvel</Label>
+ <span className="text-[10px] text-muted-foreground font-mono">{reAmenities.length} selecionada(s)</span>
+ </div>
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+ {Array.from(
+ new Set([
+ "Varanda Gourmet / Churrasqueira",
+ "Piscina Aquecida / Privativa",
+ "Portaria 24h & Biometria",
+ "Elevador Social & Serviço",
+ "Academia Completa / Fitness",
+ "Salão de Festas Climatizado",
+ "Playground / Brinquedoteca",
+ "Espaço Pet / Pet Place",
+ "Bicicletário",
+ "Energia Solar / Sustentável",
+ "Armários Embutidos",
+ "Ar-condicionado Split",
+ ...reAmenities,
+ ])
+ ).map((amenity) => {
+ const active = reAmenities.includes(amenity);
+ return (
+ <div
+ key={amenity}
+ onClick={() => toggleItem(reAmenities, setReAmenities, amenity)}
+ className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-[44px] ${
+ active
+ ? "border-primary bg-primary/10 text-primary font-medium"
+ : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
+ }`}
+ >
+ <Checkbox checked={active} />
+ <span className="truncate">{amenity}</span>
+ </div>
+ );
+ })}
+ </div>
+ <div className="flex items-center gap-2 pt-1">
+ <Input
+ value={customReAmenity}
+ onChange={(e) => setCustomReAmenity(e.target.value)}
+ onKeyDown={(e) => {
+ if (e.key === "Enter") {
+ e.preventDefault();
+ if (customReAmenity.trim() && !reAmenities.includes(customReAmenity.trim())) {
+ setReAmenities([...reAmenities, customReAmenity.trim()]);
+ setCustomReAmenity("");
+ }
+ }
+ }}
+ placeholder="Adicionar diferencial do imóvel..."
+ className="h-9 rounded-xl text-xs bg-background flex-1"
+ />
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => {
+ if (customReAmenity.trim() && !reAmenities.includes(customReAmenity.trim())) {
+ setReAmenities([...reAmenities, customReAmenity.trim()]);
+ setCustomReAmenity("");
+ }
+ }}
+ className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+ >
+ + Adicionar
+ </Button>
+ </div>
+ </div>
  </div>
  )}
 
@@ -2842,6 +2917,96 @@ function SpecializedClassifiedEditor({
  <SelectItem value="Elétrico">Elétrico</SelectItem>
  </SelectContent>
  </Select>
+ </div>
+ </div>
+
+ {/* Opcionais & Diferenciais do Veículo */}
+ <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3 pt-2">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs font-semibold text-foreground tracking-tight">Opcionais & Diferenciais do Veículo</Label>
+ <span className="text-[10px] text-muted-foreground font-mono">{vehicleFeatures.length} selecionado(s)</span>
+ </div>
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+ {Array.from(
+ new Set([
+ ...CANONICAL_VEHICLE_OPTIONS,
+ ...vehicleFeatures,
+ ])
+ ).map((opt) => {
+ const active = vehicleFeatures.includes(opt);
+ return (
+ <div
+ key={opt}
+ onClick={() => toggleItem(vehicleFeatures, setVehicleFeatures, opt)}
+ className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-[44px] ${
+ active
+ ? "border-primary bg-primary/10 text-primary font-medium"
+ : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
+ }`}
+ >
+ <Checkbox checked={active} />
+ <span className="truncate">{opt}</span>
+ </div>
+ );
+ })}
+ </div>
+ <div className="flex items-center gap-2 pt-1">
+ <Input
+ value={customVehicleOption}
+ onChange={(e) => setCustomVehicleOption(e.target.value)}
+ onKeyDown={(e) => {
+ if (e.key === "Enter") {
+ e.preventDefault();
+ if (customVehicleOption.trim() && !vehicleFeatures.includes(customVehicleOption.trim())) {
+ setVehicleFeatures([...vehicleFeatures, customVehicleOption.trim()]);
+ setCustomVehicleOption("");
+ }
+ }
+ }}
+ placeholder="Adicionar outro opcional do veículo (ex: Engate, Vitrificação)..."
+ className="h-9 rounded-xl text-xs bg-background flex-1"
+ />
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => {
+ if (customVehicleOption.trim() && !vehicleFeatures.includes(customVehicleOption.trim())) {
+ setVehicleFeatures([...vehicleFeatures, customVehicleOption.trim()]);
+ setCustomVehicleOption("");
+ }
+ }}
+ className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+ >
+ + Adicionar
+ </Button>
+ </div>
+ </div>
+
+ {/* Procedência & Histórico do Veículo */}
+ <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs font-semibold text-foreground tracking-tight">Procedência & Histórico</Label>
+ <span className="text-[10px] text-muted-foreground font-mono">{vehicleProvenance.length} selecionado(s)</span>
+ </div>
+ <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+ {CANONICAL_VEHICLE_PROVENANCE.map((prov) => {
+ const active = vehicleProvenance.includes(prov);
+ return (
+ <div
+ key={prov}
+ onClick={() => toggleItem(vehicleProvenance, setVehicleProvenance, prov)}
+ className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-[44px] ${
+ active
+ ? "border-primary bg-primary/10 text-primary font-medium"
+ : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
+ }`}
+ >
+ <Checkbox checked={active} />
+ <span className="truncate">{prov}</span>
+ </div>
+ );
+ })}
  </div>
  </div>
  </div>
