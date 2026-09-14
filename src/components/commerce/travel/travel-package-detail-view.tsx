@@ -142,11 +142,13 @@ export function TravelPackageDetailView({
  </span>
  </div>
 
+ {resort.duration_text && (
  <div className="flex items-center gap-1.5">
  <Badge variant="outline" className="text-[10px] font-mono border-border/80">
- {resort.duration_text || "5D / 4N"}
+ {resort.duration_text}
  </Badge>
  </div>
+ )}
  </div>
 
  {/* 4 Abas com Indicador Limpo */}
@@ -411,19 +413,19 @@ export function TravelPackageDetailView({
  <div className="flex-1 grid grid-cols-3 text-center divide-x divide-border/60">
  <div className="flex flex-col">
  <span className="font-bold text-sm sm:text-base text-foreground">
- {resort.duration_text || "5D / 4N"}
+ {resort.duration_text || "—"}
  </span>
  <span className="text-[10px] text-muted-foreground">Duração</span>
  </div>
  <div className="flex flex-col">
  <span className="font-bold text-sm sm:text-base text-foreground">
- {resort.meal_plan || "All Incl."}
+ {resort.meal_plan || "—"}
  </span>
  <span className="text-[10px] text-muted-foreground">Regime</span>
  </div>
  <div className="flex flex-col">
  <span className="font-bold text-sm sm:text-base text-foreground">
- {resort.guests_text || "2 Adultos"}
+ {resort.guests_text || "—"}
  </span>
  <span className="text-[10px] text-muted-foreground">Hóspedes</span>
  </div>

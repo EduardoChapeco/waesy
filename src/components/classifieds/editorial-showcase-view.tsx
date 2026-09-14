@@ -153,23 +153,23 @@ export function EditorialShowcaseView({
     }
     if (nicheId.includes("hosped") || nicheId.includes("temporada")) {
       return [
-        { label: "Tipo", val: attrs.property_type || "Chalé" },
-        { label: "Hóspedes", val: `${attrs.max_guests || 1} máx.` },
-        { label: "Quartos", val: `${attrs.bedrooms || 1} qto(s)` },
+        { label: "Tipo", val: attrs.property_type || "—" },
+        { label: "Hóspedes", val: attrs.max_guests ? `${attrs.max_guests} máx.` : "—" },
+        { label: "Quartos", val: attrs.bedrooms ? `${attrs.bedrooms} qto(s)` : "—" },
       ];
     }
     if (nicheId.includes("imov") || nicheId.includes("real_estate")) {
       return [
         { label: "Área", val: attrs.area_sqm ? `${attrs.area_sqm} m²` : "—" },
-        { label: "Quartos", val: `${attrs.bedrooms || "—"} qtos` },
-        { label: "Vagas", val: `${attrs.parking_spots || "—"} vg(s)` },
+        { label: "Quartos", val: attrs.bedrooms ? `${attrs.bedrooms} qtos` : "—" },
+        { label: "Vagas", val: attrs.parking_spots ? `${attrs.parking_spots} vg(s)` : "—" },
       ];
     }
     if (nicheId.includes("veic") || nicheId.includes("car") || nicheId.includes("auto")) {
       return [
         { label: "Ano", val: attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model}` : "—" },
         { label: "Km", val: attrs.mileage_km ? `${attrs.mileage_km} km` : "Zero Km" },
-        { label: "Câmbio", val: attrs.transmission || "Automático" },
+        { label: "Câmbio", val: attrs.transmission || "—" },
       ];
     }
     if (nicheId.includes("serv") || nicheId.includes("prof")) {
