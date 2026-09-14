@@ -228,8 +228,22 @@ function getFrequentToolsForNiche(semantics: any) {
  ];
 }
 
+interface SectorTool {
+  title: string;
+  path: string;
+  icon: any;
+  badge?: string;
+}
+
+interface SectorGroup {
+  id: string;
+  title: string;
+  description: string;
+  tools: SectorTool[];
+}
+
 // ── GRADE SETORIAL COMPLETA DE FERRAMENTAS ──
-const SECTOR_TOOL_GROUPS = [
+const SECTOR_TOOL_GROUPS: SectorGroup[] = [
   {
     id: "commerce",
     title: "Comércio & Vendas",

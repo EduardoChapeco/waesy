@@ -335,6 +335,7 @@ export interface EscPosReceiptParams {
   paymentMethod?: string;
   channelSource?: string;
   customerName?: string;
+  notes?: string;
 }
 
 /**
@@ -392,6 +393,9 @@ export function buildEscPosReceipt(params: EscPosReceiptParams): Uint8Array {
   if (params.paymentMethod) {
     bytes.push(...enc.encode(`FORMA PGTO: ${params.paymentMethod.toUpperCase()}\n`));
   }
+  if (params.notes) {
+    bytes.push(...enc.encode(`OBS: ${params.notes}\n`));
+  }
 
   // Alimentação de papel: 3 linhas
   bytes.push(0x0a, 0x0a, 0x0a);
@@ -400,6 +404,12 @@ export function buildEscPosReceipt(params: EscPosReceiptParams): Uint8Array {
   bytes.push(0x1d, 0x56, 0x41, 0x00);
 
   return new Uint8Array(bytes);
+}
+
+export class EscPosBuilder {
+  static buildReceipt(params: EscPosReceiptParams): Uint8Array {
+    return buildEscPosReceipt(params);
+  }
 }
 
 export interface ZplShippingLabelParams {
@@ -450,7 +460,7 @@ export function buildZplShippingLabel(params: ZplShippingLabelParams): string {
 
     // Destinatário
     `^FO50,350^A0N,26,26^FDPARA:^FS`,
-    `^FO50,385^A0N,34,34^FD${params.recipient.name}^FS`,
+    `^FO50,385^A0N,34,34^FD${params.recipient.name.toUpperCase()}^FS`,
     `^FO50,430^A0N,28,28^FD${params.recipient.street}, ${params.recipient.number}^FS`,
     params.recipient.neighborhood ? `^FO50,465^A0N,26,26^FD${params.recipient.neighborhood}^FS` : "",
     `^FO50,500^A0N,32,32^FD${params.recipient.city} - ${params.recipient.state}^FS`,

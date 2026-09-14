@@ -53,7 +53,7 @@ describe('[FASE 8 AUDIT] AI Layout Generator, Niche Templates & 1-Click Exporter
  expect(html).toContain('Portal Oficial · Waesy Turismo Premium');
  expect(html).toContain('cdn.tailwindcss.com');
  expect(html).toContain('fonts.googleapis.com');
- expect(html).toContain('window.__WIDER_EXPERIENCE_NODES__');
+ expect(html).toContain('window.__WAESY_EXPERIENCE_NODES__');
  });
 
  it('should dispatch deploy hook with payload and handle responses', async () => {

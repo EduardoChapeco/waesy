@@ -9,6 +9,7 @@ export interface CondicionalItemDTO {
   name: string;
   size?: string | null;
   price_cents: number;
+  priceCents?: number;
   status: "with_customer" | "returned" | "purchased";
   product_id?: string | null;
   variant_id?: string | null;
@@ -19,10 +20,14 @@ export interface StoreCondicionalDTO {
   id: string;
   store_id: string;
   customer_name: string;
+  customerName?: string;
   customer_phone?: string | null;
+  customerPhone?: string | null;
   customer_id?: string | null;
   dispatch_date: string;
+  dispatchDate?: string;
   return_due_date: string;
+  returnDueDate?: string;
   status: "open" | "due_today" | "overdue" | "closed";
   notes?: string | null;
   total_estimated_cents: number;
@@ -83,8 +88,15 @@ export const listStoreCondicionais = createServerFn({ method: "GET" })
 
       return {
         ...row,
+        customerName: row.customer_name,
+        customerPhone: row.customer_phone,
+        dispatchDate: row.dispatch_date,
+        returnDueDate: row.return_due_date,
         status: calculatedStatus,
-        items: (row.items || []) as CondicionalItemDTO[],
+        items: (row.items || []).map((it: any) => ({
+          ...it,
+          priceCents: it.price_cents,
+        })) as CondicionalItemDTO[],
       };
     });
 

@@ -340,13 +340,34 @@ function PainelEmpresaPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
             <CompanyNotificationsBell />
 
-            <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs gap-1.5">
+            <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50">
               <Link to="/c/$storeSlug" params={{ storeSlug: store.slug }} target="_blank">
-                <span>Ver Perfil Público</span>
+                <span className="hidden sm:inline">Ver Perfil</span>
                 <ArrowUpRight className="size-3.5" />
+              </Link>
+            </Button>
+
+            <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50">
+              <Link to="/workspace/marketing/brand-kit">
+                <Edit className="size-3.5 text-primary" />
+                <span className="hidden md:inline">Editar Perfil</span>
+              </Link>
+            </Button>
+
+            <Button asChild size="sm" className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-xs">
+              <Link to="/workspace">
+                <Store className="size-3.5" />
+                <span>Portal</span>
+              </Link>
+            </Button>
+
+            <Button asChild size="sm" variant="outline" className="h-9 rounded-xl text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/5">
+              <Link to="/portal-completo">
+                <Layers className="size-3.5" />
+                <span className="hidden sm:inline">Gestão Pro</span>
               </Link>
             </Button>
 
@@ -357,27 +378,20 @@ function PainelEmpresaPage() {
                 setCustomFields(initialFormSettings?.fields || []);
                 setIsCustomFormModalOpen(true);
               }}
-              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50"
+              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50 hidden lg:inline-flex"
             >
               <FileText className="size-3.5 text-primary" />
-              <span className="hidden sm:inline">Perguntas da Proposta</span>
+              <span>Proposta</span>
             </Button>
 
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsDeliveryModalOpen(true)}
-              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50"
+              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50 hidden lg:inline-flex"
             >
               <Bike className="size-3.5 text-primary" />
-              <span className="hidden sm:inline">Taxas de Entrega</span>
-            </Button>
-
-            <Button asChild size="sm" variant="outline" className="h-9 rounded-xl text-xs font-semibold gap-1.5 border-border/80 hover:bg-muted/50">
-              <Link to="/portal-completo">
-                <Layers className="size-3.5 text-primary" />
-                <span>Módulos Pro</span>
-              </Link>
+              <span>Entregas</span>
             </Button>
           </div>
         </div>

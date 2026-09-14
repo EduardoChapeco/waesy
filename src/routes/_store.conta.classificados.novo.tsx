@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info, Trash2, Plus } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -214,6 +214,16 @@ const NICHE_CARDS: NicheDefinition[] = [
  badge: "Talentos",
  gradient: "from-rose-500/10 via-red-500/5 to-transparent",
  },
+  {
+    id: "assinatura",
+    canonicalCategory: "service",
+    title: "Planos & Assinaturas",
+    subtitle: "Mensalidades & Clubes",
+    description: "Serviços recorrentes, mensalidades, planos de assinatura e clubes com renovação periódica.",
+    icon: Sparkles,
+    badge: "Recorrente",
+    gradient: "from-cyan-500/15 via-blue-500/10 to-transparent",
+  },
 ];
 
 // ─── Taxonomia Canônica Completa de Desapego ───────────────────────────────
@@ -344,7 +354,7 @@ function NovoClassificadoPage() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CAMADA 2: CreateTypePicker (Full-Page 16:9 Vertical Stack)
+// CAMADA 2: CreateTypePicker (Cards Verticais com Scroll Horizontal)
 // ─────────────────────────────────────────────────────────────────────────────
 function CreateTypePicker({
   onSelect,
@@ -352,6 +362,16 @@ function CreateTypePicker({
   onSelect: (typeId: ClassifiedNicheType, sub?: string) => void;
 }) {
   const [searchFilter, setSearchFilter] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -300 : 300,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const filteredNiches = useMemo(() => {
     if (!searchFilter.trim()) return NICHE_CARDS;
@@ -375,12 +395,17 @@ function CreateTypePicker({
   }, [searchFilter]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="w-full max-w-6xl mx-auto space-y-6 pb-20 px-1 sm:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-          Criar Anúncio
-        </h1>
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Criar Anúncio
+          </h1>
+          <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground">
+            {NICHE_CARDS.length} Formatos
+          </Badge>
+        </div>
         <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
           <Link to="/conta/classificados">Meus Anúncios</Link>
         </Button>
@@ -391,7 +416,7 @@ function CreateTypePicker({
         <Input
           value={searchFilter}
           onChange={(e) => setSearchFilter(e.target.value)}
-          placeholder="Buscar categoria ou produto (ex: Casa, iPhone, Carro, Móveis, Tênis, Assinatura)..."
+          placeholder="Buscar nicho ou categoria (ex: Casa, iPhone, Carro, Viagem, Móveis, Tênis, Assinatura)..."
           className="pl-10 h-11 rounded-2xl text-xs sm:text-sm bg-card border-border/60 shadow-sm"
         />
         {searchFilter && (
@@ -405,7 +430,95 @@ function CreateTypePicker({
         )}
       </div>
 
-      <div className="space-y-2">
+      {/* ── 2. Trilho de Cards Verticais com Scroll Horizontal ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+            Escolha o Tipo de Classificado
+          </span>
+          <div className="hidden md:flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => handleScroll("left")}
+              className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+              title="Rolar para a esquerda"
+              aria-label="Rolar para esquerda"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleScroll("right")}
+              className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+              title="Rolar para a direita"
+              aria-label="Rolar para direita"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative group/rail">
+          {/* Trilho de Scroll Horizontal com Snap */}
+          <div
+            ref={scrollContainerRef}
+            className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-2 px-0.5 scroll-smooth"
+          >
+            {filteredNiches.map((niche) => {
+              const Icon = niche.icon;
+              return (
+                <button
+                  key={niche.id}
+                  onClick={() => onSelect(niche.id)}
+                  className="w-[260px] sm:w-[280px] min-w-[260px] sm:min-w-[280px] h-[370px] sm:h-[390px] shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-primary/50 hover:shadow-lg transition-all duration-300 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                >
+                  {/* Gradiente Imersivo no Topo do Card */}
+                  <div
+                    className={`absolute top-0 inset-x-0 h-36 bg-gradient-to-b ${niche.gradient} opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`}
+                  />
+
+                  {/* Topo do Card: Ícone em Squircle + Badge */}
+                  <div className="relative z-10 flex items-start justify-between gap-2">
+                    <div className="size-13 rounded-2xl bg-background/90 backdrop-blur-md border border-border/70 shadow-xs flex items-center justify-center text-primary group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
+                      <Icon className="size-6" />
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-background/80 backdrop-blur-md border border-border/60 text-foreground shrink-0"
+                    >
+                      {niche.badge}
+                    </Badge>
+                  </div>
+
+                  {/* Meio do Card: Tipografia e Descrição Vertical */}
+                  <div className="relative z-10 space-y-1.5 flex-1 flex flex-col justify-center mt-3">
+                    <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                      {niche.title}
+                    </h3>
+                    <p className="text-xs font-semibold text-primary/90">
+                      {niche.subtitle}
+                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                      {niche.description}
+                    </p>
+                  </div>
+
+                  {/* Rodapé do Card: Ação com Seta Animada */}
+                  <div className="relative z-10 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                    <span>Criar Anúncio</span>
+                    <div className="size-7 rounded-full bg-muted/80 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:translate-x-1 transition-all">
+                      <ChevronRight className="size-4" />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. Categorias Rápidas para Desapego ── */}
+      <div className="space-y-2 pt-2 border-t border-border/40">
         <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
           Categorias Populares para Desapego Rápido
         </span>
@@ -448,48 +561,6 @@ function CreateTypePicker({
           </div>
         </div>
       )}
-
-      <div className="space-y-3.5 pt-1">
-        {filteredNiches.map((niche) => {
-          const Icon = niche.icon;
-          return (
-            <button
-              key={niche.id}
-              onClick={() => onSelect(niche.id)}
-              className="w-full text-left group relative hover:border-primary/50 bg-card hover:bg-card/80 rounded-2xl p-5 md:p-6 transition-all duration-200 cursor-pointer overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-border/50"
-            >
-              <div
-                className={`absolute inset-0 bg-gradient-to-r ${niche.gradient} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}
-              />
-
-              <div className="relative z-10 flex items-start sm:items-center gap-4 flex-1">
-                <div className="size-12 md:size-14 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  <Icon className="size-6 md:size-7" />
-                </div>
-
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-base md:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                      {niche.title}
-                    </h2>
-                    <Badge variant="secondary" className="text-[10px] font-semibold">
-                      {niche.badge}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-foreground/80 font-medium">{niche.subtitle}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {niche.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative z-10 hidden sm:flex items-center justify-center size-9 rounded-full bg-muted/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all shrink-0">
-                <ChevronRight className="size-5" />
-              </div>
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -522,6 +593,8 @@ function SpecializedClassifiedEditor({
  "whatsapp",
  ]);
  const [customSkillInput, setCustomSkillInput] = useState("");
+ const [customHospAmenity, setCustomHospAmenity] = useState("");
+ const [customReAmenity, setCustomReAmenity] = useState("");
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
@@ -639,18 +712,43 @@ function SpecializedClassifiedEditor({
   const [travelFlightDuration, setTravelFlightDuration] = useState(
     initialData?.attributes?.flight_details?.duration_text || ""
   );
-  const [travelBioBullet1, setTravelBioBullet1] = useState(
-    initialData?.attributes?.bio_bullets?.[0] || ""
-  );
-  const [travelBioBullet2, setTravelBioBullet2] = useState(
-    initialData?.attributes?.bio_bullets?.[1] || "✈️ Voo ida e volta com transfer in/out já inclusos"
-  );
-  const [travelBioBullet3, setTravelBioBullet3] = useState(
-    initialData?.attributes?.bio_bullets?.[2] || "🏖️ Acesso direto à praia, piscina natural e lago ecológico"
-  );
-  const [travelBioBullet4, setTravelBioBullet4] = useState(
-    initialData?.attributes?.bio_bullets?.[3] || "⭐ Acomodação Deluxe climatizada com varanda arejada"
-  );
+  const [travelBioBullets, setTravelBioBullets] = useState<string[]>(() => {
+    if (Array.isArray(initialData?.attributes?.bio_bullets) && initialData.attributes.bio_bullets.length > 0) {
+      return initialData.attributes.bio_bullets;
+    }
+    return [""]; // Campo livre limpo por padrão, sem fallbacks hardcoded
+  });
+
+  const handleAddTravelBullet = () => {
+    setTravelBioBullets((prev) => [...prev, ""]);
+  };
+
+  const handleUpdateTravelBullet = (index: number, val: string) => {
+    setTravelBioBullets((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
+
+  const handleRemoveTravelBullet = (index: number) => {
+    setTravelBioBullets((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      return next.length === 0 ? [""] : next;
+    });
+  };
+
+  const handleMoveTravelBullet = (index: number, direction: "up" | "down") => {
+    setTravelBioBullets((prev) => {
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      const temp = next[index];
+      next[index] = next[target];
+      next[target] = temp;
+      return next;
+    });
+  };
 
   // Specialized: Aluguel de Equipamentos
   const [equipmentPeriod, setEquipmentPeriod] = useState<"diaria" | "evento" | "semanal">(
@@ -1009,7 +1107,7 @@ function SpecializedClassifiedEditor({
         attributes.departure_date = travelDepartureDate;
         attributes.return_date = travelReturnDate;
         attributes.max_installments = travelMaxInstallments;
-        attributes.bio_bullets = [travelBioBullet1, travelBioBullet2, travelBioBullet3, travelBioBullet4].filter(Boolean);
+        attributes.bio_bullets = travelBioBullets.map((b) => b.trim()).filter(Boolean);
         attributes.flight_details = {
           departure_iata: travelDepartureIATA,
           arrival_iata: travelArrivalIATA,
@@ -1263,7 +1361,7 @@ function SpecializedClassifiedEditor({
 
     const generatedBioBullets =
       niche.id === "viagem"
-        ? [travelBioBullet1, travelBioBullet2, travelBioBullet3, travelBioBullet4].filter(Boolean)
+        ? travelBioBullets.map((b) => b.trim()).filter(Boolean)
         : niche.id === "hospedagem"
         ? [
             hospPropertyType,
@@ -1474,10 +1572,7 @@ function SpecializedClassifiedEditor({
     travelFlightDuration,
     travelStoryHighlights,
     travelItineraryDays,
-    travelBioBullet1,
-    travelBioBullet2,
-    travelBioBullet3,
-    travelBioBullet4,
+    travelBioBullets,
     hospPropertyType,
     hospGuests,
     hospBedrooms,
@@ -2114,33 +2209,131 @@ function SpecializedClassifiedEditor({
                 </div>
 
                 {/* 2.4 — Diferenciais (Bio Bullets) */}
-                <div className="space-y-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Diferenciais do Pacote (Bullets com Emoji)</p>
+                {/* 2.4 — Diferenciais do Pacote (Campos Livres Dinâmicos) */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Diferenciais do Pacote
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Campos livres dinâmicos. Adicione quantos diferenciais e benefícios desejar.
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddTravelBullet}
+                      className="h-7 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Adicionar</span>
+                    </Button>
+                  </div>
+
+                  {/* Lista Dinâmica de Campos Livres */}
                   <div className="space-y-2">
-                    <Input
-                      value={travelBioBullet1}
-                      onChange={(e) => setTravelBioBullet1(e.target.value)}
-                      placeholder="🌴 All Inclusive: refeições, snacks e bebidas liberadas"
-                      className="h-9 rounded-xl text-xs bg-background"
-                    />
-                    <Input
-                      value={travelBioBullet2}
-                      onChange={(e) => setTravelBioBullet2(e.target.value)}
-                      placeholder="✈️ Voo ida e volta com transfer in/out já inclusos"
-                      className="h-9 rounded-xl text-xs bg-background"
-                    />
-                    <Input
-                      value={travelBioBullet3}
-                      onChange={(e) => setTravelBioBullet3(e.target.value)}
-                      placeholder="🏖️ Acesso direto à praia com piscina natural"
-                      className="h-9 rounded-xl text-xs bg-background"
-                    />
-                    <Input
-                      value={travelBioBullet4}
-                      onChange={(e) => setTravelBioBullet4(e.target.value)}
-                      placeholder="⭐ Acomodação Deluxe climatizada com varanda arejada"
-                      className="h-9 rounded-xl text-xs bg-background"
-                    />
+                    {travelBioBullets.map((bullet, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-mono text-muted-foreground w-4 text-center shrink-0">
+                          {idx + 1}.
+                        </span>
+                        <Input
+                          value={bullet}
+                          onChange={(e) => handleUpdateTravelBullet(idx, e.target.value)}
+                          placeholder={`Diferencial ${idx + 1} (ex: All Inclusive, Voo Incluso, Pé na Areia, Vista Panorâmica...)`}
+                          className="h-9 rounded-xl text-xs bg-background flex-1"
+                        />
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          {travelBioBullets.length > 1 && (
+                            <>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={idx === 0}
+                                onClick={() => handleMoveTravelBullet(idx, "up")}
+                                className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                title="Mover para cima"
+                                aria-label="Mover para cima"
+                              >
+                                <ChevronUp className="size-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={idx === travelBioBullets.length - 1}
+                                onClick={() => handleMoveTravelBullet(idx, "down")}
+                                className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                title="Mover para baixo"
+                                aria-label="Mover para baixo"
+                              >
+                                <ChevronDown className="size-3" />
+                              </Button>
+                            </>
+                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveTravelBullet(idx)}
+                            className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                            title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
+                            aria-label="Remover diferencial"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddTravelBullet}
+                      className="w-full h-8 text-xs font-medium border-dashed border-border/70 hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary rounded-xl gap-1.5 cursor-pointer mt-1"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>Adicionar outro diferencial</span>
+                    </Button>
+                  </div>
+
+                  {/* Sugestões Rápidas de Emojis / Tags */}
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    <span className="text-[10px] text-muted-foreground font-medium">Sugestões rápidas:</span>
+                    {[
+                      "🌴 All Inclusive",
+                      "☕ Café da Manhã Incluso",
+                      "✈️ Aéreo Ida e Volta",
+                      "🚗 Transfer In/Out",
+                      "🏖️ Pé na Areia",
+                      "🏊 Piscina Aquecida",
+                      "⭐ Suíte com Vista",
+                      "🎟️ Ingressos Inclusos",
+                      "📶 Wi-Fi Alta Velocidade",
+                      "🍹 Open Bar Nacional",
+                    ].map((sug) => (
+                      <button
+                        key={sug}
+                        type="button"
+                        onClick={() => {
+                          setTravelBioBullets((prev) => {
+                            if (prev.length > 0 && !prev[prev.length - 1].trim()) {
+                              const next = [...prev];
+                              next[next.length - 1] = sug;
+                              return next;
+                            }
+                            return [...prev, sug];
+                          });
+                        }}
+                        className="text-[10px] px-2 py-0.5 rounded-lg border border-border/60 bg-muted/40 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer text-muted-foreground"
+                      >
+                        + {sug}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -2374,20 +2567,23 @@ function SpecializedClassifiedEditor({
                   <span className="text-[10px] text-muted-foreground font-mono">{hospAmenities.length} selecionada(s)</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {[
-                    "Wi-Fi Alta Velocidade",
-                    "Ar-condicionado",
-                    "Lareira",
-                    "Jacuzzi / Hidro",
-                    "Cozinha Equipada",
-                    "Vista Panorâmica",
-                    "Pet Friendly",
-                    "Estacionamento Gratuito",
-                    "Churrasqueira",
-                    "Piscina Privativa",
-                    "Roupa de Cama & Banho",
-                    "Espaço Home Office",
-                  ].map((amenity) => {
+                  {Array.from(
+                    new Set([
+                      "Wi-Fi Alta Velocidade",
+                      "Ar-condicionado",
+                      "Lareira",
+                      "Jacuzzi / Hidro",
+                      "Cozinha Equipada",
+                      "Vista Panorâmica",
+                      "Pet Friendly",
+                      "Estacionamento Gratuito",
+                      "Churrasqueira",
+                      "Piscina Privativa",
+                      "Roupa de Cama & Banho",
+                      "Espaço Home Office",
+                      ...hospAmenities,
+                    ])
+                  ).map((amenity) => {
                     const active = hospAmenities.includes(amenity);
                     return (
                       <div
@@ -2404,6 +2600,37 @@ function SpecializedClassifiedEditor({
                       </div>
                     );
                   })}
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <Input
+                    value={customHospAmenity}
+                    onChange={(e) => setCustomHospAmenity(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (customHospAmenity.trim() && !hospAmenities.includes(customHospAmenity.trim())) {
+                          setHospAmenities([...hospAmenities, customHospAmenity.trim()]);
+                          setCustomHospAmenity("");
+                        }
+                      }
+                    }}
+                    placeholder="Adicionar outra comodidade ou diferencial..."
+                    className="h-9 rounded-xl text-xs bg-background flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (customHospAmenity.trim() && !hospAmenities.includes(customHospAmenity.trim())) {
+                        setHospAmenities([...hospAmenities, customHospAmenity.trim()]);
+                        setCustomHospAmenity("");
+                      }
+                    }}
+                    className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+                  >
+                    + Adicionar
+                  </Button>
                 </div>
               </div>
 
@@ -2685,16 +2912,19 @@ function SpecializedClassifiedEditor({
                       <span className="text-[10px] text-muted-foreground font-mono">{reAmenities.length} selecionado(s)</span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {[
-                        "Orçamento Gratuito",
-                        "Emite Nota Fiscal (PJ)",
-                        "Garantia de 90 dias",
-                        "Atendimento Emergencial",
-                        "Profissional Certificado",
-                        "Aceita Cartão & PIX",
-                        "Materiais de 1ª Linha Inclusos",
-                        "Atendimento aos Finais de Semana",
-                      ].map((diff) => {
+                      {Array.from(
+                        new Set([
+                          "Orçamento Gratuito",
+                          "Emite Nota Fiscal (PJ)",
+                          "Garantia de 90 dias",
+                          "Atendimento Emergencial",
+                          "Profissional Certificado",
+                          "Aceita Cartão & PIX",
+                          "Materiais de 1ª Linha Inclusos",
+                          "Atendimento aos Finais de Semana",
+                          ...reAmenities,
+                        ])
+                      ).map((diff) => {
                         const active = reAmenities.includes(diff);
                         return (
                           <div
@@ -2711,6 +2941,37 @@ function SpecializedClassifiedEditor({
                           </div>
                         );
                       })}
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <Input
+                        value={customReAmenity}
+                        onChange={(e) => setCustomReAmenity(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            if (customReAmenity.trim() && !reAmenities.includes(customReAmenity.trim())) {
+                              setReAmenities([...reAmenities, customReAmenity.trim()]);
+                              setCustomReAmenity("");
+                            }
+                          }
+                        }}
+                        placeholder="Adicionar outro diferencial profissional..."
+                        className="h-9 rounded-xl text-xs bg-background flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (customReAmenity.trim() && !reAmenities.includes(customReAmenity.trim())) {
+                            setReAmenities([...reAmenities, customReAmenity.trim()]);
+                            setCustomReAmenity("");
+                          }
+                        }}
+                        className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+                      >
+                        + Adicionar
+                      </Button>
                     </div>
                   </div>
                 </div>

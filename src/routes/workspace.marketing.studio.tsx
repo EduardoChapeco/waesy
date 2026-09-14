@@ -73,7 +73,7 @@ export default function WorkspaceSocialStudioPage() {
 
   // Preencher com produto real do catálogo
   const handleSelectProduct = (productId: string) => {
-    const prod = products.find((p: any) => p.id === productId);
+    const prod: any = products.find((p: any) => p.id === productId);
     if (!prod) return;
 
     setTitle(prod.title || "Produto");

@@ -87,11 +87,11 @@ export const getExecutiveGrowthMetrics = createServerFn({ method: "GET" }).handl
     // Faturamento de faturas da plataforma
     db.from("platform_invoices").select("id, amount_cents, status"),
     // Contagem de classificados ativos
-    db.from("classified_ads").select("id, is_active", { count: "exact" }).catch(() => ({ count: 0, data: [] })),
+    Promise.resolve(db.from("classified_ads").select("id, is_active", { count: "exact" })).catch(() => ({ count: 0, data: [] } as any)),
     // Livro-caixa corporativo real (gastos e aportes)
-    db.from("platform_financial_records").select("*").order("entry_date", { ascending: false }).catch(() => ({ data: [] })),
+    Promise.resolve(db.from("platform_financial_records").select("*").order("entry_date", { ascending: false })).catch(() => ({ data: [] } as any)),
     // Metas cadastradas por período/estágio
-    db.from("platform_growth_targets").select("*").order("stage_order", { ascending: true }).catch(() => ({ data: [] })),
+    Promise.resolve(db.from("platform_growth_targets").select("*").order("stage_order", { ascending: true })).catch(() => ({ data: [] } as any)),
   ]);
 
   const profilesCount = usersRes.count || 0;

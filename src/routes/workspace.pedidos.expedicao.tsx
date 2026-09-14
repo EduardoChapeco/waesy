@@ -134,7 +134,8 @@ function WmsExpedicaoPage() {
       return createPickingBatch({ data: { orderIds } });
     },
     onSuccess: (res) => {
-      toast.success(`Onda de separação criada com sucesso (${res.totalOrders} pedidos)!`);
+      const count = (res as any).totalOrders ?? ((res as any).batch?.orders?.length || selectedOrderIdsForBatch.length);
+      toast.success(`Onda de separação criada com sucesso (${count} pedidos)!`);
       setIsCreateBatchModalOpen(false);
       setSelectedOrderIdsForBatch([]);
       queryClient.invalidateQueries({ queryKey: ["wms-batches"] });
@@ -170,7 +171,7 @@ function WmsExpedicaoPage() {
             storeName: store?.name || "Waesy Hub Logístico",
             city: store?.city || "Chapecó",
             state: store?.state || "SC",
-            zipCode: store?.zipcode || "89800-000",
+            zipCode: (store as any)?.zip_code || (store as any)?.zipcode || "89800-000",
           },
           channelSource: firstOrder.platform,
           totalItemsCount: firstOrder.items?.length || 1,

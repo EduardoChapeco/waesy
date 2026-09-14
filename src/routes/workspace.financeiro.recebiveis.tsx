@@ -507,7 +507,7 @@ function ReceivablesDashboard() {
             variant="outline"
             className="text-[10px] px-1.5 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
           >
-            {condicionaisList.filter((c) => c.status !== "closed").length} ativas
+            {condicionaisList.filter((c: any) => c.status !== "closed").length} ativas
           </Badge>
         </button>
       </div>
@@ -872,12 +872,12 @@ function ReceivablesDashboard() {
               </div>
               <div className="text-xl font-bold text-foreground">
                 {condicionaisList
-                  .filter((c) => c.status !== "closed")
-                  .reduce((acc, c) => acc + c.items.filter((i: any) => i.status === "with_customer").length, 0)}{" "}
+                  .filter((c: any) => c.status !== "closed")
+                  .reduce((acc: number, c: any) => acc + (c.items || []).filter((i: any) => i.status === "with_customer").length, 0)}{" "}
                 peças
               </div>
               <div className="text-xs text-muted-foreground">
-                Em {condicionaisList.filter((c) => c.status !== "closed").length} malas com clientes
+                Em {condicionaisList.filter((c: any) => c.status !== "closed").length} malas com clientes
               </div>
             </div>
 
@@ -891,13 +891,13 @@ function ReceivablesDashboard() {
               <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
                 {formatMoney(
                   condicionaisList
-                    .filter((c) => c.status !== "closed")
+                    .filter((c: any) => c.status !== "closed")
                     .reduce(
-                      (acc, c) =>
+                      (acc: number, c: any) =>
                         acc +
-                        c.items
+                        (c.items || [])
                           .filter((i: any) => i.status === "with_customer")
-                          .reduce((sum: number, it: any) => sum + it.priceCents, 0),
+                          .reduce((sum: number, it: any) => sum + (it.priceCents || it.price_cents || 0), 0),
                       0,
                     ),
                 )}
@@ -924,7 +924,7 @@ function ReceivablesDashboard() {
                 <AlertCircle className="h-4 w-4 text-amber-500" />
               </div>
               <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
-                {condicionaisList.filter((c) => c.status === "due_today" || c.status === "overdue").length}
+                {condicionaisList.filter((c: any) => c.status === "due_today" || c.status === "overdue").length}
               </div>
               <div className="text-xs text-muted-foreground">Malas vencendo hoje ou atrasadas</div>
             </div>
@@ -972,18 +972,19 @@ function ReceivablesDashboard() {
           {/* Listagem de Condicionais */}
           <div className="space-y-4">
             {condicionaisList
-              .filter((c) => {
+              .filter((c: any) => {
                 if (condicionaisFilter !== "all" && c.status !== condicionaisFilter) return false;
+                const cName = c.customerName || c.customer_name || "";
                 if (
                   condicionaisSearch &&
-                  !c.customerName.toLowerCase().includes(condicionaisSearch.toLowerCase())
+                  !cName.toLowerCase().includes(condicionaisSearch.toLowerCase())
                 ) {
                   return false;
                 }
                 return true;
               })
-              .map((cond) => {
-                const totalMalaCents = cond.items.reduce((acc: number, it: any) => acc + it.priceCents, 0);
+              .map((cond: any) => {
+                const totalMalaCents = (cond.items || []).reduce((acc: number, it: any) => acc + (it.priceCents || it.price_cents || 0), 0);
                 const isOverdue = cond.status === "overdue";
                 const isDueToday = cond.status === "due_today";
                 const isClosed = cond.status === "closed";
