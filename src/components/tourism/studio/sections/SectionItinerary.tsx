@@ -18,7 +18,7 @@ interface Props {
   save: (patch: Partial<Proposal>) => void;
 }
 
-const BLANK: ItineraryDay = { id: "", day: "", title: "", description: "" };
+const BLANK: ItineraryDay = { id: "", day: "", day_number: 1, title: "", description: "" };
 
 export function SectionItinerary({ draft, save }: Props) {
   const itinerary = draft.itinerary ?? [];
@@ -101,7 +101,7 @@ export function SectionItinerary({ draft, save }: Props) {
         <Card key={d.id || i} onRemove={() => remove(i)}>
           <div className="grid grid-cols-3 gap-2 mb-2">
             <L label="Label">
-              <Inp value={d.day} onChange={(v) => upd(i, { day: v })} ph={`Dia ${i + 1}`} />
+              <Inp value={d.day || ""} onChange={(v) => upd(i, { day: v })} ph={`Dia ${i + 1}`} />
             </L>
             <div className="col-span-2">
               <L label="Título">

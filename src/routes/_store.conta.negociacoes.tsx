@@ -107,54 +107,67 @@ function NegociacoesPage() {
  return true;
  });
 
- return (
- <div className="space-y-6">
- {/* ── Header ─────────────────────────────────────────────── */}
- <div className=" pb-4 flex items-center justify-between gap-4">
- <div className="flex items-center gap-2">
- <Badge variant="outline" className="font-mono text-[10px] uppercase font-bold px-2.5 py-0.5">
- DIRETAS
- </Badge>
- <span className="text-xs text-muted-foreground font-mono">Negociações & Reservas</span>
- </div>
+  return (
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-5 pb-24 px-0 sm:px-4 md:px-0">
+      {/* ── 1. Top Header Limpo & Direto (Apple HIG) ── */}
+      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Negociações
+          </h1>
+          {deals && deals.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+              {deals.length}
+            </Badge>
+          )}
+        </div>
 
- {/* Abas Rápidas */}
- <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl ">
- <button
- type="button"
- onClick={() => setActiveTab("all")}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
- activeTab === "all"
- ? "bg-background text-foreground "
- : "text-muted-foreground hover:text-foreground"
- }`}
- >
- Todas ({deals?.length || 0})
- </button>
- <button
- type="button"
- onClick={() => setActiveTab("bookings")}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
- activeTab === "bookings"
- ? "bg-background text-foreground "
- : "text-muted-foreground hover:text-foreground"
- }`}
- >
- Hospedagens & Diárias
- </button>
- <button
- type="button"
- onClick={() => setActiveTab("deals")}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
- activeTab === "deals"
- ? "bg-background text-foreground "
- : "text-muted-foreground hover:text-foreground"
- }`}
- >
- Vendas & Propostas
- </button>
- </div>
- </div>
+        <Button
+          asChild
+          size="sm"
+          variant="outline"
+          className="rounded-xl h-9 px-3.5 text-xs font-semibold cursor-pointer hover:bg-muted"
+        >
+          <Link to="/classificados">Explorar Anúncios</Link>
+        </Button>
+      </div>
+
+      {/* ── 2. Toolbar: Abas Rápidas em Trilho Horizontal sem Quebra (Anti-Wrapping & Anti-Overflow) ── */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full">
+        <button
+          type="button"
+          onClick={() => setActiveTab("all")}
+          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            activeTab === "all"
+              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
+          }`}
+        >
+          Todas ({deals?.length || 0})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("bookings")}
+          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            activeTab === "bookings"
+              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
+          }`}
+        >
+          Hospedagens & Diárias
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("deals")}
+          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            activeTab === "deals"
+              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
+          }`}
+        >
+          Vendas & Propostas
+        </button>
+      </div>
 
  {/* ── Lista de Negociações ─────────────────────────────────── */}
  {isLoading ? (
@@ -414,24 +427,25 @@ function NegociacoesPage() {
  );
  })}
  </div>
- ) : (
- <div className="border-0 bg-card/60 rounded-2xl p-10 text-center space-y-3">
- <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
- <Handshake className="size-6" />
- </div>
- <h2 className="text-base font-bold text-foreground">Nenhuma negociação ou reserva encontrada</h2>
- <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Quando você enviar uma proposta para um anúncio, reservar uma hospedagem ou receber ofertas,
- elas aparecerão aqui.
- </p>
- <Button asChild size="sm" className="rounded-xl text-xs font-bold gap-1.5 mt-2">
- <Link to="/classificados">
- <Tag className="size-4" />
- <span>Explorar Classificados & Imóveis</span>
- </Link>
- </Button>
- </div>
- )}
+      ) : (
+        <div className="border border-border/70 bg-card rounded-2xl p-6 sm:p-12 text-center space-y-3.5 shadow-xs max-w-xl mx-auto w-full">
+          <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+            <Handshake className="size-6" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base sm:text-lg font-bold text-foreground">Nenhuma negociação encontrada</h2>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              Quando você enviar uma proposta para um anúncio ou reservar uma hospedagem, elas aparecerão aqui.
+            </p>
+          </div>
+          <Button asChild size="default" className="rounded-xl h-10 sm:h-11 px-6 text-xs sm:text-sm font-bold gap-2 mt-1 shadow-xs cursor-pointer">
+            <Link to="/classificados">
+              <Tag className="size-4" />
+              <span>Explorar Classificados & Imóveis</span>
+            </Link>
+          </Button>
+        </div>
+      )}
  </div>
  );
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, isRedirect } from "@tanstack/react-router";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -41,6 +41,7 @@ const NAV_SECTIONS = [
     title: "Governança & Motor",
     items: [
       { to: "/admin-master", label: "Dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/admin-master/crescimento", label: "Metas & Valuation", icon: Target },
       { to: "/admin-master/modulos", label: "Módulos", icon: Layers },
       { to: "/admin-master/algoritmo", label: "Algoritmo", icon: Sliders },
       { to: "/admin-master/curadoria", label: "Curadoria", icon: Eye },

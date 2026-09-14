@@ -110,3 +110,14 @@ export function calculateQuoteTotals(state: Partial<Proposal>): QuoteTotals {
     },
   };
 }
+
+export function getAgencyMarkup(agencySettings?: any, channel?: string): number {
+  if (channel === "infotravel" && agencySettings?.infotravel_markup_percent !== undefined) {
+    return Number(agencySettings.infotravel_markup_percent) || 0;
+  }
+  return Number(agencySettings?.default_markup_percent) || 0;
+}
+
+export function calculateMarkup(baseCost: number, markupPercent: number): number {
+  return Math.round(baseCost * (1 + (markupPercent / 100)));
+}

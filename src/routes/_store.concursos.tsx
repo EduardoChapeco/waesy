@@ -134,7 +134,7 @@ function ConcursosPublicPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 px-4 sm:px-6 pt-4 animate-in fade-in duration-150">
+    <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0 pt-4 animate-in fade-in duration-150">
       {/* ── Top Header Silencioso & Limpo ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div className="space-y-1">

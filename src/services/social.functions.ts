@@ -207,6 +207,7 @@ export type PostType =
  | "id_badges"
  | "banner"
  | "event"
+ | "photo"
  | "classified";
 
 export type MuralFeedItem = {
@@ -219,6 +220,8 @@ export type MuralFeedItem = {
  is_store: boolean;
  };
  content_text: string | null;
+ content?: string | null;
+ scope?: string | null;
  media_urls: string[];
  layout_style?: "grid" | "carousel";
  post_type: PostType;
@@ -241,7 +244,7 @@ export type MuralFeedItem = {
  likes_count: number;
  comments_count: number;
  user_liked: boolean;
-}
+};
 export type MuralFeedResponse = {
   items: MuralFeedItem[];
   hasMore: boolean;
@@ -645,6 +648,7 @@ export const createPost = createServerFn({ method: "POST" })
           "banner",
           "event",
           "classified",
+          "photo",
         ])
         .default("simple"),
       location_name: z.string().optional().nullable(),
@@ -1627,19 +1631,19 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
  try {
  const { data: stores } = await db
  .from("stores")
- .select("id, name, slug, logo_url, banner_url, city, state, segment")
+            .select("id, name, slug, logo_url, city, state, settings")
  .in("id", storeIds)
- .eq("status", "active");
+            .eq("is_active", true);
 
  partnerStores = (stores || []).map((s: any) => ({
  id: s.id,
  name: s.name,
  slug: s.slug,
  logoUrl: s.logo_url || null,
- bannerUrl: s.banner_url || null,
+            bannerUrl: s.settings?.bannerUrl || s.settings?.banner_url || null,
  city: s.city || "Chapecó",
  state: s.state || "SC",
- segment: s.segment || "Varejo",
+            segment: s.settings?.segment || s.settings?.niche || "Varejo",
  couponCode: `${(creatorProfile.handle || "WAESY").toUpperCase().slice(0, 6)}10`,
  discountPercent: 10,
  }));
@@ -2446,8 +2450,10 @@ export const getPostById = createServerFn({ method: "GET" })
     }
 
     const item: MuralFeedItem = {
+      type: "post",
       id: post.id,
       content: post.content,
+      content_text: post.content,
       created_at: post.created_at,
       reference_type: post.reference_type,
       reference_id: post.reference_id,

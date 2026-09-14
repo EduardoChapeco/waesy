@@ -79,11 +79,12 @@ interface BrandKitForm {
   font_body: string;
   font_mono: string;
   font_display: string;
-  // Logos
+  // Logos & Capa
   logo_url: string;
   logo_dark_url: string;
   logo_icon_url: string;
   logo_light_url: string;
+  cover_url: string;
   // Estética
   border_radius_scale: "none" | "small" | "medium" | "large" | "pill";
   shadow_style: "none" | "subtle" | "medium" | "strong";
@@ -111,6 +112,7 @@ const EMPTY_FORM: BrandKitForm = {
   logo_dark_url: "",
   logo_icon_url: "",
   logo_light_url: "",
+  cover_url: "",
   border_radius_scale: "medium",
   shadow_style: "subtle",
   animation_style: "smooth",
@@ -124,7 +126,7 @@ const FONTS_DISPLAY = ["Bebas Neue", "Oswald", "Syne", "Clash Display", "Anton"]
 const ALL_FONTS = [...FONTS_SANS, ...FONTS_SERIF, ...FONTS_MONO, ...FONTS_DISPLAY].sort();
 
 // ── Serialização DB ↔ Form ────────────────────────────────────────────────────
-function dbToForm(bk: Record<string, any>): BrandKitForm {
+function dbToForm(bk: Record<string, any>, store?: any): BrandKitForm {
   const colors = bk.colors || {};
   const fonts = bk.fonts || {};
   const logos = bk.logos || {};
@@ -149,10 +151,11 @@ function dbToForm(bk: Record<string, any>): BrandKitForm {
     font_body: fonts.body || EMPTY_FORM.font_body,
     font_mono: fonts.mono || EMPTY_FORM.font_mono,
     font_display: fonts.display || EMPTY_FORM.font_display,
-    logo_url: logos.main_url || "",
+    logo_url: logos.main_url || (store as any)?.logo_url || (store as any)?.settings?.logo_url || "",
     logo_dark_url: logos.dark_url || "",
-    logo_icon_url: logos.icon_url || "",
+    logo_icon_url: logos.icon_url || (store as any)?.settings?.favicon_url || "",
     logo_light_url: logos.light_url || "",
+    cover_url: logos.cover_url || (store as any)?.banner_url || (store as any)?.settings?.cover_url || (store as any)?.settings?.banner_url || "",
     border_radius_scale: voice.border_radius_scale || EMPTY_FORM.border_radius_scale,
     shadow_style: voice.shadow_style || EMPTY_FORM.shadow_style,
     animation_style: voice.animation_style || EMPTY_FORM.animation_style,
@@ -186,6 +189,7 @@ function formToPayload(f: BrandKitForm) {
       dark_url: f.logo_dark_url || null,
       icon_url: f.logo_icon_url || null,
       light_url: f.logo_light_url || null,
+      cover_url: f.cover_url || null,
     },
     voice: {
       border_radius_scale: f.border_radius_scale,
@@ -261,7 +265,7 @@ function SectionCard({
 
 // ── Página Principal ──────────────────────────────────────────────────────────
 export function BrandKitPage() {
-  const { brandKit: initialBrandKit } = ((Route.useLoaderData?.() as any) || {});
+  const { brandKit: initialBrandKit, store } = ((Route.useLoaderData?.() as any) || {});
   const [form, setForm] = useState<BrandKitForm>(EMPTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -269,10 +273,10 @@ export function BrandKitPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (initialBrandKit) {
-      setForm(dbToForm(initialBrandKit as Record<string, any>));
+    if (initialBrandKit || store) {
+      setForm(dbToForm((initialBrandKit as Record<string, any>) || {}, store));
     }
-  }, [initialBrandKit]);
+  }, [initialBrandKit, store]);
 
   const update = (patch: Partial<BrandKitForm>) => setForm((f) => ({ ...f, ...patch }));
 
@@ -392,7 +396,7 @@ export function BrandKitPage() {
 
       {/* ── HEADER EXECUTIVO ── */}
       <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -661,53 +665,80 @@ export function BrandKitPage() {
           </div>
         )}
 
-        {/* ABA: LOGOS */}
+        {/* ABA: LOGOS & CAPA */}
         {activeTab === "logos" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {(
-              [
-                {
-                  key: "logo_url",
-                  label: "Logo Principal",
-                  desc: "Para fundos claros e uso geral",
-                },
-                {
-                  key: "logo_dark_url",
-                  label: "Logo Dark",
-                  desc: "Versão para fundos escuros",
-                },
-                {
-                  key: "logo_icon_url",
-                  label: "Ícone / Símbolo",
-                  desc: "Versão simplificada, favicon e avatar",
-                },
-                {
-                  key: "logo_light_url",
-                  label: "Logo Light",
-                  desc: "Variação clara para overlays e banners",
-                },
-              ] as const
-            ).map(({ key, label, desc }) => (
-              <div
-                key={key}
-                className="bg-card border border-border/50 rounded-2xl overflow-hidden"
-              >
-                <div className="px-5 py-4 border-b border-border/30">
-                  <Label className="text-sm font-semibold">{label}</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+          <div className="space-y-6">
+            {/* Banner Panorâmico de Capa (3:1 Canônico) */}
+            <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Banner 3:1)</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Banner de topo exibido na página pública da sua loja (aspect ratio canônico 3:1: 1200x400)
+                  </p>
                 </div>
-                <div className="p-5">
-                  <ImageUpload
-                    value={(form as any)[key] || ""}
-                    onChange={(url) => update({ [key]: url } as any)}
-                    onRemove={() => update({ [key]: "" } as any)}
-                    bucket="store-assets"
-                    aspectPreset="square"
-                    helperText={`Upload de ${label}`}
-                  />
-                </div>
+                <Badge variant="outline" className="text-[10px] font-mono">
+                  3:1 Panorâmico
+                </Badge>
               </div>
-            ))}
+              <div className="p-5">
+                <ImageUpload
+                  value={form.cover_url || ""}
+                  onChange={(url) => update({ cover_url: url })}
+                  onRemove={() => update({ cover_url: "" })}
+                  bucket="store-assets"
+                  aspectPreset="cover"
+                  helperText="Clique ou arraste para carregar a capa oficial da loja com máscara de corte 3:1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {(
+                [
+                  {
+                    key: "logo_url",
+                    label: "Logo Principal",
+                    desc: "Para fundos claros e uso geral",
+                  },
+                  {
+                    key: "logo_dark_url",
+                    label: "Logo Dark",
+                    desc: "Versão para fundos escuros",
+                  },
+                  {
+                    key: "logo_icon_url",
+                    label: "Ícone / Símbolo",
+                    desc: "Versão simplificada, favicon e avatar",
+                  },
+                  {
+                    key: "logo_light_url",
+                    label: "Logo Light",
+                    desc: "Variação clara para overlays e banners",
+                  },
+                ] as const
+              ).map(({ key, label, desc }) => (
+                <div
+                  key={key}
+                  className="bg-card border border-border/50 rounded-2xl overflow-hidden"
+                >
+                  <div className="px-5 py-4 border-b border-border/30">
+                    <Label className="text-sm font-semibold">{label}</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                  </div>
+                  <div className="p-5">
+                    <ImageUpload
+                      value={(form as any)[key] || ""}
+                      onChange={(url) => update({ [key]: url } as any)}
+                      onRemove={() => update({ [key]: "" } as any)}
+                      bucket="store-assets"
+                      aspectPreset="square"
+                      helperText={`Upload de ${label}`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

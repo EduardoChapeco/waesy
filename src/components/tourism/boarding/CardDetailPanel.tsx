@@ -303,7 +303,7 @@ export function CardDetailPanel({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-2xl md:max-w-3xl flex flex-col p-0 bg-background text-foreground border-l border-border/70"
+        className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-2xl md:max-w-3xl flex flex-col p-0 bg-background text-foreground border-l border-border/70"
       >
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">
@@ -453,7 +453,7 @@ export function CardDetailPanel({
                             <button
                               type="button"
                               onClick={() => toggleMutation.mutate({ item_id: item.id, is_completed: !item.is_completed })}
-                              className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer"
+                              className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer min-h-[44px] py-1"
                             >
                               {item.is_completed ? (
                                 <CheckCircle2 className="size-4 text-emerald-500 shrink-0" />
@@ -601,7 +601,7 @@ export function CardDetailPanel({
                         <FileAttachmentUpload
                           value={docUrl}
                           onChange={setDocUrl}
-                          placeholder="Selecionar PDF ou imagem..."
+                          helperText="Selecionar PDF ou imagem..."
                         />
                       </div>
                     </div>

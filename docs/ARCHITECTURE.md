@@ -165,3 +165,25 @@ O sistema é organizado em camadas estritamente unidirecionais. Nenhuma camada s
   - Consumo Público: `/_store/conta/tokens`.
   - BFF: `src/services/tokens.functions.ts`.
 
+### 11.5 Arquitetura Waesy Care Finance & Supply Chain Finance (Saúde de Caixa das PMEs)
+- Camada de engenharia e inteligência financeira desenhada para blindar o comerciante contra asfixia de capital de giro e descasamento de caixa:
+  - **Tabelas Canônicas:**
+    - `store_inbound_invoices`: Registro de notas fiscais de entrada (chave de 44 dígitos, fornecedor, CNPJ, valor total).
+    - `supplier_invoice_split_schedules`: Duplicatas agendadas para liquidação atômica interna em D+0 com R$ 0,00 de taxas.
+    - `store_settlement_policies`: Política de payout diferenciada (externo D+7 a D+30 vs interno D+0 para fornecedores).
+    - `store_cash_safes` & `store_cash_safe_entries`: Cofres blindados com rendimento CDI diário (Aluguel e Folha de Pagamento).
+    - `store_working_capital_advances` & `store_working_capital_installments`: Giro solidário amortizado como percentual suave das vendas diárias (5% a 15%), com carência zero nos dias de movimento fraco.
+    - `store_carnes` & `store_carne_installments`: Carnês digitais e crediário com régua acolhedora e conciliação empática.
+  - **Módulos de Operação no Workspace:**
+    - `/workspace/financeiro/recebiveis` (Gestão de Carnês, Notificações Empáticas, Relatório de Contas a Receber).
+    - `/workspace/financeiro/caixa` (Fluxo de Caixa Operacional, Turnos, Sangrias e Suprimentos).
+    - `/workspace/financeiro/pagamentos` (Histórico de Liquidações e Baixas).
+  - **Camada BFF (`/services`):**
+    - `src/services/receivables.functions.ts`: CRUD de carnês, conciliação e lembretes amigáveis.
+    - `src/services/cash-management.functions.ts`: Gestão de cofres, antecipação suave de giro e conciliação de NF-e de entrada.
+  - **Invariantes Arquiteturais:**
+    - Todo valor em inteiros de centavos (`_cents`).
+    - Nenhuma chamada ao Supabase em componentes visuais.
+    - Isolamento Multi-Tenant estrito derivado da sessão via `getServerIdentity()`.
+
+

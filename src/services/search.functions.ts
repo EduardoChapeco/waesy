@@ -81,6 +81,8 @@ export type SearchResultStore = {
  slug: string;
  description: string | null;
  logo_url: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export type SearchResult =
@@ -312,6 +314,8 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  slug: s.slug,
  description: (s.settings as any)?.description || null,
  logo_url: (s.settings as any)?.logoUrl || (s.settings as any)?.logo_url || null,
+          latitude: (s.settings as any)?.latitude ?? (s.settings as any)?.lat ?? null,
+          longitude: (s.settings as any)?.longitude ?? (s.settings as any)?.lng ?? null,
  }));
  })(),
  );
@@ -383,6 +387,84 @@ export const instantTypeaheadSearch = createServerFn({ method: "GET" })
  };
  }
 
- return res;
- });
+  return res;
+});
 
+// ---------------------------------------------------------------------------
+// Search Discovery Data (Trending terms & Visual discovery mosaic)
+// ---------------------------------------------------------------------------
+export const getSearchDiscoveryData = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const db = getServerClient();
+
+    const [productsRes, storesRes, classifiedsRes, categoriesRes] = await Promise.all([
+      db
+        .from("products")
+        .select("id, title, slug, price_cents, cover_url, store_id, status")
+        .in("status", ["published", "active"])
+        .order("created_at", { ascending: false })
+        .limit(12),
+      db
+        .from("stores")
+        .select("id, name, slug, settings, category")
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(8),
+      db
+        .from("classifieds")
+        .select("id, title, price_cents, images, category, condition, created_at")
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(6),
+      db
+        .from("categories")
+        .select("id, name, slug")
+        .order("name", { ascending: true })
+        .limit(10),
+    ]);
+
+    const mappedStores = (storesRes.data || []).map((s: any) => {
+      const settings = s.settings || {};
+      return {
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        category: s.category || "Comércio Local",
+        logo_url: settings.logoUrl || settings.logo_url || null,
+      };
+    });
+
+    const mappedClassifieds = (classifiedsRes.data || []).map((c: any) => ({
+      id: c.id,
+      title: c.title,
+      price_cents: c.price_cents,
+      cover_url: Array.isArray(c.images) && c.images.length > 0 ? c.images[0] : null,
+      category: c.category,
+    }));
+
+    const trendingTerms = [
+      ...(categoriesRes.data || []).map((c: any) => c.name),
+      "Restaurantes",
+      "Hortifrúti",
+      "Feira Orgânica",
+      "Farmácia",
+      "Pet Shop",
+      "Vagas de Emprego",
+    ].filter(Boolean);
+
+    return {
+      trendingTerms: Array.from(new Set(trendingTerms)).slice(0, 10),
+      products: productsRes.data || [],
+      stores: mappedStores,
+      classifieds: mappedClassifieds,
+    };
+  } catch (err) {
+    console.error("[search] getSearchDiscoveryData error:", err);
+    return {
+      trendingTerms: ["Mercado", "Gastronomia", "Classificados", "Serviços", "Eventos"],
+      products: [],
+      stores: [],
+      classifieds: [],
+    };
+  }
+});

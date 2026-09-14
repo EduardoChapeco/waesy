@@ -208,7 +208,7 @@ function WorkspaceSitesHubPage() {
 
  // Filtro de Documentos Reais de experience_documents
  const filteredDocuments = useMemo(() => {
- return documents.filter((doc) => {
+ return documents.filter((doc: any) => {
  const matchesSearch =
  doc.title?.toLowerCase().includes(search.toLowerCase()) ||
  doc.slug?.toLowerCase().includes(search.toLowerCase());
@@ -223,12 +223,12 @@ function WorkspaceSitesHubPage() {
  });
  }, [documents, search, docTypeFilter]);
 
- const storefrontsCount = documents.filter((d) => d.document_type === "storefront").length;
- const biolinksCount = documents.filter((d) => d.document_type === "biolink").length;
+ const storefrontsCount = documents.filter((d: any) => d.document_type === "storefront").length;
+ const biolinksCount = documents.filter((d: any) => d.document_type === "biolink").length;
  const landingPagesCount = documents.filter(
- (d) => d.document_type === "landing_page" || d.document_type === "custom"
+ (d: any) => d.document_type === "landing_page" || d.document_type === "custom"
  ).length;
- const campaignsCount = documents.filter((d) => d.document_type === "campaign").length;
+ const campaignsCount = documents.filter((d: any) => d.document_type === "campaign").length;
 
  const filteredTemplates = useMemo(() => {
  return TEMPLATES_GALLERY.filter((tpl) => {
@@ -377,7 +377,7 @@ function WorkspaceSitesHubPage() {
  };
 
  return (
- <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full p-4 sm:p-6 pb-28">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-28 animate-in fade-in duration-200">
  {/* ── Header Canônico Studio Apple HIG ── */}
  <PageHeader
  eyebrow="Marketing & Design"
@@ -549,7 +549,7 @@ function WorkspaceSitesHubPage() {
  </div>
 
  {/* Cards de Páginas Reais */}
- {filteredDocuments.map((doc) => {
+ {filteredDocuments.map((doc: any) => {
  const isPrimary =
  doc.id === primaryStorefrontId || doc.id === primaryBiolinkId || doc.is_active;
 
@@ -638,7 +638,7 @@ function WorkspaceSitesHubPage() {
  ) : (
  /* Visualização em Lista */
  <div className="border border-border/70 rounded-2xl overflow-hidden bg-background divide-y divide-border/60">
- {filteredDocuments.map((doc) => {
+ {filteredDocuments.map((doc: any) => {
  const isPrimary =
  doc.id === primaryStorefrontId || doc.id === primaryBiolinkId || doc.is_active;
 
@@ -765,7 +765,7 @@ function WorkspaceSitesHubPage() {
 
  {/* ── SHEET DE CRIAÇÃO DE NOVA PÁGINA (MULTI-TIPO COMPLETO) ── */}
  <Sheet open={isCreateSheetOpen} onOpenChange={setIsCreateSheetOpen}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] flex flex-col justify-between p-6">
+ <SheetContent side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] flex flex-col justify-between p-6">
  <div className="space-y-6">
  <SheetHeader className="p-0 text-left space-y-1">
  <SheetTitle className="text-base font-semibold">Criar Nova Página ou Vitrine</SheetTitle>

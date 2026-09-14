@@ -30,7 +30,7 @@ function CustomerTicketsPage() {
   const ticketOrders = (Route.useLoaderData() as any[]) || [];
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ function CustomerTicketsPage() {
 
       {/* ── 2. Lista de Ingressos ou Empty State ── */}
       {ticketOrders.length === 0 ? (
-        <div className="rounded-2xl border border-border/60 bg-card p-10 text-center space-y-4 max-w-lg mx-auto">
+        <div className="w-full rounded-2xl border border-border/60 bg-card p-4 sm:p-8 text-center space-y-4">
           <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Ticket className="size-7" />
           </div>
@@ -74,7 +74,7 @@ function CustomerTicketsPage() {
             return (
               <div
                 key={order.id}
-                className="rounded-2xl border border-border/60 bg-card p-5 space-y-4 shadow-2xs hover:border-border transition-all"
+                className="rounded-2xl border border-border/60 bg-card p-3.5 sm:p-5 space-y-3 sm:space-y-4 shadow-2xs hover:border-border transition-all"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">

@@ -43,7 +43,7 @@ export const triggerWorkflowExecution = createServerFn({ method: "POST" })
     }
 
     const triggerData = samplePayload || {
-      manual_trigger_by: identity.profile_id,
+      manual_trigger_by: identity.id,
       timestamp: new Date().toISOString(),
       source: "workspace_manual_test",
     };
@@ -51,7 +51,7 @@ export const triggerWorkflowExecution = createServerFn({ method: "POST" })
     const actionNodes = (wf.nodes || []).filter((n: any) => n.type === "action");
     const resultData = {
       actions_dispatched: actionNodes.length,
-      executed_by: identity.profile_id,
+      executed_by: identity.id,
       execution_mode: "manual_test",
       timestamp: new Date().toISOString(),
     };
@@ -144,7 +144,7 @@ export const createWorkflow = createServerFn({ method: "POST" })
         nodes: defaultNodes,
         edges: input.edges || [],
         status: "draft",
-        created_by: identity.profile_id,
+        created_by: identity.id,
       })
       .select()
       .single();

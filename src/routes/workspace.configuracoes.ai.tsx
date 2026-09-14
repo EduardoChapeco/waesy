@@ -105,7 +105,7 @@ function AIConfigurationPage() {
  };
 
  return (
- <div className="space-y-6 max-w-5xl">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header Operacional */}
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
  <div>

@@ -100,6 +100,56 @@ function ServiceDetailPage() {
   const [selectedPassId, setSelectedPassId] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // 1. Horários disponíveis para a data selecionada
+  const { data: slotsResult, isLoading: isLoadingSlots } = useQuery({
+    queryKey: ["service-slots", service?.id, selectedDate],
+    queryFn: () => getAvailableSlots({ data: { service_id: service!.id, date: selectedDate } }),
+    enabled: Boolean(isBookingOpen && service?.id && selectedDate),
+  });
+
+  const slots = slotsResult?.data || [];
+
+  // 2. Passes de sessões do usuário
+  const { data: activePasses } = useQuery({
+    queryKey: ["my-service-passes", service?.id],
+    queryFn: () => listMyPassesForService({ data: { service_id: service!.id } }),
+    enabled: Boolean(isBookingOpen && service?.id),
+  });
+
+  const appointmentMutation = useMutation({
+    mutationFn: () => {
+      const scheduledIso = selectedSlot
+        ? selectedSlot
+        : new Date(selectedDate + "T14:00:00.000Z").toISOString();
+
+      return createAppointment({
+        data: {
+          service_id: service?.id || "",
+          guest_name: guestName,
+          guest_phone: guestPhone,
+          scheduled_at: scheduledIso,
+          notes: notes || undefined,
+          pass_id: selectedPassId || undefined,
+        },
+      });
+    },
+    onSuccess: () => {
+      setIsSuccess(true);
+      toast.success(
+        selectedPassId
+          ? "Agendamento confirmado usando seu pacote de sessões!"
+          : "Horário reservado com sucesso!"
+      );
+      queryClient.invalidateQueries({ queryKey: ["my-service-passes"] });
+      if (service?.id) {
+        queryClient.invalidateQueries({ queryKey: ["service-slots", service.id, selectedDate] });
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Não foi possível confirmar o agendamento.");
+    },
+  });
+
   if (!service) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
@@ -119,54 +169,6 @@ function ServiceDetailPage() {
       </div>
     );
   }
-
-  // 1. Horários disponíveis para a data selecionada
-  const { data: slotsResult, isLoading: isLoadingSlots } = useQuery({
-    queryKey: ["service-slots", service.id, selectedDate],
-    queryFn: () => getAvailableSlots({ data: { service_id: service.id, date: selectedDate } }),
-    enabled: isBookingOpen && !!service.id && !!selectedDate,
-  });
-
-  const slots = slotsResult?.data || [];
-
-  // 2. Passes de sessões do usuário
-  const { data: activePasses } = useQuery({
-    queryKey: ["my-service-passes", service.id],
-    queryFn: () => listMyPassesForService({ data: { service_id: service.id } }),
-    enabled: isBookingOpen && !!service.id,
-  });
-
-  const appointmentMutation = useMutation({
-    mutationFn: () => {
-      const scheduledIso = selectedSlot
-        ? selectedSlot
-        : new Date(selectedDate + "T14:00:00.000Z").toISOString();
-
-      return createAppointment({
-        data: {
-          service_id: service.id,
-          guest_name: guestName,
-          guest_phone: guestPhone,
-          scheduled_at: scheduledIso,
-          notes: notes || undefined,
-          pass_id: selectedPassId || undefined,
-        },
-      });
-    },
-    onSuccess: () => {
-      setIsSuccess(true);
-      toast.success(
-        selectedPassId
-          ? "Agendamento confirmado usando seu pacote de sessões!"
-          : "Horário reservado com sucesso!"
-      );
-      queryClient.invalidateQueries({ queryKey: ["my-service-passes"] });
-      queryClient.invalidateQueries({ queryKey: ["service-slots", service.id, selectedDate] });
-    },
-    onError: (err: any) => {
-      toast.error(err.message || "Erro ao agendar horário.");
-    },
-  });
 
   const handleStartBooking = () => {
     setIsBookingOpen(true);

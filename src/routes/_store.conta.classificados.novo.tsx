@@ -2,11 +2,19 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { useState, useMemo, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info } from 'lucide-react';
+import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
+import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
+import { WeatherWidget } from "@/components/classifieds/weather-widget";
+import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
+import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
+import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, airportLabel } from "@/lib/classifieds/canonical-airports";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
+import { PhoneField } from "@/components/ui/phone-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -88,7 +96,8 @@ export type ClassifiedNicheType =
   | "digital"
   | "veiculo"
   | "servico"
-  | "vaga";
+  | "vaga"
+  | "assinatura";
 
 interface NicheDefinition {
   id: ClassifiedNicheType;
@@ -107,7 +116,7 @@ const NICHE_CARDS: NicheDefinition[] = [
     canonicalCategory: "travel",
     title: "Viagens, Turismo & Resorts",
     subtitle: "Pacotes, Roteiros & Destinos",
-    description: "Pacotes turísticos completos com voos, All Inclusive, timeline de itinerário e template visual Vitrine Imersiva.",
+    description: "Pacotes turísticos, resorts, passeios guiados e roteiros com fotos e programação completa.",
     icon: Key,
     badge: "Vitrine Imersiva",
     gradient: "from-amber-500/15 via-rose-500/10 to-purple-600/10",
@@ -528,31 +537,110 @@ function SpecializedClassifiedEditor({
  const [activePreviewImage, setActivePreviewImage] = useState(0);
 
   // Template de Exibição (Padrão Comercial vs Vitrine Imersiva / Glamour)
-  const [templateStyle, setTemplateStyle] = useState<"standard" | "instagram">(
-    initialData?.attributes?.template_style || (niche.id === "viagem" ? "instagram" : "standard")
+  const [templateStyle, setTemplateStyle] = useState<"standard" | "editorial">(
+    initialData?.attributes?.template_style === "editorial" || initialData?.attributes?.template_style === "instagram"
+      ? "editorial"
+      : niche.id === "viagem"
+      ? "editorial"
+      : "standard"
+  );
+
+  // ── Motor de Precificação Dinâmica & Avisos ──
+  const [pricingType, setPricingType] = useState<
+    "fixed" | "starting_at" | "on_quote" | "price_range" | "exchange_only" | "free"
+  >(
+    initialData?.attributes?.pricing_type || (niche.id === "doacao" ? "free" : "fixed")
+  );
+  const [priceMinCents, setPriceMinCents] = useState<number | undefined>(
+    initialData?.attributes?.price_min_cents ?? undefined
+  );
+  const [priceMaxCents, setPriceMaxCents] = useState<number | undefined>(
+    initialData?.attributes?.price_max_cents ?? undefined
+  );
+  const [priceDisclaimer, setPriceDisclaimer] = useState<string>(
+    initialData?.attributes?.price_disclaimer || "none"
+  );
+  const [customDisclaimer, setCustomDisclaimer] = useState<string>(
+    initialData?.attributes?.custom_disclaimer || ""
+  );
+
+  // ── Regras Avançadas de Pagamento ──
+  const [pixDiscountPercent, setPixDiscountPercent] = useState<number>(
+    initialData?.attributes?.pix_discount_percent ?? (initialData?.attributes?.payment_rules?.pix_discount_percent ?? 5)
+  );
+  const [tradeNotes, setTradeNotes] = useState<string>(
+    initialData?.attributes?.trade_notes ?? (initialData?.attributes?.payment_rules?.trade_notes ?? "")
+  );
+  const [acceptsFinancing, setAcceptsFinancing] = useState<boolean>(
+    initialData?.attributes?.accepts_financing ?? (initialData?.attributes?.payment_rules?.accepts_financing ?? false)
+  );
+  const [financingNotes, setFinancingNotes] = useState<string>(
+    initialData?.attributes?.financing_notes ?? ""
   );
 
   // Specialized: Viagens, Turismo & Resorts
   const [travelDuration, setTravelDuration] = useState(
-    initialData?.attributes?.duration_text || "5D / 4N"
+    initialData?.attributes?.duration_text || ""
   );
   const [travelMealPlan, setTravelMealPlan] = useState(
-    initialData?.attributes?.meal_plan || "All Inclusive"
+    initialData?.attributes?.meal_plan || ""
   );
   const [travelGuests, setTravelGuests] = useState(
-    initialData?.attributes?.guests_text || "2 Adultos"
+    initialData?.attributes?.guests_text || ""
   );
   const [travelDates, setTravelDates] = useState(
     initialData?.attributes?.dates_text || ""
   );
+
+  // ── Novos campos de viagem: Destino e Aeroportos ──
+  const [travelDestinationCity, setTravelDestinationCity] = useState(
+    initialData?.attributes?.destination_city || ""
+  );
+  const [travelDepartureDate, setTravelDepartureDate] = useState(
+    initialData?.attributes?.departure_date || ""
+  );
+  const [travelReturnDate, setTravelReturnDate] = useState(
+    initialData?.attributes?.return_date || ""
+  );
+  const [travelDepartureIATA, setTravelDepartureIATA] = useState(
+    initialData?.attributes?.flight_details?.departure_iata || ""
+  );
+  const [travelArrivalIATA, setTravelArrivalIATA] = useState(
+    initialData?.attributes?.flight_details?.arrival_iata || ""
+  );
+  const [travelAirline, setTravelAirline] = useState(
+    initialData?.attributes?.flight_details?.airline || ""
+  );
+  const [travelTransportType, setTravelTransportType] = useState(
+    initialData?.attributes?.flight_details?.transport_type || "airplane"
+  );
+  const [travelConnections, setTravelConnections] = useState(
+    initialData?.attributes?.flight_details?.connections ?? 0
+  );
+  const [travelDepartureTime, setTravelDepartureTime] = useState(
+    initialData?.attributes?.flight_details?.departure_time || ""
+  );
+  const [travelArrivalTime, setTravelArrivalTime] = useState(
+    initialData?.attributes?.flight_details?.arrival_time || ""
+  );
+  const [travelMaxInstallments, setTravelMaxInstallments] = useState(
+    initialData?.attributes?.max_installments || 12
+  );
+  const [travelStoryHighlights, setTravelStoryHighlights] = useState<StoryHighlight[]>(
+    initialData?.attributes?.story_highlights || []
+  );
+  const [travelItineraryDays, setTravelItineraryDays] = useState<ItineraryDay[]>(
+    initialData?.attributes?.itinerary_days || []
+  );
+
   const [travelFlightPrice, setTravelFlightPrice] = useState(
-    initialData?.attributes?.flight_details?.price_text || "R$ 1.139+"
+    initialData?.attributes?.flight_details?.price_text || ""
   );
   const [travelFlightDuration, setTravelFlightDuration] = useState(
-    initialData?.attributes?.flight_details?.duration_text || "7h 30min"
+    initialData?.attributes?.flight_details?.duration_text || ""
   );
   const [travelBioBullet1, setTravelBioBullet1] = useState(
-    initialData?.attributes?.bio_bullets?.[0] || "🌴 All Inclusive: refeições, snacks e bebidas liberadas"
+    initialData?.attributes?.bio_bullets?.[0] || ""
   );
   const [travelBioBullet2, setTravelBioBullet2] = useState(
     initialData?.attributes?.bio_bullets?.[1] || "✈️ Voo ida e volta com transfer in/out já inclusos"
@@ -668,12 +756,38 @@ function SpecializedClassifiedEditor({
     if (Array.isArray(initialData.images)) setImages(initialData.images);
 
     if (initialData.attributes) {
+      if (initialData.attributes.template_style) setTemplateStyle(initialData.attributes.template_style === "editorial" || initialData.attributes.template_style === "instagram" ? "editorial" : "standard");
+      if (initialData.attributes.pricing_type) setPricingType(initialData.attributes.pricing_type);
+      if (initialData.attributes.price_min_cents !== undefined) setPriceMinCents(initialData.attributes.price_min_cents);
+      if (initialData.attributes.price_max_cents !== undefined) setPriceMaxCents(initialData.attributes.price_max_cents);
+      if (initialData.attributes.price_disclaimer) setPriceDisclaimer(initialData.attributes.price_disclaimer);
+      if (initialData.attributes.custom_disclaimer) setCustomDisclaimer(initialData.attributes.custom_disclaimer);
+      if (initialData.attributes.pix_discount_percent !== undefined) setPixDiscountPercent(initialData.attributes.pix_discount_percent);
+      if (initialData.attributes.trade_notes) setTradeNotes(initialData.attributes.trade_notes);
+      if (initialData.attributes.accepts_financing !== undefined) setAcceptsFinancing(!!initialData.attributes.accepts_financing);
+      if (initialData.attributes.financing_notes) setFinancingNotes(initialData.attributes.financing_notes);
       if (initialData.attributes.accepts_pix !== undefined) setAcceptsPix(!!initialData.attributes.accepts_pix);
       if (initialData.attributes.accepts_card !== undefined) setAcceptsCard(!!initialData.attributes.accepts_card);
       if (initialData.attributes.max_installments) setMaxInstallments(initialData.attributes.max_installments);
       if (initialData.attributes.accepts_cash !== undefined) setAcceptsCash(!!initialData.attributes.accepts_cash);
       if (initialData.attributes.accepts_trade !== undefined) setAcceptsTrade(!!initialData.attributes.accepts_trade);
       if (initialData.attributes.cancellation_policy) setCancellationPolicy(initialData.attributes.cancellation_policy);
+      if (Array.isArray(initialData.attributes.story_highlights)) setTravelStoryHighlights(initialData.attributes.story_highlights);
+      if (Array.isArray(initialData.attributes.itinerary_days)) setTravelItineraryDays(initialData.attributes.itinerary_days);
+      if (initialData.attributes.destination_city) setTravelDestinationCity(initialData.attributes.destination_city);
+      if (initialData.attributes.departure_date) setTravelDepartureDate(initialData.attributes.departure_date);
+      if (initialData.attributes.return_date) setTravelReturnDate(initialData.attributes.return_date);
+      if (initialData.attributes.flight_details) {
+        if (initialData.attributes.flight_details.departure_iata) setTravelDepartureIATA(initialData.attributes.flight_details.departure_iata);
+        if (initialData.attributes.flight_details.arrival_iata) setTravelArrivalIATA(initialData.attributes.flight_details.arrival_iata);
+        if (initialData.attributes.flight_details.airline) setTravelAirline(initialData.attributes.flight_details.airline);
+        if (initialData.attributes.flight_details.transport_type) setTravelTransportType(initialData.attributes.flight_details.transport_type);
+        if (initialData.attributes.flight_details.connections !== undefined) setTravelConnections(initialData.attributes.flight_details.connections);
+        if (initialData.attributes.flight_details.departure_time) setTravelDepartureTime(initialData.attributes.flight_details.departure_time);
+        if (initialData.attributes.flight_details.arrival_time) setTravelArrivalTime(initialData.attributes.flight_details.arrival_time);
+        if (initialData.attributes.flight_details.price_text) setTravelFlightPrice(initialData.attributes.flight_details.price_text);
+        if (initialData.attributes.flight_details.duration_text) setTravelFlightDuration(initialData.attributes.flight_details.duration_text);
+      }
     } else if (initialData.accepts_card !== undefined) {
       setAcceptsCard(!!initialData.accepts_card);
     }
@@ -848,10 +962,30 @@ function SpecializedClassifiedEditor({
         state: structuredLoc?.state || undefined,
         neighborhood: structuredLoc?.neighborhood || undefined,
         delivery_mode: niche.id === "desapego" ? deliveryMode : niche.id === "digital" ? "digital_download" : undefined,
+        pricing_type: pricingType,
+        price_min_cents: pricingType === "price_range" || pricingType === "starting_at" ? priceMinCents : undefined,
+        price_max_cents: pricingType === "price_range" ? priceMaxCents : undefined,
+        price_disclaimer: priceDisclaimer,
+        custom_disclaimer: priceDisclaimer === "custom" ? customDisclaimer : undefined,
         accepts_pix: acceptsPix,
+        pix_discount_percent: acceptsPix ? Number(pixDiscountPercent) || 0 : undefined,
         accepts_card: acceptsCard,
         accepts_cash: niche.id === "digital" ? false : acceptsCash,
         accepts_trade: niche.id === "digital" ? false : acceptsTrade,
+        trade_notes: acceptsTrade ? tradeNotes.trim() : undefined,
+        accepts_financing: acceptsFinancing,
+        financing_notes: acceptsFinancing ? financingNotes.trim() : undefined,
+        payment_rules: {
+          accepts_pix: acceptsPix,
+          pix_discount_percent: acceptsPix ? Number(pixDiscountPercent) || 0 : 0,
+          accepts_card: acceptsCard,
+          max_installments: acceptsCard ? Number(maxInstallments) || 12 : 1,
+          accepts_cash: acceptsCash,
+          accepts_trade: acceptsTrade,
+          trade_notes: tradeNotes,
+          accepts_financing: acceptsFinancing,
+          financing_notes: financingNotes,
+        },
         accepted_payment_methods: [
           ...(acceptsPix ? ["pix"] : []),
           ...(acceptsCard ? ["cartao_credito"] : []),
@@ -859,9 +993,11 @@ function SpecializedClassifiedEditor({
         ],
         installments_available: acceptsCard,
         cancellation_policy: cancellationPolicy,
-        max_installments: acceptsCard ? parseInt(maxInstallments) || 12 : 1,
+        max_installments: acceptsCard ? Number(maxInstallments) || 12 : 1,
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
         template_style: templateStyle,
+        story_highlights: travelStoryHighlights,
+        itinerary_days: travelItineraryDays,
       };
 
       if (niche.id === "viagem") {
@@ -869,8 +1005,19 @@ function SpecializedClassifiedEditor({
         attributes.meal_plan = travelMealPlan;
         attributes.guests_text = travelGuests;
         attributes.dates_text = travelDates;
+        attributes.destination_city = travelDestinationCity;
+        attributes.departure_date = travelDepartureDate;
+        attributes.return_date = travelReturnDate;
+        attributes.max_installments = travelMaxInstallments;
         attributes.bio_bullets = [travelBioBullet1, travelBioBullet2, travelBioBullet3, travelBioBullet4].filter(Boolean);
         attributes.flight_details = {
+          departure_iata: travelDepartureIATA,
+          arrival_iata: travelArrivalIATA,
+          airline: travelAirline,
+          transport_type: travelTransportType,
+          connections: travelConnections,
+          departure_time: travelDepartureTime,
+          arrival_time: travelArrivalTime,
           price_text: travelFlightPrice,
           duration_text: travelFlightDuration,
           origin_text: "Consulte opções saindo da sua cidade",
@@ -959,7 +1106,7 @@ function SpecializedClassifiedEditor({
           attributes.appliance_type = applianceType;
           attributes.brand = applianceBrand;
           attributes.voltage = applianceVoltage;
-        } else if (desapegoCategory === "games" || (desapegoCategory as string) === "games_consoles") {
+        } else if ((desapegoCategory as string) === "games" || (desapegoCategory as string) === "games_consoles") {
           attributes.console = gameConsole;
         } else if (desapegoCategory === "moveis") {
           attributes.room = furnitureRoom;
@@ -1012,7 +1159,14 @@ function SpecializedClassifiedEditor({
           store_id: storeId || initialData?.store_id || undefined,
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
           content: description.trim(),
-          price_cents: niche.id === "doacao" ? 0 : (priceCents ?? null),
+          price_cents:
+            pricingType === "free" || niche.id === "doacao"
+              ? 0
+              : pricingType === "on_quote" || pricingType === "exchange_only"
+              ? null
+              : pricingType === "starting_at" || pricingType === "price_range"
+              ? (priceMinCents || priceCents || null)
+              : (priceCents ?? null),
           deal_type:
             niche.id === "hospedagem"
               ? "temporada"
@@ -1095,7 +1249,286 @@ function SpecializedClassifiedEditor({
     }
   };
 
- const parsedPriceCents = priceCents ?? null;
+  const parsedPriceCents = priceCents ?? null;
+
+  const livePreviewClassified = useMemo(() => {
+    const computedPriceCents =
+      pricingType === "free" || niche.id === "doacao"
+        ? 0
+        : pricingType === "on_quote" || pricingType === "exchange_only"
+        ? null
+        : pricingType === "starting_at" || pricingType === "price_range"
+        ? (priceMinCents || priceCents || null)
+        : (priceCents ?? null);
+
+    const generatedBioBullets =
+      niche.id === "viagem"
+        ? [travelBioBullet1, travelBioBullet2, travelBioBullet3, travelBioBullet4].filter(Boolean)
+        : niche.id === "hospedagem"
+        ? [
+            hospPropertyType,
+            `${hospGuests} hóspedes`,
+            `${hospBedrooms} quartos`,
+            hospCheckinType === "self_checkin" ? "Self Check-in" : "Check-in Presencial",
+          ].filter(Boolean)
+        : niche.id === "imovel"
+        ? [
+            rePropertyType,
+            reDealType === "aluguel" ? "Aluguel" : "Venda",
+            reAreaSqm ? `${reAreaSqm} m²` : null,
+            reBedrooms ? `${reBedrooms} quartos` : null,
+          ].filter(Boolean)
+        : niche.id === "veiculo"
+        ? [
+            vehicleBrand && vehicleModel ? `${vehicleBrand} ${vehicleModel}` : null,
+            vehicleYearModel ? `Ano ${vehicleYearModel}` : null,
+            vehicleKm ? `${vehicleKm} km` : null,
+            vehicleTransmission,
+          ].filter(Boolean)
+        : niche.id === "servico"
+        ? [
+            serviceArea || niche.title,
+            serviceModality,
+            serviceDuration ? `Duração: ~${serviceDuration} min` : null,
+            serviceBookingEnabled ? "Agendamento Online Ativo" : null,
+          ].filter(Boolean)
+        : niche.id === "vaga"
+        ? [
+            jobRole || title,
+            jobModel,
+            jobRegime,
+            jobSalaryRange ? `Faixa: ${jobSalaryRange}` : null,
+          ].filter(Boolean)
+        : niche.id === "desapego"
+        ? [
+            itemCondition === "novo"
+              ? "Novo / Na Caixa"
+              : itemCondition === "usado_excelente"
+              ? "Usado - Como Novo"
+              : "Usado",
+            phoneBrand && desapegoCategory === "smartphones" ? `${phoneBrand} ${phoneModel}` : null,
+            deliveryMode === "both"
+              ? "Retirada & Entrega Local"
+              : deliveryMode === "local_delivery"
+              ? "Entrega Expressa"
+              : "Retirada no Local",
+          ].filter(Boolean)
+        : [
+            niche.title,
+            locationName || "Chapecó - SC",
+            acceptsPix ? "Aceita PIX" : null,
+          ].filter(Boolean);
+
+    return {
+      id: initialData?.id || "preview-live",
+      title: title || "Título do Anúncio",
+      content: description || "",
+      description: description || "",
+      price_cents: computedPriceCents,
+      images: images || [],
+      photos: images || [],
+      media: images || [],
+      city: structuredLoc?.city || (locationName ? locationName.split(",")[0].trim() : "Chapecó"),
+      neighborhood: (locationName && locationName.split("-")[1]?.trim()) || "",
+      location_name: locationName || "",
+      location_lat: structuredLoc?.lat || null,
+      location_lng: structuredLoc?.lng || null,
+      contact_whatsapp: whatsapp || "",
+      contact_phone: whatsapp || "",
+      whatsapp: whatsapp || "",
+      contact_name: "Anunciante",
+      negotiable,
+      accepts_trade: acceptsTrade,
+      category: niche.id,
+      attributes: {
+        niche: niche.id,
+        template_style: templateStyle,
+        pricing_type: pricingType,
+        price_min_cents: pricingType === "price_range" || pricingType === "starting_at" ? priceMinCents : undefined,
+        price_max_cents: pricingType === "price_range" ? priceMaxCents : undefined,
+        price_disclaimer: priceDisclaimer,
+        custom_disclaimer: customDisclaimer,
+        accepts_pix: acceptsPix,
+        pix_discount_percent: pixDiscountPercent,
+        accepts_card: acceptsCard,
+        max_installments: acceptsCard ? (niche.id === "viagem" ? Number(travelMaxInstallments) || 12 : Number(maxInstallments) || 12) : 1,
+        accepts_trade: acceptsTrade,
+        trade_notes: tradeNotes,
+        accepts_financing: acceptsFinancing,
+        financing_notes: financingNotes,
+        accepts_cash: acceptsCash,
+        cancellation_policy: cancellationPolicy,
+        destination_city: travelDestinationCity || locationName || "Chapecó",
+        duration_text: travelDuration,
+        package_duration: travelDuration,
+        meal_plan: travelMealPlan,
+        guests_text: travelGuests,
+        guest_capacity: travelGuests,
+        dates_text: travelDates,
+        flight_details: {
+          departure_iata: travelDepartureIATA,
+          arrival_iata: travelArrivalIATA,
+          airline: travelAirline,
+          transport_type: travelTransportType,
+          connections: travelConnections,
+          departure_time: travelDepartureTime,
+          arrival_time: travelArrivalTime,
+          price_text: travelFlightPrice,
+          duration_text: travelFlightDuration,
+        },
+        story_highlights: travelStoryHighlights,
+        itinerary_days: travelItineraryDays,
+        bio_bullets: generatedBioBullets,
+        // Hospedagem
+        deal_type: niche.id === "hospedagem" ? "temporada" : niche.id === "imovel" ? reDealType : undefined,
+        rental_period: niche.id === "hospedagem" ? "diaria" : undefined,
+        property_type: niche.id === "hospedagem" ? hospPropertyType : niche.id === "imovel" ? rePropertyType : undefined,
+        bedrooms: niche.id === "hospedagem" ? parseInt(hospBedrooms) || 1 : niche.id === "imovel" ? parseInt(reBedrooms) || undefined : undefined,
+        bathrooms: niche.id === "hospedagem" ? parseInt(hospBathrooms) || 1 : niche.id === "imovel" ? parseInt(reBathrooms) || undefined : undefined,
+        max_guests: parseInt(hospGuests) || 1,
+        cleaning_fee_cents: hospCleaningFeeCents ?? 0,
+        amenities: niche.id === "hospedagem" ? hospAmenities : niche.id === "imovel" ? reAmenities : [],
+        checkin_type: hospCheckinType,
+        checkin_time: hospCheckinTime,
+        checkout_time: hospCheckoutTime,
+        house_rules: hospRules,
+        // Imóveis
+        area_sqm: reAreaSqm,
+        suites: reSuites,
+        parking_spots: reParking,
+        condo_cents: reCondoCents,
+        iptu_cents: reIptuCents,
+        furnished: reFurnished,
+        // Veículos
+        brand: vehicleBrand,
+        model: vehicleModel,
+        version: vehicleVersion,
+        year_fab: vehicleYearFab,
+        year_model: vehicleYearModel,
+        mileage_km: vehicleKm,
+        fuel_type: vehicleFuel,
+        transmission: vehicleTransmission,
+        color: vehicleColor,
+        features: vehicleFeatures,
+        // Serviços
+        modality: serviceModality,
+        service_category: serviceArea || niche.title,
+        booking_enabled: serviceBookingEnabled,
+        service_duration_minutes: parseInt(serviceDuration) || 60,
+        available_slots: parseInt(serviceDailySlots) || 8,
+        // Desapego
+        condition: itemCondition,
+        warranty: itemWarranty,
+        delivery_mode: deliveryMode,
+        free_shipping_local: freeShippingLocal,
+        // Digital
+        is_digital: niche.id === "digital",
+        digital_file_url: digitalFileUrl,
+        digital_file_name: digitalFileName,
+        digital_file_size_bytes: digitalFileSize,
+      },
+    };
+  }, [
+    initialData?.id,
+    title,
+    description,
+    pricingType,
+    priceMinCents,
+    priceMaxCents,
+    priceCents,
+    parsedPriceCents,
+    images,
+    structuredLoc,
+    locationName,
+    whatsapp,
+    negotiable,
+    acceptsTrade,
+    niche.id,
+    niche.title,
+    templateStyle,
+    priceDisclaimer,
+    customDisclaimer,
+    acceptsPix,
+    pixDiscountPercent,
+    acceptsCard,
+    travelMaxInstallments,
+    maxInstallments,
+    tradeNotes,
+    acceptsFinancing,
+    financingNotes,
+    acceptsCash,
+    cancellationPolicy,
+    travelDestinationCity,
+    travelDuration,
+    travelMealPlan,
+    travelGuests,
+    travelDates,
+    travelDepartureIATA,
+    travelArrivalIATA,
+    travelAirline,
+    travelTransportType,
+    travelConnections,
+    travelDepartureTime,
+    travelArrivalTime,
+    travelFlightPrice,
+    travelFlightDuration,
+    travelStoryHighlights,
+    travelItineraryDays,
+    travelBioBullet1,
+    travelBioBullet2,
+    travelBioBullet3,
+    travelBioBullet4,
+    hospPropertyType,
+    hospGuests,
+    hospBedrooms,
+    hospBathrooms,
+    hospCheckinType,
+    hospCheckinTime,
+    hospCheckoutTime,
+    hospCleaningFeeCents,
+    hospAmenities,
+    hospRules,
+    reDealType,
+    rePropertyType,
+    reAreaSqm,
+    reBedrooms,
+    reSuites,
+    reBathrooms,
+    reParking,
+    reCondoCents,
+    reIptuCents,
+    reFurnished,
+    reAmenities,
+    vehicleBrand,
+    vehicleModel,
+    vehicleVersion,
+    vehicleYearFab,
+    vehicleYearModel,
+    vehicleKm,
+    vehicleFuel,
+    vehicleTransmission,
+    vehicleColor,
+    vehicleFeatures,
+    serviceModality,
+    serviceArea,
+    serviceBookingEnabled,
+    serviceDuration,
+    serviceDailySlots,
+    jobRole,
+    jobModel,
+    jobRegime,
+    jobSalaryRange,
+    itemCondition,
+    itemWarranty,
+    phoneBrand,
+    phoneModel,
+    desapegoCategory,
+    deliveryMode,
+    freeShippingLocal,
+    digitalFileUrl,
+    digitalFileName,
+    digitalFileSize,
+  ]);
 
  return (
  <div className="space-y-4">
@@ -1182,7 +1615,7 @@ function SpecializedClassifiedEditor({
           <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <FileText className="size-4 text-primary shrink-0" />
-              <span>1. Informações Básicas do Anúncio</span>
+              <span>1. Informações Básicas</span>
             </div>
 
             {/* Seletor de Template Visual (Padrão vs Vitrine Imersiva) */}
@@ -1190,7 +1623,7 @@ function SpecializedClassifiedEditor({
               <Label className="text-xs text-foreground font-semibold flex items-center justify-between">
                 <span>Estilo Visual da Página</span>
                 <span className="text-[11px] text-muted-foreground font-normal">
-                  {templateStyle === "instagram" || templateStyle === "immersive" ? "✨ Vitrine Imersiva / Editorial" : "🏷️ Padrão Comercial"}
+                  {templateStyle === "editorial" || (templateStyle as string) === "instagram" ? "Vitrine Imersiva" : "Padrão"}
                 </span>
               </Label>
               <div className="grid grid-cols-2 gap-2">
@@ -1203,17 +1636,17 @@ function SpecializedClassifiedEditor({
                       : "border-border/60 hover:bg-muted/40"
                   }`}
                 >
-                  <p className="text-xs font-bold text-foreground">Padrão Comercial</p>
+                  <p className="text-xs font-bold text-foreground">Padrão</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Visual limpo com compra direta
+                    Visual limpo
                   </p>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setTemplateStyle("instagram")}
+                  onClick={() => setTemplateStyle("editorial")}
                   className={`p-2.5 rounded-xl border text-left transition-all ${
-                    templateStyle === "instagram"
+                    templateStyle === "editorial" || (templateStyle as string) === "instagram"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/60 hover:bg-muted/40"
                   }`}
@@ -1223,7 +1656,7 @@ function SpecializedClassifiedEditor({
                     <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Stories, abas imersivas, voos e roteiro
+                    Destaques visuais, abas e roteiro
                   </p>
                 </button>
               </div>
@@ -1265,156 +1698,524 @@ function SpecializedClassifiedEditor({
  className="rounded-xl text-xs bg-background resize-none leading-relaxed"
  />
  </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Motor de Precificação Dinâmica & Avisos */}
+            <div className="space-y-3 pt-1 border-t border-border/40">
               <div className="space-y-1.5">
-                <Label className="text-xs text-foreground font-medium">
-                  {niche.id === "doacao"
-                    ? "Item para Doação (Gratuito)"
-                    : niche.id === "servico"
-                    ? "Valor Base / Orçamento (R$)"
-                    : niche.id === "vaga"
-                    ? "Remuneração / Salário (R$)"
-                    : "Valor (R$)"}
+                <Label className="text-xs text-foreground font-semibold flex items-center justify-between">
+                  <span>Modalidade de Preço</span>
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    {pricingType === "fixed"
+                      ? "Valor Fixo"
+                      : pricingType === "starting_at"
+                      ? "A partir de"
+                      : pricingType === "price_range"
+                      ? "Faixa de Preço"
+                      : pricingType === "on_quote"
+                      ? "Sob Cotação"
+                      : pricingType === "exchange_only"
+                      ? "Troca"
+                      : "Gratuito"}
+                  </span>
                 </Label>
-                {niche.id === "doacao" ? (
-                  <div className="h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 flex items-center text-xs font-semibold text-emerald-600">
-                    Gratuito (Doação sem custo)
+                <Select value={pricingType} onValueChange={(v: any) => setPricingType(v)}>
+                  <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">Preço Fixo Definido (R$)</SelectItem>
+                    <SelectItem value="starting_at">A partir de... (Preço Inicial)</SelectItem>
+                    <SelectItem value="price_range">Faixa de Preço (Mínimo e Máximo)</SelectItem>
+                    <SelectItem value="on_quote">Sob Orçamento / Cotação Personalizada</SelectItem>
+                    <SelectItem value="exchange_only">Troca / Permuta Direta (Sem valor)</SelectItem>
+                    <SelectItem value="free">Gratuito / Doação Solidária (R$ 0)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {pricingType === "fixed" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground font-medium">
+                      {niche.id === "servico"
+                        ? "Valor Base (R$) *"
+                        : niche.id === "vaga"
+                        ? "Salário Proposto (R$) *"
+                        : "Valor (R$) *"}
+                    </Label>
+                    <CurrencyField
+                      value={priceCents}
+                      onChange={setPriceCents}
+                      placeholder="0,00"
+                      className="h-11 rounded-xl text-xs bg-background"
+                    />
                   </div>
-                ) : (
-                  <CurrencyField
-                    value={priceCents}
-                    onChange={setPriceCents}
-                    placeholder="0,00"
-                    className="h-11 rounded-xl text-xs bg-background"
+                  <div className="space-y-1.5 flex items-end">
+                    <div
+                      className="flex items-center gap-2.5 h-11 px-3 rounded-xl bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
+                      onClick={() => setNegotiable(!negotiable)}
+                    >
+                      <Checkbox
+                        id="neg-check"
+                        checked={negotiable}
+                        onCheckedChange={(c) => setNegotiable(!!c)}
+                      />
+                      <Label
+                        htmlFor="neg-check"
+                        className="text-xs text-foreground cursor-pointer font-medium select-none"
+                      >
+                        Aceita Propostas / Negociável
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {pricingType === "starting_at" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground font-medium">A partir de (R$) *</Label>
+                    <CurrencyField
+                      value={priceMinCents}
+                      onChange={(v) => {
+                        setPriceMinCents(v);
+                        if (v && !priceCents) setPriceCents(v);
+                      }}
+                      placeholder="0,00"
+                      className="h-11 rounded-xl text-xs bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1.5 flex items-end">
+                    <div
+                      className="flex items-center gap-2.5 h-11 px-3 rounded-xl bg-background border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer w-full"
+                      onClick={() => setNegotiable(!negotiable)}
+                    >
+                      <Checkbox
+                        id="neg-check-start"
+                        checked={negotiable}
+                        onCheckedChange={(c) => setNegotiable(!!c)}
+                      />
+                      <Label
+                        htmlFor="neg-check-start"
+                        className="text-xs text-foreground cursor-pointer font-medium select-none"
+                      >
+                        Sujeito a orçamento final
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {pricingType === "price_range" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground font-medium">Preço Mínimo (R$) *</Label>
+                    <CurrencyField
+                      value={priceMinCents}
+                      onChange={(v) => {
+                        setPriceMinCents(v);
+                        if (v && !priceCents) setPriceCents(v);
+                      }}
+                      placeholder="0,00"
+                      className="h-11 rounded-xl text-xs bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground font-medium">Preço Máximo (R$) *</Label>
+                    <CurrencyField
+                      value={priceMaxCents}
+                      onChange={setPriceMaxCents}
+                      placeholder="0,00"
+                      className="h-11 rounded-xl text-xs bg-background"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {pricingType === "on_quote" && (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
+                  <p className="font-semibold flex items-center gap-1.5">
+                    <Coins className="size-4 shrink-0" />
+                    <span>Preço sob Orçamento / Cotação</span>
+                  </p>
+                  <p className="mt-1 text-[11px] opacity-90">
+                    O anúncio exibirá "Sob Consulta" na vitrine pública e convidará os clientes a solicitarem cotação personalizada via WhatsApp.
+                  </p>
+                </div>
+              )}
+
+              {pricingType === "exchange_only" && (
+                <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-300 text-xs">
+                  <p className="font-semibold flex items-center gap-1.5">
+                    <RefreshCw className="size-4 shrink-0" />
+                    <span>Permuta / Troca Direta</span>
+                  </p>
+                  <p className="mt-1 text-[11px] opacity-90">
+                    O anúncio será classificado como troca direta. Especifique na seção de pagamento o que você aceita em contrapartida.
+                  </p>
+                </div>
+              )}
+
+              {pricingType === "free" && (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs">
+                  <p className="font-semibold flex items-center gap-1.5">
+                    <Tag className="size-4 shrink-0" />
+                    <span>Gratuito / Doação Solidária (R$ 0)</span>
+                  </p>
+                  <p className="mt-1 text-[11px] opacity-90">
+                    Este item ou serviço será oferecido gratuitamente para a comunidade local.
+                  </p>
+                </div>
+              )}
+
+              {/* Aviso Legal / Disclaimer sobre o Valor */}
+              <div className="space-y-1.5 pt-1">
+                <Label className="text-xs text-foreground font-medium flex items-center justify-between">
+                  <span>Aviso sobre Valores / Flutuação</span>
+                  <span className="text-[11px] text-muted-foreground">Transparência jurídica</span>
+                </Label>
+                <Select value={priceDisclaimer} onValueChange={setPriceDisclaimer}>
+                  <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum aviso adicional</SelectItem>
+                    <SelectItem value="demonstrative">Preço ilustrativo / demonstrativo (sob consulta)</SelectItem>
+                    <SelectItem value="subject_to_availability">Sujeito à disponibilidade e estoque sem aviso prévio</SelectItem>
+                    <SelectItem value="seasonal">Tarifa sazonal válida para baixa temporada / dias úteis</SelectItem>
+                    <SelectItem value="exchange_rate">Sujeito a flutuação cambial e taxas governamentais</SelectItem>
+                    <SelectItem value="custom">Aviso personalizado por extenso</SelectItem>
+                  </SelectContent>
+                </Select>
+                {priceDisclaimer === "custom" && (
+                  <Input
+                    value={customDisclaimer}
+                    onChange={(e) => setCustomDisclaimer(e.target.value)}
+                    placeholder="Escreva o aviso que aparecerá na vitrine pública..."
+                    className="h-10 rounded-xl text-xs bg-background mt-1.5"
                   />
                 )}
               </div>
-
- <div className="space-y-1.5">
- <Label className="text-xs text-muted-foreground font-medium block">&nbsp;</Label>
- <div
- className="flex items-center gap-2.5 h-10 px-3 rounded-xl bg-background/60 hover:bg-muted/30 transition-colors cursor-pointer"
- onClick={() => setNegotiable(!negotiable)}
- >
- <Checkbox
- id="neg-check"
- checked={negotiable}
- onCheckedChange={(c) => setNegotiable(!!c)}
- />
- <Label
- htmlFor="neg-check"
- className="text-xs text-foreground cursor-pointer font-medium select-none"
- >
- Aceita Propostas
- </Label>
- </div>
- </div>
- </div>
+            </div>
  </div>
 
  {/* Seção 2: Especificações Técnicas do Anúncio */}
-            {/* Viagens, Turismo & Resorts (Vitrine Imersiva) */}
-            {(niche.id === "viagem" || templateStyle === "instagram") && (
-              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+            {/* Viagens, Turismo & Resorts */}
+            {niche.id === "viagem" && (
+              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-6 border border-border/60 shadow-2xs">
+                {/* Header */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
-                    <span>2. Dossiê de Viagem & Resort (Vitrine Imersiva)</span>
+                    <span>2. Detalhes da Viagem</span>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
-                    4 Abas + Stories
+                    Vitrine Imersiva
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-foreground font-medium">Duração (Ex: 5D / 4N)</Label>
-                    <Input
-                      value={travelDuration}
-                      onChange={(e) => setTravelDuration(e.target.value)}
-                      placeholder="5D / 4N"
-                      className="h-11 rounded-xl text-xs bg-background font-medium"
-                    />
+                {/* 2.1 — Resumo Rápido: Duração, Regime, Hóspedes */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Resumo do Pacote</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Duração (Ex: 5D / 4N)</Label>
+                      <Input
+                        value={travelDuration}
+                        onChange={(e) => setTravelDuration(e.target.value)}
+                        placeholder="5D / 4N"
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Regime</Label>
+                      <Select value={travelMealPlan} onValueChange={setTravelMealPlan}>
+                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="All Inclusive">All Inclusive (Tudo Incluso)</SelectItem>
+                          <SelectItem value="Pensão Completa">Pensão Completa (Café, Almoço, Jantar)</SelectItem>
+                          <SelectItem value="Meia Pensão">Meia Pensão (Café e Jantar)</SelectItem>
+                          <SelectItem value="Café da Manhã">Café da Manhã Incluso</SelectItem>
+                          <SelectItem value="Só Hospedagem">Só Hospedagem</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Hóspedes Indicados</Label>
+                      <Input
+                        value={travelGuests}
+                        onChange={(e) => setTravelGuests(e.target.value)}
+                        placeholder="Ex: 2 Adultos"
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2.2 — Datas e Destino */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Datas e Destino</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Datas (texto livre)</Label>
+                      <Input
+                        value={travelDates}
+                        onChange={(e) => setTravelDates(e.target.value)}
+                        placeholder="Ex: 23/10 a 27/10/2026"
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Cidade Destino (para clima real)</Label>
+                      <Input
+                        value={travelDestinationCity}
+                        onChange={(e) => setTravelDestinationCity(e.target.value)}
+                        placeholder="Ex: Jericoacoara, CE"
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Data de Saída</Label>
+                      <Input
+                        type="date"
+                        value={travelDepartureDate}
+                        onChange={(e) => setTravelDepartureDate(e.target.value)}
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Data de Retorno</Label>
+                      <Input
+                        type="date"
+                        value={travelReturnDate}
+                        onChange={(e) => setTravelReturnDate(e.target.value)}
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
                   </div>
 
+                  {/* Preview do clima real via wttr.in */}
+                  {travelDestinationCity && (
+                    <WeatherWidget city={travelDestinationCity} className="mt-2" />
+                  )}
+                </div>
+
+                {/* 2.3 — Voo e Transporte */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Plane className="size-3.5 text-primary" />
+                    Voo e Transporte
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Tipo de Transporte</Label>
+                      <Select value={travelTransportType} onValueChange={setTravelTransportType}>
+                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CANONICAL_TRANSPORT_TYPES.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Companhia Aérea</Label>
+                      <Select value={travelAirline} onValueChange={setTravelAirline}>
+                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                          <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CANONICAL_AIRLINES.map((a) => (
+                            <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Aeroporto de Saída (IATA)</Label>
+                      <Select value={travelDepartureIATA} onValueChange={setTravelDepartureIATA}>
+                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                          <SelectValue placeholder="XAP — Chapecó, SC" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {CANONICAL_AIRPORTS.map((a) => (
+                            <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Aeroporto de Chegada (IATA)</Label>
+                      <Select value={travelArrivalIATA} onValueChange={setTravelArrivalIATA}>
+                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                          <SelectValue placeholder="FOR — Fortaleza, CE" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {CANONICAL_AIRPORTS.map((a) => (
+                            <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Horário Embarque</Label>
+                      <Input
+                        type="time"
+                        value={travelDepartureTime}
+                        onChange={(e) => setTravelDepartureTime(e.target.value)}
+                        className="h-11 rounded-xl text-xs bg-background font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Horário Chegada</Label>
+                      <Input
+                        type="time"
+                        value={travelArrivalTime}
+                        onChange={(e) => setTravelArrivalTime(e.target.value)}
+                        className="h-11 rounded-xl text-xs bg-background font-mono"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Estimativa de Preço do Voo</Label>
+                      <Input
+                        value={travelFlightPrice}
+                        onChange={(e) => setTravelFlightPrice(e.target.value)}
+                        placeholder="Ex: R$ 1.139+"
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Tempo de Voo / Percurso</Label>
+                      <Input
+                        value={travelFlightDuration}
+                        onChange={(e) => setTravelFlightDuration(e.target.value)}
+                        placeholder="Ex: 2h 15min"
+                        className="h-11 rounded-xl text-xs bg-background font-medium"
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-foreground font-medium">Regime</Label>
-                    <Select value={travelMealPlan} onValueChange={setTravelMealPlan}>
+                    <Label className="text-xs text-foreground font-medium">Conexões / Escalas</Label>
+                    <Select value={String(travelConnections)} onValueChange={(v) => setTravelConnections(Number(v))}>
                       <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="All Inclusive">All Inclusive (Tudo Incluso)</SelectItem>
-                        <SelectItem value="Pensão Completa">Pensão Completa (Café, Almoço, Jantar)</SelectItem>
-                        <SelectItem value="Meia Pensão">Meia Pensão (Café e Jantar)</SelectItem>
-                        <SelectItem value="Café da Manhã">Café da Manhã Incluso</SelectItem>
-                        <SelectItem value="Só Hospedagem">Só Hospedagem</SelectItem>
+                        <SelectItem value="0">✈️ Voo Direto (sem escala)</SelectItem>
+                        <SelectItem value="1">🔄 1 Conexão / Escala</SelectItem>
+                        <SelectItem value="2">🔄 2 Conexões</SelectItem>
+                        <SelectItem value="3">🔄 3+ Conexões</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-foreground font-medium">Hóspedes Indicados</Label>
+                {/* 2.4 — Diferenciais (Bio Bullets) */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Diferenciais do Pacote (Bullets com Emoji)</p>
+                  <div className="space-y-2">
                     <Input
-                      value={travelGuests}
-                      onChange={(e) => setTravelGuests(e.target.value)}
-                      placeholder="Ex: 2 Adultos"
-                      className="h-11 rounded-xl text-xs bg-background font-medium"
+                      value={travelBioBullet1}
+                      onChange={(e) => setTravelBioBullet1(e.target.value)}
+                      placeholder="🌴 All Inclusive: refeições, snacks e bebidas liberadas"
+                      className="h-9 rounded-xl text-xs bg-background"
+                    />
+                    <Input
+                      value={travelBioBullet2}
+                      onChange={(e) => setTravelBioBullet2(e.target.value)}
+                      placeholder="✈️ Voo ida e volta com transfer in/out já inclusos"
+                      className="h-9 rounded-xl text-xs bg-background"
+                    />
+                    <Input
+                      value={travelBioBullet3}
+                      onChange={(e) => setTravelBioBullet3(e.target.value)}
+                      placeholder="🏖️ Acesso direto à praia com piscina natural"
+                      className="h-9 rounded-xl text-xs bg-background"
+                    />
+                    <Input
+                      value={travelBioBullet4}
+                      onChange={(e) => setTravelBioBullet4(e.target.value)}
+                      placeholder="⭐ Acomodação Deluxe climatizada com varanda arejada"
+                      className="h-9 rounded-xl text-xs bg-background"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-foreground font-medium">Datas da Viagem</Label>
-                    <Input
-                      value={travelDates}
-                      onChange={(e) => setTravelDates(e.target.value)}
-                      placeholder="Ex: 23/10 a 27/10/2026"
-                      className="h-11 rounded-xl text-xs bg-background font-medium"
-                    />
+                {/* 2.5 — Parcelamento */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                      <CreditCard className="size-3.5 text-primary" />
+                      <span>Máximo de Parcelas</span>
+                    </Label>
+                    <span className="text-xs font-black text-primary font-mono">{travelMaxInstallments}x</span>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-foreground font-medium">Estimativa do Voo</Label>
-                    <Input
-                      value={travelFlightPrice}
-                      onChange={(e) => setTravelFlightPrice(e.target.value)}
-                      placeholder="Ex: R$ 1.139+"
-                      className="h-11 rounded-xl text-xs bg-background font-medium"
-                    />
+                  <input
+                    type="range"
+                    min={1}
+                    max={24}
+                    step={1}
+                    value={travelMaxInstallments}
+                    onChange={(e) => setTravelMaxInstallments(Number(e.target.value))}
+                    className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                    aria-label="Máximo de parcelas"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                    <span>1x</span>
+                    <span>6x</span>
+                    <span>12x</span>
+                    <span>18x</span>
+                    <span>24x</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 pt-1">
-                  <Label className="text-xs text-foreground font-medium block">
-                    Diferenciais do Pacote (Bullets de Bio com Emoji)
-                  </Label>
-                  <Input
-                    value={travelBioBullet1}
-                    onChange={(e) => setTravelBioBullet1(e.target.value)}
-                    placeholder="🌴 All Inclusive: refeições, snacks e bebidas liberadas"
-                    className="h-9 rounded-xl text-xs bg-background"
-                  />
-                  <Input
-                    value={travelBioBullet2}
-                    onChange={(e) => setTravelBioBullet2(e.target.value)}
-                    placeholder="✈️ Voo ida e volta com transfer in/out já inclusos"
-                    className="h-9 rounded-xl text-xs bg-background"
-                  />
-                  <Input
-                    value={travelBioBullet3}
-                    onChange={(e) => setTravelBioBullet3(e.target.value)}
-                    placeholder="🏖️ Acesso direto à praia, piscina natural e lago ecológico"
-                    className="h-9 rounded-xl text-xs bg-background"
-                  />
-                  <Input
-                    value={travelBioBullet4}
-                    onChange={(e) => setTravelBioBullet4(e.target.value)}
-                    placeholder="⭐ Apartamento Deluxe climatizada com varanda arejada"
-                    className="h-9 rounded-xl text-xs bg-background"
+                {/* 2.6 — Story Highlights */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Sparkles className="size-3.5 text-primary" />
+                    <span>Destaques Visuais</span>
+                  </p>
+                  <StoryHighlightUploader
+                    highlights={travelStoryHighlights}
+                    onChange={setTravelStoryHighlights}
+                    onUpload={(file) => uploadClassifiedMedia(file, "highlights")}
+                    maxHighlights={8}
                   />
                 </div>
+
+                {/* 2.7 — Roteiro Dia a Dia */}
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Roteiro Dia a Dia</p>
+                  <ItineraryDayEditor
+                    days={travelItineraryDays}
+                    onChange={setTravelItineraryDays}
+                    onUploadImage={(file) => uploadClassifiedMedia(file, "itinerary")}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Destaques Visuais em Vitrine Imersiva */}
+            {niche.id !== "viagem" && (templateStyle === "editorial" || (templateStyle as string) === "instagram") && (
+              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    <Sparkles className="size-4 text-primary shrink-0" />
+                    <span>Destaques Visuais</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+                    Vitrine Imersiva
+                  </Badge>
+                </div>
+                                <StoryHighlightUploader
+                  highlights={travelStoryHighlights}
+                  onChange={setTravelStoryHighlights}
+                  onUpload={(file) => uploadClassifiedMedia(file, "highlights")}
+                  maxHighlights={8}
+                />
               </div>
             )}
 
@@ -1424,7 +2225,7 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary shrink-0" />
-                    <span>2. Condições de Locação de Equipamentos</span>
+                    <span>2. Equipamento</span>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
                     Aluguel / Eventos
@@ -1465,7 +2266,7 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <Key className="size-4 text-primary shrink-0" />
- <span>2. Detalhes da Estadia & Check-in</span>
+ <span>2. Hospedagem</span>
  </div>
  <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
  Temporada / Diária
@@ -1645,7 +2446,7 @@ function SpecializedClassifiedEditor({
               <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                   <HomeIcon className="size-4 text-primary shrink-0" />
- <span>2. Especificações do Imóvel</span>
+ <span>2. Imóvel</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1732,7 +2533,7 @@ function SpecializedClassifiedEditor({
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Car className="size-4 text-primary" />
- <span>2. Especificações do Veículo</span>
+ <span>2. Veículo</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1824,7 +2625,7 @@ function SpecializedClassifiedEditor({
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary" />
-                    <span>2. Detalhes do Atendimento & Garantia</span>
+                    <span>2. Serviço</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1921,7 +2722,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Tag className="size-4 text-primary" />
- <span>2. Subcategoria & Especificações do Item</span>
+ <span>2. Especificações</span>
  </div>
  
  </div>
@@ -2212,7 +3013,7 @@ function SpecializedClassifiedEditor({
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Wrench className="size-4 text-primary" />
- <span>2. Escopo & Atendimento</span>
+ <span>2. Atendimento</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2527,7 +3328,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <FileArchive className="size-4 text-primary" />
- <span>2. Arquivo Digital & Parâmetros de Entrega</span>
+ <span>2. Arquivo Digital</span>
  </div>
  <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
  Download Imediato
@@ -2620,7 +3421,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Truck className="size-4 text-primary" />
- <span>3. Logística de Envio & Retirada</span>
+ <span>3. Entrega e Retirada</span>
  </div>
  <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
  Waesy Express
@@ -2772,7 +3573,7 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <CreditCard className="size-4 text-primary shrink-0" />
-                    <span>3. Pagamento & Políticas</span>
+                    <span>3. Pagamento</span>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-bold">
                     Negociação Transparente
@@ -2839,26 +3640,98 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
 
-                {acceptsCard && (
-                  <div className="space-y-1.5 pt-1">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="max-installments" className="text-xs text-foreground font-medium">Parcelamento Máximo no Cartão</Label>
-                      <span className="text-[11px] text-muted-foreground font-mono">Em até {maxInstallments}x</span>
+                {acceptsPix && (
+                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-background border border-border/60">
+                    <BadgePercent className="size-4 text-emerald-600 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <Label className="text-xs font-semibold text-foreground">Desconto à vista no PIX (%)</Label>
+                      <span className="text-[10px] text-muted-foreground block truncate">Destaca badge de desconto imediato na vitrine</span>
                     </div>
-                    <Select value={String(maxInstallments)} onValueChange={(v) => setMaxInstallments(v)}>
-                      <SelectTrigger id="max-installments" className="h-11 rounded-xl text-xs bg-background font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1x (À Vista)</SelectItem>
-                        <SelectItem value="3">Até 3x</SelectItem>
-                        <SelectItem value="6">Até 6x</SelectItem>
-                        <SelectItem value="10">Até 10x</SelectItem>
-                        <SelectItem value="12">Até 12x</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="w-20 shrink-0">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={50}
+                        value={pixDiscountPercent || ""}
+                        onChange={(e) => setPixDiscountPercent(Math.min(50, Math.max(0, Number(e.target.value))))}
+                        placeholder="0"
+                        className="h-9 text-xs text-right font-mono"
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-muted-foreground">%</span>
                   </div>
                 )}
+
+                {acceptsCard && (
+                  <div className="space-y-2 p-3 rounded-xl bg-background border border-border/60">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                        <CreditCard className="size-3.5 text-primary" />
+                        <span>Parcelamento Máximo no Cartão</span>
+                      </Label>
+                      <span className="text-xs font-black text-primary font-mono">{maxInstallments}x</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={1}
+                      max={24}
+                      step={1}
+                      value={maxInstallments}
+                      onChange={(e) => setMaxInstallments(Number(e.target.value) || 1)}
+                      className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                      aria-label="Parcelamento Máximo no Cartão"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                      <span>1x</span>
+                      <span>6x</span>
+                      <span>12x</span>
+                      <span>18x</span>
+                      <span>24x</span>
+                    </div>
+                    {priceCents && priceCents > 0 && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Parcela estimada: <strong>{maxInstallments}x de {formatMoney(Math.round(priceCents / maxInstallments))} sem juros</strong>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {acceptsTrade && (
+                  <div className="space-y-1.5 p-3 rounded-xl bg-background border border-border/60">
+                    <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                      <RefreshCw className="size-3.5 text-primary" />
+                      <span>Condições / O que você aceita na troca?</span>
+                    </Label>
+                    <Input
+                      value={tradeNotes}
+                      onChange={(e) => setTradeNotes(e.target.value)}
+                      placeholder="Ex: Aceito moto seminova, smartphone recente ou itens sob avaliação"
+                      className="h-9 text-xs"
+                    />
+                  </div>
+                )}
+
+                {/* Financiamento Bancário / Consórcio */}
+                <div className="p-3 rounded-xl bg-background border border-border/60 space-y-2">
+                  <div
+                    className="flex items-center gap-2.5 cursor-pointer"
+                    onClick={() => setAcceptsFinancing(!acceptsFinancing)}
+                  >
+                    <Checkbox checked={acceptsFinancing} onCheckedChange={(c) => setAcceptsFinancing(!!c)} />
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-foreground select-none">
+                      <Landmark className="size-3.5 text-primary" />
+                      <span>Aceita Financiamento Bancário / Carta de Consórcio</span>
+                    </div>
+                  </div>
+                  {acceptsFinancing && (
+                    <Input
+                      value={financingNotes}
+                      onChange={(e) => setFinancingNotes(e.target.value)}
+                      placeholder="Ex: Financiamento via BV, Santander, Itaú ou Caixa em até 60 meses"
+                      className="h-9 text-xs"
+                    />
+                  )}
+                </div>
 
                 <div className="space-y-1.5 pt-1 border-t border-border/40">
                   <Label className="text-xs text-foreground font-medium">Política de Cancelamento / Devolução</Label>
@@ -2921,24 +3794,40 @@ function SpecializedClassifiedEditor({
  <Label className="text-xs text-foreground font-medium">
  WhatsApp para Contato Direto
  </Label>
- <div className="relative">
- <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
- <Input
- value={whatsapp}
- onChange={(e) => setWhatsapp(e.target.value)}
- placeholder="(49) 99999-9999"
- className="pl-8 h-10 rounded-xl text-xs bg-background font-mono"
- />
- </div>
+ <PhoneField
+									value={whatsapp}
+									onChange={(val) => setWhatsapp(val || "")}
+									placeholder="(49) 99999-9999"
+									className="h-10 rounded-xl text-xs bg-background"
+								/>
  </div>
  </div>
  </aside>
 
- {/* Painel Direito: Live Truthful Preview (Mobg Style Fiel) */}
+ {/* Painel Direito: Live Truthful Preview (Visualização Padrão) */}
  <main
  className={`md:col-span-7 ${mobileTab === "preview" ? "block" : "hidden md:block"} sticky top-0`}
  >
- <div className="bg-card rounded-2xl overflow-hidden border border-border/60 shadow-2xs">
+        {templateStyle === "editorial" || (templateStyle as string) === "instagram" ? (
+          <div className="bg-card rounded-2xl overflow-hidden border border-border/60 shadow-2xs">
+            <div className="bg-muted/50 px-4 py-2.5 flex items-center justify-between text-xs border-b border-border/40">
+              <span className="font-bold flex items-center gap-1.5 text-foreground">
+                <Eye className="size-3.5 text-primary" />
+                Prévia — Vitrine Imersiva
+              </span>
+              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+                Vitrine Imersiva
+              </Badge>
+            </div>
+            <div className="max-h-[85vh] overflow-y-auto">
+              <EditorialShowcaseView
+                classified={livePreviewClassified}
+                isOwner={true}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="bg-card rounded-2xl overflow-hidden border border-border/60 shadow-2xs">
  {/* Header da Prévia */}
  <div className="bg-muted/50 px-4 py-2.5 flex items-center justify-between text-xs border-b border-border/40">
  <span className="font-bold flex items-center gap-1.5 text-foreground">
@@ -2946,7 +3835,7 @@ function SpecializedClassifiedEditor({
  Prévia Fiel em Tempo Real
  </span>
  <Badge variant="secondary" className="text-[10px] font-mono">
- Mobg Layout
+ Visualização Padrão
  </Badge>
  </div>
 
@@ -3012,39 +3901,81 @@ function SpecializedClassifiedEditor({
  {title || "Título do Anúncio aparecerá aqui..."}
  </h1>
 
- <div className="space-y-1 pt-1">
- <div className="flex items-baseline gap-2">
- <span className="text-2xl font-black text-primary font-mono">
- {parsedPriceCents ? formatMoney(parsedPriceCents) : "A Combinar"}
- </span>
- {niche.id === "hospedagem" && parsedPriceCents && (
- <span className="text-xs font-semibold text-muted-foreground">/diária</span>
- )}
- {niche.id === "imovel" && reDealType === "aluguel" && parsedPriceCents && (
- <span className="text-xs font-semibold text-muted-foreground">/mês</span>
- )}
- {negotiable && (
- <Badge variant="secondary" className="text-[10px]">
- Aceita Propostas
- </Badge>
- )}
- </div>
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-2xl font-black text-primary font-mono">
+                    {pricingType === "free" || niche.id === "doacao"
+                      ? "Gratuito / Doação"
+                      : pricingType === "on_quote"
+                      ? "Sob Consulta"
+                      : pricingType === "exchange_only"
+                      ? "Somente Troca / Permuta"
+                      : pricingType === "starting_at"
+                      ? `A partir de ${formatMoney(priceMinCents || parsedPriceCents || 0)}`
+                      : pricingType === "price_range"
+                      ? `${formatMoney(priceMinCents || 0)} - ${formatMoney(priceMaxCents || 0)}`
+                      : parsedPriceCents
+                      ? formatMoney(parsedPriceCents)
+                      : "A Combinar"}
+                  </span>
+                  {niche.id === "hospedagem" && parsedPriceCents && (
+                    <span className="text-xs font-semibold text-muted-foreground">/diária</span>
+                  )}
+                  {niche.id === "imovel" && reDealType === "aluguel" && parsedPriceCents && (
+                    <span className="text-xs font-semibold text-muted-foreground">/mês</span>
+                  )}
+                  {negotiable && pricingType !== "on_quote" && pricingType !== "free" && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      Aceita Propostas
+                    </Badge>
+                  )}
+                </div>
 
- {niche.id === "hospedagem" && hospCleaningFeeCents && hospCleaningFeeCents > 0 && (
- <p className="text-[11px] text-muted-foreground font-medium">
- + Taxa de Limpeza: <strong className="text-foreground">{formatMoney(hospCleaningFeeCents)}</strong> (taxa única por estadia)
- </p>
- )}
+                {/* Disclaimer de Preço na Prévia Padrão */}
+                {priceDisclaimer && priceDisclaimer !== "none" && (
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1">
+                    <Info className="size-3 shrink-0" />
+                    <span>
+                      {priceDisclaimer === "custom" && customDisclaimer
+                        ? customDisclaimer
+                        : priceDisclaimer === "demonstrative"
+                        ? "Valor ilustrativo / demonstrativo — proposta final emitida sob consulta."
+                        : priceDisclaimer === "subject_to_availability"
+                        ? "Preço e disponibilidade sujeitos a alteração e confirmação de estoque."
+                        : priceDisclaimer === "seasonal"
+                        ? "Tarifa promocional válida para baixa temporada e dias úteis."
+                        : priceDisclaimer === "exchange_rate"
+                        ? "Valores sujeitos a flutuação cambial e taxas governamentais."
+                        : "Consulte condições comerciais atualizadas."}
+                    </span>
+                  </p>
+                )}
 
- {parsedPriceCents && acceptsCard && parseInt(maxInstallments) > 1 && niche.id !== "hospedagem" && (
- <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
- <CreditCard className="size-3 text-primary" />
- <span>
- ou em até <strong>{maxInstallments}x de {formatMoney(Math.round(parsedPriceCents / (parseInt(maxInstallments) || 1)))}</strong>
- </span>
- </p>
- )}
- </div>
+                {/* Desconto PIX na Prévia Padrão */}
+                {acceptsPix && pixDiscountPercent > 0 && parsedPriceCents && (
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                    <BadgePercent className="size-3 shrink-0" />
+                    <span>
+                      <strong>{pixDiscountPercent}% de desconto</strong> no PIX ({formatMoney(Math.round(parsedPriceCents * (1 - pixDiscountPercent / 100)))})
+                    </span>
+                  </p>
+                )}
+
+                {niche.id === "hospedagem" && hospCleaningFeeCents && hospCleaningFeeCents > 0 && (
+                  <p className="text-[11px] text-muted-foreground font-medium">
+                    + Taxa de Limpeza: <strong className="text-foreground">{formatMoney(hospCleaningFeeCents)}</strong> (taxa única por estadia)
+                  </p>
+                )}
+
+                {parsedPriceCents && acceptsCard && parseInt(String(maxInstallments)) > 1 && niche.id !== "hospedagem" && (
+                  <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                    <CreditCard className="size-3 text-primary" />
+                    <span>
+                      ou em até <strong>{maxInstallments}x de {formatMoney(Math.round(parsedPriceCents / (parseInt(String(maxInstallments)) || 1)))}</strong>
+                    </span>
+                  </p>
+                )}
+              </div>
 
  {/* Badges Semânticos de Acordo com o Nicho */}
  {niche.id === "hospedagem" && (
@@ -3333,6 +4264,7 @@ function SpecializedClassifiedEditor({
  </div>
  </div>
  </div>
+        )}
  </main>
  </div>
  </div>

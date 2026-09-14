@@ -42,6 +42,7 @@ interface AgencyClausesEditorModalProps {
  open: boolean;
  onOpenChange: (open: boolean) => void;
  onSaved?: () => void;
+ storeId?: string;
 }
 
 export function AgencyClausesEditorModal({

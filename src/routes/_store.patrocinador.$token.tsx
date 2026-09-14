@@ -47,7 +47,7 @@ function PublicSponsorReportPage() {
 
   if (!report || !report.sponsor) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-24 text-center space-y-4">
+      <div className="w-full max-w-xl mx-auto px-0 sm:px-4 py-24 text-center space-y-4">
         <div className="size-14 mx-auto rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground">
           <ShieldCheck className="size-7" />
         </div>

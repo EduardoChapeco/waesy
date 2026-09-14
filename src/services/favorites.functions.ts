@@ -144,7 +144,7 @@ export const listUserFavorites = createServerFn({ method: "GET" })
   if (classifiedIds.length > 0) {
     const { data: classifieds, error: cErr } = await supabase
       .from("classifieds")
-      .select("id, title, content, price_cents, media, category, status, location_name")
+      .select("id, title, content, price_cents, images, category, status, location_name")
       .in("id", classifiedIds);
 
     if (cErr) {
@@ -152,7 +152,7 @@ export const listUserFavorites = createServerFn({ method: "GET" })
     }
 
     (classifieds || []).forEach((c) => {
-      const mediaList = Array.isArray(c.media) ? c.media : (c.media ? [c.media] : []);
+      const mediaList = Array.isArray(c.images) ? c.images : (c.images ? [c.images] : []);
       classifiedMap[c.id] = {
         ...c,
         media: mediaList,

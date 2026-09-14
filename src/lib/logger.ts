@@ -5,16 +5,24 @@ import { getServerClient } from "./supabase";
  * Dispara de forma assíncrona para não bloquear a resposta da Server Function.
  */
 export interface LogSystemErrorParams {
-  route: string;
-  error: unknown;
+  route?: string;
+  error?: unknown;
+  error_message?: string;
+  errorMessage?: string;
   operation?: string;
   payload?: any;
   userId?: string;
+  user_id?: string;
   pageUrl?: string;
+  page_url?: string;
   schemaName?: string;
+  schema_name?: string;
   tableName?: string;
+  table_name?: string;
   columnName?: string;
+  column_name?: string;
   contractName?: string;
+  contract_name?: string;
   severity?: "error" | "warn" | "critical";
 }
 
@@ -23,13 +31,20 @@ export interface LogSystemErrorParams {
  * Dispara de forma assíncrona para não bloquear a resposta da Server Function.
  */
 export function logSystemError(params: LogSystemErrorParams) {
-  const errorMessage = params.error instanceof Error ? params.error.message : String(params.error);
+  const errorMessage =
+    params.errorMessage ||
+    params.error_message ||
+    (params.error instanceof Error ? params.error.message : params.error != null ? String(params.error) : "Unknown error");
   const stackTrace = params.error instanceof Error ? params.error.stack : undefined;
   
   // Extrai tabela ou coluna de erros típicos do Postgres se não fornecidos
-  let derivedTable = params.tableName;
-  let derivedColumn = params.columnName;
-  let derivedSchema = params.schemaName || "public";
+  let derivedTable = params.tableName || params.table_name;
+  let derivedColumn = params.columnName || params.column_name;
+  let derivedSchema = params.schemaName || params.schema_name || "public";
+  const derivedPageUrl = params.pageUrl || params.page_url;
+  const derivedRoute = params.route || params.contractName || params.contract_name || params.operation || "system";
+  const derivedContract = params.contractName || params.contract_name || derivedRoute;
+  const derivedUserId = params.userId || params.user_id;
 
   if (params.error && typeof params.error === "object") {
     const pErr = params.error as any;
@@ -38,21 +53,21 @@ export function logSystemError(params: LogSystemErrorParams) {
     if (pErr.schema) derivedSchema = pErr.schema;
   }
 
-  console.error(`[System Error - ${params.route}${params.contractName ? ` (${params.contractName})` : ""}]`, errorMessage);
+  console.error(`[System Error - ${derivedRoute}${derivedContract ? ` (${derivedContract})` : ""}]`, errorMessage);
 
   try {
     const db = getServerClient();
     db.from("system_error_logs").insert({
-      route: params.route,
-      contract_name: params.contractName || params.route,
-      page_url: params.pageUrl,
+      route: derivedRoute,
+      contract_name: derivedContract,
+      page_url: derivedPageUrl,
       schema_name: derivedSchema,
       table_name: derivedTable,
       column_name: derivedColumn,
       error_message: errorMessage,
       stack_trace: stackTrace,
       payload: params.payload,
-      user_id: params.userId,
+      user_id: derivedUserId,
       severity: params.severity || "error",
     }).then(({ error }) => {
       if (error) {

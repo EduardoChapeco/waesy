@@ -456,9 +456,9 @@ export function SimLabResearchPanel({ storeId }: { storeId: string }) {
         score: Math.round(simRes.synthesis.overall_approval_rate),
         summary_insight: `NPS Sintético: ${simRes.synthesis.synthetic_nps}. Intervalo de Conversão Estimado: ${simRes.synthesis.estimated_conversion_range[0]}% a ${simRes.synthesis.estimated_conversion_range[1]}%.`,
         execution_results: simRes.responses.map((r) => ({
-          persona_name: r.persona_id,
-          purchase_intent: Math.round(r.choice_probability_percent),
-          feedback: r.natural_speech_verbatim || r.primary_objection,
+          persona_name: r.persona_id || "Persona",
+          purchase_intent: Math.round(r.choice_probability_percent || 0),
+          feedback: r.natural_speech_verbatim || r.primary_objection || "Sem observações",
         })),
       };
 

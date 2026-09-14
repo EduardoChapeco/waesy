@@ -152,7 +152,7 @@ export default function LoyaltyDashboardPage() {
  STAMP_ICONS.find((i) => i.id === stampIcon)?.icon || Award;
 
  return (
- <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl mx-auto w-full pb-20">
+ <div className="w-full space-y-6">
  <PageHeader
  title="Programa de Fidelidade Digital"
  actions={

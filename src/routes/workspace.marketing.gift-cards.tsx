@@ -188,7 +188,7 @@ function GiftCardsDashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader title="Vales-Presente" />
         <Button onClick={() => setIsDrawerOpen(true)} className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground h-10">

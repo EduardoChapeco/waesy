@@ -67,6 +67,15 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
     (location.pathname.startsWith("/hospedagem/") && location.pathname !== "/hospedagem") ||
     (location.pathname.startsWith("/turismo/") && location.pathname !== "/turismo");
 
+  const isUtilityOrCleanPage =
+    location.pathname.startsWith("/carrinho") ||
+    location.pathname.startsWith("/checkout") ||
+    location.pathname.startsWith("/conta") ||
+    location.pathname.startsWith("/buscar") ||
+    location.pathname.startsWith("/feed") ||
+    location.pathname.startsWith("/notificacoes") ||
+    location.pathname.startsWith("/membro");
+
   return (
     <header className="sticky top-0 z-30 w-full bg-background/95 backdrop-blur-md select-none border-b border-border/40">
       {/* ── Camada 1: Topo Principal Compacto ── */}
@@ -130,8 +139,8 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
         </div>
       </div>
 
-      {/* ── Camada 2: Chips de Navegação Rápida (Mobile/Tablet) — Oculto em Telas de Detalhes ── */}
-      {!isDetailPage && (
+      {/* ── Camada 2: Chips de Navegação Rápida (Mobile/Tablet) — Exclusivo da Home (/) para eliminar poluição em páginas internas ── */}
+      {location.pathname === "/" && (
         <div className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 overflow-x-auto no-scrollbar bg-background/80 backdrop-blur-sm border-t border-border/30">
           {MOBILE_QUICK_CHIPS.map((chip) => {
             const isSelected =

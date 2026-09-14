@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
+import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
 export type AspectRatioPreset = "square" | "classified" | "widescreen" | "banner" | "cover" | "header" | "free";
 
@@ -70,6 +71,23 @@ export function ImageUpload({
  if (inputRef.current) inputRef.current.value = "";
  };
 
+ const handlePaste = async (e: React.ClipboardEvent) => {
+ const items = await extractMediaFromClipboard(e);
+ if (items && items.length > 0) {
+ e.preventDefault();
+ const item = items[0];
+ setCurrentImageFile(item.file);
+ const reader = new FileReader();
+ reader.readAsDataURL(item.file);
+ reader.onload = () => {
+ setCurrentImageSrc(reader.result as string);
+ setCropModalOpen(true);
+ };
+ reader.onerror = () => toast.error("Erro ao processar imagem colada.");
+ toast.success("Imagem colada da área de transferência!");
+ }
+ };
+
  const handleCropComplete = async (croppedBase64: string) => {
  if (!currentImageFile) return;
  setIsUploading(true);
@@ -79,7 +97,7 @@ export function ImageUpload({
  const res = await getSignedUploadUrl({
  data: {
  fileName: currentImageFile.name,
- bucket,
+ bucket: bucket as any,
  contentType: currentImageFile.type,
  },
  });
@@ -171,7 +189,11 @@ export function ImageUpload({
  // ── 1. VARIANTE AVATAR / LOGOTIPO COMPACTO (QUADRADO SQUIRCLE) ──
  if (isAvatar || (aspectPreset === "square" && (className?.includes("w-2") || className?.includes("w-3")))) {
  return (
- <div className={cn("relative shrink-0 select-none", className)}>
+ <div
+ onPaste={handlePaste}
+ tabIndex={0}
+ className={cn("relative shrink-0 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ >
  {value ? (
  <div className="relative size-full rounded-2xl overflow-hidden border border-border bg-card group shadow-xs">
  <img src={value} alt="Logo/Avatar" className="size-full object-cover" />
@@ -209,7 +231,7 @@ export function ImageUpload({
  onClick={() => inputRef.current?.click()}
  disabled={isUploading}
  className="size-full rounded-2xl border-2 border-dashed border-border/80 bg-muted/40 hover:bg-muted/70 hover:border-foreground/30 transition-all flex flex-col items-center justify-center p-2 text-muted-foreground group cursor-pointer"
- title="Clique para enviar imagem 1:1"
+ title="Clique para enviar imagem 1:1 ou cole com Ctrl+V"
  >
  {isUploading ? (
  <Loader2 className="size-5 animate-spin" />
@@ -218,6 +240,7 @@ export function ImageUpload({
  <ImagePlus className="size-5 text-muted-foreground group-hover:text-foreground transition-colors mb-1" />
  <span className="text-[10px] font-bold tracking-tight text-center leading-none">
  Logo 1:1
+ <span className="block text-[8px] font-normal text-muted-foreground mt-0.5">Ctrl+V</span>
  </span>
  </>
  )}
@@ -251,7 +274,11 @@ export function ImageUpload({
  const previewStyle: React.CSSProperties = { aspectRatio: previewAspect, maxHeight: "14rem" };
 
  return (
- <div className={cn("w-full flex flex-col gap-2 select-none", className)}>
+ <div
+ onPaste={handlePaste}
+ tabIndex={0}
+ className={cn("w-full flex flex-col gap-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ >
  {value ? (
  <div
  className="relative w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
@@ -309,7 +336,7 @@ export function ImageUpload({
  Carregar Capa / Banner
  </p>
  <p className="text-[11px] text-muted-foreground mt-0.5">
- Proporção {getPresetLabel()} — o recorte reflete exatamente o que será exibido.
+ Proporção {getPresetLabel()} — clique ou cole com Ctrl+V.
  </p>
  </div>
  </>
@@ -342,7 +369,11 @@ export function ImageUpload({
  };
 
  return (
- <div className={cn("space-y-2 select-none", className)}>
+ <div
+ onPaste={handlePaste}
+ tabIndex={0}
+ className={cn("space-y-2 select-none outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ >
  {value ? (
  <div
  className="relative rounded-2xl overflow-hidden border border-border/80 bg-muted/30 group shadow-xs"
@@ -396,8 +427,8 @@ export function ImageUpload({
  <p className="text-xs font-bold text-foreground">
  {isUploading ? "Processando Imagem..." : "Adicionar Imagem"}
  </p>
- <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[200px]">
- {helperText || `Enquadramento ${getPresetLabel()}`}
+ <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[240px]">
+ {helperText ? `${helperText} • Cole com Ctrl+V` : `Enquadramento ${getPresetLabel()} • Cole com Ctrl+V`}
  </p>
  <Button
  type="button"

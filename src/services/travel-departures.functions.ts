@@ -63,6 +63,7 @@ export interface DepartureWithChecklist extends DepartureCardDTO {
   hotel_checkin_at?: string | null;
   hotel_checkout_at?: string | null;
   hotel_rules?: string | null;
+  destination_city?: string | null;
   destination_type?: 'domestic' | 'international' | 'cruise';
   checklist_completed_pct?: number;
   has_urgent_alert?: boolean;
@@ -326,7 +327,7 @@ export const toggleChecklistItem = createServerFn({ method: 'POST' })
   .validator(
     z.object({
       item_id: z.string().uuid(),
-      departure_id: z.string().uuid(),
+      departure_id: z.string().uuid().optional(),
       is_completed: z.boolean(),
     })
   )
@@ -351,24 +352,49 @@ export const toggleChecklistItem = createServerFn({ method: 'POST' })
 
     if (error) throw new Error('Erro ao atualizar checklist: ' + error.message);
 
+    const targetDepartureId = data.departure_id || item?.departure_id;
+
     // 2. Recalculate completion percentage
-    const { data: allItems, error: listErr } = await db
-      .from('boarding_checklist_items')
-      .select('is_completed, is_required')
-      .eq('departure_id', data.departure_id);
+    if (targetDepartureId) {
+      const { data: allItems, error: listErr } = await db
+        .from('boarding_checklist_items')
+        .select('is_completed, is_required')
+        .eq('departure_id', targetDepartureId);
 
-    if (!listErr && allItems) {
-      const required = allItems.filter(i => i.is_required);
-      const completed = required.filter(i => i.is_completed);
-      const pct = required.length > 0 ? Math.round((completed.length / required.length) * 100) : 100;
+      if (!listErr && allItems) {
+        const required = allItems.filter(i => i.is_required);
+        const completed = required.filter(i => i.is_completed);
+        const pct = required.length > 0 ? Math.round((completed.length / required.length) * 100) : 100;
 
-      await db
-        .from('travel_departures_kanban')
-        .update({ checklist_completed_pct: pct, updated_at: new Date().toISOString() })
-        .eq('id', data.departure_id);
+        await db
+          .from('travel_departures_kanban')
+          .update({ checklist_completed_pct: pct, updated_at: new Date().toISOString() })
+          .eq('id', targetDepartureId);
+      }
     }
 
     return item as ChecklistItem;
+  });
+
+export const deleteChecklistItem = createServerFn({ method: 'POST' })
+  .validator(
+    z.object({
+      item_id: z.string().uuid(),
+      departure_id: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity);
+
+    const db = getServerClient();
+    const { error } = await db
+      .from('boarding_checklist_items')
+      .delete()
+      .eq('id', data.item_id);
+
+    if (error) throw new Error('Erro ao excluir item: ' + error.message);
+    return { success: true };
   });
 
 export const addChecklistItem = createServerFn({ method: 'POST' })

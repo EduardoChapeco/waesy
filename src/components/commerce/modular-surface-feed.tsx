@@ -305,7 +305,7 @@ export function ModularSurfaceFeed({ sections, className = "", onAddToCart }: Mo
  <div className="flex items-center justify-between px-1">
  <div className="flex items-center gap-2">
  <span className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
- <Tag size={14} weight="bold" />
+ <Tag size={14} strokeWidth={2.5} />
  </span>
  <div>
  <h2 className="text-sm sm:text-base font-bold text-foreground leading-tight">

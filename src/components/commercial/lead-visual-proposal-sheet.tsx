@@ -49,6 +49,8 @@ interface LeadVisualProposalSheetProps {
     destination?: string | null;
     estimated_value_cents?: number;
     passenger_count?: number;
+    cover_image?: string | null;
+    cover_image_url?: string | null;
   } | null;
   storeId?: string;
   onSuccess?: () => void;

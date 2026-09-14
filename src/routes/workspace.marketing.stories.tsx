@@ -54,7 +54,7 @@ export const Route = createFileRoute("/workspace/marketing/stories")({
 export default function WorkspaceMarketingStoriesPage() {
   const { products, storeName: initialStoreName, storeSlug } = Route.useLoaderData();
 
-  const [format, setFormat] = useState<"story_9_16" | "post_1_1" | "banner_16_9">("story_9_16");
+  const [format, setFormat] = useState<"story_9_16" | "feed_1_1" | "banner_16_9">("story_9_16");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [title, setTitle] = useState("Oferta Especial Exclusiva");
   const [subtitle, setSubtitle] = useState("Escaneie o QR Code ou acesse o link para comprar");
@@ -189,10 +189,10 @@ export default function WorkspaceMarketingStoriesPage() {
           </button>
           <button
             type="button"
-            onClick={() => setFormat("post_1_1")}
+            onClick={() => setFormat("feed_1_1")}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
-              format === "post_1_1"
+              format === "feed_1_1"
                 ? "bg-background text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground",
             )}
@@ -384,7 +384,7 @@ export default function WorkspaceMarketingStoriesPage() {
           <div className="rounded-2xl border border-border/60 bg-card p-6 flex flex-col items-center">
             <div className="w-full flex items-center justify-between pb-4 border-b border-border/40">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Prévia Interativa ({format === "story_9_16" ? "9:16" : format === "post_1_1" ? "1:1" : "16:9"})
+                Prévia Interativa ({format === "story_9_16" ? "9:16" : format === "feed_1_1" ? "1:1" : "16:9"})
               </span>
               {generatedCard && (
                 <Badge variant="outline" className="text-[10px] font-bold">
@@ -401,7 +401,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     "overflow-hidden rounded-3xl shadow-xl border border-border/60 bg-black flex items-center justify-center transition-all",
                     format === "story_9_16"
                       ? "w-[270px] h-[480px]"
-                      : format === "post_1_1"
+                      : format === "feed_1_1"
                         ? "w-[340px] h-[340px]"
                         : "w-[440px] h-[247px]",
                   )}
@@ -413,7 +413,7 @@ export default function WorkspaceMarketingStoriesPage() {
                     "flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/80 bg-muted/20 text-center p-6 transition-all",
                     format === "story_9_16"
                       ? "w-[270px] h-[480px]"
-                      : format === "post_1_1"
+                      : format === "feed_1_1"
                         ? "w-[340px] h-[340px]"
                         : "w-[440px] h-[247px]",
                   )}

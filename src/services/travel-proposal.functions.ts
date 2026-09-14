@@ -17,16 +17,24 @@ export type ProposalStatus = "draft" | "sent" | "approved" | "rejected" | "expir
 export interface FlightSegmentDTO {
   id?: string;
   type?: "outbound" | "return" | "round_trip";
-  airline: string;
+  airline?: string;
+  airline_name?: string;
+  airline_code?: string;
   flight_number?: string;
-  origin: string;
-  destination: string;
+  origin?: string;
+  origin_iata?: string;
+  origin_city?: string;
+  destination?: string;
+  destination_iata?: string;
+  destination_city?: string;
   departure_date?: string;
   departure_time?: string;
   arrival_time?: string;
   cabin_class?: string;
   baggage?: string;
+  baggage_included?: string | boolean;
   stops?: number;
+  stops_count?: number;
 }
 
 export interface HotelDTO {
@@ -35,20 +43,30 @@ export interface HotelDTO {
   destination?: string;
   check_in?: string;
   check_out?: string;
+  checkin_date?: string;
+  checkout_date?: string;
+  nights_count?: number;
   room_type?: string;
   board_basis?: string; // Ex: "Café da manhã incluso", "All Inclusive"
   stars?: number;
   featured_image_url?: string;
+  image_url?: string;
   address?: string;
+  badges?: string[];
+  amenities?: string[];
 }
 
+export type HotelOptionDTO = HotelDTO;
+
 export interface ItineraryDayDTO {
+  id?: string;
   day_number: number;
   date?: string;
   title: string;
   description: string;
   location?: string;
   image_url?: string;
+  included_meals?: string[];
 }
 
 export interface TransferDTO {
@@ -56,6 +74,29 @@ export interface TransferDTO {
   vehicle: string;
   date?: string;
   notes?: string;
+}
+
+export interface TourOptionDTO {
+  id?: string;
+  title: string;
+  description?: string;
+  duration?: string;
+  price_cents?: number;
+  image_url?: string;
+  included?: boolean;
+  is_included?: boolean;
+}
+
+export interface TransferOptionDTO {
+  id?: string;
+  type?: string;
+  vehicle?: string;
+  vehicle_type?: string;
+  description?: string;
+  date?: string;
+  notes?: string;
+  price_cents?: number;
+  is_included?: boolean;
 }
 
 export interface PricingBreakdownDTO {
@@ -81,6 +122,8 @@ export interface TravelProposalDTO {
   agency_name: string;
   agency_logo_url?: string | null;
   agency_whatsapp?: string | null;
+  agency_phone?: string | null;
+  agency_email?: string | null;
   quote_id: string;
   public_token: string;
   title: string;

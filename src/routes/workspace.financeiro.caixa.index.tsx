@@ -631,7 +631,7 @@ function CashRegisterManagerPage() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {history.map((turn) => {
+ {history.map((turn: any) => {
  const diff =
  turn.final_balance_cents !== null && turn.expected_balance_cents !== null
  ? turn.final_balance_cents - turn.expected_balance_cents

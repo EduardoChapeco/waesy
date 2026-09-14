@@ -136,7 +136,7 @@ function ConcursoDetailPage() {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6 pb-28 px-4 sm:px-6 pt-4 animate-in fade-in duration-150">
+    <div className="w-full max-w-3xl mx-auto space-y-6 pb-28 px-0 sm:px-4 md:px-0 pt-4 animate-in fade-in duration-150">
       {/* ── Voltar ── */}
       <div className="flex items-center justify-between">
         <Button

@@ -28,6 +28,7 @@ export interface ContextSidebarProps {
 // ── 1. Módulos Principais Comunitários (8 Módulos Canônicos 100% Separados) ──
 const MAIN_EXPLORER_ITEMS = [
   { to: "/", label: "Início", icon: House, exact: true },
+  /* [USER_EXPLICIT_REQUIREMENT]: Identidade Canônica "Places (Lista Telefônica)" com destaque visual */
   { to: "/diretorio", label: "Places", isPlacesBadge: true, icon: Compass, exact: true },
   { to: "/classificados", label: "Classificados", icon: Tag, exact: true, isLucide: true },
   { to: "/feed", label: "Feed", icon: Rss, exact: true, isLucide: true },
@@ -122,6 +123,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                       />
                     )}
                     {isPlacesBadge ? (
+                      /* [USER_EXPLICIT_REQUIREMENT]: Marcador visual solicitado */
                       <PlacesHighlightBadge subtle={!active} className="text-xs" />
                     ) : (
                       <span className="truncate">{item.label}</span>

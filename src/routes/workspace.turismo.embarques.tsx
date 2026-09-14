@@ -206,7 +206,7 @@ function WorkspaceBoardingPage() {
     queryFn: () => listCustomers({ data: {} }),
     enabled: Boolean(storeId),
   });
-  const crmCustomers = crmData?.customers || [];
+  const crmCustomers: any[] = Array.isArray(crmData) ? crmData : (crmData as any)?.customers || [];
 
   // ── Mutations ──
   const createMutation = useMutation({
@@ -450,7 +450,7 @@ function WorkspaceBoardingPage() {
     : null;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col min-h-[calc(100vh-4rem)] pb-12 overflow-x-hidden">
       {/* ── Canonical Toolbar ── */}
       <WorkspaceCanonicalToolbar
         viewModes={[
@@ -472,7 +472,7 @@ function WorkspaceBoardingPage() {
           variant: 'outline',
         }}
         filterSlot={
-          <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full">
             {[
               { id: 'all', label: 'Todos' },
               { id: 'urgent', label: `Urgentes (${urgentCount})` },
@@ -483,7 +483,7 @@ function WorkspaceBoardingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
+                className={`h-8 sm:h-7 px-3 sm:px-2.5 rounded-lg text-xs sm:text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                   activeTab === tab.id
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -496,7 +496,7 @@ function WorkspaceBoardingPage() {
         }
       />
 
-      <div className="flex-1 p-4 sm:p-6 max-w-[1600px] w-full mx-auto">
+      <div className="flex-1 py-4 sm:py-6 w-full mx-auto overflow-x-hidden">
         {/* ── CALENDAR VIEW ── */}
         {viewMode === 'calendar' && (
           <div className="space-y-4">
@@ -1099,7 +1099,7 @@ function WorkspaceBoardingPage() {
                   <X className="size-3 mr-1" /> Remover
                 </Button>
                 <p className="text-[10px] text-muted-foreground font-mono">
-                  Criado em {new Date(detail.created_at).toLocaleDateString('pt-BR')}
+                  Criado em {detail.created_at ? new Date(detail.created_at).toLocaleDateString('pt-BR') : '—'}
                 </p>
               </div>
             </>

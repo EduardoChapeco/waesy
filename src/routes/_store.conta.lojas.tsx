@@ -53,7 +53,7 @@ export default function ContaLojasPage() {
  };
 
  return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
@@ -77,7 +77,7 @@ export default function ContaLojasPage() {
 
  {/* ── Grid de Lojas / Empty State ── */}
  {stores.length === 0 ? (
- <Card className="p-12 text-center rounded-2xl shadow-xs border border-dashed border-border/80 bg-card space-y-4 max-w-xl mx-auto my-6">
+ <Card className="w-full max-w-xl mx-auto p-5 sm:p-12 text-center rounded-2xl shadow-xs border border-dashed border-border/80 bg-card space-y-4 my-6">
  <div className="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Store className="size-8" />
  </div>

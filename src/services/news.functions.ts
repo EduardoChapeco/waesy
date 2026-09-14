@@ -41,6 +41,7 @@ export interface SponsorDTO {
   banner_url?: string | null;
   video_url?: string | null;
   website_url?: string | null;
+  target_url?: string | null;
   cta_label?: string | null;
   description?: string | null;
   tier: "gold" | "silver" | "standard" | "supporter";

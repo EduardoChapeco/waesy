@@ -960,6 +960,85 @@ Ver `BUSINESS_FLOWS.md — Módulo 6 / Editor de Serviço`.
 **Rota:** GAP — `/workspace/orcamentos/$id` | **Status:** `🔴 GAP`
 **Shell:** Workspace | **Padrão:** quote_detail | **Ator:** Owner, Manager
 
+
+---
+
+## W-030b · Carnês, Contas a Receber & Cobrança Humanizada
+
+**Rota:** `/workspace/financeiro/recebiveis` (`workspace.financeiro.recebiveis.tsx`) | **Status:** `✅ IMPLEMENTADO`
+**Shell:** Workspace Clean Shell | **Padrão:** receivables-ledger | **Ator:** Owner, Finance, Manager
+
+### Anatomia Desktop (1440px)
+```
+[Main max-w-6xl mx-auto]
+- PageHeader: Título "Carnês & Contas a Receber", Subtítulo "Gestão acolhedora de parcelas, caderninho e cobrança empática"
+- Ações Primárias: [Novo Carnê / Venda a Prazo] [Lembretes em Massa WhatsApp]
+- Grid de 4 Cards de Métricas Reais:
+  1. Total em Aberto (R$ valor_cents + número de carnês ativos)
+  2. A Vencer nos Próximos 7 Dias (Previsão de entrada de caixa a curto prazo)
+  3. Em Atraso Suave (< 15 dias) e Crítico (> 30 dias)
+  4. Conciliados / Liquidados no Mês (Taxa de adimplência saudável)
+- Barra de Filtros Rápidos: [Todos] [Vencendo Logo] [Em Atraso] [Aguardando Conciliação] [Liquidados] + Busca por Cliente/CPF
+- Tabela Master de Carnês & Parcelas:
+  - Cliente (Nome, Telefone, Badge de Confiança)
+  - Título da Venda / Compra
+  - Parcela Vigente (ex: 2/5)
+  - Valor Nominal vs Valor com Desconto de Pontualidade
+  - Data de Vencimento com Tag de Alerta
+  - Status (Pendente, Pago, Atrasado, Renegociado)
+  - Ações Rápidas:
+    - "Conciliar / Baixar" (Abre modal de recebimento com opção de perdoar juros)
+    - "Mensagem Empática" (Abre WhatsApp com template carinhoso sem tom punitivo)
+    - "Renegociar Parcela" (Ajuste de data e valor sem burocracia)
+- Modal de Emissão Rápida de Carnê:
+  - Busca de cliente (com auto-complete ou cadastro em 2 toques)
+  - Valor total, número de parcelas (1x a 24x), primeiro vencimento
+  - Tag de finalidade da compra
+- Modal de Cobrança Humanizada em Massa:
+  - Seleção por checkbox múltiplo
+  - Escolha de tom: "Lembrete Amigo (Vencendo amanhã)", "Oportunidade com Desconto de Pontualidade", "Conversa Franca (Para quem está apertado)"
+  - Preview real da mensagem com tags `{nome}`, `{valor}`, `{data}`
+```
+
+### Contratos BFF Associados
+- `listStoreCarnes()` (`receivables.functions.ts`)
+- `getCarnesReportSummary()` (`receivables.functions.ts`)
+- `approveInstallmentPayment()` (`receivables.functions.ts`)
+- `adjustInstallmentAmount()` (`receivables.functions.ts`)
+- `sendMassBillingReminders()` (`receivables.functions.ts`)
+- `createStoreCarne()` (`receivables.functions.ts`)
+
+---
+
+## W-030c · Saúde de Caixa, Cofres Blindados & Giro por Vendas (Waesy Care Finance)
+
+**Rota:** `/workspace/financeiro/recebiveis` (Aba Saúde de Caixa) | **Status:** `✅ IMPLEMENTADO`
+**Shell:** Workspace Clean Shell | **Padrão:** cashflow-shield | **Ator:** Owner, Finance
+
+### Anatomia Desktop (1440px)
+```
+[Main max-w-6xl mx-auto]
+- Banner Superior de Tranquilidade:
+  - Indicador de Fôlego de Caixa: "Você tem 18 dias de despesas fixas cobertas"
+  - Badge de Saúde: "Equilibrado / Zona de Tranquilidade"
+- Seção 1: Cofres Inteligentes Blindados (Provisionamento Automático)
+  - Card Cofre Aluguel: Barra de progresso (ex: R$ 1.800 de R$ 2.500 retidos suavemente das vendas diárias)
+  - Card Cofre Folha Salarial: Barra de progresso (ex: R$ 4.200 de R$ 6.000 retidos até dia 05)
+  - Rendimento Acumulado: Rendendo 102% do CDI diariamente em conta custodiada
+  - Ação: "Configurar Reserva Diária" ou "Liberar Aporte Extra"
+- Seção 2: Antecipação Solidária de Giro por Vendas
+  - Limite Disponível Baseado no Histórico de Vendas (ex: R$ 12.000,00 aprovados)
+  - Simulador Transparente:
+    - Retenção Diária: Slider de 5% a 15% das vendas da maquininha/marketplace
+    - Custo Fixo de R$ 0,00 em dias que a loja não vender
+    - Taxa pré-fixada justa (1,2% a 1,8% ao mês, contra 8% do cheque especial dos grandes bancos)
+  - Botão Primário: "Ativar Giro na Minha Conta Waesy"
+- Seção 3: Conciliação de Fornecedores & NF-e de Entrada
+  - Lista de Duplicatas Vinculadas com XML/Chave NF-e
+  - Alerta de Economia: "Pague seu fornecedor usando saldo interno Waesy com R$ 0,00 de taxas e D+0"
+  - Agendador de Liquidação Automática no dia do vencimento da nota
+```
+
 ---
 
 ## W-031 · Caixa
@@ -1461,4 +1540,201 @@ Renomeia módulos na sidebar conforme o nicho selecionado.
   - Prévia de categorias e itens detectados com contadores
   - Inserção em lote atômica via batchCreateCatalogMenu com isolamento multi-tenant
 ```
+
+---
+
+# Família 5 — Governança Master & Conselho Executivo (admin-master.*)
+
+---
+
+## M-001 · Metas Projetadas vs. Dados Reais & Valuation
+
+**Rota:** `/admin-master/crescimento` (`admin-master.crescimento.tsx`) | **Status:** `✅ IMPLEMENTADO`  
+**Shell:** Admin Master Shell | **Padrão:** executive-governance-dashboard | **Ator:** Fundador / Conselho / Platform Admin
+
+### Anatomia Desktop & Mobile (1440px / 390px)
+```
+[Header Executivo: Título + Badges "Governança & M&A" e "Eixo Chapecó ↔ SMO" + Botão "+ Novo Lançamento Financeiro"]
+[Tabs de Navegação 4 Abas: Metas vs Realidade | Escalas & M&A (500 a 5k) | Livro-Caixa Corporativo | Ativo Tecnológico]
+
+- Aba 1: Metas vs Realidade
+  - Seletor de Fase Alvo (Fase 1: 500 Lojas / 10k Clientes | Fase 2: 1.000 Lojas / 20k Clientes | Fase 3: 5.000 Lojas / 100k Clientes)
+  - Grid de 4 Cards de KPI com Barras de Progresso Reais:
+    - Lojas / Empresas Parceiras (Real vs Meta com % atingido e gap restante)
+    - Clientes / Cidadãos Cadastrados (Real vs Meta com contagem do PostgreSQL)
+    - Receita Direta / MRR (Real faturado vs MRR da fase)
+    - GMV Acumulado Transacionado (Total do banco de dados e taxa de conversão)
+  - Card Destaque de Valuation Dinâmico:
+    - Custo do Ativo Tecnológico (R$ 4,12M) + Múltiplos de ARR vigentes
+    - Cenário Conservador da Fase
+    - M&A Estratégico (Zucchetti / Senior Sistemas)
+
+- Aba 2: Escalas & M&A (500 a 5.000 Empresas)
+  - Tabela DRE Comparativa Dinâmica:
+    - Receita SaaS B2B (R$ 189/mês médio)
+    - Take-rate de Transações (1,5% GMV)
+    - Classificados, Destaques & Ads
+    - Custos de Nuvem & Gateways
+    - Margem Bruta de Software (>85%)
+    - EBITDA Anualizado (42% a 50%)
+    - Valuation Indicativo de Mercado
+
+- Aba 3: Livro-Caixa Corporativo
+  - 3 Cards de Resumo: Total Aportes/Investimentos, Total Gastos Operacionais, Fluxo de Caixa Líquido
+  - Tabela Auditável de Lançamentos Financeiros com data, tipo (Aporte/Gasto), categoria, descrição e valor
+  - Ação de estorno/exclusão com confirmação e recálculo instantâneo
+
+- Aba 4: Ativo Tecnológico (Codebase Audit)
+  - 4 Cards de Estatísticas ao Vivo: Linhas Totais (468.141), Rotas (341), Serviços BFF (217), Componentes (452)
+  - Custo de Reposição COCOMO II (R$ 4.120.000,00 equivalente a 11 FTEs sênior por 20 meses)
+  - Badges de Conformidade: Zero Erros de Build, RLS Deny-by-Default, Edge Serverless No-Lock-in
+```
+
+### Contratos BFF Associados
+- `getExecutiveGrowthMetrics()` (`growth-targets.functions.ts`)
+- `recordFinancialEntry()` (`growth-targets.functions.ts`)
+- `deleteFinancialEntry()` (`growth-targets.functions.ts`)
+
+### Invariantes de Governança
+- Exclusivo para usuários autenticados com role `platform_admin` ou e-mails master autorizados.
+- Zero dados mockados; se as tabelas auxiliares estiverem em inicialização, valores reais do PostgreSQL (`profiles`, `stores`, `orders`, `platform_invoices`) são computados diretamente.
+
+---
+
+## W-021 · PDV Touch de Balcão, Split Bill & Spooler Térmico ESC/POS
+
+**Rota:** `/workspace/pdv` (`workspace.pdv.index.tsx`) | **Status:** `✅ IMPLEMENTADO`  
+**Shell:** Workspace Shell | **Padrão:** touch-pos + split-bill | **Ator:** Operador de Caixa / Garçom / Lojista
+
+### Anatomia Desktop & Touch Tablet
+```
+[Coluna Esquerda 7-8 cols: Catálogo Visual de Produtos e Categorias com Busca Instantânea]
+- Grade de produtos com foto, nome, estoque e preço (touch friendly 44px+)
+- Modificadores e adicionais dinâmicos por item
+
+[Coluna Direita 4-5 cols: Comanda / Carrinho Ativo]
+- Linhas de itens com incremento/decremento e remoção
+- Subtotal, Desconto e Total a Pagar em destaque
+- Botão Primário: "Cobrar / Finalizar Venda"
+
+[Modal de Checkout — Divisão de Conta (Split Bill)]
+- Barra de Divisão Rápida: [1x (Total)] [2x] [3x] [4x] [5x]
+- Cálculo instantâneo da cota por pessoa em centavos (sem arredondamentos perdidos)
+- Seleção de Forma de Pagamento por Cota: Dinheiro (com troco), PIX, Cartão de Débito, Cartão de Crédito, Carnê
+- Lista discriminada de pagamentos efetuados com badge de pagador ("Pagador 1", "Pagador 2")
+- Barra de Progresso do Valor Pago vs Restante
+
+[Modal de Recibo e Spooler Térmico ESC/POS]
+- Visualização do Cupom Não Fiscal Monospaçado
+- Botões de Ação Direta:
+  - "Imprimir Térmica 80mm" (48 colunas canônicas ESC/POS sem cabeçalhos de navegador)
+  - "Imprimir Térmica 58mm" (32 colunas compactas)
+  - "Enviar por WhatsApp"
+```
+
+### Contratos e Utilitários Associados
+- `src/lib/thermal-printer.ts`:
+  - `generateThermalReceiptText(data, width)`
+  - `printThermalReceipt(data, paperWidth)`
+  - `buildEscPosReceipt(params)` & `buildZplShippingLabel(params)`
+  - `sendBytesToSerialPrinter(bytes)` (Web Serial API)
+
+---
+
+## W-022 · Recebíveis, Condicionais de Moda & Saúde de Caixa (Cofres Blindados & D+0)
+
+**Rota:** `/workspace/financeiro/recebiveis` (`workspace.financeiro.recebiveis.tsx`) | **Status:** `✅ IMPLEMENTADO`  
+**Shell:** Workspace Shell | **Padrão:** multi-tab-financial-center | **Ator:** Lojista / Gestor Financeiro
+
+### Anatomia (3 Abas Estratégicas no Paradigma Clean)
+```
+[Header Dinâmico: Título contextualizado + Botões de Ação por Aba]
+[Tabs Switcher 3 Abas: Carnês & Caderninho | Condicionais & Malas (Varejo) | Cofres & Saúde Caixa]
+
+- Aba 1: Carnês & Caderninho
+  - 4 Cards de KPI: Total a Receber, Inadimplência Geral, Recebido no Mês, Conciliações Pendentes
+  - Filtros: Todos, A Vencer (7d), Em Atraso, Conciliação Pendente, Baixados
+  - Cobrança em Lote: Seleção múltipla com envio de lembretes amigáveis via WhatsApp
+  - Conciliação Inteligente: Análise de comprovante PIX enviado pelo cliente, isenção de juros e baixa espelhada
+
+- Aba 2: Condicionais & Malas (Prova em Casa para Varejo de Moda e Óticas)
+  - 4 Cards de KPI: Peças na Rua / Em Prova, Valor sob Confiança (R$), Taxa de Conversão (68.4%), Malas Vencendo/Atrasadas
+  - Filtros: Todas, Em Prova, Vence Hoje, Em Atraso, Finalizadas
+  - Lista de Malas Condicionais: Nome da cliente, telefone (link WhatsApp com mensagem de carinho), prazo de devolução
+  - Modal de Saída em Condicional: Cadastro rápido com seleção de prazo (24h, 48h, 72h) e peças dinâmicas
+  - Modal de Baixa / Retorno: Interface de conferência peça a peça ("🛍️ Comprou" / "↩️ Devolveu") com reintegração automática ao estoque
+
+- Aba 3: Cofres & Saúde de Caixa (Waesy Care Finance)
+  - Banner de Fôlego Financeiro (Financial Runway): Dias de tranquilidade operacional calculados com base no saldo blindado e despesas diárias
+  - Cofre 1: Folha Salarial & Equipe (Meta mensal, saldo guardado, rendimento diário 102.5% CDI, retenção automática do PDV)
+  - Cofre 2: Aluguel & Ponto Comercial (Meta, saldo guardado, rendimento diário 102.5% CDI, retenção automática)
+  - Liquidação D+0 de Duplicatas de Fornecedores: Tabela de boletos e notas fiscais com agendamento no dia do vencimento sem taxa bancária (Taxa Zero)
+  - Giro Solidário por Vendas (Waesy Capital): Crédito com juros amigos (0.89% a.m.) sem boletos sufocantes, amortizado diariamente pela maquininha/PDV
+```
+
+### Contratos BFF Associados
+- `src/services/cash-safes.functions.ts`:
+  - `getStoreCashSafesSummary()`
+  - `depositToCashSafe({ safeType, amountCents, description })`
+  - `configureCashSafeRetention({ safeType, retentionPercent })`
+  - `listSupplierInvoicesForD0()`
+  - `scheduleSupplierInvoiceD0({ invoiceId })`
+  - `simulateWorkingCapital({ requestedAmountCents, dailyRetentionPercent })`
+- `src/services/receivables.functions.ts`:
+  - `listStoreCarnes()`, `getCarnesReportSummary()`, `approveInstallmentPayment()`, `createStoreCarne()`, etc.
+
+---
+
+## W-023 · Hub de Marketplaces, Mapeamento de SKUs, Estoque Ativo & Webhooks Transacionais
+
+**Rota:** `/workspace/integracoes/marketplaces` (`workspace.integracoes.marketplaces.tsx`) | **Status:** `✅ IMPLEMENTADO`  
+**Shell:** Workspace Shell | **Padrão:** multi-tab-marketplace-hub | **Ator:** Lojista / Gestor de Operações / E-commerce Manager
+
+### Anatomia (3 Abas Operacionais no Paradigma Clean & Apple HIG)
+```
+[Header Dinâmico: Título "Hub de Marketplaces & Integrações" + Botões: "Testar Pedido Simulado" + Módulo Fiscal + Expedição WMS]
+[Cards de KPI: Canais Ativos/Conectados | Vendas em Marketplaces (R$) | Taxas de Intermediação (R$) | Repasse Líquido D+0 (R$)]
+
+- Aba 1: Canais & Conectores
+  - Filtros de Categoria: Todos | Marketplaces E-Commerce | Delivery & Food | Frete & Logística
+  - Grid de 12 Provedores Oficiais (Mercado Livre, iFood, Shopee, Amazon, Magalu, Melhor Envio, Correios, Loggi, Jadlog, Rappi, Amo Delivery, Google Business)
+  - Card por Canal: Nome, Logo com gradiente, Badge de Status (Conectado / Desconectado), Apelido da Conta, Timestamp de Última Sync
+  - Botão Webhook URL: Abre modal com a URL POST canônica exclusiva da loja com botão de copiar em 1 clique
+  - Botão Sincronizar: Dispara atualização manual e registra em marketplace_sync_logs
+  - Botão Ajustes / Conectar: Modal de credenciais (Token de API, ID da Conta, Auto-Accept para KDS, Sincronização de Estoque)
+  - Botão Desconectar: Desconecta o conector com 1 clique (status idle/disconnected)
+
+- Aba 2: Mapeamento de SKUs & Anúncios (Catálogo Integrado)
+  - Tabela com todos os produtos da loja: Título, SKU Interno, Preço Base, Estoque Atual (Badge colorido)
+  - Canais Mapeados: Tags com identificador do anúncio externo (ex: mercadolivre: #MLB998822, shopee: #492021)
+  - Ação "Sync Estoque": Atualiza em lote nos marketplaces conectados com 1 clique
+  - Ação "Vincular Canal": Modal para vincular anúncio externo (Listing ID, SKU no canal, Margem de Preço adicional em %)
+
+- Aba 3: Auditoria de Webhooks & Sincronização
+  - Tabela 1 (Inbox Transacional de Webhooks): Data/Hora, Plataforma, ID do Evento, Tópico/Recurso, Status (Processado, Falha, Recebido), Botão "Reprocessar"
+  - Tabela 2 (Histórico de Despacho e Sincronização): Data/Hora, Plataforma, Tipo de Sync, Direção, Itens Atualizados, Duração (ms), Status
+  - Modal "Testar Pedido Simulado": Permite criar uma venda real no banco (Mercado Livre, iFood, Shopee, Amazon) para validação E2E no KDS e na Expedição WMS
+```
+
+### Contratos BFF & Server Functions Associados
+- `src/services/marketplace-hub.functions.ts`:
+  - `listMarketplaceConnectors()`
+  - `saveMarketplaceConnector(payload)`
+  - `disconnectMarketplaceConnector({ platform })`
+  - `triggerSyncConnector({ platform, syncType })`
+  - `getMarketplaceFinancialSummary()`
+  - `syncProductStockToMarketplaces({ productId, newStockQty })`
+  - `mapProductToMarketplace({ productId, platform, externalListingId, externalSku, priceMarginPercent })`
+  - `listProductMarketplaceMappings()`
+  - `listMarketplaceSyncLogs({ limit })`
+  - `syncGoogleBusinessProfile()`
+- `src/services/marketplace-webhooks.functions.ts`:
+  - `handleInboundWebhook(data)` (Transactional Inbox idempotente)
+  - `syncOrderToMaster(input)` (Espelhamento atômico em `orders`, `order_items`, `stock_movements` e `cash_registers`)
+  - `listStoreWebhookEvents({ platform, status, limit })`
+  - `reprocessWebhookEvent({ eventId })`
+  - `simulateMarketplaceOrder({ platform, customerName, productTitle, totalAmountCents })`
+
+
+
 

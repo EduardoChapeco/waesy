@@ -17,11 +17,18 @@ export interface CanvasLayer {
 }
 
 interface StudioCanvasProps {
- onExportToHero?: (imageUrl: string) => void;
- className?: string;
+  onExportToHero?: (imageUrl: string) => void;
+  className?: string;
+  aspectRatio?: any;
+  background?: any;
+  elements?: any[];
+  selectedElementId?: string | null;
+  onSelectElement?: (id: string | null) => void;
+  onUpdateElementPosition?: (id: any, pos: any) => void;
+  zoom?: number;
 }
 
-export function StudioCanvas({ onExportToHero, className = '' }: StudioCanvasProps) {
+export function StudioCanvas({ onExportToHero, className = '', aspectRatio, background, elements, selectedElementId, onSelectElement, onUpdateElementPosition, zoom }: StudioCanvasProps) {
  const [aspect, setAspect] = useState<'1:1' | '16:9' | '9:16'>('16:9');
  const [bgColor, setBgColor] = useState('#0f172a');
  const [layers, setLayers] = useState<CanvasLayer[]>([

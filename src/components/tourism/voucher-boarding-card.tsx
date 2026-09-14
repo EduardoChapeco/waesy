@@ -77,18 +77,28 @@ export interface AgencyData {
  whatsapp_phone?: string | null;
 }
 
-interface VoucherBoardingCardProps {
- voucher: VoucherData;
- tripNumber?: string;
- agency: AgencyData;
- showActions?: boolean;
+export interface VoucherBoardingCardProps {
+  voucher: VoucherData | any;
+  trip?: any;
+  tripNumber?: string;
+  agency?: AgencyData;
+  store?: any;
+  passengers?: any[];
+  confirmationItems?: any[];
+  showActions?: boolean;
 }
 
 export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCardProps>(
- ({ voucher, tripNumber, agency }, ref) => {
- const origin = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.pages.dev";
- const publicUrl = `${origin}/voucher/${voucher.public_token}`;
- const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(publicUrl)}`;
+  ({ voucher, trip, tripNumber: tripNumProp, agency: agencyProp, store, passengers, confirmationItems, showActions }, ref) => {
+    const agency: AgencyData = agencyProp || {
+      name: store?.name || trip?.agency_name || "Agência de Viagens",
+      logo_url: store?.settings?.logoUrl || store?.settings?.logo_url || null,
+      whatsapp_phone: store?.settings?.whatsapp || store?.settings?.phone || null,
+    };
+    const tripNumber = tripNumProp || trip?.trip_code || trip?.title || "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.pages.dev";
+    const publicUrl = `${origin}/voucher/${voucher?.public_token || ""}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(publicUrl)}`;
 
  return (
  <div
@@ -98,7 +108,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  style={{ fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif" }}
  >
  {/* ── HEADER DA AGÊNCIA & GUIA DE EMBARQUE ── */}
- <div className="bg-neutral-900 text-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-primary">
+ <div className="bg-neutral-900 text-white p-4 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-primary">
  <div className="flex items-center gap-4">
  {agency.logo_url ? (
  <img
@@ -136,7 +146,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  </div>
 
- <div className="p-6 sm:p-8 space-y-6">
+ <div className="p-4 sm:p-8 space-y-6">
  {/* ── 1. PASSAGEIROS TITULARES & ROOMING LIST ── */}
  {voucher.passengers && voucher.passengers.length > 0 && (
  <div className="space-y-2">
@@ -147,7 +157,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </span>
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
- {voucher.passengers.map((p, idx) => (
+ {voucher.passengers.map((p: any, idx: number) => (
  <div
  key={idx}
  className="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/50 flex flex-col justify-between"
@@ -174,7 +184,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
 
  <div className="space-y-2">
- {voucher.flights.map((flight, idx) => (
+ {voucher.flights.map((flight: any, idx: number) => (
  <div
  key={idx}
  className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -237,7 +247,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- {voucher.hotels.map((hotel, idx) => (
+ {voucher.hotels.map((hotel: any, idx: number) => (
  <div
  key={idx}
  className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/60 space-y-2"
@@ -303,7 +313,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
- {voucher.transfers?.map((t, idx) => (
+ {voucher.transfers?.map((t: any, idx: number) => (
  <div
  key={idx}
  className="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/50 flex items-center justify-between text-[11px]"
@@ -322,7 +332,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  ))}
 
- {voucher.tours?.map((tour, idx) => (
+ {voucher.tours?.map((tour: any, idx: number) => (
  <div
  key={idx}
  className="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/50 flex items-center justify-between text-[11px]"
@@ -405,7 +415,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  />
  <div className="text-[9px] font-mono text-neutral-500 space-y-0.5">
  <span className="font-bold text-neutral-900 block uppercase">Autenticidade</span>
- <span>Token: {voucher.public_token.substring(0, 10)}...</span>
+ <span>Token: {voucher?.public_token ? `${voucher.public_token.substring(0, 10)}...` : "—"}</span>
  <span className="block text-[8px] text-neutral-400">Escaneie para validar</span>
  </div>
  </div>

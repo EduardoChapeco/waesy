@@ -27,18 +27,29 @@ export const Route = createFileRoute("/_store/conta/mobilidade")({
  head: () => ({
  meta: [{ title: "Minhas Corridas & Mudanças | Waesy" }],
  }),
- loader: async () => {
-   try {
- const [requests, courierApp] = await Promise.all([
- listCustomerMobilityRequests().catch(() => []),
- getMyCourierApplicationStatus().catch(() => null),
- ]);
- return { requests, courierApp };
-   } catch (err) {
-     console.error("[loader:_store.conta.mobilidade] Unhandled error:", err);
-     return { requests: null, courierApp: null };
-   }
- },
+  loader: async () => {
+    try {
+      const { getUserSession } = await import("@/services/auth.functions");
+      const session = await getUserSession().catch(() => null);
+      const role = session?.role || session?.user?.user_metadata?.role;
+      const allowedRoles = ["store_owner", "operator", "platform_admin", "master"];
+      if (!role || !allowedRoles.includes(role)) {
+        const { redirect } = await import("@tanstack/react-router");
+        throw redirect({ to: "/conta" });
+      }
+
+      const [requests, courierApp] = await Promise.all([
+        listCustomerMobilityRequests().catch(() => []),
+        getMyCourierApplicationStatus().catch(() => null),
+      ]);
+      return { requests, courierApp };
+    } catch (err) {
+      const { isRedirect } = await import("@tanstack/react-router");
+      if (isRedirect(err)) throw err;
+      console.error("[loader:_store.conta.mobilidade] Unhandled error:", err);
+      return { requests: null, courierApp: null };
+    }
+  },
  component: CustomerMobilityHistoryPage,
 });
 
@@ -155,8 +166,8 @@ function CustomerMobilityHistoryPage() {
 
  {!isLoading && requests && requests.length > 0 && (
  <div className="space-y-3">
- {requests.map((req) => {
- const statusConfig = STATUS_LABELS[req.status] || {
+ {requests.map((req: any) => {
+ const statusConfig = (STATUS_LABELS as any)[req.status] || {
  label: req.status,
  variant: "outline",
  };

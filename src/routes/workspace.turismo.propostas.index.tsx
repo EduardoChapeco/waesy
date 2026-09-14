@@ -132,13 +132,13 @@ function WorkspaceProposalsIndexPage() {
 
  // Métricas do Painel
  const totalCount = proposalsList.length;
- const approvedCount = proposalsList.filter((p) => p.status === "approved").length;
- const draftCount = proposalsList.filter((p) => p.status === "draft").length;
- const sentCount = proposalsList.filter((p) => p.status === "sent").length;
- const totalOfferedCents = proposalsList.reduce(
- (acc, p) => acc + (p.pricing?.total_price_cents || 0),
- 0
- );
+  const approvedCount = proposalsList.filter((p: any) => p.status === "approved").length;
+  const draftCount = proposalsList.filter((p: any) => p.status === "draft").length;
+  const sentCount = proposalsList.filter((p: any) => p.status === "sent").length;
+  const totalOfferedCents = proposalsList.reduce(
+    (acc: number, p: any) => acc + (p.pricing?.total_price_cents || 0),
+    0
+  );
 
  return (
  <NicheOperationalGuard
@@ -147,7 +147,7 @@ function WorkspaceProposalsIndexPage() {
  toolDescription="O criador de lâminas e propostas interativas foi desenvolvido especificamente para agências de turismo e consultores de viagem apresentarem roteiros visuais aos passageiros."
  store={store}
  >
-      <div className="flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)]">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)] overflow-x-hidden">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -194,7 +194,7 @@ function WorkspaceProposalsIndexPage() {
  </div>
  </div>
  ) : (
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
  {proposalsList.map((p: TravelProposalDTO) => {
  const totalCents = p.pricing?.total_price_cents || 0;
  return (

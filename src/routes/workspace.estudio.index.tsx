@@ -131,11 +131,11 @@ function StudioWorkspacePage() {
  const [isPlaying, setIsPlaying] = useState(false);
  const [currentTime, setCurrentTime] = useState(0);
  const [videoDuration, setVideoDuration] = useState(15);
- const [videoTracks, setVideoTracks] = useState([
- { id: "tr-video", name: "Vídeo Principal", type: "video", clips: [{ id: "c1", start: 0, end: 10, name: "Clipe 01.mp4" }] },
- { id: "tr-audio", name: "Trilha Sonora", type: "audio", clips: [{ id: "c2", start: 0, end: 15, name: "Lo-Fi Chill Beat.mp3" }] },
- { id: "tr-text", name: "Texto / Legendas", type: "text", clips: [{ id: "c3", start: 2, end: 7, name: "Legenda Oferta" }] },
- ]);
+  const [videoTracks, setVideoTracks] = useState([
+    { id: "tr-video", name: "Vídeo Principal", type: "video", clips: [{ id: "c1", start: 0, end: 10, duration: 10, name: "Clipe 01.mp4" }] },
+    { id: "tr-audio", name: "Trilha Sonora", type: "audio", clips: [{ id: "c2", start: 0, end: 15, duration: 15, name: "Lo-Fi Chill Beat.mp3" }] },
+    { id: "tr-text", name: "Texto / Legendas", type: "text", clips: [{ id: "c3", start: 2, end: 7, duration: 5, name: "Legenda Oferta" }] },
+  ]);
 
  const [selectedTemplateCategory, setSelectedTemplateCategory] = useState<string>("all");
 
@@ -455,7 +455,7 @@ function StudioWorkspacePage() {
  id: `track-${Date.now()}`,
  name: f.name.slice(0, 16),
  type: "video",
- clips: [{ id: `clip-${Date.now()}`, name: f.name, start: 0, duration: 15 }],
+ clips: [{ id: `clip-${Date.now()}`, name: f.name, start: 0, end: 15, duration: 15 }],
  },
  ]);
  toast.success(`Vídeo "${f.name}" importado para a timeline!`);
@@ -476,7 +476,7 @@ function StudioWorkspacePage() {
  id: `track-${Date.now()}`,
  name: f.name.slice(0, 16),
  type: "audio",
- clips: [{ id: `clip-${Date.now()}`, name: f.name, start: 0, duration: 15 }],
+ clips: [{ id: `clip-${Date.now()}`, name: f.name, start: 0, end: 15, duration: 15 }],
  },
  ]);
  toast.success(`Áudio "${f.name}" adicionado à trilha sonora!`);
@@ -567,7 +567,7 @@ function StudioWorkspacePage() {
  elements={elements}
  selectedElementId={selectedElementId}
  onSelectElement={setSelectedElementId}
- onUpdateElementPosition={(id, pos) => {
+ onUpdateElementPosition={(id: string, pos: { x: number; y: number }) => {
  setElements((prev) =>
  prev.map((el) => (el.id === id ? { ...el, position: pos } : el)),
  );
@@ -623,8 +623,8 @@ function StudioWorkspacePage() {
                       return {
                         ...tr,
                         clips: [
-                          { id: `${first.id}-a`, name: `${first.name} (P1)`, start: first.start, duration: splitTime },
-                          { id: `${first.id}-b`, name: `${first.name} (P2)`, start: first.start + splitTime, duration: Math.max(1, first.duration - splitTime) },
+                          { id: `${first.id}-a`, name: `${first.name} (P1)`, start: first.start, end: first.start + splitTime, duration: splitTime },
+                          { id: `${first.id}-b`, name: `${first.name} (P2)`, start: first.start + splitTime, end: first.end, duration: Math.max(1, first.duration - splitTime) },
                         ],
                       };
                     }

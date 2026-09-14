@@ -1,18 +1,23 @@
 import { useEffect } from "react";
 
 export interface ProductSeoProps {
-  title: string;
+  title?: string;
+  productTitle?: string;
   description?: string | null;
   image?: string | null;
+  imageUrl?: string | null;
   canonicalUrl?: string;
   priceCents?: number;
   currency?: string;
   sku?: string;
   brandName?: string;
   categoryName?: string;
+  category?: string;
   availability?: "InStock" | "OutOfStock" | "PreOrder";
   condition?: "NewCondition" | "RefurbishedCondition" | "UsedCondition";
   storeName?: string;
+  inStock?: boolean;
+  slug?: string;
 }
 
 /**
@@ -22,8 +27,10 @@ export interface ProductSeoProps {
  */
 export function ProductSeoHead({
   title,
+  productTitle,
   description,
   image,
+  imageUrl,
   canonicalUrl,
   priceCents,
   currency = "BRL",
@@ -34,12 +41,15 @@ export function ProductSeoHead({
   condition = "NewCondition",
   storeName,
 }: ProductSeoProps) {
+  const effectiveTitle = title || productTitle || "";
+  const effectiveImage = image || imageUrl || null;
+
   useEffect(() => {
     if (typeof document === "undefined") return;
 
     // 1. Atualizar Título da Página
-    if (title) {
-      document.title = storeName ? `${title} | ${storeName}` : `${title} | Waesy Marketplace`;
+    if (effectiveTitle) {
+      document.title = storeName ? `${effectiveTitle} | ${storeName}` : `${effectiveTitle} | Waesy Marketplace`;
     }
 
     // 2. Helper para setar ou criar meta tags

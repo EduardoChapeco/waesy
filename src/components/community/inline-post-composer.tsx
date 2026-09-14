@@ -30,6 +30,8 @@ import { uploadPostMedia } from "@/services/storage.functions";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { getMyCreatorProfile } from "@/services/affiliates.functions";
 import { cn } from "@/lib/utils";
+import { Highlighter } from "lucide-react";
+import { extractMediaFromClipboard, fileToBase64 } from "@/lib/clipboard-media";
 
 interface MediaPreviewItem {
   url: string;
@@ -53,6 +55,7 @@ const TEMPLATE_OPTIONS: { id: PostType; label: string; icon: React.ElementType }
 
 export function InlinePostComposer({ session, profile, onSuccess }: InlinePostComposerProps) {
   const [content, setContent] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
@@ -82,6 +85,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
   const [tagsInput, setTagsInput] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -200,6 +204,88 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
     setMediaUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleInsertHighlight = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+
+    let newContent: string;
+    let newCursorPos: number;
+
+    if (selectedText.length > 0) {
+      if (selectedText.startsWith("==") && selectedText.endsWith("==") && selectedText.length >= 4) {
+        const unwrapped = selectedText.slice(2, -2);
+        newContent = content.substring(0, start) + unwrapped + content.substring(end);
+        newCursorPos = start + unwrapped.length;
+      } else {
+        const wrapped = `==${selectedText}==`;
+        newContent = content.substring(0, start) + wrapped + content.substring(end);
+        newCursorPos = start + wrapped.length;
+      }
+    } else {
+      const placeholder = "==destaque==";
+      newContent = content.substring(0, start) + placeholder + content.substring(end);
+      newCursorPos = start + placeholder.length;
+    }
+
+    setContent(newContent);
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 50);
+  };
+
+  const handleClipboardPaste = async (e: React.ClipboardEvent) => {
+    const extracted = await extractMediaFromClipboard(e);
+    if (!extracted || extracted.length === 0) {
+      return;
+    }
+
+    e.preventDefault();
+
+    if (mediaUrls.length + extracted.length > 10) {
+      toast.error(`Limite máximo de 10 mídias por post. Você pode adicionar mais ${Math.max(0, 10 - mediaUrls.length)} arquivo(s).`);
+      return;
+    }
+
+    setIsUploadingMedia(true);
+    toast.info(`Colando ${extracted.length} mídia(s) em alta resolução...`);
+
+    for (const item of extracted) {
+      const file = item.file;
+      const isVideo = item.type === "video";
+      const localUrl = item.previewUrl || URL.createObjectURL(file);
+
+      setMediaPreviews((prev) => [...prev, { url: localUrl, type: isVideo ? "video" : "image" }]);
+
+      try {
+        const base64Data = await fileToBase64(file);
+        const res = await uploadPostMedia({
+          data: {
+            fileName: file.name,
+            fileType: file.type || (isVideo ? "video/mp4" : "image/jpeg"),
+            base64Data,
+          },
+        });
+
+        if (res?.url) {
+          setMediaUrls((prev) => [...prev, res.url]);
+        } else {
+          throw new Error("Falha ao processar URL da mídia colada.");
+        }
+      } catch (err: any) {
+        toast.error(err?.message || `Erro no upload da mídia colada "${file.name}".`);
+        setMediaPreviews((prev) => prev.filter((p) => p.url !== localUrl));
+      }
+    }
+
+    setIsUploadingMedia(false);
+    toast.success("Mídia colada com sucesso!");
+  };
+
   const onSubmit = async () => {
     const trimmedContent = content.trim();
     if (!trimmedContent && mediaUrls.length === 0 && !newsTitle.trim() && !travelDestination.trim()) {
@@ -313,6 +399,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
       setMediaPreviews([]);
       setSelectedTemplate("simple");
       if (fileInputRef.current) fileInputRef.current.value = "";
+      setIsExpanded(false);
 
       await router.invalidate();
       await queryClient.resetQueries({ queryKey: ["community-feed"] });
@@ -326,9 +413,62 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
     }
   };
 
+  if (!isExpanded) {
+    return (
+      <div
+        onClick={() => {
+          setIsExpanded(true);
+          setTimeout(() => textareaRef.current?.focus(), 80);
+        }}
+        className="w-full bg-card rounded-2xl p-2.5 sm:p-3 flex items-center gap-3 border border-border/60 shadow-xs cursor-pointer hover:border-border transition-all active:scale-[0.99] select-none"
+      >
+        <Avatar className="size-9 sm:size-10 rounded-xl border border-border/50 shrink-0 overflow-hidden bg-muted">
+          {userAvatar && <AvatarImage src={userAvatar} alt={userName} className="size-full object-cover" />}
+          <AvatarFallback className="text-xs font-bold text-primary bg-primary/10 size-full flex items-center justify-center">
+            {userInitial}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex-1 min-w-0 bg-muted/40 hover:bg-muted/60 transition-colors h-10 rounded-xl px-3.5 flex items-center text-xs text-muted-foreground">
+          <span className="truncate">Compartilhe uma história, foto ou dica...</span>
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(true);
+              setTimeout(() => fileInputRef.current?.click(), 120);
+            }}
+            className="size-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+            title="Adicionar foto"
+          >
+            <ImageSquare size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedTemplate("travel");
+              setIsExpanded(true);
+            }}
+            className="size-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors hidden xs:flex cursor-pointer"
+            title="Roteiro de Viagem"
+          >
+            <AirplaneTilt size={18} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full bg-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 relative border border-border/60 shadow-xs">
-      {/* ── 1. Topo: Identificação do Autor + Seletor de Identidade (Pessoal vs Criador) ── */}
+    <div
+      onPaste={handleClipboardPaste}
+      className="w-full bg-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 relative border border-border/60 shadow-xs animate-in fade-in zoom-in-95 duration-200"
+    >
+      {/* ── 1. Topo: Identificação do Autor + Seletor de Identidade + Botão Fechar ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
         <div className="flex items-center gap-3">
           <Avatar className="size-10 rounded-xl border border-border/50 shrink-0 overflow-hidden bg-muted">
@@ -354,36 +494,52 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
           </div>
         </div>
 
-        {/* Seletor Multi-Identidade (Pessoal vs. Criador/Marca) */}
-        {hasCreatorProfile && (
-          <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40 self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => setPostAsCreator(false)}
-              className={cn(
-                "h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
-                !postAsCreator
-                  ? "bg-background text-foreground shadow-2xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Pessoal
-            </button>
-            <button
-              type="button"
-              onClick={() => setPostAsCreator(true)}
-              className={cn(
-                "h-8 px-2.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer",
-                postAsCreator
-                  ? "bg-primary text-primary-foreground shadow-2xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Sparkle size={13} weight="fill" />
-              <span>@{activeCreatorHandle}</span>
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          {/* Seletor Multi-Identidade (Pessoal vs. Criador/Marca) */}
+          {hasCreatorProfile && (
+            <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+              <button
+                type="button"
+                onClick={() => setPostAsCreator(false)}
+                className={cn(
+                  "h-7 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                  !postAsCreator
+                    ? "bg-background text-foreground shadow-2xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Pessoal
+              </button>
+              <button
+                type="button"
+                onClick={() => setPostAsCreator(true)}
+                className={cn(
+                  "h-7 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1",
+                  postAsCreator
+                    ? "bg-background text-foreground shadow-2xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Sparkle className="size-3 text-primary" weight="fill" />
+                <span>@{activeCreatorHandle}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Botão de Fechar / Encolher Editor */}
+          <button
+            type="button"
+            onClick={() => {
+              if (!content.trim() || confirm("Descartar rascunho da publicação?")) {
+                setIsExpanded(false);
+              }
+            }}
+            className="size-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
+            title="Fechar editor"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
 
       {/* ── 2. Seletor de Formato Social (Chips Apple HIG) ────────────────── */}
@@ -492,17 +648,19 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
 
       {/* ── 4. Área de Texto do Post ───────────────────────────────────────── */}
       <Textarea
+        ref={textareaRef}
         placeholder={
           selectedTemplate === "travel"
-            ? "Compartilhe dicas do roteiro, fotos do caminho, segredos do destino..."
+            ? "Compartilhe dicas do roteiro, fotos do caminho, segredos do destino... (use ==texto== para destacar)"
             : selectedTemplate === "news"
-            ? "Escreva o resumo da matéria ou fatos principais..."
+            ? "Escreva o resumo da matéria ou fatos principais... (use ==texto== para destacar)"
             : selectedTemplate === "duo_badge"
             ? "Conte sobre este trabalho em parceria ou conexão..."
-            : "O que você gostaria de compartilhar com a comunidade hoje?"
+            : "O que você gostaria de compartilhar com a comunidade hoje? (use ==texto== para destacar ou cole fotos com Ctrl+V)"
         }
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        onPaste={handleClipboardPaste}
         className="min-h-24 text-sm sm:text-base border border-border/40 rounded-2xl bg-muted/20 focus:bg-background focus:border-primary/40 p-3.5 text-foreground transition-all resize-none focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/70"
       />
 
@@ -647,6 +805,17 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             <span>
               {mediaUrls.length > 0 ? `Fotos (${mediaUrls.length}/10)` : "Foto / Vídeo"}
             </span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleInsertHighlight}
+            className="h-11 px-3.5 rounded-xl text-xs font-bold gap-1.5 border-border/60 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer"
+            title="Destacar texto com marca-texto estilo Threads (==texto==)"
+          >
+            <Highlighter className="size-4 text-amber-500" />
+            <span className="hidden sm:inline">Destaque</span>
           </Button>
 
           <Button

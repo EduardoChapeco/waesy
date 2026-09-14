@@ -171,7 +171,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  checkin_date: proposal.travel_start_date || "2026-10-10",
  checkout_date: proposal.travel_end_date || "2026-10-15",
  nights_count: 5,
- amenities: hotel.badges?.length > 0 ? hotel.badges : ["Piscina", "Wi-Fi", "Ar Condicionado"],
+ amenities: (hotel.badges && hotel.badges.length > 0) ? hotel.badges : ["Piscina", "Wi-Fi", "Ar Condicionado"],
  };
 
  const patch: Partial<TravelProposalDTO> = {
@@ -209,9 +209,12 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  const newFlight: FlightSegmentDTO = {
  id: "fl_" + Math.random().toString(36).substring(2, 7),
  type: proposal.flights.length === 0 ? "outbound" : "return",
+ airline: "LATAM Airlines",
  airline_name: "LATAM Airlines",
+ origin: "XAP",
  origin_iata: "XAP",
  origin_city: "Chapecó",
+ destination: "GRU",
  destination_iata: "GRU",
  destination_city: "São Paulo",
  departure_time: "08:30",
@@ -222,11 +225,13 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  onChange({ flights: [...proposal.flights, newFlight] });
  };
 
- const handleRemoveFlight = (id: string) => {
+ const handleRemoveFlight = (id?: string) => {
+ if (!id) return;
  onChange({ flights: proposal.flights.filter((f) => f.id !== id) });
  };
 
- const handleFlightChange = (id: string, field: keyof FlightSegmentDTO, val: any) => {
+ const handleFlightChange = (id: string | undefined, field: keyof FlightSegmentDTO, val: any) => {
+ if (!id) return;
  onChange({
  flights: proposal.flights.map((f) => (f.id === id ? { ...f, [field]: val } : f)),
  });
@@ -248,11 +253,13 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  onChange({ hotels: [...proposal.hotels, newHotel] });
  };
 
- const handleRemoveHotel = (id: string) => {
+ const handleRemoveHotel = (id?: string) => {
+ if (!id) return;
  onChange({ hotels: proposal.hotels.filter((h) => h.id !== id) });
  };
 
- const handleHotelChange = (id: string, field: keyof HotelOptionDTO, val: any) => {
+ const handleHotelChange = (id: string | undefined, field: keyof HotelOptionDTO, val: any) => {
+ if (!id) return;
  onChange({
  hotels: proposal.hotels.map((h) => (h.id === id ? { ...h, [field]: val } : h)),
  });
@@ -270,11 +277,13 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  onChange({ itinerary: [...proposal.itinerary, newDay] });
  };
 
- const handleRemoveItineraryDay = (id: string) => {
+ const handleRemoveItineraryDay = (id?: string) => {
+ if (!id) return;
  onChange({ itinerary: proposal.itinerary.filter((it) => it.id !== id) });
  };
 
- const handleItineraryChange = (id: string, field: keyof ItineraryDayDTO, val: any) => {
+ const handleItineraryChange = (id: string | undefined, field: keyof ItineraryDayDTO, val: any) => {
+ if (!id) return;
  onChange({
  itinerary: proposal.itinerary.map((it) => (it.id === id ? { ...it, [field]: val } : it)),
  });
@@ -658,7 +667,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
 
  <Input
  placeholder="Bagagem (Ex: 1x 10kg + Mochila)"
- value={f.baggage_included || ""}
+ value={typeof f.baggage_included === "boolean" ? (f.baggage_included ? "Inclusa" : "Não inclusa") : (f.baggage_included || "")}
  onChange={(e) => handleFlightChange(f.id, "baggage_included", e.target.value)}
  className="h-8 text-xs rounded-lg"
  />

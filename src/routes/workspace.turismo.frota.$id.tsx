@@ -97,21 +97,10 @@ function VehicleLayoutEditorPage() {
  const router = useRouter();
  const storeId = store?.id || "";
 
- if (!layout) {
- return (
- <div className="p-8 text-center space-y-3">
- <p className="text-sm text-muted-foreground">Modelo de veículo não encontrado.</p>
- <Button asChild variant="outline">
- <Link to={"/workspace/turismo/frota" as any}>Voltar para a Frota</Link>
- </Button>
- </div>
- );
- }
-
- const [name, setName] = useState(layout.name);
- const [rows, setRows] = useState(layout.rows || 12);
- const [cols, setCols] = useState(layout.cols || 5);
- const [isDoubleDecker, setIsDoubleDecker] = useState<boolean>(layout.is_double_decker || false);
+ const [name, setName] = useState(layout?.name || "");
+ const [rows, setRows] = useState(layout?.rows || 12);
+ const [cols, setCols] = useState(layout?.cols || 5);
+ const [isDoubleDecker, setIsDoubleDecker] = useState<boolean>(layout?.is_double_decker || false);
  const [activeDeck, setActiveDeck] = useState<number>(1);
  const [activeTool, setActiveTool] = useState<SeatElementType>("seat");
  const [activeCategory, setActiveCategory] = useState<SeatCategory>("executivo");
@@ -127,11 +116,35 @@ function VehicleLayoutEditorPage() {
  const [presetModalOpen, setPresetModalOpen] = useState(false);
 
  // Mapa de assentos
- const [seatMap, setSeatMap] = useState<SeatCell[]>(layout.seat_map || []);
+ const [seatMap, setSeatMap] = useState<SeatCell[]>(layout?.seat_map || []);
 
  // Pilha de Histórico para Undo/Redo
- const [history, setHistory] = useState<SeatCell[][]>([layout.seat_map || []]);
+ const [history, setHistory] = useState<SeatCell[][]>([layout?.seat_map || []]);
  const [historyIndex, setHistoryIndex] = useState(0);
+
+ // Contagem de poltronas
+ const totalSeats = useMemo(() => {
+ return seatMap.filter((c) => c.type === "seat").length;
+ }, [seatMap]);
+
+ const deck1SeatsCount = useMemo(() => {
+ return seatMap.filter((c) => c.type === "seat" && c.deck === 1).length;
+ }, [seatMap]);
+
+ const deck2SeatsCount = useMemo(() => {
+ return seatMap.filter((c) => c.type === "seat" && c.deck === 2).length;
+ }, [seatMap]);
+
+ if (!layout) {
+ return (
+ <div className="p-8 text-center space-y-3">
+ <p className="text-sm text-muted-foreground">Modelo de veículo não encontrado.</p>
+ <Button asChild variant="outline">
+ <Link to={"/workspace/turismo/frota" as any}>Voltar para a Frota</Link>
+ </Button>
+ </div>
+ );
+ }
 
  const pushHistory = (newMap: SeatCell[]) => {
  const updatedHistory = history.slice(0, historyIndex + 1);
@@ -155,19 +168,6 @@ function VehicleLayoutEditorPage() {
  setHistoryIndex(historyIndex + 1);
  }
  };
-
- // Contagem de poltronas
- const totalSeats = useMemo(() => {
- return seatMap.filter((c) => c.type === "seat").length;
- }, [seatMap]);
-
- const deck1SeatsCount = useMemo(() => {
- return seatMap.filter((c) => c.type === "seat" && c.deck === 1).length;
- }, [seatMap]);
-
- const deck2SeatsCount = useMemo(() => {
- return seatMap.filter((c) => c.type === "seat" && c.deck === 2).length;
- }, [seatMap]);
 
  // Clicar em uma célula do grid
  const handleCellClick = (r: number, c: number, e: React.MouseEvent) => {
@@ -344,7 +344,7 @@ function VehicleLayoutEditorPage() {
  };
 
  return (
- <div className="w-full space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24 animate-in fade-in duration-200">
+ <div className="w-full space-y-6 animate-in fade-in duration-200">
  {/* ── 1. Top Bar & Ações (Apple HIG Elevado) ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/60">
  <div className="flex items-center gap-3">
@@ -708,7 +708,7 @@ function VehicleLayoutEditorPage() {
 
  {/* ── Sheet de Presets Prontos de Ônibus ── */}
  <Sheet open={presetModalOpen} onOpenChange={setPresetModalOpen}>
- <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto">
+ <SheetContent side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto">
  <div>
  <SheetHeader>
  <SheetTitle className="text-base font-bold">Modelos Prontos de Frota</SheetTitle>

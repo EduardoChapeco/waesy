@@ -524,17 +524,34 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/marketing/vitrine", label: "Vitrine Visual (Builder)", icon: LayoutGrid },
+    { path: "/workspace/marketing/brand-kit", label: "Brand Kit & Capa da Loja", icon: Palette },
     { path: "/workspace/cms/paginas", label: "Páginas & Landing Pages", icon: FileText },
     { path: "/workspace/cms/bio", label: "Link da Bio & Perfil", icon: Link2 },
     { path: "/workspace/marketing/banners", label: "Banners & Topo", icon: ImageIcon },
     { path: "/workspace/marketing/encartes", label: "Encartes & Tabloides", icon: Flame },
-    { path: "/workspace/marketing/hotpages", label: "Páginas de Destaque (Hotpages)", icon: Layers },
+    { path: "/workspace/marketing/carrinhos", label: "Carrinhos Abandonados", icon: ShoppingCart },
     { path: "/workspace/marketing/promocoes", label: "Promoções & Cupons", icon: Flame },
     { path: "/workspace/marketing/concursos", label: "Sorteios da Loja", icon: Ticket },
     { path: "/workspace/marketing/fidelidade", label: "Programa de Fidelidade", icon: Award },
     { path: "/workspace/marketing/gift-cards", label: "Vales-Presente", icon: Gift },
-    { path: "/workspace/cms/stories", label: "Stories & Mídia", icon: ImageIcon },
+    { path: "/workspace/marketing/pixels", label: "Pixels & Telemetria", icon: Target },
     { path: "/workspace/marketing/anuncios", label: "Campanhas de Anúncios", icon: Megaphone },
+  ],
+};
+
+const GROUP_LOGISTICS_EXPEDITION: NavGroup = {
+  id: "logistics-expedition",
+  label: "Logística & Expedição",
+  icon: Truck,
+  section: "corporate",
+  items: [
+    { path: "/workspace/pedidos/expedicao", label: "Expedição WMS & Picking", icon: Package },
+    { path: "/workspace/pedidos/frota", label: "Despacho & Rotas", icon: Truck },
+    { path: "/workspace/pedidos/entregadores", label: "Entregadores & Motoboys", icon: Users },
+    { path: "/workspace/pedidos/trocas", label: "Trocas & Devoluções", icon: ArrowRightLeft },
+    { path: "/workspace/logistica/pudo", label: "Pontos PUDO & Lockers", icon: MapPin },
+    { path: "/workspace/logistica/tabelas", label: "Tabelas de Frete", icon: Navigation },
+    { path: "/workspace/logistica/faturas", label: "Faturas de Frete & CT-e", icon: Receipt },
   ],
 };
 
@@ -546,8 +563,22 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
   items: [
     { path: "/workspace/financeiro/caixa", label: "Fluxo de Caixa", icon: Banknote },
     { path: "/workspace/financeiro/pagamentos", label: "Pagamentos & Repasses", icon: DollarSign },
-    { path: "/workspace/financeiro/recebiveis", label: "Recebíveis & Carnês", icon: Receipt },
+    { path: "/workspace/financeiro/recebiveis", label: "Recebíveis, Carnês & Malas", icon: Receipt },
+    { path: "/workspace/financeiro/relatorios-canal", label: "DRE & Canais de Venda", icon: FileSpreadsheet },
+    { path: "/workspace/financeiro/afiliados", label: "Comissões de Afiliados", icon: Coins },
     { path: "/workspace/financeiro/funcionarios", label: "Folha & Salários", icon: Users },
+  ],
+};
+
+const GROUP_FISCAL_ACCOUNTING: NavGroup = {
+  id: "fiscal-accounting",
+  label: "Fiscal & Contábil",
+  icon: FileText,
+  section: "corporate",
+  items: [
+    { path: "/workspace/fiscal/nfe", label: "Notas Fiscais (NF-e/NFC-e)", icon: Receipt },
+    { path: "/workspace/contador", label: "Portal do Contador", icon: FileSpreadsheet },
+    { path: "/workspace/contratos", label: "Contratos Digitais", icon: FileText },
   ],
 };
 
@@ -558,6 +589,7 @@ const GROUP_TEAM_RH: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/configuracoes/equipe", label: "Colaboradores & Acessos", icon: Users },
+    { path: "/workspace/rh/ponto", label: "Controle de Ponto & Turnos", icon: Clock },
     { path: "/workspace/financeiro/comissoes", label: "Comissões & Metas", icon: Target },
     { path: "/workspace/configuracoes/sessoes", label: "Sessões & Segurança", icon: ShieldCheck },
   ],
@@ -572,8 +604,10 @@ const GROUP_SETTINGS: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/configuracoes", label: "Dados da Loja", icon: Settings },
+    { path: "/workspace/integracoes/marketplaces", label: "Hub de Marketplaces & Canais", icon: Globe },
     { path: "/workspace/configuracoes/inteligencia-artificial", label: "Inteligência Artificial (IAs)", icon: Bot },
     { path: "/workspace/configuracoes/integracoes", label: "Integrações & Domínios", icon: Link2 },
+    { path: "/workspace/configuracoes/parceiros", label: "Parceiros & Fornecedores", icon: Building2 },
   ],
 };
 
@@ -615,8 +649,10 @@ export function resolveWorkspaceNavigation(
       GROUP_EDUCATION,
       GROUP_WHOLESALE,
       GROUP_AGENTIC_INTELLIGENCE,
-    GROUP_MARKETING_VITRINE,
+      GROUP_MARKETING_VITRINE,
+      GROUP_LOGISTICS_EXPEDITION,
       GROUP_FINANCE_CLEAN,
+      GROUP_FISCAL_ACCOUNTING,
       GROUP_TEAM_RH,
       GROUP_SETTINGS,
     ];
@@ -638,6 +674,7 @@ export function resolveWorkspaceNavigation(
         GROUP_TURISMO_CLIENTS,
         GROUP_TURISMO_MARKETING,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -653,6 +690,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -723,7 +761,9 @@ export function resolveWorkspaceNavigation(
         GROUP_WHOLESALE,
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
+        GROUP_LOGISTICS_EXPEDITION,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -738,6 +778,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -752,6 +793,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -766,6 +808,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -779,7 +822,9 @@ export function resolveWorkspaceNavigation(
         GROUP_SUPERMARKET,
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
+        GROUP_LOGISTICS_EXPEDITION,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -794,6 +839,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -808,6 +854,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -822,6 +869,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -836,6 +884,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -850,6 +899,7 @@ export function resolveWorkspaceNavigation(
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -865,7 +915,9 @@ export function resolveWorkspaceNavigation(
         GROUP_RETAIL_SALES,
         GROUP_COMMERCIAL_SALES,
         GROUP_MARKETING_VITRINE,
+        GROUP_LOGISTICS_EXPEDITION,
         GROUP_FINANCE_CLEAN,
+        GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
         GROUP_SETTINGS,
       ];
@@ -882,13 +934,15 @@ export function resolveWorkspaceNavigation(
     const finalGroups: NavGroup[] = [];
 
     for (const group of rawGroups) {
-      // Sempre preserva Overview, Master Tasks/Inbox, Financeiro, Configurações e Grupos Primários do Nicho Ativo
+      // Sempre preserva Overview, Master Tasks/Inbox, Financeiro, Fiscal, Logística, Configurações e Grupos Primários do Nicho Ativo
       if (
         group.id === "overview" ||
         group.id === "master-tasks" ||
         group.id === "master-inbox" ||
         group.id === "intelligence-squads" ||
         group.id === "finance" ||
+        group.id === "fiscal-accounting" ||
+        group.id === "logistics-expedition" ||
         group.id === "settings" ||
         group.id === "team-rh" ||
         group.id.startsWith("tourism") ||

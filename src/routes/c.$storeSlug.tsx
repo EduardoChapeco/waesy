@@ -14,7 +14,7 @@ import { PortalOrdersRentalsWidget } from "@/components/commerce/dynamic-section
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/c/$storeSlug")({
- head: ({ loaderData }) => ({
+ head: ({ loaderData }: any) => ({
  meta: [
  { title: `Portal do Cliente — ${loaderData?.store?.name || "Minha Empresa"}` },
  { name: "description", content: "Gerencie seus contratos, carnês com PIX, agendamentos e compras." },
@@ -62,6 +62,13 @@ export const Route = createFileRoute("/c/$storeSlug")({
 function CustomerPortalWhitelabelPage() {
   const { store, portalConfig } = ((Route.useLoaderData?.() as any) || {});
 
+  // Estado de autenticação do cliente final (simulação com CPF ou Magic Link real)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [clientCpf, setClientCpf] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [activeTab, setActiveTab] = useState("carnes");
+  const [isLoading, setIsLoading] = useState(false);
+
   if (!store) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center space-y-4">
@@ -73,13 +80,6 @@ function CustomerPortalWhitelabelPage() {
       </div>
     );
   }
-
- // Estado de autenticação do cliente final (simulação com CPF ou Magic Link real)
- const [isAuthenticated, setIsAuthenticated] = useState(false);
- const [clientCpf, setClientCpf] = useState("");
- const [clientEmail, setClientEmail] = useState("");
- const [activeTab, setActiveTab] = useState("carnes");
- const [isLoading, setIsLoading] = useState(false);
 
  const handleLogin = (e: React.FormEvent) => {
  e.preventDefault();

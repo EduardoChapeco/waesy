@@ -51,54 +51,73 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 function Page() {
- const reviews = Route.useLoaderData();
+  const reviews = (Route.useLoaderData() as any[]) || [];
 
- return (
- <section>
- <h2 className="font-semibold text-2xl text-foreground mb-6">Minhas Avaliações</h2>
+  return (
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
+      {/* ── 1. Clean Minimalist Header ── */}
+      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Minhas Avaliações
+          </h1>
+          {reviews.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+              {reviews.length}
+            </Badge>
+          )}
+        </div>
 
- {reviews.length === 0 ? (
- <EmptyState
- title="Nenhuma avaliação"
- action={
- <Button asChild>
- <Link to="/mercado">Explorar produtos</Link>
- </Button>
- }
- />
- ) : (
- <div className="space-y-4">
- {reviews.map((review: any) => (
- <div key={review.id} className=" bg-card p-5">
- <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
- <div>
- {review.productSlug ? (
- <Link
- to="/produto/$slug"
- params={{ slug: review.productSlug }}
- className="text-sm font-medium text-foreground hover:text-primary hover:underline"
- >
- {review.productName}
- </Link>
- ) : (
- <p className="text-sm font-medium text-foreground">{review.productName}</p>
- )}
- <p className="text-xs text-muted-foreground mt-0.5">
- {formatDate(review.createdAt)}
- </p>
- </div>
- <Badge variant={STATUS_VARIANTS[review.status] ?? "secondary"}>
- {STATUS_LABELS[review.status] ?? review.status}
- </Badge>
- </div>
- <StarRating rating={review.rating} />
- {review.comment && (
- <p className="mt-3 text-sm text-muted-foreground">{review.comment}</p>
- )}
- </div>
- ))}
- </div>
- )}
- </section>
- );
+        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+          <Link to="/mercado">Explorar Lojas</Link>
+        </Button>
+      </div>
+
+      {reviews.length === 0 ? (
+        <EmptyState
+          title="Nenhuma avaliação enviada"
+          description="Após receber suas compras, compartilhe sua experiência para orientar a comunidade."
+          action={
+            <Button asChild className="rounded-xl">
+              <Link to="/mercado">Explorar produtos</Link>
+            </Button>
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {reviews.map((review: any) => (
+            <div key={review.id} className="rounded-2xl border border-border/60 bg-card p-5 space-y-3 shadow-2xs">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  {review.productSlug ? (
+                    <Link
+                      to="/produto/$slug"
+                      params={{ slug: review.productSlug }}
+                      className="text-sm font-bold text-foreground hover:text-primary transition-colors truncate block"
+                    >
+                      {review.productName}
+                    </Link>
+                  ) : (
+                    <p className="text-sm font-bold text-foreground truncate">{review.productName}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {formatDate(review.createdAt)}
+                  </p>
+                </div>
+                <Badge variant={STATUS_VARIANTS[review.status] ?? "secondary"} className="text-[10px]">
+                  {STATUS_LABELS[review.status] ?? review.status}
+                </Badge>
+              </div>
+              <StarRating rating={review.rating} />
+              {review.comment && (
+                <p className="text-xs text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-xl border border-border/40">
+                  {review.comment}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

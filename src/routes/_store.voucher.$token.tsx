@@ -26,14 +26,15 @@ export const Route = createFileRoute("/_store/voucher/$token")({
  },
  ],
  }),
- loader: async ({ params }) => {
-   try {
- return { data };
-   } catch (err) {
-     console.error("[loader:_store.voucher.$token] Unhandled loader error:", err);
-     return { data: null };
-   }
- },
+  loader: async ({ params }) => {
+    try {
+      const data = await getPublicVoucherByToken({ data: { token: params.token } });
+      return { data };
+    } catch (err) {
+      console.error("[loader:_store.voucher.$token] Unhandled loader error:", err);
+      return { data: null };
+    }
+  },
  component: PublicTravelVoucherPage,
 });
 

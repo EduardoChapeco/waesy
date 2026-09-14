@@ -152,7 +152,7 @@ function AdminMasterIntegracoesPage() {
   const handleSaveGov = async () => {
     setIsSavingGov(true);
     try {
-      await savePublicApiGovernanceSettings({ data: govSettings });
+      await savePublicApiGovernanceSettings({ data: { settings: govSettings } });
       toast.success("Configurações de governança salvas com sucesso!");
     } catch (err: any) {
       toast.error(err.message || "Erro ao salvar governança.");
@@ -162,15 +162,15 @@ function AdminMasterIntegracoesPage() {
   };
 
   const [isPinging, setIsPinging] = useState(false);
-  const [pingResults, setPingResults] = useState<Record<string, ApiPingResult>>({});
-  const handleRunPingTest = async (service: "osm" | "viacep" | "brasilapi" | "receitaws") => {
+  const [pingResults, setPingResults] = useState<ApiPingResult[]>([]);
+  const handleRunPingTest = async () => {
     setIsPinging(true);
     try {
-      const res = await pingPublicApis({ data: { service } });
-      setPingResults((prev) => ({ ...prev, [service]: res }));
-      toast.success(`Serviço ${service.toUpperCase()} testado: ${res.status}`);
+      const res = await pingPublicApis();
+      setPingResults(res);
+      toast.success("Conectividade dos endpoints testada com sucesso!");
     } catch (err: any) {
-      toast.error(err.message || `Erro ao testar ${service}.`);
+      toast.error(err.message || "Erro ao testar conectividade.");
     } finally {
       setIsPinging(false);
     }
@@ -218,7 +218,7 @@ function AdminMasterIntegracoesPage() {
     if (!sandboxNlp.trim()) return;
     setIsParsingNlp(true);
     try {
-      const res = await parseAddressWithAI({ data: { text: sandboxNlp } });
+      const res = await parseAddressWithAI({ data: { rawText: sandboxNlp } });
       setNlpResult(res);
       toast.success("Endereço decomposto com IA!");
     } catch (err: any) {
@@ -893,7 +893,7 @@ function AdminMasterIntegracoesPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {pingResults.map((ping) => (
+                {pingResults.map((ping: any) => (
                   <div
                     key={ping.id}
                     className="p-3.5 rounded-xl bg-muted/30 border border-border/70 space-y-2"

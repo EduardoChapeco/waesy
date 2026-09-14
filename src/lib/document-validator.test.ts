@@ -8,6 +8,14 @@ import {
   formatCnpj,
   formatCep,
   formatPhone,
+  maskCpfProgressive,
+  maskCnpjProgressive,
+  maskDocumentProgressive,
+  maskPlate,
+  validatePlate,
+  detectCardBrand,
+  maskCreditCardNumber,
+  maskCardExpiry,
 } from "./document-validator";
 
 describe("document-validator", () => {
@@ -116,6 +124,51 @@ describe("document-validator", () => {
     it("formats phone numbers", () => {
       expect(formatPhone("49999998888")).toBe("(49) 99999-8888");
       expect(formatPhone("4933221100")).toBe("(49) 3322-1100");
+    });
+  });
+
+  describe("progressive document masking", () => {
+    it("masks CPF progressively", () => {
+      expect(maskCpfProgressive("5")).toBe("5");
+      expect(maskCpfProgressive("529")).toBe("529");
+      expect(maskCpfProgressive("5299")).toBe("529.9");
+      expect(maskCpfProgressive("52998224725")).toBe("529.982.247-25");
+    });
+
+    it("masks CNPJ progressively", () => {
+      expect(maskCnpjProgressive("12")).toBe("12");
+      expect(maskCnpjProgressive("12345")).toBe("12.345");
+      expect(maskCnpjProgressive("12345678000190")).toBe("12.345.678/0001-90");
+    });
+
+    it("transitions dynamically between CPF and CNPJ", () => {
+      expect(maskDocumentProgressive("52998224725")).toBe("529.982.247-25");
+      // Ao digitar o 12º dígito, deve transicionar para máscara de CNPJ
+      expect(maskDocumentProgressive("123456780001")).toBe("12.345.678/0001");
+      expect(maskDocumentProgressive("12345678000190")).toBe("12.345.678/0001-90");
+    });
+  });
+
+  describe("plates & credit cards", () => {
+    it("validates and masks vehicle plates (traditional and mercosul)", () => {
+      expect(validatePlate("ABC-1234")).toBe(true);
+      expect(validatePlate("ABC1234")).toBe(true);
+      expect(validatePlate("ABC1D23")).toBe(true);
+      expect(validatePlate("INVALID")).toBe(false);
+
+      expect(maskPlate("abc1234")).toBe("ABC-1234");
+      expect(maskPlate("abc1d23")).toBe("ABC1D23");
+    });
+
+    it("detects card brands and formats credit cards", () => {
+      expect(detectCardBrand("4111111111111111")).toBe("visa");
+      expect(detectCardBrand("5123456789012345")).toBe("mastercard");
+      expect(detectCardBrand("6504051234567890")).toBe("elo");
+      expect(detectCardBrand("341234567890123")).toBe("amex");
+      expect(detectCardBrand("6062821234567890")).toBe("hipercard");
+
+      expect(maskCreditCardNumber("4111111111111111")).toBe("4111 1111 1111 1111");
+      expect(maskCardExpiry("1228")).toBe("12/28");
     });
   });
 });

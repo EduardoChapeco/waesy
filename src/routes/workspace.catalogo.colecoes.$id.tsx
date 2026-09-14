@@ -40,46 +40,46 @@ function EditCollectionPage() {
  const navigate = useNavigate();
  const [isSubmitting, setIsSubmitting] = useState(false);
 
- if (!collection) {
- return (
- <div className="p-8 text-center space-y-3">
- <h2 className="text-base font-bold text-foreground">Coleção não encontrada</h2>
- <Button asChild variant="outline" size="sm">
- <Link to="/workspace/catalogo/colecoes">Voltar para Coleções</Link>
- </Button>
- </div>
- );
- }
+  const initialRules = collection?.rules || {};
+  const [collectionType, setCollectionType] = useState<"manual" | "automated">(
+    initialRules.type === "automated" ? "automated" : "manual",
+  );
+  const [minDiscountPercent, setMinDiscountPercent] = useState<number>(
+    initialRules.min_discount_percent ?? 20,
+  );
+  const [onlyInStock, setOnlyInStock] = useState<boolean>(
+    initialRules.only_in_stock ?? true,
+  );
+  const [badgeText, setBadgeText] = useState<string>(
+    initialRules.badge_text || "",
+  );
+  const [coverUrl, setCoverUrl] = useState<string | null>(collection?.cover_url || collection?.image_url || null);
 
- const initialRules = collection.rules || {};
- const [collectionType, setCollectionType] = useState<"manual" | "automated">(
- initialRules.type === "automated" ? "automated" : "manual",
- );
- const [minDiscountPercent, setMinDiscountPercent] = useState<number>(
- initialRules.min_discount_percent ?? 20,
- );
- const [onlyInStock, setOnlyInStock] = useState<boolean>(
- initialRules.only_in_stock ?? true,
- );
- const [badgeText, setBadgeText] = useState<string>(
- initialRules.badge_text || "",
- );
- const [coverUrl, setCoverUrl] = useState<string | null>(collection.cover_url || collection.image_url || null);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      name: collection?.name || "",
+      slug: collection?.slug || "",
+      description: collection?.description || "",
+      status: collection?.status || "active",
+    },
+  });
 
- const {
- register,
- handleSubmit,
- setValue,
- watch,
- formState: { errors },
- } = useForm({
- defaultValues: {
- name: collection.name || "",
- slug: collection.slug || "",
- description: collection.description || "",
- status: collection.status || "active",
- },
- });
+  if (!collection) {
+    return (
+      <div className="p-8 text-center space-y-3">
+        <h2 className="text-base font-bold text-foreground">Coleção não encontrada</h2>
+        <Button asChild variant="outline" size="sm">
+          <Link to="/workspace/catalogo/colecoes">Voltar para Coleções</Link>
+        </Button>
+      </div>
+    );
+  }
 
  const onSubmit = async (values: any) => {
  setIsSubmitting(true);

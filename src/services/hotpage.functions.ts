@@ -15,6 +15,7 @@ export type HotpageModule =
  | "turismo"
  | "empregos"
  | "classificados"
+ | "classifieds"
  | "mobilidade"
  | "gastronomia"
  | "moda"
@@ -32,6 +33,8 @@ export type HotpageModule =
  | "eletronicos"
  | "doacoes"
  | "ofertas"
+ | "feed"
+ | "afiliados"
  | "all";
 
 export const HotpageModuleSchema = z.enum([
@@ -46,6 +49,7 @@ export const HotpageModuleSchema = z.enum([
  "turismo",
  "empregos",
  "classificados",
+ "classifieds",
  "mobilidade",
  "gastronomia",
  "moda",
@@ -63,6 +67,8 @@ export const HotpageModuleSchema = z.enum([
  "eletronicos",
  "doacoes",
  "ofertas",
+ "feed",
+ "afiliados",
  "all",
 ]);
 

@@ -639,7 +639,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  </header>
 
         <main id="workspace-main-content" className="flex-1 w-full overflow-y-auto no-scrollbar">
-          <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
+          <div className="w-full max-w-7xl mx-auto px-[1px] sm:px-6 lg:px-8 py-2 sm:py-6 pb-24">
             {children}
           </div>
         </main>

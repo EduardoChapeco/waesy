@@ -59,13 +59,13 @@ function ColaboradorPortalPage() {
 
   const { data: timeEntries = [] } = useQuery({
     queryKey: ["my-time-entries", employeeId],
-    queryFn: () => listEmployeeTimeEntries({ params: { employeeId } }),
+    queryFn: () => listEmployeeTimeEntries({ data: { employeeId } }),
     enabled: !!employeeId,
   });
 
   const { data: payslips = [] } = useQuery({
     queryKey: ["my-payslips", employeeId],
-    queryFn: () => listEmployeePayslips({ params: { employeeId } }),
+    queryFn: () => listEmployeePayslips({ data: { employeeId } }),
     enabled: !!employeeId,
   });
 
@@ -84,9 +84,9 @@ function ColaboradorPortalPage() {
       recordTimeClock({
         data: {
           employeeId,
-          entryType,
+          entryType: entryType as any,
           source: "mobile_pwa",
-          geolocation: geoCoords || {},
+          geolocation: geoCoords ? { latitude: geoCoords.lat, longitude: geoCoords.lng } : undefined,
         },
       }),
     onSuccess: (_, entryType) => {
@@ -103,7 +103,7 @@ function ColaboradorPortalPage() {
       createEmployeeRequest({
         data: {
           employeeId,
-          requestType,
+          requestType: requestType as any,
           title: requestTitle,
           description: requestDesc,
           amountCents: requestAmount ? Math.round(parseFloat(requestAmount) * 100) : undefined,

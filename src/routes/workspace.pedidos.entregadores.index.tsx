@@ -102,13 +102,13 @@ function CouriersListPage() {
     staleTime: 60_000,
   });
 
-  const courierList = couriers || [];
+  const courierList: any[] = couriers || [];
 
   // Contadores para as Tabs Canônicas
-  const availableCount = courierList.filter((c) => c.status === "available").length;
-  const onRouteCount = courierList.filter((c) => c.status === "on_route").length;
-  const offlineCount = courierList.filter((c) => c.status === "offline").length;
-  const suspendedCount = courierList.filter((c) => c.status === "suspended").length;
+  const availableCount = courierList.filter((c: any) => c.status === "available").length;
+  const onRouteCount = courierList.filter((c: any) => c.status === "on_route").length;
+  const offlineCount = courierList.filter((c: any) => c.status === "offline").length;
+  const suspendedCount = courierList.filter((c: any) => c.status === "suspended").length;
 
   const tabs: WorkspaceToolbarTab[] = [
     { id: "all", label: "Todos", count: courierList.length },
@@ -120,7 +120,7 @@ function CouriersListPage() {
 
   // Filtro integrado
   const filteredCouriers = useMemo(() => {
-    return courierList.filter((c) => {
+    return courierList.filter((c: any) => {
       if (activeTab !== "all" && c.status !== activeTab) return false;
       if (search.trim()) {
         const q = search.toLowerCase();
@@ -165,7 +165,7 @@ function CouriersListPage() {
   });
 
   // Métricas do Dashboard de Frota
-  const totalDefaultFees = courierList.reduce((acc, c) => acc + (c.default_fee_cents || 0), 0);
+  const totalDefaultFees = courierList.reduce((acc: number, c: any) => acc + (c.default_fee_cents || 0), 0);
   const avgFeeCents = courierList.length > 0 ? Math.round(totalDefaultFees / courierList.length) : 0;
 
   const dashboardMetrics: MetricCardItem[] = [
@@ -273,7 +273,7 @@ function CouriersListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {filteredCouriers.map((courier) => {
+                {filteredCouriers.map((courier: any) => {
                   const VehicleIcon = VEHICLE_ICONS[courier.vehicle_type] ?? Bike;
                   const isSuspended = courier.status === "suspended";
 

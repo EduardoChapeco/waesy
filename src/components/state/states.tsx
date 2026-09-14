@@ -18,6 +18,7 @@ interface StateShellProps {
  action?: ReactNode;
  className?: string;
  tone?: "neutral" | "brand" | "destructive" | "info" | "warning";
+ minimal?: boolean;
 }
 
 const toneClasses: Record<NonNullable<StateShellProps["tone"]>, string> = {
@@ -35,11 +36,13 @@ function StateShell({
  action,
  className,
  tone = "neutral",
+ minimal = false,
 }: StateShellProps) {
  return (
  <div
  className={cn(
- "flex flex-col items-center justify-center rounded-xl bg-card px-6 py-12 text-center",
+ "flex flex-col items-center justify-center text-center",
+ minimal ? "bg-transparent py-8 px-4" : "rounded-xl bg-card px-6 py-12",
  className,
  )}
  role="status"
@@ -56,8 +59,8 @@ function StateShell({
  );
 }
 
-export function EmptyState(props: Omit<StateShellProps, "icon" | "tone">) {
- return <StateShell icon={Inbox} tone="neutral" {...props} />;
+export function EmptyState(props: Omit<StateShellProps, "icon" | "tone"> & { minimal?: boolean }) {
+ return <StateShell icon={Inbox} tone="neutral" minimal={props.minimal ?? true} {...props} />;
 }
 
 export function ErrorState({

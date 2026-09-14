@@ -14,6 +14,7 @@ export interface DynamicMediaChipProps {
  slug?: string;
  label: string;
  to?: string;
+ href?: string;
  search?: Record<string, any>;
  onClick?: () => void;
  icon?: React.ElementType;
@@ -26,9 +27,11 @@ export interface DynamicMediaChipProps {
  // Propriedades Visuais de Mídia e Textura
  bg_media_type?: "none" | "image" | "video" | "gif" | null;
  bg_media_url?: string | null;
+ mediaUrl?: string | null;
  bg_color?: string | null;
  bg_overlay_opacity?: number | null; // 0 to 100
  bg_texture?: MediaChipTexture | null;
+ texture?: MediaChipTexture | null;
 
  size?: "sm" | "md" | "lg";
  className?: string;
@@ -39,7 +42,8 @@ export function DynamicMediaChip({
  id,
  slug,
  label,
- to,
+ to: toProp,
+ href,
  search,
  onClick,
  icon: IconComponent = SquaresFour,
@@ -48,15 +52,22 @@ export function DynamicMediaChip({
  badge,
  count,
  isActive = false,
- bg_media_type = "none",
- bg_media_url,
+ bg_media_type: mediaTypeProp = "none",
+ bg_media_url: mediaUrlProp,
+ mediaUrl,
  bg_color,
  bg_overlay_opacity = 35,
- bg_texture = "none",
+ bg_texture: textureProp = "none",
+ texture,
  size = "md",
  className = "",
  ariaLabel,
 }: DynamicMediaChipProps) {
+ const to = toProp || href;
+ const resolvedMediaUrl = mediaUrlProp || mediaUrl;
+ const bg_media_type = (mediaTypeProp && mediaTypeProp !== "none") ? mediaTypeProp : (resolvedMediaUrl ? "image" : "none");
+ const bg_media_url = resolvedMediaUrl;
+ const bg_texture = textureProp !== "none" ? textureProp : (texture || "none");
  const hasMedia = Boolean(bg_media_type && bg_media_type !== "none" && bg_media_url);
  const isVideo = bg_media_type === "video" && Boolean(bg_media_url);
  const overlayOpacity = Math.max(0, Math.min(100, bg_overlay_opacity ?? 35)) / 100;
@@ -141,7 +152,7 @@ export function DynamicMediaChip({
  <div
  className={`relative ${iconSizes} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 ${
  hasMedia
- ? "text-white drop-"
+ ? "text-white drop-shadow-sm"
  : isActive
  ? "text-background"
  : "text-foreground"
@@ -151,7 +162,7 @@ export function DynamicMediaChip({
  <img
  src={icon_url}
  alt={label}
- className="size-full object-contain drop-"
+ className="size-full object-contain drop-shadow-sm"
  loading="lazy"
  onError={(e) => {
  (e.currentTarget as HTMLElement).style.display = "none";
@@ -171,7 +182,7 @@ export function DynamicMediaChip({
  <span
  className={`font-bold truncate tracking-tight transition-colors min-w-0 ${
  hasMedia
- ? "text-white drop- group-hover:text-amber-200"
+ ? "text-white drop-shadow-sm group-hover:text-amber-200"
  : isActive
  ? "text-background"
  : "text-foreground"

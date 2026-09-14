@@ -4,7 +4,7 @@
 
 export type SocialClass = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | 'D_E';
 export type RegionBrazil = 'Sudeste' | 'Sul' | 'Nordeste' | 'Centro-Oeste' | 'Norte';
-export type LocationType = 'capital_metropole' | 'interior_polo' | 'rural';
+export type LocationType = 'capital_metropole' | 'interior_polo' | 'interior_medio' | 'rural';
 export type ExperimentStatus = 'queued' | 'simulating' | 'synthesizing' | 'completed' | 'failed';
 export type VerdictStatus = 'aprovado_para_veiculacao' | 'revisar_com_ajustes' | 'bloqueado_por_alto_risco';
 export type System1Emotion = 'desejo' | 'desconfianca' | 'tedio' | 'entusiasmo' | 'inseguranca';
@@ -138,18 +138,22 @@ export interface SimLabExperiment {
 }
 
 export interface SimLabPersonaResponse {
- id: string;
- experiment_id: string;
- archetype_id: string;
- archetype?: SyntheticArchetype;
- interest_score: number; // 0 a 10
- purchase_intent_percent: number; // 0 a 100%
- primary_hook_detected?: string | null;
- primary_barrier_objection: string;
- verbatim_reaction: string;
- system_1_emotion: System1Emotion;
- price_perception: PricePerception;
- simulated_at: string;
+  id: string;
+  experiment_id: string;
+  archetype_id: string;
+  persona_id?: string;
+  archetype?: SyntheticArchetype;
+  interest_score: number; // 0 a 10
+  purchase_intent_percent: number; // 0 a 100%
+  choice_probability_percent?: number;
+  primary_hook_detected?: string | null;
+  primary_barrier_objection: string;
+  primary_objection?: string;
+  verbatim_reaction: string;
+  natural_speech_verbatim?: string;
+  system_1_emotion: System1Emotion;
+  price_perception: PricePerception;
+  simulated_at: string;
 }
 
 export interface ScientificReviewerVerdict {

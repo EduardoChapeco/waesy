@@ -108,7 +108,7 @@ export function SevenSinsCanvasPage() {
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── HEADER EXECUTIVO COM SELO SILENCIOSO APPLE HIG ── */}
       <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export function SevenSinsCanvasPage() {
 
       {/* ── FEEDBACK TOAST ── */}
       {feedback && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-4">
           <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-medium text-primary flex items-center justify-between">
             <span>{feedback}</span>
             <button
@@ -159,7 +159,7 @@ export function SevenSinsCanvasPage() {
       )}
 
       {/* ── SELETOR DE PECADOS (GRADE DOS 7 GATILHOS) ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           1. Escolha a Alavanca Subconsciente (O Pecado Capital)
         </h2>
@@ -203,7 +203,7 @@ export function SevenSinsCanvasPage() {
       </div>
 
       {/* ── FORMULÁRIO DE PRODUTO & CANAL ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
         <div className="p-4 rounded-2xl bg-card border border-border/50 shadow-xs flex flex-col sm:flex-row items-center gap-4">
           <div className="w-full sm:flex-1">
             <label className="text-[11px] font-semibold text-muted-foreground block mb-1 uppercase tracking-wider">
@@ -237,7 +237,7 @@ export function SevenSinsCanvasPage() {
       </div>
 
       {/* ── SEÇÃO DA COPY GERADA & SIMLAB V2 ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Coluna Esquerda: A Peça de Copy Pronta */}
           <div className="lg:col-span-6 space-y-6">
@@ -361,7 +361,7 @@ export function SevenSinsCanvasPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <img
-                          src={p.avatar_url}
+                          src={p.avatar_url || undefined}
                           alt={p.name}
                           className="w-10 h-10 rounded-full object-cover border border-border/40"
                         />

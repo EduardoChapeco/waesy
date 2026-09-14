@@ -36,7 +36,7 @@ export function GuidedSectionPicker({
  activeCategory === "all" ? getAllTemplates() : getTemplatesByCategory(activeCategory);
 
  const filteredTemplates = templates.filter(
- (t) =>
+ (t: any) =>
  t.name.toLowerCase().includes(search.toLowerCase()) ||
  t.description.toLowerCase().includes(search.toLowerCase()),
  );
@@ -114,7 +114,7 @@ export function GuidedSectionPicker({
  </div>
  ) : (
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pb-8">
- {filteredTemplates.map((template) => (
+ {filteredTemplates.map((template: any) => (
  <div
  key={template.id}
  onClick={() => {

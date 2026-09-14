@@ -25,28 +25,37 @@ export interface SelectedModifier {
 }
 
 export interface ProductModifiersModalProps {
- open: boolean;
- onOpenChange: (open: boolean) => void;
- product: any;
- variant: any;
- store?: any;
- onConfirm: (
- product: any,
- variant: any,
- selectedModifiers: SelectedModifier[],
- notes?: string,
- ) => void;
+  open?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
+  product: any;
+  variant?: any;
+  store?: any;
+  onConfirm: (
+    product: any,
+    variant: any,
+    selectedModifiers: SelectedModifier[],
+    notes?: string,
+  ) => void | Promise<void>;
 }
 
 export function ProductModifiersModal({
- open,
- onOpenChange,
- product,
- variant,
- store,
- onConfirm,
+  open: openProp,
+  isOpen,
+  onOpenChange,
+  onClose,
+  product,
+  variant,
+  store,
+  onConfirm,
 }: ProductModifiersModalProps) {
- const [selectedModifiers, setSelectedModifiers] = useState<SelectedModifier[]>([]);
+  const open = openProp ?? isOpen ?? false;
+  const setOpen = (val: boolean) => {
+    onOpenChange?.(val);
+    if (!val) onClose?.();
+  };
+  const [selectedModifiers, setSelectedModifiers] = useState<SelectedModifier[]>([]);
  const [notes, setNotes] = useState("");
 
  const semantics = useMemo(
@@ -131,13 +140,13 @@ export function ProductModifiersModal({
  const handleConfirm = () => {
  if (!isValid) return;
  onConfirm(product, variant, selectedModifiers, notes.trim() || undefined);
- onOpenChange(false);
+ setOpen(false);
  };
 
  if (!product) return null;
 
  return (
- <Sheet open={open} onOpenChange={onOpenChange}>
+ <Sheet open={open} onOpenChange={setOpen}>
  <SheetContent
  side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-xl w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-hidden bg-card flex flex-col"
  >
@@ -269,7 +278,7 @@ export function ProductModifiersModal({
  type="button"
  variant="ghost"
  size="sm"
- onClick={() => onOpenChange(false)}
+ onClick={() => setOpen(false)}
  className="rounded-xl text-xs"
  >
  Cancelar

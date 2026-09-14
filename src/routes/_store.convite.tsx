@@ -166,7 +166,7 @@ function ConvitePage() {
     : TIER_LABELS.starter;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-10 pb-24 px-4 sm:px-6 pt-4">
+    <div className="w-full max-w-5xl mx-auto space-y-10 pb-24 px-0 sm:px-4 md:px-0 pt-4">
       {/* ── 1. HERO & PAINEL DO MEMBRO FUNDADOR / EMBAIXADOR ── */}
       {overview ? (
         <section className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-sm relative overflow-hidden">

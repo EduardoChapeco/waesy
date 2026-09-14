@@ -41,9 +41,9 @@ export const Route = createFileRoute("/admin-master/portal-completo")({
     try {
       const [content, waitlist] = await Promise.all([
         getPortalCompletoContent().catch(() => null),
-        listWorkspaceWaitlist().catch(() => ({ waitlist: [] })),
+        listWorkspaceWaitlist().catch(() => []),
       ]);
-      return { content, waitlist: waitlist?.waitlist || [] };
+      return { content, waitlist: waitlist || [] };
     } catch (err) {
       console.error("[admin-master.portal-completo] Loader error:", err);
       return { content: null, waitlist: [] };
@@ -62,27 +62,31 @@ function AdminMasterPortalCompletoPage() {
   const { data: waitlistData, refetch: refetchWaitlist } = useQuery({
     queryKey: ["admin-workspace-waitlist"],
     queryFn: () => listWorkspaceWaitlist(),
-    initialData: { waitlist: initialWaitlist },
+    initialData: initialWaitlist || [],
   });
 
-  const waitlist = waitlistData?.waitlist || [];
+  const waitlist = (Array.isArray(waitlistData) ? waitlistData : (waitlistData as any)?.waitlist) || [];
 
   // Content CMS States
-  const [title, setTitle] = useState(initialContent?.title || "O Próximo Salto de Gestão para a Sua Empresa");
+  const [title, setTitle] = useState(initialContent?.hero_title || initialContent?.title || "O Próximo Salto de Gestão para a Sua Empresa");
   const [subtitle, setSubtitle] = useState(
-    initialContent?.subtitle ||
+    initialContent?.hero_subtitle || initialContent?.subtitle ||
       "Descubra os módulos avançados de PDV, estoque com grade, gestão de entregas e turismo receptivo."
   );
-  const [demoVideoUrl, setDemoVideoUrl] = useState(initialContent?.demoVideoUrl || "");
+  const [demoVideoUrl, setDemoVideoUrl] = useState(initialContent?.video_url || initialContent?.demoVideoUrl || "");
   const [isSavingContent, setIsSavingContent] = useState(false);
   const [migratingId, setMigratingId] = useState<string | null>(null);
 
   // Migrar empresa em 1-clique
   const handleMigrate = async (waitlistId: string, storeId?: string) => {
+    if (!storeId) {
+      toast.error("Identificador de loja inexistente.");
+      return;
+    }
     setMigratingId(waitlistId);
     try {
       await migrateCompanyToFullWorkspace({
-        data: { waitlistId, storeId: storeId || undefined },
+        data: { waitlistId, storeId },
       });
       toast.success("Empresa migrada para o Workspace Pro com sucesso!");
       refetchWaitlist();
@@ -100,9 +104,7 @@ function AdminMasterPortalCompletoPage() {
     try {
       await updatePortalCompletoContent({
         data: {
-          title: title.trim(),
-          subtitle: subtitle.trim(),
-          demoVideoUrl: demoVideoUrl.trim() || undefined,
+          hero_title: title.trim(), hero_subtitle: subtitle.trim(), video_url: demoVideoUrl.trim() || null,
         },
       });
       toast.success("Conteúdo da Landing Page atualizado com sucesso!");

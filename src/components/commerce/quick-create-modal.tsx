@@ -4,7 +4,6 @@ import {
  Tag,
  Camera,
  Briefcase,
- Car,
  Plus,
  Store,
  X,
@@ -127,17 +126,6 @@ export function QuickCreateModal({
  onClick: () =>
  handleProtectedNavigate("/criar-negocio", "cadastrar uma nova loja ou empresa"),
  requiresAuth: true,
- },
- {
- id: "mobilidade",
- title: "Solicitar Corrida ou Frete",
- subtitle: "Chame carro, moto, entrega expressa ou mudança no mapa interativo.",
- icon: Car,
- iconBg: "bg-info/10",
- iconColor: "text-info",
- borderHover: "hover:border-info/50",
- badges: ["Carro & Moto", "Entregas"],
- to: "/mobilidade",
  },
  {
  id: "empregos",

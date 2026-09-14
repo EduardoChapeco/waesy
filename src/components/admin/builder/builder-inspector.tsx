@@ -77,6 +77,23 @@ export function BuilderInspector({
  treeNodes = [],
  pages = [],
 }: BuilderInspectorProps) {
+ const content = selectedNode?.content || {};
+ const layout = selectedNode?.layout_rules || {};
+ const design = selectedNode?.design_tokens || {};
+ const dataBindings = selectedNode?.data_bindings || {};
+
+ const ancestors = React.useMemo(() => {
+ if (!selectedNode?.id || !treeNodes) return [];
+ return findAncestors(selectedNode.id, treeNodes) || [selectedNode];
+ }, [selectedNode?.id, treeNodes]);
+
+ const primaryContentChild = React.useMemo(() => {
+ if (!selectedNode || (selectedNode.node_type !== "section" && selectedNode.node_type !== "container")) {
+ return null;
+ }
+ return findPrimaryContentChild(selectedNode);
+ }, [selectedNode]);
+
  if (!selectedNode || !blockManifest) {
  return (
  <aside className="w-80 bg-card border-l border-border/80 flex flex-col flex-none overflow-hidden select-none z-20 shadow-2xs">
@@ -94,23 +111,6 @@ export function BuilderInspector({
  </aside>
  );
  }
-
- const content = selectedNode.content || {};
- const layout = selectedNode.layout_rules || {};
- const design = selectedNode.design_tokens || {};
- const dataBindings = selectedNode.data_bindings || {};
-
- const ancestors = React.useMemo(() => {
- if (!selectedNode?.id || !treeNodes) return [];
- return findAncestors(selectedNode.id, treeNodes) || [selectedNode];
- }, [selectedNode?.id, treeNodes]);
-
- const primaryContentChild = React.useMemo(() => {
- if (!selectedNode || (selectedNode.node_type !== "section" && selectedNode.node_type !== "container")) {
- return null;
- }
- return findPrimaryContentChild(selectedNode);
- }, [selectedNode]);
 
  const childManifest = primaryContentChild
  ? (builderRegistry as any)[primaryContentChild.block_type]
@@ -870,12 +870,7 @@ export function BuilderInspector({
  value={(selectedNode.design_tokens as any)?.animation?.trigger || "fade_up"}
  onValueChange={(val) => {
  const currAnim = (selectedNode.design_tokens as any)?.animation || {};
- updateNode(selectedNode.id, {
- design_tokens: {
- ...(selectedNode.design_tokens || {}),
- animation: { ...currAnim, trigger: val },
- },
- });
+ updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, trigger: val });
  }}
  >
  <SelectTrigger className="h-9 text-xs rounded-xl bg-background">
@@ -909,12 +904,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => {
  const currAnim = (selectedNode.design_tokens as any)?.animation || {};
- updateNode(selectedNode.id, {
- design_tokens: {
- ...(selectedNode.design_tokens || {}),
- animation: { ...currAnim, speed: speed.id },
- },
- });
+ updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, speed: speed.id });
  }}
  className={cn(
  "py-2 px-2 rounded-xl text-[11px] font-semibold border transition-all",
@@ -947,12 +937,7 @@ export function BuilderInspector({
  type="button"
  onClick={() => {
  const currAnim = (selectedNode.design_tokens as any)?.animation || {};
- updateNode(selectedNode.id, {
- design_tokens: {
- ...(selectedNode.design_tokens || {}),
- animation: { ...currAnim, hover: hov.id },
- },
- });
+ updateNode(selectedNode.id, "design_tokens", "animation", { ...currAnim, hover: hov.id });
  }}
  className={cn(
  "py-2 px-3 rounded-xl text-xs font-semibold border text-left transition-all",

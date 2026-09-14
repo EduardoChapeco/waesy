@@ -47,26 +47,27 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
     let isMounted = true;
     let cleanupResize: (() => void) | undefined;
 
-    import("maplibre-gl").then((maplibreglModule) => {
+    import("maplibre-gl").then((maplibreglModule: any) => {
       if (!isMounted || !mapContainer.current || map.current) return;
-      const maplibregl = maplibreglModule.default || maplibreglModule;
+      const maplibregl: any = maplibreglModule.default || maplibreglModule;
 
       const stored = typeof window !== "undefined" ? getStoredLocation() : null;
       const initialLat = value?.lat || stored?.lat || -27.1004;
       const initialLng = value?.lng || stored?.lng || -52.6152;
 
-      map.current = new maplibregl.Map({
+      const mapInstance = new maplibregl.Map({
         container: mapContainer.current,
         style: getCanonicalMapStyle(),
         center: [initialLng, initialLat],
         zoom: value?.lat ? 15 : 12,
         attributionControl: false,
       });
+      map.current = mapInstance;
 
-      cleanupResize = setupMapResizeObserver(map.current, mapContainer.current);
+      cleanupResize = setupMapResizeObserver(mapInstance, mapContainer.current);
 
-      map.current.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
-      map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+      mapInstance.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
+      mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
       // Custom high-contrast marker element
       const markerEl = document.createElement("div");
@@ -80,13 +81,14 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
         </div>
       `;
 
-      marker.current = new maplibregl.Marker({ element: markerEl, draggable: true })
+      const markerInstance = new maplibregl.Marker({ element: markerEl, draggable: true })
         .setLngLat([initialLng, initialLat])
-        .addTo(map.current);
+        .addTo(mapInstance);
+      marker.current = markerInstance;
 
       // Ao arrastar o pino, aciona reverse geocoding
-      marker.current.on("dragend", async () => {
-        const lngLat = marker.current?.getLngLat();
+      markerInstance.on("dragend", async () => {
+        const lngLat = markerInstance.getLngLat();
         if (lngLat) {
           const lat = Number(lngLat.lat.toFixed(6));
           const lng = Number(lngLat.lng.toFixed(6));

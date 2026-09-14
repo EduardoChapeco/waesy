@@ -129,11 +129,11 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
       const storePosts = (postsRes as any)?.items || [];
 
       const isOwner = Boolean(
-        identityRes?.id &&
-        (profile?.owner_id === identityRes.id ||
-         profile?.user_id === identityRes.id ||
-         identityRes.store_id === profile?.id ||
-         identityRes.role === "admin")
+        (identityRes as any)?.id &&
+        ((profile as any)?.owner_id === (identityRes as any).id ||
+         (profile as any)?.user_id === (identityRes as any).id ||
+         (identityRes as any).store_id === profile?.id ||
+         (identityRes as any).role === "admin")
       );
 
       return {
@@ -187,6 +187,7 @@ function StorePerfilPage() {
     sponsors,
     employerStats,
     builderTree,
+    isOwner,
   } = ((Route.useLoaderData?.() as any) || {});
 
   const search = Route.useSearch();

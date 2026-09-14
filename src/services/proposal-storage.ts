@@ -51,20 +51,22 @@ export async function uploadProposalMedia(
 export async function saveUnsplashImageToStorage(
   _agencyId: string,
   _proposalId: string,
-  imageUrl: string,
-  _slot?: string
+  slotOrUrl: string,
+  imageUrl?: string,
+  _itemId?: string
 ): Promise<string> {
-  if (imageUrl.includes("unsplash.com")) {
+  const actualUrl = (imageUrl || slotOrUrl) || "";
+  if (actualUrl.includes("unsplash.com")) {
     try {
-      const urlObj = new URL(imageUrl);
+      const urlObj = new URL(actualUrl);
       urlObj.searchParams.set("auto", "format");
       urlObj.searchParams.set("fit", "crop");
       urlObj.searchParams.set("w", "1600");
       urlObj.searchParams.set("q", "80");
       return urlObj.toString();
     } catch {
-      return imageUrl;
+      return actualUrl;
     }
   }
-  return imageUrl;
+  return actualUrl;
 }

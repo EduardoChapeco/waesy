@@ -128,7 +128,7 @@ function AddressesPage() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-24 px-4 sm:px-6">
+    <div className="w-full max-w-4xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0">
       {/* ── 1. Apple HIG Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-5 pt-2">
         <div className="space-y-1">

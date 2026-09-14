@@ -165,6 +165,98 @@ function WorkspaceTripDetailPage() {
     notes: "",
   });
 
+  const saveLocatorMutation = useMutation({
+    mutationFn: (data: typeof locatorForm) =>
+      saveConfirmationItem({
+        data: {
+          tripId: aggregate?.trip?.id || "",
+          itemType: data.itemType,
+          providerName: data.providerName,
+          locatorCode: data.locatorCode,
+          status: data.status,
+          serviceDate: data.serviceDate || undefined,
+          notes: data.notes || undefined,
+        },
+      }),
+    onSuccess: (res) => {
+      toast.success("Localizador cadastrado com sucesso!");
+      setIsAddLocatorOpen(false);
+      setLocatorForm({
+        itemType: "flight",
+        providerName: "",
+        locatorCode: "",
+        status: "confirmed",
+        serviceDate: "",
+        notes: "",
+      });
+      const newItem: TripConfirmationItemDTO = {
+        id: res.id,
+        trip_id: aggregate?.trip?.id || "",
+        item_type: locatorForm.itemType,
+        provider_name: locatorForm.providerName,
+        locator_code: locatorForm.locatorCode,
+        status: locatorForm.status,
+        service_date: locatorForm.serviceDate || null,
+        notes: locatorForm.notes || null,
+      };
+      setAggregate((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          confirmationItems: [newItem, ...(prev.confirmationItems || [])],
+        };
+      });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao salvar localizador");
+    },
+  });
+
+  const savePassengerMut = useMutation({
+    mutationFn: (data: typeof passengerForm) =>
+      saveTripPassenger({
+        data: {
+          id: data.id,
+          tripId: aggregate?.trip?.id || "",
+          fullName: data.fullName,
+          documentType: data.documentType,
+          document: data.document,
+          documentExpiry: data.documentExpiry || undefined,
+          nationality: data.nationality,
+          birthDate: data.birthDate || undefined,
+          email: data.email || undefined,
+          phone: data.phone || undefined,
+          seatNumber: data.seatNumber || undefined,
+          isLeadPassenger: data.isLeadPassenger,
+          notes: data.notes || undefined,
+        },
+      }),
+    onSuccess: async () => {
+      toast.success("Passageiro salvo com sucesso!");
+      setIsPassengerSheetOpen(false);
+      const updated = await getTripAggregate({ data: { tripId: aggregate?.trip?.id || "" } }).catch(() => null);
+      if (updated) setAggregate(updated);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao salvar passageiro");
+    },
+  });
+
+  const deletePassengerMut = useMutation({
+    mutationFn: (passengerId: string) =>
+      deleteTripPassenger({
+        data: { passengerId },
+      }),
+    onSuccess: async () => {
+      toast.success("Passageiro excluído!");
+      const updated = await getTripAggregate({ data: { tripId: aggregate?.trip?.id || "" } }).catch(() => null);
+      if (updated) setAggregate(updated);
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao excluir passageiro");
+    },
+  });
+
   if (!aggregate || !aggregate.trip) {
     return (
       <div className="py-20 text-center space-y-4">
@@ -223,98 +315,6 @@ function WorkspaceTripDetailPage() {
     }
   };
 
-  const saveLocatorMutation = useMutation({
-    mutationFn: (data: typeof locatorForm) =>
-      saveConfirmationItem({
-        data: {
-          tripId: trip.id,
-          itemType: data.itemType,
-          providerName: data.providerName,
-          locatorCode: data.locatorCode,
-          status: data.status,
-          serviceDate: data.serviceDate || undefined,
-          notes: data.notes || undefined,
-        },
-      }),
-    onSuccess: (res) => {
-      toast.success("Localizador cadastrado com sucesso!");
-      setIsAddLocatorOpen(false);
-      setLocatorForm({
-        itemType: "flight",
-        providerName: "",
-        locatorCode: "",
-        status: "confirmed",
-        serviceDate: "",
-        notes: "",
-      });
-      const newItem: TripConfirmationItemDTO = {
-        id: res.id,
-        trip_id: trip.id,
-        item_type: locatorForm.itemType,
-        provider_name: locatorForm.providerName,
-        locator_code: locatorForm.locatorCode,
-        status: locatorForm.status,
-        service_date: locatorForm.serviceDate || null,
-        notes: locatorForm.notes || null,
-      };
-      setAggregate((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          confirmationItems: [newItem, ...(prev.confirmationItems || [])],
-        };
-      });
-    },
-    onError: (err: any) => {
-      toast.error(err?.message || "Erro ao salvar localizador");
-    },
-  });
-
-  const savePassengerMut = useMutation({
-    mutationFn: (data: typeof passengerForm) =>
-      saveTripPassenger({
-        data: {
-          id: data.id,
-          tripId: trip.id,
-          fullName: data.fullName,
-          documentType: data.documentType,
-          document: data.document,
-          documentExpiry: data.documentExpiry || undefined,
-          nationality: data.nationality,
-          birthDate: data.birthDate || undefined,
-          email: data.email || undefined,
-          phone: data.phone || undefined,
-          seatNumber: data.seatNumber || undefined,
-          isLeadPassenger: data.isLeadPassenger,
-          notes: data.notes || undefined,
-        },
-      }),
-    onSuccess: async () => {
-      toast.success("Passageiro salvo com sucesso!");
-      setIsPassengerSheetOpen(false);
-      const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
-      if (updated) setAggregate(updated);
-    },
-    onError: (err: any) => {
-      toast.error(err?.message || "Erro ao salvar passageiro");
-    },
-  });
-
-  const deletePassengerMut = useMutation({
-    mutationFn: (passengerId: string) =>
-      deleteTripPassenger({
-        data: { passengerId },
-      }),
-    onSuccess: async () => {
-      toast.success("Passageiro excluído!");
-      const updated = await getTripAggregate({ data: { tripId: trip.id } }).catch(() => null);
-      if (updated) setAggregate(updated);
-    },
-    onError: (err: any) => {
-      toast.error(err?.message || "Erro ao excluir passageiro");
-    },
-  });
-
   const openNewPassenger = () => {
     setPassengerForm({
       id: undefined,
@@ -354,7 +354,7 @@ function WorkspaceTripDetailPage() {
   const cleanWhatsapp = (trip.client_whatsapp || "").replace(/\D/g, "");
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. CABEÇALHO DA VIAGEM ── */}
       <div className="flex flex-col gap-4 p-5 rounded-2xl bg-card border border-border/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1192,7 +1192,7 @@ function WorkspaceTripDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 overflow-y-auto"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 overflow-y-auto"
         >
           <SheetHeader className="pb-4 border-b border-border/60">
             <SheetTitle className="text-sm font-bold text-foreground">
@@ -1355,7 +1355,7 @@ function WorkspaceTripDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl lg:max-w-[70vw] xl:max-w-[70vw] p-6"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6"
         >
           <SheetHeader className="pb-4 border-b border-border/60">
             <SheetTitle className="text-sm font-bold text-foreground">

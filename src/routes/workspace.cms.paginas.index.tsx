@@ -198,7 +198,7 @@ function CmsPagesPage() {
   };
 
  return (
- <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full p-4 sm:p-6 pb-20">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  <PageHeader
  eyebrow="CMS"
  title="Páginas"

@@ -778,6 +778,8 @@ export const saveBrandKit = createServerFn({ method: "POST" })
       .eq("store_id", identity.store_id)
       .maybeSingle();
 
+    let brandKitResult: BrandKitDTO;
+
     if (existing?.id) {
       const { data: updated, error } = await supabase
         .from("brand_kits")
@@ -787,7 +789,7 @@ export const saveBrandKit = createServerFn({ method: "POST" })
         .single();
 
       if (error) throw new Error("Erro ao atualizar Brand Kit: " + error.message);
-      return updated as BrandKitDTO;
+      brandKitResult = updated as BrandKitDTO;
     } else {
       const { data: created, error } = await supabase
         .from("brand_kits")
@@ -796,8 +798,39 @@ export const saveBrandKit = createServerFn({ method: "POST" })
         .single();
 
       if (error) throw new Error("Erro ao criar Brand Kit: " + error.message);
-      return created as BrandKitDTO;
+      brandKitResult = created as BrandKitDTO;
     }
+
+    // Sincroniza imediatamente com a tabela stores para refletir na vitrine canônica
+    if (data.logos && typeof data.logos === "object") {
+      const storeUpdates: Record<string, any> = {};
+      if (data.logos.cover_url) {
+        storeUpdates.banner_url = data.logos.cover_url;
+      }
+      if (data.logos.main_url) {
+        storeUpdates.logo_url = data.logos.main_url;
+      }
+
+      const { data: currentStore } = await supabase
+        .from("stores")
+        .select("settings")
+        .eq("id", identity.store_id)
+        .maybeSingle();
+
+      const mergedSettings = {
+        ...(currentStore?.settings || {}),
+        ...(data.logos.cover_url ? { cover_url: data.logos.cover_url, banner_url: data.logos.cover_url } : {}),
+        ...(data.logos.main_url ? { logo_url: data.logos.main_url } : {}),
+      };
+      storeUpdates.settings = mergedSettings;
+
+      await supabase
+        .from("stores")
+        .update(storeUpdates)
+        .eq("id", identity.store_id);
+    }
+
+    return brandKitResult;
   });
 
 /**

@@ -63,6 +63,8 @@ export interface StructuredLocationValue {
   state: string;
   neighborhood: string;
   formatted: string;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 interface CityComboboxProps {

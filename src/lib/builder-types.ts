@@ -139,7 +139,7 @@ export const ExperienceNodeSchema = z.object({
 
 export interface ExperienceNode {
  id: string;
- version_id: string;
+ version_id?: string;
  parent_id?: string | null;
 
  node_type: NodeType;
@@ -191,6 +191,7 @@ export interface InspectorField {
  options?: { label: string; value: string }[];
  defaultValue?: any;
  helpText?: string;
+ placeholder?: string;
  required?: boolean;
  arrayFields?: InspectorField[];
 }

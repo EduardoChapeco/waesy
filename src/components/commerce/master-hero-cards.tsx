@@ -67,12 +67,6 @@ const DEFAULT_HERO_MODULES = [
  title: "Notícias",
  defaultCover: "",
  },
- {
- slug: "mobilidade",
- to: "/mobilidade",
- title: "Mobilidade & MotoLink",
- defaultCover: "",
- },
 ];
 
 // ── 2. Supercategorias de Continuação (Chips que NÃO repetem os módulos do topo) ──

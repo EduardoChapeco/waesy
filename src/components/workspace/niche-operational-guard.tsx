@@ -20,51 +20,57 @@ import { Card } from "@/components/ui/card";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 
 interface NicheOperationalGuardProps {
- targetNiche: string;
- toolTitle: string;
- toolDescription: string;
- store: any;
- children: ReactNode;
+  targetNiche?: string;
+  requiredNiches?: string[];
+  toolTitle?: string;
+  toolDescription?: string;
+  store?: any;
+  children: ReactNode;
 }
 
 export function NicheOperationalGuard({
- targetNiche,
- toolTitle,
- toolDescription,
- store,
- children,
+  targetNiche,
+  requiredNiches,
+  toolTitle = "Módulo Especializado",
+  toolDescription = "Esta ferramenta foi customizada para nichos operacionais específicos.",
+  store,
+  children,
 }: NicheOperationalGuardProps) {
- const [dismissed, setDismissed] = useState(false);
- const semantics = getNicheSemantics(store);
+  const [dismissed, setDismissed] = useState(false);
+  const semantics = getNicheSemantics(store);
 
- // Se o nicho da loja for o mesmo do alvo, libera o acesso direto
- if (semantics.nicheId === targetNiche || dismissed) {
- if (dismissed && semantics.nicheId !== targetNiche) {
- return (
- <div className="space-y-4">
- <div className="p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3">
- <div className="flex items-center gap-2">
- <ShieldAlert className="size-4 shrink-0" />
- <span>
- Você está visualizando uma ferramenta projetada para o segmento{" "}
- <strong>{targetNiche === "gastronomy" ? "Gastronomia & Restaurantes" : targetNiche}</strong>.
- </span>
- </div>
- <Button
- variant="ghost"
- size="sm"
- onClick={() => setDismissed(false)}
- className="h-7 text-xs font-bold px-2 rounded-xl"
- >
- Restaurar Guarda
- </Button>
- </div>
- {children}
- </div>
- );
- }
- return <>{children}</>;
- }
+  const effectiveNiches = requiredNiches && requiredNiches.length > 0
+    ? requiredNiches
+    : targetNiche ? [targetNiche] : [];
+
+  // Se o nicho da loja for o mesmo do alvo ou nenhum nicho específico exigido, libera o acesso direto
+  if (effectiveNiches.length === 0 || effectiveNiches.includes(semantics.nicheId) || dismissed) {
+    if (dismissed && effectiveNiches.length > 0 && !effectiveNiches.includes(semantics.nicheId)) {
+      return (
+        <div className="space-y-4">
+          <div className="p-3 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="size-4 shrink-0" />
+              <span>
+                Você está visualizando uma ferramenta projetada para o segmento{" "}
+                <strong>{effectiveNiches.join(", ")}</strong>.
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDismissed(false)}
+              className="h-7 text-xs px-2 hover:bg-amber-500/20"
+            >
+              Reativar proteção
+            </Button>
+          </div>
+          {children}
+        </div>
+      );
+    }
+    return <>{children}</>;
+  }
 
  // Gera sugestões de ferramentas adequadas para o nicho real da loja
  const getSuggestions = () => {

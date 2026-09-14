@@ -5,7 +5,7 @@ import { InlinePostComposer } from "@/components/community/inline-post-composer"
 import { PostCard } from "@/components/community/post-card";
 import { getMuralFeed, type MuralFeedResponse } from "@/services/social.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import { MessageSquare, Loader2, Users, Compass, Airplane, Image as ImageIcon } from "lucide-react";
+import { MessageSquare, Loader2, Users, Compass, Plane, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_store/feed")({
@@ -74,9 +74,9 @@ function FeedPage() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
       {/* ─── Feed Container Central (Largura Padrão Editorial) ───────────── */}
-      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+      <div className="max-w-2xl mx-auto px-0.5 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
         {/* ── 1. Menu de Abas Canônicas (Apple HIG) ───────────────────────── */}
-        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar px-1 sm:px-0">
           <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-2xl border border-border/40 w-full sm:w-auto overflow-x-auto no-scrollbar">
             {FEED_TABS.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -148,12 +148,12 @@ function FeedPage() {
             </Button>
           </div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center rounded-2xl border border-border/60 bg-card space-y-3">
-            <div className="size-11 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
-              <MessageSquare className="size-5" />
+          <div className="py-12 px-4 text-center space-y-3">
+            <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+              <MessageSquare className="size-5 stroke-[1.5]" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-foreground">
+              <h3 className="text-base font-bold text-foreground">
                 {activeTab === "travel"
                   ? "Nenhuma viagem registrada ainda"
                   : activeTab === "photos"
@@ -171,7 +171,7 @@ function FeedPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {items.map((post) => (
+            {items.map((post: any) => (
               <PostCard
                 key={post.id}
                 item={post}

@@ -24,9 +24,9 @@ export interface KanbanColumnCustomizerModalProps {
   onOpenChange: (open: boolean) => void;
   storeId: string;
   module: string;
-  currentStages?: KanbanStageDTO[];
-  stages?: KanbanStageDTO[];
-  onStagesUpdated: (newStages: KanbanStageDTO[]) => void;
+  currentStages?: any[];
+  stages?: any[];
+  onStagesUpdated: (newStages: any[]) => void;
 }
 
 const PURPOSE_OPTIONS: Array<{ value: KanbanPurpose; label: string }> = [

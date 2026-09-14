@@ -168,7 +168,7 @@ export function MarketRadarPage() {
     <div className="w-full min-h-full bg-background text-foreground pb-24">
       {/* ── HEADER EXECUTIVO COM SELO SILENCIOSO APPLE HIG ── */}
       <div className="border-b border-border/40 bg-card/50 backdrop-blur-xl sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="max-w-7xl mx-auto px-0 sm:px-0 py-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -250,7 +250,7 @@ export function MarketRadarPage() {
 
       {/* ── ALERTA DE FEEDBACK ── */}
       {feedback && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-4">
           <div
             className={`p-4 rounded-xl flex items-center justify-between border ${
               feedback.type === "success"
@@ -274,7 +274,7 @@ export function MarketRadarPage() {
       )}
 
       {/* ── CONTEÚDO PRINCIPAL ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center text-muted-foreground">
             <RefreshCw className="w-8 h-8 animate-spin mb-3 text-primary" />

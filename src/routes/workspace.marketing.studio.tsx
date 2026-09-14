@@ -1,19 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Download, 
   Share2, 
   Smartphone, 
   Square, 
-  Sparkles, 
-  Copy, 
   Eye, 
   RefreshCw,
-  Sliders,
   Plane,
   ShoppingBag,
   MessageSquareQuote,
-  Check
+  Check,
+  Package
 } from "lucide-react";
 import { 
   InstagramLogo, 
@@ -25,14 +24,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { listAdminProducts } from "@/services/admin-catalog.functions";
+import { getStoreSettings } from "@/services/store.functions";
+import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/marketing/studio")({
   head: () => ({
-    meta: [{ title: "Social Studio & Gerador de Cards | Workspace Waesy" }],
+    meta: [{ title: "Social Studio & Gerador de Peças | Workspace Waesy" }],
   }),
   component: WorkspaceSocialStudioPage,
 });
@@ -41,34 +42,69 @@ type TemplateType = "travel" | "product" | "quote";
 type AspectRatio = "9:16" | "1:1";
 
 export default function WorkspaceSocialStudioPage() {
-  const [template, setTemplate] = useState<TemplateType>("travel");
+  const [template, setTemplate] = useState<TemplateType>("product");
   const [ratio, setRatio] = useState<AspectRatio>("9:16");
 
+  // Dados da Loja e Catálogo Real
+  const { data: store } = useQuery({
+    queryKey: ["store-settings"],
+    queryFn: () => getStoreSettings(),
+  });
+
+  const { data: products = [] } = useQuery({
+    queryKey: ["admin-products-studio"],
+    queryFn: () => listAdminProducts(),
+  });
+
   // Campos do formulário
-  const [title, setTitle] = useState("Expedição Jalapão & Serras");
-  const [subtitle, setSubtitle] = useState("4 Dias de Ecoturismo & Cachoeiras");
-  const [price, setPrice] = useState("R$ 1.890");
-  const [installments, setInstallments] = useState("10x sem juros de R$ 189");
-  const [badgeText, setBadgeText] = useState("Saída Confirmada • Outubro");
-  const [authorName, setAuthorName] = useState("Excelência Tour");
-  const [authorHandle, setAuthorHandle] = useState("@excelenciatour");
-  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&q=80");
+  const [title, setTitle] = useState("Coleção Autoral");
+  const [subtitle, setSubtitle] = useState("Peças exclusivas com pronta entrega");
+  const [price, setPrice] = useState("R$ 189,90");
+  const [installments, setInstallments] = useState("3x sem juros de R$ 63,30");
+  const [badgeText, setBadgeText] = useState("Destaque • Pronta Entrega");
+  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80");
   const [isExporting, setIsExporting] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const authorName = store?.name || "Minha Loja";
+  const authorHandle = `@${store?.slug || "loja"}`;
+
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // Preencher com produto real do catálogo
+  const handleSelectProduct = (productId: string) => {
+    const prod = products.find((p: any) => p.id === productId);
+    if (!prod) return;
+
+    setTitle(prod.title || "Produto");
+    setSubtitle(prod.description?.slice(0, 80) || prod.category?.name || "Disponível na loja");
+    setPrice(formatMoney(prod.price_cents || 0));
+
+    // Regra #22: Cálculo de parcelas reais
+    const maxInstallments = prod.attributes?.max_installments || 3;
+    const installmentCents = Math.round((prod.price_cents || 0) / maxInstallments);
+    setInstallments(`${maxInstallments}x sem juros de ${formatMoney(installmentCents)}`);
+
+    setBadgeText(prod.stock_on_hand > 0 ? "Pronta Entrega" : "Edição Limitada");
+
+    const img = prod.images?.[0] || prod.image_url;
+    if (img) setImageUrl(img);
+
+    setTemplate("product");
+    toast.success(`Dados de "${prod.title}" carregados no Studio!`);
+  };
 
   const handleShare = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
-          title: title,
-          text: `${title} - ${subtitle} por ${price} (${installments}). Confira no nosso catálogo:`,
+          title,
+          text: `${title} - ${subtitle} por ${price} (${installments}). Confira na nossa vitrine:`,
           url: typeof window !== "undefined" ? window.location.origin : "",
         });
         toast.success("Conteúdo compartilhado com sucesso!");
-      } catch (err) {
-        // Usuário cancelou o compartilhamento
+      } catch {
+        // Usuário cancelou
       }
     } else {
       navigator.clipboard.writeText(`${title} - ${subtitle} por ${price} (${installments})`);
@@ -78,27 +114,31 @@ export default function WorkspaceSocialStudioPage() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     setIsExporting(true);
-    toast.info("Preparando imagem vetorial em alta resolução (PNG)...");
-    setTimeout(() => {
+    try {
+      const { exportElementAsImage } = await import("@/lib/pdf-export");
+      await exportElementAsImage("social-card-render-target", `card-${template}-${Date.now()}.png`);
+      toast.success("Card em alta resolução (PNG) baixado com sucesso!");
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao gerar arquivo de imagem.");
+    } finally {
       setIsExporting(false);
-      toast.success("Card renderizado com sucesso para publicação!");
-    }, 900);
+    }
   };
 
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           eyebrow="Marketing & Criação"
           title="Social Studio"
-          description="Crie peças publicitárias com design editorial de alto padrão para Redes Sociais, Stories, WhatsApp e Comunidade em segundos."
+          description="Crie peças publicitárias em alta resolução para Redes Sociais, Stories e WhatsApp."
         />
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="h-10 rounded-xl text-xs font-medium cursor-pointer"
+            className="h-11 rounded-xl text-xs font-semibold cursor-pointer"
             onClick={handleShare}
           >
             {copied ? <Check className="size-4 mr-1.5 text-emerald-600" /> : <Share2 className="size-4 mr-1.5" />}
@@ -107,92 +147,92 @@ export default function WorkspaceSocialStudioPage() {
           <Button
             onClick={handleDownload}
             disabled={isExporting}
-            className="h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
+            className="h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
           >
             {isExporting ? (
               <RefreshCw className="size-4 mr-1.5 animate-spin" />
             ) : (
               <Download className="size-4 mr-1.5" />
             )}
-            {isExporting ? "Gerando..." : "Baixar Card HD"}
+            {isExporting ? "Renderizando..." : "Baixar Card HD"}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Painel de Controles e Customização */}
+        {/* Painel de Controles */}
         <div className="lg:col-span-6 space-y-6">
-          {/* Seletor de Template */}
+          {/* Seletor de Produto Real do Catálogo */}
+          {products.length > 0 && (
+            <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-2">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Package className="size-4 text-primary" /> Carregar Produto do Catálogo
+              </Label>
+              <select
+                onChange={(e) => handleSelectProduct(e.target.value)}
+                defaultValue=""
+                className="w-full h-11 px-3 rounded-xl border border-border bg-background text-xs text-foreground cursor-pointer"
+              >
+                <option value="" disabled>Selecione um produto cadastrado na loja...</option>
+                {products.map((p: any) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title} — {formatMoney(p.price_cents || 0)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Formato & Template */}
           <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
-            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Formato & Template Editorial
+            <Label className="text-xs font-bold text-foreground">
+              Formato & Template
             </Label>
             <div className="grid grid-cols-3 gap-2.5">
               <button
                 type="button"
-                onClick={() => {
-                  setTemplate("travel");
-                  setTitle("Expedição Jalapão & Serras");
-                  setSubtitle("4 Dias de Ecoturismo & Cachoeiras");
-                  setPrice("R$ 1.890");
-                  setBadgeText("Saída Confirmada • Outubro");
-                }}
-                className={cn(
-                  "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1.5",
-                  template === "travel"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border/70 hover:bg-muted/30 text-foreground"
-                )}
-              >
-                <Plane className="size-4" />
-                <span className="text-xs font-bold block">Viagem & Tour</span>
-                <span className="text-[10px] text-muted-foreground">Roteiro panorâmico</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setTemplate("product");
-                  setTitle("Cesta Artesanal de Queijos & Vinhos");
-                  setSubtitle("Seleção Especial da Serra Catarinense");
-                  setPrice("R$ 289,90");
-                  setBadgeText("Pronta Entrega • Frete Grátis");
-                }}
+                onClick={() => setTemplate("product")}
                 className={cn(
                   "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1.5",
                   template === "product"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border/70 hover:bg-muted/30 text-foreground"
+                    ? "border-primary bg-primary/5 text-primary font-bold"
+                    : "border-border hover:bg-muted/30 text-foreground"
                 )}
               >
                 <ShoppingBag className="size-4" />
-                <span className="text-xs font-bold block">Produto & Oferta</span>
-                <span className="text-[10px] text-muted-foreground">Destaque de preço</span>
+                <span className="text-xs">Produto & Oferta</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => {
-                  setTemplate("quote");
-                  setTitle("A verdadeira viagem de descobrimento não consiste em procurar novas paisagens, mas em ter novos olhos.");
-                  setSubtitle("Marcel Proust • Filosofia de Viagem");
-                  setPrice("");
-                  setBadgeText("Reflexão da Semana");
-                }}
+                onClick={() => setTemplate("travel")}
+                className={cn(
+                  "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1.5",
+                  template === "travel"
+                    ? "border-primary bg-primary/5 text-primary font-bold"
+                    : "border-border hover:bg-muted/30 text-foreground"
+                )}
+              >
+                <Plane className="size-4" />
+                <span className="text-xs">Roteiro / Experiência</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTemplate("quote")}
                 className={cn(
                   "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1.5",
                   template === "quote"
-                    ? "border-primary bg-primary/5 text-primary"
-                    : "border-border/70 hover:bg-muted/30 text-foreground"
+                    ? "border-primary bg-primary/5 text-primary font-bold"
+                    : "border-border hover:bg-muted/30 text-foreground"
                 )}
               >
                 <MessageSquareQuote className="size-4" />
-                <span className="text-xs font-bold block">Quote / X Card</span>
-                <span className="text-[10px] text-muted-foreground">Estilo Microblog & Notícias</span>
+                <span className="text-xs">Frase & Depoimento</span>
               </button>
             </div>
 
-            {/* Seletor de Proporção */}
+            {/* Proporção */}
             <div className="pt-2 flex items-center gap-3">
               <span className="text-xs text-muted-foreground font-medium">Proporção:</span>
               <div className="flex gap-2">
@@ -201,7 +241,7 @@ export default function WorkspaceSocialStudioPage() {
                   variant={ratio === "9:16" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setRatio("9:16")}
-                  className="h-8 rounded-lg text-xs cursor-pointer"
+                  className="h-9 rounded-lg text-xs cursor-pointer"
                 >
                   <Smartphone className="size-3.5 mr-1" /> Stories (9:16)
                 </Button>
@@ -210,7 +250,7 @@ export default function WorkspaceSocialStudioPage() {
                   variant={ratio === "1:1" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setRatio("1:1")}
-                  className="h-8 rounded-lg text-xs cursor-pointer"
+                  className="h-9 rounded-lg text-xs cursor-pointer"
                 >
                   <Square className="size-3.5 mr-1" /> Feed (1:1)
                 </Button>
@@ -218,10 +258,10 @@ export default function WorkspaceSocialStudioPage() {
             </div>
           </div>
 
-          {/* Dados do Conteúdo */}
+          {/* Textos */}
           <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
-            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Conteúdo & Textos do Card
+            <Label className="text-xs font-bold text-foreground">
+              Textos do Card
             </Label>
 
             <div className="space-y-3">
@@ -230,16 +270,16 @@ export default function WorkspaceSocialStudioPage() {
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="h-10 rounded-xl text-xs"
+                  className="h-11 rounded-xl text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-medium">Subtítulo / Roteiro</Label>
+                <Label className="text-xs font-medium">Subtítulo / Descrição</Label>
                 <Input
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  className="h-10 rounded-xl text-xs"
+                  className="h-11 rounded-xl text-xs"
                 />
               </div>
 
@@ -250,7 +290,7 @@ export default function WorkspaceSocialStudioPage() {
                     <Input
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      className="h-10 rounded-xl text-xs font-semibold"
+                      className="h-11 rounded-xl text-xs font-semibold"
                     />
                   </div>
                   <div className="space-y-1">
@@ -258,7 +298,7 @@ export default function WorkspaceSocialStudioPage() {
                     <Input
                       value={installments}
                       onChange={(e) => setInstallments(e.target.value)}
-                      className="h-10 rounded-xl text-xs"
+                      className="h-11 rounded-xl text-xs"
                     />
                   </div>
                 </div>
@@ -266,55 +306,40 @@ export default function WorkspaceSocialStudioPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">Selo / Tag Superior</Label>
+                  <Label className="text-xs font-medium">Selo Superior</Label>
                   <Input
                     value={badgeText}
                     onChange={(e) => setBadgeText(e.target.value)}
-                    className="h-10 rounded-xl text-xs"
+                    className="h-11 rounded-xl text-xs"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-medium">Identificador (@)</Label>
+                  <Label className="text-xs font-medium">Identificador</Label>
                   <Input
                     value={authorHandle}
-                    onChange={(e) => setAuthorHandle(e.target.value)}
-                    className="h-10 rounded-xl text-xs font-mono"
+                    disabled
+                    className="h-11 rounded-xl text-xs font-mono bg-muted/40"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-medium">URL da Imagem de Fundo</Label>
+                <Label className="text-xs font-medium">URL da Imagem</Label>
                 <Input
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  className="h-10 rounded-xl text-xs font-mono"
+                  className="h-11 rounded-xl text-xs font-mono"
                 />
               </div>
             </div>
           </div>
-
-          {/* Redes de Destino */}
-          <div className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <span className="text-xs font-bold text-foreground block">Canais de Publicação</span>
-              <span className="text-[11px] text-muted-foreground">Otimizado para feeds e stories</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <InstagramLogo className="size-5 hover:text-pink-600 transition-colors cursor-pointer" />
-              <WhatsappLogo className="size-5 hover:text-emerald-600 transition-colors cursor-pointer" />
-              <TwitterLogo className="size-5 hover:text-blue-500 transition-colors cursor-pointer" />
-              <FacebookLogo className="size-5 hover:text-blue-600 transition-colors cursor-pointer" />
-              <TiktokLogo className="size-5 hover:text-foreground transition-colors cursor-pointer" />
-            </div>
-          </div>
         </div>
 
-        {/* Visualizador do Card em Tempo Real (Canvas Preview) */}
+        {/* Visualizador do Card em Tempo Real */}
         <div className="lg:col-span-6 flex flex-col items-center justify-center p-6 rounded-3xl bg-neutral-900/90 border border-neutral-800 shadow-2xl">
           <div className="w-full flex items-center justify-between text-neutral-400 text-xs mb-4 px-2">
             <span className="flex items-center gap-1.5 font-medium">
-              <Eye className="size-3.5" /> Pré-visualização Dinâmica
+              <Eye className="size-3.5" /> Pré-visualização
             </span>
             <span className="font-mono text-[11px] bg-neutral-800 px-2 py-0.5 rounded text-neutral-300">
               {ratio === "9:16" ? "1080 x 1920 (Stories)" : "1080 x 1080 (Feed)"}
@@ -324,6 +349,7 @@ export default function WorkspaceSocialStudioPage() {
           {/* O Card Renderizado */}
           <div
             ref={previewRef}
+            id="social-card-render-target"
             className={cn(
               "relative overflow-hidden rounded-2xl shadow-2xl transition-all select-none flex flex-col justify-between p-6 bg-neutral-950 text-white",
               ratio === "9:16"
@@ -336,7 +362,7 @@ export default function WorkspaceSocialStudioPage() {
               backgroundPosition: "center",
             }}
           >
-            {/* Topo: Logo & Badge */}
+            {/* Topo */}
             <div className="flex items-center justify-between z-10">
               <div className="flex items-center gap-2">
                 <div className="size-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center font-bold text-xs">
@@ -355,7 +381,7 @@ export default function WorkspaceSocialStudioPage() {
               )}
             </div>
 
-            {/* Centro (Para Quote) ou Fundo (Para Viagem/Produto) */}
+            {/* Conteúdo */}
             {template === "quote" ? (
               <div className="my-auto py-6 space-y-4 z-10">
                 <p className="text-base sm:text-lg font-serif italic leading-relaxed text-neutral-100">
@@ -394,16 +420,12 @@ export default function WorkspaceSocialStudioPage() {
               </div>
             )}
 
-            {/* Rodapé: Chamada de Ação / Branding */}
+            {/* Rodapé */}
             <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[10px] text-neutral-400 z-10">
-              <span>Waesy Community OS</span>
-              <span className="font-semibold text-white">Toque para Saber Mais</span>
+              <span>{store?.name || "Waesy Comércio Local"}</span>
+              <span className="font-semibold text-white">Consulte no Catálogo</span>
             </div>
           </div>
-
-          <p className="text-[11px] text-neutral-500 mt-4 text-center">
-            Pressione "Baixar Card HD" para exportar a arte pronta para publicação direta.
-          </p>
         </div>
       </div>
     </div>

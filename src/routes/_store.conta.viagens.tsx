@@ -80,12 +80,12 @@ function CustomerTripsPage() {
  };
 
  const totalBookingsCount = trips.length + agencyTrips.length;
- const confirmedCount =
- trips.filter((t) => t.status === "confirmed").length +
- agencyTrips.filter((t: any) => t.status === "confirmed").length;
+  const confirmedCount =
+    trips.filter((t: any) => t.status === "confirmed").length +
+    agencyTrips.filter((t: any) => t.status === "confirmed").length;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
@@ -271,7 +271,7 @@ function CustomerTripsPage() {
  </h2>
  )}
  <div className="space-y-4">
- {trips.map((booking) => {
+ {trips.map((booking: any) => {
  const exp = booking.experience;
  const formattedDate = booking.desired_date
  ? new Date(booking.desired_date).toLocaleDateString("pt-BR", {

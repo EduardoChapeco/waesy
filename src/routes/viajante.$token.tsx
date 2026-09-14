@@ -12,7 +12,7 @@ import {
 } from '@/services/travel-lifecycle.functions';
 
 export const Route = createFileRoute('/viajante/$token')({
-  head: ({ loaderData }) => ({
+  head: ({ loaderData }: any) => ({
     meta: [
       {
         title: loaderData?.context?.agencyName
@@ -47,7 +47,7 @@ export const Route = createFileRoute('/viajante/$token')({
 
 function PublicTravelerFormPage() {
   const { token } = Route.useParams();
-  const loaderData = Route.useLoaderData();
+  const loaderData = Route.useLoaderData() as any;
   const context = loaderData?.context;
 
   const [step, setStep] = useState(1);

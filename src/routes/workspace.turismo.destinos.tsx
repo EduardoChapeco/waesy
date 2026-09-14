@@ -378,7 +378,20 @@ export default function WorkspaceDestinationsPage() {
  try {
  for (let i = 0; i < files.length; i++) {
  const file = files[i];
- const res = await uploadStoreMedia(file);
+ const base64 = await new Promise<string>((resolve, reject) => {
+ const reader = new FileReader();
+ reader.onload = () => resolve(reader.result as string);
+ reader.onerror = reject;
+ reader.readAsDataURL(file);
+ });
+ const res = await uploadStoreMedia({
+ data: {
+ fileName: file.name,
+ fileType: file.type || "image/jpeg",
+ base64Data: base64,
+ bucket: "cms-media",
+ },
+ });
  if (res?.url) {
  uploadedUrls.push(res.url);
  }
@@ -621,7 +634,7 @@ export default function WorkspaceDestinationsPage() {
       toolDescription="Catálogo estruturado com base canônica de cidades, estados, aeroportos IATA, seções ricas, galerias de mídia e avaliações de viajantes."
       store={store}
     >
-      <div className="space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         <WorkspaceCanonicalToolbar
           tabs={[
             { id: "all", label: "Todos os Destinos", icon: Compass, count: destinations.length },
@@ -822,7 +835,7 @@ export default function WorkspaceDestinationsPage() {
  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
  <SheetContent
  side="right"
- className="w-full sm:max-w-3xl lg:max-w-4xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
+ className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-4xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
  >
  {/* Header */}
  <SheetHeader className="p-5 pb-4 border-b border-border/80 bg-muted/20">
@@ -1848,7 +1861,7 @@ export default function WorkspaceDestinationsPage() {
  <Sheet open={!!previewModalDest} onOpenChange={() => setPreviewModalDest(null)}>
  <SheetContent
  side="right"
- className="w-full sm:max-w-2xl md:max-w-3xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
+ className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-2xl md:max-w-3xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border"
  >
  <SheetHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
  <div>

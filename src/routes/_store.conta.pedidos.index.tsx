@@ -20,15 +20,15 @@ export const Route = createFileRoute("/_store/conta/pedidos/")(({
 
 const STATUS_STYLE: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
-  awaiting_payment: "bg-amber-500/10 text-amber-600",
-  paid: "bg-blue-500/10 text-blue-600",
-  processing: "bg-blue-500/10 text-blue-600",
-  ready_for_pickup: "bg-purple-500/10 text-purple-600",
+  awaiting_payment: "bg-warning/10 text-warning",
+  paid: "bg-info/10 text-info",
+  processing: "bg-info/10 text-info",
+  ready_for_pickup: "bg-primary/10 text-primary",
   shipped: "bg-primary/10 text-primary",
   delivered: "bg-primary/10 text-primary",
-  completed: "bg-emerald-500/10 text-emerald-600",
+  completed: "bg-success/10 text-success",
   cancelled: "bg-destructive/10 text-destructive",
-  return_requested: "bg-orange-500/10 text-orange-600",
+  return_requested: "bg-warning/10 text-warning",
   returned: "bg-muted text-muted-foreground",
 };
 
@@ -50,11 +50,11 @@ function Page() {
   const orders = Route.useLoaderData() as any[];
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
             Pedidos
           </h1>
           {orders.length > 0 && (
@@ -64,21 +64,25 @@ function Page() {
           )}
         </div>
 
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-9 px-3.5 cursor-pointer hover:bg-muted">
           <Link to="/mercado">Explorar Lojas</Link>
         </Button>
       </div>
 
       {/* ── Lista ── */}
       {orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center flex-1 py-20 px-6 text-center gap-4">
-          <ShoppingBag className="size-9 text-muted-foreground/25" strokeWidth={1.5} />
-          <div>
-            <p className="text-sm font-semibold text-foreground">Nenhum pedido</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Suas compras aparecerão aqui.</p>
+        <div className="flex flex-col items-center justify-center flex-1 py-16 px-4 text-center gap-3">
+          <div className="size-16 rounded-3xl bg-muted/60 flex items-center justify-center mb-1 text-muted-foreground">
+            <ShoppingBag className="size-8 stroke-[1.5]" />
           </div>
-          <Button asChild size="sm" className="rounded-xl h-10 px-5 text-xs font-semibold">
-            <Link to="/mercado">Explorar lojas</Link>
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Nenhum pedido realizado</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 max-w-xs mx-auto">
+              Suas compras em lojas e restaurantes parceiros aparecerão aqui com rastreamento em tempo real.
+            </p>
+          </div>
+          <Button asChild size="sm" className="rounded-2xl h-11 px-6 text-sm font-bold mt-3 shadow-xs">
+            <Link to="/mercado">Explorar Lojas</Link>
           </Button>
         </div>
       ) : (

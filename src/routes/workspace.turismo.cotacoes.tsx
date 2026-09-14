@@ -124,21 +124,21 @@ export default function AgencyQuotesPage() {
 
  // Métricas do CRM
  const metrics = useMemo(() => {
- const list = quotes || [];
+ const list: any[] = quotes || [];
  const total = list.length;
- const newCount = list.filter((q) => q.status === "new").length;
- const analyzingCount = list.filter((q) => q.status === "analyzing").length;
- const quotedCount = list.filter((q) => q.status === "quoted").length;
- const wonCount = list.filter((q) => q.status === "won").length;
+ const newCount = list.filter((q: any) => q.status === "new").length;
+ const analyzingCount = list.filter((q: any) => q.status === "analyzing").length;
+ const quotedCount = list.filter((q: any) => q.status === "quoted").length;
+ const wonCount = list.filter((q: any) => q.status === "won").length;
  const conversionRate = total > 0 ? Math.round((wonCount / total) * 100) : 0;
- const totalVolumeCents = list.reduce((acc, q) => acc + (q.quote_amount_cents || 0), 0);
+ const totalVolumeCents = list.reduce((acc: number, q: any) => acc + (q.quote_amount_cents || 0), 0);
 
  return { total, newCount, analyzingCount, quotedCount, wonCount, conversionRate, totalVolumeCents };
  }, [quotes]);
 
  // Filtro na Lista
  const filteredQuotes = useMemo(() => {
- return (quotes || []).filter((q) => {
+ return (quotes || []).filter((q: any) => {
  if (selectedStatus !== "all" && q.status !== selectedStatus) return false;
  if (tripTypeFilter !== "all" && q.trip_type !== tripTypeFilter) return false;
  if (search.trim()) {
@@ -237,7 +237,7 @@ export default function AgencyQuotesPage() {
  toolDescription="O pipeline de cotações, orçamentos e captação de passageiros para pacotes aéreos, cruzeiros e hotéis foi projetado especificamente para agências de viagens e turismo."
  store={store}
  >
-      <div className="flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)]">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)] pb-20">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -343,7 +343,7 @@ export default function AgencyQuotesPage() {
               { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, color: "#10b981" },
               { id: "lost", title: "Perdidas", icon: Trash, color: "#f43f5e" },
             ].map((col) => {
-              const colQuotes = filteredQuotes.filter((q) => q.status === col.id);
+              const colQuotes = filteredQuotes.filter((q: any) => q.status === col.id);
               const ColIcon = col.icon;
               return (
                 <div
@@ -369,7 +369,7 @@ export default function AgencyQuotesPage() {
                         Nenhum lead nesta etapa
                       </div>
                     ) : (
-                      colQuotes.map((q) => {
+                      colQuotes.map((q: any) => {
                         const cleanWhatsapp = (q.contact_whatsapp || "").replace(/\D/g, "");
                         const waMessage = encodeURIComponent(
                           `Olá ${q.contact_name}! Sou da agência de viagens no Waesy e preparei opções para ${q.destination_city}.`,
@@ -493,7 +493,7 @@ export default function AgencyQuotesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- {filteredQuotes.map((q) => {
+ {filteredQuotes.map((q: any) => {
  const cleanWhatsapp = (q.contact_whatsapp || "").replace(/\D/g, "");
  const tripTypeLabel =
  q.trip_type === "air_package"
@@ -691,7 +691,7 @@ export default function AgencyQuotesPage() {
  <Sheet open={!!managingQuote} onOpenChange={(o) => !o && setManagingQuote(null)}>
    <SheetContent
      size="wide"
-     className="p-0 flex flex-col h-full bg-card overflow-hidden"
+     className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] p-0 flex flex-col h-full bg-card overflow-hidden"
    >
      <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
        <div className="flex items-center justify-between">
@@ -882,31 +882,31 @@ export default function AgencyQuotesPage() {
  items: [
  {
  label: "Pacote Completo (Aéreo + Hotel)",
- value: (quotes || []).filter((q) => q.trip_type === "air_package").length,
+ value: (quotes || []).filter((q: any) => q.trip_type === "air_package").length,
  total: Math.max((quotes || []).length, 1),
  color: "bg-sky-500",
  },
  {
  label: "Somente Hotel / Resort",
- value: (quotes || []).filter((q) => q.trip_type === "hotel_only").length,
+ value: (quotes || []).filter((q: any) => q.trip_type === "hotel_only").length,
  total: Math.max((quotes || []).length, 1),
  color: "bg-amber-500",
  },
  {
  label: "Cruzeiro Marítimo",
- value: (quotes || []).filter((q) => q.trip_type === "cruise").length,
+ value: (quotes || []).filter((q: any) => q.trip_type === "cruise").length,
  total: Math.max((quotes || []).length, 1),
  color: "bg-indigo-500",
  },
  {
  label: "Excursão Rodoviária",
- value: (quotes || []).filter((q) => q.trip_type === "bus").length,
+ value: (quotes || []).filter((q: any) => q.trip_type === "bus").length,
  total: Math.max((quotes || []).length, 1),
  color: "bg-emerald-500",
  },
  {
  label: "Outros / Vistos",
- value: (quotes || []).filter((q) => q.trip_type === "visa_assistance" || !q.trip_type).length,
+ value: (quotes || []).filter((q: any) => q.trip_type === "visa_assistance" || !q.trip_type).length,
  total: Math.max((quotes || []).length, 1),
  color: "bg-slate-400",
  },

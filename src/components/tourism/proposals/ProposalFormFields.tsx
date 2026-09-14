@@ -23,7 +23,7 @@ export function Accordion({
   return (
     <div className="mb-4 overflow-hidden rounded-[var(--radius-card)] bg-surface  ring-1 ring-border/50 transition-all">
       <Button
-        variant="subtle"
+        variant="ghost"
         onClick={() => setOpen(!open)}
         className="flex w-full items-center justify-between px-4 py-3 text-left ds-label-caps text-muted-foreground hover:bg-surface-alt/50 transition-colors shadow-none"
       >
@@ -155,7 +155,7 @@ export function Card({ children, onRemove }: { children: React.ReactNode; onRemo
   return (
     <div className="relative mb-3 rounded-[var(--radius-card)] border border-border/60 bg-surface-alt/20 p-4">
       <Button
-        variant="subtle"
+        variant="ghost"
         type="button"
         onClick={onRemove}
         className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-surface hover:text-danger transition-colors shadow-none"
@@ -244,10 +244,73 @@ export function FileUploadList({
   );
 }
 
+export function PhotoUpload({
+  url,
+  onUpload,
+  prompt,
+}: {
+  url?: string;
+  onUpload: (u: string) => void;
+  prompt?: string;
+}) {
+  const [loading, setLoading] = useState(false);
+
+  async function upload(files: FileList | null) {
+    if (!files || !files[0]) return;
+    setLoading(true);
+    try {
+      const file = files[0];
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await uploadMediaUniversal({
+        data: {
+          fileName: file.name,
+          fileType: file.type || "image/jpeg",
+          base64Data: base64,
+          bucket: "public_media",
+          folder: "proposals/covers",
+        },
+      });
+      if (res?.url) {
+        onUpload(res.url);
+      }
+    } catch {
+      toast.error("Falha ao enviar imagem.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      {url && (
+        <img
+          src={url}
+          alt={prompt || "Foto"}
+          className="h-14 w-20 rounded object-cover ring-1 ring-border/50"
+        />
+      )}
+      <label className="cursor-pointer rounded-2xl border border-border/60 bg-surface px-3 py-1.5 text-xs font-semibold hover:bg-surface-alt transition-colors">
+        {loading ? "Enviando…" : url ? "Trocar foto" : "Adicionar foto"}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => upload(e.target.files)}
+        />
+      </label>
+    </div>
+  );
+}
+
 export function AddBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
     <Button
-      variant="neutral-action"
+      variant="outline"
       type="button"
       onClick={onClick}
       className="flex h-8 items-center gap-1.5 rounded-2xl border border-border/60 bg-surface px-3 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none"
@@ -278,7 +341,7 @@ export function TagsEditor({
           >
             {t}
             <Button
-              variant="subtle"
+              variant="ghost"
               type="button"
               onClick={() => onChange(tags.filter((_, x) => x !== i))}
               className="text-muted-foreground hover:text-danger shadow-none p-0.5"

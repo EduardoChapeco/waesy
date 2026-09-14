@@ -40,7 +40,7 @@ export interface VitrineCardItem {
 
 export interface VitrineSectionConfig {
   id: string;
-  type: "banners" | "custom_cards" | "product_rail" | "hotpages" | "sponsors" | "brand_story" | "infinite_feed";
+  type: "banners" | "custom_cards" | "product_rail" | "hotpages" | "sponsors" | "brand_story" | "infinite_feed" | "promotional_flyers";
   title: string;
   enabled: boolean;
   cards?: VitrineCardItem[];

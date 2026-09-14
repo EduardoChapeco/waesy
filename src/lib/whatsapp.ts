@@ -17,10 +17,20 @@ export interface TrackWhatsAppLeadParams {
  | "directory"
  | "event"
  | "quote"
- | "custom";
+ | "custom"
+ | "feed"
+ | "noticias"
+ | "agenda"
+ | "eventos"
+ | "empregos"
+ | "places"
+    | "classifieds"
+ | "afiliados"
+ | "concursos";
  entityId?: string | null;
  entityTitle?: string | null;
  customMessage?: string;
+ message?: string;
  niche?: string;
  metadata?: Record<string, any>;
 }
@@ -108,10 +118,10 @@ export async function trackAndOpenWhatsApp(
       data: {
         phone: cleanPhone,
         store_id: params.storeId || null,
-        entity_type: params.entityType,
+        entity_type: params.entityType as any,
         entity_id: params.entityId || null,
         entity_title: params.entityTitle || null,
-        custom_message: params.customMessage || null,
+        custom_message: params.customMessage || params.message || null,
         origin_url: originUrl,
         niche: params.niche || null,
       },

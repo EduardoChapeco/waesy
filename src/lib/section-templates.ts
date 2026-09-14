@@ -1424,11 +1424,11 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  ],
  },
 
- // ── 43. ANÉIS DE STORIES (INSTAGRAM STYLE) ──
+ // ── 43. DESTAQUES VISUAIS CIRCULARES ──
  stories_ring: {
  id: "stories_ring",
- name: "Destaques & Stories Interativos",
- description: "Círculos de stories clicáveis no topo da vitrine com fotos e vídeos curtos.",
+ name: "Destaques Visuais",
+ description: "Círculos de destaques interativos no topo da vitrine com fotos e vídeos curtos.",
  category: "social",
  previewImageUrl: "",
  nodes: [
@@ -1490,3 +1490,12 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  },
 
 };
+
+export function getAllTemplates(): SectionTemplate[] {
+  return Object.values(sectionTemplates);
+}
+
+export function getTemplatesByCategory(category: string): SectionTemplate[] {
+  if (category === "all") return Object.values(sectionTemplates);
+  return Object.values(sectionTemplates).filter((t) => t.category === category);
+}

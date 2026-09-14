@@ -493,138 +493,283 @@ export const sendCustomerChatMessage = createServerFn({ method: "POST" })
  });
 
 /**
- * Lista todas as conversas do cliente
+ * Busca unificada de contatos (membros da rede e lojas/negócios locais) para iniciar nova conversa
+ */
+export const searchChatContacts = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().default(""),
+      limit: z.number().int().min(1).max(30).default(15),
+    }),
+  )
+  .handler(async ({ data }) => {
+    try {
+      const q = data.query.trim();
+      const db = getServerClient();
+      const ssrClient = await getSSRClient();
+      const { data: { user } } = await ssrClient.auth.getUser();
+
+      let profilesQuery = db
+        .from("profiles")
+        .select("id, full_name, avatar_url, bio, city")
+        .limit(data.limit);
+
+      if (user) {
+        profilesQuery = profilesQuery.neq("id", user.id);
+      }
+
+      if (q.length > 0) {
+        profilesQuery = profilesQuery.ilike("full_name", `%${q}%`);
+      }
+
+      let storesQuery = db
+        .from("stores")
+        .select("id, name, slug, settings, category, city")
+        .eq("status", "active")
+        .limit(data.limit);
+
+      if (q.length > 0) {
+        storesQuery = storesQuery.or(`name.ilike.%${q}%,category.ilike.%${q}%`);
+      }
+
+      const [profilesRes, storesRes] = await Promise.all([profilesQuery, storesQuery]);
+
+      const contacts = (profilesRes.data || []).map((p: any) => ({
+        id: p.id,
+        name: p.full_name || "Membro da Comunidade",
+        type: "person" as const,
+        avatar_url: p.avatar_url,
+        subtitle: p.city ? `Membro em ${p.city}` : "Membro da Comunidade",
+      }));
+
+      const stores = (storesRes.data || []).map((s: any) => {
+        const settings = s.settings || {};
+        return {
+          id: s.id,
+          name: s.name,
+          type: "store" as const,
+          avatar_url: settings.logoUrl || settings.logo_url || null,
+          subtitle: s.category || "Loja & Negócio Local",
+          slug: s.slug,
+        };
+      });
+
+      return {
+        contacts,
+        stores,
+      };
+    } catch (err) {
+      console.error("[chat] searchChatContacts error:", err);
+      return { contacts: [], stores: [] };
+    }
+  });
+
+/**
+ * Lista todas as conversas do cliente (lojas e membros P2P)
  */
 export const listCustomerChatThreads = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const ssrClient = await getSSRClient();
- const { data: { user } } = await ssrClient.auth.getUser();
- if (!user) throw new Error("Não autenticado");
+  try {
+    const ssrClient = await getSSRClient();
+    const { data: { user } } = await ssrClient.auth.getUser();
+    if (!user) throw new Error("Não autenticado");
 
- const db = getServerClient();
- const { data, error } = await db
- .from("chat_threads")
- .select(`
- id, status, subject, department, updated_at, created_at, order_id,
- store:stores(id, name, slug, settings),
- chat_messages(id, message, created_at, is_staff_reply)
- `)
- .eq("customer_id", user.id)
- .order("updated_at", { ascending: false });
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("chat_threads")
+      .select(`
+        id, status, subject, department, updated_at, created_at, order_id, thread_type, customer_id, recipient_profile_id,
+        store:stores(id, name, slug, settings),
+        chat_messages(id, message, created_at, is_staff_reply)
+      `)
+      .or(`customer_id.eq.${user.id},recipient_profile_id.eq.${user.id}`)
+      .order("updated_at", { ascending: false });
 
- if (error) throw error;
+    if (error) throw error;
 
- return (data || []).map((thread: any) => {
- const messages = thread.chat_messages || [];
- messages.sort(
- (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
- );
- const lastMsg = messages[0];
- const storeSettings = (thread.store?.settings as any) || {};
- const mappedStore = thread.store ? {
- ...thread.store,
- logo_url: storeSettings.logoUrl || storeSettings.logo_url || null,
- } : null;
+    // Se houver conversas P2P, busca perfis participantes
+    const p2pProfileIds = new Set<string>();
+    for (const t of data || []) {
+      if (t.thread_type === "direct_p2p" || t.recipient_profile_id) {
+        const otherId = t.customer_id === user.id ? t.recipient_profile_id : t.customer_id;
+        if (otherId) p2pProfileIds.add(otherId);
+      }
+    }
 
- return {
- ...thread,
- store: mappedStore,
- last_message: lastMsg ? lastMsg.message : "Conversa iniciada",
- last_message_at: lastMsg ? lastMsg.created_at : thread.created_at,
- unread_count: messages.filter((m: any) => m.is_staff_reply).length,
- is_last_reply_staff: lastMsg ? lastMsg.is_staff_reply : false,
- };
- });
- } catch (e: any) {
- console.error("[chat] listCustomerChatThreads error:", e);
- throw new Error(e.message || "Erro ao listar conversas.");
- }
+    const profilesMap = new Map<string, any>();
+    if (p2pProfileIds.size > 0) {
+      const { data: profilesList } = await db
+        .from("profiles")
+        .select("id, full_name, avatar_url, city")
+        .in("id", Array.from(p2pProfileIds));
+      for (const p of profilesList || []) {
+        profilesMap.set(p.id, p);
+      }
+    }
+
+    return (data || []).map((thread: any) => {
+      const messages = thread.chat_messages || [];
+      messages.sort(
+        (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      const lastMsg = messages[0];
+      const storeSettings = (thread.store?.settings as any) || {};
+      const mappedStore = thread.store
+        ? {
+            ...thread.store,
+            logo_url: storeSettings.logoUrl || storeSettings.logo_url || null,
+          }
+        : null;
+
+      const isP2P = thread.thread_type === "direct_p2p" || (!thread.store_id && thread.recipient_profile_id);
+      let peerProfile: any = null;
+      if (isP2P) {
+        const otherId = thread.customer_id === user.id ? thread.recipient_profile_id : thread.customer_id;
+        peerProfile = profilesMap.get(otherId) || { full_name: "Membro", avatar_url: null };
+      }
+
+      return {
+        ...thread,
+        is_p2p: isP2P,
+        peer_profile: peerProfile,
+        store: mappedStore,
+        last_message: lastMsg ? lastMsg.message : "Conversa iniciada",
+        last_message_at: lastMsg ? lastMsg.created_at : thread.created_at,
+        unread_count: messages.filter((m: any) => m.is_staff_reply).length,
+        is_last_reply_staff: lastMsg ? lastMsg.is_staff_reply : false,
+      };
+    });
+  } catch (e: any) {
+    console.error("[chat] listCustomerChatThreads error:", e);
+    throw new Error(e.message || "Erro ao listar conversas.");
+  }
 });
 
 /**
- * Inicia ou localiza thread unificada cliente-loja
+ * Inicia ou localiza thread unificada (cliente-loja ou direta P2P)
  */
 export const startCustomerChatThread = createServerFn({ method: "POST" })
- .validator(
- z.object({
- storeId: z.string().uuid(),
- orderId: z.string().uuid().optional(),
- subject: z.string().min(1),
- initialMessage: z.string().min(1),
- department: z.string().default("geral"),
- }),
- )
- .handler(async ({ data: input }) => {
- try {
- const ssrClient = await getSSRClient();
- const { data: { user } } = await ssrClient.auth.getUser();
- const db = getServerClient();
+  .validator(
+    z.object({
+      storeId: z.string().uuid().optional(),
+      recipientProfileId: z.string().uuid().optional(),
+      orderId: z.string().uuid().optional(),
+      subject: z.string().min(1).default("Conversa"),
+      initialMessage: z.string().min(1),
+      department: z.string().default("geral"),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    try {
+      const ssrClient = await getSSRClient();
+      const { data: { user } } = await ssrClient.auth.getUser();
+      const db = getServerClient();
 
- let profile: any = null;
- if (user) {
- const { data: p } = await db
- .from("profiles")
- .select("full_name, avatar_url")
- .eq("id", user.id)
- .maybeSingle();
- profile = p ? { ...p, email: user.email } : null;
- }
+      if (!input.storeId && !input.recipientProfileId) {
+        throw new Error("Selecione uma loja ou membro para conversar.");
+      }
 
- // Procura thread aberta existente para a mesma loja e pedido
- let query = db
- .from("chat_threads")
- .select("id")
- .eq("store_id", input.storeId)
- .eq("status", "open");
+      let profile: any = null;
+      if (user) {
+        const { data: p } = await db
+          .from("profiles")
+          .select("full_name, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
+        profile = p ? { ...p, email: user.email } : null;
+      }
 
- if (user) {
- query = query.eq("customer_id", user.id);
- }
+      let threadId: string | undefined;
 
- if (input.orderId) {
- query = query.eq("order_id", input.orderId);
- }
+      if (input.recipientProfileId) {
+        if (!user) throw new Error("Faça login para conversar com membros.");
+        const { data: existingP2P } = await db
+          .from("chat_threads")
+          .select("id")
+          .or(
+            `and(customer_id.eq.${user.id},recipient_profile_id.eq.${input.recipientProfileId}),and(customer_id.eq.${input.recipientProfileId},recipient_profile_id.eq.${user.id})`
+          )
+          .maybeSingle();
 
- const { data: existing } = await query.maybeSingle();
+        if (existingP2P) {
+          threadId = existingP2P.id;
+        } else {
+          const { data: newP2P, error: p2pErr } = await db
+            .from("chat_threads")
+            .insert({
+              store_id: null,
+              customer_id: user.id,
+              recipient_profile_id: input.recipientProfileId,
+              thread_type: "direct_p2p",
+              guest_name: profile?.full_name || "Membro",
+              guest_email: profile?.email || null,
+              subject: input.subject,
+              status: "open",
+            })
+            .select()
+            .single();
 
- let threadId = existing?.id;
+          if (p2pErr) throw p2pErr;
+          threadId = newP2P.id;
+        }
+      } else if (input.storeId) {
+        let query = db
+          .from("chat_threads")
+          .select("id")
+          .eq("store_id", input.storeId)
+          .eq("status", "open");
 
- if (!threadId) {
- const { data: newThread, error: threadErr } = await db
- .from("chat_threads")
- .insert({
- store_id: input.storeId,
- customer_id: user ? user.id : null,
- guest_name: profile?.full_name || "Cliente",
- guest_email: profile?.email || null,
- subject: input.subject,
- order_id: input.orderId || null,
- department: input.department,
- status: "open",
- })
- .select()
- .single();
+        if (user) {
+          query = query.eq("customer_id", user.id);
+        }
 
- if (threadErr) throw threadErr;
- threadId = newThread.id;
- }
+        if (input.orderId) {
+          query = query.eq("order_id", input.orderId);
+        }
 
- // Insere a mensagem inicial
- await db.from("chat_messages").insert({
- thread_id: threadId,
- message: input.initialMessage,
- message_type: input.orderId ? "order_card" : "text",
- payload: input.orderId ? { order_id: input.orderId } : {},
- is_staff_reply: false,
- sender_id: user ? user.id : null,
- });
+        const { data: existing } = await query.maybeSingle();
 
- return { threadId };
- } catch (e: any) {
- console.error("[chat] startCustomerChatThread error:", e);
- throw new Error(e.message || "Erro ao iniciar conversa.");
- }
- });
+        if (existing) {
+          threadId = existing.id;
+        } else {
+          const { data: newThread, error: threadErr } = await db
+            .from("chat_threads")
+            .insert({
+              store_id: input.storeId,
+              customer_id: user ? user.id : null,
+              guest_name: profile?.full_name || "Cliente",
+              guest_email: profile?.email || null,
+              subject: input.subject,
+              order_id: input.orderId || null,
+              department: input.department,
+              thread_type: "store",
+              status: "open",
+            })
+            .select()
+            .single();
+
+          if (threadErr) throw threadErr;
+          threadId = newThread.id;
+        }
+      }
+
+      if (!threadId) throw new Error("Não foi possível criar a conversa.");
+
+      // Insere a mensagem inicial
+      await db.from("chat_messages").insert({
+        thread_id: threadId,
+        message: input.initialMessage,
+        message_type: input.orderId ? "order_card" : "text",
+        payload: input.orderId ? { order_id: input.orderId } : {},
+        is_staff_reply: false,
+        sender_id: user ? user.id : null,
+      });
+
+      return { threadId };
+    } catch (e: any) {
+      console.error("[chat] startCustomerChatThread error:", e);
+      throw new Error(e.message || "Erro ao iniciar conversa.");
+    }
+  });
 
 /**
  * Abertura de chamado SAC / RMA (Troca, Devolução ou Defeito)

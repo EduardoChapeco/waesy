@@ -19,6 +19,10 @@ export interface FlyerHotspotDTO {
   product_id?: string | null;
   custom_label?: string | null;
   price_override_cents?: number | null;
+  title?: string | null;
+  price_cents?: number | null;
+  image_url?: string | null;
+  product_slug?: string | null;
   product?: {
     id: string;
     title: string;
@@ -28,6 +32,8 @@ export interface FlyerHotspotDTO {
     slug?: string | null;
   } | null;
 }
+
+export type PromotionalFlyerDTO = StoreFlyerDTO;
 
 export interface StoreFlyerDTO {
   id: string;
@@ -49,6 +55,7 @@ export interface StoreFlyerDTO {
   is_valid: boolean;
   time_left_display?: string;
   status_badge?: "active" | "scheduled" | "expired";
+  badge_text?: string | null;
 }
 
 // Helper para cálculo defensivo de vigência temporal

@@ -96,7 +96,7 @@ function ContractEditorPage() {
 
  if (contract.status !== "draft") {
  return (
- <div className="py-20 text-center space-y-4 max-w-xl mx-auto">
+ <div className="w-full max-w-xl mx-auto py-20 px-0 sm:px-4 text-center space-y-4">
  <ShieldCheck size={48} className="text-emerald-600 mx-auto" />
  <h2 className="text-xl font-bold">Este contrato já está selado/assinado</h2>
  <p className="text-muted-foreground">

@@ -50,17 +50,35 @@ export const RATE_LIMIT_POLICIES: Record<string, RateLimitPolicy> = {
  message: "Muitas solicitações de redefinição de senha. Verifique sua caixa de entrada ou aguarde.",
  },
 
- // Inteligência Artificial & LLMs
- ai_generation: {
- windowMs: 60 * 1000, // 1 minuto
- maxAllowed: 10,
- message: "Limite de requisições de Inteligência Artificial atingido. Aguarde alguns segundos para continuar gerando conteúdo.",
- },
- ai_mining_crawler: {
- windowMs: 60 * 1000,
- maxAllowed: 6,
- message: "Muitas extrações simultâneas em andamento. Aguarde o término da fila de mineração.",
- },
+  // Inteligência Artificial, LLMs & WebMCP Protocol
+  ai_generation: {
+    windowMs: 60 * 1000, // 1 minuto
+    maxAllowed: 10,
+    message: "Limite de requisições de Inteligência Artificial atingido. Aguarde alguns segundos para continuar gerando conteúdo.",
+  },
+  ai_mining_crawler: {
+    windowMs: 60 * 1000,
+    maxAllowed: 6,
+    message: "Muitas extrações simultâneas em andamento. Aguarde o término da fila de mineração.",
+  },
+  webmcp_tool_call_public: {
+    windowMs: 60 * 1000,
+    maxAllowed: 30, // 30 chamadas públicas/min por IP
+    lockoutMs: 5 * 60 * 1000, // 5 min de ban temporário em caso de ataque
+    message: "Limite do Protocolo WebMCP excedido (30 req/min). Agentes de IA externos devem respeitar a quota pública.",
+  },
+  webmcp_tool_call_staff: {
+    windowMs: 60 * 1000,
+    maxAllowed: 120, // 120 chamadas/min por loja autenticada
+    lockoutMs: 15 * 60 * 1000,
+    message: "Cota de automação de staff WebMCP excedida (120 req/min). Proteção anti-loop de agentes ativada.",
+  },
+  webmcp_batch_dispatch: {
+    windowMs: 5 * 60 * 1000, // 5 minutos
+    maxAllowed: 10, // máx 10 lotes pesados
+    lockoutMs: 15 * 60 * 1000,
+    message: "Limite de lotes e simulações simultâneas WebMCP atingido. Aguarde o processamento dos jobs em andamento.",
+  },
 
  // E-mails, Mensagens e Contatos
  email_contact_form: {

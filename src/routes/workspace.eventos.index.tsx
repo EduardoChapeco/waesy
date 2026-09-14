@@ -215,7 +215,7 @@ export default function WorkspaceEventosPage() {
       toolDescription="Controle de ingressos, lotes promocionais, check-in de portaria com QR Code, orçamentos e fornecedores de eventos."
       store={store}
     >
-      <div className="w-full space-y-6 animate-in fade-in duration-200">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
         <WorkspaceCanonicalToolbar
           tabs={TABS}

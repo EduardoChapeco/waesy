@@ -138,7 +138,7 @@ function MuralPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {items.map((post) => (
+            {items.map((post: any) => (
               <div key={post.id} className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
                 <PostCard
                   item={post}

@@ -93,9 +93,9 @@ export default function WorkspaceContractsIndexPage() {
 
   // Métricas do Painel Jurídico
   const totalCount = contractsList.length;
-  const signedCount = contractsList.filter((c) => c.status === "signed").length;
-  const pendingCount = contractsList.filter((c) => c.status !== "signed" && c.status !== "cancelled").length;
-  const totalValueCents = contractsList.reduce((acc, c) => acc + (c.total_value_cents || 0), 0);
+  const signedCount = contractsList.filter((c: any) => c.status === "signed").length;
+  const pendingCount = contractsList.filter((c: any) => c.status !== "signed" && c.status !== "cancelled").length;
+  const totalValueCents = contractsList.reduce((acc: number, c: any) => acc + (c.total_value_cents || 0), 0);
 
   const metricsItems: MetricCardItem[] = [
     {
@@ -133,7 +133,7 @@ export default function WorkspaceContractsIndexPage() {
       toolDescription="Gestão de minutas, contratos com validade jurídica e link de assinatura digital para passageiros e contratantes de pacotes turísticos."
       store={store}
     >
-      <div className="w-full space-y-6 animate-in fade-in duration-200">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
         <WorkspaceCanonicalToolbar
           tabs={TABS}
@@ -234,7 +234,7 @@ export default function WorkspaceContractsIndexPage() {
                           <span>Assinado por {c.signatures[0].signer_name}</span>
                         </p>
                         <p className="text-[10px] text-muted-foreground font-mono truncate">
-                          Hash: {c.signatures[0].signature_hash?.substring(0, 24)}...
+                          Hash: {((c.signatures[0] as any)?.signature_hash || (c.signatures[0] as any)?.hash || "").substring(0, 24)}...
                         </p>
                       </div>
                     )}

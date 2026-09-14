@@ -15,8 +15,6 @@ import {
   GraduationCap,
   CircleNotch,
   WarningCircle,
-  Sparkle,
-  SlidersHorizontal,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +85,14 @@ const MONTH_NAMES = [
   "NOV",
   "DEZ",
 ];
+
+const FALLBACK_EVENT_COVERS = {
+  default: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop&q=80",
+};
+
+function getEventCover(event: any) {
+  return event.cover_image || event.cover_image_url || event.image_url || FALLBACK_EVENT_COVERS.default;
+}
 
 export const Route = createFileRoute("/_store/eventos")({
   validateSearch: (search: Record<string, unknown>) => SearchSchema.parse(search),
@@ -243,8 +249,8 @@ function EventosPage() {
       if (selectedCategory !== "todos") {
         if (selectedCategory === "gratis") {
           const isFree =
-            !e.price_cents ||
-            e.price_cents === 0 ||
+            !(e as any).price_cents ||
+            (e as any).price_cents === 0 ||
             titleLower.includes("gratis") ||
             titleLower.includes("gratuito") ||
             descLower.includes("entrada franca") ||
@@ -400,7 +406,7 @@ function EventosPage() {
       const t = (e.title || "").toLowerCase();
       const d = (e.description || "").toLowerCase();
 
-      if (!e.price_cents || e.price_cents === 0 || t.includes("gratis")) {
+      if (!(e as any).price_cents || (e as any).price_cents === 0 || t.includes("gratis")) {
         counts.gratis = (counts.gratis || 0) + 1;
       }
       if (cat === "shows" || t.includes("show") || t.includes("rock") || t.includes("festival")) {
@@ -462,7 +468,7 @@ function EventosPage() {
 
     const gratis = filteredEvents.filter((e) => {
       const t = (e.title || "").toLowerCase();
-      return !e.price_cents || e.price_cents === 0 || t.includes("gratis");
+      return !(e as any).price_cents || (e as any).price_cents === 0 || t.includes("gratis");
     });
 
     const rails = [];
@@ -554,25 +560,9 @@ function EventosPage() {
         </section>
       )}
 
-      {/* ── 2. Seção de Cards Panorâmicos de Hotpages de Eventos (16/10 & Editável no Admin) ── */}
+      {/* ── 2. Seção de Cards Panorâmicos de Hotpages de Eventos ── */}
       {displayHotpages.length > 0 && (
-        <section aria-label="Hotpages e Destaques Temáticos" className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkle size={16} weight="fill" className="text-primary" />
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
-                Hotpages & Experiências em Destaque
-              </h2>
-            </div>
-            <Link
-              to="/admin-master/botoes"
-              search={{ module: "eventos" }}
-              className="text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
-            >
-              Personalizar Hotpages →
-            </Link>
-          </div>
-
+        <section aria-label="Hotpages e Destaques Temáticos">
           <HotpagesRail
             hotpages={displayHotpages}
             activeSlug={selectedCategory}
@@ -581,25 +571,19 @@ function EventosPage() {
         </section>
       )}
 
-      {/* ── 3. Seção Dedicada de Botões de Subcategorias de Eventos ── */}
-      <section aria-label="Subcategorias de Eventos" className="space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal size={15} weight="bold" className="text-foreground" />
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
-              Categorias & Gêneros
-            </span>
-          </div>
-          {selectedCategory !== "todos" && (
+      {/* ── 3. Subcategorias de Eventos ── */}
+      <section aria-label="Subcategorias de Eventos" className="space-y-2">
+        {selectedCategory !== "todos" && (
+          <div className="flex justify-end pb-0.5">
             <button
               type="button"
               onClick={() => setSelectedCategory("todos")}
-              className="text-[11px] font-mono text-primary hover:underline cursor-pointer"
+              className="text-xs font-medium text-primary hover:underline cursor-pointer"
             >
               Limpar filtro de categoria
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Trilho de Botões Ergonômicos com Contadores */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -637,36 +621,26 @@ function EventosPage() {
         </div>
       </section>
 
-      {/* ── 4. Filtro Proeminente de Data & Calendário (Canônico) ── */}
-      <section aria-label="Filtrar por Data & Programação" className="space-y-3 pt-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CalendarDots size={16} weight="bold" className="text-foreground" />
-            <h2 className="text-sm font-bold text-foreground tracking-tight">
-              Filtrar por Data & Programação
-            </h2>
-          </div>
-
-          {/* Presets Rápidos */}
-          <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar">
-            {PRESET_DATE_FILTERS.map((preset) => {
-              const isSelected = selectedDateFilter === preset.id;
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => setSelectedDateFilter(preset.id)}
-                  className={`h-8 px-3 rounded-xl text-[11px] font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    isSelected
-                      ? "bg-foreground text-background font-bold shadow-sm"
-                      : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
+      {/* ── 4. Filtro Proeminente de Data & Calendário ── */}
+      <section aria-label="Programação por Data" className="space-y-3 pt-1">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          {PRESET_DATE_FILTERS.map((preset) => {
+            const isSelected = selectedDateFilter === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => setSelectedDateFilter(preset.id)}
+                className={`h-8 px-3.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                  isSelected
+                    ? "bg-foreground text-background font-bold shadow-xs"
+                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Trilho Panorâmico de Cards de Dias Grandes */}
@@ -728,10 +702,7 @@ function EventosPage() {
         </div>
 
         {/* Navegador de Meses para Eventos Futuros */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap shrink-0">
-            MESES:
-          </span>
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
           {availableMonths.map((m) => {
             const isSelected = selectedDateFilter === m.key;
             return (
@@ -867,7 +838,7 @@ function EventosPage() {
 
                   <div className="p-4 pt-3 flex items-center justify-between border-t border-border/40 mt-3">
                     <span className="text-xs font-bold text-primary">
-                      {event.price_cents ? `R$ ${(event.price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
+                      {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
                     </span>
                     <span className="text-[11px] font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                       Ver ingressos <CaretRight size={12} weight="bold" />
@@ -879,13 +850,7 @@ function EventosPage() {
           ))}
 
           {/* Motor de Descoberta Infinita Procedural no Rodapé do Feed */}
-          <div className="pt-6 border-t border-border/40 space-y-4">
-            <div className="flex items-center gap-2">
-              <Sparkle size={16} weight="fill" className="text-primary" />
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
-                Descubra Também no Waesy
-              </h2>
-            </div>
+          <div className="pt-6 border-t border-border/40">
             <ProceduralInfiniteFeed
               city="São Miguel do Oeste"
               pageSize={4}
@@ -942,7 +907,7 @@ function EventosPage() {
 
               <div className="p-4 pt-3 flex items-center justify-between border-t border-border/40 mt-3">
                 <span className="text-xs font-bold text-primary">
-                  {event.price_cents ? `R$ ${(event.price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
+                  {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Entrada Gratuita"}
                 </span>
                 <span className="text-[11px] font-semibold text-foreground flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                   Detalhes <CaretRight size={12} weight="bold" />
@@ -995,7 +960,7 @@ function EventosPage() {
 
               <div className="flex items-center gap-4 self-end sm:self-center shrink-0">
                 <span className="text-sm font-bold text-primary">
-                  {event.price_cents ? `R$ ${(event.price_cents / 100).toFixed(2)}` : "Gratuito"}
+                  {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Gratuito"}
                 </span>
                 <Button size="sm" variant="outline" className="h-9 px-4 rounded-xl text-xs font-semibold gap-1">
                   Ingressos <CaretRight size={12} weight="bold" />

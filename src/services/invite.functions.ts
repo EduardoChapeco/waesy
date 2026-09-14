@@ -170,6 +170,7 @@ export const getMyInviteOverview = createServerFn({ method: "GET" })
       id: string;
       invitedName: string;
       pointsAwarded: number;
+      tokensAwarded: number;
       createdAt: string;
     }> = [];
     let monthlyConversions = 0;
@@ -889,7 +890,7 @@ export const getPublicConcursoById = createServerFn({ method: "GET" })
 
     const { data: r, error } = await supabase
       .from("raffles")
-      .select("*, stores:store_id(id, name, logo_url, description, segment, category)")
+      .select("*, stores:store_id(id, name, logo_url, settings)")
       .eq("id", raffleId)
       .single();
 

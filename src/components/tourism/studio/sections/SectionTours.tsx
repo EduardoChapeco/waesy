@@ -118,7 +118,7 @@ export function SectionTours({ draft, save }: Props) {
           </div>
           <L label="Observações">
             <Inp
-              value={t.notes}
+              value={t.notes || ""}
               onChange={(v) => upd(i, { notes: v })}
               ph="Ponto de encontro, duração..."
             />

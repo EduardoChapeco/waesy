@@ -7,10 +7,13 @@ import type { TravelVisaDTO, VisaStatus } from '@/types/travel-visas';
 const visaStatusEnum = z.enum([
   'coleta_documentos',
   'formulario_preenchido',
+  'entrevista_agendada',
   'agendamento_consular',
   'analise_consular',
+  'em_analise_consular',
   'aprovado',
   'recusado',
+  'negado',
   'entregue',
 ]);
 

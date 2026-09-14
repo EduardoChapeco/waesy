@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { PostCommentsDrawer } from "@/components/community/post-comments-drawer";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
+import { RichPostContent } from "@/components/community/rich-post-content";
 
 interface PostCardProps {
  item?: MuralFeedItem;
@@ -39,8 +40,6 @@ export function PostCard(props: PostCardProps) {
  const item = props.item || props.post;
  const queryKey = props.queryKey || ["mural-feed"];
 
- if (!item) return null;
-
  const qc = useQueryClient();
  const [activeSlide, setActiveSlide] = useState(0);
  const [isSaved, setIsSaved] = useState(false);
@@ -50,8 +49,9 @@ export function PostCard(props: PostCardProps) {
  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
  const toggleLike = useMutation({
- mutationFn: () => togglePostLike({ data: { post_id: item.id } }),
+ mutationFn: () => togglePostLike({ data: { post_id: item?.id || "" } }),
  onMutate: async () => {
+ if (!item) return;
  await qc.cancelQueries({ queryKey });
  const prev = qc.getQueryData(queryKey);
  qc.setQueryData(queryKey, (old: any) => {
@@ -86,9 +86,10 @@ export function PostCard(props: PostCardProps) {
  },
  });
 
- const authorInitial = item.author.name?.charAt(0)?.toUpperCase() ?? "J";
+ const authorInitial = item?.author?.name?.charAt(0)?.toUpperCase() ?? "J";
 
  const handleShare = () => {
+ if (!item) return;
  const permalinkUrl = typeof window !== "undefined" ? `${window.location.origin}/publicacao/${item.id}` : "";
  if (navigator.share) {
  navigator
@@ -108,6 +109,10 @@ export function PostCard(props: PostCardProps) {
  setIsSaved(!isSaved);
  toast.success(isSaved ? "Publicação removida dos salvos" : "Publicação salva com sucesso!");
  };
+
+ if (!item) {
+ return null;
+ }
 
  return (
  <article className="flex flex-col rounded-2xl bg-card p-4 sm:p-5 transition-all hover:border-border/80 border border-border/70 relative">
@@ -230,17 +235,16 @@ export function PostCard(props: PostCardProps) {
  {/* ── 2. Texto do Post (quando houver) ─────────────────────────── */}
  {item.content_text && item.post_type !== "news" && (
  <div className="mb-3 text-sm text-foreground/90 leading-relaxed font-normal">
- <p
- className={`whitespace-pre-wrap ${
- !isExpanded && item.content_text.length > 280 ? "line-clamp-3" : ""
- }`}
- >
- {item.content_text}
- </p>
+ <RichPostContent
+ content={item.content_text}
+ isExpanded={isExpanded}
+ maxCharacters={280}
+ />
  {item.content_text.length > 280 && (
  <button
+ type="button"
  onClick={() => setIsExpanded(!isExpanded)}
- className="mt-1 text-xs font-bold text-primary hover:underline"
+ className="mt-1 block text-xs font-bold text-primary hover:underline cursor-pointer"
  >
  {isExpanded ? "Ver menos" : "Ver mais"}
  </button>
@@ -283,16 +287,19 @@ export function PostCard(props: PostCardProps) {
  </button>
  </div>
 
- {/* Manchete Editorial */}
+ {/* Manchete Editorial com suporte a Marca-Texto Threads Style */}
  <h3 className="font-editorial text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
- {item.metadata?.title || item.content_text?.slice(0, 90) || "All Faith Needs Feet Business"}
+ <RichPostContent
+ content={item.metadata?.title || item.content_text?.slice(0, 90) || "All Faith Needs Feet Business"}
+ isExpanded={true}
+ />
  </h3>
 
  {/* Resumo / Lead */}
  {item.metadata?.subtitle && (
- <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-sans">
- {item.metadata.subtitle}
- </p>
+ <div className="text-xs sm:text-sm text-white/80 leading-relaxed font-sans">
+ <RichPostContent content={item.metadata.subtitle} isExpanded={true} />
+ </div>
  )}
 
  {/* Imagem do Artigo */}

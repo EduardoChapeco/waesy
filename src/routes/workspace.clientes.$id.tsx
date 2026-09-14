@@ -31,6 +31,7 @@ import {
   grantCustomerStoreCredit,
   saveTravelerPreferences,
 } from "@/services/crm.functions";
+import { DocumentsPanel } from "@/components/crm/DocumentsPanel";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/clientes/$id")({
@@ -51,27 +52,11 @@ function CustomerDetailPage() {
   const { id } = Route.useParams();
   const router = useRouter();
 
-  // ── Guard defensivo: loader pode retornar null em falha ─────────────────────
-  if (!data?.profile) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
-        <User className="size-10 text-muted-foreground" />
-        <h2 className="font-bold text-lg text-foreground">Cliente não encontrado</h2>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Este registro pode ter sido removido ou você não tem permissão para visualizá-lo.
-        </p>
-        <Button variant="outline" size="sm" onClick={() => router.history.back()}>
-          Voltar
-        </Button>
-      </div>
-    );
-  }
-
   const [activeTab, setActiveTab] = useState("timeline");
 
   // CRM State
-  const [notes, setNotes] = useState(data.crm?.notes || "");
-  const [tags, setTags] = useState(data.crm?.tags ? data.crm.tags.join(", ") : "");
+  const [notes, setNotes] = useState(data?.crm?.notes || "");
+  const [tags, setTags] = useState(data?.crm?.tags ? data.crm.tags.join(", ") : "");
   const [isSavingCrm, setIsSavingCrm] = useState(false);
 
   // Modal de Concessão de Crédito
@@ -89,23 +74,39 @@ function CustomerDetailPage() {
 
   // Modal de Preferências do Viajante & Anamnese
   const [isTravelerModalOpen, setIsTravelerModalOpen] = useState(false);
-  const [seatPref, setSeatPref] = useState(data.travelerPreferences?.seat_preference || "window");
-  const [mealPref, setMealPref] = useState(data.travelerPreferences?.meal_preference || "standard");
-  const [passportNum, setPassportNum] = useState(data.travelerPreferences?.passport?.number || "");
-  const [passportCountry, setPassportCountry] = useState(data.travelerPreferences?.passport?.issuingCountry || "Brasil");
-  const [passportExpiry, setPassportExpiry] = useState(data.travelerPreferences?.passport?.expiryDate || "");
+  const [seatPref, setSeatPref] = useState(data?.travelerPreferences?.seat_preference || "window");
+  const [mealPref, setMealPref] = useState(data?.travelerPreferences?.meal_preference || "standard");
+  const [passportNum, setPassportNum] = useState(data?.travelerPreferences?.passport?.number || "");
+  const [passportCountry, setPassportCountry] = useState(data?.travelerPreferences?.passport?.issuingCountry || "Brasil");
+  const [passportExpiry, setPassportExpiry] = useState(data?.travelerPreferences?.passport?.expiryDate || "");
   const [airlineMiles, setAirlineMiles] = useState(
-    (data.travelerPreferences?.frequent_flyer_programs || []).map((f: any) => `${f.airline}: ${f.accountNumber}`).join(", ")
+    (data?.travelerPreferences?.frequent_flyer_programs || []).map((f: any) => `${f.airline}: ${f.accountNumber}`).join(", ")
   );
   const [visasInput, setVisasInput] = useState(
-    (data.travelerPreferences?.visas || []).map((v: any) => `${v.country} (${v.visaType})`).join(", ")
+    (data?.travelerPreferences?.visas || []).map((v: any) => `${v.country} (${v.visaType})`).join(", ")
   );
   const [dietaryAllergies, setDietaryAllergies] = useState(
-    data.travelerPreferences?.special_assistance?.dietaryAllergies || ""
+    data?.travelerPreferences?.special_assistance?.dietaryAllergies || ""
   );
-  const [isPcd, setIsPcd] = useState(Boolean(data.travelerPreferences?.special_assistance?.pcd));
-  const [isWheelchair, setIsWheelchair] = useState(Boolean(data.travelerPreferences?.special_assistance?.wheelchair));
+  const [isPcd, setIsPcd] = useState(Boolean(data?.travelerPreferences?.special_assistance?.pcd));
+  const [isWheelchair, setIsWheelchair] = useState(Boolean(data?.travelerPreferences?.special_assistance?.wheelchair));
   const [isSavingTraveler, setIsSavingTraveler] = useState(false);
+
+  // ── Guard defensivo: loader pode retornar null em falha ─────────────────────
+  if (!data?.profile) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
+        <User className="size-10 text-muted-foreground" />
+        <h2 className="font-bold text-lg text-foreground">Cliente não encontrado</h2>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Este registro pode ter sido removido ou você não tem permissão para visualizá-lo.
+        </p>
+        <Button variant="outline" size="sm" onClick={() => router.history.back()}>
+          Voltar
+        </Button>
+      </div>
+    );
+  }
 
   const handleSharePortalLink = () => {
     const leadToken = data.commercialLeads?.[0]?.id || id;
@@ -252,7 +253,7 @@ function CustomerDetailPage() {
   });
 
   return (
-    <div className="w-full space-y-6 pb-12">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
       {/* ── Header ── */}
       <PageHeader
         title={data.profile.name}
@@ -407,47 +408,47 @@ function CustomerDetailPage() {
 
       {/* ── 2. Abas de Detalhamento 360° ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex flex-wrap sm:flex-nowrap h-auto sm:h-10 w-full gap-1 mb-6 p-1 bg-muted/50 rounded-2xl overflow-x-auto">
-          <TabsTrigger value="timeline" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+        <TabsList className="flex items-center justify-start h-11 w-full gap-1.5 mb-6 p-1 bg-muted/50 rounded-2xl overflow-x-auto no-scrollbar whitespace-nowrap">
+          <TabsTrigger value="timeline" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <History className="size-3.5" />
             <span>Timeline</span>
           </TabsTrigger>
-          <TabsTrigger value="viagens" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="viagens" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Plane className="size-3.5 text-primary" />
             <span>Viagens ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0)})</span>
           </TabsTrigger>
-          <TabsTrigger value="preferencias" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="preferencias" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Compass className="size-3.5 text-sky-500" />
             <span>Preferências</span>
           </TabsTrigger>
-          <TabsTrigger value="passes" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="passes" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <QrCode className="size-3.5 text-emerald-500" />
             <span>Passes Wallet ({data.walletPasses?.length || 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="acompanhantes" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="acompanhantes" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Users2 className="size-3.5 text-violet-500" />
             <span>Família / Pax ({allPax.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="documents" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="documents" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <FileText className="size-3.5 text-primary" />
             <span>Docs ({data.documents?.length || 0})</span>
             {data.documents?.some((d: any) => d.expiryStatus === "expired") && (
               <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
             )}
           </TabsTrigger>
-          <TabsTrigger value="addresses" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="addresses" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <MapPin className="size-3.5" />
             <span>Endereços ({data.addresses?.length || 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="credits" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="credits" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Gift className="size-3.5" />
             <span>Créditos</span>
           </TabsTrigger>
-          <TabsTrigger value="clinical" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="clinical" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <HeartPulse className="size-3.5 text-rose-500" />
             <span>Prontuário ({data.clinicalRecords?.length || 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="crm" className="text-xs font-semibold gap-1.5 flex-1 rounded-xl min-h-[36px]">
+          <TabsTrigger value="crm" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Tag className="size-3.5" />
             <span>Notas & Tags</span>
           </TabsTrigger>
@@ -703,7 +704,7 @@ function CustomerDetailPage() {
               <div className="space-y-2 text-xs">
                 {airlineMiles ? (
                   <div className="p-2.5 rounded-xl bg-muted/40 font-mono text-[11px] space-y-1">
-                    {airlineMiles.split(",").map((m, idx) => (
+                    {airlineMiles.split(",").map((m: string, idx: number) => (
                       <div key={idx} className="flex items-center justify-between">
                         <span>{m.trim()}</span>
                         <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
@@ -1014,7 +1015,7 @@ function CustomerDetailPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col justify-between overflow-y-auto"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col justify-between overflow-y-auto"
         >
           <div>
             <SheetHeader className="pb-4">

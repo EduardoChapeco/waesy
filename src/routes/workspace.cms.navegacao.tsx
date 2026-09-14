@@ -41,19 +41,9 @@ function CmsNavigationPage() {
   const router = useRouter();
   const menus = Route.useLoaderData();
 
-  // Guard defensivo para null
-  if (!menus) {
-    return (
-      <EmptyState
-        title="Não foi possível carregar os menus"
-        description="Tente recarregar a página."
-      />
-    );
-  }
-
   const defaultMenu: any =
-    (menus as any[]).find((m: any) => m.handle === "main-menu") ||
-    (menus as any[])[0] ||
+    (menus as any[] | undefined)?.find((m: any) => m.handle === "main-menu") ||
+    (menus as any[] | undefined)?.[0] ||
     { name: "Menu Principal", handle: "main-menu", items: [] };
 
   const [activeMenu, setActiveMenu] = useState<MenuState>({
@@ -64,6 +54,16 @@ function CmsNavigationPage() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+
+  // Guard defensivo para null
+  if (!menus) {
+    return (
+      <EmptyState
+        title="Não foi possível carregar os menus"
+        description="Tente recarregar a página."
+      />
+    );
+  }
 
   const handleAddItem = () => {
     const newItem: NavItem = {
@@ -111,7 +111,7 @@ function CmsNavigationPage() {
   };
 
   return (
-    <div className="w-full space-y-6 pb-12">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         title="Navegação"
         description="Configure os menus de navegação da sua vitrine pública."

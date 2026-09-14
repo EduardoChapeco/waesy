@@ -76,9 +76,33 @@ description: "Regras estritas para erradicar o 'AI Smell' visual: elimina botõe
 
 ---
 
-## 🛡️ 5. Checklist de Verificação Antes de Concluir Qualquer UI
+## 💬 6. Eliminação de Jargão Técnico / Linguagem Comercial Direta
+
+- **Fale como um lojista e cliente real**, não como um programador de software:
+  - ❌ "Auditar parâmetros de comissão e webhook de tracking" ➔ ✅ **"Minhas Comissões & Vendas"**
+  - ❌ "Visualizar payload de transação multi-tenant" ➔ ✅ **"Detalhes do Pedido"**
+  - ❌ "Configurar metadata de nicho operacional" ➔ ✅ **"Tipo de Atendimento"**
+  - ❌ "Acessar portal comercial de gestores" ➔ ✅ **"Entrar no Workspace"**
+  - ❌ "Taxonomia canônica de atributos" ➔ ✅ **"Características do Produto"**
+- A interface deve ser clara, amigável, direta e estritamente comercial.
+
+---
+
+## 📱 7. Padronização Milimétrica de 1px da Borda no Mobile & Zero Dead Space
+
+- **Distância Canônica de 1px**: No mobile, o container raiz `<main>` deve aplicar `px-[1px]`.
+- **Proibição de Margem Dupla**: Telas filhas (`_store.*` e `workspace.*`) nunca devem aplicar `px-4`, `px-6` ou `px-0.5` acumulados no mobile. Usem `px-0 sm:px-4 md:px-0`.
+- **Proibição de "Grid dentro de Grid"**: Nunca estrangule telas móveis (360px-390px) com múltiplos contêineres aninhados com paddings internos. O conteúdo deve se expandir aproveitando 100% da largura útil disponível.
+- **Proibição de `max-w-xl` em Empty States Móveis**: Empty states e cartões devem preencher `w-full` com padding interno contido (`p-4 sm:p-8`), sem margens flutuantes ociosas nas laterais.
+
+---
+
+## 🛡️ 8. Checklist de Verificação Antes de Concluir Qualquer UI
 
 - [ ] Existe algum botão com título + subtítulo descritivo quando um botão simples bastaria? (Se sim, simplifique).
 - [ ] Existe algum texto redundante explicando como preencher um input óbvio? (Se sim, delete).
 - [ ] Existe algum ícone dentro de uma caixinha arredondada sem função real? (Se sim, remova a caixinha).
+- [ ] Os termos usados são comerciais e humanos (sem jargões técnicos de BD/programação)?
+- [ ] A tela no mobile tem exatamente 1px da borda da tela sem paddings laterais acumulados?
 - [ ] A tela parece ter sido feita por um designer da Apple, Stripe ou Linear? (Menos texto, mais foco no dado).
+

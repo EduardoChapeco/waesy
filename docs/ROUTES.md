@@ -144,5 +144,21 @@ Encontradas rotas físicas que não possuem registro no ROUTES.md e não recebem
 
 ### Status Geral
 
-- **Administração (admin.\*):** Predominantemente BLOQUEADO via <PhaseGate>. Possuem componentes renderizados, mas sem acesso orgânico em runtime.
-- **Vitrine e Conta (\_store.\*):** A maioria COMPROVADO para leitura, mas com pendências de validação estrita de Supabase direto vs Server Functions em sub-rotas como avaliações e chats.
+- **Administração (admin.\* / workspace.\*):** Painéis operacionais do lojista e módulos de nicho com isolamento multi-tenant por sessão.
+- **Governança Master (admin-master.\*):** Painel executivo do conselho, auditoria, telemetria e valuation.
+- **Vitrine e Conta (\_store.\*):** Experiência pública nativa rápida e silenciosa sem barreiras cognitivas.
+
+## Rotas de Governança Master (admin-master.*)
+
+| Rota | Descrição | Permissão | Fase | Status |
+| :--- | :--- | :--- | :---: | :---: |
+| `/admin-master` | Dashboard Global da Plataforma | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/crescimento` | **Metas Projetadas vs. Dados Reais & Valuation** | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/modulos` | Gestão de Módulos & Features | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/algoritmo` | Calibração do Feed & Afinidade | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/curadoria` | Curadoria & Mystery Shopper | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/lojas` | Gestão Global de Tenants/Lojas | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/usuarios` | Usuários & Moderação | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/faturas` | Faturamento Global da Plataforma | platform_admin | 1 | `✅ Implementado` |
+| `/admin-master/seguranca` | Telemetria & Segurança Forense | platform_admin | 1 | `✅ Implementado` |
+

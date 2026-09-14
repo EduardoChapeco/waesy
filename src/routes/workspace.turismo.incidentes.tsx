@@ -254,7 +254,7 @@ export default function TourismIncidentsPage() {
   const anacRights = detail?.anac_rights_summary as any;
 
   return (
-    <div className="flex flex-col gap-4 min-h-[calc(100vh-8.5rem)]">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 min-h-[calc(100vh-8.5rem)] pb-20 animate-in fade-in duration-200">
       {/* ── Toolbar Canônica ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -346,7 +346,7 @@ export default function TourismIncidentsPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] border-l p-0 flex flex-col h-full bg-card overflow-hidden"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] border-l p-0 flex flex-col h-full bg-card overflow-hidden"
         >
           {detailLoading ? (
             <div className="flex-1 flex items-center justify-center">
@@ -546,7 +546,7 @@ export default function TourismIncidentsPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col h-full"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col h-full"
         >
           <SheetHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <SheetTitle className="text-sm font-bold text-foreground flex items-center gap-2">

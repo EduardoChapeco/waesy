@@ -65,27 +65,36 @@ function StoreCartPage() {
 
  const selectedCart = carts?.find((c: any) => c.storeId === selectedStoreId);
 
- return (
-    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 space-y-6 pb-28 lg:pb-16">
-      {/* ── Sub-Header Silencioso ── */}
-      <div className="flex items-center justify-between pb-2 border-b border-border/40">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+  return (
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 md:px-0 space-y-4 sm:space-y-6 pb-28 lg:pb-16">
+      {/* ── Sub-Header Silencioso Nativo ── */}
+      <div className="flex items-center justify-between pb-3 border-b border-border/40 pt-1">
+        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
           Meu Carrinho
         </h1>
         {selectedCart && (
-          <span className="text-xs text-muted-foreground font-medium">
+          <span className="text-xs text-muted-foreground font-semibold">
             {selectedCart.itemCount} {selectedCart.itemCount === 1 ? "item" : "itens"}
           </span>
         )}
       </div>
 
       {!carts || carts.length === 0 ? (
-        <EmptyState
-          title="Seu carrinho está vazio"
-          action={
-            <Button onClick={() => router.navigate({ to: "/mercado" })}>Continuar Comprando</Button>
-          }
-        />
+        <div className="py-14 px-2 flex flex-col items-center justify-center text-center">
+          <div className="size-16 rounded-3xl bg-muted/60 flex items-center justify-center mb-4 text-muted-foreground">
+            <ShoppingBag className="size-8 stroke-[1.5]" />
+          </div>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">Seu carrinho está vazio</h2>
+          <p className="text-xs text-muted-foreground max-w-xs mt-1 mb-6">
+            Adicione produtos de restaurantes, mercados ou lojas da sua região para finalizar sua compra.
+          </p>
+          <Button
+            onClick={() => router.navigate({ to: "/mercado" })}
+            className="rounded-2xl h-11 px-6 font-bold text-sm cursor-pointer shadow-sm active:scale-95 transition-all"
+          >
+            Continuar Comprando
+          </Button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10 items-start">
           {/* Coluna Esquerda: Listagem de Lojas e Itens */}
@@ -242,7 +251,7 @@ function StoreCartPage() {
                     </div>
 
                     {selectedCart.couponCode && (
-                      <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                      <div className="flex justify-between text-success font-medium">
                         <span className="flex items-center gap-1">
                           <Ticket className="size-3.5" /> Cupom ({selectedCart.couponCode})
                         </span>

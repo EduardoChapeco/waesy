@@ -3,7 +3,7 @@
  * Motor de exibição de pedidos para cozinha/produção
  */
 
-import { defineEngine } from '../contracts/engine.contract';
+export const defineEngine = <T>(config: T): T => config;
 
 export const KDSEngine = defineEngine({
   id: 'kds_engine',

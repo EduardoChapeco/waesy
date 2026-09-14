@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_store/entrar")({
  error: typeof search.error === "string" ? search.error : undefined,
  };
  },
-  loader: async ({ search }: { search: { returnUrl?: string; error?: string } }) => {
+  loader: async ({ search }: any) => {
     try {
       const session = await getUserSession();
       if (session?.id) {

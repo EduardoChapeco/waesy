@@ -20,24 +20,57 @@ import {
 import { PostCommentsDrawer } from "@/components/community/post-comments-drawer";
 import { toast } from "sonner";
 
-interface MediaLightboxModalProps {
- isOpen: boolean;
- onClose: () => void;
- post: MuralFeedItem;
- initialMediaIndex?: number;
+export interface MediaLightboxModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  post?: MuralFeedItem;
+  mediaUrls?: string[];
+  initialIndex?: number;
+  initialMediaIndex?: number;
+  postContext?: {
+    authorName?: string;
+    authorAvatar?: string | null;
+    caption?: string | null;
+    createdAt?: string;
+  };
 }
 
 export function MediaLightboxModal({
- isOpen,
- onClose,
- post,
- initialMediaIndex = 0,
+  isOpen,
+  onClose,
+  post: providedPost,
+  mediaUrls,
+  initialIndex,
+  initialMediaIndex,
+  postContext,
 }: MediaLightboxModalProps) {
- const [currentIndex, setCurrentIndex] = useState(initialMediaIndex);
- const [isCommentDrawerOpen, setIsCommentDrawerOpen] = useState(false);
- const qc = useQueryClient();
+  const mediaList = providedPost?.media_urls || mediaUrls || [];
+  const startIdx = initialMediaIndex ?? initialIndex ?? 0;
+  const post: MuralFeedItem = providedPost || {
+    id: "context-preview",
+    type: "post",
+    content_text: postContext?.caption || null,
+    media_urls: mediaList,
+    post_type: "photo",
+    created_at: postContext?.createdAt || new Date().toISOString(),
+    likes_count: 0,
+    comments_count: 0,
+    user_liked: false,
+    author: {
+      id: "author",
+      name: postContext?.authorName || "Perfil",
+      avatar_url: postContext?.authorAvatar || null,
+      is_store: false,
+    },
+    reference_type: "none",
+    reference_id: null,
+  };
 
- const currentMediaUrl = post.media_urls[currentIndex] || "";
+  const [currentIndex, setCurrentIndex] = useState(startIdx);
+  const [isCommentDrawerOpen, setIsCommentDrawerOpen] = useState(false);
+  const qc = useQueryClient();
+
+  const currentMediaUrl = post.media_urls[currentIndex] || "";
 
  // Query para estatísticas exclusivas das fotos
  const statsQueryKey = ["post-media-stats", post.id];
@@ -144,41 +177,43 @@ export function MediaLightboxModal({
  )}
  </div>
 
- {/* Bottom Floating Interaction Bar */}
- <div className="px-4 py-3 bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-white shrink-0">
- <div className="flex items-center gap-2">
- {/* Curtir foto específica */}
- <Button
- size="sm"
- variant="ghost"
- onClick={() => toggleLikeMutation.mutate()}
- className={`h-10 px-3.5 rounded-xl gap-2 text-xs font-bold transition-all ${
- currentStat.user_liked
- ? "bg-destructive/20 text-destructive hover:bg-destructive/30"
- : "bg-white/10 hover:bg-white/20 text-white"
- }`}
- >
- <Heart
- className={`size-4 ${currentStat.user_liked ? "fill-current text-destructive" : ""}`}
- />
- <span>{currentStat.likes_count} curtidas nesta foto</span>
- </Button>
+  {/* Bottom Floating Interaction Bar */}
+  <div className="px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-white shrink-0">
+    <div className="flex items-center gap-2">
+      {/* Curtir foto específica */}
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => toggleLikeMutation.mutate()}
+        className={`h-10 px-3 sm:px-3.5 rounded-xl gap-2 text-xs font-bold transition-all ${
+          currentStat.user_liked
+            ? "bg-destructive/20 text-destructive hover:bg-destructive/30"
+            : "bg-white/10 hover:bg-white/20 text-white"
+        }`}
+      >
+        <Heart
+          className={`size-4 ${currentStat.user_liked ? "fill-current text-destructive" : ""}`}
+        />
+        <span className="hidden sm:inline">{currentStat.likes_count} curtidas nesta foto</span>
+        <span className="sm:hidden">{currentStat.likes_count}</span>
+      </Button>
 
- {/* Comentar na foto específica */}
- <Button
- size="sm"
- variant="ghost"
- onClick={() => setIsCommentDrawerOpen(true)}
- className="h-10 px-3.5 rounded-xl gap-2 text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition-all"
- >
- <MessageSquare className="size-4" />
- <span>
- {currentStat.comments_count > 0
- ? `${currentStat.comments_count} comentários`
- : "Comentar foto"}
- </span>
- </Button>
- </div>
+      {/* Comentar na foto específica */}
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => setIsCommentDrawerOpen(true)}
+        className="h-10 px-3 sm:px-3.5 rounded-xl gap-2 text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition-all"
+      >
+        <MessageSquare className="size-4" />
+        <span className="hidden sm:inline">
+          {currentStat.comments_count > 0
+            ? `${currentStat.comments_count} comentários`
+            : "Comentar foto"}
+        </span>
+        <span className="sm:hidden">{currentStat.comments_count}</span>
+      </Button>
+    </div>
 
  {/* Dots de navegação */}
  {post.media_urls.length > 1 && (

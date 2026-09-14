@@ -244,7 +244,7 @@ function VehicleLayoutsListPage() {
  label: f.label,
  active: typeFilter === f.id,
  }))}
- onFilterChange={(id) => setTypeFilter(id)}
+  onFilterChange={(id: string) => setTypeFilter(id)}
  primaryAction={{
  label: "Novo Modelo",
  icon: Plus,
@@ -255,8 +255,8 @@ function VehicleLayoutsListPage() {
  />
 
  {/* ── 2. Grid de Modelos ── */}
- <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-24 space-y-6">
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="w-full space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {filtered.map((layout) => (
  <div
  key={layout.id}
@@ -353,7 +353,7 @@ function VehicleLayoutsListPage() {
      <SheetContent
        side="right"
        size="wide"
-       className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] border-l border-border/70 bg-card p-6 space-y-4 overflow-y-auto"
+       className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] border-l border-border/70 bg-card p-6 space-y-4 overflow-y-auto"
      >
       <SheetHeader>
         <SheetTitle className="text-base font-bold text-foreground">

@@ -128,7 +128,7 @@ function LimpezaVerticalPage() {
  const relevantHotpages = useMemo(() => {
  if (!hotpages) return [];
  return hotpages.filter(
- (hp) =>
+ (hp: any) =>
  hp.module === "marketplace" ||
  hp.slug.includes("limpeza") ||
  hp.slug.includes("higiene") ||

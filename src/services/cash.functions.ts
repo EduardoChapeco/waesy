@@ -475,6 +475,46 @@ export async function _processPOSSale(input: {
  throw new Error("Erro ao finalizar venda no PDV: " + rpcError.message);
  }
 
+  // Sincronização em background E2E com Marketplaces e Fiscal
+  if (rpcResult.orderId) {
+    // 1. NF-e / NFC-e Automatizada
+    import("./fiscal-nfe.functions")
+      .then(({ emitOrderNFeAutomated }) => {
+        emitOrderNFeAutomated({ data: { orderId: rpcResult.orderId, storeId: identity.store_id } })
+          .then((res) => {
+            if (res.success && res.invoice) {
+              console.log(`[pdv:fiscal] Nota fiscal emitida para venda PDV #${rpcResult.orderId}`);
+            }
+          })
+          .catch((err) => {
+            console.warn(`[pdv:fiscal] Falha não-bloqueante na emissão fiscal PDV:`, err);
+          });
+      })
+      .catch((e) => console.warn("[pdv:fiscal] Falha ao importar fiscal-nfe:", e));
+
+    // 2. Propagação de Estoque para Marketplaces (Mercado Livre, Shopee, Amazon)
+    import("./marketplace-hub.functions")
+      .then(async ({ _syncStockToMarketplacesInternal }) => {
+        for (const item of canonicalItems) {
+          try {
+            const { data: updatedVariant } = await supabase
+              .from("product_variants")
+              .select("stock_on_hand, product_id")
+              .eq("id", item.variantId)
+              .maybeSingle();
+
+            const targetProductId = updatedVariant?.product_id || item.variantId;
+            const newStockQty = updatedVariant?.stock_on_hand ?? 0;
+
+            await _syncStockToMarketplacesInternal(identity.store_id, targetProductId, newStockQty);
+          } catch (syncErr) {
+            console.warn(`[pdv:stock-sync] Falha na sincronização do item ${item.sku}:`, syncErr);
+          }
+        }
+      })
+      .catch((e) => console.warn("[pdv:stock-sync] Falha ao importar marketplace-hub:", e));
+  }
+
  return {
  status: "success" as const,
  receiptId: rpcResult.receiptId,

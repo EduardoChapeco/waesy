@@ -338,12 +338,12 @@ function PersonalFinancePage() {
   // Categorias filtradas pelo tipo no drawer
   const availableCategories = useMemo(() => {
     return categories.filter(
-      (c) => c.type === entryType || c.type === "both"
+      (c: any) => c.type === entryType || c.type === "both"
     );
   }, [categories, entryType]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
@@ -566,7 +566,7 @@ function PersonalFinancePage() {
 
         {/* Barra de Filtros Rápidos & Busca */}
         <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
-          <div className="inline-flex bg-muted/60 p-1 rounded-xl border border-border/40 self-start">
+          <div className="inline-flex bg-muted/60 p-1 rounded-xl border border-border/40 self-start overflow-x-auto no-scrollbar max-w-full">
             <button
               type="button"
               onClick={() => setActiveTab("all")}
@@ -828,7 +828,7 @@ function PersonalFinancePage() {
                   Categoria
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-1 border border-border/40 rounded-xl bg-muted/30">
-                  {availableCategories.map((cat) => (
+                  {availableCategories.map((cat: any) => (
                     <button
                       key={cat.id}
                       type="button"

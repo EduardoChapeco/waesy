@@ -453,3 +453,126 @@ Para suportar indicações:
 ### 32.3 Diretrizes Visuais Canônicas (Design Ops)
 
 - **Sem Breadcrumbs Administrativos Artificiais**: Páginas públicas sociais, classificados e eventos iniciam de maneira limpa com suas mídias, títulos, badges contextuais e ações prioritárias, sem heros inflados ou trilhas burocráticas no topo.
+
+---
+
+## 33. Governança Estratégica, Metas de Crescimento & Livro-Caixa Corporativo
+
+Para possibilitar o acompanhamento executivo de dados reais vs. metas projetadas e auditorias de M&A (Due Diligence):
+
+```text
+PlatformGrowthTarget (Metas por Fase)
+  ├── id (uuid, PK)
+  ├── period_key (text, unique: fase_1_500_stores | fase_2_1000_stores | fase_3_5000_stores_100k_clients)
+  ├── label (text)
+  ├── stage_order (int)
+  ├── target_stores (int)
+  ├── target_clients (int)
+  ├── target_mrr_cents (bigint)
+  ├── target_arr_cents (bigint)
+  ├── target_gmv_monthly_cents (bigint)
+  ├── target_expenses_monthly_cents (bigint)
+  ├── target_investments_cents (bigint)
+  ├── target_conversion_rate (numeric 5,2)
+  ├── target_valuation_conservative_cents (bigint)
+  ├── target_valuation_strategic_cents (bigint)
+  ├── notes (text)
+  └── created_at / updated_at (timestamptz)
+
+PlatformFinancialRecord (Livro-Caixa Auditável)
+  ├── id (uuid, PK)
+  ├── entry_type (text: expense | investment | revenue_adjustment)
+  ├── category (text: infraestrutura | marketing | pessoal | aporte_societario | etc.)
+  ├── amount_cents (bigint, positivo)
+  ├── description (text)
+  ├── entry_date (date)
+  ├── receipt_url (text, optional)
+  ├── recorded_by (uuid, FK -> auth.users)
+  └── created_at / updated_at (timestamptz)
+```
+
+### Invariantes de Governança
+1. **Deny-by-Default Restrito**: Ambas as tabelas possuem RLS habilitado, com acesso concedido exclusivamente a usuários com role `platform_admin`.
+2. **Dinheiro em Centavos**: Todo valor monetário é armazenado como `bigint` em centavos de Real (`amount_cents`, `target_mrr_cents`, etc.), nunca float.
+3. **Auditoria de Responsabilidade**: Todo lançamento financeiro manual registra o UUID do administrador responsável (`recorded_by`).
+
+---
+
+## 34. Supply Chain Finance, Payout D+7/D+30 & Liquidação de NF-e de Entrada
+
+Estrutura de dados para viabilizar retenção de saldo e liquidação com taxa zero para fornecedores homologados:
+
+```text
+StoreInboundInvoice (NF-e de Entrada de Fornecedor)
+  ├── id (uuid, PK)
+  ├── store_id (uuid, FK -> stores)
+  ├── supplier_cnpj (text, 14 dígitos)
+  ├── supplier_name (text)
+  ├── nfe_key (text, 44 dígitos único)
+  ├── nfe_number (text)
+  ├── nfe_serie (text)
+  ├── total_amount_cents (bigint)
+  ├── xml_url / danfe_pdf_url (text, optional)
+  ├── status (pending | scheduled | paid | cancelled)
+  ├── payment_due_date (date)
+  ├── installments (jsonb: array de duplicatas { dup_number, amount_cents, due_date, status })
+  └── created_at / updated_at (timestamptz)
+
+StoreSettlementPolicy (Regra Paramétrica de Payout)
+  ├── store_id (uuid, PK -> stores)
+  ├── standard_payout_days (int: 7 | 14 | 30)
+  ├── early_payout_fee_percentage (numeric 5,2: ex 2.50% a 3.50%)
+  ├── allow_b2b_supplier_d0 (boolean: true)
+  └── updated_by (uuid, FK -> auth.users)
+```
+
+### Invariantes do Modelo
+1. **Verificação de Chave Única:** Uma mesma chave de NF-e (44 dígitos) só pode ser liquidada uma única vez no ecossistema (`unique(nfe_key)`).
+2. **Liquidação Vinculada à Data:** O pagamento automático ao fornecedor é agendado rigorosamente para a data de vencimento da duplicata (`due_date`), preservando o fluxo de caixa do lojista e a custódia da plataforma até o momento exato do vencimento.
+3. **Isenção de Taxa Condicional:** O sistema aplica taxa zero de antecipação (`early_payout_fee = 0`) exclusivamente quando o destinatário dos recursos é o CNPJ emissor da NF-e de entrada vinculada.
+
+---
+
+## 35. Waesy Care Finance: Entidades de Apoio ao Fluxo de Caixa Humano
+
+```text
+StoreCashSafe (Cofres Inteligentes de Proteção)
+  ├── id (uuid, PK)
+  ├── store_id (uuid, FK -> stores)
+  ├── name (text: "Salários da Equipe", "Aluguel", "Reserva de Emergência")
+  ├── target_amount_cents (bigint)
+  ├── current_amount_cents (bigint)
+  ├── auto_split_percentage (numeric 4,2: ex 10.00%)
+  ├── unlock_date (date: ex dia 5 de cada mês)
+  ├── status (active | paused | unlocked)
+  └── created_at / updated_at (timestamptz)
+
+StoreWorkingCapitalAdvance (Giro Solidário por Vendas)
+  ├── id (uuid, PK)
+  ├── store_id (uuid, FK -> stores)
+  ├── approved_amount_cents (bigint)
+  ├── outstanding_balance_cents (bigint)
+  ├── daily_sales_deduction_rate (numeric 4,2: ex 10.00%)
+  ├── monthly_interest_rate (numeric 4,2: ex 1.50%)
+  ├── status (active | settled | renegotiated)
+  ├── disbursed_at (timestamptz)
+  └── created_at / updated_at (timestamptz)
+
+SupplierInvoiceSplitSchedule (Provisionamento Suave de NF-e)
+  ├── id (uuid, PK)
+  ├── store_id (uuid, FK -> stores)
+  ├── inbound_invoice_id (uuid, FK -> store_inbound_invoices)
+  ├── daily_reserve_cents (bigint)
+  ├── total_reserved_cents (bigint)
+  ├── target_due_date (date)
+  ├── auto_pay_enabled (boolean: true)
+  ├── emergency_advance_cents (bigint, default 0)
+  └── status (accumulating | ready_to_pay | paid | defaulted)
+```
+
+### Invariantes Humanas de Caixa:
+1. **Cobrança Proporcional ao Dia:** O Capital de Giro por Vendas NUNCA cobra parcela fixa; a amortização ocorre exclusivamente como fração do faturamento real do dia. Se a loja não faturar, o valor retido é zero.
+2. **Separação Intocável de Folha:** O saldo do Cofre de Salários só pode ser movimentado para pagamentos registrados no módulo de folha ou com desbloqueio explícito pelo proprietário da loja.
+
+
+

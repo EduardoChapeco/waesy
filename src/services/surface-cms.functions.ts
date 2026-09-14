@@ -485,8 +485,10 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  "banner_single_21_9",
  "banner_duo_16_9",
  "banner_trio_bento",
- "custom_buttons_rail",
- ]),
+      "custom_buttons_rail",
+      "single_store_spotlight",
+      "classifieds_spotlight",
+    ]),
  title: z.string().min(1, "Título obrigatório"),
  subtitle: z.string().optional().nullable(),
  badge_tag: z.string().optional().nullable(),
@@ -755,7 +757,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
 
     // ── MODO 1: Achados com Maiores Descontos ──
     if (mode === 1) {
-      let discountQuery = supabase
+      let discountQuery: any = supabase
         .from("products")
         .select(`
           id,
@@ -805,7 +807,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
             has_flash_offer: true,
           };
         })
-        .filter((p) => p.discount_percent > 0);
+        .filter((p: any) => p.discount_percent > 0);
 
       if (validDeals.length >= 2) {
         return {
@@ -827,7 +829,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
 
     // ── MODO 2: Lojas Novas & Estabelecimentos em Destaque ──
     if (mode === 2) {
-      let storesQuery = supabase
+      let storesQuery: any = supabase
         .from("stores")
         .select("id, name, slug, description, settings, created_at")
         .order("created_at", { ascending: false })
@@ -874,9 +876,9 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
     }
 
     // ── MODO 3: Classificados & Oportunidades em Alta ──
-    let classQuery = supabase
+    let classQuery: any = supabase
       .from("classifieds")
-      .select("id, title, price_cents, images, photos, location_name, deal_type, is_boosted, created_at")
+      .select("id, title, price_cents, images, location_name, deal_type, is_boosted, created_at")
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(10);
@@ -887,7 +889,7 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
 
     const { data: rawClassifieds } = await classQuery;
     const classifiedItems = (rawClassifieds || []).map((c: any) => {
-      const cover = (c.images && c.images[0]) || (c.photos && c.photos[0]) || null;
+      const cover = (c.images && c.images[0]) || null;
       return {
         id: c.id,
         title: c.title,

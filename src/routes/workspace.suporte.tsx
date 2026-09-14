@@ -233,7 +233,7 @@ function WorkspaceSupportPage() {
   }, [tickets, activeTab, categoryFilter, searchQuery]);
 
   return (
-    <div className="flex flex-col gap-4 min-h-[calc(100vh-8.5rem)]">
+    <div className="flex flex-col gap-4 min-h-[calc(100vh-8.5rem)] max-w-7xl mx-auto px-0 sm:px-4 md:px-0 w-full">
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[

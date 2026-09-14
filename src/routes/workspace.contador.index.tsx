@@ -145,9 +145,8 @@ function WorkspaceContadorPage() {
   };
 
   return (
-    <div className="w-full min-h-full bg-background p-4 sm:p-6 space-y-6 animate-in fade-in duration-300">
-      <div className="mx-auto max-w-6xl space-y-6">
-        {/* Header */}
+    <div className="w-full space-y-6 animate-in fade-in duration-300">
+      {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
@@ -432,7 +431,6 @@ function WorkspaceContadorPage() {
           )}
         </div>
       </div>
-    </div>
   );
 }
 

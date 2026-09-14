@@ -72,6 +72,7 @@ import { Route as AdminMasterBoostPaymentsRouteImport } from './routes/admin-mas
 import { Route as AdminMasterBotoesRouteImport } from './routes/admin-master.botoes'
 import { Route as AdminMasterCarnesRouteImport } from './routes/admin-master.carnes'
 import { Route as AdminMasterConviteRouteImport } from './routes/admin-master.convite'
+import { Route as AdminMasterCrescimentoRouteImport } from './routes/admin-master.crescimento'
 import { Route as AdminMasterCuradoriaRouteImport } from './routes/admin-master.curadoria'
 import { Route as AdminMasterDenunciasRouteImport } from './routes/admin-master.denuncias'
 import { Route as AdminMasterFaturasRouteImport } from './routes/admin-master.faturas'
@@ -91,6 +92,7 @@ import { Route as AdminMasterTermosRouteImport } from './routes/admin-master.ter
 import { Route as AdminMasterTokensRouteImport } from './routes/admin-master.tokens'
 import { Route as AdminMasterUsuariosRouteImport } from './routes/admin-master.usuarios'
 import { Route as AdminMasterVitrinesRouteImport } from './routes/admin-master.vitrines'
+import { Route as ApiOpenapiDotjsonRouteImport } from './routes/api.openapi[.]json'
 import { Route as ApiSecurityTelemetryRouteImport } from './routes/api.security-telemetry'
 import { Route as ApiWebmcpDotjsonRouteImport } from './routes/api.webmcp[.]json'
 import { Route as AssinarTokenRouteImport } from './routes/assinar.$token'
@@ -344,6 +346,7 @@ import { Route as WorkspaceTurismoViagensIndexRouteImport } from './routes/works
 import { Route as WorkspaceTurismoViagensIdRouteImport } from './routes/workspace.turismo.viagens.$id'
 import { Route as WorkspaceTurismoVouchersIndexRouteImport } from './routes/workspace.turismo.vouchers.index'
 import { Route as WorkspacePedidosIdReciboRouteImport } from './routes/workspace_.pedidos.$id.recibo'
+import { Route as ApiMcpV1ToolsCallRouteImport } from './routes/api.mcp.v1.tools.call'
 import { Route as WorkspaceTurismoGruposIdEmbarqueRouteImport } from './routes/workspace.turismo.grupos.$id.embarque'
 
 const StoreRoute = StoreRouteImport.update({
@@ -661,6 +664,11 @@ const AdminMasterConviteRoute = AdminMasterConviteRouteImport.update({
   path: '/convite',
   getParentRoute: () => AdminMasterRoute,
 } as any)
+const AdminMasterCrescimentoRoute = AdminMasterCrescimentoRouteImport.update({
+  id: '/crescimento',
+  path: '/crescimento',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
 const AdminMasterCuradoriaRoute = AdminMasterCuradoriaRouteImport.update({
   id: '/curadoria',
   path: '/curadoria',
@@ -756,6 +764,11 @@ const AdminMasterVitrinesRoute = AdminMasterVitrinesRouteImport.update({
   id: '/vitrines',
   path: '/vitrines',
   getParentRoute: () => AdminMasterRoute,
+} as any)
+const ApiOpenapiDotjsonRoute = ApiOpenapiDotjsonRouteImport.update({
+  id: '/api/openapi.json',
+  path: '/api/openapi.json',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSecurityTelemetryRoute = ApiSecurityTelemetryRouteImport.update({
   id: '/api/security-telemetry',
@@ -2127,6 +2140,11 @@ const WorkspacePedidosIdReciboRoute =
     path: '/workspace/pedidos/$id/recibo',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiMcpV1ToolsCallRoute = ApiMcpV1ToolsCallRouteImport.update({
+  id: '/api/mcp/v1/tools/call',
+  path: '/api/mcp/v1/tools/call',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkspaceTurismoGruposIdEmbarqueRoute =
   WorkspaceTurismoGruposIdEmbarqueRouteImport.update({
     id: '/embarque',
@@ -2196,6 +2214,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/botoes': typeof AdminMasterBotoesRoute
   '/admin-master/carnes': typeof AdminMasterCarnesRoute
   '/admin-master/convite': typeof AdminMasterConviteRoute
+  '/admin-master/crescimento': typeof AdminMasterCrescimentoRoute
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
@@ -2215,6 +2234,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/tokens': typeof AdminMasterTokensRoute
   '/admin-master/usuarios': typeof AdminMasterUsuariosRoute
   '/admin-master/vitrines': typeof AdminMasterVitrinesRoute
+  '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/security-telemetry': typeof ApiSecurityTelemetryRoute
   '/api/webmcp.json': typeof ApiWebmcpDotjsonRoute
   '/assinar/$token': typeof AssinarTokenRoute
@@ -2469,6 +2489,7 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/propostas/': typeof WorkspaceTurismoPropostasIndexRoute
   '/workspace/turismo/viagens/': typeof WorkspaceTurismoViagensIndexRoute
   '/workspace/turismo/vouchers/': typeof WorkspaceTurismoVouchersIndexRoute
+  '/api/mcp/v1/tools/call': typeof ApiMcpV1ToolsCallRoute
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRoutesByTo {
@@ -2525,6 +2546,7 @@ export interface FileRoutesByTo {
   '/admin-master/botoes': typeof AdminMasterBotoesRoute
   '/admin-master/carnes': typeof AdminMasterCarnesRoute
   '/admin-master/convite': typeof AdminMasterConviteRoute
+  '/admin-master/crescimento': typeof AdminMasterCrescimentoRoute
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
@@ -2544,6 +2566,7 @@ export interface FileRoutesByTo {
   '/admin-master/tokens': typeof AdminMasterTokensRoute
   '/admin-master/usuarios': typeof AdminMasterUsuariosRoute
   '/admin-master/vitrines': typeof AdminMasterVitrinesRoute
+  '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/security-telemetry': typeof ApiSecurityTelemetryRoute
   '/api/webmcp.json': typeof ApiWebmcpDotjsonRoute
   '/assinar/$token': typeof AssinarTokenRoute
@@ -2799,6 +2822,7 @@ export interface FileRoutesByTo {
   '/workspace/turismo/propostas': typeof WorkspaceTurismoPropostasIndexRoute
   '/workspace/turismo/viagens': typeof WorkspaceTurismoViagensIndexRoute
   '/workspace/turismo/vouchers': typeof WorkspaceTurismoVouchersIndexRoute
+  '/api/mcp/v1/tools/call': typeof ApiMcpV1ToolsCallRoute
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRoutesById {
@@ -2864,6 +2888,7 @@ export interface FileRoutesById {
   '/admin-master/botoes': typeof AdminMasterBotoesRoute
   '/admin-master/carnes': typeof AdminMasterCarnesRoute
   '/admin-master/convite': typeof AdminMasterConviteRoute
+  '/admin-master/crescimento': typeof AdminMasterCrescimentoRoute
   '/admin-master/curadoria': typeof AdminMasterCuradoriaRoute
   '/admin-master/denuncias': typeof AdminMasterDenunciasRoute
   '/admin-master/faturas': typeof AdminMasterFaturasRoute
@@ -2883,6 +2908,7 @@ export interface FileRoutesById {
   '/admin-master/tokens': typeof AdminMasterTokensRoute
   '/admin-master/usuarios': typeof AdminMasterUsuariosRoute
   '/admin-master/vitrines': typeof AdminMasterVitrinesRoute
+  '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/api/security-telemetry': typeof ApiSecurityTelemetryRoute
   '/api/webmcp.json': typeof ApiWebmcpDotjsonRoute
   '/assinar/$token': typeof AssinarTokenRoute
@@ -3138,6 +3164,7 @@ export interface FileRoutesById {
   '/workspace/turismo/propostas/': typeof WorkspaceTurismoPropostasIndexRoute
   '/workspace/turismo/viagens/': typeof WorkspaceTurismoViagensIndexRoute
   '/workspace/turismo/vouchers/': typeof WorkspaceTurismoVouchersIndexRoute
+  '/api/mcp/v1/tools/call': typeof ApiMcpV1ToolsCallRoute
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRouteTypes {
@@ -3204,6 +3231,7 @@ export interface FileRouteTypes {
     | '/admin-master/botoes'
     | '/admin-master/carnes'
     | '/admin-master/convite'
+    | '/admin-master/crescimento'
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
@@ -3223,6 +3251,7 @@ export interface FileRouteTypes {
     | '/admin-master/tokens'
     | '/admin-master/usuarios'
     | '/admin-master/vitrines'
+    | '/api/openapi.json'
     | '/api/security-telemetry'
     | '/api/webmcp.json'
     | '/assinar/$token'
@@ -3477,6 +3506,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/propostas/'
     | '/workspace/turismo/viagens/'
     | '/workspace/turismo/vouchers/'
+    | '/api/mcp/v1/tools/call'
     | '/workspace/turismo/grupos/$id/embarque'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -3533,6 +3563,7 @@ export interface FileRouteTypes {
     | '/admin-master/botoes'
     | '/admin-master/carnes'
     | '/admin-master/convite'
+    | '/admin-master/crescimento'
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
@@ -3552,6 +3583,7 @@ export interface FileRouteTypes {
     | '/admin-master/tokens'
     | '/admin-master/usuarios'
     | '/admin-master/vitrines'
+    | '/api/openapi.json'
     | '/api/security-telemetry'
     | '/api/webmcp.json'
     | '/assinar/$token'
@@ -3807,6 +3839,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/propostas'
     | '/workspace/turismo/viagens'
     | '/workspace/turismo/vouchers'
+    | '/api/mcp/v1/tools/call'
     | '/workspace/turismo/grupos/$id/embarque'
   id:
     | '__root__'
@@ -3871,6 +3904,7 @@ export interface FileRouteTypes {
     | '/admin-master/botoes'
     | '/admin-master/carnes'
     | '/admin-master/convite'
+    | '/admin-master/crescimento'
     | '/admin-master/curadoria'
     | '/admin-master/denuncias'
     | '/admin-master/faturas'
@@ -3890,6 +3924,7 @@ export interface FileRouteTypes {
     | '/admin-master/tokens'
     | '/admin-master/usuarios'
     | '/admin-master/vitrines'
+    | '/api/openapi.json'
     | '/api/security-telemetry'
     | '/api/webmcp.json'
     | '/assinar/$token'
@@ -4145,6 +4180,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/propostas/'
     | '/workspace/turismo/viagens/'
     | '/workspace/turismo/vouchers/'
+    | '/api/mcp/v1/tools/call'
     | '/workspace/turismo/grupos/$id/embarque'
   fileRoutesById: FileRoutesById
 }
@@ -4155,6 +4191,7 @@ export interface RootRouteChildren {
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WorkspaceRoute: typeof WorkspaceRouteWithChildren
+  ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   ApiSecurityTelemetryRoute: typeof ApiSecurityTelemetryRoute
   ApiWebmcpDotjsonRoute: typeof ApiWebmcpDotjsonRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
@@ -4181,6 +4218,7 @@ export interface RootRouteChildren {
   ViajanteViagemIdRoute: typeof ViajanteViagemIdRoute
   ApiAuthMarketplaceCallbackRoute: typeof ApiAuthMarketplaceCallbackRoute
   WorkspacePedidosIdReciboRoute: typeof WorkspacePedidosIdReciboRoute
+  ApiMcpV1ToolsCallRoute: typeof ApiMcpV1ToolsCallRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -4626,6 +4664,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMasterConviteRouteImport
       parentRoute: typeof AdminMasterRoute
     }
+    '/admin-master/crescimento': {
+      id: '/admin-master/crescimento'
+      path: '/crescimento'
+      fullPath: '/admin-master/crescimento'
+      preLoaderRoute: typeof AdminMasterCrescimentoRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
     '/admin-master/curadoria': {
       id: '/admin-master/curadoria'
       path: '/curadoria'
@@ -4758,6 +4803,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin-master/vitrines'
       preLoaderRoute: typeof AdminMasterVitrinesRouteImport
       parentRoute: typeof AdminMasterRoute
+    }
+    '/api/openapi.json': {
+      id: '/api/openapi.json'
+      path: '/api/openapi.json'
+      fullPath: '/api/openapi.json'
+      preLoaderRoute: typeof ApiOpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/security-telemetry': {
       id: '/api/security-telemetry'
@@ -6530,6 +6582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacePedidosIdReciboRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mcp/v1/tools/call': {
+      id: '/api/mcp/v1/tools/call'
+      path: '/api/mcp/v1/tools/call'
+      fullPath: '/api/mcp/v1/tools/call'
+      preLoaderRoute: typeof ApiMcpV1ToolsCallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/workspace/turismo/grupos/$id/embarque': {
       id: '/workspace/turismo/grupos/$id/embarque'
       path: '/embarque'
@@ -6890,6 +6949,7 @@ interface AdminMasterRouteChildren {
   AdminMasterBotoesRoute: typeof AdminMasterBotoesRoute
   AdminMasterCarnesRoute: typeof AdminMasterCarnesRoute
   AdminMasterConviteRoute: typeof AdminMasterConviteRoute
+  AdminMasterCrescimentoRoute: typeof AdminMasterCrescimentoRoute
   AdminMasterCuradoriaRoute: typeof AdminMasterCuradoriaRoute
   AdminMasterDenunciasRoute: typeof AdminMasterDenunciasRoute
   AdminMasterFaturasRoute: typeof AdminMasterFaturasRoute
@@ -6923,6 +6983,7 @@ const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterBotoesRoute: AdminMasterBotoesRoute,
   AdminMasterCarnesRoute: AdminMasterCarnesRoute,
   AdminMasterConviteRoute: AdminMasterConviteRoute,
+  AdminMasterCrescimentoRoute: AdminMasterCrescimentoRoute,
   AdminMasterCuradoriaRoute: AdminMasterCuradoriaRoute,
   AdminMasterDenunciasRoute: AdminMasterDenunciasRoute,
   AdminMasterFaturasRoute: AdminMasterFaturasRoute,
@@ -7317,6 +7378,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WorkspaceRoute: WorkspaceRouteWithChildren,
+  ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   ApiSecurityTelemetryRoute: ApiSecurityTelemetryRoute,
   ApiWebmcpDotjsonRoute: ApiWebmcpDotjsonRoute,
   AssinarTokenRoute: AssinarTokenRoute,
@@ -7343,6 +7405,7 @@ const rootRouteChildren: RootRouteChildren = {
   ViajanteViagemIdRoute: ViajanteViagemIdRoute,
   ApiAuthMarketplaceCallbackRoute: ApiAuthMarketplaceCallbackRoute,
   WorkspacePedidosIdReciboRoute: WorkspacePedidosIdReciboRoute,
+  ApiMcpV1ToolsCallRoute: ApiMcpV1ToolsCallRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

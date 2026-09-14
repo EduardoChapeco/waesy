@@ -122,3 +122,23 @@ Qualquer agente de Inteligência Artificial atuando na Waesy não é apenas um "
 1. **Design Ops**: Antes de gerar componentes, deve consultar o `DESIGN.md` para garantir que o estilo gerado reflita as diretrizes visuais criadas pelo cliente (Operacional Clean x Editorial Cultural).
 2. **Data Architect**: Se houver um requisito visual novo (como um "Campo de Status de Entrega"), o agente deve traçar a arquitetura até o banco, propondo tabelas, schemas e contratos BFF ANTES de modificar o front-end.
 3. **QA/Product Owner**: Cada execução termina com a prova no runtime e a verificação estrita. Não presuma, prove com código tipado, RLS blindado e sincronização fim-a-fim.
+
+## 11. Estratégia de Hiperescala, Efeito Flywheel & Transição para BaaS
+
+A Waesy adota uma tese de go-to-market desenhada para alcançar dominância territorial no Sul do Brasil com custos de aquisição (CAC) mínimos:
+
+1. **Preço Baixo como Barreira Inviolável (Amazon Style):**
+   - Ao contrário de aplicativos tradicionais de delivery que cobram de 12% a 15% das empresas, a Waesy opera com comissão máxima de 3% a 5% no comércio e 1% em viagens/turismo, garantindo adesão orgânica dos lojistas.
+2. **Motores de Atração Exponencial (CAC = Zero):**
+   - **Eventos & Ingressos:** Atrai de 50.000 a 100.000 clientes em poucos meses para retirada de ingressos com QR Code seguro.
+   - **Classificados Gratuitos:** Gera retenção e tráfego diário da comunidade local.
+   - **Turismo & Agências:** Conecta o alto ticket e GMV bruto massivo de pacotes regionais.
+   - **Logística Justa (MotoLink):** Empodera frotas e entregadores locais sem intermediação abusiva.
+3. **Transição para BaaS (Banking-as-a-Service) & B2B:**
+   - Com o saldo retido nas carteiras digitais dos lojistas para pagamentos a distribuidoras parceiras, a Waesy captura float financeiro, emissão de boletos/carnês e antecipação de recebíveis.
+4. **Governança Executiva & Metas ao Vivo:**
+   - Acompanhamento em tempo real via painel corporativo em `/admin-master/crescimento` confrontando dados reais do PostgreSQL (`profiles`, `stores`, `orders`, `platform_invoices`) com metas por fase (500, 1.000 e 5.000 empresas).
+5. **Waesy Care Finance (O Escudo Humano de Fluxo de Caixa):**
+   - A Waesy substitui a pressão bancária tradicional por apoio empático: **Cofres Automáticos** para folha e aluguel rendendo 100% CDI, **Provisionamento Suave de NF-e** (separando R$ 200 a R$ 300/dia para quitar duplicatas de fornecedores sem baque no vencimento), **Capital de Giro Solidário** amortizado apenas como fração percentual das vendas diárias reais (sem parcelas fixas asfixiantes) e **Central de Compras Coletivas B2B** com 20% a 35% de desconto direto de indústrias e cooperativas de SC.
+
+

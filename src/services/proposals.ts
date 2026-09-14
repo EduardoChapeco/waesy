@@ -57,12 +57,21 @@ export type Tour = {
   description: string;
   date: string;
   price: number;
+  image_url?: string;
+  notes?: string;
 };
 
 export type ItineraryDay = {
+  id?: string;
   day_number: number;
+  day?: string;
   title: string;
   description: string;
+  city?: string;
+  images?: string[];
+  imageLayout?: string;
+  meals?: string[];
+  overnight?: string;
 };
 
 export type ProposalOption = {
@@ -82,11 +91,14 @@ export type ProposalOption = {
 
 export type Proposal = {
   id: string;
+  number?: string;
   title: string;
   status: string;
   destination: string;
   start_date: string | null;
   end_date: string | null;
+  travel_start?: string | null;
+  travel_end?: string | null;
   pax_adults: number;
   pax_children: number;
   pax_infants: number;
@@ -116,6 +128,8 @@ export type Proposal = {
   agent_name?: string | null;
   agent_photo_url?: string | null;
   agent_whatsapp?: string | null;
+  agency_phone?: string | null;
+  agency_email?: string | null;
   custom_payments?: any[] | null;
   waypoints?: any[] | null;
   extra_pages?: any[] | null;
@@ -145,6 +159,10 @@ export type UnsplashPhoto = {
     name: string;
     username: string;
   };
+  url_full?: string;
+  url_thumb?: string;
+  alt?: string;
+  photographer?: string;
 };
 
 /**
@@ -168,6 +186,10 @@ export async function searchUnsplash(query: string): Promise<UnsplashPhoto[]> {
             small: r.urls.small,
             thumb: r.urls.thumb,
           },
+          url_full: r.urls.regular,
+          url_thumb: r.urls.thumb,
+          alt: r.alt_description || r.description || "Foto de viagem",
+          photographer: r.user?.name || "Unsplash Creator",
           alt_description: r.alt_description,
           description: r.description,
           user: {
@@ -200,6 +222,10 @@ export async function searchUnsplash(query: string): Promise<UnsplashPhoto[]> {
       small: `${f.url}?auto=format&fit=crop&w=800&q=80`,
       thumb: `${f.url}?auto=format&fit=crop&w=400&q=80`,
     },
+    url_full: `${f.url}?auto=format&fit=crop&w=1600&q=80`,
+    url_thumb: `${f.url}?auto=format&fit=crop&w=400&q=80`,
+    alt: `${query} - Foto ${i + 1}`,
+    photographer: "Fotógrafo Unsplash",
     alt_description: `${query} - Foto ${i + 1}`,
     description: `Paisagem de viagem para ${query}`,
     user: {
@@ -235,9 +261,10 @@ export async function fetchProposalHistory(proposalId: string): Promise<any[]> {
  * Sugestões inteligentes de inclusões e exclusões para propostas
  */
 export async function suggestIncludesExcludesViaAI(
-  destination: string,
+  input: string | Proposal,
   _daysCount: number = 7
 ): Promise<{ includes: string[]; excludes: string[] }> {
+  const destination = typeof input === "string" ? input : input.destination || input.title || "";
   const isIntl = /(europa|paris|roma|orlando|disney|miami|canc[uú]n|chile|bariloche|buenos aires|punta cana)/i.test(destination);
   return {
     includes: [
@@ -260,12 +287,24 @@ export async function suggestIncludesExcludesViaAI(
 /**
  * Refinamento do texto do roteiro
  */
-export async function refineItineraryText(text: string): Promise<string> {
-  return text
+export async function refineItineraryText(
+  titleOrText: string,
+  description?: string
+): Promise<{ title?: string; description: string }> {
+  const rawDesc = description !== undefined ? description : titleOrText;
+  const refined = rawDesc
     .trim()
     .replace(/\s+/g, " ")
     .replace(/^dia\s*(\d+)/i, "Dia $1 —")
     .replace(/(\. )([a-z])/g, (_, p1, p2) => p1 + p2.toUpperCase());
+
+  if (description !== undefined) {
+    return {
+      title: titleOrText.trim(),
+      description: refined,
+    };
+  }
+  return { description: refined };
 }
 
 // Re-export canonical Server Functions

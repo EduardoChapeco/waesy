@@ -153,7 +153,7 @@ function CreatorProfilesManagementPage() {
       </div>
 
       {/* ─── Conteúdo Principal ────────────────────────────────────────── */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <div className="max-w-4xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6">
         {creatorProfiles.length === 0 && !isLoading ? (
           <div className="p-8 sm:p-12 text-center rounded-3xl border border-border/60 bg-card space-y-4 max-w-lg mx-auto shadow-xs">
             <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">

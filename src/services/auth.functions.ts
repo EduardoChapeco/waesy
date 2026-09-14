@@ -936,7 +936,7 @@ export const requestAccountDeletion = createServerFn({ method: "POST" }).handler
 });
 
 // ---------------------------------------------------------------------------
-// Painel de Segurança & Auditoria de Sessões (Padrão Instagram / BigTech)
+// Painel de Segurança & Auditoria de Sessões Avançada
 // ---------------------------------------------------------------------------
 
 /**

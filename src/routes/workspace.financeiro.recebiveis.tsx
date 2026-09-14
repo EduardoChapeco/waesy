@@ -24,6 +24,19 @@ import {
   ChevronRight,
   ExternalLink,
   MessageSquare,
+  Lock,
+  Shield,
+  TrendingUp,
+  Sparkles,
+  Sliders,
+  ArrowRight,
+  ArrowDownRight,
+  RefreshCw,
+  ShoppingBag,
+  Shirt,
+  HeartHandshake,
+  DollarSign,
+  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -47,37 +60,158 @@ import {
   searchCustomersForCarne,
 } from "@/services/receivables.functions";
 import {
+  listStoreCondicionais,
+  createStoreCondicional,
+  resolveCondicionalItems,
+  type StoreCondicionalDTO,
+  type CondicionalItemDTO,
+} from "@/services/condicionais.functions";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/workspace/financeiro/recebiveis")({
-  head: () => ({ meta: [{ title: "Carnês & Contas a Receber | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Recebíveis, Carnês & Condicionais | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [carnes, report] = await Promise.all([
+      const [carnes, report, condicionais] = await Promise.all([
         listStoreCarnes({ data: { filter: "all" } }).catch(() => []),
         getCarnesReportSummary({ data: {} }).catch(() => null),
+        listStoreCondicionais().catch(() => []),
       ]);
-      return { carnes, report };
+      return { carnes, report, condicionais };
     } catch {
-      return { carnes: [], report: null };
+      return { carnes: [], report: null, condicionais: [] };
     }
   },
   component: ReceivablesDashboard,
 });
 
 function ReceivablesDashboard() {
-  const { carnes: initialCarnes, report: initialReport } = ((Route.useLoaderData?.() as any) || {});
+  const {
+    carnes: initialCarnes,
+    report: initialReport,
+    condicionais: initialCondicionais,
+  } = ((Route.useLoaderData?.() as any) || {});
   const queryClient = useQueryClient();
 
   const [activeFilter, setActiveFilter] = useState<
     "all" | "due_soon" | "late" | "pending_conciliation" | "settled"
   >("all");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Navegação Principal de Abas (Clean & Standby de BaaS)
+  const [mainTab, setMainTab] = useState<"carnes" | "condicionais">("carnes");
+
+  // Módulo de Condicionais & Prova em Casa (Varejo de Moda - 100% Persistência Real em Banco)
+  const [condicionaisFilter, setCondicionaisFilter] = useState<"all" | "open" | "due_today" | "overdue" | "closed">("all");
+  const [condicionaisSearch, setCondicionaisSearch] = useState("");
+
+  const { data: condicionaisList = initialCondicionais || [], refetch: refetchCondicionais } = useQuery<StoreCondicionalDTO[]>({
+    queryKey: ["store-condicionais", condicionaisFilter, condicionaisSearch],
+    queryFn: () => listStoreCondicionais({ data: { filter: condicionaisFilter, search: condicionaisSearch } }),
+    initialData: initialCondicionais,
+  });
+
+  const createCondicionalMutation = useMutation({
+    mutationFn: (data: any) => createStoreCondicional({ data }),
+    onSuccess: () => {
+      toast.success("Saída em condicional registrada com sucesso!");
+      setIsCreateCondicionalOpen(false);
+      setNewCondCustomerName("");
+      setNewCondCustomerPhone("");
+      setNewCondNotes("");
+      setNewCondItems([{ name: "", size: "M", priceReais: 0 }]);
+      refetchCondicionais();
+      queryClient.invalidateQueries({ queryKey: ["store-condicionais"] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erro ao salvar condicional.");
+    },
+  });
+
+  const resolveCondicionalMutation = useMutation({
+    mutationFn: (data: any) => resolveCondicionalItems({ data }),
+    onSuccess: (res) => {
+      toast.success(
+        `Condicional atualizado com sucesso! Total vendido: ${formatMoney(res.totalSoldCents)}.`,
+      );
+      setIsReturnCondicionalOpen(false);
+      refetchCondicionais();
+      queryClient.invalidateQueries({ queryKey: ["store-condicionais"] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erro ao resolver itens.");
+    },
+  });
+
+  // Modais de Condicional
+  const [isCreateCondicionalOpen, setIsCreateCondicionalOpen] = useState(false);
+  const [newCondCustomerName, setNewCondCustomerName] = useState("");
+  const [newCondCustomerPhone, setNewCondCustomerPhone] = useState("");
+  const [newCondDays, setNewCondDays] = useState(2);
+  const [newCondNotes, setNewCondNotes] = useState("");
+  const [newCondItems, setNewCondItems] = useState<{ name: string; size: string; priceReais: number }[]>([
+    { name: "", size: "M", priceReais: 0 },
+  ]);
+
+  const [selectedCondicional, setSelectedCondicional] = useState<any>(null);
+  const [isReturnCondicionalOpen, setIsReturnCondicionalOpen] = useState(false);
+  const [itemReturnDecisions, setItemReturnDecisions] = useState<Record<string, "bought" | "returned">>({});
+
+  const handleOpenReturnModal = (cond: any) => {
+    setSelectedCondicional(cond);
+    const initialDecisions: Record<string, "bought" | "returned"> = {};
+    (cond.items || []).forEach((item: any) => {
+      initialDecisions[item.id] = "bought";
+    });
+    setItemReturnDecisions(initialDecisions);
+    setIsReturnCondicionalOpen(true);
+  };
+
+  const handleConfirmReturnCondicional = () => {
+    if (!selectedCondicional) return;
+    const itemsPayload = Object.entries(itemReturnDecisions).map(([itemId, decision]) => ({
+      id: itemId,
+      action: decision === "bought" ? ("purchase" as const) : ("return" as const),
+    }));
+    resolveCondicionalMutation.mutate({
+      condicionalId: selectedCondicional.id,
+      items: itemsPayload,
+    });
+  };
+
+  const handleCreateCondicional = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCondCustomerName.trim()) {
+      toast.error("Informe o nome da cliente.");
+      return;
+    }
+    const validItems = newCondItems.filter((it) => it.name.trim() && it.priceReais > 0);
+    if (validItems.length === 0) {
+      toast.error("Adicione ao menos uma peça válida à mala condicional.");
+      return;
+    }
+
+    const returnDueDate = new Date(Date.now() + newCondDays * 24 * 60 * 60 * 1000).toISOString();
+
+    createCondicionalMutation.mutate({
+      customerName: newCondCustomerName,
+      customerPhone: newCondCustomerPhone || null,
+      returnDueDate,
+      notes: newCondNotes || null,
+      items: validItems.map((it) => ({
+        name: it.name,
+        size: it.size || "Único",
+        priceCents: Math.round(it.priceReais * 100),
+      })),
+    });
+  };
 
   // Queries
   const { data: carnes = [] } = useQuery({
@@ -290,37 +424,99 @@ function ReceivablesDashboard() {
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-28 font-sans">
-      {/* Top Header */}
+    <div className="space-y-6 max-w-7xl mx-auto pb-28 font-sans px-0 sm:px-4 md:px-0">
+      {/* Top Header Dinâmico */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <PageHeader title="Recebíveis" />
+          <PageHeader
+            title={
+              mainTab === "carnes"
+                ? "Recebíveis & Carnês"
+                : "Condicionais & Malas (Varejo)"
+            }
+          />
           <p className="text-muted-foreground text-sm max-w-2xl mt-1">
-            Controle de parcelamentos, conciliação de comprovantes e cobranças da loja.
+            {mainTab === "carnes" && "Controle de parcelamentos, conciliação de comprovantes e cobranças da loja."}
+            {mainTab === "condicionais" && "Gestão de peças e malas sob confiança de clientes para prova em casa no varejo de moda e calçados."}
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
-          {selectedInstallmentIds.length > 0 && (
-            <Button
-              className="rounded-xl bg-primary text-primary-foreground font-medium text-xs h-10 px-3.5 shadow-sm"
-              onClick={() => setIsMassBillingOpen(true)}
-            >
-              <Send className="h-3.5 w-3.5 mr-1.5" /> Cobrar ({selectedInstallmentIds.length}) Selecionados
-            </Button>
+          {mainTab === "carnes" && (
+            <>
+              {selectedInstallmentIds.length > 0 && (
+                <Button
+                  className="rounded-xl bg-primary text-primary-foreground font-medium text-xs h-10 px-3.5 shadow-sm"
+                  onClick={() => setIsMassBillingOpen(true)}
+                >
+                  <Send className="h-3.5 w-3.5 mr-1.5" /> Cobrar ({selectedInstallmentIds.length}) Selecionados
+                </Button>
+              )}
+              <Button
+                className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-1.5" /> Emitir Novo Carnê
+              </Button>
+            </>
           )}
 
-          <Button
-            className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-1.5" /> Emitir Novo Carnê
-          </Button>
+          {mainTab === "condicionais" && (
+            <Button
+              className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 px-4 shadow-sm"
+              onClick={() => setIsCreateCondicionalOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-1.5" /> Nova Saída em Condicional
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* KPI Cards de Carteira (Clean Paradigm) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      {/* Seletor de Abas Principais (Clean Paradigm) */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-muted/50 border border-border/60 max-w-xl">
+        <button
+          type="button"
+          onClick={() => setMainTab("carnes")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2 px-3.5 text-xs font-semibold rounded-xl transition-all",
+            mainTab === "carnes"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Receipt className="h-4 w-4" />
+          <span>Carnês & Caderninho</span>
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+            {carnes.length}
+          </Badge>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMainTab("condicionais")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2 px-3.5 text-xs font-semibold rounded-xl transition-all",
+            mainTab === "condicionais"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Shirt className="h-4 w-4 text-indigo-500" />
+          <span>Condicionais & Malas</span>
+          <Badge
+            variant="outline"
+            className="text-[10px] px-1.5 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
+          >
+            {condicionaisList.filter((c) => c.status !== "closed").length} ativas
+          </Badge>
+        </button>
+      </div>
+
+      {/* Conteúdo da Aba 1: Carnês & Caderninho */}
+      {mainTab === "carnes" && (
+        <>
+          {/* KPI Cards de Carteira (Clean Paradigm) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -657,6 +853,252 @@ function ReceivablesDashboard() {
               </div>
             );
           })}
+        </div>
+      )}
+        </>
+      )}
+
+      {/* Conteúdo da Aba 2: Condicionais & Malas (Varejo de Moda) */}
+      {mainTab === "condicionais" && (
+        <div className="space-y-6">
+          {/* KPI Cards de Condicional */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Peças na Rua / Em Prova
+                </span>
+                <Shirt className="h-4 w-4 text-indigo-500" />
+              </div>
+              <div className="text-xl font-bold text-foreground">
+                {condicionaisList
+                  .filter((c) => c.status !== "closed")
+                  .reduce((acc, c) => acc + c.items.filter((i: any) => i.status === "with_customer").length, 0)}{" "}
+                peças
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Em {condicionaisList.filter((c) => c.status !== "closed").length} malas com clientes
+              </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Valor sob Confiança
+                </span>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                {formatMoney(
+                  condicionaisList
+                    .filter((c) => c.status !== "closed")
+                    .reduce(
+                      (acc, c) =>
+                        acc +
+                        c.items
+                          .filter((i: any) => i.status === "with_customer")
+                          .reduce((sum: number, it: any) => sum + it.priceCents, 0),
+                      0,
+                    ),
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">Potencial de faturamento em aberto</div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Taxa de Conversão
+                </span>
+                <TrendingUp className="h-4 w-4 text-emerald-500" />
+              </div>
+              <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">68.4%</div>
+              <div className="text-xs text-muted-foreground">Média de peças aprovadas na prova</div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Atenção / Vencimento
+                </span>
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+              </div>
+              <div className="text-xl font-bold text-amber-600 dark:text-amber-400">
+                {condicionaisList.filter((c) => c.status === "due_today" || c.status === "overdue").length}
+              </div>
+              <div className="text-xs text-muted-foreground">Malas vencendo hoje ou atrasadas</div>
+            </div>
+          </div>
+
+          {/* Filtros e Busca de Condicionais */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/50 overflow-x-auto">
+              {(
+                [
+                  { key: "all", label: "Todas" },
+                  { key: "open", label: "Em Prova" },
+                  { key: "due_today", label: "Vence Hoje" },
+                  { key: "overdue", label: "Em Atraso" },
+                  { key: "closed", label: "Finalizadas" },
+                ] as const
+              ).map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setCondicionaisFilter(f.key)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
+                    condicionaisFilter === f.key
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar cliente ou mala..."
+                value={condicionaisSearch}
+                onChange={(e) => setCondicionaisSearch(e.target.value)}
+                className="pl-9 h-9 text-xs rounded-xl bg-card border-border/60"
+              />
+            </div>
+          </div>
+
+          {/* Listagem de Condicionais */}
+          <div className="space-y-4">
+            {condicionaisList
+              .filter((c) => {
+                if (condicionaisFilter !== "all" && c.status !== condicionaisFilter) return false;
+                if (
+                  condicionaisSearch &&
+                  !c.customerName.toLowerCase().includes(condicionaisSearch.toLowerCase())
+                ) {
+                  return false;
+                }
+                return true;
+              })
+              .map((cond) => {
+                const totalMalaCents = cond.items.reduce((acc: number, it: any) => acc + it.priceCents, 0);
+                const isOverdue = cond.status === "overdue";
+                const isDueToday = cond.status === "due_today";
+                const isClosed = cond.status === "closed";
+
+                return (
+                  <div
+                    key={cond.id}
+                    className="p-5 rounded-2xl bg-card border border-border/60 shadow-xs space-y-4 hover:border-border transition-colors"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
+                          {cond.customerName.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground text-sm">{cond.customerName}</span>
+                            <span className="text-xs text-muted-foreground">{cond.customerPhone}</span>
+                            {isOverdue && (
+                              <Badge variant="destructive" className="text-[10px] px-2 py-0 h-4">
+                                Atrasada
+                              </Badge>
+                            )}
+                            {isDueToday && (
+                              <Badge className="text-[10px] px-2 py-0 h-4 bg-amber-500/15 text-amber-700 dark:text-amber-400 border-0">
+                                Vence Hoje
+                              </Badge>
+                            )}
+                            {!isOverdue && !isDueToday && !isClosed && (
+                              <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4">
+                                Em Prova
+                              </Badge>
+                            )}
+                            {isClosed && (
+                              <Badge className="text-[10px] px-2 py-0 h-4 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-0">
+                                Finalizada
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Saída: {formatDate(cond.dispatchDate)} • Devolução prevista: {formatDate(cond.returnDueDate)}
+                            {cond.notes && ` • ${cond.notes}`}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {cond.customerPhone && (
+                          <a
+                            href={`https://wa.me/55${cond.customerPhone.replace(/\D/g, "")}?text=Ol%C3%A1%20${encodeURIComponent(
+                              cond.customerName,
+                            )}!%20Passando%20para%20saber%20como%20ficaram%20as%20pe%C3%A7as%20da%20sua%20mala%20condicional%20%E2%9C%A8`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border border-border/70 hover:bg-muted/50 text-foreground transition-colors"
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 text-emerald-500" /> WhatsApp
+                          </a>
+                        )}
+
+                        {!isClosed && (
+                          <Button
+                            size="sm"
+                            className="h-8 px-3.5 text-xs rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium"
+                            onClick={() => handleOpenReturnModal(cond)}
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Dar Baixa / Conferir
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Peças da Mala */}
+                    <div className="p-3 rounded-xl bg-muted/40 border border-border/40 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-1">
+                        <span>Peças Sob Confiança ({cond.items.length})</span>
+                        <span>Total da Mala: {formatMoney(totalMalaCents)}</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {cond.items.map((item: any) => (
+                          <div
+                            key={item.id}
+                            className="p-2.5 rounded-lg bg-background border border-border/50 flex items-center justify-between text-xs"
+                          >
+                            <div className="truncate pr-2">
+                              <p className="font-medium text-foreground truncate">{item.name}</p>
+                              <p className="text-[11px] text-muted-foreground">Tam: {item.size}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="font-semibold text-foreground">{formatMoney(item.priceCents)}</p>
+                              <span
+                                className={cn(
+                                  "text-[10px] font-medium",
+                                  item.status === "bought"
+                                    ? "text-emerald-600"
+                                    : item.status === "returned"
+                                    ? "text-muted-foreground"
+                                    : "text-indigo-600 dark:text-indigo-400",
+                                )}
+                              >
+                                {item.status === "bought"
+                                  ? "Comprado"
+                                  : item.status === "returned"
+                                  ? "Devolvido"
+                                  : "Com Cliente"}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
         </div>
       )}
 
@@ -1183,6 +1625,296 @@ function ReceivablesDashboard() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal 1: Nova Saída em Condicional (Mala / Prova em Casa) */}
+      <Dialog open={isCreateCondicionalOpen} onOpenChange={setIsCreateCondicionalOpen}>
+        <DialogContent className="max-w-lg rounded-2xl p-6 space-y-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+              <Shirt className="h-5 w-5 text-indigo-500" />
+              Nova Saída em Condicional (Mala)
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Registre as peças emprestadas para a cliente provar em casa. As peças ficam sob responsabilidade dela pelo prazo estipulado.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateCondicional} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Nome da Cliente *</Label>
+                <Input
+                  placeholder="Ex: Mariana Silva"
+                  value={newCondCustomerName}
+                  onChange={(e) => setNewCondCustomerName(e.target.value)}
+                  className="h-9 text-xs rounded-xl"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">WhatsApp / Telefone</Label>
+                <Input
+                  placeholder="(49) 99999-9999"
+                  value={newCondCustomerPhone}
+                  onChange={(e) => setNewCondCustomerPhone(e.target.value)}
+                  className="h-9 text-xs rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Prazo de Retorno (Dias)</Label>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 3, 5].map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setNewCondDays(d)}
+                      className={cn(
+                        "flex-1 py-1.5 text-xs font-medium rounded-xl border transition-colors",
+                        newCondDays === d
+                          ? "bg-foreground text-background border-foreground font-semibold"
+                          : "border-border/60 text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {d} {d === 1 ? "dia" : "dias"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Observação (Opcional)</Label>
+                <Input
+                  placeholder="Ex: Prova para festa de formatura"
+                  value={newCondNotes}
+                  onChange={(e) => setNewCondNotes(e.target.value)}
+                  className="h-9 text-xs rounded-xl"
+                />
+              </div>
+            </div>
+
+            {/* Peças Dinâmicas */}
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold text-foreground">Peças da Mala</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2.5 text-xs rounded-lg"
+                  onClick={() =>
+                    setNewCondItems([...newCondItems, { name: "", size: "M", priceReais: 0 }])
+                  }
+                >
+                  <Plus className="h-3 w-3 mr-1" /> Adicionar Peça
+                </Button>
+              </div>
+
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {newCondItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      placeholder="Descrição da peça"
+                      value={item.name}
+                      onChange={(e) => {
+                        const updated = [...newCondItems];
+                        updated[idx].name = e.target.value;
+                        setNewCondItems(updated);
+                      }}
+                      className="h-8 text-xs rounded-xl flex-2"
+                    />
+                    <Input
+                      placeholder="Tam"
+                      value={item.size}
+                      onChange={(e) => {
+                        const updated = [...newCondItems];
+                        updated[idx].size = e.target.value;
+                        setNewCondItems(updated);
+                      }}
+                      className="h-8 text-xs rounded-xl w-16"
+                    />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="R$ Preço"
+                      value={item.priceReais || ""}
+                      onChange={(e) => {
+                        const updated = [...newCondItems];
+                        updated[idx].priceReais = Number(e.target.value);
+                        setNewCondItems(updated);
+                      }}
+                      className="h-8 text-xs rounded-xl w-24"
+                    />
+                    {newCondItems.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-rose-600 shrink-0"
+                        onClick={() => setNewCondItems(newCondItems.filter((_, i) => i !== idx))}
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-muted/40 text-xs flex justify-between font-medium">
+                <span className="text-muted-foreground">Valor Total da Mala:</span>
+                <span className="text-foreground font-bold">
+                  {formatMoney(
+                    Math.round(
+                      newCondItems.reduce((acc, it) => acc + (Number(it.priceReais) || 0), 0) * 100,
+                    ),
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-xl text-xs h-9"
+                onClick={() => setIsCreateCondicionalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="rounded-xl bg-foreground text-background hover:bg-foreground/90 text-xs h-9 px-4 font-medium"
+              >
+                Registrar Saída em Condicional
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal 2: Conferência e Baixa de Condicional */}
+      <Dialog open={isReturnCondicionalOpen} onOpenChange={setIsReturnCondicionalOpen}>
+        <DialogContent className="max-w-md sm:max-w-lg rounded-2xl p-6 space-y-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              Conferência de Retorno — {selectedCondicional?.customerName}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Selecione quais peças a cliente decidiu comprar e quais estão sendo devolvidas para reintegração automática ao estoque da loja.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedCondicional && (
+            <div className="space-y-4">
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {selectedCondicional.items.map((item: any) => {
+                  const decision = itemReturnDecisions[item.id] || "bought";
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-3 rounded-xl border border-border/50 bg-background flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="truncate">
+                        <p className="font-semibold text-foreground truncate">{item.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Tam: {item.size} • {formatMoney(item.priceCents)}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setItemReturnDecisions({ ...itemReturnDecisions, [item.id]: "bought" })
+                          }
+                          className={cn(
+                            "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            decision === "bought"
+                              ? "bg-emerald-600 text-white border-emerald-600 font-semibold"
+                              : "border-border/60 text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          🛍️ Comprou
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setItemReturnDecisions({ ...itemReturnDecisions, [item.id]: "returned" })
+                          }
+                          className={cn(
+                            "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            decision === "returned"
+                              ? "bg-muted text-foreground border-border font-semibold"
+                              : "border-border/60 text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          ↩️ Devolveu
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Resumo Financeiro da Baixa */}
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Peças Compradas:</span>
+                  <span className="font-bold text-foreground">
+                    {
+                      selectedCondicional.items.filter(
+                        (it: any) => (itemReturnDecisions[it.id] || "bought") === "bought",
+                      ).length
+                    }{" "}
+                    peças
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Faturado:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatMoney(
+                      selectedCondicional.items
+                        .filter((it: any) => (itemReturnDecisions[it.id] || "bought") === "bought")
+                        .reduce((sum: number, it: any) => sum + it.priceCents, 0),
+                    )}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/30">
+                  <span>Reintegradas ao Estoque:</span>
+                  <span>
+                    {
+                      selectedCondicional.items.filter(
+                        (it: any) => (itemReturnDecisions[it.id] || "bought") === "returned",
+                      ).length
+                    }{" "}
+                    peças voltam ao saldo de produtos
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl text-xs h-9"
+                  onClick={() => setIsReturnCondicionalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-9 px-4"
+                  onClick={handleConfirmReturnCondicional}
+                >
+                  Confirmar Baixa & Reintegrar Peças
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

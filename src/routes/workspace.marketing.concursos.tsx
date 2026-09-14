@@ -219,7 +219,7 @@ function WorkspaceConcursosPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 pb-20 p-4 sm:p-6 animate-in fade-in duration-150">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── PageHeader Canônico Clean ── */}
       <PageHeader
         eyebrow="Marketing"

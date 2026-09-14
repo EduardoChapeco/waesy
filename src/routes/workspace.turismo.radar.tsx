@@ -157,19 +157,22 @@ export default function TurismoRadarPage() {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertDescription, setAlertDescription] = useState('');
 
+  const destinationsData: DestinationIntelligence[] = initialDestinations || [];
+  const alertsData: TravelAlert[] = initialAlerts || [];
+
   // Queries Reais
-  const { data: destinations = initialDestinations, refetch: refetchDests } = useQuery({
+  const { data: destinations = destinationsData, refetch: refetchDests } = useQuery<DestinationIntelligence[]>({
     queryKey: ['destination-intelligence', storeId],
     queryFn: () => listDestinationIntelligence({ data: { store_id: storeId } }),
     enabled: Boolean(storeId),
-    initialData: initialDestinations,
+    initialData: destinationsData,
   });
 
-  const { data: alerts = initialAlerts, refetch: refetchAlerts } = useQuery({
+  const { data: alerts = alertsData, refetch: refetchAlerts } = useQuery<TravelAlert[]>({
     queryKey: ['travel-alerts', storeId],
     queryFn: () => listTravelAlerts({ data: { store_id: storeId } }),
     enabled: Boolean(storeId),
-    initialData: initialAlerts,
+    initialData: alertsData,
   });
 
   // Mutations
@@ -257,21 +260,21 @@ export default function TurismoRadarPage() {
   };
 
   const continents = useMemo(() => {
-    const all = Array.from(new Set(destinations.map((d) => d.continent).filter(Boolean)));
+    const all = Array.from(new Set(destinations.map((d: DestinationIntelligence) => d.continent).filter(Boolean)));
     return ['all', ...all];
   }, [destinations]);
 
   const filtered = useMemo(() => {
-    return destinations.filter((d) => {
+    return destinations.filter((d: DestinationIntelligence) => {
       const matchSearch =
         d.destination.toLowerCase().includes(search.toLowerCase()) ||
-        (Array.isArray(d.tags) && d.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())));
+        (Array.isArray(d.tags) && d.tags.some((t: string) => t.toLowerCase().includes(search.toLowerCase())));
       const matchContinent = filterContinent === 'all' || d.continent === filterContinent;
       return matchSearch && matchContinent;
     });
   }, [destinations, search, filterContinent]);
 
-  const topAlerts = alerts.filter((a) => a.is_active).slice(0, 5);
+  const topAlerts = alerts.filter((a: TravelAlert) => a.is_active).slice(0, 5);
 
   const dashboardMetrics: MetricCardItem[] = useMemo(
     () => [
@@ -284,7 +287,7 @@ export default function TurismoRadarPage() {
       },
       {
         title: 'Destinos em Alta',
-        value: destinations.filter((d) => d.trend === 'rising').length,
+        value: destinations.filter((d: DestinationIntelligence) => d.trend === 'rising').length,
         description: 'Alta procura recente',
         icon: TrendingUp,
         color: 'emerald',
@@ -298,7 +301,7 @@ export default function TurismoRadarPage() {
       },
       {
         title: 'Exigem Visto',
-        value: destinations.filter((d) => d.is_visa_required).length,
+        value: destinations.filter((d: DestinationIntelligence) => d.is_visa_required).length,
         description: 'Suporte consular',
         icon: Shield,
         color: 'rose',
@@ -308,7 +311,7 @@ export default function TurismoRadarPage() {
   );
 
   return (
-    <div className="space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Toolbar Canônica de 2 Tiers (Apple HIG & Sem Colisões) ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -316,10 +319,10 @@ export default function TurismoRadarPage() {
           ...continents
             .filter((c) => c !== 'all')
             .map((c) => ({
-              id: c,
-              label: c,
+              id: String(c),
+              label: String(c),
               icon: MapPin,
-              count: destinations.filter((d) => d.continent === c).length,
+              count: destinations.filter((d: DestinationIntelligence) => d.continent === c).length,
             })),
         ]}
         activeTab={filterContinent}
@@ -366,7 +369,7 @@ export default function TurismoRadarPage() {
             </Button>
           </div>
           <div className="space-y-2">
-            {topAlerts.map((alert) => {
+            {topAlerts.map((alert: TravelAlert) => {
               const cfg = getAlertConfig(alert.severity);
               return (
                 <div key={alert.id} className={`flex items-start gap-3 p-4 rounded-2xl border ${cfg.bg}`}>
@@ -422,7 +425,7 @@ export default function TurismoRadarPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((dest) => {
+          {filtered.map((dest: DestinationIntelligence) => {
             const trend = getTrendConfig(dest.trend);
             const safety = getSafetyConfig(dest.safety_level);
             const TrendIcon = trend.icon;
@@ -496,7 +499,7 @@ export default function TurismoRadarPage() {
 
                 {Array.isArray(dest.tags) && dest.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
-                    {dest.tags.slice(0, 4).map((tag) => (
+                    {dest.tags.slice(0, 4).map((tag: string) => (
                       <span
                         key={tag}
                         className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted/40 text-muted-foreground capitalize border border-border/40"
@@ -528,7 +531,7 @@ export default function TurismoRadarPage() {
                           <Zap className="size-3.5 text-amber-500" /> Destaques & Passeios
                         </h4>
                         <ul className="space-y-1">
-                          {dest.highlights.map((h) => (
+                          {dest.highlights.map((h: string) => (
                             <li key={h} className="flex items-center gap-2 text-xs text-muted-foreground">
                               <ChevronRight className="size-3 shrink-0 text-primary" />
                               <span>{h}</span>
@@ -578,7 +581,7 @@ export default function TurismoRadarPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border overflow-hidden"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border overflow-hidden"
         >
           <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20 shrink-0">
             <div className="flex items-center gap-2 mb-1">
@@ -773,7 +776,7 @@ export default function TurismoRadarPage() {
         <SheetContent
           side="right"
           size="wide"
-          className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border overflow-hidden"
+          className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col bg-background border-l border-border overflow-hidden"
         >
           <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20 shrink-0">
             <SheetTitle className="text-lg font-bold text-foreground flex items-center gap-2">

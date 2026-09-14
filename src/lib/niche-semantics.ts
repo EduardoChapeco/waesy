@@ -21,6 +21,7 @@ export interface NicheKpiMetric {
 
 export interface NicheSemantics {
  nicheId: string;
+ isFoodBusiness?: boolean;
  name: string;
  itemSingular: string;
  itemPlural: string;
@@ -1223,8 +1224,14 @@ export function enrichNicheSemantics(base: NicheSemantics): NicheSemantics {
  "Observações (opcional)"
  );
 
+ const isFoodBusiness = [
+ "restaurante", "pizzaria", "hamburgueria", "cafeteria",
+ "confeitaria", "gastronomia", "acougue", "bebidas", "delivery", "food"
+ ].includes(nicheId) || nicheId.includes("food") || nicheId.includes("restaurante") || nicheId.includes("gastro");
+
  return {
  ...base,
+ isFoodBusiness,
  shareTitle,
  shareSubtitle,
  qrCardCallout,

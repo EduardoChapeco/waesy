@@ -190,7 +190,7 @@ function ClaimReputacaoPage() {
  <BarChart3 className="size-4 text-primary" /> Concorrentes Diretos no Nicho
  </h2>
  <div className="divide-y divide-border">
- {intel.competitors.map((comp) => (
+ {intel.competitors.map((comp: any) => (
  <div key={comp.name} className="py-3 flex items-center justify-between text-sm">
  <span className="font-semibold text-foreground">{comp.name}</span>
  <div className="flex items-center gap-4 text-xs">

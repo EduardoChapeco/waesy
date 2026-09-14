@@ -77,20 +77,22 @@ function AfiliadosFinanceiroPage() {
  staleTime: 60_000,
  });
 
- // Client-side search (since list is usually small per tenant)
- const filteredPerformance = performance?.filter((p) =>
- p.sellerName.toLowerCase().includes(search.toLowerCase()),
- );
+  // Client-side search (since list is usually small per tenant)
+  const filteredPerformance = (performance as any[])?.filter((p: any) =>
+    p.sellerName.toLowerCase().includes(search.toLowerCase()),
+  ) || [];
 
- return (
- <div className="flex flex-col h-full gap-6">
- {/* Header */}
- <div>
- <h1 className="text-lg font-semibold text-foreground">Comissões de Parceiros e Equipe</h1>
- <p className="text-sm text-muted-foreground">
- Gerencie o desempenho e os repasses de vendedores e afiliados.
- </p>
- </div>
+  return (
+    <div className="flex flex-col h-full gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 font-sans">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+        <div>
+          <h1 className="text-base font-bold text-foreground">Comissões de Parceiros & Equipe</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Desempenho e repasses consolidados de vendedores e afiliados.
+          </p>
+        </div>
+      </div>
 
  {/* Summary Cards */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -180,8 +182,8 @@ function AfiliadosFinanceiroPage() {
  <th className="px-4 py-3 font-medium w-10"></th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border">
- {filteredPerformance.map((p) => (
+              <tbody className="divide-y divide-border">
+                {filteredPerformance.map((p: any) => (
  <tr key={p.sellerId} className="hover:bg-muted/20 transition-colors group">
  <td className="px-4 py-3">
  <p className="font-medium text-foreground flex items-center gap-2">

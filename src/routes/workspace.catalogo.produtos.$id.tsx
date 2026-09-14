@@ -140,48 +140,24 @@ function EditProductPage() {
  const semantics = getNicheSemantics(store);
  const nicheCtx = getNicheCatalogContext(store);
 
- if (!product) {
- return (
- <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
- <div className="flex items-center gap-3">
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold">
- <Link to="/workspace/catalogo/produtos">
- <ArrowLeft className="mr-2 size-3.5" />
- Voltar ao Catálogo
- </Link>
- </Button>
- </div>
- <div className="p-12 text-center border-0 rounded-2xl bg-card">
- <h2 className="text-base font-bold text-foreground">{nicheCtx.entityName} não encontrado</h2>
- <p className="text-xs text-muted-foreground mt-1">
- O {nicheCtx.entityName.toLowerCase()} solicitado não existe ou foi removido do catálogo.
- </p>
- <Button asChild className="mt-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground" size="sm">
- <Link to="/workspace/catalogo/produtos">Ir para Lista de {nicheCtx.entityNamePlural}</Link>
- </Button>
- </div>
- </div>
- );
- }
-
  // Estado para Live Preview na barra lateral
- const [liveTitle, setLiveTitle] = useState(product.title);
- const [liveDescription, setLiveDescription] = useState(product.description || "");
- const [liveBrand, setLiveBrand] = useState(product.brand || "");
- const [livePriceCents, setLivePriceCents] = useState(product.price_cents || 0);
- const [liveCompareCents, setLiveCompareCents] = useState(product.compare_at_cents || null);
- const [liveCostCents, setLiveCostCents] = useState(product.cost_cents || null);
- const [liveStatus, setLiveStatus] = useState(product.status || "draft");
+ const [liveTitle, setLiveTitle] = useState(product?.title || "");
+ const [liveDescription, setLiveDescription] = useState(product?.description || "");
+ const [liveBrand, setLiveBrand] = useState(product?.brand || "");
+ const [livePriceCents, setLivePriceCents] = useState(product?.price_cents || 0);
+ const [liveCompareCents, setLiveCompareCents] = useState(product?.compare_at_cents || null);
+ const [liveCostCents, setLiveCostCents] = useState(product?.cost_cents || null);
+ const [liveStatus, setLiveStatus] = useState(product?.status || "draft");
 
  // Grupos de Opções / Adicionais selecionados
  const [optionGroups, setOptionGroups] = useState<any[]>(optionGroupsList || []);
  const initialSelectedGroups = useMemo(() => {
- return (product.product_option_groups || []).map((g: any) => g.option_group_id || g.option_groups?.id).filter(Boolean);
- }, [product.product_option_groups]);
+ return (product?.product_option_groups || []).map((g: any) => g.option_group_id || g.option_groups?.id).filter(Boolean);
+ }, [product?.product_option_groups]);
  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<string[]>(initialSelectedGroups);
 
  // Foto de capa principal
- const coverImage = product.product_media?.[0]?.url;
+ const coverImage = product?.product_media?.[0]?.url;
 
  // Cálculo da Margem de Lucro e Lucro Bruto
  const profitMarginPercent = useMemo(() => {
@@ -201,6 +177,7 @@ function EditProductPage() {
 
  const handleBomItemsChange = async (newItems: BomItem[]) => {
  setBomItems(newItems);
+ if (!product) return;
  try {
  await updateProduct({
  data: {
@@ -344,6 +321,30 @@ function EditProductPage() {
  toast.error("Erro ao salvar adicionais vinculados.");
  }
  };
+
+ if (!product) {
+ return (
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="flex items-center gap-3">
+ <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold">
+ <Link to="/workspace/catalogo/produtos">
+ <ArrowLeft className="mr-2 size-3.5" />
+ Voltar ao Catálogo
+ </Link>
+ </Button>
+ </div>
+ <div className="p-12 text-center border-0 rounded-2xl bg-card">
+ <h2 className="text-base font-bold text-foreground">{nicheCtx.entityName} não encontrado</h2>
+ <p className="text-xs text-muted-foreground mt-1">
+ O {nicheCtx.entityName.toLowerCase()} solicitado não existe ou foi removido do catálogo.
+ </p>
+ <Button asChild className="mt-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground" size="sm">
+ <Link to="/workspace/catalogo/produtos">Ir para Lista de {nicheCtx.entityNamePlural}</Link>
+ </Button>
+ </div>
+ </div>
+ );
+ }
 
  return (
  <div className="space-y-6">

@@ -266,7 +266,7 @@ function AdminOrdersPage() {
  : "Vendas";
 
  return (
- <div className="space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-12 overflow-x-hidden">
  {/* ── Header da Página ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <PageHeader
@@ -337,7 +337,7 @@ function AdminOrdersPage() {
  </Button>
 
  {availableViewModes.length > 1 && (
- <div className="flex items-center rounded-xl p-0.5 bg-muted/40 border border-border/60">
+ <div className="flex items-center rounded-xl p-0.5 bg-muted/40 border border-border/60 overflow-x-auto no-scrollbar max-w-full">
  {availableViewModes.map((mode) => {
  const Icon = mode.icon;
  const isActive = viewMode === mode.id;
@@ -924,7 +924,7 @@ function AdminOrdersPage() {
  {/* ── MODO 3: SEPARAÇÃO & PICKING WMS (EXCLUSIVO PARA VAREJO / MERCADO) ── */}
  {viewMode === "picking" && isRetail ? (
  <div className="space-y-6">
- <div className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border">
  <div className="flex items-center gap-3">
  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
  <ShoppingBag className="size-5" />

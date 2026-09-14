@@ -79,7 +79,7 @@ function PostThreadPage() {
   // 2. Query dos Comentários
   const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
     queryKey: ["post-comments", params.id],
-    queryFn: () => listPostComments({ data: { post_id: params.id } }),
+    queryFn: () => listPostComments({ data: { postId: params.id } }),
   });
 
   // 3. Mutação de Curtida
@@ -112,7 +112,7 @@ function PostThreadPage() {
     mutationFn: (content: string) =>
       createPostComment({
         data: {
-          post_id: params.id,
+          postId: params.id,
           content,
         },
       }),
@@ -196,16 +196,16 @@ function PostThreadPage() {
               <div className="font-bold text-sm text-foreground hover:underline cursor-pointer">
                 {post.author?.name}
               </div>
-              {post.author?.username && (
+              {(post.author as any)?.username && (
                 <div className="text-xs text-muted-foreground font-mono">
-                  @{post.author.username}
+                  @{(post.author as any).username}
                 </div>
               )}
             </div>
           </div>
 
           <Badge variant="secondary" className="capitalize text-[11px] rounded-lg">
-            {post.post_type === "offer" ? "Oferta" : post.post_type === "review" ? "Avaliação" : "Mural"}
+            {(post.post_type as string) === "offer" ? "Oferta" : (post.post_type as string) === "review" ? "Avaliação" : "Mural"}
           </Badge>
         </div>
 

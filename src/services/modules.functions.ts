@@ -11,8 +11,44 @@ export interface PlatformModuleDTO {
   is_public: boolean;
   badge: string | null;
   order_index: number;
+  category?: 'public_discovery' | 'store_operation' | 'ai_intelligence' | string;
   updated_at: string;
 }
+
+/**
+ * Consulta cruzada de módulos ativos para uma loja específica.
+ * Um módulo está ativo se estiver habilitado globalmente pela plataforma
+ * E (opcionalmente) não desativado expressamente nas flags da loja.
+ */
+export const getStoreActiveModules = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().uuid() }))
+  .handler(async ({ data: { storeId } }) => {
+    const supabase = getServerClient();
+    try {
+      const [platformRes, storeRes] = await Promise.all([
+        supabase.from("platform_modules_config").select("*").eq("enabled", true),
+        supabase.from("stores").select("enabled_modules, plan_tier").eq("id", storeId).single(),
+      ]);
+
+      const globalModules = (platformRes.data || []) as PlatformModuleDTO[];
+      const storeModules = (storeRes.data?.enabled_modules || {}) as Record<string, boolean>;
+
+      const activeMap: Record<string, boolean> = {};
+      for (const m of globalModules) {
+        // Se a loja tiver a chave definida como false, desativa; se não definida ou true, permanece ativa
+        activeMap[m.module_key] = storeModules[m.module_key] !== false;
+      }
+
+      return {
+        activeMap,
+        globalModules,
+        planTier: storeRes.data?.plan_tier || "free",
+      };
+    } catch (err) {
+      console.error("[modules] Erro ao obter módulos da loja:", err);
+      return { activeMap: {}, globalModules: [], planTier: "free" };
+    }
+  });
 
 /**
  * Consulta pública de módulos ativos na plataforma Waesy.

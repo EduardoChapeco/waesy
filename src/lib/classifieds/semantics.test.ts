@@ -8,7 +8,7 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
       title: "Pacote All Inclusive Resort Salinas de Maragogi",
       price_cents: 450000,
       attributes: {
-        template_style: "instagram",
+        template_style: "editorial",
         niche: "viagem",
       },
     };

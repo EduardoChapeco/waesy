@@ -423,38 +423,33 @@ function AfiliadosPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-28">
-      {/* ─── Top Bar Executiva Apple HIG ────────────────────────────── */}
-      <div className="border-b border-border/40 bg-card/60 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold tracking-tight text-foreground">
-                Programa de Parceiros & Criadores
-              </h1>
-              {partner && (
-                <Badge variant="outline" className="text-xs font-mono bg-primary/5 text-primary border-primary/20">
-                  @{referralHandle}
-                </Badge>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Monetize vitrines com lojas parceiras, divulgue cupons exclusivos e receba tokens da rede.
-            </p>
+      {/* ─── Top Bar Nativa Apple HIG (Direta, Comercial e Silenciosa) ─── */}
+      <div className="border-b border-border/40 bg-card/70 backdrop-blur-md px-2.5 sm:px-6 py-2.5 sm:py-3.5 sticky top-0 z-20">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-sm sm:text-base font-bold tracking-tight text-foreground truncate">
+              Parceiros & Criadores
+            </h1>
+            {partner && (
+              <Badge variant="outline" className="text-[11px] font-mono bg-primary/5 text-primary border-primary/20 shrink-0">
+                @{referralHandle}
+              </Badge>
+            )}
           </div>
 
           {partner && (
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline" size="sm" className="h-10 px-3.5 rounded-xl text-xs gap-1.5">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5">
                 <Link to="/u/$username" params={{ username: referralHandle }}>
                   <Globe className="size-3.5" />
-                  <span>Ver Minha Vitrine</span>
+                  <span className="hidden xs:inline">Minha Vitrine</span>
                 </Link>
               </Button>
 
-              <Button asChild size="sm" className="h-10 px-3.5 rounded-xl text-xs font-semibold gap-1.5">
+              <Button asChild size="sm" className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5">
                 <Link to="/feed">
                   <PenSquare className="size-3.5" />
-                  <span>Nova Publicação</span>
+                  <span>Publicar</span>
                 </Link>
               </Button>
             </div>
@@ -462,118 +457,118 @@ function AfiliadosPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+      {/* Container Principal com Padrão 1px Mobile (Edge-to-Edge) */}
+      <div className="max-w-5xl mx-auto px-0 sm:px-4 md:px-6 py-2 sm:py-6">
         {isLoading && !partner ? (
           <div className="max-w-md mx-auto py-20 text-center space-y-4">
             <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
               <Sparkles className="size-6" />
             </div>
-            <p className="text-sm font-semibold text-foreground">Carregando painel de criador...</p>
-            <p className="text-xs text-muted-foreground">Sincronizando vitrines digitais e carteira de tokens.</p>
+            <p className="text-sm font-semibold text-foreground">Carregando painel...</p>
           </div>
         ) : partner ? (
           /* ─── PAINEL COMPLETO DO CRIADOR / PARCEIRO ────────────── */
-          <div className="space-y-6">
-            {/* Navegação em Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="h-11 p-1 bg-muted/40 rounded-xl border border-border/40 grid grid-cols-2 sm:grid-cols-5 gap-1">
-                <TabsTrigger value="dashboard" className="text-xs rounded-lg gap-1.5 font-medium">
+          <div className="space-y-4 sm:space-y-6">
+            {/* Navegação em Tabs (Scroll Suave no Mobile sem Quebra Feia) */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+              <TabsList className="h-10 sm:h-11 p-1 bg-muted/40 rounded-xl border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:grid sm:grid-cols-5">
+                <TabsTrigger value="dashboard" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
                   <TrendingUp className="size-3.5" />
                   <span>Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="showcase" className="text-xs rounded-lg gap-1.5 font-medium">
+                <TabsTrigger value="showcase" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
                   <Layers className="size-3.5" />
                   <span>Minha Vitrine</span>
                 </TabsTrigger>
-                <TabsTrigger value="stores" className="text-xs rounded-lg gap-1.5 font-medium">
+                <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
                   <Store className="size-3.5" />
                   <span>Lojas & Cupons</span>
                 </TabsTrigger>
-                <TabsTrigger value="referrals" className="text-xs rounded-lg gap-1.5 font-medium">
+                <TabsTrigger value="referrals" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
                   <Coins className="size-3.5" />
-                  <span>Indicações & Carteira</span>
+                  <span>Ganhos & Bônus</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="text-xs rounded-lg gap-1.5 font-medium">
+                <TabsTrigger value="settings" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
                   <SlidersHorizontal className="size-3.5" />
-                  <span>Identidade</span>
+                  <span>Configurações</span>
                 </TabsTrigger>
               </TabsList>
 
-              {/* ─── TAB 1: VISÃO GERAL (MÉTRICAS & SEMÂNTICA COMERCIAL) ── */}
-              <TabsContent value="dashboard" className="space-y-6 mt-0">
+              {/* ─── TAB 1: VISÃO GERAL (MÉTRICAS & SEMÂNTICA COMERCIAL DIRETA) ── */}
+              <TabsContent value="dashboard" className="space-y-3 sm:space-y-5 mt-0">
                 {/* 4 Cards de Métricas Comerciais */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                  <div className="p-3.5 sm:p-4 rounded-2xl border border-border/60 bg-card space-y-1">
                     <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                      Acessos no seu Link
+                      Cliques no Link
                     </span>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {(partner.total_clicks || 0).toLocaleString("pt-BR")}
                     </p>
-                    <span className="text-[10px] text-muted-foreground">Em links e vitrine</span>
+                    <span className="text-[10px] text-muted-foreground">Acessos à sua vitrine</span>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
+                  <div className="p-3.5 sm:p-4 rounded-2xl border border-border/60 bg-card space-y-1">
                     <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                       Vendas Realizadas
                     </span>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {partner.total_orders || 0}
                     </p>
-                    <span className="text-[10px] text-emerald-600 font-medium">Vendas diretas</span>
+                    <span className="text-[10px] text-emerald-600 font-medium">Pedidos convertidos</span>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1">
+                  <div className="p-3.5 sm:p-4 rounded-2xl border border-border/60 bg-card space-y-1">
                     <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                      Total Vendido
+                      Volume Gerado
                     </span>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {formatMoney(partner.total_gmv_cents || 0)}
                     </p>
-                    <span className="text-[10px] text-muted-foreground">Gerado para as lojas</span>
+                    <span className="text-[10px] text-muted-foreground">Total faturado em lojas</span>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-primary/30 bg-primary/5 space-y-1">
+                  <div className="p-3.5 sm:p-4 rounded-2xl border border-primary/30 bg-primary/5 space-y-1">
                     <span className="text-[11px] font-medium text-primary uppercase tracking-wider flex items-center gap-1">
-                      <Coins className="size-3" /> Tokens Ganhos
+                      <Coins className="size-3" /> Saldo de Ganhos
                     </span>
-                    <p className="text-2xl font-bold text-primary">
+                    <p className="text-xl sm:text-2xl font-bold text-primary">
                       {(wallet?.balance || 0).toLocaleString("pt-BR")}
                     </p>
                     <span className="text-[10px] text-muted-foreground">
-                      +{wallet?.balancePendingMaturity || 0} em liberação
+                      +{wallet?.balancePendingMaturity || 0} a liberar
                     </span>
                   </div>
                 </div>
 
-                {/* Link de Divulgação com Compartilhamento Rápido no WhatsApp */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                {/* Link de Divulgação com Compartilhamento Direto */}
+                <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <div>
                       <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <span>Seu Link Oficial de Indicação & Vitrine</span>
-                        <Badge variant="outline" className="text-[10px]">
-                          Validade de 30 Dias
+                        <span>Seu Link de Divulgação</span>
+                        <Badge variant="outline" className="text-[10px] bg-muted/40 font-mono">
+                          Validade 30 dias
                         </Badge>
                       </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Compras e cadastros feitos pelo seu link atribuem comissões e tokens à sua conta civil no CPF.
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Compartilhe seu link exclusivo e receba comissões automáticas em cada compra realizada.
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       <Button
                         type="button"
                         size="sm"
                         onClick={() => handleCopy(generalAffiliateUrl, "Link de divulgação")}
-                        className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5"
+                        className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5"
                       >
                         {copiedLink === generalAffiliateUrl ? (
-                          <CheckCircle2 className="size-4 text-emerald-400" />
+                          <CheckCircle2 className="size-3.5 text-emerald-400" />
                         ) : (
-                          <Copy className="size-4" />
+                          <Copy className="size-3.5" />
                         )}
-                        <span>{copiedLink === generalAffiliateUrl ? "Copiado!" : "Copiar Link"}</span>
+                        <span>{copiedLink === generalAffiliateUrl ? "Copiado" : "Copiar"}</span>
                       </Button>
 
                       <Button
@@ -586,7 +581,7 @@ function AfiliadosPage() {
                             generalAffiliateUrl
                           )
                         }
-                        className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
+                        className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30"
                       >
                         <Send className="size-3.5" />
                         <span>WhatsApp</span>
@@ -597,29 +592,29 @@ function AfiliadosPage() {
                   <Input
                     readOnly
                     value={generalAffiliateUrl}
-                    className="h-11 rounded-xl bg-muted/40 font-mono text-xs border-border/60"
+                    className="h-10 rounded-xl bg-muted/30 font-mono text-xs border-border/50 select-all"
                   />
                 </div>
 
-                {/* Desempenho da Divulgação */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {/* Desempenho de Vendas */}
+                <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <span>Desempenho da sua Divulgação</span>
+                        <span>Desempenho de Vendas</span>
                         <Badge
                           variant="outline"
                           className="text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 border-emerald-500/20"
                         >
-                          {analytics?.summary?.conversionRate || 0}% de conversão
+                          {analytics?.summary?.conversionRate || 0}% conversão
                         </Badge>
                       </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Acompanhamento diário de acessos à sua vitrine e vendas atribuídas.
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Acompanhamento diário de acessos à sua vitrine e pedidos gerados.
                       </p>
                     </div>
 
-                    <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5 self-start sm:self-auto">
+                    <Button asChild variant="outline" size="sm" className="h-8 px-3 rounded-xl text-xs gap-1.5 self-start sm:self-auto">
                       <Link to="/u/$username" params={{ username: referralHandle }}>
                         <Globe className="size-3.5" />
                         <span>Abrir Vitrine Pública</span>
@@ -653,41 +648,41 @@ function AfiliadosPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-4 rounded-xl bg-muted/20 border border-border/40 text-center text-xs text-muted-foreground">
+                    <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 text-center text-xs text-muted-foreground">
                       Compartilhe seu link de vitrine ou produtos comissionados para acompanhar métricas de acessos diários aqui.
                     </div>
                   )}
                 </div>
 
-                {/* Resumo de Formas de Ganho */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-2">
-                    <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                {/* Resumo Comercial de Formas de Ganho */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
+                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                       <ShoppingBag className="size-4" />
                     </div>
-                    <h4 className="text-xs font-bold text-foreground">Vendas de Produtos</h4>
+                    <h4 className="text-xs font-bold text-foreground">Comissões por Venda</h4>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Ganhe comissões automáticas das lojas locais ao compartilhar produtos, coleções e cardápios na sua vitrine.
+                      Receba comissão direta das lojas ao divulgar produtos, coleções e cardápios na sua vitrine.
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-2">
-                    <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
+                    <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                       <Ticket className="size-4" />
                     </div>
                     <h4 className="text-xs font-bold text-foreground">Cupons de Desconto</h4>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Ofereça descontos exclusivos de 10% nas lojas parceiras com cupons que levam sua assinatura e rastreiam cada compra.
+                      Ofereça vantagens exclusivas nas lojas parceiras com cupons que levam sua assinatura.
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-2">
-                    <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <div className="p-4 rounded-2xl border border-border/60 bg-card space-y-1.5">
+                    <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
                       <Coins className="size-4" />
                     </div>
-                    <h4 className="text-xs font-bold text-foreground">Tokens Comunitários</h4>
+                    <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Acumule tokens a cada novo membro e empresa cadastrada, salvos com segurança jurídica na sua carteira civil no CPF.
+                      Ganhe tokens e bônus por novos clientes e empresas indicadas, com resgate via Pix.
                     </p>
                   </div>
                 </div>
@@ -739,7 +734,7 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 1. Controle de Camadas da Vitrine (Wix Style Reordering) */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -811,7 +806,7 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 2. Editor de Banner Promocional 16:9 */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -894,7 +889,7 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 3. Lojas Parceiras Conectadas à Vitrine */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -965,7 +960,7 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 4. Produtos Recomendados */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -1042,7 +1037,7 @@ function AfiliadosPage() {
                 </div>
 
                 {/* 5. Próximos Eventos & Shows da Marca */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -1104,8 +1099,8 @@ function AfiliadosPage() {
               </TabsContent>
 
               {/* ─── TAB 3: LOJAS & CUPONS PARCEIROS ────────────────── */}
-              <TabsContent value="stores" className="space-y-6 mt-0">
-                <div className="bg-muted/20 p-5 rounded-2xl border border-border/60">
+              <TabsContent value="stores" className="space-y-4 sm:space-y-6 mt-0">
+                <div className="bg-muted/20 p-3.5 sm:p-5 rounded-2xl border border-border/60">
                   <h3 className="text-sm font-bold text-foreground">Lojas Parceiras com Cupons Ativos</h3>
                   <p className="text-xs text-muted-foreground">
                     Divulgue os cupons exclusivos das lojas locais. O cliente ganha 10% de desconto e a venda é atribuída à sua conta.
@@ -1121,7 +1116,7 @@ function AfiliadosPage() {
                     return (
                       <div
                         key={s.id}
-                        className="p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between gap-4"
+                        className="p-3.5 sm:p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between gap-4"
                       >
                         <div className="flex items-start gap-3">
                           <div className="size-12 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
@@ -1211,46 +1206,44 @@ function AfiliadosPage() {
                 </div>
               </TabsContent>
 
-              {/* ─── TAB 4: INDICAÇÕES & CARTEIRA CIVIL NO CPF ──────── */}
-              <TabsContent value="referrals" className="space-y-6 mt-0">
-                {/* Bloco de Custódia Civil no CPF */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-primary/30 bg-primary/5 space-y-3">
+              {/* ─── TAB 4: INDICAÇÕES & SALDO ────────────────────── */}
+              <TabsContent value="referrals" className="space-y-4 sm:space-y-6 mt-0">
+                {/* Bloco de Saldo e Saques */}
+                <div className="p-4 sm:p-5 rounded-2xl border border-primary/30 bg-primary/5 space-y-2.5">
                   <div className="flex items-center gap-2.5">
-                    <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <ShieldCheck className="size-5" />
+                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <ShieldCheck className="size-4" />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-foreground">
-                        Custódia e Carteira Segura vinculada ao seu CPF
+                        Seus Ganhos & Extrato
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        Segurança jurídica, conformidade contábil e proteção anti-fraude.
+                        Comissões e bônus acumulados por indicações e vendas confirmadas.
                       </p>
                     </div>
                   </div>
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Todos os tokens comunitários e comissões gerados pelos seus links de divulgação e marcas são
-                    creditados de forma imutável na sua <strong className="text-foreground">Carteira Civil de Pessoa Física (CPF)</strong>.
-                    O painel do criador serve exclusivamente para você monitorar os resultados e acessos trazidos pelo perfil
-                    artístico <strong className="text-foreground">@{referralHandle}</strong>.
+                    Suas comissões por vendas e bônus por indicações são creditados automaticamente no seu saldo.
+                    Você pode solicitar o resgate via Pix ou utilizar como desconto em compras na rede.
                   </p>
                 </div>
 
                 {/* Regras Ativas de Tokens */}
                 {rules.length > 0 && (
-                  <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-3">
-                    <h3 className="text-sm font-bold text-foreground">Regras de Emissão de Tokens Comunitários</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
+                    <h3 className="text-sm font-bold text-foreground">Regras de Bônus por Indicação</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                       {rules.map((r: any) => (
-                        <div key={r.id} className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-1.5">
+                        <div key={r.id} className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-semibold text-foreground">{r.title}</span>
                             <Badge variant="secondary" className="text-[10px]">
                               {r.vesting_days}d liberação
                             </Badge>
                           </div>
-                          <p className="text-base font-extrabold text-primary">
+                          <p className="text-sm sm:text-base font-extrabold text-primary">
                             +{Number(r.tokens_amount).toLocaleString("pt-BR")} tokens
                           </p>
                           <p className="text-[11px] text-muted-foreground leading-tight">{r.description}</p>
@@ -1261,7 +1254,7 @@ function AfiliadosPage() {
                 )}
 
                 {/* Histórico */}
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card space-y-3">
                   <h3 className="text-sm font-bold text-foreground">Histórico de Indicações Recentes</h3>
                   {referrals.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-6">
@@ -1270,7 +1263,7 @@ function AfiliadosPage() {
                   ) : (
                     <div className="divide-y divide-border/40">
                       {referrals.map((ref: any) => (
-                        <div key={ref.id} className="py-3 flex items-center justify-between gap-2">
+                        <div key={ref.id} className="py-2.5 flex items-center justify-between gap-2">
                           <div className="space-y-0.5">
                             <p className="text-xs font-semibold text-foreground">
                               {ref.referral_type === "store" ? "Loja / Empresa" : "Membro"} indicado
@@ -1296,23 +1289,23 @@ function AfiliadosPage() {
                 </div>
               </TabsContent>
 
-              {/* ─── TAB 5: IDENTIDADE & PRIVACIDADE PESSOAL ───────── */}
-              <TabsContent value="settings" className="space-y-6 mt-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* ─── TAB 5: IDENTIDADE & CONFIGURAÇÕES ─────────────── */}
+              <TabsContent value="settings" className="space-y-4 sm:space-y-6 mt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Edição do Perfil de Criador */}
-                  <div className="p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                  <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-3 sm:space-y-4">
                     <div>
-                      <h3 className="text-sm font-bold text-foreground">Perfil Público de Criador / Marca</h3>
+                      <h3 className="text-sm font-bold text-foreground">Perfil Público da Marca</h3>
                       <p className="text-xs text-muted-foreground">
                         Como seus seguidores e lojas parceiras enxergam você na comunidade.
                       </p>
                     </div>
 
-                    <form onSubmit={handleSaveCreator} className="space-y-4">
+                    <form onSubmit={handleSaveCreator} className="space-y-3 sm:space-y-4">
                       {/* Avatar e Capa da Marca */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2 border-b border-border/40">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-foreground">Foto do Perfil / Logo da Marca (1:1)</Label>
+                          <Label className="text-xs font-semibold text-foreground">Foto do Perfil / Logo (1:1)</Label>
                           <ImageUpload
                             value={creatorAvatarUrl}
                             onChange={(url) => setCreatorAvatarUrl(url)}
@@ -1337,22 +1330,22 @@ function AfiliadosPage() {
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-xs font-medium">Nome Artístico / Marca Pública</Label>
+                        <Label className="text-xs font-medium">Nome de Apresentação Pública</Label>
                         <Input
                           value={creatorStageName}
                           onChange={(e) => setCreatorStageName(e.target.value)}
-                          className="h-11 rounded-xl text-xs"
+                          className="h-10 sm:h-11 rounded-xl text-xs"
                           required
                         />
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-xs font-medium">Bio Pública da Marca</Label>
+                        <Label className="text-xs font-medium">Bio Pública</Label>
                         <Input
                           value={creatorBio}
                           onChange={(e) => setCreatorBio(e.target.value)}
                           placeholder="Foco de conteúdo, atuação regional..."
-                          className="h-11 rounded-xl text-xs"
+                          className="h-10 sm:h-11 rounded-xl text-xs"
                         />
                       </div>
 
@@ -1362,50 +1355,48 @@ function AfiliadosPage() {
                           value={creatorCategory}
                           onChange={(e) => setCreatorCategory(e.target.value)}
                           placeholder="Ex: Geral, Gastronomia, Viagens, Moda"
-                          className="h-11 rounded-xl text-xs"
+                          className="h-10 sm:h-11 rounded-xl text-xs"
                         />
                       </div>
 
                       <Button
                         type="submit"
                         disabled={isSavingCreator}
-                        className="w-full h-11 rounded-xl text-xs font-semibold mt-2"
+                        className="w-full h-10 sm:h-11 rounded-xl text-xs font-semibold mt-2"
                       >
-                        {isSavingCreator ? "Salvando..." : "Salvar Alterações da Marca"}
+                        {isSavingCreator ? "Salvando..." : "Salvar Alterações"}
                       </Button>
                     </form>
                   </div>
 
-                  {/* Privacidade do Perfil Pessoal Civil */}
-                  <div className="p-6 rounded-2xl border border-border/60 bg-card space-y-4">
+                  {/* Privacidade do Perfil */}
+                  <div className="p-3.5 sm:p-6 rounded-2xl border border-border/60 bg-card space-y-3 sm:space-y-4">
                     <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                        <ShieldCheck className="size-5" />
+                      <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <ShieldCheck className="size-4" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-foreground">Privacidade do Perfil Pessoal (CPF)</h3>
+                        <h3 className="text-sm font-bold text-foreground">Privacidade do Perfil</h3>
                         <p className="text-xs text-muted-foreground">
-                          Separe sua identidade civil particular da sua atuação pública.
+                          Controle a visibilidade da sua conta nas buscas da comunidade.
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3 text-xs">
+                    <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 space-y-3 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">Visibilidade do Perfil Civil:</span>
+                        <span className="font-medium text-foreground">Visibilidade nas Buscas:</span>
                         <Badge
                           variant={isAnonymous ? "default" : "outline"}
                           className="text-[10px] font-semibold"
                         >
-                          {isAnonymous ? "Perfil Civil Discreto" : "Visível na Busca"}
+                          {isAnonymous ? "Perfil Discreto" : "Visível na Busca"}
                         </Badge>
                       </div>
 
                       <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        O seu perfil pessoal civil no CPF é imutável e vinculado a compras e contratos reais.
-                        Ao ativar a privacidade, ele fica oculto de buscas públicas na comunidade. Não são permitidas
-                        postagens anônimas: suas interações públicas acontecem sempre através da sua marca ou nome
-                        artístico <strong className="text-foreground">@{referralHandle}</strong>.
+                        Ao ativar o modo discreto, seu perfil pessoal não aparece nas buscas públicas da comunidade.
+                        Suas divulgações e links continuam funcionando normalmente através de <strong className="text-foreground">@{referralHandle}</strong>.
                       </p>
 
                       <Button
@@ -1413,13 +1404,13 @@ function AfiliadosPage() {
                         variant={isAnonymous ? "outline" : "default"}
                         disabled={isUpdatingPrivacy}
                         onClick={() => handleTogglePrivacy(!isAnonymous, isAnonymous ? "public" : "unlisted")}
-                        className="w-full h-11 rounded-xl text-xs font-semibold gap-2"
+                        className="w-full h-10 sm:h-11 rounded-xl text-xs font-semibold gap-2"
                       >
                         {isAnonymous ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                         <span>
                           {isAnonymous
-                            ? "Tornar Perfil Civil Visível na Busca"
-                            : "Manter Perfil Civil Discreto (Oculto da Busca)"}
+                            ? "Tornar Visível na Busca"
+                            : "Manter Perfil Discreto (Ocultar da Busca)"}
                         </span>
                       </Button>
                     </div>
@@ -1502,7 +1493,7 @@ function AfiliadosPage() {
           </div>
         ) : (
           /* ─── ONBOARDING EM 4 PASSOS ESTILO CRIAÇÃO DE EMPRESA ───── */
-          <div className="max-w-xl mx-auto p-6 sm:p-8 rounded-3xl border border-border/60 bg-card shadow-xs space-y-6">
+          <div className="w-full max-w-xl mx-auto p-3.5 sm:p-8 rounded-2xl sm:rounded-3xl border border-border/60 bg-card shadow-xs space-y-6">
             {/* Stepper no Topo */}
             <div className="flex items-center justify-between border-b border-border/40 pb-4">
               {[
@@ -1711,9 +1702,9 @@ function AfiliadosPage() {
                       <Coins className="size-4" />
                     </div>
                     <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-foreground">Tokens Comunitários no CPF</h4>
+                      <h4 className="text-xs font-bold text-foreground">Bônus por Indicação</h4>
                       <p className="text-[11px] text-muted-foreground">
-                        Acumule 50.000 tokens por usuário e 500.000 tokens por empresa indicada, creditados na sua carteira civil.
+                        Receba 50.000 tokens por membro e 500.000 tokens por empresa cadastrada pelo seu link.
                       </p>
                     </div>
                   </div>

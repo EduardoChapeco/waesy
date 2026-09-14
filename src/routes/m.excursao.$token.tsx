@@ -43,6 +43,19 @@ export const Route = createFileRoute("/m/excursao/$token")({
 function PublicPassengerRegistrationPage() {
  const { formData } = (Route.useLoaderData as any)();
 
+ const [name, setName] = useState(formData?.passenger_name || "");
+ const [doc, setDoc] = useState(formData?.passenger_document || "");
+ const [phone, setPhone] = useState(formData?.passenger_phone || "");
+ const [birthDate, setBirthDate] = useState(formData?.passenger_birth_date || "");
+ const [emergencyName, setEmergencyName] = useState(formData?.emergency_contact_name || "");
+ const [emergencyPhone, setEmergencyPhone] = useState(formData?.emergency_contact_phone || "");
+ const [dietary, setDietary] = useState(formData?.dietary_restrictions || "");
+ const [boardingPoint, setBoardingPoint] = useState(formData?.boarding_point || "");
+ const [termsAccepted, setTermsAccepted] = useState(formData?.terms_accepted || false);
+
+ const [submitting, setSubmitting] = useState(false);
+ const [submitted, setSubmitted] = useState(formData?.status === "completed");
+
  if (!formData || formData.error) {
  return (
  <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -58,19 +71,6 @@ function PublicPassengerRegistrationPage() {
  </div>
  );
  }
-
- const [name, setName] = useState(formData.passenger_name || "");
- const [doc, setDoc] = useState(formData.passenger_document || "");
- const [phone, setPhone] = useState(formData.passenger_phone || "");
- const [birthDate, setBirthDate] = useState(formData.passenger_birth_date || "");
- const [emergencyName, setEmergencyName] = useState(formData.emergency_contact_name || "");
- const [emergencyPhone, setEmergencyPhone] = useState(formData.emergency_contact_phone || "");
- const [dietary, setDietary] = useState(formData.dietary_restrictions || "");
- const [boardingPoint, setBoardingPoint] = useState(formData.boarding_point || "");
- const [termsAccepted, setTermsAccepted] = useState(formData.terms_accepted || false);
-
- const [submitting, setSubmitting] = useState(false);
- const [submitted, setSubmitted] = useState(formData.status === "completed");
 
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();

@@ -279,7 +279,7 @@ export default function TableReservationsPage() {
  toolDescription="O mapa de salão, disposição de mesas físicas e gestão de comandas presenciais foi projetado especificamente para restaurantes, bares e estabelecimentos gastronômicos."
  store={store}
  >
- <div className="flex-1 space-y-6 p-4 sm:p-6 max-w-7xl mx-auto w-full pb-20">
+ <div className="w-full space-y-6">
  <PageHeader
  title="Reservas & Salão"
  actions={

@@ -26,6 +26,10 @@ export interface ServerIdentity {
   tenant_id?: string | null;
   user_id?: string | null;
   customer_id?: string | null;
+  storeId?: string | null;
+  name?: string | null;
+  email?: string | null;
+  fullName?: string | null;
   /** @deprecated use (identity.role === "platform_admin") instead */
   isPlatformAdmin?: boolean;
   /** @deprecated use identity.id instead */
@@ -56,6 +60,13 @@ export function assertStoreAccess(
     throw new Error("Unauthorized: User not authenticated.");
   }
 
+  if (identity.role === "platform_admin" || identity.role === "master") {
+    if (targetStoreId) {
+      (identity as any).store_id = targetStoreId;
+    }
+    return; // Global admins have access
+  }
+
   // If targetStoreId is provided, enforce cross-tenant isolation
   const effectiveStoreId = targetStoreId || identity.store_id;
 
@@ -69,11 +80,22 @@ export function assertStoreAccess(
     (identity as any).store_id = effectiveStoreId;
   }
 
-  if (identity.role === "platform_admin" || identity.role === "master") {
-    return; // Global admins have access
+  // Enforce that user actually has an authorized membership in the effective store
+  const targetMembership = (identity.memberships || []).find(
+    (m) => m.store_id === (identity as any).store_id
+  );
+
+  const effectiveRole = targetMembership?.role || identity.role;
+
+  if (!targetMembership && !targetStoreId && (allowedRoles as readonly string[]).includes(identity.role)) {
+    return;
   }
 
-  if (!(allowedRoles as readonly string[]).includes(identity.role)) {
-    throw new Error(`Unauthorized: Insufficient role (${identity.role}). Required one of: ${allowedRoles.join(", ")}`);
+  if (!targetMembership || !(allowedRoles as readonly string[]).includes(effectiveRole)) {
+    throw new Error(
+      `Unauthorized: Insufficient permissions for store ${(identity as any).store_id}. Required one of: ${allowedRoles.join(", ")}`
+    );
   }
+
+  (identity as any).role = effectiveRole;
 }

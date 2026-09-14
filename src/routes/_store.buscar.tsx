@@ -1,17 +1,19 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { z } from "zod";
-import { ShoppingBag, Calendar, Tag, Store, ChevronRight, Layers } from 'lucide-react';
+import { ShoppingBag, Calendar, Tag, Store, ChevronRight, Layers, Clock, Sparkles, TrendingUp, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 import {
- federatedSearch,
- type FederatedSearchResponse,
- type SearchResultProduct,
- type SearchResultEvent,
- type SearchResultClassified,
- type SearchResultStore,
+  federatedSearch,
+  getSearchDiscoveryData,
+  type FederatedSearchResponse,
+  type SearchResultProduct,
+  type SearchResultEvent,
+  type SearchResultClassified,
+  type SearchResultStore,
 } from "@/services/search.functions";
+import { getUserTopAffinities } from "@/services/telemetry-affinity.functions";
 import { ProductGrid } from "@/components/commerce/product-grid";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
@@ -19,37 +21,44 @@ import { PageSkeleton } from "@/components/state/loading";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
+  DiscoveryControlBar,
+  type ViewModeType,
+  type FilterChipOption,
 } from "@/components/commerce/discovery-control-bar";
 import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplibre-canvas";
 
 const SearchSchema = z.object({
- q: z.string().optional(),
- tipo: z.enum(["product", "event", "classified", "store"]).optional(),
+  q: z.string().optional(),
+  tipo: z.enum(["product", "event", "classified", "store"]).optional(),
 });
 
 export const Route = createFileRoute("/_store/buscar")({
- head: () => ({ meta: [{ title: "Buscar na Plataforma" }] }),
- validateSearch: SearchSchema,
- loader: async ({ location }) => {
-   try {
- const q = (location.search as { q?: string }).q;
- if (!q || q.trim().length < 2) return { result: null, query: q ?? "" };
- try {
- const result = await federatedSearch({ data: { query: q.trim() } });
- return { result, query: q };
- } catch {
- return { result: null, query: q };
- }
-   } catch (err) {
-     console.error("[loader:_store.buscar] Unhandled loader error:", err);
-     return { result: null, query: "" };
-   }
- },
- pendingComponent: PageSkeleton,
- component: SearchPage,
+  head: () => ({ meta: [{ title: "Buscar na Plataforma" }] }),
+  validateSearch: SearchSchema,
+  loader: async ({ location }) => {
+    try {
+      const q = (location.search as { q?: string }).q;
+      const [discoveryData, userAffinities] = await Promise.all([
+        getSearchDiscoveryData().catch(() => null),
+        getUserTopAffinities({ data: { limit: 5 } }).catch(() => []),
+      ]);
+
+      if (!q || q.trim().length < 2) {
+        return { result: null, query: q ?? "", discoveryData, userAffinities };
+      }
+      try {
+        const result = await federatedSearch({ data: { query: q.trim() } });
+        return { result, query: q, discoveryData, userAffinities };
+      } catch {
+        return { result: null, query: q, discoveryData, userAffinities };
+      }
+    } catch (err) {
+      console.error("[loader:_store.buscar] Unhandled loader error:", err);
+      return { result: null, query: "", discoveryData: null, userAffinities: [] };
+    }
+  },
+  pendingComponent: PageSkeleton,
+  component: SearchPage,
 });
 
 const TYPE_FILTERS: FilterChipOption[] = [
@@ -223,138 +232,363 @@ function ResultSection({
 // ── Componente Principal ───────────────────────────────────────────────────
 
 function SearchPage() {
-  const { result: initialResult = null, query: initialQuery = "" } = ((Route.useLoaderData() as any) || {});
- const navigate = useNavigate();
- const [input, setInput] = useState(initialQuery ?? "");
- const [result, setResult] = useState<FederatedSearchResponse | null>(initialResult);
- const [activeType, setActiveType] = useState<string>("todos");
- const [viewMode, setViewMode] = useState<ViewModeType>("grid");
+  const {
+    result: initialResult = null,
+    query: initialQuery = "",
+    discoveryData = null,
+    userAffinities = [],
+  } = ((Route.useLoaderData() as any) || {});
+  const navigate = useNavigate();
+  const [input, setInput] = useState(initialQuery ?? "");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
- const handleSearch = async (q: string) => {
- const trimmed = q.trim();
- if (!trimmed || trimmed.length < 2) return;
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("waesy_recent_searches");
+        return stored ? JSON.parse(stored) : [];
+      }
+    } catch {}
+    return [];
+  });
 
- navigate({ to: Route.fullPath, search: { q: trimmed } });
+  const saveRecentSearch = (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed || trimmed.length < 2) return;
+    setRecentSearches((prev) => {
+      const next = [trimmed, ...prev.filter((t) => t.toLowerCase() !== trimmed.toLowerCase())].slice(0, 8);
+      try {
+        localStorage.setItem("waesy_recent_searches", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
- try {
- const res = await federatedSearch({ data: { query: trimmed } });
- setResult(res);
- } catch (e: unknown) {
- toast.error(
- (e instanceof Error ? e.message : String(e)) || "Erro ao buscar. Tente novamente.",
- );
- setResult(null);
- }
- };
+  const removeRecentSearch = (term: string) => {
+    setRecentSearches((prev) => {
+      const next = prev.filter((t) => t !== term);
+      try {
+        localStorage.setItem("waesy_recent_searches", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
- const total = getTotalCount(result);
- const hasResults = result !== null && total > 0;
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem("waesy_recent_searches");
+    } catch {}
+  };
 
- // Filtrar por tipo ativo
- const filteredProducts = activeType === "todos" || activeType === "product" ? (result?.products ?? []) : [];
- const filteredEvents = activeType === "todos" || activeType === "event" ? (result?.events ?? []) : [];
- const filteredClassifieds =
- activeType === "todos" || activeType === "classified" ? (result?.classifieds ?? []) : [];
- const filteredStores = activeType === "todos" || activeType === "store" ? (result?.stores ?? []) : [];
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
- const [selectedStoreMarker, setSelectedStoreMarker] = useState<any | null>(null);
+  const [result, setResult] = useState<FederatedSearchResponse | null>(initialResult);
+  const [activeType, setActiveType] = useState<string>("todos");
+  const [viewMode, setViewMode] = useState<ViewModeType>("grid");
 
- // Marcadores do Mapa — apenas lojas com coordenadas reais
- const mapMarkers: MapMarkerItem[] = useMemo(() => {
- return filteredStores
-  .filter((s) => s.latitude && s.longitude)
-  .map((s) => ({
-  id: s.id,
-  title: s.name,
-  lat: s.latitude,
-  lng: s.longitude,
-  category: "store",
-  image_url: s.logo_url,
-  }));
- }, [filteredStores]);
+  const handleSearch = async (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed || trimmed.length < 2) return;
 
- return (
- <div className="w-full max-w-4xl mx-auto space-y-6 pb-6">
- {/* ── 1. Barra de Busca Canônica Padronizada ── */}
- <DiscoveryControlBar
- search={input}
- onSearchChange={(val) => {
- setInput(val);
- if (val.length >= 2) handleSearch(val);
- else if (!val) setResult(null);
- }}
- searchPlaceholder="Busque por produto, mercado, vaga, serviço, passeio..."
- categories={TYPE_FILTERS}
- activeCategory={activeType}
- onSelectCategory={setActiveType}
- viewMode={viewMode}
- onViewModeChange={setViewMode}
- allowedViewModes={["grid", "list", "feed"]}
- resultsCount={total}
- />
+    saveRecentSearch(trimmed);
+    navigate({ to: Route.fullPath, search: { q: trimmed } });
 
- {/* ── 2. Estado Inicial (Sugestões, Termos em Alta e Categorias Rápidas) ── */}
- {!input && !hasResults && (
- <div className="space-y-6 pt-2">
- {/* Termos Populares — sem label de seção */}
- <div className="space-y-3">
- <div className="flex flex-wrap gap-2">
- {[
- "Pizza Artesanal",
- "Hortifrúti & Feira",
- "Carros & Motos",
- "Apartamento Aluguel",
- "Farmácia 24h",
- "Eletricista & Obras",
- "Corte de Cabelo",
- "Vagas de Emprego",
- "Shows & Festas",
- "Passeios & Cachoeiras",
- ].map((term) => (
- <button
- key={term}
- type="button"
- onClick={() => {
- setInput(term);
- handleSearch(term);
- }}
- className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-card hover:bg-primary/10 hover:text-primary hover:border-primary/40 text-foreground transition-all cursor-pointer select-none active:scale-95 "
- >
- {term}
- </button>
- ))}
- </div>
- </div>
+    try {
+      const res = await federatedSearch({ data: { query: trimmed } });
+      setResult(res);
+    } catch (e: unknown) {
+      toast.error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao buscar. Tente novamente.",
+      );
+      setResult(null);
+    }
+  };
 
- {/* Atalhos Rápidos para Verticais */}
- <div className="space-y-3 pt-2">
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
- {[
- { to: "/mercado", label: "Mercado & Feira", icon: ShoppingBag, color: "text-emerald-600 bg-emerald-500/10" },
- { to: "/gastronomia", label: "Gastronomia", icon: Store, color: "text-warning bg-warning/10" },
- { to: "/classificados", label: "Classificados", icon: Tag, color: "text-amber-600 bg-amber-500/10" },
- { to: "/agenda", label: "Eventos & Festas", icon: Calendar, color: "text-primary bg-primary/10" },
- ].map((cat) => {
- const Icon = cat.icon;
- return (
- <Link
- key={cat.to}
- to={cat.to as any}
- className="flex items-center gap-3 p-3 rounded-2xl bg-card hover:bg-muted/60 transition-all group"
- >
- <div className={`flex size-9 items-center justify-center rounded-xl ${cat.color} shrink-0 group-hover:scale-105 transition-transform`}>
- <Icon className="size-4.5" />
- </div>
- <span className="text-xs font-bold text-foreground truncate">
- {cat.label}
- </span>
- </Link>
- );
- })}
- </div>
- </div>
- </div>
- )}
+  const onSearchInputChange = (val: string) => {
+    setInput(val);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    if (!val || val.trim().length < 2) {
+      setResult(null);
+      return;
+    }
+    debounceRef.current = setTimeout(() => {
+      handleSearch(val);
+    }, 300);
+  };
+
+  const total = getTotalCount(result);
+  const hasResults = result !== null && total > 0;
+
+  // Filtrar por tipo ativo
+  const filteredProducts = activeType === "todos" || activeType === "product" ? (result?.products ?? []) : [];
+  const filteredEvents = activeType === "todos" || activeType === "event" ? (result?.events ?? []) : [];
+  const filteredClassifieds =
+    activeType === "todos" || activeType === "classified" ? (result?.classifieds ?? []) : [];
+  const filteredStores = activeType === "todos" || activeType === "store" ? (result?.stores ?? []) : [];
+
+  const [selectedStoreMarker, setSelectedStoreMarker] = useState<any | null>(null);
+
+  // Marcadores do Mapa — apenas lojas com coordenadas reais
+  const mapMarkers: MapMarkerItem[] = useMemo(() => {
+    return filteredStores
+      .filter((s) => s.latitude && s.longitude)
+      .map((s) => ({
+        id: s.id,
+        title: s.name,
+        lat: s.latitude!,
+        lng: s.longitude!,
+        category: "store",
+        image_url: s.logo_url,
+      }));
+  }, [filteredStores]);
+
+  return (
+    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
+      {/* ── Topo Mobile Nativo ── */}
+      <div className="flex sm:hidden items-center justify-between gap-2 pt-1 pb-1">
+        <h1 className="text-xl font-black tracking-tight text-foreground">
+          Explorar
+        </h1>
+        <span className="text-xs text-muted-foreground font-medium">Descoberta local</span>
+      </div>
+
+      {/* ── 1. Barra de Busca Canônica Padronizada ── */}
+      <DiscoveryControlBar
+        search={input}
+        onSearchChange={onSearchInputChange}
+        searchPlaceholder="Busque por produtos, lojas, serviços, eventos..."
+        categories={TYPE_FILTERS}
+        activeCategory={activeType}
+        onSelectCategory={setActiveType}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        allowedViewModes={["grid", "list", "feed"]}
+        resultsCount={total}
+      />
+
+      {/* ── 2. Estado Inicial de Descoberta Visual (Instagram / Mercado Livre Style) ── */}
+      {!input && !hasResults && (
+        <div className="space-y-6 pt-1">
+          {/* Histórico de Buscas Recentes */}
+          {recentSearches.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Clock className="size-3.5 text-muted-foreground" />
+                  <span>Buscas recentes</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={clearRecentSearches}
+                  className="text-[11px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                >
+                  Limpar tudo
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {recentSearches.map((term) => (
+                  <div
+                    key={term}
+                    className="inline-flex items-center gap-1.5 pl-3 pr-2 py-1 rounded-xl text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground transition-all group"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInput(term);
+                        handleSearch(term);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      {term}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeRecentSearch(term);
+                      }}
+                      className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                      title="Remover termo"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recomendado para Você (Afinidade Real do Usuário) */}
+          {userAffinities && userAffinities.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Sparkles className="size-3.5 text-amber-500" />
+                <span>Recomendado para você</span>
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {userAffinities.map((item: any) => {
+                  const tagLabel = item.tag || item.category || String(item);
+                  return (
+                    <button
+                      key={tagLabel}
+                      type="button"
+                      onClick={() => {
+                        setInput(tagLabel);
+                        handleSearch(tagLabel);
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer select-none active:scale-95"
+                    >
+                      #{tagLabel}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Em Alta na Cidade (Trending dinâmico do banco) */}
+          {discoveryData?.trendingTerms && discoveryData.trendingTerms.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <TrendingUp className="size-3.5 text-primary" />
+                <span>Em alta na região</span>
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {discoveryData.trendingTerms.map((term: string) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => {
+                      setInput(term);
+                      handleSearch(term);
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95 shadow-2xs"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Atalhos Rápidos para Verticais */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+            {[
+              { to: "/mercado", label: "Mercado & Feira", icon: ShoppingBag, color: "text-emerald-500 bg-emerald-500/10" },
+              { to: "/gastronomia", label: "Gastronomia", icon: Store, color: "text-amber-500 bg-amber-500/10" },
+              { to: "/classificados", label: "Classificados", icon: Tag, color: "text-blue-500 bg-blue-500/10" },
+              { to: "/agenda", label: "Eventos & Festas", icon: Calendar, color: "text-purple-500 bg-purple-500/10" },
+            ].map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <Link
+                  key={cat.to}
+                  to={cat.to as any}
+                  className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-card border border-border/60 hover:bg-muted/60 transition-all group"
+                >
+                  <div className={`flex size-9 items-center justify-center rounded-xl ${cat.color} shrink-0 group-hover:scale-105 transition-transform`}>
+                    <Icon className="size-4.5" />
+                  </div>
+                  <span className="text-xs font-bold text-foreground truncate">
+                    {cat.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Mural de Descoberta Visual (Estilo Instagram / Mercado Livre) */}
+          {discoveryData?.products && discoveryData.products.length > 0 && (
+            <div className="space-y-3 pt-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-black tracking-tight text-foreground">
+                  Destaques da Comunidade
+                </h3>
+                <Link to="/mercado" className="text-xs font-semibold text-primary hover:underline">
+                  Ver catálogo
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {discoveryData.products.slice(0, 8).map((p: any) => (
+                  <Link
+                    key={p.id}
+                    to="/produto/$slug"
+                    params={{ slug: p.slug || p.id }}
+                    className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/60 hover:border-border transition-all group shadow-2xs"
+                  >
+                    <div className="aspect-square bg-muted overflow-hidden relative">
+                      {p.cover_url ? (
+                        <img
+                          src={p.cover_url}
+                          alt={p.title}
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="size-full flex items-center justify-center text-muted-foreground/30">
+                          <ShoppingBag className="size-8" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-2.5 space-y-1">
+                      <p className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                        {p.title}
+                      </p>
+                      <p className="text-xs font-black font-mono text-foreground">
+                        {formatMoney(p.price_cents)}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lojas em Destaque no Mural */}
+          {discoveryData?.stores && discoveryData.stores.length > 0 && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-black tracking-tight text-foreground">
+                  Lojas & Negócios Locais
+                </h3>
+                <Link to="/diretorio" className="text-xs font-semibold text-primary hover:underline">
+                  Guia completo
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {discoveryData.stores.slice(0, 4).map((s: any) => (
+                  <Link
+                    key={s.id}
+                    to="/bio/$slug"
+                    params={{ slug: s.slug }}
+                    className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-card border border-border/60 hover:bg-muted/50 transition-all group"
+                  >
+                    <div className="size-10 rounded-xl overflow-hidden bg-muted shrink-0 flex items-center justify-center border border-border/40">
+                      {s.logo_url ? (
+                        <img src={s.logo_url} alt={s.name} className="size-full object-cover" />
+                      ) : (
+                        <Store className="size-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-foreground truncate group-hover:text-primary">
+                        {s.name}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">{s.category}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
  {input.length >= 2 && result !== null && total === 0 && (
  <div className="py-12 text-center space-y-4 bg-card rounded-2xl p-6 ">
@@ -412,7 +646,7 @@ function SearchPage() {
  </div>
  <div className="min-w-0">
  <span className="text-xs font-bold text-foreground truncate block">{selectedStoreMarker.name}</span>
- <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">• Aberto agora</span>
+ <span className="text-[10px] text-success font-semibold">• Aberto agora</span>
  </div>
  </div>
 

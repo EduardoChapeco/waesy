@@ -326,7 +326,7 @@ function CommunityHomePage() {
   const unifiedItems = useMemo(() => {
     const list: Array<{
       id: string;
-      pillar: "places" | "classifieds" | "feed" | "noticias" | "empregos" | "eventos" | "agenda" | "afiliados";
+      pillar: "places" | "classifieds" | "feed" | "noticias" | "empregos" | "eventos" | "agenda" | "afiliados" | "concursos";
       badge: string;
       title: string;
       image?: string | null;
@@ -506,14 +506,14 @@ function CommunityHomePage() {
 
   return (
     <div className="w-full space-y-8 pb-20">
-      {/* ── 1. CARDS COM IMAGENS DO TOPO (Padrão de Upload de Imagens dos Pilares) ── */}
+      {/* ── 1. CARDS COM IMAGENS DO TOPO (Carrossel Horizontal de Categorias Master) ── */}
       <section aria-label="Categorias Principais">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 gap-2.5 sm:gap-3">
+        <HorizontalRail title="Categorias Principais" hideHeader={true}>
           {displayHeroCards.map((card) => (
             <Link
               key={card.slug}
               to={card.to as any}
-              className="group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[16/10] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-[0.98]"
+              className="min-w-[145px] sm:min-w-[170px] md:min-w-[190px] max-w-[200px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[16/10] border border-border/60 hover:border-foreground/30 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-[0.98]"
             >
               {card.coverUrl ? (
                 <img
@@ -541,7 +541,7 @@ function CommunityHomePage() {
               </div>
             </Link>
           ))}
-        </div>
+        </HorizontalRail>
       </section>
 
       {/* ── 2. CARROSSEL DE BANNERS HERO (Se cadastrados) ── */}
@@ -614,7 +614,7 @@ function CommunityHomePage() {
                               {item.business_name}
                             </h3>
                             {item.is_verified && (
-                              <CheckCircle size={15} weight="fill" className="text-blue-500 shrink-0" />
+                              <CheckCircle size={15} weight="fill" className="text-info shrink-0" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-1">
@@ -816,7 +816,7 @@ function CommunityHomePage() {
                 actionTo="/empregos"
               >
                 {filteredJobs.map((job: JobItemDTO) => {
-                  const coverImage = job.cover_image_url || job.company_logo_url;
+                  const coverImage = (job as any).cover_image_url || job.company_logo_url;
 
                   return (
                     <Link

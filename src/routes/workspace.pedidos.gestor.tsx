@@ -25,6 +25,7 @@ import {
  History,
 } from "lucide-react";
 
+import { getBrowserClient } from "@/lib/supabase";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
@@ -243,7 +244,7 @@ function KDSPage() {
  .on(
  "postgres_changes",
  { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${storeId}` },
- async (payload) => {
+ async (payload: any) => {
  if (payload.eventType === "INSERT") {
  playOrderChime();
  toast.success(`🔔 Novo pedido #${(payload.new as any).id?.slice(0, 6)} recebido na cozinha!`);
@@ -270,7 +271,7 @@ function KDSPage() {
  }
  },
  )
- .subscribe(async (status) => {
+ .subscribe(async (status: string) => {
  if (status === "SUBSCRIBED") {
  // Catch-up sync: preenche gap de pedidos se o socket reconectar após queda
  try {

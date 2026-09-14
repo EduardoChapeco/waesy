@@ -119,13 +119,13 @@ export function TravelBookingDossierModal({
         <DialogHeader className="space-y-1 pb-2 border-b border-border/40">
           <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
             <Plane className="size-4" />
-            <span>Dossiê Personalizado de Viagem</span>
+            <span>Reserva e Proposta</span>
           </div>
           <DialogTitle className="text-lg font-bold text-foreground">
-            Solicitar Reserva / Orçamento
+            Solicitar Proposta
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Preencha os dados dos viajantes para receber a proposta oficial da agência.
+            Preencha seus dados para receber o retorno do anunciante.
           </DialogDescription>
         </DialogHeader>
 
@@ -217,7 +217,7 @@ export function TravelBookingDossierModal({
           {/* Nomes dos Passageiros */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-foreground">
-              Nome dos Passageiros (para emissão de voucher)
+              Nome dos Passageiros
             </Label>
             <Input
               value={passengerNames}

@@ -8,8 +8,7 @@ import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ShieldCheck,
-  ShieldAlert,
-  Warning,
+    Warning,
   CheckCircle,
   XCircle,
   Eye,
@@ -180,7 +179,7 @@ function AdminCourierAuditPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
-              {appList.map((app) => {
+              {appList.map((app: any) => {
                 const details = app.crosscheck_details || {};
                 const isDivergent = app.crosscheck_status === "divergence_flagged";
                 const isApproved = app.crosscheck_status === "match_approved";

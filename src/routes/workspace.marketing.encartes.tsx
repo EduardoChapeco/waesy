@@ -193,7 +193,7 @@ export default function WorkspaceMarketingEncartesPage() {
     if (!confirm(`Deseja realmente excluir o encarte "${title}"?`)) return;
 
     try {
-      await deleteStoreFlyer({ data: { flyerId } });
+      await deleteStoreFlyer({ data: { id: flyerId } });
       toast.success("Encarte excluído com sucesso.");
       await router.invalidate();
     } catch (err: any) {

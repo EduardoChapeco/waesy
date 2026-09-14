@@ -43,17 +43,23 @@ import {
 import { formatMoney } from "@/lib/money";
 
 interface NewTravelContractSheetProps {
- isOpen: boolean;
- onOpenChange: (open: boolean) => void;
- onCreated?: (contractId: string) => void;
+  isOpen?: boolean;
+  open?: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated?: (contractId: string) => void;
+  onSuccess?: (options?: any) => Promise<any> | void;
+  storeId?: string;
 }
 
 export function NewTravelContractSheet({
- isOpen,
- onOpenChange,
- onCreated,
+  isOpen,
+  open,
+  onOpenChange,
+  onCreated,
+  onSuccess,
 }: NewTravelContractSheetProps) {
- const queryClient = useQueryClient();
+  const effectiveOpen = open !== undefined ? open : (isOpen ?? false);
+  const queryClient = useQueryClient();
 
  // Modo ativo: 'proposal' | 'crm' | 'manual'
  const [activeTab, setActiveTab] = useState<"proposal" | "crm" | "manual">("proposal");
@@ -322,9 +328,9 @@ export function NewTravelContractSheet({
  };
 
  return (
- <Sheet open={isOpen} onOpenChange={onOpenChange}>
+ <Sheet open={effectiveOpen} onOpenChange={onOpenChange}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border shadow-2xl"
+ side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border shadow-2xl"
  >
  {/* Header Premium do Contrato */}
  <SheetHeader className="p-6 pb-4 border-b border-border/70 bg-muted/20">

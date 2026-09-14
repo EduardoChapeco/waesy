@@ -332,7 +332,7 @@ export const registerAffiliate = createServerFn({ method: "POST" })
           },
           { onConflict: "handle" }
         )
-        .catch((e) => console.warn("[affiliates] Auto-sync creator error:", e));
+        .then(() => null, (e: any) => console.warn("[affiliates] Auto-sync creator error:", e));
 
       return updated;
     }
@@ -373,7 +373,7 @@ export const registerAffiliate = createServerFn({ method: "POST" })
         },
         { onConflict: "handle" }
       )
-      .catch((e) => console.warn("[affiliates] Creator profile auto-sync warning:", e));
+      .then(() => null, (e: any) => console.warn("[affiliates] Creator profile auto-sync warning:", e));
 
     // 5. Inicializa a carteira de tokens
     await supabase
@@ -389,7 +389,7 @@ export const registerAffiliate = createServerFn({ method: "POST" })
         },
         { onConflict: "user_id" }
       )
-      .catch((e) => console.warn("[affiliates] Wallet auto-sync warning:", e));
+      .then(() => null, (e: any) => console.warn("[affiliates] Wallet auto-sync warning:", e));
 
     return partner;
   });
@@ -424,7 +424,7 @@ export const getAffiliateDashboard = createServerFn({ method: "GET" }).handler(a
     .select("*", { count: "exact", head: true })
     .eq("affiliate_id", partner.id)
     .gte("created_at", thirtyDaysAgo.toISOString())
-    .catch(() => ({ count: null }));
+    .then((res) => res, () => ({ count: null }));
 
   return {
     partner,
@@ -462,7 +462,7 @@ export const trackAffiliateClick = createServerFn({ method: "POST" })
         affiliate_id: partner.id,
         ip_hash: ipHash,
         target_path: targetPath || "/",
-      }).catch(() => null);
+      }).then(() => null, () => null);
 
       await supabase
         .from("affiliate_partners")

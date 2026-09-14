@@ -52,7 +52,7 @@ function ContaConcursosPage() {
   const winningEntries = entries.filter((e) => e.isWinner);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-20 p-4 sm:p-6 animate-in fade-in duration-150">
+    <div className="w-full max-w-4xl mx-auto space-y-6 pb-20 px-0 sm:px-6 py-2 sm:py-6 animate-in fade-in duration-150">
       {/* ── Top Header Clean ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>

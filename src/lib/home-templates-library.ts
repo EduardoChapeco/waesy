@@ -6,7 +6,7 @@ export interface HomeTemplatePreset {
  name: string;
  category: "fashion" | "beauty" | "conversion" | "general" | "storytelling";
  description: string;
- thumbnail: string;
+ thumbnail: string | null;
  tags: string[];
  nodesFactory: (uuid: () => string) => Partial<ExperienceNode>[];
 }
@@ -18,7 +18,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  name: "Fashion Editorial",
  category: "fashion",
  description:
- "Design de alta moda com Hero Split, Shop The Look interativo, Bento Grid e feed do Instagram.",
+ "Design de alta moda com Hero Split, Shop The Look interativo, Bento Grid e feed de fotos.",
  thumbnail:
  null,
  tags: ["Moda", "Editorial", "Shop The Look", "Bento Grid"],
@@ -197,7 +197,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  block_type: "social_grid",
  parent_id: c4,
  sort_order: 0,
- content: { title: "Siga o Estilo no Instagram", handle: "@waesy_oficial", images: [] },
+ content: { title: "Galeria de Estilo", handle: "@waesy_oficial", images: [] },
  },
  ];
  },

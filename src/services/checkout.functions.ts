@@ -231,7 +231,38 @@ export const processCheckout = createServerFn({ method: "POST" })
  // Não propagamos erros de certificação para não bloquear o checkout
  console.warn("[checkout.mctu] Falha ao gerar certificado:", certErr?.message);
  });
- }
+
+    // ── Propagação Multicanal de Estoque (Mercado Livre, Shopee, Amazon) ──
+    import("./marketplace-hub.functions")
+      .then(async ({ _syncStockToMarketplacesInternal }) => {
+        const { data: orderWithStore } = await db
+          .from("orders")
+          .select("store_id, order_items(item_id, variant_sku)")
+          .eq("id", result.orderId)
+          .maybeSingle();
+
+        if (orderWithStore?.store_id && Array.isArray(orderWithStore.order_items)) {
+          for (const item of orderWithStore.order_items) {
+            if (!item.item_id) continue;
+            try {
+              const { data: variant } = await db
+                .from("product_variants")
+                .select("stock_on_hand, product_id")
+                .eq("id", item.item_id)
+                .maybeSingle();
+
+              const targetProductId = variant?.product_id || item.item_id;
+              const newStockQty = variant?.stock_on_hand ?? 0;
+
+              await _syncStockToMarketplacesInternal(orderWithStore.store_id, targetProductId, newStockQty);
+            } catch (syncErr) {
+              console.warn(`[checkout:stock-sync] Falha ao sincronizar item ${item.item_id}:`, syncErr);
+            }
+          }
+        }
+      })
+      .catch((e) => console.warn("[checkout:stock-sync] Falha ao importar marketplace-hub:", e));
+  }
 
  return {
  status: "success" as const,

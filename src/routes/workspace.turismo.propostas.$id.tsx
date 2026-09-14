@@ -53,6 +53,7 @@ export const Route = createFileRoute("/workspace/turismo/propostas/$id")({
 
 function WorkspaceProposalStudioPage() {
   const { proposal: initialProposal } = ((Route.useLoaderData?.() as any) || {});
+  const [proposal, setProposal] = useState<TravelProposalDTO | null>(initialProposal || null);
  const [isExportingPdf, setIsExportingPdf] = useState(false);
  const [isExportingImage, setIsExportingImage] = useState(false);
  const [isCreatingContract, setIsCreatingContract] = useState(false);

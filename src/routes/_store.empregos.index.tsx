@@ -98,30 +98,30 @@ function JobsMasterPage() {
  staleTime: 30_000,
  });
 
- const jobsList = jobs || [];
+  const jobsList: JobItemDTO[] = (jobs || []) as JobItemDTO[];
 
- // Agrupamento para modo Feed por Área / Empresa
- const jobsByCategory = useMemo(() => {
- const map = new Map<string, JobItemDTO[]>();
- jobsList.forEach((job) => {
- const cat = job.category || "clt";
- if (!map.has(cat)) map.set(cat, []);
- map.get(cat)!.push(job);
- });
- return Array.from(map.entries()).map(([categoryKey, items]) => {
- const chip = JOB_CATEGORY_CHIPS.find((c) => c.id === categoryKey);
- return {
- categoryKey,
- categoryName: chip?.label || "Oportunidades em Aberto",
- items,
- };
- });
- }, [jobsList]);
+  // Agrupamento para modo Feed por Área / Empresa
+  const jobsByCategory = useMemo(() => {
+    const map = new Map<string, JobItemDTO[]>();
+    jobsList.forEach((job: JobItemDTO) => {
+      const cat = job.category || "clt";
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat)!.push(job);
+    });
+    return Array.from(map.entries()).map(([categoryKey, items]) => {
+      const chip = JOB_CATEGORY_CHIPS.find((c) => c.id === categoryKey);
+      return {
+        categoryKey,
+        categoryName: chip?.label || "Oportunidades em Aberto",
+        items,
+      };
+    });
+  }, [jobsList]);
 
- // Vagas em destaque para trilho no Feed
- const featuredJobs = useMemo(() => {
- return jobsList.filter((j) => j.is_featured).slice(0, 6);
- }, [jobsList]);
+  // Vagas em destaque para trilho no Feed
+  const featuredJobs = useMemo(() => {
+    return jobsList.filter((j: JobItemDTO) => j.is_featured).slice(0, 6);
+  }, [jobsList]);
 
  return (
  <div className="w-full space-y-6 pb-20">
@@ -170,7 +170,7 @@ function JobsMasterPage() {
  actionLabel="Ver grade completa"
  onAction={() => setViewMode("grid")}
  >
- {featuredJobs.map((job) => (
+ {featuredJobs.map((job: any) => (
  <div key={job.id} className="min-w-[290px] sm:min-w-[320px] max-w-[340px] shrink-0">
  <JobPostCard job={job} />
  </div>
@@ -190,7 +190,7 @@ function JobsMasterPage() {
  setViewMode("grid");
  }}
  >
- {items.map((job) => (
+ {items.map((job: any) => (
  <div key={job.id} className="min-w-[290px] sm:min-w-[320px] max-w-[340px] shrink-0">
  <JobPostCard job={job} />
  </div>
@@ -209,7 +209,7 @@ function JobsMasterPage() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- {jobsList.map((job) => (
+ {jobsList.map((job: any) => (
  <JobPostCard key={job.id} job={job} />
  ))}
  </div>
@@ -245,7 +245,7 @@ function JobsMasterPage() {
  </div>
  ) : (
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
- {jobsList.map((job) => (
+ {jobsList.map((job: any) => (
  <JobPostCard key={job.id} job={job} />
  ))}
  </div>
@@ -262,7 +262,7 @@ function JobsMasterPage() {
  </div>
  ) : (
  <div className="flex flex-col space-y-3 w-full">
- {jobsList.map((job) => (
+ {jobsList.map((job: any) => (
  <JobListItem key={job.id} job={job} />
  ))}
  </div>

@@ -8,7 +8,6 @@ import { useEffect } from "react";
 
 import { AppShell } from "@/components/shell/app-shell";
 import { GlobalPopupRenderer } from "@/components/commerce/global-popup-renderer";
-import { AdminContextualBar } from "@/components/shell/admin-contextual-bar";
 import { CartProvider, useCartContext } from "@/lib/cart-context";
 import { ErrorState, UnconfiguredState } from "@/components/state/states";
 
@@ -181,7 +180,6 @@ function StoreLayout() {
  />
  <Outlet />
  <GlobalPopupRenderer popups={popups} />
- <AdminContextualBar userRole={session?.role} />
  </AppShell>
  );
 }

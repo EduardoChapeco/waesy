@@ -120,7 +120,7 @@ export const Route = createFileRoute("/_store/conta/empresa")({
       ]);
 
       const resolvedStore = (leadsRes as any)?.currentStore || (leadsRes as any)?.store;
-      let reviewsRes = { reviews: [], stats: { average_rating: 5.0, total_reviews: 0 } };
+      let reviewsRes: any = { reviews: [], stats: { average_rating: 5.0, total_reviews: 0 } };
       if (resolvedStore?.id) {
         reviewsRes = await listStoreDealReviews({ data: { storeId: resolvedStore.id } }).catch(() => reviewsRes);
       }
@@ -209,7 +209,7 @@ function PainelEmpresaPage() {
   // Mutations
   const updateStatusMutation = useMutation({
     mutationFn: async ({ leadId, status }: { leadId: string; status: string }) => {
-      return await updateCompanyLeadStatus({ data: { leadId, status: status as any } });
+      return await updateCompanyLeadStatus({ data: { dealId: leadId, status: status as any } });
     },
     onSuccess: () => {
       toast.success("Status da negociação atualizado!");
@@ -222,7 +222,7 @@ function PainelEmpresaPage() {
 
   const toggleCatalogMutation = useMutation({
     mutationFn: async ({ classifiedId, status }: { classifiedId: string; status: string }) => {
-      return await toggleCompanyClassifiedStatus({ data: { classifiedId, status: status as any } });
+      return await toggleCompanyClassifiedStatus({ data: { classifiedId, newStatus: status as any } });
     },
     onSuccess: () => {
       toast.success("Status do anúncio atualizado!");
@@ -262,7 +262,7 @@ function PainelEmpresaPage() {
   const handleOpenReceipt = async (leadId: string) => {
     setLoadingReceiptId(leadId);
     try {
-      const receipt = await getCompanyReceiptData({ data: { leadId } });
+      const receipt = await getCompanyReceiptData({ data: { dealId: leadId } });
       setSelectedReceipt(receipt);
       setIsReceiptModalOpen(true);
     } catch (err: any) {
@@ -404,16 +404,16 @@ function PainelEmpresaPage() {
           </div>
         </div>
 
-        {/* Navegação entre Abas */}
-        <div className="flex items-center justify-between border-b border-border/60 pb-3 flex-wrap gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
+        {/* Navegação entre Abas com Scroll Horizontal */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-border/60 pb-2 gap-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1">
             <button
               type="button"
               onClick={() => setActiveTab("leads")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
                 activeTab === "leads"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "text-muted-foreground hover:bg-muted/50"
+                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
               }`}
             >
               Mural de Negociações ({leads.length})
@@ -421,21 +421,21 @@ function PainelEmpresaPage() {
             <button
               type="button"
               onClick={() => setActiveTab("catalog")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
                 activeTab === "catalog"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "text-muted-foreground hover:bg-muted/50"
+                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
               }`}
             >
-              Catálogo de Classificados ({classifieds.length})
+              Catálogo ({classifieds.length})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("jobs")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
                 activeTab === "jobs"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "text-muted-foreground hover:bg-muted/50"
+                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
               }`}
             >
               <Briefcase className="size-3.5" />
@@ -444,14 +444,14 @@ function PainelEmpresaPage() {
             <button
               type="button"
               onClick={() => setActiveTab("reviews")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
                 activeTab === "reviews"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "text-muted-foreground hover:bg-muted/50"
+                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
               }`}
             >
               <Star className="size-3.5 fill-amber-400 text-amber-500" />
-              <span>Reputação & Avaliações ({reviewsData?.reviews?.length || 0})</span>
+              <span>Avaliações ({reviewsData?.reviews?.length || 0})</span>
             </button>
           </div>
 

@@ -7,7 +7,7 @@
  * 3. Cada nicho possui vocabulário, badges, fichas técnicas e CTAs contextuais dedicados.
  */
 
-import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, MessageCircle, Phone, Flame, UserCheck, Lock, Plane, HeartHandshake } from 'lucide-react';
+import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, MessageCircle, Phone, Flame, UserCheck, Lock, Plane, HeartHandshake, Utensils } from 'lucide-react';
 
 export type ClassifiedNicheId =
  | "hospitality_stay" // Hospedagem & Temporada (Chalés, Cabanas, Pousadas, Studios)
@@ -19,7 +19,8 @@ export type ClassifiedNicheId =
  | "agri" // Agronegócio & Maquinário Pesado
  | "travel" // Viagens & Pacotes Turísticos (Resorts, Roteiros, Excursões)
  | "equipment" // Aluguel de Equipamentos (Eventos, Obras, Som, Luz)
- | "donation"; // Doações & Desapego Solidário (R$ 0,00)
+ | "donation" // Doações & Desapego Solidário (R$ 0,00)
+ | "food"; // Alimentação, Marmitas, Doces Caseiros & Gastronomia Artesanal
 
 export interface ClassifiedNicheDefinition {
  id: ClassifiedNicheId;
@@ -199,6 +200,22 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
  showTechnicalSpecs: false,
  allowEscrowGuarantee: false,
  },
+ food: {
+ id: "food",
+ canonicalCategory: "sale",
+ dealType: "venda",
+ title: "Alimentação & Gastronomia Artesanal",
+ shortLabel: "Gastronomia",
+ subtitle: "Marmitas Fitness, Doces Caseiros, Bolos, Salgados & Pratos do Dia",
+ icon: Utensils,
+ badge: "Gastronomia & Pronta Entrega",
+ priceSuffix: "",
+ primaryActionLabel: "Pedir no WhatsApp",
+ secondaryActionLabel: "Consultar Ingredientes & Entrega",
+ showDeliveryBadges: true,
+ showTechnicalSpecs: true,
+ allowEscrowGuarantee: true,
+ },
 };
 
 /**
@@ -217,14 +234,25 @@ export function resolveClassifiedNiche(classified: any): ClassifiedNicheDefiniti
     return NICHE_DEFINITIONS.donation;
   }
 
+  // 1.5. Alimentação & Gastronomia Artesanal
+  if (
+    category === "food" ||
+    category === "alimentacao" ||
+    category === "gastronomia" ||
+    rawNiche === "alimentacao" ||
+    rawNiche === "food" ||
+    rawNiche === "gastronomia"
+  ) {
+    return NICHE_DEFINITIONS.food;
+  }
+
   // 2. Turismo / Viagens / Pacotes
   if (
     category === "travel" ||
     category === "tourism" ||
     category === "viagem" ||
     rawNiche === "viagem" ||
-    rawNiche === "turismo" ||
-    classified.attributes?.template_style === "instagram"
+    rawNiche === "turismo"
   ) {
     return NICHE_DEFINITIONS.travel;
   }

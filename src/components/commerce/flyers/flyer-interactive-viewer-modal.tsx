@@ -138,7 +138,7 @@ export function FlyerInteractiveViewerModal({
     try {
       // Registra clique no produto do encarte
       recordFlyerInteraction({
-        data: { flyerId: currentFlyer.id, type: "click", productId: hotspot.product_id },
+        data: { flyerId: currentFlyer.id, type: "click" },
       }).catch(() => {});
 
       const res = await addToCart({
@@ -148,10 +148,12 @@ export function FlyerInteractiveViewerModal({
         },
       });
 
-      if (res) {
-        setCartData(res);
+      if (res && res.status === "success" && res.cart) {
+        setCartData(res.cart);
         toast.success(`${hotspot.title || "Produto"} adicionado à sacola!`);
         setIsCartOpen(true);
+      } else if (res && res.status === "error") {
+        toast.error((res as any).message || "Não foi possível adicionar o produto.");
       }
     } catch (err: any) {
       toast.error(err?.message || "Não foi possível adicionar o produto.");

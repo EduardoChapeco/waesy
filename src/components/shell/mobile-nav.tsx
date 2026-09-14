@@ -12,10 +12,11 @@
  *  - Quando vazios: Carrinho e Pedidos permanecem na seção com scroll horizontal
  *  - Atalhos Secundários integrados: Pedidos | Carrinho | Agenda | Ingressos | Salvos | Negociações
  *  - Avatar/Perfil: 1 toque → perfil público | segurar 500ms → editar | 2 toques → central da conta
+ *  - Admin Mode: ícone Shield ao lado do avatar (apenas platform_admin) → transforma o nav em admin bar
  */
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Home,
   Search,
@@ -31,6 +32,12 @@ import {
   Wallet,
   Coins,
   MessageSquare,
+  Shield,
+  ArrowLeft,
+  Sliders,
+  Image as ImageIcon,
+  Layers,
+  LayoutDashboard,
 } from "lucide-react";
 import { QuickCreateModal } from "@/components/commerce/quick-create-modal";
 import { useCartContext } from "@/lib/cart-context";
@@ -40,7 +47,25 @@ import { cn } from "@/lib/utils";
 
 export interface MobileNavProps {
   session?: any;
+  userRole?: string | null;
 }
+
+// ── Mapa de nichos para o Admin Mode ─────────────────────────────────────────
+const ROUTE_NICHE_MAP: Record<string, { id: string; label: string }> = {
+  "/": { id: "home", label: "Início" },
+  "/mercado": { id: "mercado", label: "Mercado" },
+  "/gastronomia": { id: "gastronomia", label: "Gastronomia" },
+  "/farmacia": { id: "farmacia", label: "Farmácia" },
+  "/bebidas": { id: "bebidas", label: "Bebidas" },
+  "/moda": { id: "moda", label: "Moda" },
+  "/feed": { id: "feed", label: "Feed" },
+  "/noticias": { id: "noticias", label: "Notícias" },
+  "/eventos": { id: "eventos", label: "Eventos" },
+  "/turismo": { id: "turismo", label: "Turismo" },
+  "/classificados": { id: "classificados", label: "Classificados" },
+  "/diretorio": { id: "diretorio", label: "Diretório" },
+  "/ofertas": { id: "ofertas", label: "Ofertas" },
+};
 
 // ── Lógica Contextual do Botão + ─────────────────────────────────────────────
 type CreateContext = {
@@ -95,6 +120,13 @@ function resolveCreateContext(pathname: string): CreateContext {
       navigateTo: "/workspace/noticias/novo",
     };
   }
+  if (path.startsWith("/conta/conversas")) {
+    return {
+      label: "Nova conversa",
+      disabled: false,
+      navigateTo: "/conta/conversas?nova=1",
+    };
+  }
   if (
     path.startsWith("/mercado") ||
     path.startsWith("/gastronomia") ||
@@ -112,9 +144,13 @@ function resolveCreateContext(pathname: string): CreateContext {
   return { label: "Criar & Anunciar", disabled: false, useQuickCreate: true };
 }
 
-export function MobileNav({ session }: MobileNavProps) {
+export function MobileNav({ session, userRole }: MobileNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const pathname = routerState.location.pathname;
+
+  const [adminMode, setAdminMode] = useState(false);
 
   const isFormPage =
     location.pathname.includes("/classificados/novo") ||
@@ -122,10 +158,6 @@ export function MobileNav({ session }: MobileNavProps) {
     location.pathname.endsWith("/editar") ||
     location.pathname.includes("/catalogo/produtos/novo") ||
     location.pathname.includes("/marketing/anuncios/novo");
-
-  if (isFormPage) {
-    return null;
-  }
 
   const { globalCarts, cart } = useCartContext();
 
@@ -194,6 +226,56 @@ export function MobileNav({ session }: MobileNavProps) {
     (typeof user?.email === "string" ? user.email.split("@")[0] : null);
   const userId = session?.user?.id || user?.id;
   const publicProfileTarget = username || userId;
+
+  // ── Verificação de Admin ───────────────────────────────────────────────────
+  const isAdmin =
+    userRole === "platform_admin" ||
+    session?.role === "platform_admin" ||
+    user?.app_metadata?.role === "platform_admin";
+
+  // Fechar admin mode ao mudar de rota
+  useEffect(() => {
+    setAdminMode(false);
+  }, [pathname]);
+
+  // Niche ativo para exibição contextual no Admin Mode
+  const activeNiche = ROUTE_NICHE_MAP[pathname] || { id: "all", label: "Vitrine" };
+
+  // Atalhos Admin
+  const adminShortcuts = [
+    {
+      id: "vitrines",
+      label: "Vitrines",
+      icon: Sliders,
+      to: `/admin-master/vitrines?surface=${activeNiche.id}`,
+      color: "text-primary",
+      highlight: false,
+    },
+    {
+      id: "banners",
+      label: "Banners",
+      icon: ImageIcon,
+      to: `/admin-master/banners?placement=${activeNiche.id}`,
+      color: "text-sky-500",
+      highlight: false,
+    },
+    {
+      id: "botoes",
+      label: "Botões",
+      icon: Layers,
+      to: `/admin-master/botoes?module=${activeNiche.id}`,
+      color: "text-amber-500",
+      highlight: false,
+    },
+    {
+      id: "master",
+      label: "Master",
+      icon: LayoutDashboard,
+      to: "/admin-master",
+      color: "text-primary",
+      highlight: true,
+    },
+  ];
 
   // ── Gestos do Avatar / Botão Perfil (1 toque: público | segurar 500ms: editar | 2 toques: central /conta) ──
   const lastTapTimeRef = useRef<number>(0);
@@ -390,6 +472,9 @@ export function MobileNav({ session }: MobileNavProps) {
     location.pathname.startsWith("/conta/perfil") ||
     location.pathname.startsWith("/membro/") ||
     location.pathname === "/conta";
+  if (isFormPage) {
+    return null;
+  }
 
   return (
     <div
@@ -397,9 +482,68 @@ export function MobileNav({ session }: MobileNavProps) {
       style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 10px)" }}
     >
       <nav
-        aria-label="Navegação principal mobile"
-        className="flex items-center gap-1.5 p-1.5 bg-background/95 backdrop-blur-xl border border-border/60 shadow-xl rounded-[24px] ring-1 ring-black/5 dark:ring-white/10"
+        aria-label={adminMode ? "Navegação Admin Master" : "Navegação principal mobile"}
+        className="flex items-center gap-1.5 p-1.5 bg-background/95 backdrop-blur-xl border border-border/60 shadow-xl rounded-[24px] ring-1 ring-black/5 dark:ring-white/10 transition-all duration-200"
       >
+        {/* ── ADMIN MODE BAR ── */}
+        {adminMode && (
+          <>
+            {/* Botão ← Voltar */}
+            <div className="shrink-0">
+              <button
+                type="button"
+                onClick={() => setAdminMode(false)}
+                aria-label="Voltar à navegação normal"
+                className="h-11 w-11 shrink-0 rounded-2xl bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center border border-border/40 active:scale-95 transition-all cursor-pointer"
+              >
+                <ArrowLeft className="size-5 stroke-[2]" />
+              </button>
+            </div>
+
+            {/* Atalhos Admin com scroll horizontal */}
+            <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar scroll-smooth flex items-center gap-1.5 px-1">
+              {/* Label contextual do nicho atual */}
+              <div className="shrink-0 flex items-center gap-1.5 h-11 px-3 rounded-2xl bg-primary/8 border border-primary/20">
+                <Shield className="size-3.5 text-primary" />
+                <span className="text-[12px] font-semibold text-primary whitespace-nowrap">
+                  {activeNiche.label}
+                </span>
+              </div>
+
+              {adminShortcuts.map((shortcut) => {
+                const Icon = shortcut.icon;
+                return (
+                  <Link
+                    key={shortcut.id}
+                    to={shortcut.to as any}
+                    aria-label={shortcut.label}
+                    className={cn(
+                      "h-11 px-3.5 rounded-2xl font-sans font-medium text-[13.5px] flex items-center gap-2 shrink-0 transition-all active:scale-95",
+                      shortcut.highlight
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted/40 hover:bg-muted/70 text-foreground/85 hover:text-foreground border border-border/30"
+                    )}
+                  >
+                    <Icon className={cn("size-[17px]", !shortcut.highlight && shortcut.color)} />
+                    <span className="whitespace-nowrap">{shortcut.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Separador + Ícone shield fixo à direita */}
+            <div className="flex items-center gap-1 shrink-0">
+              <div className="h-6 w-px bg-border/60 mx-0.5 shrink-0" />
+              <div className="h-11 w-11 shrink-0 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center">
+                <Shield className="size-4.5 text-primary" />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── MODO NORMAL ── */}
+        {!adminMode && (
+          <>
         {/* ── 1. BOTÃO [+] FIXO À ESQUERDA (Não se move, contextual por módulo) ── */}
         <div className="shrink-0">
           {createCtx.useQuickCreate ? (
@@ -422,6 +566,10 @@ export function MobileNav({ session }: MobileNavProps) {
             <button
               type="button"
               onClick={() => {
+                if (createCtx.navigateTo?.includes("nova=1")) {
+                  window.dispatchEvent(new CustomEvent("open-new-chat-dialog"));
+                  return;
+                }
                 if (!isAuthenticated) {
                   toast.info("Acesse sua conta para continuar.");
                   navigate({
@@ -561,42 +709,58 @@ export function MobileNav({ session }: MobileNavProps) {
 
           {/* D. Foto de Perfil / Botão Entrar (Fixo no extremo direito) */}
           {isAuthenticated ? (
-            <button
-              type="button"
-              aria-label="Perfil (1 toque: perfil público, segurar: editar perfil, 2 toques: central da conta)"
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerCancel}
-              onContextMenu={(e) => e.preventDefault()}
-              style={{ touchAction: "manipulation", WebkitTouchCallout: "none" }}
-              className={cn(
-                "h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center transition-all cursor-pointer relative select-none",
-                isProfileActive
-                  ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
-                  : "ring-1 ring-border/80",
-                isPressing ? "scale-90 opacity-75 ring-2 ring-primary" : "active:scale-95"
-              )}
-            >
-              {userAvatar ? (
-                <div className="size-full rounded-2xl overflow-hidden">
-                  <img
-                    src={userAvatar}
-                    alt={userFullName}
-                    className="size-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="size-full rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-sans font-bold text-xs tracking-tight">
-                  {userInitials}
-                </div>
+            <div className="flex items-center gap-1">
+              {/* Shield Admin Toggle (apenas platform_admin) */}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setAdminMode(true)}
+                  aria-label="Ativar modo Admin Master"
+                  title="Admin Master — clique para acessar controles de governança"
+                  className="h-11 w-11 shrink-0 rounded-2xl bg-primary/8 hover:bg-primary/15 border border-primary/25 flex items-center justify-center active:scale-95 transition-all cursor-pointer relative"
+                >
+                  <Shield className="size-4 text-primary" />
+                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-primary" />
+                </button>
               )}
 
-              {/* Distintivo de status visual no canto inferior */}
-              <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-[8px] font-black text-foreground flex items-center justify-center border border-background shadow-xs">
-                P
-              </span>
-            </button>
+              {/* Avatar / Perfil */}
+              <button
+                type="button"
+                aria-label="Perfil (1 toque: perfil público, segurar: editar perfil, 2 toques: central da conta)"
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
+                onContextMenu={(e) => e.preventDefault()}
+                style={{ touchAction: "manipulation", WebkitTouchCallout: "none" }}
+                className={cn(
+                  "h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center transition-all cursor-pointer relative select-none",
+                  isProfileActive
+                    ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
+                    : "ring-1 ring-border/80",
+                  isPressing ? "scale-90 opacity-75 ring-2 ring-primary" : "active:scale-95"
+                )}
+              >
+                {userAvatar ? (
+                  <div className="size-full rounded-2xl overflow-hidden">
+                    <img
+                      src={userAvatar}
+                      alt={userFullName}
+                      className="size-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="size-full rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-sans font-bold text-xs tracking-tight">
+                    {userInitials}
+                  </div>
+                )}
+                {/* Distintivo de status visual no canto inferior */}
+                <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-[8px] font-black text-foreground flex items-center justify-center border border-background shadow-xs">
+                  P
+                </span>
+              </button>
+            </div>
           ) : (
             <Link
               to="/entrar"
@@ -608,6 +772,8 @@ export function MobileNav({ session }: MobileNavProps) {
             </Link>
           )}
         </div>
+      </>
+      )}
       </nav>
     </div>
   );

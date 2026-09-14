@@ -202,7 +202,7 @@ function AutomacoesWorkflowsPage() {
   const activeCount = workflows.filter((w) => w.status === "active").length;
 
   return (
-    <div className="w-full space-y-6 pb-12">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Header ── */}
       <PageHeader
         title="Automações Visuais"

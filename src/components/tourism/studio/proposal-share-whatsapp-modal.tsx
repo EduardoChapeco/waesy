@@ -32,8 +32,9 @@ export function ProposalShareWhatsappModal({
 
  const totalPriceFormatted = formatMoney(proposal.pricing?.total_price_cents || 0);
  const hotelHighlight = proposal.hotels?.[0]?.hotel_name || 'Hospedagem Selecionada';
- const flightHighlight = proposal.flights?.[0]
- ? `Voo ${proposal.flights[0].airline_name || 'Aéreo'} (${proposal.flights[0].origin_iata} ➔ ${proposal.flights[0].destination_iata})`
+ const f = proposal.flights?.[0] as any;
+ const flightHighlight = f
+ ? `Voo ${f.airline_name || f.airline || 'Aéreo'} (${f.origin_iata || f.origin || ''} ➔ ${f.destination_iata || f.destination || ''})`
  : 'Aéreo conforme roteiro';
 
  const defaultMessage = `Olá ${proposal.client_name}! ✈️🌟

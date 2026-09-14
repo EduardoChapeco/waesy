@@ -74,17 +74,6 @@ function GroupTourBoardingPage() {
  const { store, tour, initialOverview } = (Route.useLoaderData as any)();
  const storeId = store?.id || "";
 
- if (!tour) {
- return (
- <div className="p-8 text-center space-y-3">
- <p className="text-sm text-muted-foreground">Excursão não encontrada.</p>
- <Button asChild variant="outline">
- <Link to={"/workspace/turismo/grupos" as any}>Voltar</Link>
- </Button>
- </div>
- );
- }
-
  const [overview, setOverview] = useState(initialOverview);
  const [searchQuery, setSearchQuery] = useState("");
  const [selectedPointFilter, setSelectedPointFilter] = useState("all");
@@ -233,17 +222,28 @@ function GroupTourBoardingPage() {
  const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n");
  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
  const url = URL.createObjectURL(blob);
- const link = document.createElement("a");
- link.setAttribute("href", url);
- link.setAttribute("download", `lista_embarque_${tour.destination.toLowerCase().replace(/\s+/g, "_")}.csv`);
- document.body.appendChild(link);
- link.click();
- document.body.removeChild(link);
- toast.success("Planilha de embarque exportada com sucesso!");
- };
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `lista_embarque_${tour?.destination ? tour.destination.toLowerCase().replace(/\s+/g, "_") : "excursao"}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Planilha de embarque exportada com sucesso!");
+  };
 
- return (
- <div className="w-full space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
+  if (!tour) {
+    return (
+      <div className="p-8 text-center space-y-3">
+        <p className="text-sm text-muted-foreground">Excursão não encontrada.</p>
+        <Button asChild variant="outline">
+          <Link to={"/workspace/turismo/grupos" as any}>Voltar</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+ <div className="w-full space-y-6">
  {/* ── 1. Top Bar & Ações ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/60">
  <div className="flex items-center gap-3">
@@ -508,7 +508,7 @@ function GroupTourBoardingPage() {
    <SheetContent
      side="right"
      size="wide"
-     className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-3xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto"
+     className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-6 flex flex-col justify-between overflow-y-auto"
    >
      <div>
        <SheetHeader>

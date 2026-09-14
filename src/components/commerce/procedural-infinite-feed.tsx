@@ -16,6 +16,7 @@ export interface ProceduralInfiniteFeedProps {
   initialExcludedStoreIds?: string[];
   initialExcludedProductIds?: string[];
   city?: string;
+  pageSize?: number;
   className?: string;
 }
 

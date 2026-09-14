@@ -63,7 +63,7 @@ function WorkspaceLogisticsInvoicesPage() {
  .reduce((acc, i) => acc + i.net_payable_cents, 0);
 
  return (
- <div className="w-full max-w-5xl mx-auto space-y-8 pb-6">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>

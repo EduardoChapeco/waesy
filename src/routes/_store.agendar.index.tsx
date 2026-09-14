@@ -65,8 +65,8 @@ export const Route = createFileRoute("/_store/agendar/")({
   loader: async () => {
     try {
       const [banners, hotpages] = await Promise.all([
-        listActiveBanners({ data: { placement: "agendar" } }).catch(() => []),
-        listHotpages({ data: { module: "agendar" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "agenda" } }).catch(() => []),
+        listHotpages({ data: { module: "agenda" } }).catch(() => []),
       ]);
       return { banners, hotpages };
     } catch (err) {

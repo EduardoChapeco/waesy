@@ -620,7 +620,7 @@ export function ProfessionalResumeEditor({
  </p>
  ) : (
  <div className="space-y-3">
- {normalizedEducations.map((edu, idx) => (
+ {normalizedEducations.map((edu: any, idx: number) => (
  <div
  key={edu.id || idx}
  className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
@@ -1064,7 +1064,6 @@ export function ProfessionalResumeEditor({
  onChange({
  ...resumeData,
  educations: updated,
- education: updated, // mantém retrocompatibilidade
  });
  setActiveModal(null);
  toast.success(isDelete ? "Formação removida!" : "Formação salva com sucesso!");
@@ -1609,7 +1608,7 @@ function ExperienceEditSheet({
                 </Label>
                 <CurrencyField
                   value={salaryCents || 0}
-                  onChange={(val) => setSalaryCents(val > 0 ? val : undefined)}
+                  onChange={(val) => setSalaryCents(val && val > 0 ? val : undefined)}
                   placeholder="R$ 0,00"
                   className="h-9 rounded-xl text-xs"
                 />

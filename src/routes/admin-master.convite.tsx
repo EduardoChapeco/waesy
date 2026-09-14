@@ -658,13 +658,7 @@ function AdminConvitePage() {
       )}
 
       {/* ── SHEET AUDITORIA DE CUPONS DO SORTEIO ── */}
-      <SheetPage
-        isOpen={Boolean(selectedRaffleForTickets)}
-        onClose={() => setSelectedRaffleForTickets(null)}
-        title={`Cupons do Sorteio`}
-        description={selectedRaffleForTickets?.title || "Auditoria de participantes e bilhetes emitidos."}
-        size="md"
-      >
+      <SheetPage open={Boolean(selectedRaffleForTickets)} onOpenChange={(open) => { if (!open) setSelectedRaffleForTickets(null); }} title={`Cupons do Sorteio`} description={selectedRaffleForTickets?.title || "Auditoria de participantes e bilhetes emitidos."} size="default">
         <div className="space-y-4 pt-2">
           <div className="p-3 bg-muted/40 rounded-xl border border-border/60 flex items-center justify-between text-xs font-mono">
             <span>Total de Cupons: <strong>{ticketsList.length}</strong></span>
@@ -719,21 +713,13 @@ function AdminConvitePage() {
       </SheetPage>
 
       {/* ── SHEET NOVO SORTEIO OFICIAL (ESPAÇOSO, ZERO SQUISHED INPUTS) ── */}
-      <SheetPage
-        isOpen={isRaffleSheetOpen}
-        onClose={() => setIsRaffleSheetOpen(false)}
-        title="Novo Sorteio da Plataforma"
-        description="Cadastre um sorteio oficial disponível para toda a Comunidade Waesy."
-        size="lg"
-      >
+      <SheetPage open={isRaffleSheetOpen} onOpenChange={setIsRaffleSheetOpen} title="Novo Sorteio da Plataforma" description="Cadastre um sorteio oficial disponível para toda a Comunidade Waesy." size="lg">
         <form onSubmit={handleCreateRaffleSubmit} className="space-y-5 pt-2">
           {/* Media Uploader 16:9 */}
-          <MediaUploader
-            value={newRaffleImg}
-            onChange={setNewRaffleImg}
+          <MediaUploader value={newRaffleImg} onChange={(urls) => setNewRaffleImg(urls[0] || "")}
             bucket="post-media"
             folder="raffles"
-            aspectRatio={16 / 9}
+            aspect={16 / 9}
             label="Banner Oficial do Sorteio (16:9)"
           />
 

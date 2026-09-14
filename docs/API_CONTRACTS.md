@@ -487,3 +487,215 @@ Response: Order Object
 - **Request:** `{}` (Requer Platform Admin)
 - **Response:** `Array<{ id: string, route: string, error_message: string, stack_trace?: string, severity: string, created_at: string }>`
 
+---
+
+## 16. Governança Executiva, Metas & Valuation (BFF Contracts)
+
+### 16.1 Consultar Métricas Executivas de Crescimento & Valuation
+`GET /services/growth-targets.functions/getExecutiveGrowthMetrics`
+- **Autenticação:** Sessão ativa obrigatória com role `platform_admin` ou e-mail master autorizado.
+- **Request:** `{}`
+- **Response:**
+  ```ts
+  {
+    real: {
+      profilesCount: number,
+      storesCount: number,
+      ordersCount: number,
+      realGmvCents: number,
+      paidOrdersCents: number,
+      paidInvoicesCents: number,
+      realDirectRevenueCents: number,
+      classifiedsCount: number,
+      totalExpensesCents: number,
+      totalInvestmentsCents: number,
+      netCashFlowCents: number,
+      realConversionRate: number,
+      currentCalculatedValuationCents: number
+    },
+    codebase: {
+      srcFiles: number,
+      srcLines: number,
+      srcBytes: number,
+      supabaseLines: number,
+      totalLines: number,
+      routesCount: number,
+      servicesCount: number,
+      componentsCount: number,
+      techAssetValueCents: number
+    },
+    targets: Array<{
+      period_key: string,
+      label: string,
+      stage_order: number,
+      target_stores: number,
+      target_clients: number,
+      target_mrr_cents: number,
+      target_arr_cents: number,
+      target_gmv_monthly_cents: number,
+      target_expenses_monthly_cents?: number,
+      target_valuation_conservative_cents: number,
+      target_valuation_strategic_cents: number,
+      notes?: string
+    }>,
+    financialRecords: Array<{
+      id: string,
+      entry_type: "expense" | "investment" | "revenue_adjustment",
+      category: string,
+      amount_cents: number,
+      description: string,
+      entry_date: string,
+      receipt_url?: string,
+      recorded_by?: string,
+      created_at: string
+    }>
+  }
+  ```
+
+### 16.2 Registrar Lançamento Financeiro no Livro-Caixa
+`POST /services/growth-targets.functions/recordFinancialEntry`
+- **Autenticação:** Requer `platform_admin`.
+- **Request (Zod Schema):**
+  ```ts
+  {
+    entryType: "expense" | "investment" | "revenue_adjustment",
+    category: string,
+    amountCents: number, // Valor positivo inteiro em centavos
+    description: string,
+    entryDate?: string, // Formato YYYY-MM-DD
+    receiptUrl?: string
+  }
+  ```
+- **Response:** Objeto do registro recém-criado em `platform_financial_records`.
+
+### 16.3 Estornar / Remover Lançamento Financeiro
+`POST /services/growth-targets.functions/deleteFinancialEntry`
+- **Autenticação:** Requer `platform_admin`.
+- **Request (Zod Schema):** `{ id: string }` (UUID válido)
+- **Response:** `{ success: true }`
+
+---
+
+## 17. Waesy Care Finance & Saúde de Caixa das PMEs (BFF)
+
+Contratos dedicados à proteção contra asfixia de caixa, antecipação justa, liquidação de fornecedores em D+0 e cobrança acolhedora.
+
+### 17.1 Listar e Filtrar Carnês da Loja
+`POST /services/receivables.functions/listStoreCarnes`
+- **Autenticação:** Requer `owner`, `admin` ou `finance` no escopo da loja (`store_id` derivado da sessão via `getServerIdentity`).
+- **Request (Zod Schema):**
+  ```ts
+  {
+    filter?: "all" | "due_soon" | "late" | "pending_conciliation" | "settled",
+    search?: string,
+    limit?: number,
+    offset?: number
+  }
+  ```
+- **Response:** Array de objetos `CarneWithInstallmentsDTO` contendo identificação do cliente, parcelas, valor em centavos (`amount_cents`), status e dias de atraso.
+
+### 17.2 Obter Relatório Resumo de Contas a Receber
+`POST /services/receivables.functions/getCarnesReportSummary`
+- **Autenticação:** Requer acesso ao financeiro da loja.
+- **Request:** `{}`
+- **Response:**
+  ```ts
+  {
+    totalReceivableCents: number,
+    totalOverdueCents: number,
+    dueNext7DaysCents: number,
+    settledThisMonthCents: number,
+    activeCarnesCount: number,
+    overdueInstallmentsCount: number,
+    averageDaysToPayment: number
+  }
+  ```
+
+### 17.3 Conciliar ou Ajustar Parcela com Perdão de Encargos
+`POST /services/receivables.functions/approveInstallmentPayment`
+- **Autenticação:** Requer papel financeiro na loja.
+- **Request (Zod Schema):**
+  ```ts
+  {
+    installmentId: string, // UUID
+    paymentMethod: "pix" | "dinheiro" | "cartao_debito" | "cartao_credito" | "transferencia",
+    waiveInterest?: boolean, // Se true, zera juros e multas por empatia
+    discountCents?: number, // Desconto voluntário de pontualidade
+    notes?: string
+  }
+  ```
+- **Response:** `{ success: true, settledAt: string, finalAmountCents: number }`
+
+### 17.4 Disparar Cobrança Humanizada em Massa (WhatsApp)
+`POST /services/receivables.functions/sendMassBillingReminders`
+- **Autenticação:** Requer papel financeiro na loja.
+- **Request (Zod Schema):**
+  ```ts
+  {
+    installmentIds: string[], // Lista de UUIDs
+    templateType: "friendly" | "due_warning" | "overdue_discount" | "custom",
+    discountPercent?: number, // Ex: 5% a 10% para incentivar quitação imediata
+    customMessage?: string
+  }
+  ```
+- **Response:** `{ dispatchedCount: number, failedCount: number }`
+
+### 17.5 Provisionar Saldo em Cofre Blindado (Aluguel / Folha)
+`POST /services/cash-management.functions/configureCashSafe`
+- **Autenticação:** Requer `owner` da loja.
+- **Request (Zod Schema):**
+  ```ts
+  {
+    safeType: "payroll" | "rent" | "taxes" | "emergency",
+    targetAmountCents: number,
+    targetDate: string, // YYYY-MM-DD
+    autoRetainPercentage: number, // 2% a 15% retidos automaticamente de cada venda
+    allowEmergencyEarlyWithdraw: boolean
+  }
+  ```
+- **Response:** Objeto `StoreCashSafeDTO` com saldo atual, rendimento CDI diário e meta.
+
+### 17.6 Simular e Contratar Giro Solidário por Vendas
+`POST /services/cash-management.functions/applyWorkingCapitalAdvance`
+- **Autenticação:** Requer `owner` da loja (exclusivo para quem possui histórico mínimo de 30 dias de vendas).
+- **Request (Zod Schema):**
+  ```ts
+  {
+    requestedAmountCents: number,
+    dailySalesRetentionPercentage: number, // 5% a 15%
+    purpose: "working_capital" | "inventory_restock" | "store_renovation" | "emergency_cash"
+  }
+  ```
+- **Response:**
+  ```ts
+  {
+    advanceId: string,
+    approvedAmountCents: number,
+    totalRepaymentCents: number,
+    monthlyInterestRatePercent: number, // Ex: 1.4%
+    status: "active",
+    firstRetentionStartsAt: string
+  }
+  ```
+
+### 17.7 Vincular NF-e de Fornecedor para Liquidação D+0 sem Taxas
+`POST /services/cash-management.functions/registerSupplierInvoice`
+- **Autenticação:** Requer acesso ao financeiro da loja.
+- **Request (Zod Schema):**
+  ```ts
+  {
+    nfeAccessKey: string, // 44 dígitos
+    supplierCnpj: string,
+    supplierName: string,
+    totalInvoiceCents: number,
+    installments: Array<{
+      installmentNumber: number,
+      dueDate: string,
+      amountCents: number
+    }>
+  }
+  ```
+- **Response:** Objeto `StoreInboundInvoiceDTO` com duplicatas agendadas para liquidação interna em D+0 com isenção total de tarifa de saque.
+
+
+

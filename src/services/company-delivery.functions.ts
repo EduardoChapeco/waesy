@@ -46,6 +46,7 @@ export const UpdateDispatchStatusSchema = z.object({
   token: z.string().min(5),
   status: z.enum(["accepted", "picked_up", "delivered", "failed", "cancelled"]),
   proofPhotoUrl: z.string().url().optional().nullable(),
+  confirmationPin: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
 });
 
@@ -68,11 +69,11 @@ export const getCompanyDeliverySettings = createServerFn({ method: "GET" })
   .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    let targetStoreId = data?.storeId;
+    let targetStoreId: string | undefined = data?.storeId;
 
     if (!targetStoreId) {
       const identity = await getServerIdentity().catch(() => null);
-      targetStoreId = identity?.store_id || identity?.tenant_id;
+      targetStoreId = (identity?.store_id || identity?.tenant_id) ?? undefined;
     }
 
     if (!targetStoreId) {
@@ -123,11 +124,11 @@ export const saveCompanyDeliverySettings = createServerFn({ method: "POST" })
   .validator(SaveDeliverySettingsSchema)
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    let targetStoreId = data.storeId;
+    let targetStoreId: string | undefined = data.storeId;
 
     if (!targetStoreId) {
       const identity = await getServerIdentity().catch(() => null);
-      targetStoreId = identity?.store_id || identity?.tenant_id;
+      targetStoreId = (identity?.store_id || identity?.tenant_id) ?? undefined;
     }
 
     if (!targetStoreId) {

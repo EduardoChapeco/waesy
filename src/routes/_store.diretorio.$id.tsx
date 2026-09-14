@@ -71,6 +71,7 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
         classifiedsRes,
         concursosRes,
         employerStatsRes,
+        storeProfileRes,
         identityRes,
       ] = await Promise.all([
         getStorePublicCatalog({ data: targetStore ? { storeId: targetStore } : undefined }).catch(
@@ -98,7 +99,7 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
           ? getStoreConcursos({ data: { storeId: targetStore } }).catch(() => [])
           : Promise.resolve([]),
         targetStore
-          ? getCompanyEmployerStats({ data: { storeId: targetStore, companyName: listing.business_name || listing.name } }).catch(() => null)
+          ? getCompanyEmployerStats({ data: { storeId: targetStore, companyName: listing.business_name || (listing as any).name || "" } }).catch(() => null)
           : Promise.resolve(null),
         targetStore
           ? getStorePublicProfileWithSections({ data: { store_id: targetStore } }).catch(() => null)
@@ -111,7 +112,7 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
         if (!targetStore) return false;
         return (
           j.store_id === targetStore ||
-          j.company_name?.toLowerCase() === (listing.business_name || listing.name)?.toLowerCase()
+          j.company_name?.toLowerCase() === (listing.business_name || (listing as any).name)?.toLowerCase()
         );
       });
 
@@ -149,11 +150,11 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
 
       const combinedReviews = [...dealReviews, ...publicReviews];
       const isOwner = Boolean(
-        identityRes?.id &&
-        (listing.owner_id === identityRes.id ||
-         listing.user_id === identityRes.id ||
-         identityRes.store_id === targetStore ||
-         identityRes.role === "admin")
+        (identityRes as any)?.id &&
+        ((listing as any).owner_id === (identityRes as any).id ||
+         (listing as any).user_id === (identityRes as any).id ||
+         (identityRes as any).store_id === targetStore ||
+         (identityRes as any).role === "admin")
       );
 
       return {

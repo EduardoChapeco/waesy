@@ -32,21 +32,29 @@ export function getSSRClient() {
  return createServerClient(env.data.VITE_SUPABASE_URL, env.data.VITE_SUPABASE_ANON_KEY, {
  cookies: {
  getAll() {
+ try {
  const cookieHeader = getRequestHeader("cookie");
  if (!cookieHeader) return [];
  return parseCookieHeader(cookieHeader).map((c) => ({
  name: c.name,
  value: c.value ?? "",
  }));
+ } catch {
+ return [];
+ }
  },
  setAll(cookiesToSet) {
+ try {
  cookiesToSet.forEach(({ name, value, options }) => {
  setCookie(name, value, {
  ...options,
- // Ensure path defaults to / if not provided, just in case
- path: options?.path ?? "/",
+ sameSite: options?.sameSite === "none" ? "none" : "lax",
+ secure: process.env.NODE_ENV === "production",
  });
  });
+ } catch {
+ // Silently ignore cookie setting outside request context
+ }
  },
  },
  });

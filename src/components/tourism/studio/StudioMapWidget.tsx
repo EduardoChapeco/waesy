@@ -1,25 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-// Note: leaflet-image doesn't have official types, so we ignore it
-// @ts-ignore
-import leafletImage from "leaflet-image";
-import { Loader2, Camera } from "lucide-react";
+import { Loader2, Camera, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { uploadProposalMedia } from "@/services/proposal-storage";
-
-// Fix leaflet default icon issue
-if (typeof window !== "undefined") {
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  });
-}
+import { getCanonicalMapStyle, setupMapResizeObserver } from "@/lib/map-styles";
 
 export type Waypoint = {
   id: string;
@@ -36,18 +21,6 @@ type Props = {
   onWaypointsChange?: (waypoints: Waypoint[]) => void;
 };
 
-// Component to handle map center changes dynamically
-function MapBoundsUpdater({ waypoints }: { waypoints: Waypoint[] }) {
-  const map = useMap();
-  useEffect(() => {
-    if (waypoints.length > 0) {
-      const bounds = L.latLngBounds(waypoints.map((w) => [w.lat, w.lng]));
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-    }
-  }, [waypoints, map]);
-  return null;
-}
-
 export function StudioMapWidget({
   agencyId,
   proposalId,
@@ -56,32 +29,106 @@ export function StudioMapWidget({
   onWaypointsChange,
 }: Props) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const [localWaypoints, setLocalWaypoints] = useState<Waypoint[]>(waypoints);
   const [searchQuery, setSearchQuery] = useState("");
   const [capturing, setCapturing] = useState(false);
   const [searching, setSearching] = useState(false);
-  const mapRef = useRef<L.Map | null>(null);
 
-  if (!mounted || typeof window === "undefined") {
-    return (
-      <div className="h-[400px] w-full rounded-full border bg-surface-alt/30 flex items-center justify-center text-muted-foreground text-sm">
-        <Loader2 className="h-6 w-6 animate-spin text-brand/60 mr-2" />
-        Carregando mapa interativo...
-      </div>
-    );
-  }
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !mapContainer.current || mapRef.current) return;
+    let isMounted = true;
+    let cleanupResize: (() => void) | undefined;
+
+    import("maplibre-gl").then((maplibreglModule) => {
+      if (!isMounted || !mapContainer.current || mapRef.current) return;
+      const maplibregl = (maplibreglModule as any).default || maplibreglModule;
+
+      const initialCenter: [number, number] = localWaypoints.length > 0
+        ? [localWaypoints[0].lng, localWaypoints[0].lat]
+        : [-52.6152, -27.1004];
+
+      const map = new maplibregl.Map({
+        container: mapContainer.current,
+        style: getCanonicalMapStyle(),
+        center: initialCenter,
+        zoom: localWaypoints.length > 0 ? 5 : 2,
+        preserveDrawingBuffer: true,
+        attributionControl: false,
+      });
+
+      cleanupResize = setupMapResizeObserver(map, mapContainer.current);
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+      map.on("load", () => {
+        if (!isMounted) return;
+        mapRef.current = map;
+        renderWaypoints(map, maplibregl, localWaypoints);
+      });
+    });
+
+    return () => {
+      isMounted = false;
+      cleanupResize?.();
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [mounted]);
+
+  const renderWaypoints = (map: any, maplibregl: any, wps: Waypoint[]) => {
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    if (!map || wps.length === 0) return;
+
+    const bounds = new maplibregl.LngLatBounds();
+
+    wps.forEach((wp, idx) => {
+      bounds.extend([wp.lng, wp.lat]);
+
+      const el = document.createElement("div");
+      el.className = "flex items-center justify-center size-7 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-md border-2 border-white cursor-pointer";
+      el.innerText = `${idx + 1}`;
+
+      const popup = new maplibregl.Popup({ offset: 25 }).setText(wp.label);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([wp.lng, wp.lat])
+        .setPopup(popup)
+        .addTo(map);
+
+      markersRef.current.push(marker);
+    });
+
+    if (wps.length > 1) {
+      map.fitBounds(bounds, { padding: 40, maxZoom: 14 });
+    } else if (wps.length === 1) {
+      map.flyTo({ center: [wps[0].lng, wps[0].lat], zoom: 12 });
+    }
+  };
+
+  useEffect(() => {
+    if (mapRef.current) {
+      import("maplibre-gl").then((maplibreglModule) => {
+        const maplibregl = (maplibreglModule as any).default || maplibreglModule;
+        renderWaypoints(mapRef.current, maplibregl, localWaypoints);
+      });
+    }
+  }, [localWaypoints]);
 
   async function handleSearch() {
     if (!searchQuery) return;
     setSearching(true);
     try {
-      // Nominatim free geocoding
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`
       );
       const data = await res.json();
 
@@ -96,11 +143,11 @@ export function StudioMapWidget({
         const updated = [...localWaypoints, newWp];
         setLocalWaypoints(updated);
         setSearchQuery("");
-        if (onWaypointsChange) onWaypointsChange(updated);
+        onWaypointsChange?.(updated);
       } else {
         toast.error("Local não encontrado.");
       }
-    } catch (e) {
+    } catch {
       toast.error("Erro na busca de endereço.");
     } finally {
       setSearching(false);
@@ -110,33 +157,32 @@ export function StudioMapWidget({
   function removeWaypoint(id: string) {
     const updated = localWaypoints.filter((w) => w.id !== id);
     setLocalWaypoints(updated);
-    if (onWaypointsChange) onWaypointsChange(updated);
+    onWaypointsChange?.(updated);
   }
 
   async function captureMap() {
     if (!mapRef.current) return;
     setCapturing(true);
     try {
-      // leaflet-image creates a canvas from the map tiles
-      leafletImage(mapRef.current, async (err: any, canvas: HTMLCanvasElement) => {
-        if (err) throw new Error("Erro na captura");
-
-        canvas.toBlob(
-          async (blob) => {
-            if (!blob) throw new Error("Falha ao gerar blob da imagem");
-
-            const file = new File([blob], `map_${Date.now()}.png`, { type: "image/png" });
-            const url = await uploadProposalMedia(agencyId, proposalId, file, "map");
-            onMapCaptured(url);
-            toast.success("Mapa capturado e salvo com sucesso!");
+      const canvas = mapRef.current.getCanvas();
+      canvas.toBlob(
+        async (blob: Blob | null) => {
+          if (!blob) {
+            toast.error("Falha ao capturar tela do mapa.");
             setCapturing(false);
-          },
-          "image/png",
-          0.9,
-        );
-      });
-    } catch (e) {
-      toast.error("Falha ao capturar o mapa.");
+            return;
+          }
+          const file = new File([blob], `map_${Date.now()}.png`, { type: "image/png" });
+          const url = await uploadProposalMedia(agencyId, proposalId, file, "map");
+          onMapCaptured(url);
+          toast.success("Mapa capturado e salvo com sucesso!");
+          setCapturing(false);
+        },
+        "image/png",
+        0.92
+      );
+    } catch (e: any) {
+      toast.error("Falha ao capturar o mapa: " + (e?.message || "Erro"));
       setCapturing(false);
     }
   }
@@ -149,77 +195,56 @@ export function StudioMapWidget({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          className="rounded-xl h-10 text-xs"
         />
-        <Button onClick={handleSearch} disabled={searching} variant="secondary">
-          {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Adicionar Ponto"}
+        <Button onClick={handleSearch} disabled={searching} variant="secondary" className="rounded-xl h-10 text-xs gap-1.5 shrink-0">
+          {searching ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+          <span>Adicionar</span>
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {localWaypoints.map((wp, i) => (
-          <div
-            key={wp.id}
-            className="flex items-center gap-2 bg-secondary text-secondary-foreground text-xs px-3 py-1.5 rounded-full"
-          >
-            <span className="font-bold">{i + 1}.</span>
-            <span className="truncate max-w-[150px]">{wp.label}</span>
-            <Button
-              onClick={() => removeWaypoint(wp.id)}
-              className="text-muted-foreground hover:text-red-500 ml-1"
+      {localWaypoints.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {localWaypoints.map((wp, i) => (
+            <div
+              key={wp.id}
+              className="flex items-center gap-1.5 bg-muted/70 text-foreground text-xs px-2.5 py-1 rounded-xl border border-border/60"
             >
-              &times;
-            </Button>
-          </div>
-        ))}
-      </div>
-
-      <div className="relative h-[400px] w-full rounded-full border overflow-hidden">
-        <MapContainer
-          center={[0, 0]}
-          zoom={2}
-          style={{ height: "100%", width: "100%", zIndex: 0 }}
-          ref={mapRef as any}
-        >
-          <TileLayer
-            attribution="&copy; OpenStreetMap"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            crossOrigin="anonymous" // Essential for leaflet-image
-          />
-
-          <MapBoundsUpdater waypoints={localWaypoints} />
-
-          {localWaypoints.map((wp, idx) => (
-            <Marker key={wp.id} position={[wp.lat, wp.lng]}>
-              <Popup>{wp.label}</Popup>
-            </Marker>
+              <span className="font-bold text-primary">{i + 1}.</span>
+              <span className="truncate max-w-[140px]">{wp.label}</span>
+              <button
+                type="button"
+                onClick={() => removeWaypoint(wp.id)}
+                className="text-muted-foreground hover:text-destructive ml-1"
+                aria-label={`Remover ${wp.label}`}
+              >
+                <X className="size-3" />
+              </button>
+            </div>
           ))}
+        </div>
+      )}
 
-          {localWaypoints.length > 1 && (
-            <Polyline
-              positions={localWaypoints.map((w) => [w.lat, w.lng])}
-              color="hsl(var(--primary))"
-              weight={3}
-              dashArray="5, 10"
-            />
-          )}
-        </MapContainer>
+      <div className="relative h-[380px] w-full rounded-2xl border border-border/60 overflow-hidden bg-muted/20">
+        <div ref={mapContainer} className="h-full w-full" />
 
         {capturing && (
-          <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center z-10">
-            <div className="bg-white p-4 rounded-full border border-border flex items-center gap-3">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <span className="text-sm font-medium">Capturando mapa em alta resolução...</span>
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center z-20">
+            <div className="bg-card p-4 rounded-2xl border border-border flex items-center gap-3 shadow-lg">
+              <Loader2 className="size-4 animate-spin text-primary" />
+              <span className="text-xs font-semibold">Capturando mapa em alta resolução...</span>
             </div>
           </div>
         )}
       </div>
 
       <Button
+        type="button"
         onClick={captureMap}
         disabled={capturing || localWaypoints.length === 0}
-        className="w-full"
+        className="w-full h-10 rounded-xl text-xs font-semibold gap-2"
       >
-        <Camera className="mr-2 h-4 w-4" />
+        <Camera className="size-4" />
         {capturing ? "Processando..." : "Capturar Imagem HD do Mapa"}
       </Button>
     </div>

@@ -579,7 +579,7 @@ function WorkspaceComercialPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 w-full min-h-[calc(100vh-120px)] pb-12">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-[calc(100vh-120px)] pb-12 overflow-x-hidden">
       {/* ── BARRA OPERACIONAL CANÔNICA (SILENCIOSA & ALTA DENSIDADE) ── */}
       <WorkspaceCanonicalToolbar
         searchValue={searchTerm}
@@ -603,6 +603,32 @@ function WorkspaceComercialPage() {
           },
         }}
       />
+
+      {/* ── SELETOR MOBILE RÁPIDO DE ETAPAS (TOUCH ERGONÔMICO) ── */}
+      <div className="sm:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
+        {STAGES.map((s) => {
+          const count = filteredLeads.filter((l: any) =>
+            s.id === "won"
+              ? l.status === "won" || l.status === "converted"
+              : l.status === s.id || (!l.status && s.id === "new")
+          ).length;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => {
+                const el = document.getElementById(`kanban-col-${s.id}`);
+                el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-[44px]"
+            >
+              <span className={cn("size-2 rounded-full", s.dotColor)} />
+              <span>{s.title}</span>
+              <span className="text-[10px] font-mono px-1 rounded-md bg-muted text-muted-foreground">{count}</span>
+            </button>
+          );
+        })}
+      </div>
 
       {/* ── KANBAN BOARD FULL VERTICAL & HORIZONTAL (ENTERPRISE STANDARD) ── */}
       <div className="flex-1 flex gap-4 overflow-x-auto no-scrollbar pb-6 pt-1 items-stretch snap-x snap-mandatory [scrollbar-width:thin] scrollbar-thumb-border/60 scrollbar-track-transparent">
@@ -706,7 +732,7 @@ function WorkspaceComercialPage() {
 
       {/* ── MODAL / SHEET LATERAL DE NOVA OPORTUNIDADE (TRAVELAGÊNCIAS STANDARD) ── */}
       <Sheet open={isNewLeadOpen} onOpenChange={setIsNewLeadOpen}>
-        <SheetContent side="right" className="sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+        <SheetContent side="right" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-2xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           <div className="space-y-6">
             <SheetHeader className="p-0 text-left space-y-1 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
@@ -908,7 +934,7 @@ function WorkspaceComercialPage() {
                     <Label className="text-[11px] font-semibold">Orçamento Estimado (R$)</Label>
                     <CurrencyField
                       value={newLeadForm.estimatedValueCents}
-                      onChange={(cents) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: cents }))}
+                      onChange={(cents) => setNewLeadForm((prev) => ({ ...prev, estimatedValueCents: cents ?? 0 }))}
                       className="h-8 text-xs rounded-xl font-mono"
                     />
                   </div>
@@ -1001,7 +1027,7 @@ function WorkspaceComercialPage() {
 
       {/* ── FICHA 360° DO LEAD (TRAVELAGÊNCIAS ENTERPRISE STANDARD) ── */}
       <Sheet open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
-        <SheetContent side="right" className="sm:max-w-xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+        <SheetContent side="right" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-xl p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
           {selectedLead && (
             <>
               <div className="space-y-5">
@@ -1342,7 +1368,7 @@ function WorkspaceComercialPage() {
                       <Label className="text-xs font-semibold">Valor Estimado da Venda (R$)</Label>
                       <CurrencyField
                         value={editLeadForm.estimated_value_cents}
-                        onChange={(cents) => setEditLeadForm((prev) => ({ ...prev, estimated_value_cents: cents }))}
+                        onChange={(cents) => setEditLeadForm((prev) => ({ ...prev, estimated_value_cents: cents ?? 0 }))}
                         className="h-8 text-xs rounded-xl font-mono"
                       />
                     </div>

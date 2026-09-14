@@ -14,6 +14,7 @@ export interface FavoriteButtonProps {
   className?: string;
   size?: "sm" | "default" | "lg" | "icon";
   showLabel?: boolean;
+  title?: string;
 }
 
 export function FavoriteButton({

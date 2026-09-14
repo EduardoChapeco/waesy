@@ -153,7 +153,7 @@ export default function TemplateVoucherStory({ voucher: v, agency, brandKit }: P
         {v.passengers && v.passengers.length > 0 && (
           <div className="mt-4 ds-meta text-white/50 text-center">
             {v.passengers.length} passageiro{v.passengers.length !== 1 ? "s" : ""} ·{" "}
-            {v.passengers.map((p) => p.name.split(" ")[0]).join(", ")}
+            {v.passengers.map((p: any) => p.name.split(" ")[0]).join(", ")}
           </div>
         )}
 

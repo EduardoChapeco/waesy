@@ -34,6 +34,7 @@ export interface TourismItemDTO {
  badge_label?: string;
  included_items: string[];
  what_to_bring: string[];
+ itinerary?: Array<{ day?: number; title: string; description: string; time?: string }> | null;
  is_featured: boolean;
  status: "active" | "inactive" | "draft";
  created_at: string;
@@ -186,6 +187,7 @@ export const getPublicTourismById = createServerFn({ method: "GET" })
  badge_label: row.badge_label || "Experiência",
  included_items: row.included_items || [],
  what_to_bring: row.what_to_bring || [],
+ itinerary: row.itinerary || row.attributes?.itinerary || row.attributes?.itinerary_days || null,
  is_featured: row.is_featured ?? false,
  status: row.status,
  created_at: row.created_at,

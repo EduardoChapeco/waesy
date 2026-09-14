@@ -146,7 +146,7 @@ function WorkspaceAiSettingsPage() {
  );
 
  return (
- <div className="w-full space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
+ <div className="w-full space-y-6">
  {/* ── 1. Header ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
  <div>

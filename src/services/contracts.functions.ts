@@ -169,6 +169,7 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
  signatureImageBase64: z.string().optional(),
  ipAddress: z.string().optional(),
  userAgent: z.string().optional(),
+      faceImageUrl: z.string().optional(),
  }),
  )
  .handler(async ({ data: input }) => {
@@ -204,6 +205,7 @@ export const signContractEnvelope = createServerFn({ method: "POST" })
  signer_email: envelope.signer_email,
  document_hash: (envelope.contract_version as any)?.hash_sha256,
  signature_image: input.signatureImageBase64 || null,
+        face_image: input.faceImageUrl || null,
  },
  });
 

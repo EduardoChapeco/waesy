@@ -105,7 +105,7 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
       try {
         const { data: storeData } = await supabase
           .from("stores")
-          .select("id, name, slug, logo_url, phone, settings")
+          .select("id, name, slug, logo_url, phone, pix_key, payment_instructions, settings")
           .eq("id", classifiedData.store_id)
           .maybeSingle();
 
@@ -116,8 +116,25 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
             slug: storeData.slug,
             logo_url: storeData.logo_url,
             phone: storeData.phone,
+            pix_key: storeData.pix_key || storeData.settings?.pix_key || null,
+            payment_instructions: storeData.payment_instructions || storeData.settings?.payment_instructions || null,
             custom_inquiry_fields: storeData.settings?.custom_inquiry_fields || [],
           };
+
+          // Sincronização estrita de pagamentos com o Workspace da Loja
+          if (classifiedData.sync_payment_with_store !== false && classifiedData.attributes) {
+            const rules = { ...(classifiedData.attributes.payment_rules || {}) };
+            const effectivePix = storeData.pix_key || storeData.settings?.pix_key;
+            if (effectivePix) {
+              rules.pix_key = effectivePix;
+              if (rules.pix_enabled === undefined) rules.pix_enabled = true;
+            }
+            const instructions = storeData.payment_instructions || storeData.settings?.payment_instructions;
+            if (instructions) {
+              rules.store_payment_instructions = instructions;
+            }
+            classifiedData.attributes.payment_rules = rules;
+          }
         }
       } catch (storeErr) {
         console.warn("[classifieds] error fetching store data:", storeErr);
@@ -126,7 +143,7 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
       try {
         const { data: member } = await supabase
           .from("workspace_members")
-          .select("store_id, stores(id, name, slug, logo_url, phone, settings)")
+          .select("store_id, stores(id, name, slug, logo_url, phone, pix_key, payment_instructions, settings)")
           .eq("profile_id", classifiedData.author_profile_id)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -139,6 +156,8 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
             slug: s.slug,
             logo_url: s.logo_url,
             phone: s.phone,
+            pix_key: s.pix_key || s.settings?.pix_key || null,
+            payment_instructions: s.payment_instructions || s.settings?.payment_instructions || null,
             custom_inquiry_fields: s.settings?.custom_inquiry_fields || [],
           };
         }

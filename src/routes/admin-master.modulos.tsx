@@ -65,8 +65,28 @@ function AdminMasterModulosPage() {
   const [editOrderIndex, setEditOrderIndex] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [categoryTab, setCategoryTab] = useState<"all" | "store_operation" | "public_discovery" | "ai_intelligence">("all");
+  const [search, setSearch] = useState("");
+
   const activeCount = modules.filter((m) => m.enabled).length;
   const disabledCount = modules.length - activeCount;
+
+  const storeOpCount = modules.filter((m) => m.category === "store_operation").length;
+  const publicCount = modules.filter((m) => m.category === "public_discovery").length;
+  const aiCount = modules.filter((m) => m.category === "ai_intelligence").length;
+
+  const filteredModules = modules.filter((m) => {
+    if (categoryTab !== "all" && m.category !== categoryTab) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const matchName = m.name.toLowerCase().includes(q);
+      const matchKey = m.module_key.toLowerCase().includes(q);
+      const matchDesc = (m.description || "").toLowerCase().includes(q);
+      const matchBadge = (m.badge || "").toLowerCase().includes(q);
+      if (!matchName && !matchKey && !matchDesc && !matchBadge) return false;
+    }
+    return true;
+  });
 
   const handleToggle = async (module: PlatformModuleDTO) => {
     const nextState = !module.enabled;
@@ -149,7 +169,7 @@ function AdminMasterModulosPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto py-4 px-4 sm:px-6">
+    <div className="space-y-6 max-w-6xl mx-auto py-4 px-0 sm:px-4 md:px-0">
       {/* ─── Header ────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div className="space-y-1">
@@ -160,7 +180,7 @@ function AdminMasterModulosPage() {
             </h1>
           </div>
           <p className="text-xs text-muted-foreground">
-            Ligue ou desligue qualquer recurso público da plataforma Waesy em tempo real com controle transacional e persistência no banco.
+            Ligue ou desligue qualquer recurso da plataforma Waesy em tempo real com controle transacional e persistência no banco.
           </p>
         </div>
 
@@ -178,9 +198,68 @@ function AdminMasterModulosPage() {
         </div>
       </div>
 
+      {/* ─── Barra de Filtros & Abas ─────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <button
+            type="button"
+            onClick={() => setCategoryTab("all")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              categoryTab === "all"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground bg-muted/40"
+            }`}
+          >
+            Todos ({modules.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setCategoryTab("store_operation")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              categoryTab === "store_operation"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground bg-muted/40"
+            }`}
+          >
+            Operação de Loja ({storeOpCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setCategoryTab("public_discovery")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              categoryTab === "public_discovery"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground bg-muted/40"
+            }`}
+          >
+            Vitrines Públicas ({publicCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setCategoryTab("ai_intelligence")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              categoryTab === "ai_intelligence"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground bg-muted/40"
+            }`}
+          >
+            Inteligência & IA ({aiCount})
+          </button>
+        </div>
+
+        <div className="w-full sm:w-64">
+          <Input
+            placeholder="Buscar módulo por nome, chave ou badge..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-9 text-xs rounded-xl bg-card"
+          />
+        </div>
+      </div>
+
       {/* ─── Grid de Módulos ────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {modules.map((module) => {
+        {filteredModules.map((module) => {
           const isToggling = togglingKey === module.module_key;
 
           return (
@@ -212,13 +291,21 @@ function AdminMasterModulosPage() {
                     {module.description || "Sem descrição definida."}
                   </p>
 
-                  <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-muted-foreground">
+                  <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-muted-foreground flex-wrap">
                     <span className="px-1.5 py-0.5 rounded bg-muted">
                       key: {module.module_key}
                     </span>
                     <span>•</span>
-                    <span className={module.enabled ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-muted-foreground"}>
-                      {module.enabled ? "Visível publicamente" : "Desativado"}
+                    <Badge variant="secondary" className="text-[9px] py-0 px-1.5 font-normal">
+                      {module.category === "store_operation"
+                        ? "Workspace"
+                        : module.category === "ai_intelligence"
+                        ? "IA & Automação"
+                        : "Vitrine Pública"}
+                    </Badge>
+                    <span>•</span>
+                    <span className={module.enabled ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-amber-600 dark:text-amber-400 font-medium"}>
+                      {module.enabled ? "Ativo no Sistema" : "Pausado Globalmente"}
                     </span>
                   </div>
                 </div>

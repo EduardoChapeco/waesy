@@ -130,7 +130,7 @@ function EletronicosVerticalPage() {
  const relevantHotpages = useMemo(() => {
  if (!hotpages) return [];
  return hotpages.filter(
- (hp) =>
+ (hp: any) =>
  hp.module === "marketplace" ||
  hp.slug.includes("tech") ||
  hp.slug.includes("gamer") ||

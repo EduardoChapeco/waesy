@@ -270,7 +270,7 @@ function IntegrationsPage() {
  };
 
  return (
- <div className="space-y-6 max-w-5xl">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  <PageHeader title="Integrações" />
  <p className="text-muted-foreground">
  Conecte sua loja e comunidade com serviços de logística, mensagens, agenda e ferramentas de

@@ -53,7 +53,7 @@ export interface ThreadPostItem {
  replies?: ThreadPostItem[];
 }
 
-export function ThreadsFeedCard({
+export function CommunityFeedCard({
  post,
  onLike,
  onReply,
@@ -407,3 +407,5 @@ export function ThreadsFeedCard({
  </article>
  );
 }
+
+export const ThreadsFeedCard = CommunityFeedCard;

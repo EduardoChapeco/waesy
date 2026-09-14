@@ -222,3 +222,158 @@ export function formatPhone(val?: string | null): string {
   if (clean.length <= 10) return `(${clean.slice(0, 2)}) ${clean.slice(2, 6)}-${clean.slice(6)}`;
   return `(${clean.slice(0, 2)}) ${clean.slice(2, 7)}-${clean.slice(7, 11)}`;
 }
+
+/**
+ * Máscara progressiva para CPF conforme o usuário digita (ex: 123 -> 123, 1234 -> 123.4, 12345678901 -> 123.456.789-01).
+ */
+export function maskCpfProgressive(val?: string | null): string {
+  const clean = cleanDocument(val).slice(0, 11);
+  if (!clean) return "";
+  if (clean.length <= 3) return clean;
+  if (clean.length <= 6) return `${clean.slice(0, 3)}.${clean.slice(3)}`;
+  if (clean.length <= 9) return `${clean.slice(0, 3)}.${clean.slice(3, 6)}.${clean.slice(6)}`;
+  return `${clean.slice(0, 3)}.${clean.slice(3, 6)}.${clean.slice(6, 9)}-${clean.slice(9)}`;
+}
+
+/**
+ * Máscara progressiva para CNPJ conforme o usuário digita (ex: 12345678000190 -> 12.345.678/0001-90).
+ */
+export function maskCnpjProgressive(val?: string | null): string {
+  const clean = cleanDocument(val).slice(0, 14);
+  if (!clean) return "";
+  if (clean.length <= 2) return clean;
+  if (clean.length <= 5) return `${clean.slice(0, 2)}.${clean.slice(2)}`;
+  if (clean.length <= 8) return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5)}`;
+  if (clean.length <= 12) return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5, 8)}/${clean.slice(8)}`;
+  return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5, 8)}/${clean.slice(8, 12)}-${clean.slice(12)}`;
+}
+
+/**
+ * Máscara dinâmica que alterna suavemente entre CPF (até 11 dígitos) e CNPJ (12 a 14 dígitos).
+ */
+export function maskDocumentProgressive(
+  val?: string | null,
+  mode: "cpf" | "cnpj" | "dynamic" = "dynamic"
+): string {
+  const clean = cleanDocument(val);
+  if (mode === "cpf") return maskCpfProgressive(clean);
+  if (mode === "cnpj") return maskCnpjProgressive(clean);
+  // Modo dinâmico: se passar de 11 dígitos, transiciona imediatamente para CNPJ
+  if (clean.length > 11) {
+    return maskCnpjProgressive(clean);
+  }
+  return maskCpfProgressive(clean);
+}
+
+/**
+ * Formata placa de veículo (Padrão Tradicional ABC-1234 ou Mercosul ABC1D23).
+ */
+export function maskPlate(val?: string | null): string {
+  if (!val) return "";
+  const clean = val.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 7);
+  if (clean.length <= 3) return clean;
+
+  // Se o 5º caractere for número (índice 4), formato tradicional (ABC-1234)
+  // Se for letra, padrão Mercosul (ABC1D23)
+  const char4 = clean[4];
+  if (char4 && /[0-9]/.test(char4)) {
+    return `${clean.slice(0, 3)}-${clean.slice(3)}`;
+  }
+  if (clean.length > 3 && clean.length <= 4) {
+    return clean;
+  }
+  return clean;
+}
+
+/**
+ * Valida se uma placa é válida pelo padrão tradicional (ABC-1234) ou Mercosul (ABC1D23).
+ */
+export function validatePlate(val?: string | null): boolean {
+  if (!val) return false;
+  const clean = val.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  if (clean.length !== 7) return false;
+
+  const traditionalRegex = /^[A-Z]{3}[0-9]{4}$/;
+  const mercosulRegex = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
+
+  return traditionalRegex.test(clean) || mercosulRegex.test(clean);
+}
+
+export type CardBrand = "visa" | "mastercard" | "elo" | "amex" | "hipercard" | "unknown";
+
+/**
+ * Detecta a bandeira do cartão de crédito através dos BINs oficiais operantes no Brasil.
+ */
+export function detectCardBrand(cardNumber?: string | null): CardBrand {
+  if (!cardNumber) return "unknown";
+  const clean = cardNumber.replace(/\D/g, "");
+  if (!clean) return "unknown";
+
+  // Elo (BINs específicos no Brasil)
+  const eloPrefixes = [
+    "401178", "401179", "438935", "457631", "457632", "504175",
+    "627780", "636297", "636368"
+  ];
+  if (eloPrefixes.some((p) => clean.startsWith(p))) return "elo";
+  const eloRanges = [
+    [506699, 506778], [509000, 509999], [650031, 650033], [650035, 650051],
+    [650405, 650439], [650485, 650538], [650541, 650598], [650700, 650718],
+    [650720, 650727], [650901, 650978], [651652, 651679], [655000, 655019],
+    [655021, 655058]
+  ];
+  const prefix6 = parseInt(clean.slice(0, 6), 10);
+  if (eloRanges.some(([min, max]) => prefix6 >= min && prefix6 <= max)) return "elo";
+
+  // Hipercard
+  if (clean.startsWith("606282") || clean.startsWith("3841")) return "hipercard";
+
+  // Amex (34, 37)
+  if (clean.startsWith("34") || clean.startsWith("37")) return "amex";
+
+  // Visa (4)
+  if (clean.startsWith("4")) return "visa";
+
+  // Mastercard (51-55 ou 2221-2720)
+  const prefix2 = parseInt(clean.slice(0, 2), 10);
+  const prefix4 = parseInt(clean.slice(0, 4), 10);
+  if ((prefix2 >= 51 && prefix2 <= 55) || (prefix4 >= 2221 && prefix4 <= 2720)) {
+    return "mastercard";
+  }
+
+  return "unknown";
+}
+
+/**
+ * Máscara progressiva para número de cartão de crédito (agrupamento de 4 em 4 dígitos ou 4-6-5 para Amex).
+ */
+export function maskCreditCardNumber(val?: string | null): string {
+  if (!val) return "";
+  const clean = val.replace(/\D/g, "");
+  const brand = detectCardBrand(clean);
+
+  if (brand === "amex") {
+    // Amex: 4-6-5 (15 dígitos)
+    const limited = clean.slice(0, 15);
+    if (limited.length <= 4) return limited;
+    if (limited.length <= 10) return `${limited.slice(0, 4)} ${limited.slice(4)}`;
+    return `${limited.slice(0, 4)} ${limited.slice(4, 10)} ${limited.slice(10)}`;
+  }
+
+  // Padrão 16 dígitos: 4-4-4-4
+  const limited = clean.slice(0, 16);
+  const parts: string[] = [];
+  for (let i = 0; i < limited.length; i += 4) {
+    parts.push(limited.slice(i, i + 4));
+  }
+  return parts.join(" ");
+}
+
+/**
+ * Máscara para data de validade de cartão (MM/AA).
+ */
+export function maskCardExpiry(val?: string | null): string {
+  if (!val) return "";
+  const clean = val.replace(/\D/g, "").slice(0, 4);
+  if (clean.length <= 2) return clean;
+  return `${clean.slice(0, 2)}/${clean.slice(2)}`;
+}

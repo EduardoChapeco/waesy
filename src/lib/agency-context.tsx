@@ -60,8 +60,8 @@ export type Agency = {
   status?: string | null;
 };
 
-export type BrandKit = Database["public"]["Tables"]["brand_kit"]["Row"];
-export type CompanyProfile = Database["public"]["Tables"]["company_profiles"]["Row"];
+export type BrandKit = any;
+export type CompanyProfile = any;
 
 type Ctx = {
   agency: Agency | null;
@@ -182,7 +182,7 @@ export function AgencyProvider({
     queryKey: ["current-user-role", preloadedAgency?.id],
     enabled: !!preloadedAgency?.id,
     queryFn: async () => {
-      const store = await getStoreSettings().catch(() => null);
+      const store = (await getStoreSettings().catch(() => null)) as any;
       return store?.user_role || "agency_admin";
     },
   });
@@ -192,7 +192,7 @@ export function AgencyProvider({
     enabled: !!preloadedAgency?.id,
     initialData: preloadedAgency,
     queryFn: async () => {
-      const store = await getStoreSettings().catch(() => null);
+      const store = (await getStoreSettings().catch(() => null)) as any;
       if (!store) return preloadedAgency as Agency;
       return {
         id: store.id,

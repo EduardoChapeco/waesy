@@ -1,5 +1,5 @@
 import { CreatorAnalyticsCard } from "@/components/social/creator-analytics-card";
-import { ThreadsFeedCard } from "@/components/social/threads-feed-card";
+import { CommunityFeedCard } from "@/components/social/community-feed-card";
 import { CreatorProfileSheetEditor, CreatorProfileSheetData } from "@/components/profile/creator-profile-sheet-editor";
 import {
  Sheet,
@@ -14,7 +14,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAffiliateShowcaseProducts, getAvailablePartnerStores, upsertCreatorProfile } from "@/services/affiliates.functions";
-import { Package, Settings, User, MessageSquare, Tag, MapPin, Briefcase, Globe, Instagram, Store, Check, Plus, Edit3, Share2, Layers, ExternalLink, MessageCircle, GraduationCap, Grid, List, ArrowLeft, Building2, Clock, ShieldCheck, Award, Calendar, Send, ShoppingBag, Trash2, FileText, Upload, HeartHandshake, Languages, X, UserPlus, Eye, ChevronRight, Heart, Activity, Camera } from 'lucide-react';
+import { Package, Settings, User, MessageSquare, Tag, MapPin, Briefcase, Globe, Instagram, Store, Check, Plus, Edit3, Share2, Layers, ExternalLink, MessageCircle, GraduationCap, Grid, List, ArrowLeft, Building2, Clock, ShieldCheck, Award, Calendar, Send, ShoppingBag, Trash2, FileText, Upload, HeartHandshake, Languages, X, UserPlus, Eye, ChevronRight, Heart, Activity, Camera, Copy, ArrowRight } from 'lucide-react';
 import { ImageUpload } from "@/components/ui/image-upload";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -182,7 +182,7 @@ export function MemberPublicProfileView({
  // Queries para a Vitrine Comercial de Afiliados/Criador
  const { data: showcaseProducts = [], isLoading: isLoadingProducts } = useQuery({
   queryKey: ["affiliate-showcase-products", profile?.id],
-  queryFn: () => getAffiliateShowcaseProducts({ data: { affiliateId: profile?.id } }),
+  queryFn: () => getAffiliateShowcaseProducts(),
   enabled: activeMode === "comercial" && !!profile?.id,
  });
 
@@ -1654,8 +1654,8 @@ export function MemberPublicProfileView({
  ) : (
  <div className="space-y-4">
  {posts.map((p: any) => (
- <div key={p.id} className="p-4 sm:p-6 rounded-2xl bg-card border border-border/40 shadow-2xs">
- <ThreadsFeedCard
+ <div key={p.id} className="p-3 sm:p-5 rounded-2xl bg-card border border-border/40 shadow-2xs">
+ <CommunityFeedCard
  post={{
  id: p.id,
  author: {
@@ -1894,7 +1894,7 @@ export function MemberPublicProfileView({
  key={p.id}
  to="/produto/$slug"
  params={{ slug: p.slug }}
- search={{ ref: creatorProfile?.handle || profile.username }}
+ search={{ ref: creatorProfile?.handle || profile.username } as any}
  className="group rounded-2xl bg-card border border-border/60 hover:border-primary/40 transition-all overflow-hidden flex flex-col justify-between shadow-xs"
  >
  <div className="space-y-3">

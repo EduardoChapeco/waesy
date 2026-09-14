@@ -207,9 +207,11 @@ function WorkspaceHotelsPage() {
  const { data: hotels = initialHotels, refetch } = useQuery({
  queryKey: ["workspace_hotels_bank", selectedDestination],
  queryFn: () =>
- listHotelsBank({
- destination_id: selectedDestination === "all" ? undefined : selectedDestination,
- }),
+   listHotelsBank({
+     data: {
+       destination_id: selectedDestination === "all" ? undefined : selectedDestination,
+     },
+   }),
  initialData: initialHotels,
  });
 
@@ -622,7 +624,7 @@ function WorkspaceHotelsPage() {
  toolDescription="Catálogo de hospedagens, redes hoteleiras e resorts com acomodações estruturadas, fotos, comodidades, políticas e tarifas base para pacotes e propostas."
  store={store}
  >
- <div className="space-y-6 pb-20">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         <WorkspaceCanonicalToolbar
           viewModes={[
             { id: "grid", label: "Cards", icon: LayoutGrid },
@@ -1026,7 +1028,7 @@ function WorkspaceHotelsPage() {
 
  {/* ── SHEET RAIO-X DO HOTEL & RESORT (TRUTHFUL PREVIEW LATERAL) ── */}
  <Sheet open={!!previewHotel} onOpenChange={(open) => !open && setPreviewHotel(null)}>
- <SheetContent side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full max-h-screen overflow-y-auto no-scrollbar p-0 bg-card border-l border-border/80">
+ <SheetContent side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-h-screen overflow-y-auto no-scrollbar p-0 bg-card border-l border-border/80">
  {previewHotel && (
  <div className="space-y-4">
  {/* Header com Foto de Capa Panorâmica */}
@@ -1204,7 +1206,7 @@ function WorkspaceHotelsPage() {
 
  {/* ── SHEET MODULAR DE CADASTRO / EDIÇÃO ENTERPRISE (6 ABAS) ── */}
  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
- <SheetContent className="sm:max-w-3xl overflow-y-auto no-scrollbar p-0 flex flex-col gap-0 bg-card">
+ <SheetContent className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl overflow-y-auto no-scrollbar p-0 flex flex-col gap-0 bg-card">
  <SheetHeader className="p-5 border-b border-border/60 bg-muted/20 text-left shrink-0">
  <div className="flex items-center justify-between">
  <div>

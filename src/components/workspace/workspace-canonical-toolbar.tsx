@@ -17,6 +17,8 @@ export interface WorkspaceCanonicalAction {
   icon?: React.ElementType;
   onClick?: () => void;
   variant?: "default" | "outline" | "secondary" | "ghost";
+  disabled?: boolean;
+  loading?: boolean;
 }
 
 export interface WorkspaceToolbarTab {
@@ -50,14 +52,18 @@ export interface WorkspaceCanonicalToolbarProps {
   onTabChange?: (tabId: string) => void;
   onViewModeChange?: (mode: string) => void;
 
-  /** Busca rápida (suporta searchValue ou searchQuery) */
+  /** Busca rápida (suporta searchValue ou searchQuery ou searchTerm) */
   searchPlaceholder?: string;
+  placeholder?: string;
   searchValue?: string;
   searchQuery?: string;
+  searchTerm?: string;
   onSearchChange?: (val: string) => void;
 
   /** Filtros rápidos estruturados (dropdowns padronizados) */
   filters?: WorkspaceToolbarFilter[];
+  filterChips?: any[];
+  onFilterChange?: (id: any) => void;
   /** Slot livre para filtros contextuais adicionais */
   filterSlot?: React.ReactNode;
 
@@ -105,11 +111,15 @@ export function WorkspaceCanonicalToolbar({
   activeViewMode,
   onTabChange,
   onViewModeChange,
-  searchPlaceholder = "Buscar...",
+  searchPlaceholder: customPlaceholder,
+  placeholder,
   searchValue,
   searchQuery,
+  searchTerm,
   onSearchChange,
   filters,
+  filterChips,
+  onFilterChange,
   filterSlot,
   onOpenDashboard,
   onMetricsClick,
@@ -127,7 +137,8 @@ export function WorkspaceCanonicalToolbar({
   const effectiveTabs = tabs || viewModes || [];
   const currentActive = activeTab || activeViewMode;
   const handleTabSelect = onTabChange || onViewModeChange;
-  const effectiveSearch = searchValue !== undefined ? searchValue : searchQuery;
+  const searchPlaceholder = placeholder || customPlaceholder || "Buscar...";
+  const effectiveSearch = searchValue ?? searchQuery ?? searchTerm;
   const effectiveDashboardLabel = dashboardLabel || dashboardButtonLabel || "Métricas";
 
   const handleDashboard = onOpenDashboard || onMetricsClick;
@@ -330,6 +341,7 @@ export function WorkspaceCanonicalToolbar({
                 type="button"
                 variant={secondaryAction.variant || "outline"}
                 size="sm"
+                disabled={secondaryAction.disabled}
                 onClick={secondaryAction.onClick}
                 className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none"
               >
@@ -340,12 +352,13 @@ export function WorkspaceCanonicalToolbar({
 
             {/* Lista de Ações Secundárias */}
             {secondaryActions &&
-              secondaryActions.map((act, i) => (
+              secondaryActions.map((act) => (
                 <Button
-                  key={i}
+                  key={act.label}
                   type="button"
                   variant={act.variant || "outline"}
                   size="sm"
+                  disabled={act.disabled}
                   onClick={act.onClick}
                   className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none"
                 >
@@ -361,6 +374,7 @@ export function WorkspaceCanonicalToolbar({
               <Button
                 type="button"
                 size="sm"
+                disabled={(primaryAction as WorkspaceCanonicalAction).disabled}
                 onClick={(primaryAction as WorkspaceCanonicalAction).onClick}
                 className="h-10 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-none min-h-[40px]"
               >

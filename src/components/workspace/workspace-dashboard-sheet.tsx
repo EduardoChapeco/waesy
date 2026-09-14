@@ -10,8 +10,9 @@ import { BarChart3, TrendingUp, Calendar, ArrowUpRight, CheckCircle2 } from "luc
 import { cn } from "@/lib/utils";
 
 export interface MetricCardItem {
-  id: string;
-  label: string;
+  id?: string;
+  label?: string;
+  title?: string;
   value: string | number;
   subtext?: string;
   description?: string;
@@ -22,25 +23,42 @@ export interface MetricCardItem {
   };
   icon?: React.ElementType;
   variant?: "default" | "primary" | "success" | "warning" | "danger" | "info";
+  color?: string;
 }
 
 export interface WorkspaceDashboardSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
   title?: string;
+  subtitle?: string;
   description?: string;
   metrics?: MetricCardItem[];
+  items?: MetricCardItem[];
+  breakdown?: any;
   children?: React.ReactNode;
 }
 
 export function WorkspaceDashboardSheet({
-  open,
+  open: openProp,
+  isOpen,
   onOpenChange,
+  onClose,
   title = "Painel de Métricas & Indicadores",
-  description = "Acompanhamento em tempo real de produtividade, volume e conversões.",
-  metrics = [],
+  subtitle,
+  description: descProp,
+  metrics: metricsProp = [],
+  items,
   children,
 }: WorkspaceDashboardSheetProps) {
+  const open = openProp ?? isOpen ?? false;
+  const setOpen = (val: boolean) => {
+    onOpenChange?.(val);
+    if (!val) onClose?.();
+  };
+  const description = descProp || subtitle || "Acompanhamento em tempo real de produtividade, volume e conversões.";
+  const metrics = metricsProp.length > 0 ? metricsProp : (items || []);
   const [period, setPeriod] = useState<"today" | "7d" | "30d" | "all">("today");
 
   const getVariantStyles = (variant?: MetricCardItem["variant"]) => {
@@ -61,7 +79,7 @@ export function WorkspaceDashboardSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
         side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background border-l border-border/70 overflow-hidden select-none"
       >
@@ -143,14 +161,14 @@ export function WorkspaceDashboardSheet({
                 const Icon = m.icon;
                 return (
                   <div
-                    key={m.id}
+                    key={m.id || m.label || m.title}
                     className={cn(
                       "p-4 rounded-xl border space-y-1.5 transition-all",
                       getVariantStyles(m.variant)
                     )}
                   >
                     <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                      <span className="truncate">{m.label}</span>
+                      <span className="truncate">{m.label || m.title}</span>
                       {Icon && <Icon className="size-4 shrink-0" />}
                     </div>
 

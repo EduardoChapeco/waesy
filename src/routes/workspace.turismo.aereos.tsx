@@ -121,10 +121,10 @@ export default function FlightsPage() {
 
   const { data: customersData } = useQuery({
     queryKey: ['crm-customers-picker', storeId],
-    queryFn: () => listCustomers({ data: { storeId } }).catch(() => ({ customers: [] })),
+    queryFn: () => listCustomers({ data: {} }).catch(() => []),
     enabled: Boolean(storeId),
   });
-  const customers = customersData?.customers || [];
+  const customers: any[] = Array.isArray(customersData) ? customersData : (customersData as any)?.customers || [];
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ['travel-suppliers-air', storeId],
@@ -303,7 +303,7 @@ export default function FlightsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto w-full">
+    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full overflow-x-hidden">
       <WorkspaceCanonicalToolbar
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
@@ -326,7 +326,7 @@ export default function FlightsPage() {
 
       {/* Sheet Lateral Ampliada (size="wide" -> 70% viewport) */}
       <Sheet open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <SheetContent size="wide" className="p-0 flex flex-col h-full bg-card overflow-hidden">
+        <SheetContent size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen p-0 flex flex-col h-full bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-primary/10 text-primary">

@@ -92,10 +92,10 @@ export default function ReaccommodationPage() {
 
   const { data: customersData } = useQuery({
     queryKey: ['crm-customers-reacc', storeId],
-    queryFn: () => listCustomers({ data: { storeId } }).catch(() => ({ customers: [] })),
+    queryFn: () => listCustomers({ data: {} }).catch(() => []),
     enabled: Boolean(storeId),
   });
-  const customers = customersData?.customers || [];
+  const customers = Array.isArray(customersData) ? customersData : (customersData as any)?.customers || [];
 
   const { data: itineraries = [] } = useQuery({
     queryKey: ['travel-flight-itineraries-reacc', storeId],
@@ -115,8 +115,10 @@ export default function ReaccommodationPage() {
       const selectedCust = customers.find((c: any) => c.id === selectedCustomerId);
       const selectedItin = itineraries.find((it: any) => it.id === selectedItineraryId);
       const pnr = selectedItin?.segments?.[0]?.record_locator;
+      const custName = selectedCust?.fullName || selectedCust?.name || selectedCust?.full_name || 'Passageiro';
+      const custPhone = selectedCust?.phone || selectedCust?.whatsapp || 'sem telefone';
       const passengerHeader = selectedCust
-        ? `Passageiro: ${selectedCust.full_name} (${selectedCust.phone || selectedCust.whatsapp || 'sem telefone'})`
+        ? `Passageiro: ${custName} (${custPhone})`
         : passengerManualName
         ? `Passageiro: ${passengerManualName}`
         : null;
@@ -190,7 +192,7 @@ export default function ReaccommodationPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto w-full">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -316,7 +318,7 @@ export default function ReaccommodationPage() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Aberto em {new Date(c.created_at).toLocaleString('pt-BR')}
+                      Aberto em {c.created_at ? new Date(c.created_at).toLocaleString('pt-BR') : 'Recente'}
                     </p>
                   </div>
                 </div>
@@ -412,7 +414,7 @@ export default function ReaccommodationPage() {
 
       {/* Sheet de Novo Caso Ampliada (size="wide" -> 70% viewport) */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent size="wide" className="p-0 flex flex-col h-full bg-card overflow-hidden">
+        <SheetContent size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] p-0 flex flex-col h-full bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
@@ -440,7 +442,7 @@ export default function ReaccommodationPage() {
                   <option value="">Passageiro Avulso / Não cadastrado</option>
                   {customers.map((c: any) => (
                     <option key={c.id} value={c.id}>
-                      {c.full_name} {c.phone ? `(${c.phone})` : ''}
+                      {c.fullName || c.name || c.full_name || 'Cliente'} {c.phone ? `(${c.phone})` : ''}
                     </option>
                   ))}
                 </select>

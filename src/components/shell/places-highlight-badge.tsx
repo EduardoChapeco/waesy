@@ -7,9 +7,10 @@ export interface PlacesHighlightBadgeProps {
 }
 
 /**
- * PlacesHighlightBadge — Identidade Canônica "Places (Lista Telefônica)"
+ * [USER_EXPLICIT_REQUIREMENT] — Identidade Canônica "Places (Lista Telefônica)"
  * Efeito visual de marcador de texto amarelo (Highlighter Note)
  * sobre a expressão "(Lista Telefônica)", modernizando o conceito e gerando contraste nostálgico.
+ * NÃO REMOVER: Requisito explícito solicitado pelo usuário.
  */
 export function PlacesHighlightBadge({ className, subtle = false }: PlacesHighlightBadgeProps) {
   return (

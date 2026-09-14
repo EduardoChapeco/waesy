@@ -6,6 +6,7 @@ import { getBrowserClient } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { compressImage } from "@/lib/image-compression";
+import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
 export interface MediaData {
  id: string;
@@ -250,6 +251,16 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  }
  };
 
+ const handlePaste = async (e: React.ClipboardEvent) => {
+ const items = await extractMediaFromClipboard(e);
+ if (items && items.length > 0) {
+ e.preventDefault();
+ const files = items.map((i) => i.file);
+ toast.info(`Processando ${files.length} mídia(s) colada(s)...`);
+ await handleFiles(files);
+ }
+ };
+
  const handleCropComplete = async (croppedBase64: string) => {
  setUploading(true);
  onUploadingStateChange?.(true);
@@ -335,7 +346,11 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  };
 
  return (
- <div className={cn("space-y-3", className)}>
+ <div
+ onPaste={handlePaste}
+ tabIndex={0}
+ className={cn("space-y-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 rounded-2xl", className)}
+ >
  {label && <label className="text-xs font-semibold text-foreground">{label}</label>}
 
  {/* Grid de previews existentes */}
@@ -393,6 +408,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  {mediaList.length < maxFiles && (
  <div
  onClick={() => fileInputRef.current?.click()}
+ onPaste={handlePaste}
  onDragOver={(e) => {
  e.preventDefault();
  e.stopPropagation();
@@ -423,10 +439,10 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  <UploadCloud className="size-5" />
  </div>
  <p className="text-xs font-semibold text-foreground">
- Clique ou arraste fotos e vídeos aqui
+ Clique, arraste ou cole fotos e vídeos aqui
  </p>
  <p className="text-[11px] text-muted-foreground">
- JPG, PNG, WEBP ou MP4 até {maxFiles} arquivo{maxFiles > 1 ? "s" : ""} ({mediaList.length}/{maxFiles} adicionados)
+ JPG, PNG, WEBP ou MP4 até {maxFiles} arquivo{maxFiles > 1 ? "s" : ""} ({mediaList.length}/{maxFiles} adicionados) • Cole com Ctrl+V
  </p>
  </div>
  )}

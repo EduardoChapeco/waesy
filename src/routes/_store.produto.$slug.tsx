@@ -282,11 +282,11 @@ function ProductPage() {
 
  const isTravelPackage = Boolean(
  product.attributes?.travel ||
- product.category?.slug?.includes("turismo") ||
- product.category?.slug?.includes("viag") ||
- product.category?.name?.toLowerCase().includes("turismo") ||
- product.category?.name?.toLowerCase().includes("viagem") ||
- product.category?.name?.toLowerCase().includes("resort")
+ (product as any).category?.slug?.includes("turismo") ||
+ (product as any).category?.slug?.includes("viag") ||
+ (product as any).category?.name?.toLowerCase().includes("turismo") ||
+ (product as any).category?.name?.toLowerCase().includes("viagem") ||
+ (product as any).category?.name?.toLowerCase().includes("resort")
  );
 
  if (isTravelPackage) {
@@ -665,7 +665,7 @@ function ProductContent({
         imageUrl={currentThumbnailUrl || product.media?.[0]?.url}
         brandName={(product as any)?.store?.name || "Waesy"}
         categoryName="Turismo & Viagens"
-        sku={product.sku || product.id}
+        sku={(product as any).sku || product.id}
         inStock={true}
       />
  {/* Breadcrumb */}
@@ -711,7 +711,7 @@ function ProductContent({
         imageUrl={currentThumbnailUrl || product.media?.[0]?.url}
         brandName={(product as any)?.store?.name || "Waesy"}
         categoryName={product.categories?.[0]?.name || "Geral"}
-        sku={selectedVariant?.sku || product.sku || product.id}
+        sku={selectedVariant?.sku || (product as any).sku || product.id}
         inStock={!allOutOfStock}
       />
       {/* Breadcrumb */}
@@ -1646,7 +1646,7 @@ function ProductContent({
  })()}
 
  {/* ── Mobile Sticky Buy Bar (Padrão iFood / E-commerce Fluido) ── */}
- <div className="md:hidden fixed bottom-16 left-0 right-0 z-30 bg-card px-3 py-2.5 flex items-center justify-between gap-3 select-none">
+ <div className="md:hidden fixed bottom-16 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border/60 shadow-lg px-3 py-2.5 flex items-center justify-between gap-3 select-none">
  {/* Contador de Quantidade [- 1 +] */}
  <div className="flex items-center rounded-xl bg-secondary h-11 px-1 shrink-0">
  <button

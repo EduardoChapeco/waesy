@@ -30,6 +30,7 @@ export const Route = createFileRoute("/_store/colecao/$slug")({
 
 function CollectionPage() {
  const { collection, products } = ((Route.useLoaderData?.() as any) || {});
+ const productList = Array.isArray(products) ? products : [];
 
  if (!collection) {
  return (
@@ -47,7 +48,7 @@ function CollectionPage() {
  }
 
  return (
- <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-6 md:py-12">
+ <div className="mx-auto max-w-screen-xl px-0 sm:px-4 py-4 sm:py-8 md:px-6 md:py-12">
  {/* Breadcrumb */}
  <nav
  aria-label="Navegação estrutural"
@@ -83,7 +84,7 @@ function CollectionPage() {
  )}
 
  {/* Grid */}
- {products.length === 0 ? (
+ {productList.length === 0 ? (
  <EmptyState
  title="Coleção ainda sem produtos"
  action={
@@ -94,7 +95,7 @@ function CollectionPage() {
  />
  ) : (
  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
- {products.map((product: any) => (
+ {productList.map((product: any) => (
  <ProductCard key={product.id} product={product} />
  ))}
  </div>

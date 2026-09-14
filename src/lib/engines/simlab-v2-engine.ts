@@ -6,7 +6,7 @@
 export interface SyntheticPersonaV2 {
  id: string;
  name: string;
- avatarUrl: string;
+ avatarUrl: string | null;
  age: number;
  socioeconomicClass: 'A' | 'B' | 'C' | 'D';
  occupation: string;

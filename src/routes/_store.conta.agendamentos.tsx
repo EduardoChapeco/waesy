@@ -119,7 +119,7 @@ function CustomerAgendaPage() {
  const apptList = appointments || [];
 
  return (
- <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+  <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
    {/* ── 1. Clean Minimalist Header ── */}
    <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
      <div className="flex items-center gap-3">
@@ -171,10 +171,10 @@ function CustomerAgendaPage() {
  </button>
  </div>
 
- {/* ── 3. Appointments List (Grouped iOS Surface) ── */}
- {apptList.length === 0 ? (
- <div className="rounded-2xl border border-border/60 bg-card p-10 text-center space-y-3">
- <p className="text-sm font-semibold text-foreground">
+    {/* ── 3. Appointments List (Grouped iOS Surface) ── */}
+    {apptList.length === 0 ? (
+      <div className="w-full rounded-2xl border border-border/60 bg-card p-4 sm:p-8 text-center space-y-3">
+        <p className="text-sm font-semibold text-foreground">
  {activeTab === "upcoming"
  ? "Nenhum agendamento futuro encontrado"
  : "Nenhum histórico de agendamentos"}
@@ -203,10 +203,10 @@ function CustomerAgendaPage() {
  const price = appt.booking_services?.price_cents || 0;
 
  return (
- <div
- key={appt.id}
- className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-border shadow-2xs"
- >
+          <div
+            key={appt.id}
+            className="rounded-2xl border border-border/60 bg-card p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-border shadow-2xs"
+          >
  {/* Data e Horário em Destaque */}
  <div className="flex items-start gap-4">
  <div className="size-14 rounded-2xl bg-muted/40 border border-border/50 flex flex-col items-center justify-center shrink-0">

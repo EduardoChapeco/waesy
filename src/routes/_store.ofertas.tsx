@@ -1,7 +1,6 @@
-import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { Lightning, Truck, ArrowRight, Storefront, ShoppingCart, Percent,  } from "@phosphor-icons/react";
+import { Tag, Lightning, Truck, ArrowRight, Storefront, ShoppingCart, Percent } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { PageSkeleton } from "@/components/state/loading";
 import { OfferCard } from "@/components/commerce/offer-card";

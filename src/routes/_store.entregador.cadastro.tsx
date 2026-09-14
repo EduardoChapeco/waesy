@@ -34,6 +34,8 @@ import {
 import { getLegalDocumentBySlug } from "@/services/legal.functions";
 import { toast } from "sonner";
 import { formatCpf, validateCpfMod11 } from "@/lib/document-validator";
+import { DocumentField } from "@/components/ui/document-field";
+import { PlateField } from "@/components/ui/plate-field";
 
 export const Route = createFileRoute("/_store/entregador/cadastro")({
   head: () => ({
@@ -345,18 +347,12 @@ function CourierOnboardingPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="cpf" className="text-xs font-semibold">CPF do Condutor *</Label>
-                  <Input
+                  <DocumentField
                     id="cpf"
+                    mode="cpf"
                     value={form.cpf}
-                    onChange={(e) => update("cpf", formatCpf(e.target.value))}
-                    onBlur={() => {
-                      if (form.cpf && !validateCpfMod11(form.cpf)) {
-                        toast.error("CPF do condutor inválido. Verifique os dígitos digitados.");
-                      }
-                    }}
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                    className="h-10 rounded-xl text-xs font-mono"
+                    onChange={(masked) => update("cpf", masked)}
+                    className="h-10 rounded-xl text-xs"
                     required
                   />
                 </div>
@@ -377,12 +373,11 @@ function CourierOnboardingPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="plate" className="text-xs font-semibold">Placa do Veículo</Label>
-                  <Input
+                  <PlateField
                     id="plate"
                     value={form.vehiclePlate}
-                    onChange={(e) => update("vehiclePlate", e.target.value)}
-                    placeholder="ABC-1234"
-                    className="h-10 rounded-xl text-xs font-mono uppercase"
+                    onChange={(masked) => update("vehiclePlate", masked)}
+                    className="h-10 rounded-xl text-xs"
                   />
                 </div>
 

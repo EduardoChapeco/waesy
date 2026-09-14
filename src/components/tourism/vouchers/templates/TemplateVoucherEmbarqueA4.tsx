@@ -151,7 +151,7 @@ export default function TemplateVoucherEmbarqueA4({
       {v.passengers && v.passengers.length > 0 && (
         <Section title="Passageiros">
           <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-            {v.passengers.map((p, i) => (
+            {v.passengers.map((p: any, i: number) => (
               <div key={i} className="flex flex-col border border-slate-100 rounded-full px-3 py-2">
                 <span
                   className="font-bold text-[12px] text-slate-800"
@@ -170,7 +170,7 @@ export default function TemplateVoucherEmbarqueA4({
       {/* VOOS */}
       {v.flights && v.flights.length > 0 && (
         <Section title="Voos">
-          {v.flights.map((f, i) => (
+          {v.flights.map((f: any, i: number) => (
             <div key={i} className="mb-2 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
               <div className="flex items-center justify-between mb-1">
                 <span
@@ -200,7 +200,7 @@ export default function TemplateVoucherEmbarqueA4({
       {/* HOSPEDAGEM */}
       {v.accommodation && v.accommodation.length > 0 && (
         <Section title="Hospedagem">
-          {v.accommodation.map((a, i) => (
+          {v.accommodation.map((a: any, i: number) => (
             <div key={i} className="mb-2 bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100">
               <div
                 className="font-bold text-[13px]"
@@ -224,7 +224,7 @@ export default function TemplateVoucherEmbarqueA4({
       {/* TRANSFERS */}
       {v.transfers && v.transfers.length > 0 && (
         <Section title="Transfers">
-          {v.transfers.map((t, i) => (
+          {v.transfers.map((t: any, i: number) => (
             <div key={i} className="flex gap-3 ds-meta items-start mb-1">
               <span className="shrink-0 font-bold text-slate-500">{t.type ?? "Transfer"}</span>
               <span className="flex-1">

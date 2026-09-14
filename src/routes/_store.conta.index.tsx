@@ -8,7 +8,7 @@ import { getProfile, getUserSession, signOut } from "@/services/auth.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
-import { Shield, Store, LayoutDashboard, ArrowUpRight, Plus, Eye, Edit3, ArrowRight, ShoppingBag, Calendar, Ticket, Bookmark, Plane, CreditCard, Coins, Gift, HelpCircle, RotateCcw, Layers, LogOut, User, ExternalLink, ChevronRight, Building2, Lock, ShieldCheck, Briefcase, Car, Wallet, FileText, Sparkles, Trophy } from 'lucide-react';
+import { Shield, Store, LayoutDashboard, ArrowUpRight, Plus, Eye, Edit3, ArrowRight, ShoppingBag, Calendar, Ticket, Bookmark, Plane, CreditCard, Coins, Gift, HelpCircle, RotateCcw, Layers, LogOut, User, ExternalLink, ChevronRight, Building2, Lock, ShieldCheck, Briefcase, Wallet, FileText, Sparkles, Trophy } from 'lucide-react';
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/")({
@@ -49,7 +49,6 @@ const ACCOUNT_SECTIONS = [
  { to: "/conta/pedidos", label: "Pedidos", icon: ShoppingBag },
  { to: "/conta/verificacao", label: "Verificação", icon: ShieldCheck },
  { to: "/conta/colaborador", label: "Colaborador", icon: Briefcase },
- { to: "/conta/mobilidade", label: "Mobilidade", icon: Car },
  { to: "/conta/agendamentos", label: "Agendamentos", icon: Calendar },
  { to: "/conta/pacotes", label: "Pacotes", icon: Ticket },
  { to: "/conta/concursos", label: "Sorteios & Cupons", icon: Ticket },
@@ -148,10 +147,10 @@ function AccountDashboardPage() {
  );
  }
 
- return (
- <div className="w-full max-w-4xl mx-auto space-y-6 pb-20 px-4 sm:px-0 animate-in fade-in duration-200">
- {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
- <div className="bg-card rounded-2xl border border-border/60 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+  return (
+    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
+      <div className="bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
  <div className="flex items-center gap-4 min-w-0">
  <div className="size-14 rounded-2xl bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
  {userAvatar ? (

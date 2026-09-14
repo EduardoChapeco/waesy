@@ -5,7 +5,7 @@
 
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LockKey, ShieldAlert } from "@phosphor-icons/react";
+import { LockKey } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getPublicStoreProfile, getStorePublicCatalog } from "@/services/catalog.functions";
 import { listPublicJobs } from "@/services/jobs.functions";
@@ -88,11 +88,11 @@ export const Route = createFileRoute("/_store/loja/$slug")({
           data: { slug: "home", document_type: "storefront", storeId: targetStore },
         }).catch(() => null),
         getStorePublicCatalog({ data: { storeId: targetStore } }).catch(() => null),
-        listPublicJobs({ data: { storeId: targetStore } }).catch(() => []),
-        listHotpages({ data: { storeId: targetStore } }).catch(() => []),
+        listPublicJobs({ data: {} as any }).catch(() => []),
+        listHotpages({ data: { module: "home" } as any }).catch(() => []),
         listActiveBanners({ data: { storeId: targetStore } }).catch(() => []),
         listActiveStoreFlyers({ data: { storeSlug: targetStore } }).catch(() => []),
-        getMuralFeed({ data: { storeId: targetStore } }).catch(() => []),
+        getMuralFeed({ data: { store_id: targetStore } }).catch(() => []),
         listStorePublicReviews({ data: { storeId: targetStore } }).catch(() => []),
         listStorePublicSponsors({ data: { storeId: targetStore } }).catch(() => []),
         getCompanyEmployerStats({ data: { storeId: targetStore } }).catch(() => null),
@@ -101,7 +101,7 @@ export const Route = createFileRoute("/_store/loja/$slug")({
 
       return {
         profile,
-        experienceDoc: docRes?.document || null,
+        experienceDoc: (docRes as any)?.data?.document || (docRes as any)?.document || null,
         catalog: catalogRes?.products || [],
         categories: catalogRes?.categories || [],
         jobs: jobsRes || [],

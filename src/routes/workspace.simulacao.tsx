@@ -264,7 +264,7 @@ function SimulacaoPage() {
       />
 
       {/* ── 2. PAINEL PRINCIPAL EM DUAS COLUNAS OPERACIONAIS ── */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="w-full space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Coluna Esquerda: Formulação da Proposta & Amostragem IBGE */}
           <div className="lg:col-span-5 space-y-5">

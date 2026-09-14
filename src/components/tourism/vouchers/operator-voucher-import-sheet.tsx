@@ -43,6 +43,7 @@ import {
   applyParsedVoucherToTrip,
   type OperatorParsedVoucherDTO,
 } from "@/services/travel-lifecycle.functions";
+import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
 interface UploadedDocumentItem {
   id: string;
@@ -122,6 +123,35 @@ export function OperatorVoucherImportSheet({
     }
   };
 
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    if (activeInputTab === "text") return;
+
+    const items = await extractMediaFromClipboard(e);
+    if (items && items.length > 0) {
+      e.preventDefault();
+      toast.info(`Processando ${items.length} comprovante(s) colado(s)...`);
+      for (const item of items) {
+        const file = item.file;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(",")[1];
+          setDocuments((prev) => [
+            ...prev,
+            {
+              id: Math.random().toString(36).substring(2, 9),
+              name: file.name || "voucher_clipboard.png",
+              size: file.size,
+              type: file.type || "image/png",
+              base64,
+            },
+          ]);
+        };
+        reader.readAsDataURL(file);
+      }
+      toast.success("Comprovante colado com sucesso para análise OCR!");
+    }
+  };
+
   const removeDocument = (id: string) => {
     setDocuments((prev) => prev.filter((d) => d.id !== id));
   };
@@ -134,7 +164,12 @@ export function OperatorVoucherImportSheet({
 
     setIsAnalyzing(true);
     try {
-      const payloadFiles = documents.map((doc) => ({
+      const payloadFiles: Array<{
+        fileBase64?: string;
+        fileMime?: string;
+        fileName?: string;
+        rawText?: string;
+      }> = documents.map((doc) => ({
         fileBase64: doc.base64,
         fileMime: doc.type,
         fileName: doc.name,
@@ -253,7 +288,7 @@ export function OperatorVoucherImportSheet({
         </div>
 
         {/* ── CORPO DA SHEET ── */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <div className="flex-1 overflow-y-auto p-5 space-y-6" onPaste={handlePaste}>
           {/* PASSO 1: INPUT MULTI-DOCUMENTOS */}
           {step === "input" && (
             <div className="space-y-5">
@@ -287,7 +322,9 @@ export function OperatorVoucherImportSheet({
                   {/* Dropzone Multi-Upload */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-all rounded-2xl p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3"
+                    onPaste={handlePaste}
+                    tabIndex={0}
+                    className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-all rounded-2xl p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <input
                       ref={fileInputRef}
@@ -302,14 +339,14 @@ export function OperatorVoucherImportSheet({
                     </div>
                     <div>
                       <p className="text-xs font-bold text-foreground">
-                        Clique ou arraste todos os arquivos da viagem
+                        Clique, arraste ou cole com Ctrl+V os comprovantes
                       </p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        PDFs de reservas, bilhetes aéreos, vouchers de hotel, boletos e fotos de passaportes (até 20MB cada)
+                        PDFs de reservas, bilhetes aéreos, vouchers, boletos e prints de tela (suporta colar direto da área de transferência)
                       </p>
                     </div>
                     <Button variant="outline" size="sm" type="button" className="text-xs h-8">
-                      <Plus className="size-3.5 mr-1" /> Selecionar Arquivos
+                      <Plus className="size-3.5 mr-1" /> Selecionar ou Colar Arquivos
                     </Button>
                   </div>
 

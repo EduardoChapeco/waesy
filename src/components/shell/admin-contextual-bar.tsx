@@ -56,24 +56,24 @@ export function AdminContextualBar({ userRole }: AdminContextualBarProps) {
  emoji: "🌐",
  };
 
- if (isMinimized) {
- return (
- <button
- onClick={() => setIsMinimized(false)}
- aria-label="Expandir Barra de Governança"
- className="fixed bottom-4 right-4 z-50 size-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-all cursor-pointer"
- title="Admin Master Ativo - Clique para expandir"
- >
- <Shield className="size-4" />
- </button>
- );
- }
+  if (isMinimized) {
+    return (
+      <button
+        onClick={() => setIsMinimized(false)}
+        aria-label="Expandir Barra de Governança"
+        className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 size-9 sm:size-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center border border-border/40 hover:scale-105 transition-all cursor-pointer shadow-lg"
+        title="Admin Master Ativo - Clique para expandir"
+      >
+        <Shield className="size-4" />
+      </button>
+    );
+  }
 
- return (
- <aside
- aria-label="Barra de Governança Contextual Master"
- className="fixed bottom-4 right-4 sm:left-auto sm:right-6 z-50 max-w-md w-auto bg-card/95 backdrop-blur-2xl border border-border/60 rounded-2xl p-2 px-3 flex items-center justify-between gap-2.5 text-xs animate-in slide-in-from-bottom-3 duration-300"
- >
+  return (
+    <aside
+      aria-label="Barra de Governança Contextual Master"
+      className="fixed bottom-20 right-3.5 lg:bottom-6 lg:right-6 z-50 max-w-[calc(100vw-1.75rem)] sm:max-w-md w-auto bg-card/95 backdrop-blur-2xl border border-border/60 rounded-2xl p-2 px-3 flex items-center justify-between gap-2.5 text-xs animate-in slide-in-from-bottom-3 duration-300 shadow-xl ring-1 ring-black/10 dark:ring-white/10"
+    >
  <div className="flex items-center gap-2">
  <div className="size-6 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold text-[10px]">
  <Shield className="size-3.5" />

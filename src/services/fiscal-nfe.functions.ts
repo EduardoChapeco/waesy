@@ -467,7 +467,7 @@ export const emitOrderNFeAutomated = createServerFn({ method: "POST" })
         message: `A Nota Fiscal do seu pedido #${order.public_token?.substring(0, 8)} foi emitida. Acesse para baixar a DANFE.`,
         link_url: danfePdfUrl,
         is_read: false,
-      }).catch(() => null);
+      }).then(() => null, () => null);
     }
 
     return { success: true, invoice: invoice as StoreNFeInvoiceDTO };

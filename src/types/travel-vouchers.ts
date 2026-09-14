@@ -1,4 +1,4 @@
-export type VoucherType = 'flight' | 'hotel' | 'transfer' | 'package' | 'insurance' | 'tour';
+export type VoucherType = 'flight' | 'hotel' | 'transfer' | 'package' | 'insurance' | 'tour' | 'car_rental' | 'activity' | 'other';
 
 export interface VoucherFlightData {
  airline?: string;
@@ -51,10 +51,13 @@ export interface TravelVoucherDTO {
 }
 
 export const VOUCHER_TYPE_LABELS: Record<VoucherType, string> = {
- flight: 'Aéreo / Boarding Pass',
- hotel: 'Hospedagem / Hotel',
- transfer: 'Transfer / Receptivo',
- insurance: 'Seguro Viagem',
- tour: 'Ingresso / Passeio',
- package: 'Pacote Completo',
+  flight: 'Aéreo / Boarding Pass',
+  hotel: 'Hospedagem / Hotel',
+  transfer: 'Transfer / Receptivo',
+  insurance: 'Seguro Viagem',
+  tour: 'Ingresso / Passeio',
+  package: 'Pacote Completo',
+  activity: 'Atividade / Experiência',
+  car_rental: 'Locação de Veículo',
+  other: 'Outro Voucher',
 };

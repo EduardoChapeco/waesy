@@ -141,7 +141,7 @@ function AdminMasterVitrinesPage() {
  fetchSections(selectedSurfaceSlug);
  });
 
- const activeSurface = surfaces.find((s) => s.slug === selectedSurfaceSlug) || surfaces[0];
+ const activeSurface = surfaces.find((s: any) => s.slug === selectedSurfaceSlug) || surfaces[0];
 
  const handleOpenNewDialog = () => {
  setEditingSection(null);
@@ -268,7 +268,7 @@ function AdminMasterVitrinesPage() {
 
  {/* Seletor Horizontal de Superfícies / Mercados */}
  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 border-b border-border/30">
- {surfaces.map((s) => {
+ {surfaces.map((s: any) => {
  const isSelected = selectedSurfaceSlug === s.slug;
  return (
  <button

@@ -94,7 +94,7 @@ function TourismMasterPage() {
  initialData: initialItems,
  });
 
- const tourismList = items || [];
+ const tourismList: any[] = items || [];
 
  // Agrupamento por Categoria para Modo Feed
  const tourismByCategory = useMemo(() => {

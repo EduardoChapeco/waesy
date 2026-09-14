@@ -46,33 +46,33 @@ export const Route = createFileRoute("/_store/entrega/$token")({
 
 function DeliveryCourierPage() {
   const { delivery } = (Route.useLoaderData() as any) || {};
- const { token } = Route.useParams();
+  const { token } = Route.useParams();
 
- if (!delivery) {
- return (
- <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
- <div className="max-w-md w-full border border-border/80 bg-card rounded-2xl p-6 text-center space-y-4 shadow-sm">
- <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
- <Truck className="size-6" />
- </div>
- <h1 className="text-lg font-bold text-foreground">Entrega Não Encontrada</h1>
- <p className="text-xs text-muted-foreground leading-relaxed">
- O link de despacho informado não é válido, expirou ou a entrega foi cancelada pela loja.
- </p>
- </div>
- </div>
- );
- }
+  const [pin, setPin] = useState("");
+  const [proofPhotoUrl, setProofPhotoUrl] = useState("");
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDelivered, setIsDelivered] = useState(delivery?.status === "delivered");
+  const [deliveredAt, setDeliveredAt] = useState((delivery as any)?.delivered_at);
+  const [selectedPayment, setSelectedPayment] = useState<"cash" | "pix" | "card" | "wallet">("cash");
+  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
+  const [isStartingPickup, setIsStartingPickup] = useState(false);
+  const [pickupStarted, setPickupStarted] = useState(delivery?.status === "in_transit" || delivery?.status === "delivered");
 
- const [pin, setPin] = useState("");
- const [proofPhotoUrl, setProofPhotoUrl] = useState("");
- const [isConfirming, setIsConfirming] = useState(false);
- const [isDelivered, setIsDelivered] = useState(delivery.status === "delivered");
- const [deliveredAt, setDeliveredAt] = useState((delivery as any).delivered_at);
- const [selectedPayment, setSelectedPayment] = useState<"cash" | "pix" | "card" | "wallet">("cash");
- const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
- const [isStartingPickup, setIsStartingPickup] = useState(false);
- const [pickupStarted, setPickupStarted] = useState(delivery.status === "in_transit" || delivery.status === "delivered");
+  if (!delivery) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full border border-border/80 bg-card rounded-2xl p-6 text-center space-y-4 shadow-sm">
+          <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+            <Truck className="size-6" />
+          </div>
+          <h1 className="text-lg font-bold text-foreground">Entrega Não Encontrada</h1>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            O link de despacho informado não é válido, expirou ou a entrega foi cancelada pela loja.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
  const handleStartPickup = async () => {
  setIsStartingPickup(true);

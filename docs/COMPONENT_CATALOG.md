@@ -55,12 +55,23 @@
 | `ProductCard`                   | Card de produto (DTO server-side)             | loading via skeleton; sem cálculo local        |
 | `PriceDisplay`                  | Formata cents+BRL do servidor                 | apenas formatação, nunca cálculo               |
 
-## Painel (`src/components/admin`)
-
 | Componente                     | Descrição                                                                 | Notas                                |
 | ------------------------------ | ------------------------------------------------------------------------- | ------------------------------------ |
 | `AdminShell`                   | Sidebar recolhível (desktop) + topbar + ThemeToggle + bottom nav (mobile) | responsivo, safe-area, alvos >= 44px |
 | `PlannedFeature` / `PhaseGate` | Estado honesto de fase                                                    | nunca na vitrine                     |
+
+## Workspace & Saúde Financeira Humanizada (`src/components/commerce` / `src/components/finance`)
+
+| Componente                    | Descrição & Recursos                                                                                              | Estados & Regras de Apresentação                                                                                                |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `CashSafeProgressCard`        | Card de visualização de Cofre Blindado (Aluguel / Folha Salarial) com barra de progresso, meta e rendimento CDI   | Exibe % retido, montante em centavos formatado, rendimento CDI acumulado, tag "Blindado até vencimento" e ação de aporte extra. |
+| `WorkingCapitalOfferSheet`    | Sheet lateral de contratação de Giro Solidário por Vendas com slider de retenção suave (5% a 15% das vendas)      | Simulação em tempo real, custo fixo zero em dias sem vendas, taxa pré-fixada justa (1,2%-1,8%/mês) e carência transparente.    |
+| `SupplierInvoiceSplitTracker` | Linha do tempo de conciliação de NF-e de fornecedor vinculada com XML/chave de acesso e status de duplicata      | Status: agendada, retida, liquidada em D+0. Destaca economia de taxa de saque (R$ 0,00) via pagamento interno.                 |
+| `FinancialTranquilityBadge`   | Badge visual e empático de saúde do caixa ("22 dias de fôlego", "Zona de Tranquilidade", "Atenção: 4 dias")       | Baseado no cálculo dias_caixa = saldo_liquido / despesa_diaria_media. Cores semânticas sem alarmismo punitivo.                 |
+| `FriendlyBillingComposer`     | Modal de disparo de lembretes e renegociação humanizada via WhatsApp para carnês em atraso                       | 4 templates acolhedores: "Lembrete Amigo", "Desconto de Pontualidade", "Conversa Franca" e "Personalizado". Zero agressividade.|
+| `CarneInstallmentRow`         | Linha da tabela de carnês com status visual, histórico de conciliação e botão rápido de baixa sem juros          | Ação atômica de baixa com perdão opcional de encargos em um clique.                                                             |
+| `GrowthTargetsSummaryCard`    | Card de progresso de metas de hiperescala (Lojas, Cidadãos, MRR, GMV) com barra proporcional e badge de conclusão | Utilizado em `/admin-master/crescimento` com dados reais do PostgreSQL e zero mocks.                                           |
+
 
 ## Acessibilidade (todos)
 

@@ -172,9 +172,9 @@ export const Route = createFileRoute("/api/feed/xml")({
  if (p.google_product_category) {
  xml += ` <g:google_product_category>${escapeXml(String(p.google_product_category))}</g:google_product_category>\n`;
  }
- if (p.category_name) {
- xml += ` <g:product_type>${escapeXml(p.category_name)}</g:product_type>\n`;
- }
+ if ((p as any).category_name) {
+        xml += `      <g:product_type>${escapeXml((p as any).category_name)}</g:product_type>\n`;
+      }
 
  if (v.attributes && typeof v.attributes === "object") {
  const attrs = v.attributes as Record<string, string>;

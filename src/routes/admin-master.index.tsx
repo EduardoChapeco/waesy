@@ -32,7 +32,17 @@ export const Route = createFileRoute("/admin-master/")({
 });
 
 function AdminMasterDashboard() {
- const { metrics, stores, invoices } = ((Route.useLoaderData?.() as any) || {});
+  const loaderData = (Route.useLoaderData?.() as any) || {};
+  const metrics = loaderData.metrics || {
+    totalRevenueCents: 0,
+    pendingRevenueCents: 0,
+    totalStores: 0,
+    totalUsers: 0,
+    pendingReports: 0,
+    pendingKyc: 0,
+  };
+  const stores = loaderData.stores || [];
+  const invoices = loaderData.invoices || [];
  const router = useRouter();
  const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -55,7 +65,7 @@ function AdminMasterDashboard() {
  const METRIC_CARDS = [
  {
  label: "Receita Faturada",
- value: formatMoney(metrics.totalRevenueCents),
+ value: formatMoney(metrics.totalRevenueCents || 0),
  icon: DollarSign,
  color: "text-primary bg-primary/10",
  },

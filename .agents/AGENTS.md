@@ -106,6 +106,52 @@ Antes de escrever qualquer linha de código, você DEVE ativar a skill `bigtech-
     - **Regra do Error Boundary Transparente (No-Blackbox Mandate):**
       - O `WorkspaceErrorComponent` NUNCA deve ser uma "caixa preta" opaca que apenas diz "Ajustando Workspace". Ele DEVE exibir o erro técnico real (`error.message`) em caixa de diagnóstico para auditoria instantânea.
 
+15. **Padrão Milimétrico de 1px da Borda no Mobile & Proibição de Margem Dupla (Zero-Dead-Space Mandate).**
+    - O container raiz `<main>` no shell mobile possui distância canônica de exatamente **1px** da borda da tela (`px-[1px]`).
+    - As páginas filhas (`_store.*` e `workspace.*`) são expressamente PROIBIDAS de adicionar `px-4`, `px-6`, `px-0.5` ou margens cumulativas no mobile. Devem utilizar obrigatoriamente `px-0 sm:px-4 md:px-0` (ou `px-0 sm:px-0`), de modo que o grid e os cards se estendam de ponta a ponta respeitando exclusivamente a margem de 1px do shell.
+    - Proibição absoluta de "Grid dentro de Grid / Card dentro de Grid" com empilhamento de paddings que estrangulem a área útil da tela em smartphones (360px-390px).
+    - É proibido usar `max-w-xl mx-auto` ou restrições de largura fixa em empty states ou cartões móveis que gerem caixas flutuantes com margens ociosas de 10px a 20px. Os cards devem preencher `w-full` com padding interno ergonômico (`p-3.5` a `p-4 sm:p-8`).
+
+16. **Desacoplamento de Headers Globais e TopBars no Mobile (Native App Experience).**
+    - Todas as páginas nativas de aplicativo móvel (Perfil, Conta, Agendamentos, Ingressos, Conversas, Busca, Carrinho, Checkout, Notificações, Membro, Afiliados, Agenda, Pedidos, Turismo, Classificados, etc.) NUNCA devem renderizar a barra de topo global (`TopBar`) com chips repetitivos e logo redundante no mobile.
+    - O controle deve ser registrado na lista canônica `isCleanMobileAppPage` no `app-shell.tsx`. A experiência móvel deve ser limpa, rápida e direta como Instagram, Airbnb e Apple iOS, tendo o terço inferior (`MobileNav`) como único hub de navegação contextual.
+
+17. **Taxonomia e Recorte Canônico de Capa da Loja (3:1 Panoramic Ratio).**
+    - Toda capa de perfil de loja ou banner de cabeçalho público DEVE possuir upload direto acessível via Brand Kit (`/workspace/marketing/brand-kit`) utilizando o componente `ImageUpload` com máscara canônica de proporção 3:1 (`aspectPreset="cover"`, 1200x400px).
+    - Mutações no Brand Kit devem sincronizar atomicamente com as colunas `stores.banner_url` e `stores.settings.cover_url` para garantia de integridade imediata na vitrine pública (`canonical-store-profile-view.tsx`).
+
+18. **Propagação Recursiva Universal de Melhorias.**
+    - Nenhuma melhoria de ergonomia, silêncio visual, simplificação de termos técnicos ou ajuste de grid pode ser tratada como isolada. O agente DEVE propagar a correção recursivamente em todos os módulos irmãos e telas operacionais correlatas (PDV, Turismo, JUS, Classificados, Imóveis, Logística).
+
+19. **Paridade CMS ↔ View — Proibição de Mock Implícito de Dados (Zero Silent Fallback).**
+    - Todo campo renderizado numa vitrine pública, editorial ou imersiva DEVE ter seu correspondente campo de entrada no CMS (form de criação/edição). A correspondência é 1:1 obrigatória.
+    - É expressamente PROIBIDO criar fallbacks hardcoded nos componentes de visualização (ex: `|| "5D / 4N"`, `|| "All Incl."`, `|| "2 Adultos"`, `|| [{ id: "h1", image: images[0] }]`). Dados ausentes devem renderizar empty state legível, nunca dados inventados.
+    - A Regra se aplica a: duração do pacote, regime alimentar, número de hóspedes, story highlights, roteiro dia a dia, clima, mapa, voo, parcelamento e todos os campos futuros.
+
+20. **Upload Multi-Contextual Obrigatório em Cada Seção de Mídia.**
+    - Toda seção que exibe imagens numa vitrine (galeria de fotos, story highlights, fotos por dia do roteiro, fotos de quartos, fotos de pratos) DEVE ter seu correspondente uploader contextual diretamente na interface, sem exigir que o usuário saia da tela para outro módulo.
+    - Os uploaders devem ser inline, com feedback de progresso (spinner), limite de tamanho claro e preview imediato após upload.
+    - O componente `StoryHighlightUploader` é o padrão canônico para highlights circulares. O componente `ItineraryDayEditor` é o padrão canônico para fotos por dia.
+
+21. **APIs Reais Obrigatórias — Proibição de Dados Climáticos, Geográficos e de Câmbio Hardcoded.**
+    - Qualquer widget de clima DEVE usar a API `wttr.in` (ou equivalente real) via `fetch`, nunca arrays hardcoded de previsão.
+    - Qualquer mapa DEVE usar lat/lng reais do banco (`location_lat`, `location_lng`). É PROIBIDO usar coordenadas hardcoded como fallback silencioso. Caso lat/lng seja null, exibir empty state explicativo.
+    - Câmbio, taxas e preços externos devem vir de APIs (ex: awesomeapi.com.br), nunca de strings estáticas.
+    - O componente `WeatherWidget` é o padrão canônico. Ao criar qualquer nova vitrine de turismo, hospedagem ou evento ao ar livre, integrar `WeatherWidget` com `destination_city` do banco.
+
+22. **Parcelamento Sempre Configurável (1-24x) — Proibição de Hardcoding de Installments.**
+    - É expressamente PROIBIDO exibir um número de parcelas fixo (`12x` ou `6x`) sem que o anunciante o tenha configurado.
+    - Todo niche que suporte parcelamento deve expor um slider de 1-24x no CMS. O valor salvo em `attributes.max_installments` é a fonte da verdade.
+    - A fórmula canônica: `installmentCents = Math.round(price_cents / max_installments)`. Exibir sempre "Nx de R$ Y,ZZ sem juros".
+
+23. **Modo Proprietário (Owner Edit Mode) Obrigatório em Todas as Vitrines Editoriais.**
+    - Toda view editorial imersiva (Instagram Travel View, Classified Detail, Store Profile, Event View) DEVE detectar `isOwner` e exibir:
+      - Um banner de aviso "Modo Proprietário" abaixo da topbar (fundo âmbar/warning, discreto).
+      - Um botão "✏️ Editar" na top bar (ao lado dos ícones de share/favorite).
+      - Overlays de upload contextual em cada seção de mídia (fotos, highlights, banners).
+    - O `isOwner` deve ser derivado da sessão segura do servidor, nunca de query param no cliente.
+    - O padrão canônico está em `instagram-travel-view.tsx` com a prop `isOwner` e o banner `bg-amber-500/10`.
+
 ## Fase Atual de Desenvolvimento
 
 Estamos solidificando a **Fase 1** (Zines, Ferramentas de Apresentação, Multi-tenant) e transicionando o núcleo canônico do Builder e do CMS. Siga as orientações de Fases do `MASTER_PLAN.md` e do `ROADMAP.md` rigidamente.

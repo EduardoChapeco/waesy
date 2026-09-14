@@ -116,7 +116,7 @@ function AccordionSection({
   return (
     <div className="rounded-2xl border border-border bg-surface">
       <Button
-        variant="subtle"
+        variant="ghost"
         type="button"
         onClick={() => setOpenId(open ? null : id)}
         className="flex w-full items-center gap-2 px-3 py-2.5 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none"
@@ -203,7 +203,7 @@ export function VoucherStudio({
         openId={openSection}
         setOpenId={setOpenSection}
       >
-        {passengers.map((p, i) => (
+        {passengers.map((p: any, i: number) => (
           <div
             key={i}
             className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border p-3"
@@ -247,7 +247,7 @@ export function VoucherStudio({
                 onClick={() =>
                   upd(
                     "passengers",
-                    passengers.filter((_, x) => x !== i),
+                    passengers.filter((_: any, x: number) => x !== i),
                   )
                 }
                 className="text-xs text-danger hover:underline"
@@ -275,7 +275,7 @@ export function VoucherStudio({
         openId={openSection}
         setOpenId={setOpenSection}
       >
-        {flights.map((f, i) => (
+        {flights.map((f: any, i: number) => (
           <div key={i} className="space-y-1.5 rounded-full border border-border p-2">
             <div className="flex flex-col gap-2">
               <div className="col-span-1">
@@ -395,7 +395,7 @@ export function VoucherStudio({
               onClick={() =>
                 upd(
                   "flights",
-                  flights.filter((_, x) => x !== i),
+                  flights.filter((_: any, x: number) => x !== i),
                 )
               }
               className="ds-meta text-danger hover:underline"
@@ -438,7 +438,7 @@ export function VoucherStudio({
         openId={openSection}
         setOpenId={setOpenSection}
       >
-        {accommodation.map((a, i) => (
+        {accommodation.map((a: any, i: number) => (
           <div key={i} className="space-y-1.5 rounded-full border border-border p-2">
             <div className="flex flex-col gap-2">
               <div className="col-span-1">
@@ -537,7 +537,7 @@ export function VoucherStudio({
               onClick={() =>
                 upd(
                   "accommodation",
-                  accommodation.filter((_, x) => x !== i),
+                  accommodation.filter((_: any, x: number) => x !== i),
                 )
               }
               className="ds-meta text-danger hover:underline"
@@ -579,7 +579,7 @@ export function VoucherStudio({
         openId={openSection}
         setOpenId={setOpenSection}
       >
-        {transfers.map((t, i) => (
+        {transfers.map((t: any, i: number) => (
           <div key={i} className="space-y-1.5 rounded-full border border-border p-2">
             <div className="flex flex-col gap-2">
               <div className="col-span-1">
@@ -653,7 +653,7 @@ export function VoucherStudio({
               onClick={() =>
                 upd(
                   "transfers",
-                  transfers.filter((_, x) => x !== i),
+                  transfers.filter((_: any, x: number) => x !== i),
                 )
               }
               className="ds-meta text-danger hover:underline"
@@ -693,7 +693,7 @@ export function VoucherStudio({
         openId={openSection}
         setOpenId={setOpenSection}
       >
-        {emergency.map((c, i) => (
+        {emergency.map((c: any, i: number) => (
           <div
             key={i}
             className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-border p-3"
@@ -738,7 +738,7 @@ export function VoucherStudio({
                 onClick={() =>
                   upd(
                     "emergency_contacts",
-                    emergency.filter((_, x) => x !== i),
+                    emergency.filter((_: any, x: number) => x !== i),
                   )
                 }
                 className="ds-meta text-danger hover:underline"
@@ -798,7 +798,7 @@ export function VoucherStudio({
 
     if (passengers.length > 0) {
       text += `👤 *Passageiros:*\n`;
-      passengers.forEach((p) => {
+      passengers.forEach((p: any) => {
         text += `- ${p.name}${p.document ? ` (Doc: ${p.document})` : ""}${p.seat ? ` - Assento: ${p.seat}` : ""}\n`;
       });
       text += `\n`;
@@ -806,7 +806,7 @@ export function VoucherStudio({
 
     if (flights.length > 0) {
       text += `🛫 *Voos Confirmados:*\n`;
-      flights.forEach((f, idx) => {
+      flights.forEach((f: any, idx: number) => {
         text += `*Voo ${idx + 1}:* ${f.airline} ${f.flight_number || ""}\n`;
         text += `📍 ${f.origin} ➔ ${f.destination}\n`;
         text += `📅 Data: ${f.date || "A confirmar"} | Saída: ${f.departure_time || "--:--"} | Chegada: ${f.arrival_time || "--:--"}\n`;
@@ -818,7 +818,7 @@ export function VoucherStudio({
 
     if (accommodation.length > 0) {
       text += `🏨 *Hospedagem:*\n`;
-      accommodation.forEach((h, idx) => {
+      accommodation.forEach((h: any, idx: number) => {
         text += `*Hotel ${idx + 1}:* ${h.name}\n`;
         if (h.city) text += `📍 Cidade: ${h.city}\n`;
         text += `📅 Check-in: ${h.checkin || "A confirmar"} | Check-out: ${h.checkout || "A confirmar"}\n`;
@@ -831,7 +831,7 @@ export function VoucherStudio({
 
     if (transfers.length > 0) {
       text += `🚌 *Transfers:*\n`;
-      transfers.forEach((t) => {
+      transfers.forEach((t: any) => {
         text += `- ${t.type || "Transfer"}: ${t.origin || "Origem"} ➔ ${t.destination || "Destino"}\n`;
         if (t.date) text += `  📅 Data: ${t.date}\n`;
         if (t.vehicle) text += `  🚗 Veículo: ${t.vehicle}\n`;
@@ -843,7 +843,7 @@ export function VoucherStudio({
 
     if (emergency.length > 0) {
       text += `🚨 *Contatos de Emergência:*\n`;
-      emergency.forEach((c) => {
+      emergency.forEach((c: any) => {
         text += `- ${c.name} (${c.role || "Suporte"}): ${c.phone}\n`;
       });
       text += `\n`;

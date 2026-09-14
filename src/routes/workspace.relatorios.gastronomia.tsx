@@ -247,7 +247,7 @@ function GastronomyReportsPage() {
  toolDescription="Métricas de tempo de preparo de cozinha, canais de pedidos (mesa, balcão, delivery) e pratos mais vendidos aplicam-se a negócios de alimentação e gastronomia."
  store={store}
  >
- <div className="flex-1 w-full max-w-7xl mx-auto space-y-6 p-4 sm:p-6 lg:p-8 pb-24">
+ <div className="w-full space-y-6">
  <PageHeader title="Relatórios Gastronomia" />
 
  {/* ── KPIs Hoje ── */}
@@ -370,7 +370,7 @@ function GastronomyReportsPage() {
  <p className="text-xs text-muted-foreground py-4 text-center">Nenhuma venda registrada neste mês.</p>
  ) : (
  <div className="space-y-3">
- {reports.topProducts.map((product, idx) => (
+ {reports.topProducts.map((product: any, idx: number) => (
  <ProductBar
  key={product.title}
  rank={idx + 1}

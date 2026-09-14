@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
                 platform: platform as any,
                 name: platform === "mercadolivre" ? "Mercado Livre Brasil" : platform === "ifood" ? "iFood Delivery" : "Canal Marketplace",
                 status: "connected",
-                credentials_payload: {
+                credentials: {
                   access_token: mockAccessToken,
                   refresh_token: mockRefreshToken,
                   token_type: "Bearer",
@@ -84,15 +84,22 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
 
           if (connector) {
             await supabase.from("marketplace_sync_logs").insert({
+              store_id: storeId,
               connector_id: connector.id,
-              sync_type: "inventory",
-              items_synced: 0,
+              platform: platform,
+              sync_type: "oauth",
+              direction: "inbound",
+              status: "completed",
+              items_processed: 0,
+              items_created: 0,
+              items_updated: 1,
               items_failed: 0,
-              details: {
+              duration_ms: 50,
+              errors: [],
+              metadata: {
                 action: "oauth_connected",
                 connected_at: new Date().toISOString(),
               },
-              status: "success",
             });
           }
 

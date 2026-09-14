@@ -417,7 +417,7 @@ export function UnifiedNewProductPage() {
  };
 
  return (
- <div className="space-y-6">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* ── Top Header Limpo ── */}
  <PageHeader
  eyebrow="Catálogo"
@@ -512,7 +512,7 @@ export function UnifiedNewProductPage() {
 
  {/* ── Sheet Lateral: Importador Inteligente por URL ── */}
  <Sheet open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
- <SheetContent side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
+ <SheetContent side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
  <SheetTitle className="text-base font-bold flex items-center gap-2">
  <Globe className="size-4 text-primary" />
@@ -1326,7 +1326,7 @@ export function UnifiedNewProductPage() {
  {/* ── SHEET LATERAL: NOVA DIMENSÃO / PROPRIEDADE DE VARIAÇÃO (ELIMINANDO DIALOG POPUP) ── */}
  <Sheet open={isAddDimensionOpen} onOpenChange={setIsAddDimensionOpen}>
  <SheetContent
- side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between"
+ side="right" size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between"
  >
  <div className="p-6 space-y-4">
  <SheetHeader className="pb-2 text-left">

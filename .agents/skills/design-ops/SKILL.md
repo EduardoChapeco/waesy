@@ -44,6 +44,11 @@ Antes de codar uma tela:
 
 ## Mobile First & Elastic Responsiveness (Apple HIG, iFood, Threads, Avec, Belasis)
 
+- **Padronização Milimétrica de 1px da Borda no Mobile & Zero Dead Space**:
+  - O container raiz `<main>` no shell mobile possui distância canônica de exatamente **1px** da borda da tela (`px-[1px]`).
+  - Telas filhas (`_store.*` e `workspace.*`) nunca devem aplicar `px-4`, `px-6` ou `px-0.5` acumulados no mobile. Usem `px-0 sm:px-4 md:px-0`.
+  - Proibição absoluta de "Grid dentro de Grid / Card dentro de Grid" com empilhamento de paddings que estrangulem a área útil da tela em smartphones.
+  - Proibição de `max-w-xl mx-auto` em empty states móveis ou cartões: use `w-full` com padding interno contido (`p-4 sm:p-8`).
 - **Tipografia Fluida**: Utilize `fluid-h1`, `fluid-h2` ou `clamp()` para títulos e blocos que escalam organicamente com a largura da tela sem saltos bruscos.
 - **Touch Target Inviolável (44px)**: No mobile, todos os botões, checkboxes, ícones e triggers devem possuir área de clique mínima de 44x44px (`touch-target` ou `h-11`).
 - **Safe Area Insets**: Sempre inclua `safe-bottom` em footers fixos, barras de navegação e drawers para não sobrepor o Home Indicator do iOS.

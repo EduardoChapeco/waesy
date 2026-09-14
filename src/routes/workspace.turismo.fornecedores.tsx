@@ -114,7 +114,7 @@ function WorkspaceSuppliersPage() {
   ], [suppliers]);
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="px-0 sm:px-6 lg:px-8 py-2 sm:py-6 max-w-7xl mx-auto space-y-6">
       <WorkspaceCanonicalToolbar
         tabs={supplierTabs}
         activeTab={selectedKind}

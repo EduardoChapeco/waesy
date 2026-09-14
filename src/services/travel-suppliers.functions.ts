@@ -8,10 +8,13 @@ const supplierKindEnum = z.enum([
   'operator',
   'consolidator',
   'hotel_chain',
+  'hotel',
   'receptive',
+  'transfer',
   'insurance',
   'car_rental',
   'airline',
+  'visa',
   'other',
 ]);
 

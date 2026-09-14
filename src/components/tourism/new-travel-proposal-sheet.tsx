@@ -489,7 +489,10 @@ export function NewTravelProposalSheet({
         .filter((t) => !t.toLowerCase().includes("transfer"))
         .map((t) => ({ title: t, description: "Serviço incluso na proposta" }))
         .concat(
-          selectedTemplate?.tours ||
+          (selectedTemplate?.tours?.map((t) => ({
+            title: t.title,
+            description: t.description || "Passeio recomendado no destino",
+          })) as { title: string; description: string }[]) ||
             (selectedCanonicalDest
               ? selectedCanonicalDest.highlights.map((h) => ({
                   title: h,

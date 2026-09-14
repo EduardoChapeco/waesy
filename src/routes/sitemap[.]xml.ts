@@ -38,10 +38,10 @@ export const Route = createFileRoute("/sitemap.xml")({
  // 3. Fetch active classifieds
  const { data: classifieds } = await db
  .from("classifieds")
- .select("slug, id")
- .eq("status", "published");
+        .select("id")
+        .eq("status", "active");
  if (classifieds) {
- classifieds.forEach((c) => dynamicPaths.push(`/classificados/${c.slug || c.id}`));
+ classifieds.forEach((c) => dynamicPaths.push(`/classificados/${c.id}`));
  }
 
  // 4. Fetch active tourism experiences

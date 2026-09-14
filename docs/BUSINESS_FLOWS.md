@@ -1542,7 +1542,139 @@ graph TD
 | **Varejo (PDV)** | Venda fechada com vendedora | **Financeiro (Comissões)** | Cálculo da comissão sobre a venda | `commissions` (status: `pending`) |
 | **Serviços (Agenda)** | Atendimento concluído | **Pacotes (Créditos)** | Baixa de 1 sessão no extrato | `service_pass_ledger` (`session_completed`) |
 | **Recrutamento (Vagas)** | Candidato envia currículo | **Comercial (Funil RH)** | Criação de lead com pretensão salarial | `leads_crm` (tag: `Candidato`, `RH`) |
-| **Classificados (Imóveis)** | Usuário envia proposta | **Comercial (CRM)** | Oportunidade com contato do interessado | `leads_crm` (tag: `Classificados`) |
 | **Logística (Despacho)** | Pedido pronto para entrega | **MotoLink (Entregador)** | Link Mágico com geolocalização | `delivery_orders` + token de despacho |
+
+---
+
+## Módulo 26 — Governança Executiva, Metas de Crescimento & Flywheel de M&A
+
+Este módulo documenta o processo de monitoramento contínuo de metas estratégicas, gestão de fluxo de caixa e o ciclo de crescimento exponencial da Waesy Platform.
+
+### 26.1 O Ciclo Virtuoso (Flywheel) da Waesy: Do Evento ao BaaS
+
+```
+[1. Eventos & Ingressos (Taxa 5%)] ──> [2. Injeção de 100k Clientes (CAC Zero)] ──> [3. Descoberta no Marketplace (3% a 5%)]
+                 │                                                                                    │
+                 ▼                                                                                    ▼
+[6. BaaS / Carteira Digital] <── [5. Liquidação Fornecedores B2B] <── [4. Retenção de Saldo do Lojista]
+```
+
+1. **Atração em Massa por Eventos:** Ao cobrar taxa de apenas 5% (contra 10% a 15% dos concorrentes como Sympla), as principais produtoras do Oeste migram para a Waesy. 100 mil participantes baixam o app e criam perfil de cliente sem nenhum gasto de publicidade paga.
+2. **Permanência Comunitária por Classificados:** A gratuidade em anúncios de pessoas físicas (veículos, imóveis, serviços) cria retenção diária e volume de sessões.
+3. **Migração em Massa dos Lojistas:** Com comissões justas (3% a 5% vs 12% a 15% do Amo Ofertas/iFood), os restaurantes e comércios parceiros tornam-se promotores orgânicos da plataforma.
+4. **Fechamento de Ciclo com BaaS & B2B:** Os lojistas utilizam o saldo das vendas diretamente dentro da carteira da Waesy para pagar distribuidores de bebidas, carnes e insumos da região, gerando float financeiro e receita de intermediação bancária.
+
+### 26.2 Fluxo E2E: Auditoria de Metas & Livro-Caixa Corporativo
+1. **Acesso Seguro:** O fundador ou membro do conselho acessa `/admin-master/crescimento`. A sessão é validada via `getServerIdentity()` contra o papel `platform_admin`.
+2. **Agregação Concreta:** O BFF `getExecutiveGrowthMetrics` executa queries paralelas no PostgreSQL, extraindo a contagem real de `profiles`, `stores`, `orders` e o faturamento líquido faturado.
+3. **Registro no Livro-Caixa:** O gestor clica em *"+ Novo Lançamento Financeiro"*, seleciona o tipo (`expense` ou `investment`), preenche valor e descrição.
+4. **Persistência Atômica:** A mutação `recordFinancialEntry` grava em `platform_financial_records` com o ID do administrador auditor.
+5. **Recálculo Instantâneo:** A interface executa `router.invalidate()`, recalculando imediatamente o Fluxo de Caixa Líquido, o Runway de capital e a distância até a próxima meta (500, 1.000 ou 5.000 empresas).
+
+### 26.3 Supply Chain Finance: Retenção D+7 a D+30 & Liquidação com NF-e de Entrada
+
+O mecanismo financeiro que retém o capital dentro do ecossistema e atrai as distribuidoras da região:
+
+```
+[Venda no PDV/Delivery] ──> [Saldo em Custódia Waesy]
+                                    │
+        ┌───────────────────────────┴───────────────────────────┐
+        ▼                                                       ▼
+[Rota A: Saque Externo Banco Tradicional]         [Rota B: Pagamento Fornecedor / NF-e Entrada]
+  - Sujeito a prazo estipulado pelo Master:         - ISENÇÃO TOTAL DE TAXA DE ANTECIPAÇÃO (D+0)
+    D+7, D+14 ou D+30.                              - Vinculação obrigatória da chave NF-e (44 dígitos)
+  - Se antecipar para D+0: taxa de 2,5% a 3,5%.    - Sistema agenda quitação automática no vencimento
+  - Dinheiro sai da plataforma.                     - Fornecedor recebe na conta Waesy (dinheiro NÃO sai!)
+```
+
+#### Regras de Negócio e Invariantes do Fluxo:
+1. **Controle Paramétrico pelo Admin Master:** O prazo de liquidação externo (`settlement_delay_days`) é configurável globalmente pelo Admin Master (ex: padrão de 7 a 30 dias para vendas no crédito/débito).
+2. **Taxa Zero para Fornecedores Homologados:** Caso o lojista utilize seu saldo disponível para liquidar duplicatas de NF-e emitidas contra seu CNPJ por fornecedores parceiros, **a liberação é imediata (D+0) e sem custo de antecipação**.
+3. **Vinculação Obrigatória de NF-e de Entrada:**
+   - O lojista informa a chave de acesso da NF-e (44 dígitos) ou realiza o upload do XML de entrada.
+   - O sistema valida a autenticidade perante a SEFAZ, extrai o CNPJ do fornecedor, o valor total e as datas de vencimento das parcelas (`<fat>/<dup>`).
+   - O saldo da carteira é reservado para débito automático no dia exato do vencimento da nota.
+4. **Efeito Float Financeiro:** Milhões de reais transitam dentro do ecossistema Waesy sem evasão para a rede bancária tradicional, gerando remuneração de custódia (CDI) e fidelidade operacional intransponível.
+
+### 26.4 Waesy Care Finance: O Escudo Humano de Fluxo de Caixa
+
+Para além da liquidação de notas fiscais, a Waesy opera como o anjo da guarda do lojista nos momentos de aperto financeiro:
+
+1. **Provisionamento Diário Suave de Duplicatas:** Em vez de pagar R$ 5.000 de uma vez só no vencimento, o sistema retém suaves frações diárias (ex: R$ 250/dia durante 20 dias), garantindo quitação pontual sem choque de liquidez.
+2. **Cofres Automáticos Blindados:** Separação diária de percentuais para folha salarial dos funcionários (dia 5) e aluguel do imóvel, rendendo 102.5% do CDI em conta custodiada. Implementado no Workspace com aportes manuais e sliders de retenção automática.
+3. **Capital de Giro por Vendas (Giro Solidário):** Linhas automáticas de R$ 2.000 a R$ 30.000 amortizadas exclusivamente por um percentual leve das vendas futuras diárias (5% a 15%), sem parcelas fixas asfixiantes nos meses de baixo movimento.
+4. **Carnê Digital com Garantia de Liquidez:** Elimina a inadimplência do fiado de caderninho, permitindo antecipação de recebíveis a taxas solidárias e cobrança automatizada via WhatsApp.
+5. **Compras Coletivas B2B:** Centralização de pedidos de insumos de dezenas de lojas para obter descontos industriais de 20% a 35% junto a indústrias e cooperativas do Oeste de SC.
+
+---
+
+### 26.5 Fluxo Operacional: Venda em Condicional (Mala de Prova em Casa — Varejo de Moda)
+
+No comércio varejista (moda feminina, infantil, calçados, ótica), a entrega de malas para clientes provarem em casa por 24h a 72h é responsável por até 40% do faturamento de lojas do interior:
+
+```
+[1. Montagem da Mala] ──> [2. Saída em Condicional] ──> [3. Prova em Casa (48h)] ──> [4. Conferência & Retorno] ──> [5. Faturamento & Estoque]
+    Seleção de Peças          Registro Nome + WhatsApp        Acompanhamento Status        Peça a Peça: Comprou /          Baixa Atômica Compradas /
+    e Valores R$              e Prazo de Retorno              Atrasada / Vence Hoje        Devolveu ao Estoque             Reintegração Devolvidas
+```
+
+- **Invariantes do Fluxo:**
+  - Nenhuma peça sai da loja sem registro do responsável e telefone de contato.
+  - Na conferência de retorno, a loja marca individualmente as peças compradas e devolvidas com 1 toque.
+  - O valor das peças compradas pode ser faturado à vista (PIX/Cartão) ou parcelado via Carnê Digital Waesy.
+  - As peças devolvidas têm reintegração atômica imediata ao estoque da loja para nova exposição.
+
+---
+
+### 26.6 Fluxo Operacional: Split Bill & Impressão Térmica ESC/POS no PDV Touch
+
+Nos balcões de alimentação e atendimento com fluxo rápido:
+
+```
+[Comanda / Carrinho] ──> [Modal de Checkout] ──> [Split Bill 1x a 5x] ──> [Pagamentos Mistos] ──> [Spooler ESC/POS 80mm/58mm]
+     Total a Pagar            Seleção de Cotas         Cálculo Centavos          Pix + Cartão +         Impressão Térmica Limpa
+                                                       por Pagador               Dinheiro (com troco)   sem Cabeçalhos de Browser
+```
+
+- **Invariantes de Caixa:**
+  - O cálculo da divisão por pessoa preserva a soma exata em centavos BRL: `centsPerPerson = Math.floor(remainingCents / count)`. O último pagador assume os centavos residuais sem gerar quebras de caixa.
+  - A discriminação de pagamentos no cupom térmico identifica explicitamente cada cota ("Pagador 1 (PIX) - R$ 45,00", "Pagador 2 (Cartão) - R$ 45,00").
+  - O utilitário `thermal-printer.ts` injeta CSS `@page { margin: 0; size: 80mm auto; }` para garantir compatibilidade universal com impressoras não fiscais (Epson, Elgin, Bematech, Daruma).
+
+---
+
+### 26.7 Fluxo Operacional: Hub de Marketplaces, Sincronização Bidirecional & Ingestão E2E
+
+A Waesy atua como o sistema operacional central da empresa física e digital, unificando canais remotos e locais sob a mesma verdade contábil, de estoque e de expedição:
+
+```
+[Mercado Livre / iFood / Shopee]
+               │
+               ▼ (Webhook POST com HMAC / ID)
+[/api/webhooks/marketplaces] ──> [Transactional Inbox (Idempotência)]
+                                              │
+               ┌──────────────────────────────┴──────────────────────────────┐
+               ▼                                                             ▼
+[Espelhamento em public.orders]                                [Baixa Física de Estoque]
+- Status mapeado (paid, ready, shipped)                        - Abate em product_variants.stock_on_hand
+- Snapshot do comprador e endereço de entrega                  - Grava em public.stock_movements (sale)
+- Alimenta KDS de Cozinha e Expedição WMS                      - Previne furo de estoque no PDV local
+               │
+               ▼
+[Conciliação de Fluxo de Caixa]
+- Registra entrada no caixa aberto (cash_registers)
+- Discrimina taxas retidas (marketplace_fee_cents) e repasse líquido (net_payout_cents)
+```
+
+- **Invariantes e Regras de Negócio Invioláveis:**
+  1. **Idempotência Transacional:** Toda requisição de webhook tem seu `event_id` verificado previamente. Se o evento já existir, retorna status `duplicate` sem duplicar pedidos ou baixar estoque em duplicidade.
+  2. **Espelhamento Mestre Instantâneo:** Nenhum pedido externo permanece confinado a tabelas isoladas. Ao ingressar, ele gera linha correspondente em `public.orders` e itens em `public.order_items`, integrando-se imediatamente aos painéis operacionais (`/workspace/pedidos`, `/workspace/pdv/cozinha`, `/workspace/pedidos/expedicao`).
+  3. **Proteção Anti-Furo de Estoque:** Ao ser vendido um produto no Mercado Livre ou Shopee, o estoque local é decrementado; da mesma forma, ao ser vendido no PDV físico, o gatilho `syncProductStockToMarketplaces` notifica os canais conectados para atualizar o saldo disponível.
+  4. **Auditoria Total & Reprocessamento:** Cada evento recebido e sincronização de saída é registrado com timestamp, duração em milissegundos e contagem de itens em `marketplace_sync_logs` e `marketplace_webhook_events`. O lojista pode reprocessar qualquer evento falho com 1 clique.
+
+
+
+
+
 
 

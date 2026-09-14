@@ -34,6 +34,14 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { DocumentField } from "@/components/ui/document-field";
+import { CepField } from "@/components/ui/cep-field";
+import { PhoneField } from "@/components/ui/phone-field";
+import {
+  CreditCardNumberInput,
+  CardExpiryInput,
+  CardCvvInput,
+} from "@/components/ui/credit-card-field";
 import { Surface } from "@/components/ui/surface";
 
 export const Route = createFileRoute("/_store/checkout")({
@@ -633,7 +641,7 @@ export function CheckoutPage() {
 
  if (!cart.items || cart.items.length === 0) {
  return (
- <div className="max-w-xl mx-auto py-16 text-center space-y-6 px-4">
+ <div className="w-full max-w-xl mx-auto py-16 text-center space-y-6 px-0 sm:px-4">
  <div className="size-16 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <ShoppingBag className="size-8 stroke-[1.5]" />
  </div>
@@ -775,12 +783,10 @@ export function CheckoutPage() {
 
  <div className="space-y-1.5">
  <Label className="text-xs font-bold text-foreground">WhatsApp / Telefone *</Label>
- <Input
- type="tel"
+ <PhoneField
  required
- placeholder="(99) 99999-9999"
  value={formData.customerPhone}
- onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+ onChange={(val) => setFormData({ ...formData, customerPhone: val || "" })}
  className="h-11 rounded-xl text-base sm:text-sm"
  />
  </div>
@@ -789,10 +795,12 @@ export function CheckoutPage() {
  <Label className="text-xs font-bold text-foreground">
  CPF / CNPJ <span className="text-muted-foreground font-normal">(Opcional para NF-e)</span>
  </Label>
- <Input
- placeholder="000.000.000-00"
+ <DocumentField
+ mode="dynamic"
  value={formData.customerDocument}
- onChange={(e) => setFormData({ ...formData, customerDocument: e.target.value })}
+ onChange={(masked, _isValid, clean) =>
+ setFormData({ ...formData, customerDocument: clean || masked })
+ }
  className="h-11 rounded-xl text-base sm:text-sm"
  />
  </div>
@@ -1042,12 +1050,24 @@ export function CheckoutPage() {
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
  <div className="space-y-1">
  <Label className="text-[11px] font-bold text-muted-foreground">CEP *</Label>
- <Input
- placeholder="89800-000"
- maxLength={9}
+ <CepField
  value={formData.shippingAddress.zipcode}
- onChange={(e) => handleCepChange(e.target.value)}
- className="h-11 rounded-xl text-base sm:text-sm font-mono"
+ onChange={(masked, clean) => {
+ handleCepChange(clean);
+ }}
+ onAddressFound={(addr) => {
+ setFormData((prev) => ({
+ ...prev,
+ shippingAddress: {
+ ...prev.shippingAddress,
+ street: addr.street || prev.shippingAddress.street,
+ neighborhood: addr.neighborhood || prev.shippingAddress.neighborhood,
+ city: addr.city || prev.shippingAddress.city,
+ state: addr.state || prev.shippingAddress.state,
+ },
+ }));
+ }}
+ className="h-11 rounded-xl text-base sm:text-sm"
  />
  </div>
 
@@ -1390,12 +1410,12 @@ export function CheckoutPage() {
  <div className="p-4 rounded-2xl bg-muted/20 space-y-3.5 animate-in fade-in-50">
  <div className="space-y-1">
  <Label className="text-[11px] font-bold text-muted-foreground">Número do Cartão *</Label>
- <Input
- placeholder="0000 0000 0000 0000"
- maxLength={19}
+ <CreditCardNumberInput
  value={creditCardData.number}
- onChange={(e) => setCreditCardData({ ...creditCardData, number: e.target.value })}
- className="h-11 rounded-xl text-base sm:text-sm font-mono"
+ onChange={(formatted, _brand, clean) =>
+ setCreditCardData({ ...creditCardData, number: clean || formatted })
+ }
+ className="h-11 rounded-xl text-base sm:text-sm"
  />
  </div>
 
@@ -1412,22 +1432,22 @@ export function CheckoutPage() {
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1">
  <Label className="text-[11px] font-bold text-muted-foreground">Validade (MM/AA) *</Label>
- <Input
- placeholder="12/28"
- maxLength={5}
+ <CardExpiryInput
  value={creditCardData.expiryDate}
- onChange={(e) => setCreditCardData({ ...creditCardData, expiryDate: e.target.value })}
- className="h-11 rounded-xl text-base sm:text-sm font-mono"
+ onChange={(formatted) =>
+ setCreditCardData({ ...creditCardData, expiryDate: formatted })
+ }
+ className="h-11 rounded-xl text-base sm:text-sm"
  />
  </div>
  <div className="space-y-1">
  <Label className="text-[11px] font-bold text-muted-foreground">CVV *</Label>
- <Input
- placeholder="123"
- maxLength={4}
+ <CardCvvInput
  value={creditCardData.cvv}
- onChange={(e) => setCreditCardData({ ...creditCardData, cvv: e.target.value })}
- className="h-11 rounded-xl text-base sm:text-sm font-mono"
+ onChange={(cvv) =>
+ setCreditCardData({ ...creditCardData, cvv })
+ }
+ className="h-11 rounded-xl text-base sm:text-sm"
  />
  </div>
  </div>

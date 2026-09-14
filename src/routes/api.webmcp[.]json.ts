@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MCP_TOOLS_MANIFEST } from "@/services/mcp-server.functions";
 
 export const Route = createFileRoute("/api/webmcp.json")({
   server: {
@@ -7,92 +8,34 @@ export const Route = createFileRoute("/api/webmcp.json")({
         const url = new URL(request.url);
 
         const manifest = {
-          name: "Waesy AI Agent & MCP Protocol",
-          version: "2.0.0",
-          description: "Especificação WebMCP para busca de produtos, estoques, empresas e compras autônomas por IA.",
+          name: "Waesy Universal Commerce MCP Protocol",
+          version: "2.1.0",
+          description:
+            "Especificação WebMCP oficial para descoberta, catálogo, simulação econométrica e automação operacional com AI-Guards e isolamento multi-tenant estrito.",
           protocol: "model-context-protocol/v1",
+          executionEndpoint: `${url.origin}/api/mcp/v1/tools/call`,
+          securityModel: {
+            standard: "Meta Ads & Stripe Restricted Scopes",
+            tiers: {
+              public: "Leitura pública sanitizada de produtos, empresas e frete sem exposição de margens",
+              store_staff: "Operações restritas à loja autorizada com validação de sessão e assertStoreAccess",
+              admin_only: "Operações restritas a administradores da plataforma"
+            },
+            isolationRule: "Tentativas de acesso cruzado entre empresas (cross-tenant) resultam em 403 Forbidden imediato e alerta de sentinela."
+          },
           capabilities: {
             tools: true,
             resources: true,
             prompts: false,
           },
-          tools: [
-            {
-              name: "search_catalog_products",
-              description: "Busca produtos, estoques e preços atualizados no marketplace local Waesy.",
-              parameters: {
-                type: "object",
-                properties: {
-                  query: { type: "string", description: "Termo de busca do produto" },
-                  store_id: { type: "string", description: "ID opcional da loja" },
-                  max_price: { type: "number", description: "Preço máximo em reais" },
-                },
-                required: ["query"],
-              },
-              endpoint: `${url.origin}/api/search`,
-            },
-            {
-              name: "get_store_directory_info",
-              description: "Retorna dados de contato, endereço, horários e reputação de uma empresa no Diretório.",
-              parameters: {
-                type: "object",
-                properties: {
-                  slug_or_id: { type: "string", description: "Slug ou ID da empresa" },
-                },
-                required: ["slug_or_id"],
-              },
-              endpoint: `${url.origin}/api/store/info`,
-            },
-            {
-              name: "check_delivery_coverage",
-              description: "Valida se um CEP é atendido pela frota e calcula taxa de entrega em tempo real.",
-              parameters: {
-                type: "object",
-                properties: {
-                  cep: { type: "string", description: "CEP de entrega no Brasil" },
-                },
-                required: ["cep"],
-              },
-              endpoint: `${url.origin}/api/shipping/calculate`,
-            },
-            {
-              name: "get_google_shopping_feed",
-              description: "Retorna o feed RSS XML padronizado para integração direta com Google Merchant Center.",
-              parameters: {
-                type: "object",
-                properties: {
-                  store: { type: "string", description: "UUID da loja para filtragem do catálogo" },
-                },
-                required: ["store"],
-              },
-              endpoint: `${url.origin}/api/feed/xml`,
-            },
-            {
-              name: "get_meta_catalog_feed",
-              description: "Retorna o feed CSV compatível com Meta Commerce Manager e anúncios dinâmicos (DPA).",
-              parameters: {
-                type: "object",
-                properties: {
-                  store: { type: "string", description: "UUID da loja para filtragem do catálogo" },
-                },
-                required: ["store"],
-              },
-              endpoint: `${url.origin}/api/feed/meta.csv`,
-            },
-            {
-              name: "inbound_marketplace_webhook",
-              description: "Endpoint transacional para recepção e conciliação de webhooks de Mercado Livre, iFood e emissão fiscal.",
-              parameters: {
-                type: "object",
-                properties: {
-                  platform: { type: "string", description: "Plataforma emissora (mercadolivre, ifood, focus_nfe, etc.)" },
-                  store_id: { type: "string", description: "UUID opcional da loja de destino" },
-                },
-                required: ["platform"],
-              },
-              endpoint: `${url.origin}/api/webhooks/marketplaces`,
-            },
-          ],
+          tools: MCP_TOOLS_MANIFEST.map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+            tier: tool.tier,
+            requiredScope: tool.requiredScope,
+            parameters: tool.inputSchema,
+            endpoint: `${url.origin}/api/mcp/v1/tools/call`,
+          })),
         };
 
         return new Response(JSON.stringify(manifest, null, 2), {
@@ -100,7 +43,18 @@ export const Route = createFileRoute("/api/webmcp.json")({
           headers: {
             "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*",
-            "Cache-Control": "public, max-age=86400",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Cache-Control": "public, max-age=3600",
+          },
+        });
+      },
+      OPTIONS: async () => {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
           },
         });
       },

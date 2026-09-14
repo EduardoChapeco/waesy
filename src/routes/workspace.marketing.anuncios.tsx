@@ -540,7 +540,7 @@ function AnunciosWorkspacePage() {
                   <Label className="text-xs font-semibold">Orçamento Diário</Label>
                   <CurrencyField
                     value={formDailyCents}
-                    onChange={setFormDailyCents}
+                    onChange={(val) => setFormDailyCents(val || 0)}
                     className="h-11 rounded-xl text-sm"
                   />
                 </div>
@@ -548,7 +548,7 @@ function AnunciosWorkspacePage() {
                   <Label className="text-xs font-semibold">Limite Total</Label>
                   <CurrencyField
                     value={formTotalCents}
-                    onChange={setFormTotalCents}
+                    onChange={(val) => setFormTotalCents(val || 0)}
                     className="h-11 rounded-xl text-sm"
                   />
                 </div>

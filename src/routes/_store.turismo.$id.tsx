@@ -53,6 +53,7 @@ import { toast } from "sonner";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
+import { WeatherWidget } from "@/components/classifieds/weather-widget";
 
 export const Route = createFileRoute("/_store/turismo/$id")({
  head: ({
@@ -87,20 +88,6 @@ export const Route = createFileRoute("/_store/turismo/$id")({
 function TourismDetailPage() {
  const { experience, session } = ((Route.useLoaderData?.() as any) || {});
  const navigate = useNavigate();
-
- if (!experience) {
- return (
- <div className="max-w-xl mx-auto py-20 px-4 text-center space-y-4">
- <h2 className="text-xl font-bold text-foreground">Experiência Turística não encontrada</h2>
- <p className="text-xs text-muted-foreground">
- O roteiro solicitado não está ativo ou foi removido.
- </p>
- <Button asChild size="sm" className="rounded-xl font-bold text-xs">
- <Link to="/turismo">Explorar Outros Roteiros</Link>
- </Button>
- </div>
- );
- }
 
  const [isBookingOpen, setIsBookingOpen] = useState(false);
  const [isTravelQuoteOpen, setIsTravelQuoteOpen] = useState(false);
@@ -141,7 +128,7 @@ function TourismDetailPage() {
  mutationFn: () =>
  bookTourismExperience({
  data: {
- experienceId: experience!.id,
+ experienceId: experience?.id || "",
  customerName: customerName || passengers[0]?.name || "Cliente",
  customerEmail,
  customerPhone,
@@ -193,7 +180,7 @@ function TourismDetailPage() {
  };
 
  return (
- <div className="w-full max-w-6xl mx-auto space-y-8 pb-6 px-4 sm:px-0">
+ <div className="w-full max-w-6xl mx-auto space-y-8 pb-6 px-0 sm:px-4 md:px-0">
  <ProductTelemetry
    storeId={experience.store_id}
    productId={experience.id}
@@ -293,7 +280,7 @@ function TourismDetailPage() {
 
  {/* ── 4. Main Content Grid ── */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
- {/* Left Column: Description, Inclusions, Itinerary, Transport, Hotel, What to Bring */}
+ {/* Left Column: Description, Weather, Itinerary, Inclusions, What to Bring */}
  <div className="md:col-span-2 space-y-8">
  {/* Sobre a Experiência */}
  <section className="space-y-3">
@@ -303,7 +290,15 @@ function TourismDetailPage() {
  </div>
  </section>
 
- {/* Roteiro Dia a Dia / Itinerário Detalhado */}
+ {/* Previsão do Tempo Real via wttr.in (Regra 21) */}
+ {experience.location && (
+ <div className="space-y-2">
+ <WeatherWidget city={experience.location.split(",")[0].trim()} />
+ </div>
+ )}
+
+ {/* Roteiro Dia a Dia / Itinerário Detalhado (Renderizado apenas se cadastrado - Regra 19) */}
+ {experience.itinerary && experience.itinerary.length > 0 && (
  <section className="space-y-4">
  <div className="flex items-center justify-between">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -311,45 +306,28 @@ function TourismDetailPage() {
  <span>Roteiro Dia a Dia & Atividades</span>
  </h3>
  <Badge variant="outline" className="text-[10px] font-mono font-bold">
- Programação Completa
+ Programação Oficial
  </Badge>
  </div>
 
  <div className="space-y-3 relative before:absolute before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-border/60">
- <div className="relative pl-8 space-y-1">
+ {experience.itinerary.map((item: any, idx: number) => (
+ <div key={idx} className="relative pl-8 space-y-1">
  <div className="absolute left-2 top-1.5 size-3.5 rounded-full bg-primary ring-4 ring-background -translate-x-1/2" />
  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary block">
- Dia 1 • Embarque & Boas-Vindas
+ Dia {item.day || idx + 1} {item.time ? `• ${item.time}` : ""}
  </span>
- <p className="text-xs font-bold text-foreground">Apresentação no ponto de encontro e check-in</p>
+ <p className="text-xs font-bold text-foreground">{item.title}</p>
+ {item.description && (
  <p className="text-xs text-muted-foreground leading-relaxed">
- Recepção dos viajantes, conferência de vouchers e acomodação no transporte. Chegada ao destino e tarde livre para ambientação.
+ {item.description}
  </p>
+ )}
  </div>
-
- <div className="relative pl-8 space-y-1">
- <div className="absolute left-2 top-1.5 size-3.5 rounded-full bg-border ring-4 ring-background -translate-x-1/2" />
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
- Dia 2 • Roteiro Guiado & Atrações
- </span>
- <p className="text-xs font-bold text-foreground">Passeio principal e imersão cultural/natural</p>
- <p className="text-xs text-muted-foreground leading-relaxed">
- Saída matinal com guia credenciado, paradas para fotos, degustação gastronômica e tempo reservado para compras e lazer.
- </p>
- </div>
-
- <div className="relative pl-8 space-y-1">
- <div className="absolute left-2 top-1.5 size-3.5 rounded-full bg-border ring-4 ring-background -translate-x-1/2" />
- <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
- Dia 3 • Retorno & Encerramento
- </span>
- <p className="text-xs font-bold text-foreground">Check-out e viagem de retorno</p>
- <p className="text-xs text-muted-foreground leading-relaxed">
- Manhã livre para últimas fotos, check-out do hotel e embarque de volta ao local de origem com assistência total.
- </p>
- </div>
+ ))}
  </div>
  </section>
+ )}
 
  {/* O que está incluso */}
  {experience.included_items && experience.included_items.length > 0 && (

@@ -240,21 +240,22 @@ export function BusinessLocationPicker({
      const maplibregl = (maplibreglModule as any).default || maplibreglModule;
 
      try {
-       map.current = new maplibregl.Map({
+       const mapInstance = new maplibregl.Map({
          container: mapContainer.current,
          style: getCanonicalMapStyle(),
          center: [initialLng, initialLat],
          zoom: value.latitude ? 16 : 13,
          attributionControl: false,
        });
+       map.current = mapInstance;
 
-       cleanupResize = setupMapResizeObserver(map.current, mapContainer.current);
+       cleanupResize = setupMapResizeObserver(mapInstance, mapContainer.current);
 
-       map.current.addControl(
+       mapInstance.addControl(
          new maplibregl.AttributionControl({ compact: true }),
          "bottom-right"
        );
-       map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+       mapInstance.addControl(new maplibregl.NavigationControl(), "top-right");
 
        // Marcador arrastável personalizado
        const markerEl = document.createElement("div");
@@ -268,13 +269,14 @@ export function BusinessLocationPicker({
          </div>
        `;
 
-       marker.current = new maplibregl.Marker({ element: markerEl, draggable: true })
+       const markerInstance = new maplibregl.Marker({ element: markerEl, draggable: true })
          .setLngLat([initialLng, initialLat])
-         .addTo(map.current);
+         .addTo(mapInstance);
+       marker.current = markerInstance;
 
        // Evento de arraste do pino (Ajuste fino de latitude/longitude)
-       marker.current.on("dragend", async () => {
-         const lngLat = marker.current?.getLngLat();
+       markerInstance.on("dragend", async () => {
+         const lngLat = markerInstance.getLngLat();
          if (lngLat) {
            onChange({
              ...value,

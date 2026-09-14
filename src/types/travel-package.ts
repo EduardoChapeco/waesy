@@ -99,6 +99,7 @@ export interface TravelDestinationDetails {
  name: string;
  region?: string;
  country?: string;
+ description?: string;
  iata_gateway?: string;
  flight_summary?: string;
  flight_duration?: string;

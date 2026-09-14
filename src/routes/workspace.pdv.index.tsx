@@ -34,7 +34,9 @@ import {
  Loader2,
  ChefHat,
  Armchair,
+ Users,
 } from "lucide-react";
+import { printThermalReceipt, type ThermalReceiptData } from "@/lib/thermal-printer";
 import {
  getActiveRegister,
  openRegister,
@@ -259,6 +261,7 @@ interface CartItem {
 interface SplitPayment {
  method: "cash" | "pix" | "credit" | "debit" | "other";
  amountCents: number;
+ payerLabel?: string;
 }
 
 function PdvTerminal() {
@@ -331,6 +334,7 @@ function PdvTerminal() {
  const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
  const [paymentAmountInput, setPaymentAmountInput] = useState("");
  const [discountInput, setDiscountInput] = useState("");
+ const [splitCount, setSplitCount] = useState<number>(1);
 
  // Categorias extraídas dos produtos
  const categories = useMemo(() => {
@@ -510,29 +514,91 @@ function PdvTerminal() {
  const remainingToPay = Math.max(0, cartTotal - totalPaidSoFar);
 
  const handleOpenCheckout = () => {
- setSplitPayments([]);
- setPaymentAmountInput((remainingToPay / 100).toFixed(2).replace(".", ","));
- setCheckoutOpen(true);
+   setSplitPayments([]);
+   setSplitCount(1);
+   setPaymentAmountInput((cartTotal / 100).toFixed(2).replace(".", ","));
+   setCheckoutOpen(true);
  };
 
- const handleAddSplitPayment = () => {
- const cents = parseCurrencyInputToCents(paymentAmountInput);
- if (cents <= 0) {
- toast.error("Informe um valor válido de pagamento.");
- return;
- }
+ const handleSplitBillByPeople = (count: number) => {
+   const countClamped = Math.max(1, count);
+   setSplitCount(countClamped);
+   if (countClamped === 1) {
+     setPaymentAmountInput((remainingToPay / 100).toFixed(2).replace(".", ","));
+     return;
+   }
+   const baseTotal = splitPayments.length === 0 ? cartTotal : remainingToPay;
+   const remainingSlots = Math.max(1, countClamped - splitPayments.length);
+   const shareCents = Math.floor(baseTotal / remainingSlots);
+   setPaymentAmountInput((shareCents / 100).toFixed(2).replace(".", ","));
+ };
 
- setSplitPayments((prev) => [
- ...prev,
- { method: selectedPaymentMethod, amountCents: cents },
- ]);
+ const handleAddSplitPayment = (customLabel?: string) => {
+   const cents = parseCurrencyInputToCents(paymentAmountInput);
+   if (cents <= 0) {
+     toast.error("Informe um valor válido de pagamento.");
+     return;
+   }
 
- const nextRemaining = Math.max(0, remainingToPay - cents);
- setPaymentAmountInput((nextRemaining / 100).toFixed(2).replace(".", ","));
+   const payerLabel =
+     customLabel ||
+     (splitCount > 1 ? `Pagador ${splitPayments.length + 1}` : undefined);
+
+   setSplitPayments((prev) => [
+     ...prev,
+     { method: selectedPaymentMethod, amountCents: cents, payerLabel },
+   ]);
+
+   const nextRemaining = Math.max(0, remainingToPay - cents);
+   if (nextRemaining > 0 && splitCount > 1) {
+     const remainingSlots = Math.max(1, splitCount - (splitPayments.length + 1));
+     const nextShare = Math.floor(nextRemaining / remainingSlots);
+     setPaymentAmountInput((nextShare / 100).toFixed(2).replace(".", ","));
+   } else {
+     setPaymentAmountInput((nextRemaining / 100).toFixed(2).replace(".", ","));
+   }
  };
 
  const handleRemoveSplitPayment = (index: number) => {
- setSplitPayments((prev) => prev.filter((_, i) => i !== index));
+   setSplitPayments((prev) => prev.filter((_, i) => i !== index));
+ };
+
+ const handlePrintThermal = (paperWidth: "80mm" | "58mm" = "80mm") => {
+   if (!lastSaleReceipt) return;
+   const receiptData: ThermalReceiptData = {
+     storeName: store?.name || "Waesy Comércio Local",
+     storeCnpj: store?.cnpj || undefined,
+     storeAddress: store?.address || undefined,
+     storePhone: store?.phone || undefined,
+     saleId: lastSaleReceipt.saleId,
+     date: lastSaleReceipt.date,
+     serviceMode: lastSaleReceipt.serviceMode,
+     tableOrComanda: lastSaleReceipt.tableOrComandaNumber,
+     customerDoc: lastSaleReceipt.customerDoc,
+     customerName: lastSaleReceipt.customerName,
+     items: (lastSaleReceipt.items || []).map((i: any) => ({
+       title: i.product?.title || "Item",
+       qty: i.qty,
+       unitPriceCents: i.unitPriceCents,
+       totalCents: i.unitPriceCents * i.qty,
+       sku: i.variant?.sku,
+       modifiers: (i.selectedModifiers || []).map((m: any) => ({
+         label: m.title || m.label,
+         priceDeltaCents: m.priceDeltaCents || 0,
+       })),
+     })),
+     subtotalCents: lastSaleReceipt.subtotal,
+     discountCents: lastSaleReceipt.discount,
+     totalCents: lastSaleReceipt.total,
+     amountPaidCents: lastSaleReceipt.amountPaid,
+     changeCents: lastSaleReceipt.change,
+     payments: (lastSaleReceipt.effectivePayments || []).map((p: any) => ({
+       method: p.method,
+       amountCents: p.amountCents,
+       payerLabel: p.payerLabel,
+     })),
+   };
+   printThermalReceipt(receiptData, paperWidth);
  };
 
  // Finalizar Venda
@@ -1150,6 +1216,37 @@ function PdvTerminal() {
  </DialogHeader>
 
  <div className="p-6 space-y-5">
+ {/* Barra de Divisão Rápida de Conta (Split Bill) */}
+ <div className="p-3 bg-muted/40 rounded-xl border border-border/70 space-y-2">
+ <div className="flex items-center justify-between">
+ <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Users className="size-3.5 text-primary" />
+ <span>Dividir Conta entre Pessoas (Split Bill)</span>
+ </span>
+ {splitCount > 1 && (
+ <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
+ {splitCount} pessoas (~{formatMoney(Math.round(cartTotal / splitCount))} cada)
+ </Badge>
+ )}
+ </div>
+ <div className="flex items-center gap-1.5">
+ {[1, 2, 3, 4, 5].map((count) => (
+ <button
+ key={count}
+ type="button"
+ onClick={() => handleSplitBillByPeople(count)}
+ className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer border ${
+ splitCount === count
+ ? "bg-primary text-primary-foreground border-primary shadow-xs"
+ : "bg-card border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground"
+ }`}
+ >
+ {count === 1 ? "1x (Total)" : `${count}x`}
+ </button>
+ ))}
+ </div>
+ </div>
+
  {/* Seletor de Meio de Pagamento */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
  {[
@@ -1192,7 +1289,7 @@ function PdvTerminal() {
  />
  <Button
  type="button"
- onClick={handleAddSplitPayment}
+ onClick={() => handleAddSplitPayment()}
  className="h-11 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground shrink-0"
  >
  Adicionar Pagamento
@@ -1220,7 +1317,7 @@ function PdvTerminal() {
  {splitPayments.length > 0 && (
  <div className="space-y-2 p-3 bg-muted/40 rounded-xl border border-border/60">
  <span className="text-[11px] font-bold text-muted-foreground block">
- Pagamentos Adicionados:
+ Pagamentos Adicionados ({splitPayments.length}):
  </span>
  <div className="space-y-1.5">
  {splitPayments.map((p, idx) => (
@@ -1228,16 +1325,25 @@ function PdvTerminal() {
  key={idx}
  className="flex items-center justify-between text-xs p-2 bg-card rounded-lg border border-border/50"
  >
+ <div className="flex items-center gap-1.5">
+ {p.payerLabel && (
+ <Badge variant="outline" className="text-[10px] font-bold py-0 h-4 border-primary/30 text-primary">
+ {p.payerLabel}
+ </Badge>
+ )}
  <span className="font-bold uppercase font-mono">{p.method}</span>
+ </div>
+ <div className="flex items-center gap-2">
  <span className="font-mono font-bold">{formatMoney(p.amountCents)}</span>
  <Button
  variant="ghost"
  size="icon"
- className="size-6 text-destructive"
+ className="size-6 text-destructive cursor-pointer"
  onClick={() => handleRemoveSplitPayment(idx)}
  >
  <Trash2 className="size-3" />
  </Button>
+ </div>
  </div>
  ))}
  </div>
@@ -1303,7 +1409,7 @@ function PdvTerminal() {
  <div className="space-y-1 py-1 border-b border-border/60">
  {lastSaleReceipt?.items?.map((item: any, idx: number) => (
  <div key={idx} className="flex justify-between text-[11px]">
- <span>{item.qty}x {item.product.title}</span>
+ <span>{item.qty}x {item.product?.title || item.title}</span>
  <span>{formatMoney(item.unitPriceCents * item.qty)}</span>
  </div>
  ))}
@@ -1333,18 +1439,28 @@ function PdvTerminal() {
  </div>
  </div>
 
- <div className="flex items-center gap-2 pt-2">
+ <div className="space-y-2 pt-2">
+ <div className="grid grid-cols-2 gap-2">
  <Button
- onClick={() => window.print()}
+ onClick={() => handlePrintThermal("80mm")}
  variant="outline"
- className="flex-1 h-11 rounded-xl text-xs font-bold gap-2"
+ className="h-11 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
  >
- <Printer className="size-4" />
- <span>Imprimir Térmica (58/80mm)</span>
+ <Printer className="size-4 text-primary" />
+ <span>Imprimir 80mm</span>
  </Button>
  <Button
+ onClick={() => handlePrintThermal("58mm")}
+ variant="outline"
+ className="h-11 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+ >
+ <Printer className="size-4" />
+ <span>Imprimir 58mm</span>
+ </Button>
+ </div>
+ <Button
  onClick={() => setReceiptModalOpen(false)}
- className="flex-1 h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground"
+ className="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer"
  >
  Nova Venda (ESC)
  </Button>

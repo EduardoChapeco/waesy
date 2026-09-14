@@ -34,11 +34,13 @@ import {
   CheckCircle2,
   TrendingUp,
   Wrench,
+  Banknote,
+  Utensils,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { InstagramTravelView } from "@/components/classifieds/instagram-travel-view";
+import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
@@ -485,6 +487,10 @@ const handleDownloadDigitalFile = async () => {
   }
 };
 
+  const niche = useMemo(() => (classified ? resolveClassifiedNiche(classified) : ({} as any)), [classified]);
+  const semanticBadges = useMemo(() => (classified ? getSemanticBadges(classified) : []), [classified]);
+  const semanticCondition = useMemo(() => (classified ? getSemanticCondition(classified) : null), [classified]);
+
  if (!classified) {
  return (
  <div className="mx-auto max-w-4xl px-4 py-16 text-center">
@@ -523,16 +529,12 @@ const handleDownloadDigitalFile = async () => {
  variant: "outline",
  };
 
- const niche = useMemo(() => resolveClassifiedNiche(classified), [classified]);
- const semanticBadges = useMemo(() => getSemanticBadges(classified), [classified]);
- const semanticCondition = useMemo(() => getSemanticCondition(classified), [classified]);
-
   if (
     niche.id === "travel" ||
     classified?.category === "travel" ||
     classified?.category === "viagem" ||
     classified?.category === "tourism" ||
-    classified?.attributes?.template_style === "instagram" ||
+    classified?.attributes?.template_style === "editorial" || classified?.attributes?.template_style === "immersive" || classified?.attributes?.template_style === "instagram" ||
     classified?.attributes?.template_style === "instagram_resort"
   ) {
     return (
@@ -550,11 +552,17 @@ const handleDownloadDigitalFile = async () => {
           sku={classified?.id}
           inStock={classified?.status === "active"}
         />
-        <InstagramTravelView
+        <EditorialShowcaseView
           classified={classified}
           isOwner={isOwner}
           onOpenBookingModal={() => setBookingOpen(true)}
           onOpenProposalModal={() => setProposalOpen(true)}
+          onEditClassified={() =>
+            navigate({
+              to: "/conta/classificados/novo",
+              search: { editId: classified.id } as any,
+            })
+          }
         />
       </>
     );
@@ -949,7 +957,76 @@ const handleDownloadDigitalFile = async () => {
  </div>
  )}
 
- {/* ─── Ficha Técnica: Desapego & Bens Físicos ─── */}
+ {/* ─── Ficha Técnica: Alimentação & Gastronomia Artesanal ─── */}
+              {(classified.category === "food" || classified.category === "alimentacao" || classified.attributes?.niche === "alimentacao" || niche.id === "food") && (
+                <div className="pt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                      <Utensils className="size-3.5 text-primary" />
+                      <span>Cardápio & Informações da Refeição</span>
+                    </h3>
+                    <Badge variant="outline" className="text-[11px] font-semibold text-primary border-primary/20 bg-primary/10">
+                      Gastronomia Local
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="bg-muted/30 p-3 rounded-xl border border-border/40">
+                      <span className="text-muted-foreground block text-[10px]">Tipo</span>
+                      <span className="font-bold text-foreground capitalize">
+                        {classified.attributes?.meal_type?.replace(/_/g, " ") || "Refeição Artesanal"}
+                      </span>
+                    </div>
+                    <div className="bg-muted/30 p-3 rounded-xl border border-border/40">
+                      <span className="text-muted-foreground block text-[10px]">Preparo / Entrega</span>
+                      <span className="font-bold text-foreground">
+                        {classified.attributes?.prep_time || "Pronta entrega"}
+                      </span>
+                    </div>
+                    <div className="bg-muted/30 p-3 rounded-xl border border-border/40 col-span-2 sm:col-span-1">
+                      <span className="text-muted-foreground block text-[10px]">Entrega</span>
+                      <span className="font-bold text-foreground">
+                        MotoLink & Retirada Local
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Restrições / Selos Alimentares */}
+                  {Array.isArray(classified.attributes?.dietary_tags) && classified.attributes.dietary_tags.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-border/40">
+                      <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block">
+                        Selos & Restrições
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {classified.attributes.dietary_tags.map((tag: string, idx: number) => (
+                          <Badge key={idx} variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                            ✓ {tag.replace(/_/g, " ")}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sabores & Opções Selecionáveis */}
+                  {classified.attributes?.modifiers_text && (
+                    <div className="space-y-2 pt-2 border-t border-border/40">
+                      <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block">
+                        Sabores / Opções Disponíveis
+                      </span>
+                      <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 text-xs text-foreground/90 space-y-1.5">
+                        {classified.attributes.modifiers_text.split(",").map((opt: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-primary" />
+                            <span>{opt.trim()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ─── Ficha Técnica: Desapego & Bens Físicos ─── */}
  {classified.category === "sale" && classified.attributes?.desapego_subcategory && (
  <div className="pt-4 space-y-4">
  <h3 className="text-xs font-medium text-muted-foreground">

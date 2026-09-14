@@ -61,6 +61,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   service: "Serviço",
   job: "Vaga",
   trade: "Troca",
+  donation: "Doação",
+  travel: "Viagem",
+  equipment: "Equipamento",
+  event: "Evento",
 };
 
 const STATUS_CONFIG: Record<
@@ -255,7 +259,7 @@ function ClassificadosIndex() {
   const gatewayAvailable = gatewayStatus?.available ?? false;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 pb-20 px-4 sm:px-0">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">

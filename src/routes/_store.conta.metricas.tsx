@@ -225,7 +225,7 @@ function MemberMetricsPage() {
  </p>
  ) : (
  <div className="space-y-2">
- {recentFollowers.map((f) => (
+ {recentFollowers.map((f: any) => (
  <Link
  key={f.id}
  to="/membro/$id"
@@ -415,7 +415,7 @@ function MemberMetricsPage() {
  </div>
  ) : (
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
- {topPosts.map((post, idx) => (
+ {topPosts.map((post: any, idx: number) => (
  <div
  key={post.id}
  className="group relative p-3.5 rounded-2xl bg-muted/20 border border-border/50 hover:border-primary/40 transition-all flex flex-col justify-between gap-3"

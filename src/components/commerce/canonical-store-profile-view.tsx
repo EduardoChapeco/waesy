@@ -5,7 +5,7 @@
  * Posts Sociais (Feed/Grid), Vagas de Emprego, Avaliações Verificadas e Patrocinadores.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   Clock,
@@ -67,7 +67,7 @@ import {
   type VitrineCardItem,
 } from "@/components/commerce/store-vitrine-sections-editor";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
-import { ThreadsFeedCard } from "@/components/social/threads-feed-card";
+import { CommunityFeedCard } from "@/components/social/community-feed-card";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
 import { ProductModifiersModal, type SelectedModifier } from "@/components/pos/product-modifiers-modal";
@@ -1398,7 +1398,7 @@ export function CanonicalStoreProfileView({
                   /* Modo 2: Feed Social com Notas Rápidas */
                   <div className="space-y-4 max-w-2xl mx-auto">
                     {posts.map((post: any) => (
-                      <ThreadsFeedCard
+                      <CommunityFeedCard
                         key={post.id}
                         post={{
                           id: post.id,
@@ -1795,7 +1795,7 @@ export function CanonicalStoreProfileView({
 
                   {employerStats.recentReviews && employerStats.recentReviews.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {employerStats.recentReviews.map((rev, idx) => (
+                      {employerStats.recentReviews.map((rev: any, idx: number) => (
                         <div
                           key={idx}
                           className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-2 shadow-2xs"

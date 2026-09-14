@@ -28,6 +28,8 @@ import {
  uploadPostMedia,
  getPostMediaSignedUrl,
 } from "@/services/storage.functions";
+import { Highlighter } from "lucide-react";
+import { extractMediaFromClipboard, fileToBase64 } from "@/lib/clipboard-media";
 
 export interface ThreadNode {
  id: string;
@@ -77,6 +79,7 @@ export function PostCreationDrawer({
  ]);
 
  const fileInputRef = useRef<HTMLInputElement>(null);
+ const textareaRef = useRef<HTMLTextAreaElement>(null);
 
  // Identity extraction (strictly personal)
  const user = session?.user || session;
@@ -162,6 +165,91 @@ export function PostCreationDrawer({
  const handleRemoveMedia = (index: number) => {
  setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
  setMediaUrls((prev) => prev.filter((_, i) => i !== index));
+ };
+
+ const handleInsertHighlight = () => {
+ const textarea = textareaRef.current;
+ if (!textarea) return;
+
+ const start = textarea.selectionStart;
+ const end = textarea.selectionEnd;
+ const selectedText = contentText.substring(start, end);
+
+ let newContent: string;
+ let newCursorPos: number;
+
+ if (selectedText.length > 0) {
+ if (selectedText.startsWith("==") && selectedText.endsWith("==") && selectedText.length >= 4) {
+ const unwrapped = selectedText.slice(2, -2);
+ newContent = contentText.substring(0, start) + unwrapped + contentText.substring(end);
+ newCursorPos = start + unwrapped.length;
+ } else {
+ const wrapped = `==${selectedText}==`;
+ newContent = contentText.substring(0, start) + wrapped + contentText.substring(end);
+ newCursorPos = start + wrapped.length;
+ }
+ } else {
+ const placeholder = "==destaque==";
+ newContent = contentText.substring(0, start) + placeholder + contentText.substring(end);
+ newCursorPos = start + placeholder.length;
+ }
+
+ setContentText(newContent);
+ setTimeout(() => {
+ textarea.focus();
+ textarea.setSelectionRange(newCursorPos, newCursorPos);
+ }, 50);
+ };
+
+ const handleClipboardPaste = async (e: React.ClipboardEvent) => {
+ const extracted = await extractMediaFromClipboard(e);
+ if (!extracted || extracted.length === 0) {
+ return;
+ }
+
+ e.preventDefault();
+
+ if (mediaUrls.length + extracted.length > 10) {
+ toast.error(`Limite máximo de 10 mídias. Você pode adicionar mais ${Math.max(0, 10 - mediaUrls.length)} arquivo(s).`);
+ return;
+ }
+
+ setIsUploadingMedia(true);
+ toast.info(`Colando ${extracted.length} mídia(s) em alta resolução...`);
+
+ for (const item of extracted) {
+ const file = item.file;
+ const isVideo = item.type === "video";
+ const localUrl = item.previewUrl || URL.createObjectURL(file);
+
+ setMediaPreviews((prev) => [
+ ...prev,
+ { url: localUrl, type: isVideo ? "video" : "image", file },
+ ]);
+
+ try {
+ const base64Data = await fileToBase64(file);
+ const uploadRes = await uploadPostMedia({
+ data: {
+ fileName: file.name,
+ fileType: file.type || (isVideo ? "video/mp4" : "image/jpeg"),
+ base64Data,
+ },
+ });
+
+ if (uploadRes?.url) {
+ setMediaUrls((prev) => [...prev, uploadRes.url]);
+ } else {
+ throw new Error("Falha ao processar URL da mídia colada.");
+ }
+ } catch (err: any) {
+ toast.error(err?.message || `Erro no upload da mídia colada "${file.name}".`);
+ setMediaPreviews((prev) => prev.filter((p) => p.url !== localUrl));
+ }
+ }
+
+ setIsUploadingMedia(false);
+ toast.success("Mídia(s) colada(s) com sucesso!");
  };
 
  const handleAddThreadNode = () => {
@@ -415,7 +503,7 @@ export function PostCreationDrawer({
  </div>
 
  {/* ── Corpo de Edição Rolável ── */}
- <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4">
+ <div onPaste={handleClipboardPaste} className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4">
  {/* Identificação do Autor Pessoal */}
  <div className="flex items-center gap-3">
  <Avatar className="size-10 rounded-full ">
@@ -434,14 +522,16 @@ export function PostCreationDrawer({
  {(activeFormat === "simple" || activeFormat === "carousel" || activeFormat === "moment") && (
  <div className="space-y-4">
  <Textarea
+ ref={textareaRef}
  value={contentText}
  onChange={(e) => setContentText(e.target.value)}
+ onPaste={handleClipboardPaste}
  placeholder={
  activeFormat === "moment"
  ? "Legenda do seu momento em vídeo..."
  : activeFormat === "carousel"
- ? "Compartilhe uma sequência de fotos ou momentos..."
- : "O que está acontecendo na comunidade?"
+ ? "Compartilhe uma sequência de fotos ou momentos... (use ==texto== para destacar)"
+ : "O que está acontecendo na comunidade? (use ==texto== para destacar ou cole com Ctrl+V)"
  }
  className="w-full border-none shadow-none focus-visible:ring-0 resize-none text-sm p-0 min-h-[110px] placeholder:text-muted-foreground/60 leading-relaxed bg-transparent"
  />
@@ -566,6 +656,18 @@ export function PostCreationDrawer({
  <span>Foto / Vídeo</span>
  </>
  )}
+ </Button>
+
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={handleInsertHighlight}
+ className="rounded-xl text-xs font-bold h-9 gap-1.5 px-3 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer"
+ title="Destacar com marca-texto estilo Threads (==texto==)"
+ >
+ <Highlighter size={15} className="text-amber-500" />
+ <span>Destaque</span>
  </Button>
 
  <div className="flex items-center gap-1.5 bg-muted/40 px-2.5 py-1 rounded-xl ">

@@ -182,7 +182,7 @@ function WorkspaceTelemetriaPage() {
  const wa = whatsappAnalytics;
 
  return (
- <div className="w-full space-y-6">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
@@ -267,7 +267,7 @@ function WorkspaceTelemetriaPage() {
  <h3 className="text-sm font-bold text-foreground">Leads por Módulo</h3>
  </div>
  <div className="space-y-2">
- {wa.entity_distribution.map((item) => {
+          {wa.entity_distribution.map((item: any) => {
  const pct = wa.total_leads > 0 ? Math.round((item.count / wa.total_leads) * 100) : 0;
  return (
  <div key={item.entity_type} className="space-y-1">
@@ -291,7 +291,7 @@ function WorkspaceTelemetriaPage() {
  <h3 className="text-sm font-bold text-foreground">Mais Clicados</h3>
  </div>
  <div className="space-y-2">
- {wa.top_items.slice(0, 5).map((item, idx) => (
+          {wa.top_items.slice(0, 5).map((item: any, idx: number) => (
  <div key={`${item.entity_id}-${idx}`} className="flex items-center justify-between gap-2 text-xs py-1.5 last:border-0">
  <div className="flex items-center gap-2 min-w-0">
  <span className="size-5 shrink-0 rounded-full bg-muted flex items-center justify-center font-black text-[10px] text-muted-foreground">{idx + 1}</span>
@@ -419,7 +419,7 @@ function WorkspaceTelemetriaPage() {
  </tr>
  </thead>
  <tbody className="divide-y divide-border/60">
- {sponsorsMetrics.map((sp) => (
+            {sponsorsMetrics.map((sp: any) => (
  <tr key={sp.sponsor_id} className="hover:bg-muted/30 transition-colors">
  <td className="py-3.5 px-3 font-bold text-foreground">{sp.sponsor_name}</td>
  <td className="py-3.5 px-3">

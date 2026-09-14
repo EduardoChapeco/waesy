@@ -116,7 +116,7 @@ function WorkspaceAffiliatesPage() {
     .reduce((acc: number, p: any) => acc + (p.amount_cents || 0), 0);
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Marketing & Comunidade"
         title="Gestão de Afiliados & Saques PIX"

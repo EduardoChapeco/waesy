@@ -91,16 +91,16 @@ function NovoOrcamentoRouterPage() {
  const { store } = ((Route.useLoaderData?.() as any) || {});
  const semantics = getNicheSemantics(store);
  const isTourism =
- semantics.niche === "tourism" ||
+ semantics.nicheId === "tourism" ||
  (store?.segment || store?.type || "").toLowerCase().includes("turis") ||
  (store?.segment || store?.type || "").toLowerCase().includes("viag");
 
  const [activeMode, setActiveMode] = useState<"commercial" | "travelos">("commercial");
 
  return (
- <div className="space-y-6">
+ <div className="space-y-6 w-full max-w-7xl mx-auto px-0 sm:px-0">
  {isTourism && (
- <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-2xl bg-card border border-border/70 gap-3 shadow-xs">
+ <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-2xl bg-card border border-border/70 gap-3 shadow-xs">
  <div className="flex items-center gap-2.5">
  <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <Compass className="size-4" />
@@ -446,7 +446,7 @@ function NovoOrcamentoTravelosPage() {
  };
 
  return (
- <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full p-4 sm:p-6 pb-24">
+ <div className="flex flex-col gap-6 w-full">
  {/* Topo / Breadcrumb & Ações */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="flex items-center gap-3">
@@ -841,7 +841,7 @@ function NovoOrcamentoTravelosPage() {
  <div className="space-y-1">
  <Label className="text-[11px] font-bold">Franquia de Bagagem</Label>
  <Input
- value={flight.baggage_included || ""}
+ value={typeof flight.baggage_included === "string" ? flight.baggage_included : flight.baggage_included ? "Inclusa" : ""}
  onChange={(e) => {
  const val = e.target.value;
  setFlights((prev) => prev.map((f) => (f.id === flight.id ? { ...f, baggage_included: val } : f)));
@@ -1248,7 +1248,7 @@ function NovoOrcamentoTravelosPage() {
  ? flights.map(f => `   ✈ ${f.type === 'outbound' ? 'Ida' : f.type === 'return' ? 'Volta' : 'Conexão'}: ${f.origin_iata} → ${f.destination_iata} | ${f.airline_name} | ${f.departure_time} – ${f.arrival_time}${f.baggage_included ? ` | Bagagem: ${f.baggage_included}` : ''}`).join('\n')
  : '   Voos a confirmar';
  const hotelLines = hotels.length > 0
- ? hotels.map(h => `   🏨 ${h.hotel_name} (${h.stars ? '★'.repeat(h.stars) : ''}) | ${h.nights_count} noite${h.nights_count > 1 ? 's' : ''} | ${h.board_basis === 'all_inclusive' ? 'All-Inclusive' : h.board_basis === 'breakfast' ? 'Café da Manhã' : h.board_basis === 'half_board' ? 'Meia Pensão' : 'Hospedagem'}`).join('\n')
+ ? hotels.map(h => `   🏨 ${h.hotel_name} (${h.stars ? '★'.repeat(h.stars) : ''}) | ${h.nights_count || 1} noite${(h.nights_count || 1) > 1 ? 's' : ''} | ${h.board_basis === 'all_inclusive' ? 'All-Inclusive' : h.board_basis === 'breakfast' ? 'Café da Manhã' : h.board_basis === 'half_board' ? 'Meia Pensão' : 'Hospedagem'}`).join('\n')
  : '   Hotel a confirmar';
  const pixPrice = Math.round(totalPriceCents * 0.95);
  const installLine = maxInstallments > 1 ? `   💳 Parcelado: ${maxInstallments}x de ${formatMoney(installmentValueCents)} sem juros` : '';
@@ -2044,16 +2044,13 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  type="button"
  className="w-full h-11 mt-2 rounded-xl font-bold text-xs bg-[#25D366] hover:bg-[#128C7E] text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
  onClick={() => {
-   let msg = `*Orçamento: ${title}*\n\n`;
+   let msg = `*Orçamento Comercial*\n\n`;
    items.forEach(item => {
-     msg += `• ${item.quantity}x ${item.title}\n`;
+     msg += `• ${item.quantity}x ${item.name || 'Item'}\n`;
      if (item.description) msg += `  _${item.description}_\n`;
    });
    msg += `\n*Total: ${formatMoney(totalCents)}*\n`;
    
-   if (paymentConditions.pix.enabled && paymentConditions.pix.discountPercent > 0) {
-     msg += `*Pix (${paymentConditions.pix.discountPercent}% OFF): ${formatMoney(Math.round(totalCents * (1 - paymentConditions.pix.discountPercent/100)))}*\n`;
-   }
    
    const phone = customerData.phone.replace(/\D/g, '');
    window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');

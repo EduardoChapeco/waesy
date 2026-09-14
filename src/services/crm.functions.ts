@@ -1380,13 +1380,13 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
 
   // 5. Registra atividade na timeline
   await supabase.from("lead_activities").insert({
-  lead_id: leadId,
-  store_id: identity.store_id,
-  author_id: identity.id,
-  type: "conversion",
-  content: `Lead convertido para Cliente Oficial. ID: ${newCustomer.id}`,
-  metadata: { customer_id: newCustomer.id },
-  }).catch(() => null);
+    lead_id: leadId,
+    store_id: identity.store_id,
+    author_id: identity.id,
+    type: "conversion",
+    content: `Lead convertido para Cliente Oficial. ID: ${newCustomer.id}`,
+    metadata: { customer_id: newCustomer.id },
+  }).then(() => null, () => null);
 
   return { status: "success" as const, customerId: newCustomer.id };
  } catch (e: unknown) {
@@ -1534,7 +1534,7 @@ export const getLeadById = createServerFn({ method: "GET" })
         .from("travel_proposals")
         .select("*")
         .eq("lead_id", leadId)
-        .catch(() => ({ data: [] })),
+        .then((res) => res, () => ({ data: [] })),
     ]);
 
     return {
