@@ -383,7 +383,7 @@ export const publicQuoteRequestSchema = z.object({
 export type PublicQuoteRequestInput = z.infer<typeof publicQuoteRequestSchema>;
 
 /**
- * Solicitação pública de orçamento feita pelo cliente/morador na vitrine da loja ou no Hub de Serviços.
+ * Solicitação pública de orçamento feita pelo cliente na vitrine da loja ou no Hub de Serviços.
  * Grava na tabela quotes com status 'sent' e cria o item descritivo em quote_items.
  */
 export const requestPublicQuote = createServerFn({ method: "POST" })
@@ -400,7 +400,7 @@ export const requestPublicQuote = createServerFn({ method: "POST" })
  p_guest_phone: data.customer_phone,
  p_valid_until: null,
  p_conditions: `Solicitação via Super App Waesy - Categoria: ${data.service_category || "Geral"}. Endereço: ${data.location_address || "Não informado"}. Urgência: ${data.urgency}. Data preferencial: ${data.preferred_date || "A combinar"}`,
- p_internal_notes: `Orçamento solicitado pelo morador através da vitrine pública.`,
+ p_internal_notes: `Orçamento solicitado pelo cliente através da vitrine pública.`,
  });
 
  if (rpcError || !quoteId) {

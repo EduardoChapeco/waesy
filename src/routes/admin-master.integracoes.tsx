@@ -659,22 +659,22 @@ function AdminMasterIntegracoesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   {
+                    id: "osm_standard",
+                    name: "OpenStreetMap Standard (Recomendado)",
+                    desc: "Camada oficial OpenStreetMap 100% aberta, livre de marcas d'água e sem restrição de chaves.",
+                    badge: "100% Livre & Oficial",
+                  },
+                  {
                     id: "carto_voyager",
                     name: "CARTO Voyager (Retina 2x)",
-                    desc: "Estilo claro, alta legibilidade e contraste. Padrão diurno recomendando.",
-                    badge: "100% Gratuito",
+                    desc: "Estilo claro de alto contraste. Requer chave comercial para omitir marca d'água.",
+                    badge: "Estilo Alternativo",
                   },
                   {
                     id: "carto_dark",
                     name: "CARTO Dark Matter (Retina 2x)",
-                    desc: "Estilo escuro ultra moderno para visualização noturna elegante.",
-                    badge: "100% Gratuito",
-                  },
-                  {
-                    id: "osm_standard",
-                    name: "OpenStreetMap Standard",
-                    desc: "Camada clássica OSM com dados cartográficos abertos completos.",
-                    badge: "100% Gratuito",
+                    desc: "Estilo escuro moderno para visualização noturna. Requer chave comercial.",
+                    badge: "Estilo Alternativo",
                   },
                 ].map((style) => {
                   const isSelected = govSettings.defaultMapProvider === style.id;
@@ -989,6 +989,7 @@ function AdminMasterIntegracoesPage() {
                     {cepResult.latitude && cepResult.longitude && (
                       <div className="h-[180px] w-full rounded-xl overflow-hidden border border-border/70">
                         <MapLibreCanvas
+                          provider={govSettings.defaultMapProvider}
                           center={{ lat: cepResult.latitude, lng: cepResult.longitude }}
                           zoom={15}
                           markers={[

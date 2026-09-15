@@ -213,45 +213,75 @@ export const deleteIntegrationCredential = createServerFn({ method: "POST" })
  return { status: "success" };
  });
 
+import { getPublicApiGovernanceSettings } from "./public-apis.functions";
+
 /**
  * Retorna a configuração pública do provedor de mapas (OpenStreetMap, Mapbox, Google Maps).
  * Padrão: OpenStreetMap ativo como open source fallback, a menos que o admin tenha configurado
  * e ativado outro provedor ou desativado o serviço de mapas.
  */
 export const getPublicMapConfig = createServerFn({ method: "GET" }).handler(async () => {
- const supabase = getServerClient();
- 
- const { data: record } = await supabase
- .from("integration_credentials")
- .select("is_active, token_payload")
- .eq("provider", "map_service")
- .maybeSingle();
+  const supabase = getServerClient();
 
- if (record) {
- if (!record.is_active) {
- return {
- isActive: false,
- provider: "none",
- message: "Serviço de mapas desativado nas configurações do sistema.",
- };
- }
- const payload = (record.token_payload as any) || {};
- return {
- isActive: true,
- provider: payload.provider || "open_street_map",
- apiKey: payload.api_key || null,
- customTileUrl: payload.custom_tile_url || null,
- message: null,
- };
- }
+  // 1. Verificar Governança Global das APIs Públicas (Admin Master)
+  try {
+    const gov = await getPublicApiGovernanceSettings();
+    if (gov && !gov.isMapServiceActive) {
+      return {
+        isActive: false,
+        provider: "none",
+        message: "Serviço de mapas desativado nas configurações do sistema.",
+      };
+    }
 
- // Fallback padrão: OpenStreetMap ativo
- return {
- isActive: true,
- provider: "open_street_map",
- apiKey: null,
- customTileUrl: null,
- message: null,
- };
+    if (gov && gov.defaultMapProvider) {
+      return {
+        isActive: true,
+        provider: gov.defaultMapProvider,
+        apiKey: null,
+        customTileUrl: null,
+        message: null,
+      };
+    }
+  } catch (err) {
+    console.warn("[map-config] Falha ao consultar governança global, usando fallback defensivo:", err);
+  }
+
+  // 2. Fallback de credenciais legadas
+  try {
+    const { data: record } = await supabase
+      .from("integration_credentials")
+      .select("is_active, token_payload")
+      .eq("provider", "map_service")
+      .maybeSingle();
+
+    if (record) {
+      if (!record.is_active) {
+        return {
+          isActive: false,
+          provider: "none",
+          message: "Serviço de mapas desativado nas configurações do sistema.",
+        };
+      }
+      const payload = (record.token_payload as any) || {};
+      return {
+        isActive: true,
+        provider: payload.provider || "osm_standard",
+        apiKey: payload.api_key || null,
+        customTileUrl: payload.custom_tile_url || null,
+        message: null,
+      };
+    }
+  } catch {
+    // Ignora erro
+  }
+
+  // 3. Fallback padrão canônico: OpenStreetMap ativo e limpo (sem watermarks)
+  return {
+    isActive: true,
+    provider: "osm_standard",
+    apiKey: null,
+    customTileUrl: null,
+    message: null,
+  };
 });
-

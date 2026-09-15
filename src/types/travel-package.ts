@@ -145,6 +145,7 @@ export interface TravelPackageData {
  flight_details?: FlightDetails;
  installments?: TravelPricingInstallments;
  payment_conditions?: PaymentConditions;
+ story_highlights?: TravelHighlightCircle[];
  /** Tipo modal do transporte: aereo (padrão), terrestre (ônibus/van), cruzeiro (marítimo) ou misto. */
  transport_type?: TransportType;
 }

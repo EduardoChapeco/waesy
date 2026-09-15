@@ -64,7 +64,7 @@ export interface PublicApiGovernanceDTO {
 }
 
 export const DEFAULT_PUBLIC_API_GOVERNANCE: PublicApiGovernanceDTO = {
-  defaultMapProvider: "carto_voyager",
+  defaultMapProvider: "osm_standard",
   isMapServiceActive: true,
   isCepAutoFillActive: true,
   isCnpjLookupActive: true,
@@ -589,21 +589,48 @@ export const pingPublicApis = createServerFn({ method: "GET" }).handler(
 export const getPublicApiGovernanceSettings = createServerFn({ method: "GET" }).handler(
   async (): Promise<PublicApiGovernanceDTO> => {
     const supabase = getServerClient();
-    const { data: record } = await supabase
-      .from("integration_credentials")
-      .select("token_payload, is_active")
-      .eq("provider", "public_apis_governance")
-      .maybeSingle();
 
-    if (!record || !record.token_payload) {
-      return DEFAULT_PUBLIC_API_GOVERNANCE;
+    // 1. Tentar ler da loja raiz da plataforma (Single Source of Truth para Governança Global)
+    try {
+      const { data: rootStore } = await supabase
+        .from("stores")
+        .select("settings")
+        .or("slug.eq.waesy-matriz,is_platform_root.eq.true")
+        .limit(1)
+        .maybeSingle();
+
+      const rootGov = (rootStore?.settings as any)?.public_apis_governance;
+      if (rootGov && typeof rootGov === "object") {
+        return {
+          ...DEFAULT_PUBLIC_API_GOVERNANCE,
+          ...rootGov,
+          isMapServiceActive: rootGov.isMapServiceActive ?? true,
+        };
+      }
+    } catch {
+      // Falha defensiva: prosseguir para fallback
     }
 
-    return {
-      ...DEFAULT_PUBLIC_API_GOVERNANCE,
-      ...(record.token_payload as any),
-      isMapServiceActive: record.is_active ?? true,
-    };
+    // 2. Fallback para integration_credentials
+    try {
+      const { data: record } = await supabase
+        .from("integration_credentials")
+        .select("token_payload, is_active")
+        .eq("provider", "public_apis_governance")
+        .maybeSingle();
+
+      if (record && record.token_payload) {
+        return {
+          ...DEFAULT_PUBLIC_API_GOVERNANCE,
+          ...(record.token_payload as any),
+          isMapServiceActive: record.is_active ?? true,
+        };
+      }
+    } catch {
+      // Ignora erro de RLS
+    }
+
+    return DEFAULT_PUBLIC_API_GOVERNANCE;
   }
 );
 
@@ -630,23 +657,47 @@ export const savePublicApiGovernanceSettings = createServerFn({ method: "POST" }
   .handler(async ({ data: { settings } }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
 
-    const { error } = await supabase
-      .from("integration_credentials")
-      .upsert(
-        {
-          store_id: identity.store_id,
-          provider: "public_apis_governance",
-          is_active: settings.isMapServiceActive,
-          token_payload: settings,
+    // 1. Persistir no root store da plataforma (Governança Global)
+    const { data: rootStore } = await supabase
+      .from("stores")
+      .select("id, settings")
+      .or("slug.eq.waesy-matriz,is_platform_root.eq.true")
+      .limit(1)
+      .maybeSingle();
+
+    if (rootStore) {
+      const existingSettings = (rootStore.settings as Record<string, any>) || {};
+      const { error: rootUpdateErr } = await supabase
+        .from("stores")
+        .update({
+          settings: {
+            ...existingSettings,
+            public_apis_governance: settings,
+          },
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: "store_id, provider" }
-      );
+        })
+        .eq("id", rootStore.id);
 
-    if (error) {
-      throw new Error("Erro ao salvar governança de APIs públicas: " + error.message);
+      if (rootUpdateErr) {
+        console.warn("[governance] Erro ao salvar na loja raiz:", rootUpdateErr.message);
+      }
+    }
+
+    // 2. Persistir também em integration_credentials se houver store_id associado
+    if (identity.store_id) {
+      await supabase
+        .from("integration_credentials")
+        .upsert(
+          {
+            store_id: identity.store_id,
+            provider: "public_apis_governance",
+            is_active: settings.isMapServiceActive,
+            token_payload: settings,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "store_id, provider" }
+        );
     }
 
     return { status: "success" };

@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Handshake,
+  HeartHandshake,
   Loader2,
   Image as ImageIcon,
   Play,
@@ -28,6 +29,7 @@ import {
   Calendar,
   Users,
   Check,
+  Download,
   FileArchive,
   DownloadCloud,
   Briefcase,
@@ -36,6 +38,10 @@ import {
   Wrench,
   Banknote,
   Utensils,
+  Store as StoreIcon,
+  Hotel,
+  Sparkles,
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -80,7 +86,14 @@ import {
   resolveClassifiedNiche,
   getSemanticBadges,
   getSemanticCondition,
+  getClassifiedFeatureCards,
+  getClassifiedPaymentMethods,
 } from "@/lib/classifieds/semantics";
+import {
+  CANONICAL_TRANSFER_VEHICLES,
+  DEPARTURE_STATUS_CONFIG,
+  type DepartureOption,
+} from "@/lib/classifieds/canonical-airports";
 
 export const Route = createFileRoute("/_store/classificados/$id")({
   head: ({
@@ -154,12 +167,20 @@ function ClassifiedDetailError({ error }: { error: Error }) {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
- sale: "Desapego / Item Geral",
- vehicle: "Veículo",
- real_estate: "Imóvel",
- service: "Serviço Profissional",
- job: "Emprego / Vaga",
- trade: "Troca",
+  sale: "Desapego / Item Geral",
+  vehicle: "Veículo",
+  real_estate: "Imóvel",
+  service: "Serviço Profissional",
+  job: "Emprego / Vaga",
+  trade: "Troca",
+  donation: "Doação Solidária",
+  subscription: "Clube & Assinatura",
+  digital: "Produto Digital",
+  equipment: "Locação de Equipamento",
+  travel: "Viagem & Turismo",
+  hospitality: "Hospedagem & Temporada",
+  food: "Gastronomia & Alimentação",
+  agri: "Agronegócio & Maquinário",
 };
 
 const CONDITION_LABELS: Record<string, string> = {
@@ -211,7 +232,7 @@ function ClassifiedDetailPage() {
  // Perguntas customizadas configuradas pelo lojista
  const [customAnswers, setCustomAnswers] = useState<Record<string, any>>({});
 
- // Direct Booking State (Hospedagem / Temporada / Diárias)
+ // Direct Booking State (Hospedagem / Temporada / Diárias & Pacotes de Viagem)
  const [bookingOpen, setBookingOpen] = useState(false);
  const [checkInDate, setCheckInDate] = useState(() => {
  const d = new Date();
@@ -226,6 +247,11 @@ function ClassifiedDetailPage() {
  const [bookingGuests, setBookingGuests] = useState(1);
  const [isBooking, setIsBooking] = useState(false);
  const [isBuyingDirect, setIsBuyingDirect] = useState(false);
+
+  // Travel Package Specific Booking State
+  const [selectedDeparture, setSelectedDeparture] = useState<DepartureOption | null>(null);
+  const [travelPassengers, setTravelPassengers] = useState(1);
+  const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<string>("");
 
   // Service Booking State
   const [serviceBookingOpen, setServiceBookingOpen] = useState(false);
@@ -297,6 +323,33 @@ function ClassifiedDetailPage() {
  const cleaningFeeCents = classified?.cleaning_fee_cents || 0;
  const dailyRateCents = classified?.price_cents || 0;
  const bookingTotalCents = dailyRateCents * nightsCount + cleaningFeeCents;
+
+  // Cálculos Derivados para Pacote de Viagem / Excursão / Turismo
+  const isTravelPackage =
+    classified?.category === "travel" ||
+    classified?.category === "viagem" ||
+    classified?.category === "tourism" ||
+    classified?.attributes?.niche === "viagem" ||
+    classified?.attributes?.niche === "travel" ||
+    classified?.attributes?.template_style === "editorial" ||
+    classified?.attributes?.template_style === "instagram_resort";
+
+  const departureOptions: DepartureOption[] = Array.isArray(classified?.attributes?.departure_options)
+    ? classified.attributes.departure_options
+    : [];
+
+  const flightDetails = classified?.attributes?.flight_details || null;
+  const boardingGateways: string[] = Array.isArray(flightDetails?.boarding_gateways)
+    ? flightDetails.boarding_gateways
+    : [];
+
+  const effectiveTravelUnitPriceCents = (selectedDeparture?.price_override_cents && selectedDeparture.price_override_cents > 0)
+    ? selectedDeparture.price_override_cents
+    : (classified?.price_cents || 0);
+
+  const travelTotalCents = effectiveTravelUnitPriceCents * travelPassengers;
+  const maxInstallments = Math.max(1, Number(classified?.attributes?.max_installments) || 12);
+  const travelInstallmentCents = Math.round(travelTotalCents / maxInstallments);
 
  // Status Mutation
  const statusMutation = useMutation({
@@ -397,38 +450,62 @@ function ClassifiedDetailPage() {
  }
  };
 
- const handleDirectBooking = async () => {
- if (!classified) return;
- setIsBooking(true);
- try {
- await createDealProposal({
- data: {
- classifiedId: classified.id,
- sellerId: classified.author_profile_id,
- proposedPriceCents: bookingTotalCents,
- totalPriceCents: bookingTotalCents,
- dailyRateCents,
- cleaningFeeCents,
- nightsCount,
- guestsCount: bookingGuests,
- dealType: "rental",
- startDate: checkInDate,
- endDate: checkOutDate,
- isDirectBooking: true,
- terms: `Reserva direta de ${nightsCount} diárias (${checkInDate} a ${checkOutDate}) para ${bookingGuests} hóspede(s).`,
- },
- });
+  const handleDirectBooking = async () => {
+    if (!classified) return;
+    setIsBooking(true);
+    try {
+      if (isTravelPackage) {
+        const depDate = selectedDeparture?.departure_date || "";
+        const retDate = selectedDeparture?.return_date || "";
+        const depTime = selectedDeparture?.departure_time ? ` às ${selectedDeparture.departure_time}` : "";
+        const boarding = selectedBoardingPoint || flightDetails?.meeting_point || (boardingGateways[0] || "A combinar com a agência");
 
- toast.success("Reserva confirmada! Acompanhe em Minhas Negociações e na sua Agenda.");
- setBookingOpen(false);
- navigate({ to: "/conta/negociacoes" });
- } catch (err: any) {
- console.error("Erro ao reservar:", err);
- toast.error(err?.message || "Erro ao efetuar reserva.");
- } finally {
- setIsBooking(false);
- }
- };
+        await createDealProposal({
+          data: {
+            classifiedId: classified.id,
+            sellerId: classified.author_profile_id,
+            proposedPriceCents: travelTotalCents,
+            totalPriceCents: travelTotalCents,
+            guestsCount: travelPassengers,
+            dealType: "travel",
+            startDate: depDate || undefined,
+            endDate: retDate || undefined,
+            isDirectBooking: true,
+            terms: `Reserva de Pacote de Viagem: ${classified.title}\nSaída: ${selectedDeparture?.label || "Saída Confirmada"}${depDate ? ` (${depDate}${retDate ? ` até ${retDate}` : ""}${depTime})` : ""}\nLocal de Embarque: ${boarding}\nViajantes: ${travelPassengers} passageiro(s)\nValor por pessoa: ${formatMoney(effectiveTravelUnitPriceCents)}\nTotal: ${formatMoney(travelTotalCents)}`,
+          },
+        });
+
+        toast.success("Solicitação de reserva de pacote enviada com sucesso! O operador foi notificado.");
+      } else {
+        await createDealProposal({
+          data: {
+            classifiedId: classified.id,
+            sellerId: classified.author_profile_id,
+            proposedPriceCents: bookingTotalCents,
+            totalPriceCents: bookingTotalCents,
+            dailyRateCents,
+            cleaningFeeCents,
+            nightsCount,
+            guestsCount: bookingGuests,
+            dealType: "rental",
+            startDate: checkInDate,
+            endDate: checkOutDate,
+            isDirectBooking: true,
+            terms: `Reserva direta de ${nightsCount} diárias (${checkInDate} a ${checkOutDate}) para ${bookingGuests} hóspede(s).`,
+          },
+        });
+
+        toast.success("Reserva confirmada! Acompanhe em Minhas Negociações e na sua Agenda.");
+      }
+      setBookingOpen(false);
+      navigate({ to: "/conta/negociacoes" });
+    } catch (err: any) {
+      console.error("Erro ao reservar:", err);
+      toast.error(err?.message || "Erro ao efetuar reserva.");
+    } finally {
+      setIsBooking(false);
+    }
+  };
 
   const handleDirectBuy = async () => {
     if (!classified) return;
@@ -490,6 +567,8 @@ const handleDownloadDigitalFile = async () => {
   const niche = useMemo(() => (classified ? resolveClassifiedNiche(classified) : ({} as any)), [classified]);
   const semanticBadges = useMemo(() => (classified ? getSemanticBadges(classified) : []), [classified]);
   const semanticCondition = useMemo(() => (classified ? getSemanticCondition(classified) : null), [classified]);
+  const featureCards = useMemo(() => (classified ? getClassifiedFeatureCards(classified) : []), [classified]);
+  const paymentMethods = useMemo(() => (classified ? getClassifiedPaymentMethods(classified) : []), [classified]);
 
  if (!classified) {
  return (
@@ -529,6 +608,486 @@ const handleDownloadDigitalFile = async () => {
  variant: "outline",
  };
 
+  const renderBookingDialog = () => (
+    <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+      <DialogContent className="sm:max-w-lg sm:rounded-2xl max-h-[90vh] overflow-y-auto">
+        {viewerContext === "anonymous" ? (
+          <div className="text-center py-6 space-y-4">
+            <Calendar className="size-10 text-primary mx-auto" />
+            <div className="space-y-1">
+              <DialogTitle className="text-lg font-bold">
+                Identifique-se para reservar
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Para solicitar sua reserva com garantias e acompanhamento oficial, faça login na sua conta Waesy.
+              </DialogDescription>
+            </div>
+            <Button
+              asChild
+              className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground text-sm"
+            >
+              <Link
+                to="/entrar"
+                search={{ returnUrl: `/classificados/${classified.id}` }}
+              >
+                Entrar na Minha Conta
+              </Link>
+            </Button>
+          </div>
+        ) : isTravelPackage ? (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider text-primary border-primary/25 bg-primary/10">
+                  Reserva de Pacote
+                </Badge>
+              </div>
+              <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                <Calendar className="size-5 text-primary" />
+                <span>Reservar Pacote de Viagem</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Selecione a data de saída confirmada, o ponto de embarque e a quantidade de passageiros.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              {/* Seleção de Saída Confirmada */}
+              {departureOptions.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-foreground flex items-center justify-between">
+                    <span>Opções de Saída Disponíveis *</span>
+                    <span className="text-[11px] font-mono text-muted-foreground font-normal">
+                      {departureOptions.length} confirmada(s)
+                    </span>
+                  </label>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {departureOptions.map((opt, i) => {
+                      const cfg = DEPARTURE_STATUS_CONFIG[opt.status] || DEPARTURE_STATUS_CONFIG.confirmed;
+                      const depDate = opt.departure_date ? new Date(opt.departure_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
+                      const retDate = opt.return_date ? new Date(opt.return_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
+                      const isSelected = selectedDeparture ? selectedDeparture.id === opt.id : i === 0;
+                      return (
+                        <div
+                          key={opt.id || i}
+                          onClick={() => setSelectedDeparture(opt)}
+                          className={cn(
+                            "p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1.5",
+                            isSelected
+                              ? "border-primary ring-2 ring-primary/25 bg-primary/5"
+                              : "border-border/70 hover:border-primary/40 bg-card"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-bold text-foreground">
+                                {opt.label || `Opção ${i + 1}`}
+                              </span>
+                              {isSelected && (
+                                <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.2 rounded-full">
+                                  ✓ Selecionada
+                                </span>
+                              )}
+                              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", cfg.color)}>
+                                {cfg.icon} {cfg.label}
+                              </span>
+                            </div>
+                            {opt.price_override_cents && opt.price_override_cents > 0 ? (
+                              <span className="font-mono font-bold text-xs text-foreground">
+                                {formatMoney(opt.price_override_cents)}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            {depDate}{depDate && retDate && " — "}{retDate}
+                            {opt.departure_time && <span className="font-mono ml-1 font-semibold text-foreground">• Embarque: {opt.departure_time}</span>}
+                          </p>
+                          {opt.available_seats !== undefined && opt.available_seats > 0 && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {opt.available_seats} vagas restantes
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Ponto de Embarque */}
+              {(boardingGateways.length > 0 || flightDetails?.meeting_point) && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <MapPin className="size-3.5 text-primary" />
+                    <span>Local de Embarque / Ponto de Encontro *</span>
+                  </label>
+                  {boardingGateways.length > 0 ? (
+                    <select
+                      value={selectedBoardingPoint || boardingGateways[0]}
+                      onChange={(e) => setSelectedBoardingPoint(e.target.value)}
+                      className="w-full h-10 rounded-xl text-xs bg-background border border-border px-3 font-medium text-foreground"
+                    >
+                      {boardingGateways.map((gw, idx) => (
+                        <option key={idx} value={gw}>
+                          {gw}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input
+                      value={selectedBoardingPoint}
+                      onChange={(e) => setSelectedBoardingPoint(e.target.value)}
+                      placeholder={flightDetails?.meeting_point || "Informe a cidade ou ponto de embarque..."}
+                      className="h-10 rounded-xl text-xs bg-background"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Quantidade de Viajantes / Passageiros */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Users className="size-3.5 text-primary" />
+                    <span>Número de Viajantes (Passageiros)</span>
+                  </span>
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    {travelPassengers} {travelPassengers === 1 ? "passageiro" : "passageiros"}
+                  </span>
+                </label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={selectedDeparture?.available_seats || 10}
+                    value={travelPassengers}
+                    onChange={(e) => setTravelPassengers(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="h-10 rounded-xl text-xs bg-background font-mono w-28 text-center font-bold"
+                  />
+                  <div className="text-xs text-muted-foreground flex-1">
+                    {selectedDeparture?.available_seats ? (
+                      <span>Até {selectedDeparture.available_seats} assentos disponíveis nesta saída</span>
+                    ) : (
+                      <span>Vagas limitadas por ordem de confirmação</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Resumo Financeiro Transparente */}
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-2 text-xs">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Valor por pessoa</span>
+                  <span className="font-mono font-medium text-foreground">
+                    {formatMoney(effectiveTravelUnitPriceCents)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Viajantes</span>
+                  <span className="font-mono font-medium text-foreground">
+                    × {travelPassengers}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-border/40 flex justify-between items-baseline font-bold text-sm text-foreground">
+                  <div>
+                    <span>Total do Pacote</span>
+                    {maxInstallments > 1 && (
+                      <span className="block text-[11px] font-normal text-muted-foreground">
+                        em até {maxInstallments}x de {formatMoney(travelInstallmentCents)}
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-mono text-primary text-base font-extrabold">
+                    {formatMoney(travelTotalCents)}
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleDirectBooking}
+                disabled={isBooking}
+                className="w-full h-12 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md cursor-pointer"
+              >
+                {isBooking ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Enviando Solicitação de Reserva...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="size-4" />
+                    <span>Confirmar Reserva — {formatMoney(travelTotalCents)}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                <Calendar className="size-5 text-primary" />
+                Reservar Hospedagem por Diária
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Selecione as datas de check-in e check-out para confirmar sua estadia.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">
+                    Check-in *
+                  </label>
+                  <Input
+                    type="date"
+                    value={checkInDate}
+                    onChange={(e) => setCheckInDate(e.target.value)}
+                    className="h-10 rounded-xl text-xs bg-background font-mono"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">
+                    Check-out *
+                  </label>
+                  <Input
+                    type="date"
+                    value={checkOutDate}
+                    onChange={(e) => setCheckOutDate(e.target.value)}
+                    className="h-10 rounded-xl text-xs bg-background font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  Número de Hóspedes
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={classified.max_guests || 10}
+                  value={bookingGuests}
+                  onChange={(e) => setBookingGuests(parseInt(e.target.value) || 1)}
+                  className="h-10 rounded-xl text-xs bg-background font-mono"
+                />
+              </div>
+
+              {/* Resumo de Valores */}
+              <div className="p-3.5 rounded-xl bg-muted/40 space-y-2 text-xs">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>
+                    {formatMoney(dailyRateCents)} × {nightsCount} diária(s)
+                  </span>
+                  <span className="font-mono font-medium text-foreground">
+                    {formatMoney(dailyRateCents * nightsCount)}
+                  </span>
+                </div>
+                {cleaningFeeCents > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Taxa única de limpeza</span>
+                    <span className="font-mono font-medium text-foreground">
+                      {formatMoney(cleaningFeeCents)}
+                    </span>
+                  </div>
+                )}
+                <div className="pt-2 flex justify-between font-bold text-sm text-foreground">
+                  <span>Total Estimado</span>
+                  <span className="font-mono text-primary">
+                    {formatMoney(bookingTotalCents)}
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleDirectBooking}
+                disabled={isBooking}
+                className="w-full h-11 rounded-xl text-xs font-bold gap-2"
+              >
+                {isBooking ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Confirmando Reserva...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="size-4" />
+                    <span>Confirmar Reserva de {formatMoney(bookingTotalCents)}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
+  const renderProposalDialog = () => (
+    <Dialog open={proposalOpen} onOpenChange={setProposalOpen}>
+      <DialogContent className="sm:max-w-md sm:rounded-2xl max-h-[90vh] overflow-y-auto">
+        {viewerContext === "anonymous" ? (
+          <div className="text-center py-6 space-y-4">
+            <Handshake className="size-10 text-primary mx-auto" />
+            <div className="space-y-1">
+              <DialogTitle className="text-lg font-bold">
+                Identifique-se para negociar
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Para enviar propostas, negociar valores e trocar itens com segurança,
+                faça login na sua conta Waesy.
+              </DialogDescription>
+            </div>
+            <Button
+              asChild
+              className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground text-sm"
+            >
+              <Link
+                to="/entrar"
+                search={{ returnUrl: `/classificados/${classified.id}` }}
+              >
+                Entrar na Minha Conta
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                <Handshake className="size-5 text-primary" />
+                Enviar Proposta de Negociação
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Envie uma oferta formal para o anunciante. O valor e os termos ficarão
+                registrados com segurança.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  Sua Oferta de Preço (R$) *
+                </label>
+                <CurrencyField
+                  value={proposalPriceCents}
+                  onChange={setProposalPriceCents}
+                  placeholder="0,00"
+                  className="h-10 rounded-xl text-xs bg-background"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">
+                    Forma de Pagamento
+                  </label>
+                  <Input
+                    value={proposalInstallments}
+                    onChange={(e) => setProposalInstallments(e.target.value)}
+                    placeholder="1 (À vista)"
+                    className="h-9 rounded-xl text-xs bg-background font-mono"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">
+                    Sinal / Entrada (R$)
+                  </label>
+                  <CurrencyField
+                    value={proposalDepositCents}
+                    onChange={setProposalDepositCents}
+                    placeholder="0,00"
+                    className="h-9 rounded-xl text-xs bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  Termos ou Condições Especiais
+                </label>
+                <Textarea
+                  value={proposalTerms}
+                  onChange={(e) => setProposalTerms(e.target.value)}
+                  placeholder="Ex: Retiro no sábado, parcelamento combinado..."
+                  rows={3}
+                  className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+                />
+              </div>
+
+              {/* Perguntas Personalizadas configuradas pela Empresa/Vendedor */}
+              {classified?.store?.custom_inquiry_fields && classified.store.custom_inquiry_fields.length > 0 && (
+                <div className="space-y-3 pt-2.5 pb-1 border-t border-border/40">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground">
+                      Perguntas Adicionais do Vendedor
+                    </span>
+                    <span className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded font-medium">
+                      Personalizado pela loja
+                    </span>
+                  </div>
+                  {classified.store.custom_inquiry_fields.map((field: any) => (
+                    <div key={field.id} className="space-y-1">
+                      <label className="text-xs font-medium text-foreground flex items-center gap-1">
+                        <span>{field.label}</span>
+                        {field.required && <span className="text-rose-500 font-bold">*</span>}
+                      </label>
+                      {field.type === "textarea" ? (
+                        <Textarea
+                          value={customAnswers[field.id] || ""}
+                          onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                          placeholder="Sua resposta..."
+                          rows={2}
+                          className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+                        />
+                      ) : field.type === "checkbox" ? (
+                        <label className="flex items-center gap-2 cursor-pointer pt-0.5">
+                          <input
+                            type="checkbox"
+                            checked={!!customAnswers[field.id]}
+                            onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.checked }))}
+                            className="size-4 rounded accent-primary"
+                          />
+                          <span className="text-xs text-muted-foreground">{field.label}</span>
+                        </label>
+                      ) : (
+                        <Input
+                          type="text"
+                          value={customAnswers[field.id] || ""}
+                          onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                          placeholder="Sua resposta..."
+                          className="h-9 rounded-xl text-xs bg-background"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <Button
+                onClick={handleSendProposal}
+                disabled={isSendingProposal}
+                className="w-full h-10 rounded-xl text-xs font-bold gap-2"
+              >
+                {isSendingProposal ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Enviando Proposta...</span>
+                  </>
+                ) : (
+                  <>
+                    <Handshake className="size-4" />
+                    <span>Confirmar e Enviar Proposta</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
   if (
     niche.id === "travel" ||
     classified?.category === "travel" ||
@@ -555,7 +1114,10 @@ const handleDownloadDigitalFile = async () => {
         <EditorialShowcaseView
           classified={classified}
           isOwner={isOwner}
-          onOpenBookingModal={() => setBookingOpen(true)}
+          onOpenBookingModal={(dep) => {
+            if (dep) setSelectedDeparture(dep);
+            setBookingOpen(true);
+          }}
           onOpenProposalModal={() => setProposalOpen(true)}
           onEditClassified={() =>
             navigate({
@@ -564,6 +1126,8 @@ const handleDownloadDigitalFile = async () => {
             })
           }
         />
+        {renderBookingDialog()}
+        {renderProposalDialog()}
       </>
     );
   }
@@ -845,18 +1409,28 @@ const handleDownloadDigitalFile = async () => {
                       <Tag className="size-3.5 text-primary" />
                       <span>Características & Facilidades do Imóvel</span>
                     </h3>
-                    {classified.attributes?.furnished && (
-                      <Badge variant="secondary" className="text-[11px] font-semibold bg-primary/15 text-primary border-primary/20">
-                        {classified.attributes.furnished}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {classified.attributes?.property_type && (
+                        <Badge variant="outline" className="text-[11px] font-semibold">
+                          {classified.attributes.property_type}
+                        </Badge>
+                      )}
+                      {classified.attributes?.furnished && (
+                        <Badge variant="secondary" className="text-[11px] font-semibold bg-primary/15 text-primary border-primary/20">
+                          {classified.attributes.furnished}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     {classified.bedrooms && (
                       <div className="bg-muted/30 p-3 rounded-xl border border-border/40 text-center">
                         <span className="text-muted-foreground block text-[10px]">Quartos</span>
-                        <span className="font-bold text-base text-foreground font-mono">{classified.bedrooms}</span>
+                        <span className="font-bold text-base text-foreground font-mono">
+                          {classified.bedrooms}
+                          {classified.attributes?.suites ? ` (${classified.attributes.suites} suítes)` : ""}
+                        </span>
                       </div>
                     )}
                     {classified.parking_spots && (
@@ -908,54 +1482,139 @@ const handleDownloadDigitalFile = async () => {
                 </div>
               )}
 
+              {/* ─── Ficha Técnica: Hospedagem, Chalé & Temporada ─── */}
+              {(classified.category === "hospitality" || classified.category === "hospedagem" || classified.attributes?.niche === "hospitality" || (niche as any)?.id === "hospitality") && (
+                <div className="pt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                      <Hotel className="size-3.5 text-primary" />
+                      <span>Ficha da Hospedagem & Estadia</span>
+                    </h3>
+                    {classified.attributes?.property_type && (
+                      <Badge variant="outline" className="text-[11px] font-semibold">
+                        {classified.attributes.property_type}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="bg-muted/30 p-3 rounded-xl border border-border/40 text-center">
+                      <span className="text-muted-foreground block text-[10px]">Check-in</span>
+                      <span className="font-bold text-sm text-foreground font-mono">{classified.attributes?.checkin_time || "14:00"}</span>
+                    </div>
+                    <div className="bg-muted/30 p-3 rounded-xl border border-border/40 text-center">
+                      <span className="text-muted-foreground block text-[10px]">Check-out</span>
+                      <span className="font-bold text-sm text-foreground font-mono">{classified.attributes?.checkout_time || "11:00"}</span>
+                    </div>
+                    {classified.attributes?.max_guests && (
+                      <div className="bg-muted/30 p-3 rounded-xl border border-border/40 text-center">
+                        <span className="text-muted-foreground block text-[10px]">Capacidade</span>
+                        <span className="font-bold text-sm text-foreground font-mono">{classified.attributes.max_guests} hóspedes</span>
+                      </div>
+                    )}
+                    {classified.attributes?.cleaning_fee_cents ? (
+                      <div className="bg-muted/30 p-3 rounded-xl border border-border/40 text-center">
+                        <span className="text-muted-foreground block text-[10px]">Taxa Limpeza</span>
+                        <span className="font-bold text-sm text-foreground font-mono">{formatMoney(classified.attributes.cleaning_fee_cents)}</span>
+                      </div>
+                    ) : null}
+                    {classified.attributes?.security_deposit_cents ? (
+                      <div className="bg-muted/30 p-3 rounded-xl border border-border/40 text-center">
+                        <span className="text-muted-foreground block text-[10px]">Caução</span>
+                        <span className="font-bold text-sm text-foreground font-mono">{formatMoney(classified.attributes.security_deposit_cents)}</span>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Regras da Casa */}
+                  {classified.attributes?.house_rules && (
+                    <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 text-xs space-y-1.5">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                        Regras da Casa & Observações
+                      </span>
+                      <p className="text-foreground/90 leading-relaxed whitespace-pre-line">
+                        {classified.attributes.house_rules}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Ficha Técnica de Veículo */}
- {classified.category === "vehicle" && classified.attributes && (
- <div className=" pt-4 space-y-3">
- <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Ficha do Veículo
- </h3>
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-muted/30 p-3.5 rounded-xl ">
- {classified.attributes.brand && (
- <div>
- <span className="text-muted-foreground block text-[10px]">Marca</span>
- <span className="font-bold">{classified.attributes.brand}</span>
- </div>
- )}
- {classified.attributes.model && (
- <div>
- <span className="text-muted-foreground block text-[10px]">Modelo</span>
- <span className="font-bold">{classified.attributes.model}</span>
- </div>
- )}
- {classified.attributes.year_fab && (
- <div>
- <span className="text-muted-foreground block text-[10px]">Ano Fab/Mod</span>
- <span className="font-bold">
- {classified.attributes.year_fab}/{classified.attributes.year_model || "-"}
- </span>
- </div>
- )}
- {classified.attributes.mileage_km && (
- <div>
- <span className="text-muted-foreground block text-[10px]">Quilometragem</span>
- <span className="font-bold">{classified.attributes.mileage_km} km</span>
- </div>
- )}
- {classified.attributes.transmission && (
- <div>
- <span className="text-muted-foreground block text-[10px]">Câmbio</span>
- <span className="font-bold">{classified.attributes.transmission}</span>
- </div>
- )}
- {classified.attributes.fuel_type && (
- <div>
- <span className="text-muted-foreground block text-[10px]">Combustível</span>
- <span className="font-bold">{classified.attributes.fuel_type}</span>
- </div>
- )}
- </div>
- </div>
- )}
+              {classified.category === "vehicle" && classified.attributes && (
+                <div className="pt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                      Ficha do Veículo
+                    </h3>
+                    {classified.attributes.version && (
+                      <Badge variant="outline" className="text-[10px] font-semibold">
+                        {classified.attributes.version}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-muted/30 p-3.5 rounded-xl">
+                    {classified.attributes.brand && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Marca</span>
+                        <span className="font-bold">{classified.attributes.brand}</span>
+                      </div>
+                    )}
+                    {classified.attributes.model && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Modelo</span>
+                        <span className="font-bold">{classified.attributes.model}</span>
+                      </div>
+                    )}
+                    {classified.attributes.year_fab && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Ano Fab/Mod</span>
+                        <span className="font-bold">
+                          {classified.attributes.year_fab}/{classified.attributes.year_model || "-"}
+                        </span>
+                      </div>
+                    )}
+                    {classified.attributes.mileage_km !== undefined && classified.attributes.mileage_km !== null && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Quilometragem</span>
+                        <span className="font-bold">
+                          {classified.attributes.mileage_km === 0 ? "Zero Km" : `${classified.attributes.mileage_km} km`}
+                        </span>
+                      </div>
+                    )}
+                    {classified.attributes.transmission && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Câmbio</span>
+                        <span className="font-bold">{classified.attributes.transmission}</span>
+                      </div>
+                    )}
+                    {classified.attributes.fuel_type && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Combustível</span>
+                        <span className="font-bold">{classified.attributes.fuel_type}</span>
+                      </div>
+                    )}
+                    {classified.attributes.color && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Cor</span>
+                        <span className="font-bold">{classified.attributes.color}</span>
+                      </div>
+                    )}
+                    {classified.attributes.doors && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Portas</span>
+                        <span className="font-bold">{classified.attributes.doors} portas</span>
+                      </div>
+                    )}
+                    {classified.attributes.plate_end && (
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Final da Placa</span>
+                        <span className="font-bold">{classified.attributes.plate_end}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
  {/* ─── Ficha Técnica: Alimentação & Gastronomia Artesanal ─── */}
               {(classified.category === "food" || classified.category === "alimentacao" || classified.attributes?.niche === "alimentacao" || niche.id === "food") && (
@@ -1321,6 +1980,14 @@ const handleDownloadDigitalFile = async () => {
  </div>
  </div>
 
+ {/* Escala / Jornada de Trabalho */}
+ {classified.attributes?.work_schedule && (
+ <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-xs flex items-center justify-between">
+ <span className="text-muted-foreground font-medium">Jornada / Escala de Trabalho:</span>
+ <strong className="text-foreground">{classified.attributes.work_schedule}</strong>
+ </div>
+ )}
+
  {/* Benefícios Oferecidos */}
  {Array.isArray(classified.attributes?.benefits) && classified.attributes.benefits.length > 0 && (
  <div className="space-y-2 pt-2">
@@ -1471,6 +2138,267 @@ const handleDownloadDigitalFile = async () => {
           })}
         </div>
       </div>
+
+      {classified.attributes?.service_area && (
+        <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-xs flex items-center justify-between">
+          <span className="text-muted-foreground font-medium">Região / Raio de Atendimento:</span>
+          <strong className="text-foreground">{classified.attributes.service_area}</strong>
+        </div>
+      )}
+      {classified.attributes?.available_slots !== undefined && (
+        <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-xs flex items-center justify-between">
+          <span className="text-muted-foreground font-medium">Vagas / Agendamentos por Dia:</span>
+          <strong className="text-foreground font-mono">{classified.attributes.available_slots} vagas disponíveis</strong>
+        </div>
+      )}
+    </div>
+  )}
+
+  {/* ─── Ficha Técnica: Equipamentos & Locação de Maquinário ─── */}
+  {(classified.category === "equipment" || classified.attributes?.niche === "equipment" || (niche as any)?.id === "equipment") && (
+    <div className="pt-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+          <Wrench className="size-3.5 text-primary" />
+          <span>Ficha Técnica do Equipamento / Maquinário</span>
+        </h3>
+        {classified.attributes?.condition && (
+          <Badge variant="outline" className="text-[11px] font-semibold capitalize">
+            {classified.attributes.condition.replace(/_/g, " ")}
+          </Badge>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-muted/30 p-4 rounded-2xl text-center">
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Período de Locação</span>
+          <span className="font-bold text-foreground capitalize">
+            {classified.attributes?.equipment_period === "diaria"
+              ? "Por Diária"
+              : classified.attributes?.equipment_period === "evento"
+              ? "Por Evento"
+              : classified.attributes?.equipment_period === "semanal"
+              ? "Semanal"
+              : classified.attributes?.equipment_period === "mensal"
+              ? "Mensal"
+              : "Por Diária"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Caução / Garantia</span>
+          <span className="font-bold text-foreground font-mono">
+            {classified.attributes?.deposit_cents ? formatMoney(classified.attributes.deposit_cents) : "Sem caução"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Operador Técnico</span>
+          <span className="font-bold text-foreground">
+            {classified.attributes?.operator_included ? "Incluso no valor" : "Não incluso"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Entrega / Retirada</span>
+          <span className="font-bold text-foreground">
+            {classified.attributes?.delivery_available ? "Entrega no local" : "Retirada no balcão"}
+          </span>
+        </div>
+      </div>
+
+      {/* Acessórios & Cabos Inclusos */}
+      {Array.isArray(classified.attributes?.accessories) && classified.attributes.accessories.length > 0 && (
+        <div className="space-y-2 pt-2 border-t border-border/40">
+          <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block">
+            Acessórios & Itens Inclusos
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {classified.attributes.accessories.map((acc: string, idx: number) => (
+              <Badge key={idx} variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-1.5 bg-primary/10 text-primary border-primary/20">
+                ✓ {acc}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+
+  {/* ─── Ficha Técnica: Produtos Digitais & Conteúdo ─── */}
+  {(classified.category === "digital" || classified.attributes?.niche === "digital" || (niche as any)?.id === "digital" || classified.attributes?.digital_file_url) && (
+    <div className="pt-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+          <FileArchive className="size-3.5 text-primary" />
+          <span>Arquivo & Entrega Digital Imediata</span>
+        </h3>
+        <Badge variant="outline" className="text-[10px] uppercase font-mono font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+          Download Instantâneo
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-muted/30 p-4 rounded-2xl text-center">
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Formato do Arquivo</span>
+          <span className="font-bold text-foreground uppercase font-mono">
+            {classified.attributes?.digital_file_type || "PDF / Arquivo"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Tamanho</span>
+          <span className="font-bold text-foreground font-mono">
+            {classified.attributes?.digital_file_size_bytes
+              ? `${(classified.attributes.digital_file_size_bytes / (1024 * 1024)).toFixed(1)} MB`
+              : classified.attributes?.file_size || "Acesso Direto"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Limite de Downloads</span>
+          <span className="font-bold text-foreground">
+            {classified.attributes?.digital_download_limit ? `${classified.attributes.digital_download_limit} tentativas` : "Ilimitado"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Acesso</span>
+          <span className="font-bold text-emerald-600">Vitalício</span>
+        </div>
+      </div>
+
+      <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="space-y-0.5 text-center sm:text-left">
+          <p className="text-xs font-bold text-foreground">Acesso ao Arquivo Digital</p>
+          <p className="text-[11px] text-muted-foreground">
+            Garantia de integridade do arquivo protegido por assinatura criptográfica Waesy.
+          </p>
+        </div>
+        <Button
+          onClick={handleDownloadDigitalFile}
+          disabled={isDownloadingDigital}
+          size="sm"
+          className="h-10 px-4 rounded-xl font-bold text-xs gap-2 shrink-0 bg-primary text-primary-foreground shadow-xs cursor-pointer"
+        >
+          {isDownloadingDigital ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              <span>Gerando Link Seguro...</span>
+            </>
+          ) : (
+            <>
+              <Download className="size-4" />
+              <span>Baixar Arquivo Agora</span>
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  )}
+
+  {/* ─── Ficha Técnica: Doação Solidária & Desapego Gratuito ─── */}
+  {(classified.category === "donation" || classified.attributes?.niche === "doacao" || (niche as any)?.id === "donation" || (classified.price_cents === 0 && !["service", "real_estate", "job"].includes(classified.category))) && (
+    <div className="pt-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+          <HeartHandshake className="size-3.5 text-emerald-600" />
+          <span>Doação Solidária Comunitária</span>
+        </h3>
+        <Badge variant="outline" className="text-[10px] uppercase font-mono font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
+          100% Gratuito
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-muted/30 p-4 rounded-2xl text-center">
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Finalidade</span>
+          <span className="font-bold text-foreground">Ajuda Comunitária</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Custo ao Beneficiário</span>
+          <span className="font-bold text-emerald-600 font-mono">R$ 0,00 Grátis</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Retirada</span>
+          <span className="font-bold text-foreground">
+            {classified.attributes?.delivery_mode === "pickup" ? "Retirada em Mãos" : "A Combinar"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Prioridade</span>
+          <span className="font-bold text-foreground">Ordem de Pedido</span>
+        </div>
+      </div>
+
+      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
+        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+          Termo de Desapego Solidário Waesy
+        </span>
+        <p className="text-foreground/90 leading-relaxed text-[11px]">
+          Este item está sendo doado de forma voluntária e sem qualquer cobrança financeira. A retirada deve ser combinada com respeito e pontualidade diretamente com o doador.
+        </p>
+      </div>
+    </div>
+  )}
+
+  {/* ─── Ficha Técnica: Assinatura Recorrente & Clube ─── */}
+  {(classified.category === "subscription" || classified.attributes?.niche === "assinatura" || (niche as any)?.id === "subscription") && (
+    <div className="pt-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+          <Sparkles className="size-3.5 text-primary" />
+          <span>Plano de Assinatura & Clube Recorrente</span>
+        </h3>
+        <Badge variant="outline" className="text-[10px] uppercase font-mono font-bold text-primary border-primary/30 bg-primary/10">
+          Recorrência Waesy
+        </Badge>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-muted/30 p-4 rounded-2xl text-center">
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Ciclo de Cobrança</span>
+          <span className="font-bold text-foreground capitalize">
+            {classified.attributes?.subscription_cycle === "anual" ? "Cobrança Anual" : "Cobrança Mensal"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Período de Teste</span>
+          <span className="font-bold text-foreground">
+            {classified.attributes?.trial_days ? `${classified.attributes.trial_days} dias grátis` : "Acesso imediato"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Taxa de Matrícula</span>
+          <span className="font-bold text-foreground font-mono">
+            {classified.attributes?.setup_fee_cents ? formatMoney(classified.attributes.setup_fee_cents) : "Isento"}
+          </span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block text-[10px] mb-0.5">Fidelidade</span>
+          <span className="font-bold text-emerald-600">Sem fidelidade</span>
+        </div>
+      </div>
+
+      {Array.isArray(classified.attributes?.recurring_features) && classified.attributes.recurring_features.length > 0 && (
+        <div className="space-y-2 pt-2 border-t border-border/40">
+          <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider block">
+            Benefícios Inclusos no Plano
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {classified.attributes.recurring_features.map((feat: string, idx: number) => (
+              <Badge key={idx} variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-1.5 bg-primary/10 text-primary border-primary/20">
+                ✓ {feat}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {classified.attributes?.subscription_terms && (
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/40 text-xs space-y-1.5">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+            Regras de Renovação & Cancelamento
+          </span>
+          <p className="text-foreground/90 leading-relaxed text-[11px] whitespace-pre-line">
+            {classified.attributes.subscription_terms}
+          </p>
+        </div>
+      )}
     </div>
   )}
 
@@ -1543,7 +2471,13 @@ const handleDownloadDigitalFile = async () => {
  </div>
  )}
 
- {/* Localização no Mapa Real (MapLibre OpenStreetMap) */}
+ {/* Localização no Mapa Real (MapLibre OpenStreetMap) — Suprimido se hide_location */}
+ {!Boolean(
+   classified.attributes?.hide_location ||
+   classified.attributes?.hide_address ||
+   classified.attributes?.location_privacy === "hidden" ||
+   author?.hide_location
+ ) && (
               <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1582,163 +2516,218 @@ const handleDownloadDigitalFile = async () => {
                 })()}
 
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Por segurança e privacidade, a localização no mapa indica a região aproximada do anúncio. O endereço exato é combinado diretamente entre as partes.
+                  Por segurança e privacidade, a localização no mapa indica a região aproximada do anúncio. O endereço exato é combinado diretamente entre das partes.
                 </p>
               </div>
- </div>
+            )}
+          </div>
 
- {/* Coluna Direita: Informações Essenciais & Ações (5 colunas) */}
- <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24">
- <div className="bg-card rounded-2xl border border-border/60 p-6 sm:p-7 space-y-6">
- <div className="space-y-2">
- <div className="flex items-center justify-between text-xs text-muted-foreground">
- <div className="flex items-center gap-1.5">
- <Clock className="size-3.5" />
- <span>Publicado {formatRelativeTime(classified.created_at)}</span>
- </div>
- <Badge variant="outline" className="text-[10px] font-bold">
- {CATEGORY_LABELS[classified.category] || classified.category}
- </Badge>
- </div>
+  {/* Coluna Direita: Informações Essenciais & Ações (5 colunas) */}
+  <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
+    <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-6 shadow-xs">
+      {/* ── 1. Topo & Identificação do Anúncio ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <Badge className="px-3.5 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/25 text-xs font-black uppercase tracking-wider">
+            {CATEGORY_LABELS[classified.category] || classified.category}
+          </Badge>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <Clock className="size-3.5 text-muted-foreground/70" />
+            <span>Publicado {formatRelativeTime(classified.created_at)}</span>
+            <span className="text-muted-foreground/40">•</span>
+            <span className="font-mono text-[11px]">Cód. #{classified.id.slice(0, 8)}</span>
+          </div>
+        </div>
 
- <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-tight tracking-tight">
- {classified.title}
- </h1>
- </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-snug tracking-tight">
+          {classified.title}
+        </h1>
+      </div>
 
- {/* Bloco de Preço */}
- <div className=" pt-4">
- <span className="text-xs uppercase font-bold text-muted-foreground tracking-wider block mb-1">
- {niche.id === "donation"
- ? "Desapego Solidário"
- : niche.id === "equipment"
- ? "Valor da Diária de Locação"
- : classified.deal_type === "aluguel"
- ? "Valor do Aluguel Mensal"
- : classified.deal_type === "temporada"
- ? "Valor por Diária"
- : "Valor"}
- </span>
- <div className="text-3xl font-black text-primary font-mono flex items-baseline gap-1">
- {niche.id === "donation" || (classified.price_cents === 0 && classified.category === "donation") ? (
- <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">Gratuito (Doação)</span>
- ) : classified.price_cents !== null && classified.price_cents !== undefined ? (
- <>
- <span>{formatMoney(classified.price_cents)}</span>
- {classified.deal_type === "aluguel" && (
- <span className="text-sm font-normal text-muted-foreground">/mês</span>
- )}
- {(classified.deal_type === "temporada" || niche.id === "equipment") && (
- <span className="text-sm font-normal text-muted-foreground">/diária</span>
- )}
- </>
- ) : (
- "A Combinar"
- )}
- </div>
- {classified.deal_type === "temporada" && classified.cleaning_fee_cents > 0 && (
- <span className="text-xs text-muted-foreground block mt-1 font-mono">
- + {formatMoney(classified.cleaning_fee_cents)} taxa de limpeza única
- </span>
- )}
- {classified.price_cents && classified.attributes?.accepts_card && (classified.attributes?.max_installments || 12) > 1 && (
- <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1 mt-1">
- <CreditCard className="size-3 text-primary" />
- <span>
- ou em até <strong>{classified.attributes?.max_installments || 12}x de {formatMoney(Math.round(classified.price_cents / (classified.attributes?.max_installments || 12)))}</strong>
- </span>
- </p>
- )}
+      {/* ── 2. Card Financeiro & Precificação Estruturada ── */}
+      <div className="p-5 rounded-2xl bg-muted/25 dark:bg-muted/15 border border-border/70 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs uppercase font-extrabold text-muted-foreground tracking-wider block">
+            {niche.id === "donation"
+              ? "Desapego Solidário"
+              : niche.id === "equipment"
+              ? "Valor da Diária de Locação"
+              : classified.deal_type === "aluguel"
+              ? "Valor do Aluguel Mensal"
+              : classified.deal_type === "temporada"
+              ? "Valor por Diária"
+              : "Valor"}
+          </span>
+          {classified.negotiable !== false && (
+            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+              ✓ Negociável
+            </span>
+          )}
+        </div>
 
- {/* Badges Semânticos do Nicho */}
- <div className="flex flex-wrap gap-1.5 pt-2.5">
- {semanticBadges.map((badge, idx) => {
- const Icon = badge.icon;
- return (
- <Badge
- key={idx}
- variant={badge.variant || "outline"}
- className="text-[10px] font-medium gap-1 bg-muted/40"
- >
- <Icon className="size-3 text-primary" />
- <span>{badge.label}</span>
- </Badge>
- );
- })}
- </div>
+        <div className="text-3xl sm:text-4xl font-black text-foreground font-display tracking-tight flex items-baseline gap-1.5">
+          {niche.id === "donation" || (classified.price_cents === 0 && classified.category === "donation") ? (
+            <span className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">Gratuito (Doação)</span>
+          ) : classified.price_cents !== null && classified.price_cents !== undefined ? (
+            <>
+              <span>{formatMoney(classified.price_cents)}</span>
+              {classified.deal_type === "aluguel" && (
+                <span className="text-sm font-semibold text-muted-foreground">/mês</span>
+              )}
+              {(classified.deal_type === "temporada" || niche.id === "equipment") && (
+                <span className="text-sm font-semibold text-muted-foreground">/diária</span>
+              )}
+            </>
+          ) : (
+            <span className="text-2xl font-bold text-foreground">A Combinar</span>
+          )}
+        </div>
 
- {classified.negotiable && (
- <span className="text-xs text-muted-foreground font-medium mt-2 block">
- ✓ Vendedor aceita propostas e negociação
- </span>
- )}
+        {classified.deal_type === "temporada" && classified.cleaning_fee_cents > 0 && (
+          <span className="text-xs text-muted-foreground block font-mono">
+            + {formatMoney(classified.cleaning_fee_cents)} taxa única de limpeza
+          </span>
+        )}
 
-              {/* ── Formas de Pagamento & Condições Comerciais Reais ── */}
-              <div className="pt-3 pb-1 border-t border-border/60 space-y-2">
-                <span className="text-[11px] font-bold font-mono uppercase tracking-wider text-muted-foreground block">
-                  Formas de Pagamento & Garantia
-                </span>
-                <div className="flex flex-wrap gap-1.5 text-xs">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/40 font-medium text-foreground">
-                    <QrCode className="size-3.5 text-emerald-600" />
-                    Pix
-                  </span>
-                  {(classified.attributes?.accepts_card ?? classified.accepts_card) && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/40 font-medium text-foreground">
-                      <CreditCard className="size-3.5 text-primary" />
-                      Cartão {(classified.attributes?.max_installments || 12) > 1 ? `até ${classified.attributes?.max_installments || 12}x` : "à vista"}
+        {classified.price_cents && classified.attributes?.accepts_card && (classified.attributes?.max_installments || 12) > 1 && (
+          <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground font-medium flex items-center gap-1.5">
+              <CreditCard className="size-3.5 text-primary" />
+              <span>ou até <strong>{classified.attributes?.max_installments || 12}x de {formatMoney(Math.round(classified.price_cents / (classified.attributes?.max_installments || 12)))}</strong></span>
+            </span>
+            <span className="font-semibold text-primary">no cartão</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── 3. Feature Cards Estruturados (Grid de 2 Colunas, Adeus Pills Amontoadas!) ── */}
+      {featureCards.length > 0 && (
+        <div className="space-y-2">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+            Destaques & Especificações
+          </span>
+          <div className="grid grid-cols-2 gap-2.5">
+            {featureCards.map((card, idx) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={idx}
+                  className="p-3.5 rounded-xl bg-background border border-border/70 flex items-center gap-3 shadow-2xs hover:border-border transition-colors min-w-0"
+                >
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Icon className="size-5" />
+                  </div>
+                  <div className="min-w-0 flex flex-col">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                      {card.title}
                     </span>
-                  )}
-                  {(classified.attributes?.accepts_trade ?? classified.accepts_trade) && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/40 font-medium text-foreground">
-                      <RefreshCw className="size-3.5 text-amber-600" />
-                      Aceita Troca
+                    <span className="text-xs sm:text-sm font-black text-foreground truncate" title={card.value}>
+                      {card.value}
                     </span>
-                  )}
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/40 font-medium text-foreground">
-                    <Banknote className="size-3.5 text-muted-foreground" />
-                    Dinheiro / À Vista
-                  </span>
-                </div>
-                {classified.attributes?.cancellation_policy && (
-                  <p className="text-[11px] text-muted-foreground pt-1 flex items-center gap-1">
-                    <ShieldCheck className="size-3 text-emerald-600" />
-                    <span>Cancelamento: {classified.attributes.cancellation_policy}</span>
-                  </p>
-                )}
-              </div>
-
-              {/* ── Autor / Loja / Prestador do Anúncio (Posicionado Abaixo do Preço) ── */}
-              <div className="pt-3 pb-3 border-y border-border/60 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="size-10 rounded-xl">
-                    <AvatarImage src={author?.avatar_url || ""} alt={author?.full_name || ""} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm rounded-xl">
-                      {authorInitial}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-muted-foreground font-medium">Anunciado por</p>
-                    <p className="text-sm font-bold text-foreground truncate">
-                      {author?.full_name || "Membro Verificado Waesy"}
-                    </p>
+                    {card.hint && (
+                      <span className="text-[10px] text-muted-foreground truncate">{card.hint}</span>
+                    )}
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-                {author?.id && (
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl text-xs font-semibold h-8"
-                  >
-                    <Link to="/membro/$id" params={{ id: author.id }} search={{ modo: "comercial" }}>
-                      Ver Perfil
-                    </Link>
-                  </Button>
+      {/* ── 4. Formas de Pagamento Estruturadas & Garantia ── */}
+      {paymentMethods.length > 0 && (
+        <div className="p-4 rounded-xl bg-muted/20 border border-border/60 space-y-2.5">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+            Formas de Pagamento Aceitas
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            {paymentMethods.map((pm) => {
+              const Icon = pm.icon;
+              return (
+                <div key={pm.id} className="p-2.5 rounded-lg bg-background border border-border/50 flex items-center gap-2.5 min-w-0">
+                  <div className="size-7 rounded-md bg-muted/60 flex items-center justify-center text-primary shrink-0">
+                    <Icon className="size-3.5" />
+                  </div>
+                  <div className="min-w-0 flex flex-col">
+                    <span className="font-bold text-xs text-foreground truncate">{pm.label}</span>
+                    {pm.badge && <span className="text-[10px] text-muted-foreground truncate">{pm.badge}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {classified.attributes?.cancellation_policy && (
+            <p className="text-[11px] text-muted-foreground pt-1 flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
+              <span>Política de Cancelamento: <strong className="text-foreground">{classified.attributes.cancellation_policy}</strong></span>
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── 5. Autor / Loja / Anunciante Hero Card (Isolamento Estrito Empresa vs Anunciante) ── */}
+      {(() => {
+        const isCompany = Boolean(classified.store_id && classified.store?.id);
+        const sellerName = isCompany ? (classified.store.name || "Loja Oficial") : (author?.full_name || "Anunciante");
+        const sellerAvatar = isCompany ? classified.store.logo_url : author?.avatar_url;
+        const hideLocation = Boolean(
+          classified.attributes?.hide_location ||
+          classified.attributes?.hide_address ||
+          classified.attributes?.location_privacy === "hidden" ||
+          author?.hide_location
+        );
+        const sellerCity = hideLocation
+          ? null
+          : isCompany
+          ? (classified.store.city ? `${classified.store.city}${classified.store.state ? ` • ${classified.store.state}` : ""}` : (classified.city || "Brasil"))
+          : (classified.location_name || classified.city || "Brasil");
+        const sellerProfileUrl = isCompany
+          ? `/perfil-da-loja?storeId=${classified.store.id}`
+          : (author?.id ? `/membro/${author.id}` : null);
+
+        return (
+          <div className="p-4 rounded-2xl bg-muted/25 border border-border/60 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-12 rounded-2xl bg-background border border-border/70 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+                {sellerAvatar ? (
+                  <img src={sellerAvatar} alt={sellerName} className="size-full object-cover" />
+                ) : isCompany ? (
+                  <StoreIcon className="size-6 text-muted-foreground" />
+                ) : (
+                  <User className="size-6 text-muted-foreground" />
                 )}
               </div>
- </div>
+              <div className="min-w-0 flex flex-col">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-black text-sm sm:text-base text-foreground truncate">
+                    {sellerName}
+                  </span>
+                  <CheckCircle2 className="size-4 text-blue-500 shrink-0" title="Verificado Waesy" />
+                </div>
+                <span className="text-xs text-muted-foreground truncate">
+                  {sellerCity ? `${sellerCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante Verificado"}
+                </span>
+              </div>
+            </div>
+
+            {sellerProfileUrl && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="rounded-xl text-xs font-bold h-9 px-3 shrink-0 border-border/80 hover:bg-background"
+              >
+                <Link to={sellerProfileUrl}>
+                  {isCompany ? "Ver Loja" : "Ver Perfil"}
+                </Link>
+              </Button>
+            )}
+          </div>
+        );
+      })()}
+    </div>
 
  {/* Entrega e Download de Produto Digital */}
  {(classified.is_digital || classified.attributes?.is_digital || classified.digital_file_url) && (
@@ -1804,52 +2793,71 @@ const handleDownloadDigitalFile = async () => {
    </div>
  )}
 
- {/* Simulador de Frete & Logística Waesy Express (Exclusivo para produtos físicos/desapegos) */}
- {niche.showDeliveryBadges && classified.attributes?.delivery_mode !== "pickup" && (
- <div className="border border-primary/20 rounded-2xl p-4 bg-primary/5 space-y-2.5">
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
- <Truck className="size-4 text-primary" />
- <span>Calcular Entrega no seu Endereço</span>
- </div>
- <Badge variant="default" className="text-[9px] font-mono bg-primary text-primary-foreground">
- Waesy Express
- </Badge>
- </div>
+  {/* Simulador de Frete & Logística Real (Zero Mock / Baseado em Dados do Anúncio) */}
+  {niche.showDeliveryBadges && classified.attributes?.delivery_mode !== "pickup" && (() => {
+    const isFreeShipping = Boolean(classified.attributes?.free_shipping || classified.attributes?.free_shipping_local);
+    const hasDeliveryFee = Boolean(classified.delivery_fee_cents || classified.attributes?.delivery_fee_cents);
+    const deliveryFeeCents = classified.delivery_fee_cents || classified.attributes?.delivery_fee_cents || 0;
+    const allowsMotolink = Boolean(Array.isArray(classified.attributes?.service_modes) && classified.attributes?.service_modes.includes("motolink"));
 
- <div className="space-y-1.5 text-xs pt-1">
- <div className="flex items-center justify-between p-2 rounded-xl bg-background ">
- <div className="flex items-center gap-2">
- <div className="size-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
- <Truck className="size-3.5" />
- </div>
- <div>
- <p className="font-semibold text-xs text-foreground">Entrega Expressa Motoboy</p>
- <p className="text-[10px] text-muted-foreground">Chega hoje em até 2 horas</p>
- </div>
- </div>
- <span className="font-bold text-xs text-primary font-mono">
- {classified.attributes?.free_shipping_local ? "Grátis" : "R$ 12,00"}
- </span>
- </div>
+    return (
+      <div className="border border-primary/20 rounded-2xl p-4 bg-primary/5 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+            <Truck className="size-4 text-primary" />
+            <span>Condições de Envio & Entrega</span>
+          </div>
+          <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+            {isFreeShipping ? "Frete Grátis" : hasDeliveryFee ? "Entrega Disponível" : "A Combinar"}
+          </Badge>
+        </div>
 
- <div className="flex items-center justify-between p-2 rounded-xl bg-background ">
- <div className="flex items-center gap-2">
- <div className="size-6 rounded-lg bg-muted flex items-center justify-center text-foreground">
- <Package className="size-3.5" />
- </div>
- <div>
- <p className="font-semibold text-xs text-foreground">Ponto PUDO / Locker Waesy</p>
- <p className="text-[10px] text-muted-foreground">Retire no ponto credenciado</p>
- </div>
- </div>
- <span className="font-bold text-xs text-foreground font-mono">
- R$ 5,00
- </span>
- </div>
- </div>
- </div>
- )}
+        <div className="space-y-1.5 text-xs pt-1">
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border/50">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <Truck className="size-3.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-xs text-foreground truncate">
+                  {isFreeShipping
+                    ? "Frete Grátis pelo Vendedor"
+                    : allowsMotolink
+                    ? "Entrega via Motolink / Entregador"
+                    : "Entrega Própria / Envio"}
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {isFreeShipping
+                    ? "Sem custo de frete para a região do anúncio"
+                    : hasDeliveryFee
+                    ? "Taxa fixa de entrega na região"
+                    : "Combinar endereço e valor com o vendedor"}
+                </p>
+              </div>
+            </div>
+            <span className="font-bold text-xs text-primary font-mono shrink-0 ml-2">
+              {isFreeShipping ? "Grátis" : hasDeliveryFee ? formatMoney(deliveryFeeCents) : "A combinar"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border/50">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="size-7 rounded-lg bg-muted flex items-center justify-center text-foreground shrink-0">
+                <Package className="size-3.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-xs text-foreground truncate">Retirada no Local</p>
+                <p className="text-[10px] text-muted-foreground truncate">Retire no endereço combinado com o anunciante</p>
+              </div>
+            </div>
+            <span className="font-bold text-xs text-emerald-600 font-mono shrink-0 ml-2">
+              Grátis
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  })()}
 
  {/* Ações de Negociação & Contato */}
  <div className="space-y-3 pt-2">
@@ -1942,292 +2950,29 @@ const handleDownloadDigitalFile = async () => {
                     />
                   )}
  </div>
- ) : classified.deal_type === "temporada" ? (
- /* Bloco de Reserva Direta de Hospedagem / Diárias */
- <div className="space-y-3">
- <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
- <DialogTrigger asChild>
- <Button
- size="lg"
- className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm"
- >
- <Calendar className="size-5" />
- Reservar Diárias
- </Button>
- </DialogTrigger>
- <DialogContent className="sm:max-w-md sm:rounded-2xl">
- {viewerContext === "anonymous" ? (
- <div className="text-center py-6 space-y-4">
- <Calendar className="size-10 text-primary mx-auto" />
- <div className="space-y-1">
- <DialogTitle className="text-lg font-bold">
- Identifique-se para reservar
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Faça login na sua conta Waesy para reservar este imóvel por temporada com
- garantia e suporte regional.
- </DialogDescription>
- </div>
- <Button
- asChild
- className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground text-sm"
- >
- <Link
- to="/entrar"
- search={{ returnUrl: `/classificados/${classified.id}` }}
- >
- Entrar na Minha Conta
- </Link>
- </Button>
- </div>
- ) : (
- <>
- <DialogHeader>
- <DialogTitle className="text-lg font-bold flex items-center gap-2">
- <Calendar className="size-5 text-primary" />
- Reservar Hospedagem por Diária
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Selecione as datas de check-in e check-out para confirmar sua estadia.
- </DialogDescription>
- </DialogHeader>
+              ) : classified.deal_type === "temporada" ? (
+                /* Bloco de Reserva Direta de Hospedagem / Diárias */
+                <div className="space-y-3">
+                  <Button
+                    size="lg"
+                    onClick={() => setBookingOpen(true)}
+                    className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm shadow-xs cursor-pointer"
+                  >
+                    <Calendar className="size-5" />
+                    <span>Reservar Diárias</span>
+                  </Button>
 
- <div className="space-y-4 py-2">
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Check-in *
- </label>
- <Input
- type="date"
- value={checkInDate}
- onChange={(e) => setCheckInDate(e.target.value)}
- className="h-10 rounded-xl text-xs bg-background font-mono"
- />
- </div>
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Check-out *
- </label>
- <Input
- type="date"
- value={checkOutDate}
- onChange={(e) => setCheckOutDate(e.target.value)}
- className="h-10 rounded-xl text-xs bg-background font-mono"
- />
- </div>
- </div>
-
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Número de Hóspedes
- </label>
- <Input
- type="number"
- min={1}
- max={classified.max_guests || 10}
- value={bookingGuests}
- onChange={(e) => setBookingGuests(parseInt(e.target.value) || 1)}
- className="h-10 rounded-xl text-xs bg-background font-mono"
- />
- </div>
-
- {/* Resumo de Valores */}
- <div className="p-3.5 rounded-xl bg-muted/40 space-y-2 text-xs">
- <div className="flex justify-between text-muted-foreground">
- <span>
- {formatMoney(dailyRateCents)} × {nightsCount} diária(s)
- </span>
- <span className="font-mono font-medium text-foreground">
- {formatMoney(dailyRateCents * nightsCount)}
- </span>
- </div>
- {cleaningFeeCents > 0 && (
- <div className="flex justify-between text-muted-foreground">
- <span>Taxa única de limpeza</span>
- <span className="font-mono font-medium text-foreground">
- {formatMoney(cleaningFeeCents)}
- </span>
- </div>
- )}
- <div className="pt-2 flex justify-between font-bold text-sm text-foreground">
- <span>Total Estimado</span>
- <span className="font-mono text-primary">
- {formatMoney(bookingTotalCents)}
- </span>
- </div>
- </div>
-
- <Button
- onClick={handleDirectBooking}
- disabled={isBooking}
- className="w-full h-11 rounded-xl text-xs font-bold gap-2"
- >
- {isBooking ? (
- <>
- <Loader2 className="size-4 animate-spin" />
- <span>Confirmando Reserva...</span>
- </>
- ) : (
- <>
- <Check className="size-4" />
- <span>Confirmar Reserva de {formatMoney(bookingTotalCents)}</span>
- </>
- )}
- </Button>
- </div>
- </>
- )}
- </DialogContent>
- </Dialog>
-
- {/* Modal Secundário de Proposta/Negociação para Temporada */}
- <Dialog open={proposalOpen} onOpenChange={setProposalOpen}>
- <DialogTrigger asChild>
- <Button
- variant="outline"
- size="sm"
- className="w-full h-10 rounded-xl font-bold text-xs gap-1.5"
- >
- <Handshake className="size-4 text-muted-foreground" />
- Fazer Oferta Especial / Negociar
- </Button>
- </DialogTrigger>
- <DialogContent className="sm:max-w-md sm:rounded-2xl">
- {viewerContext === "anonymous" ? (
- <div className="text-center py-6 space-y-4">
- <Handshake className="size-10 text-primary mx-auto" />
- <div className="space-y-1">
- <DialogTitle className="text-lg font-bold">
- Identifique-se para negociar
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Para enviar ofertas personalizadas, faça login na sua conta Waesy.
- </DialogDescription>
- </div>
- <Button
- asChild
- className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground text-sm"
- >
- <Link
- to="/entrar"
- search={{ returnUrl: `/classificados/${classified.id}` }}
- >
- Entrar na Minha Conta
- </Link>
- </Button>
- </div>
- ) : (
- <>
- <DialogHeader>
- <DialogTitle className="text-lg font-bold flex items-center gap-2">
- <Handshake className="size-5 text-primary" />
- Enviar Oferta para o Anfitrião
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Proponha um pacote diferenciado ou período estendido.
- </DialogDescription>
- </DialogHeader>
-
- <div className="space-y-4 py-2">
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Valor Total Proposto (R$) *
- </label>
- <CurrencyField
- value={proposalPriceCents}
- onChange={setProposalPriceCents}
- placeholder="0,00"
- className="h-10 rounded-xl text-xs bg-background"
- />
- </div>
-
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Detalhes do Período ou Condições
- </label>
- <Textarea
- value={proposalTerms}
- onChange={(e) => setProposalTerms(e.target.value)}
- placeholder="Ex: Período de 15 dias, pagamento antecipado no PIX..."
- rows={3}
- className="rounded-xl text-xs bg-background resize-none leading-relaxed"
- />
- </div>
-
- {/* Perguntas Personalizadas configuradas pela Empresa/Vendedor */}
- {classified?.store?.custom_inquiry_fields && classified.store.custom_inquiry_fields.length > 0 && (
- <div className="space-y-3 pt-2.5 pb-1 border-t border-border/40">
- <div className="flex items-center justify-between">
- <span className="text-xs font-bold text-foreground">
- Perguntas Adicionais do Vendedor
- </span>
- <span className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded font-medium">
- Personalizado pela loja
- </span>
- </div>
- {classified.store.custom_inquiry_fields.map((field: any) => (
- <div key={field.id} className="space-y-1">
- <label className="text-xs font-medium text-foreground flex items-center gap-1">
- <span>{field.label}</span>
- {field.required && <span className="text-rose-500 font-bold">*</span>}
- </label>
- {field.type === "textarea" ? (
- <Textarea
- value={customAnswers[field.id] || ""}
- onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
- placeholder="Sua resposta..."
- rows={2}
- className="rounded-xl text-xs bg-background resize-none leading-relaxed"
- />
- ) : field.type === "checkbox" ? (
- <label className="flex items-center gap-2 cursor-pointer pt-0.5">
- <input
- type="checkbox"
- checked={!!customAnswers[field.id]}
- onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.checked }))}
- className="size-4 rounded accent-primary"
- />
- <span className="text-xs text-muted-foreground">{field.label}</span>
- </label>
- ) : (
- <Input
- type="text"
- value={customAnswers[field.id] || ""}
- onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
- placeholder="Sua resposta..."
- className="h-9 rounded-xl text-xs bg-background"
- />
- )}
- </div>
- ))}
- </div>
- )}
-
- <Button
- onClick={handleSendProposal}
- disabled={isSendingProposal}
- className="w-full h-10 rounded-xl text-xs font-bold gap-2"
- >
- {isSendingProposal ? (
- <>
- <Loader2 className="size-4 animate-spin" />
- <span>Enviando Proposta...</span>
- </>
- ) : (
- <>
- <Handshake className="size-4" />
- <span>Enviar Proposta ao Anfitrião</span>
- </>
- )}
- </Button>
- </div>
- </>
- )}
- </DialogContent>
- </Dialog>
- </div>
-  ) : (classified.category === "service" || classified.booking_enabled || classified.attributes?.booking_enabled) ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setProposalOpen(true)}
+                    className="w-full h-10 rounded-xl font-bold text-xs gap-1.5 cursor-pointer"
+                  >
+                    <Handshake className="size-4 text-muted-foreground" />
+                    <span>Fazer Oferta Especial / Negociar</span>
+                  </Button>
+                </div>
+              ) : (classified.category === "service" || classified.booking_enabled || classified.attributes?.booking_enabled) ? (
     /* Bloco Especial de Agendamento de Serviço Profissional */
     <div className="space-y-3">
       <Dialog open={serviceBookingOpen} onOpenChange={setServiceBookingOpen}>
@@ -2444,213 +3189,116 @@ const handleDownloadDigitalFile = async () => {
       )}
     </div>
   ) : (
- /* Bloco de Compra / Negociação para Venda, Aluguel e Outros Itens */
- <div className="space-y-3">
- {/* Botão Primário Semântico adaptado ao nicho */}
- {niche.id === "goods" && classified.price_cents && classified.price_cents > 0 ? (
- <Button
- onClick={handleDirectBuy}
- disabled={isBuyingDirect}
- size="lg"
- className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm"
- >
- {isBuyingDirect ? (
- <>
- <Loader2 className="size-5 animate-spin" />
- <span>Processando Compra Segura...</span>
- </>
- ) : (
- <>
- <ShieldCheck className="size-5" />
- <span>Comprar com Garantia por {formatMoney(classified.price_cents)}</span>
- </>
- )}
- </Button>
- ) : (
- <Dialog open={proposalOpen} onOpenChange={setProposalOpen}>
- <DialogTrigger asChild>
- <Button
- size="lg"
- className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm"
- >
- <niche.icon className="size-5" />
- <span>{niche.primaryActionLabel}</span>
- </Button>
- </DialogTrigger>
- </Dialog>
- )}
+    /* Bloco de Compra / Negociação para Venda, Aluguel e Outros Itens */
+    <div className="space-y-3">
+      {/* Botão Primário Semântico adaptado ao nicho */}
+      {niche.id === "donation" ? (
+        <div className="space-y-2">
+          <Button
+            size="lg"
+            onClick={() => setProposalOpen(true)}
+            className="w-full h-12 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-sm shadow-xs cursor-pointer"
+          >
+            <HeartHandshake className="size-5" />
+            <span>Solicitar Doação / Combinar Retirada</span>
+          </Button>
+          <p className="text-[11px] text-center text-muted-foreground">
+            Item 100% gratuito. Combine a retirada com o doador.
+          </p>
+        </div>
+      ) : niche.id === "goods" && classified.price_cents && classified.price_cents > 0 ? (
+        <Button
+          onClick={handleDirectBuy}
+          disabled={isBuyingDirect}
+          size="lg"
+          className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm"
+        >
+          {isBuyingDirect ? (
+            <>
+              <Loader2 className="size-5 animate-spin" />
+              <span>Processando Compra Segura...</span>
+            </>
+          ) : (
+            <>
+              <ShieldCheck className="size-5" />
+              <span>Comprar com Garantia por {formatMoney(classified.price_cents)}</span>
+            </>
+          )}
+        </Button>
+      ) : (
+        <Button
+          size="lg"
+          onClick={() => setProposalOpen(true)}
+          className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground gap-2 text-sm shadow-xs cursor-pointer"
+        >
+          <niche.icon className="size-5" />
+          <span>{niche.primaryActionLabel}</span>
+        </Button>
+      )}
 
- {/* Botão Fazer Proposta / Negociar */}
- <Dialog open={proposalOpen} onOpenChange={setProposalOpen}>
- <DialogTrigger asChild>
- <Button
- variant={classified.price_cents ? "outline" : "default"}
- size="lg"
- className={`w-full ${classified.price_cents ? "h-10 text-xs" : "h-12 text-sm"} rounded-xl font-bold gap-2`}
- >
- <Handshake className="size-4" />
- <span>Fazer Proposta / Negociar Valor</span>
- </Button>
- </DialogTrigger>
- <DialogContent className="sm:max-w-md sm:rounded-2xl">
- {viewerContext === "anonymous" ? (
- <div className="text-center py-6 space-y-4">
- <Handshake className="size-10 text-primary mx-auto" />
- <div className="space-y-1">
- <DialogTitle className="text-lg font-bold">
- Identifique-se para negociar
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Para enviar propostas, negociar valores e trocar itens com segurança,
- faça login na sua conta Waesy.
- </DialogDescription>
- </div>
- <Button
- asChild
- className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground text-sm"
- >
- <Link
- to="/entrar"
- search={{ returnUrl: `/classificados/${classified.id}` }}
- >
- Entrar na Minha Conta
- </Link>
- </Button>
- </div>
- ) : (
- <>
- <DialogHeader>
- <DialogTitle className="text-lg font-bold flex items-center gap-2">
- <Handshake className="size-5 text-primary" />
- Enviar Proposta de Negociação
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Envie uma oferta formal para o vendedor. O valor e os termos ficarão
- registrados com segurança.
- </DialogDescription>
- </DialogHeader>
+      {/* Botão Fazer Proposta / Negociar (Oculto em Doações Solidárias) */}
+      {niche.id !== "donation" && (
+        <Button
+          variant={classified.price_cents ? "outline" : "default"}
+          size="lg"
+          onClick={() => setProposalOpen(true)}
+          className={`w-full ${classified.price_cents ? "h-10 text-xs" : "h-12 text-sm"} rounded-xl font-bold gap-2 cursor-pointer`}
+        >
+          <Handshake className="size-4" />
+          <span>Fazer Proposta / Negociar Valor</span>
+        </Button>
+      )}
+    </div>
+  )}
 
- <div className="space-y-4 py-2">
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Sua Oferta de Preço (R$) *
- </label>
- <CurrencyField
- value={proposalPriceCents}
- onChange={setProposalPriceCents}
- placeholder="0,00"
- className="h-10 rounded-xl text-xs bg-background"
- />
- </div>
+  {/* Botão de WhatsApp Rastreado */}
+  {cleanPhone && (
+    <ProtectedContactButton
+      phone={cleanPhone}
+      entityType="classified"
+      entityId={classified.id}
+      entityTitle={classified.title}
+      storeId={(classified as any).store_id || null}
+      niche={classified.category || "classificados"}
+      variant="outline"
+      size="lg"
+      label="Conversar no WhatsApp"
+      className="w-full h-11 font-bold border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 text-xs"
+    />
+  )}
+  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Forma de Pagamento
- </label>
- <Input
- value={proposalInstallments}
- onChange={(e) => setProposalInstallments(e.target.value)}
- placeholder="1 (À vista)"
- className="h-9 rounded-xl text-xs bg-background font-mono"
- />
- </div>
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Sinal / Entrada (R$)
- </label>
- <CurrencyField
- value={proposalDepositCents}
- onChange={setProposalDepositCents}
- placeholder="0,00"
- className="h-9 rounded-xl text-xs bg-background"
- />
- </div>
- </div>
+  {/* Dica de Segurança */}
+  <div className="bg-muted/30 rounded-xl p-3.5 flex gap-3 text-xs text-muted-foreground">
+    <ShieldCheck className="size-5 text-primary shrink-0 mt-0.5" />
+    <div className="space-y-0.5">
+      <p className="font-semibold text-foreground">Negociação Segura</p>
+      <p>
+        Prefira encontros em locais públicos e formalize acordos de valor via proposta na
+        Waesy.
+      </p>
+    </div>
+  </div>
+  </div>
+  </div>
+  </div>
 
- <div className="space-y-1.5">
- <label className="text-xs font-semibold text-foreground">
- Termos ou Condições Especiais
- </label>
- <Textarea
- value={proposalTerms}
- onChange={(e) => setProposalTerms(e.target.value)}
- placeholder="Ex: Retiro no sábado, aceito troca com volta..."
- rows={3}
- className="rounded-xl text-xs bg-background resize-none leading-relaxed"
- />
- </div>
+  {/* Modal Fullscreen de Imagem */}
+  {fullscreenImage && (
+    <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
+      <DialogContent className="sm:max-w-4xl p-2 bg-black border-none sm:rounded-2xl overflow-hidden">
+        <img
+          src={fullscreenImage}
+          alt="Visualização cheia"
+          className="w-full h-auto max-h-[85vh] object-contain rounded-xl mx-auto"
+        />
+      </DialogContent>
+    </Dialog>
+  )}
 
- <Button
- onClick={handleSendProposal}
- disabled={isSendingProposal}
- className="w-full h-10 rounded-xl text-xs font-bold gap-2"
- >
- {isSendingProposal ? (
- <>
- <Loader2 className="size-4 animate-spin" />
- <span>Enviando Proposta...</span>
- </>
- ) : (
- <>
- <Handshake className="size-4" />
- <span>Confirmar e Enviar Proposta</span>
- </>
- )}
- </Button>
- </div>
- </>
- )}
- </DialogContent>
- </Dialog>
- </div>
- )}
-
- {/* Botão de WhatsApp Rastreado */}
- {cleanPhone && (
-                <ProtectedContactButton
-                  phone={cleanPhone}
-                  entityType="classified"
-                  entityId={classified.id}
-                  entityTitle={classified.title}
-                  storeId={(classified as any).store_id || null}
-                  niche={classified.category || "classificados"}
-                  variant="outline"
-                  size="lg"
-                  label="Conversar no WhatsApp"
-                  className="w-full h-11 font-bold border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 text-xs"
-                />
-              )}
- </div>
-
- {/* Dica de Segurança */}
- <div className=" bg-muted/30 rounded-xl p-3.5 flex gap-3 text-xs text-muted-foreground">
- <ShieldCheck className="size-5 text-primary shrink-0 mt-0.5" />
- <div className="space-y-0.5">
- <p className="font-semibold text-foreground">Negociação Segura</p>
- <p>
- Prefira encontros em locais públicos e formalize acordos de valor via proposta na
- Waesy.
- </p>
- </div>
- </div>
- </div>
- </div>
- </div>
-
- {/* Modal Fullscreen de Imagem */}
- {fullscreenImage && (
- <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
- <DialogContent className="sm:max-w-4xl p-2 bg-black border-none sm:rounded-2xl overflow-hidden">
- <img
- src={fullscreenImage}
- alt="Visualização cheia"
- className="w-full h-auto max-h-[85vh] object-contain rounded-xl mx-auto"
- />
- </DialogContent>
- </Dialog>
- )}
- </div>
- </div>
- );
+  {/* Modais Compartilhados de Reserva e Negociação */}
+  {renderBookingDialog()}
+  {renderProposalDialog()}
+  </div>
+  );
 }

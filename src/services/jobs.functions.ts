@@ -30,6 +30,11 @@ export interface JobItemDTO {
  status: "active" | "paused" | "closed" | "draft";
  created_at: string;
  applications_count?: number;
+ is_external?: boolean;
+ external_url?: string | null;
+ external_source?: string | null;
+ external_id?: string | null;
+ application_mode?: "internal" | "external_link" | "whatsapp" | "email";
 }
 
 export const listPublicJobs = createServerFn({ method: "GET" })
@@ -97,6 +102,11 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  is_featured: row.is_featured ?? false,
  status: row.status,
  created_at: row.created_at,
+ is_external: Boolean(row.is_external),
+ external_url: row.external_url || null,
+ external_source: row.external_source || null,
+ external_id: row.external_id || null,
+ application_mode: row.application_mode || "internal",
  })) as JobItemDTO[];
  });
 
@@ -139,6 +149,11 @@ export const getPublicJobById = createServerFn({ method: "GET" })
  status: row.status,
  created_at: row.created_at,
  applications_count: appsRes.count ?? 0,
+ is_external: Boolean(row.is_external),
+ external_url: row.external_url || null,
+ external_source: row.external_source || null,
+ external_id: row.external_id || null,
+ application_mode: row.application_mode || "internal",
  } as JobItemDTO;
  });
 
@@ -627,3 +642,150 @@ export const getCompanyDetails = createServerFn({ method: "GET" })
       .maybeSingle();
     return company || null;
   });
+
+// ============================================================
+// Mineração & Publicação de Vagas Externas com Links Oficiais
+// ============================================================
+export const mineAndPublishExternalJob = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      title: z.string().min(3),
+      company_name: z.string().min(2),
+      company_logo_url: z.string().url().optional().nullable(),
+      category: z.enum(["clt", "pj", "estagio", "tech", "comercial", "operacional", "saude", "outros"]).default("clt"),
+      location: z.string().default("Chapecó, SC"),
+      workplace_type: z.enum(["Presencial", "Híbrido", "Remoto"]).default("Presencial"),
+      contract_type: z.enum(["CLT", "PJ", "Estágio", "Freelancer", "Temporário"]).default("CLT"),
+      salary_display: z.string().default("A combinar"),
+      description: z.string().min(10),
+      requirements: z.array(z.string()).default([]),
+      benefits: z.array(z.string()).default([]),
+      contact_whatsapp: z.string().optional().nullable(),
+      contact_email: z.string().optional().nullable(),
+      external_url: z.string().url(),
+      external_source: z.string().default("Portal Regional"),
+      external_id: z.string().optional().nullable(),
+      application_mode: z.enum(["internal", "external_link", "whatsapp", "email"]).default("external_link"),
+      store_id: z.string().uuid().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    // 1. Resolver loja se não fornecida (associa à store raiz se houver)
+    let storeId = data.store_id;
+    if (!storeId) {
+      const { data: rootStore } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("is_platform_root", true)
+        .maybeSingle();
+      storeId = rootStore?.id || null;
+    }
+
+    // 2. Verificar se já existe vaga com este external_url ou external_id
+    if (data.external_url) {
+      const { data: existing } = await supabase
+        .from("jobs")
+        .select("id, title")
+        .eq("external_url", data.external_url)
+        .maybeSingle();
+
+      if (existing) {
+        return { success: true, jobId: existing.id, isExisting: true };
+      }
+    }
+
+    // 3. Inserir a vaga externa
+    const { data: inserted, error } = await supabase
+      .from("jobs")
+      .insert({
+        store_id: storeId,
+        title: data.title,
+        company_name: data.company_name,
+        company_logo_url: data.company_logo_url,
+        category: data.category,
+        location: data.location,
+        workplace_type: data.workplace_type,
+        contract_type: data.contract_type,
+        salary_display: data.salary_display,
+        description: data.description,
+        requirements: data.requirements,
+        benefits: data.benefits,
+        contact_whatsapp: data.contact_whatsapp,
+        contact_email: data.contact_email,
+        is_featured: false,
+        status: "active",
+        is_external: true,
+        external_url: data.external_url,
+        external_source: data.external_source,
+        external_id: data.external_id,
+        application_mode: data.application_mode,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      throw new Error(`Falha ao publicar vaga externa: ${error.message}`);
+    }
+
+    return { success: true, jobId: inserted.id, isExisting: false };
+  });
+
+export const listExternalJobs = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      city: z.string().optional(),
+      limit: z.number().int().min(1).max(50).default(30),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let query = supabase
+      .from("jobs")
+      .select("*")
+      .eq("is_external", true)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(data?.limit || 30);
+
+    if (data?.city && data.city !== "Todas") {
+      query = query.ilike("location", `%${data.city}%`);
+    }
+
+    const { data: rows, error } = await query;
+    if (error) {
+      console.error("Erro ao listar vagas externas:", error);
+      return [];
+    }
+
+    return (rows || []).map((row: any) => ({
+      id: row.id,
+      store_id: row.store_id,
+      author_profile_id: row.author_profile_id,
+      title: row.title,
+      company_name: row.company_name,
+      company_logo_url: row.company_logo_url,
+      category: row.category,
+      location: row.location,
+      workplace_type: row.workplace_type,
+      contract_type: row.contract_type,
+      salary_display: row.salary_display,
+      salary_min_cents: row.salary_min_cents ? Number(row.salary_min_cents) : null,
+      salary_max_cents: row.salary_max_cents ? Number(row.salary_max_cents) : null,
+      description: row.description,
+      requirements: row.requirements || [],
+      benefits: row.benefits || [],
+      contact_whatsapp: row.contact_whatsapp,
+      contact_email: row.contact_email,
+      is_featured: row.is_featured ?? false,
+      status: row.status,
+      created_at: row.created_at,
+      is_external: true,
+      external_url: row.external_url || null,
+      external_source: row.external_source || null,
+      external_id: row.external_id || null,
+      application_mode: row.application_mode || "external_link",
+    })) as JobItemDTO[];
+  });
+

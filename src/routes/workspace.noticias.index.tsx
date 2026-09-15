@@ -20,10 +20,14 @@ import {
  ThumbsUp,
  ThumbsDown,
  Loader2,
+ Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { generateCarouselFromMinedContent } from "@/services/studio.functions";
+import { CarouselStudioEditor } from "@/components/studio/carousel-studio-editor";
+import type { EscamasCarouselProject } from "@/types/studio-machine";
 import {
  listWorkspaceArticles,
  deleteArticle,
@@ -35,6 +39,10 @@ import {
  curateMineArticle,
  type MinedArticleDTO,
 } from "@/services/mining.functions";
+import {
+  isHealthyImageUrl,
+  getFallbackThematicImage,
+} from "@/services/mining/integrity-gate";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { EmptyState } from "@/components/state/states";
@@ -64,6 +72,57 @@ function WorkspaceNoticiasIndexPage() {
  const [activeTab, setActiveTab] = useState("materias");
  const [isPending, startTransition] = useTransition();
  const [curatingId, setCuratingId] = useState<string | null>(null);
+
+ // Studio Machine Carrossel
+ const [studioProject, setStudioProject] = useState<EscamasCarouselProject | null>(null);
+ const [isGeneratingCarousel, setIsGeneratingCarousel] = useState(false);
+
+  const handleGenerateCarouselFromArticle = async (art: NewsArticleDTO) => {
+    setIsGeneratingCarousel(true);
+    try {
+      const res = await generateCarouselFromMinedContent({
+        data: {
+          contentType: "noticias",
+          itemId: art.id,
+          title: art.title,
+          summary: art.subtitle || "",
+          coverUrl: art.cover_media_url || null,
+          details: { category: art.category },
+        },
+      });
+      setStudioProject(res.project);
+      toast.success("Carrossel gerado no Studio Machine!");
+    } catch (err: any) {
+      toast.error("Erro ao gerar carrossel: " + (err.message || "Tente novamente."));
+    } finally {
+      setIsGeneratingCarousel(false);
+    }
+  };
+
+  const handleGenerateCarouselFromMined = async (mined: MinedArticleDTO) => {
+    setIsGeneratingCarousel(true);
+    try {
+      const res = await generateCarouselFromMinedContent({
+        data: {
+          contentType: "noticias",
+          itemId: mined.id,
+          title: mined.ai_structured_title || mined.raw_title || "Sem Título",
+          summary: mined.ai_structured_subtitle || mined.ai_summary || "",
+          coverUrl: mined.ai_suggested_cover_url,
+          details: {
+            category: mined.ai_suggested_category,
+            ai_structured_sections: mined.ai_structured_sections,
+          },
+        },
+      });
+     setStudioProject(res.project);
+     toast.success("Carrossel gerado no Studio Machine!");
+   } catch (err: any) {
+     toast.error("Erro ao gerar carrossel: " + (err.message || "Tente novamente."));
+   } finally {
+     setIsGeneratingCarousel(false);
+   }
+ };
 
  const refreshArticles = async () => {
  const updated = await listWorkspaceArticles().catch(() => []);
@@ -220,6 +279,17 @@ function WorkspaceNoticiasIndexPage() {
  </div>
 
  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+ <Button
+   variant="outline"
+   size="sm"
+   onClick={() => handleGenerateCarouselFromArticle(art)}
+   disabled={isGeneratingCarousel}
+   className="h-8 px-2.5 text-xs font-semibold rounded-xl gap-1 border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10"
+   title="Gerar Carrossel no Studio para Instagram"
+ >
+   <Sparkles className="size-3.5" />
+   Carrossel
+ </Button>
  <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs">
  <Link to="/noticias/$slug" params={{ slug: art.slug }} target="_blank">
  <ExternalLink className="size-3.5 mr-1" />
@@ -258,14 +328,21 @@ function WorkspaceNoticiasIndexPage() {
  >
  <div className="flex items-start justify-between gap-4">
  <div className="flex items-start gap-3 min-w-0">
- {mined.ai_suggested_cover_url && (
- <img
- src={mined.ai_suggested_cover_url}
- alt=""
- className="size-14 rounded-xl object-cover shrink-0 bg-muted"
- onError={(e) => (e.currentTarget.style.display = "none")}
- />
- )}
+                  <div className="relative size-14 rounded-xl overflow-hidden bg-muted shrink-0">
+                    <img
+                      src={mined.ai_suggested_cover_url || getFallbackThematicImage(mined.ai_suggested_category)}
+                      alt=""
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = getFallbackThematicImage(mined.ai_suggested_category);
+                      }}
+                    />
+                    {!isHealthyImageUrl(mined.ai_suggested_cover_url) && (
+                      <span className="absolute bottom-0 right-0 rounded-tl-md bg-amber-500 text-[8px] font-bold px-1 text-white" title="Fallback fotográfico em alta definição">
+                        HD
+                      </span>
+                    )}
+                  </div>
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
  {mined.ai_suggested_kicker && (
@@ -293,20 +370,31 @@ function WorkspaceNoticiasIndexPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2 shrink-0">
- <Button
- size="sm"
- disabled={curatingId === mined.id}
- onClick={() => handleApproveMined(mined)}
- className="rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1 h-8"
- >
- {curatingId === mined.id ? (
- <Loader2 className="size-3.5 animate-spin" />
- ) : (
- <ThumbsUp className="size-3.5" />
- )}
- Aprovar
- </Button>
+ <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleGenerateCarouselFromMined(mined)}
+                    disabled={isGeneratingCarousel}
+                    className="rounded-xl font-bold text-xs border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 gap-1 h-8"
+                    title="Gerar Carrossel no Studio para Instagram"
+                  >
+                    <Sparkles className="size-3.5" />
+                    Carrossel
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={curatingId === mined.id}
+                    onClick={() => handleApproveMined(mined)}
+                    className="rounded-xl font-bold text-xs gap-1 h-8"
+                  >
+                    {curatingId === mined.id ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <ThumbsUp className="size-3.5" />
+                    )}
+                    Aprovar
+                  </Button>
  <Button
  variant="outline"
  size="sm"
@@ -384,6 +472,16 @@ function WorkspaceNoticiasIndexPage() {
  )}
  </TabsContent>
  </Tabs>
+
+ {/* MODAL STUDIO MACHINE ESCAMAS */}
+ {studioProject && (
+   <CarouselStudioEditor
+     project={studioProject}
+     isOpen={!!studioProject}
+     onClose={() => setStudioProject(null)}
+     onProjectUpdated={(up) => setStudioProject(up)}
+   />
+ )}
  </div>
  );
 }

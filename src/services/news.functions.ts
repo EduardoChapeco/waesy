@@ -152,6 +152,7 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  article: NewsArticleDTO | null;
  sponsors: SponsorDTO[];
  related: NewsArticleDTO[];
+ linkedEvent?: any;
  }> => {
  const supabase = getAnonServerClient();
 
@@ -173,7 +174,7 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  .maybeSingle();
 
  if (!error && articleData) {
- const [sponsorsRes, relatedRes] = await Promise.all([
+ const [sponsorsRes, relatedRes, eventRelRes] = await Promise.all([
  supabase
  .from("sponsors")
  .select("*")
@@ -188,19 +189,29 @@ export const getArticleDetail = createServerFn({ method: "GET" })
  .neq("id", articleData.id)
  .order("published_at", { ascending: false })
  .limit(4),
+ supabase
+ .from("event_news_relations")
+ .select(
+ "events(id, title, event_date, location, venue, cover_image, is_external, external_ticket_url, price_min_cents, rsvp_going_count)",
+ )
+ .eq("news_article_id", articleData.id)
+ .limit(1),
  ]);
+
+ const linkedEvent = (eventRelRes?.data?.[0] as any)?.events || null;
 
  return {
  article: articleData as any,
  sponsors: (sponsorsRes.data || []) as SponsorDTO[],
  related: (relatedRes.data || []) as NewsArticleDTO[],
+ linkedEvent,
  };
  }
  } catch (err) {
  console.warn("[news] Erro ao buscar detalhe do artigo no banco:", err);
  }
 
- return { article: null, sponsors: [], related: [] };
+ return { article: null, sponsors: [], related: [], linkedEvent: null };
  },
  );
 

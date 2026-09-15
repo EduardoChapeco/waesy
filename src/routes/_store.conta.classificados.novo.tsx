@@ -2,13 +2,13 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info, Trash2, Plus } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
-import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, airportLabel } from "@/lib/classifieds/canonical-airports";
+import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { PhoneField } from "@/components/ui/phone-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { formatMoney } from "@/lib/money";
 import {
@@ -69,7 +70,7 @@ import {
  getRegimeLabel,
  getWorkplaceModelLabel,
 } from "@/lib/classifieds/canonical-hiring";
-import { ChevronDown, ChevronUp, CheckCircle, GraduationCap, Award, SlidersHorizontal } from "lucide-react";
+// (ChevronDown, ChevronUp merged into main lucide import above)
 import { z } from "zod";
 
 const ClassifiedSearchSchema = z.object({
@@ -290,6 +291,20 @@ function NovoClassificadoPage() {
       return NICHE_CARDS.find((n) => n.id === selectedType);
     }
     if (initialData) {
+      const savedNiche = initialData.attributes?.niche;
+      if (savedNiche) {
+        const found = NICHE_CARDS.find((n) => n.id === savedNiche);
+        if (found) return found;
+      }
+      if (initialData.category === "travel") {
+        return NICHE_CARDS.find((n) => n.id === "viagem");
+      }
+      if (initialData.category === "equipment") {
+        return NICHE_CARDS.find((n) => n.id === "equipamento");
+      }
+      if (initialData.category === "donation") {
+        return NICHE_CARDS.find((n) => n.id === "doacao");
+      }
       if (initialData.category === "real_estate") {
         return initialData.deal_type === "temporada"
           ? NICHE_CARDS.find((n) => n.id === "hospedagem")
@@ -713,6 +728,109 @@ function SpecializedClassifiedEditor({
   const [travelFlightDuration, setTravelFlightDuration] = useState(
     initialData?.attributes?.flight_details?.duration_text || ""
   );
+
+  // ── Transporte Terrestre / Excursão ──
+  const [travelBusCategory, setTravelBusCategory] = useState(
+    initialData?.attributes?.flight_details?.bus_category || ""
+  );
+  const [travelBusCompany, setTravelBusCompany] = useState(
+    initialData?.attributes?.flight_details?.bus_company || ""
+  );
+  const [travelDepartureCity, setTravelDepartureCity] = useState(
+    initialData?.attributes?.flight_details?.departure_city || ""
+  );
+  const [travelMeetingPoint, setTravelMeetingPoint] = useState(
+    initialData?.attributes?.flight_details?.meeting_point || ""
+  );
+  const [travelBoardingGatewayInput, setTravelBoardingGatewayInput] = useState("");
+  const [travelBoardingGateways, setTravelBoardingGateways] = useState<string[]>(
+    initialData?.attributes?.flight_details?.boarding_gateways || []
+  );
+  const [travelReturnDepartureTime, setTravelReturnDepartureTime] = useState(
+    initialData?.attributes?.flight_details?.return_departure_time || ""
+  );
+  const [travelGuideService, setTravelGuideService] = useState(
+    initialData?.attributes?.flight_details?.guide_service || ""
+  );
+
+  // ── Multimodal / Combo ──
+  const [travelComboFromIATA, setTravelComboFromIATA] = useState(
+    initialData?.attributes?.flight_details?.combo_flight_from_iata || ""
+  );
+  const [travelComboToIATA, setTravelComboToIATA] = useState(
+    initialData?.attributes?.flight_details?.combo_flight_to_iata || ""
+  );
+  const [travelComboAirline, setTravelComboAirline] = useState(
+    initialData?.attributes?.flight_details?.combo_airline || ""
+  );
+  const [travelComboFlightPrice, setTravelComboFlightPrice] = useState(
+    initialData?.attributes?.flight_details?.combo_flight_price_text || ""
+  );
+  const [travelTransferVehicle, setTravelTransferVehicle] = useState(
+    initialData?.attributes?.flight_details?.transfer_vehicle || ""
+  );
+  const [travelTransferFrom, setTravelTransferFrom] = useState(
+    initialData?.attributes?.flight_details?.transfer_from || ""
+  );
+  const [travelTransferTo, setTravelTransferTo] = useState(
+    initialData?.attributes?.flight_details?.transfer_to || ""
+  );
+  const [travelTransferDuration, setTravelTransferDuration] = useState(
+    initialData?.attributes?.flight_details?.transfer_duration || ""
+  );
+  const [travelTransferTime, setTravelTransferTime] = useState(
+    initialData?.attributes?.flight_details?.transfer_departure_time || ""
+  );
+  const [travelComboNotes, setTravelComboNotes] = useState(
+    initialData?.attributes?.flight_details?.combo_notes || ""
+  );
+
+  // ── Cruzeiro ──
+  const [travelShipName, setTravelShipName] = useState(
+    initialData?.attributes?.flight_details?.ship_name || ""
+  );
+  const [travelCruiseLine, setTravelCruiseLine] = useState(
+    initialData?.attributes?.flight_details?.cruise_line || ""
+  );
+  const [travelCabinCategory, setTravelCabinCategory] = useState(
+    initialData?.attributes?.flight_details?.cabin_category || ""
+  );
+  const [travelEmbarkationPort, setTravelEmbarkationPort] = useState(
+    initialData?.attributes?.flight_details?.embarkation_port || ""
+  );
+
+  // ── Múltiplas Saídas / Datas ──
+  const [travelDepartureOptions, setTravelDepartureOptions] = useState<DepartureOption[]>(
+    initialData?.attributes?.departure_options || []
+  );
+
+  // ── Helpers para gateway tags ──
+  const handleAddGateway = () => {
+    const v = travelBoardingGatewayInput.trim();
+    if (!v || travelBoardingGateways.includes(v)) return;
+    setTravelBoardingGateways((prev) => [...prev, v]);
+    setTravelBoardingGatewayInput("");
+  };
+  const handleRemoveGateway = (g: string) =>
+    setTravelBoardingGateways((prev) => prev.filter((x) => x !== g));
+
+  // ── Helpers para múltiplas saídas ──
+  const handleAddDeparture = () => {
+    const newOpt: DepartureOption = {
+      id: crypto.randomUUID(),
+      departure_date: "",
+      return_date: "",
+      status: "confirmed",
+      label: `Saída ${travelDepartureOptions.length + 1}`,
+    };
+    setTravelDepartureOptions((prev) => [...prev, newOpt]);
+  };
+  const handleUpdateDeparture = (id: string, patch: Partial<DepartureOption>) =>
+    setTravelDepartureOptions((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, ...patch } : d))
+    );
+  const handleRemoveDeparture = (id: string) =>
+    setTravelDepartureOptions((prev) => prev.filter((d) => d.id !== id));
   const [travelBioBullets, setTravelBioBullets] = useState<string[]>(() => {
     if (Array.isArray(initialData?.attributes?.bio_bullets) && initialData.attributes.bio_bullets.length > 0) {
       return initialData.attributes.bio_bullets;
@@ -843,6 +961,83 @@ function SpecializedClassifiedEditor({
   const [acceptsTrade, setAcceptsTrade] = useState(false);
   const [cancellationPolicy, setCancellationPolicy] = useState<"flexible" | "moderate" | "strict" | "negotiable">("flexible");
 
+  // Computadores Canônicos
+  const [computerType, setComputerType] = useState("Notebook");
+  const [computerBrand, setComputerBrand] = useState("Dell");
+  const [computerProcessor, setComputerProcessor] = useState("Intel Core i5");
+  const [computerRam, setComputerRam] = useState("16 GB");
+  const [computerStorage, setComputerStorage] = useState("512 GB SSD");
+
+  // Eletrodomésticos Canônicos
+  const [applianceType, setApplianceType] = useState("Geladeira / Refrigerador");
+  const [applianceBrand, setApplianceBrand] = useState("Brastemp");
+  const [applianceVoltage, setApplianceVoltage] = useState("220V");
+
+  // Games Canônicos
+  const [gameConsole, setGameConsole] = useState("PlayStation 5");
+
+  // Moda / Brechó Canônico
+  const [fashionCategory, setFashionCategory] = useState("Roupas em Geral");
+  const [fashionBrand, setFashionBrand] = useState("");
+
+  // Veículo Procedência
+  const [vehicleProvenance, setVehicleProvenance] = useState<string[]>([]);
+
+  // Móveis & Brechó
+  const [furnitureRoom, setFurnitureRoom] = useState("Sala");
+  const [furnitureMaterial, setFurnitureMaterial] = useState("Madeira Maciça");
+  const [fashionGender, setFashionGender] = useState("Unissex");
+  const [fashionSize, setFashionSize] = useState("M");
+
+  // Specialized: Oportunidade / Vaga (Microfase 77B)
+  const [jobRole, setJobRole] = useState("");
+  const [jobModel, setJobModel] = useState<"presencial" | "hibrido" | "remoto">("presencial");
+  const [jobRegime, setJobRegime] = useState<"CLT" | "PJ" | "Estágio" | "Freelancer">("CLT");
+  const [jobSalaryRange, setJobSalaryRange] = useState("");
+  const [jobMinEducation, setJobMinEducation] = useState("Ensino Médio Completo");
+  const [jobExperienceLevel, setJobExperienceLevel] = useState("Júnior (1 a 2 anos)");
+  const [jobApplicationType, setJobApplicationType] = useState<"perfil_waesy" | "whatsapp" | "email_cv">("perfil_waesy");
+  const [jobBenefits, setJobBenefits] = useState<string[]>([
+    "Vale Refeição / Alimentação",
+    "Vale Transporte",
+    "Plano de Saúde",
+  ]);
+  const [jobSkills, setJobSkills] = useState<string[]>(["Atendimento", "Comunicação"]);
+  const [newSkillInput, setNewSkillInput] = useState("");
+
+  // Specialized: Logística Avançada & Formas de Pagamento
+  const [deliveryMode, setDeliveryMode] = useState<"both" | "pickup" | "local_delivery" | "shipping">("both");
+  const [freeShippingLocal, setFreeShippingLocal] = useState(false);
+
+  // Specialized: Serviço
+  const [serviceModality, setServiceModality] = useState<"presencial" | "remoto" | "domicilio">(
+    "presencial",
+  );
+  const [serviceArea, setServiceArea] = useState("");
+  const [serviceDuration, setServiceDuration] = useState("60");
+  const [servicePricingType, setServicePricingType] = useState<"fixo" | "por_hora" | "a_combinar">(
+    "fixo",
+  );
+  const [serviceBookingEnabled, setServiceBookingEnabled] = useState(true);
+  const [serviceAvailableDays, setServiceAvailableDays] = useState<string[]>([
+    "seg",
+    "ter",
+    "qua",
+    "qui",
+    "sex",
+  ]);
+  const [serviceHoursStart, setServiceHoursStart] = useState("08:00");
+  const [serviceHoursEnd, setServiceHoursEnd] = useState("18:00");
+  const [serviceDailySlots, setServiceDailySlots] = useState("8");
+
+  // Specialized: Produto Digital & Downloads
+  const [digitalFileType, setDigitalFileType] = useState("ebook");
+  const [digitalFileUrl, setDigitalFileUrl] = useState<string | null>(null);
+  const [digitalFileName, setDigitalFileName] = useState<string | null>(null);
+  const [digitalFileSize, setDigitalFileSize] = useState<number | null>(null);
+  const [digitalDownloadLimit, setDigitalDownloadLimit] = useState("5");
+  const [digitalPreviewUrl, setDigitalPreviewUrl] = useState("");
+
   // Hydration effect for editing existing classified
   useEffect(() => {
     if (!initialData) return;
@@ -851,6 +1046,7 @@ function SpecializedClassifiedEditor({
     if (initialData.price_cents !== undefined) setPriceCents(initialData.price_cents ?? undefined);
     if (initialData.negotiable !== undefined) setNegotiable(initialData.negotiable);
     if (initialData.location_name || initialData.location_text) setLocationName(initialData.location_name || initialData.location_text);
+    if (initialData.attributes?.hide_location !== undefined) setHideLocation(!!initialData.attributes.hide_location);
     if (initialData.contact_whatsapp || initialData.whatsapp) setWhatsapp(initialData.contact_whatsapp || initialData.whatsapp);
     if (Array.isArray(initialData.images)) setImages(initialData.images);
 
@@ -871,11 +1067,22 @@ function SpecializedClassifiedEditor({
       if (initialData.attributes.accepts_cash !== undefined) setAcceptsCash(!!initialData.attributes.accepts_cash);
       if (initialData.attributes.accepts_trade !== undefined) setAcceptsTrade(!!initialData.attributes.accepts_trade);
       if (initialData.attributes.cancellation_policy) setCancellationPolicy(initialData.attributes.cancellation_policy);
+      if (initialData.attributes.city && initialData.attributes.state) {
+        setStructuredLoc({ city: initialData.attributes.city, state: initialData.attributes.state, neighborhood: initialData.attributes.neighborhood });
+      }
+
+      // Viagem
       if (Array.isArray(initialData.attributes.story_highlights)) setTravelStoryHighlights(initialData.attributes.story_highlights);
       if (Array.isArray(initialData.attributes.itinerary_days)) setTravelItineraryDays(initialData.attributes.itinerary_days);
       if (initialData.attributes.destination_city) setTravelDestinationCity(initialData.attributes.destination_city);
       if (initialData.attributes.departure_date) setTravelDepartureDate(initialData.attributes.departure_date);
       if (initialData.attributes.return_date) setTravelReturnDate(initialData.attributes.return_date);
+      if (Array.isArray(initialData.attributes.bio_bullets) && initialData.attributes.bio_bullets.length > 0) {
+        setTravelBioBullets(initialData.attributes.bio_bullets);
+      }
+      if (Array.isArray(initialData.attributes.departure_options)) {
+        setTravelDepartureOptions(initialData.attributes.departure_options);
+      }
       if (initialData.attributes.flight_details) {
         if (initialData.attributes.flight_details.departure_iata) setTravelDepartureIATA(initialData.attributes.flight_details.departure_iata);
         if (initialData.attributes.flight_details.arrival_iata) setTravelArrivalIATA(initialData.attributes.flight_details.arrival_iata);
@@ -886,7 +1093,79 @@ function SpecializedClassifiedEditor({
         if (initialData.attributes.flight_details.arrival_time) setTravelArrivalTime(initialData.attributes.flight_details.arrival_time);
         if (initialData.attributes.flight_details.price_text) setTravelFlightPrice(initialData.attributes.flight_details.price_text);
         if (initialData.attributes.flight_details.duration_text) setTravelFlightDuration(initialData.attributes.flight_details.duration_text);
+        if (Array.isArray(initialData.attributes.flight_details.boarding_gateways)) {
+          setTravelBoardingGateways(initialData.attributes.flight_details.boarding_gateways);
+        }
       }
+
+      // Equipamento
+      if (initialData.attributes.equipment_period) setEquipmentPeriod(initialData.attributes.equipment_period);
+      if (initialData.attributes.deposit_cents !== undefined) setEquipmentDepositCents(initialData.attributes.deposit_cents);
+
+      // Digital
+      if (initialData.attributes.digital_file_type) setDigitalFileType(initialData.attributes.digital_file_type);
+      if (initialData.attributes.digital_file_name) setDigitalFileName(initialData.attributes.digital_file_name);
+      if (initialData.attributes.digital_file_size_bytes !== undefined) setDigitalFileSize(initialData.attributes.digital_file_size_bytes);
+      if (initialData.attributes.digital_file_url || initialData.digital_file_url) setDigitalFileUrl(initialData.attributes.digital_file_url || initialData.digital_file_url);
+      if (initialData.attributes.download_limit !== undefined) setDigitalDownloadLimit(String(initialData.attributes.download_limit));
+      if (initialData.attributes.digital_preview_url) setDigitalPreviewUrl(initialData.attributes.digital_preview_url);
+
+      // Serviço
+      if (initialData.attributes.modality) setServiceModality(initialData.attributes.modality);
+      if (initialData.attributes.service_area) setServiceArea(initialData.attributes.service_area);
+      if (initialData.attributes.service_duration_minutes || initialData.attributes.estimated_duration) {
+        setServiceDuration(String(initialData.attributes.service_duration_minutes || initialData.attributes.estimated_duration));
+      }
+      if (initialData.attributes.pricing_type) setServicePricingType(initialData.attributes.pricing_type);
+      if (initialData.attributes.booking_enabled !== undefined) setServiceBookingEnabled(!!initialData.attributes.booking_enabled);
+      if (Array.isArray(initialData.attributes.available_weekdays)) setServiceAvailableDays(initialData.attributes.available_weekdays);
+      if (initialData.attributes.working_hours_start) setServiceHoursStart(initialData.attributes.working_hours_start);
+      if (initialData.attributes.working_hours_end) setServiceHoursEnd(initialData.attributes.working_hours_end);
+      if (initialData.attributes.available_slots !== undefined) setServiceDailySlots(String(initialData.attributes.available_slots));
+
+      // Vaga
+      if (initialData.attributes.role) setJobRole(initialData.attributes.role);
+      if (initialData.attributes.work_model) setJobModel(initialData.attributes.work_model);
+      if (initialData.attributes.regime) setJobRegime(initialData.attributes.regime);
+      if (initialData.attributes.work_schedule) setJobWorkSchedule(initialData.attributes.work_schedule);
+      if (initialData.attributes.salary_range) setJobSalaryRange(initialData.attributes.salary_range);
+      if (initialData.attributes.min_education) setJobMinEducation(initialData.attributes.min_education);
+      if (initialData.attributes.experience_level) setJobExperienceLevel(initialData.attributes.experience_level);
+      if (Array.isArray(initialData.attributes.application_methods)) setJobAcceptedMethods(initialData.attributes.application_methods);
+      if (Array.isArray(initialData.attributes.benefits)) setJobBenefits(initialData.attributes.benefits);
+      if (Array.isArray(initialData.attributes.skills)) setJobSkills(initialData.attributes.skills);
+
+      // Desapego & Bens Físicos
+      if (initialData.attributes.warranty) setItemWarranty(initialData.attributes.warranty);
+      if (initialData.attributes.brand) {
+        setPhoneBrand(initialData.attributes.brand);
+        setComputerBrand(initialData.attributes.brand);
+        setApplianceBrand(initialData.attributes.brand);
+        setFashionBrand(initialData.attributes.brand);
+      }
+      if (initialData.attributes.model) setPhoneModel(initialData.attributes.model);
+      if (initialData.attributes.storage) {
+        setPhoneStorage(initialData.attributes.storage);
+        setComputerStorage(initialData.attributes.storage);
+      }
+      if (initialData.attributes.battery_health !== undefined) setPhoneBatteryHealth(String(initialData.attributes.battery_health));
+      if (Array.isArray(initialData.attributes.accessories)) setPhoneAccessories(initialData.attributes.accessories);
+      if (initialData.attributes.computer_type) setComputerType(initialData.attributes.computer_type);
+      if (initialData.attributes.processor) setComputerProcessor(initialData.attributes.processor);
+      if (initialData.attributes.ram) setComputerRam(initialData.attributes.ram);
+      if (initialData.attributes.appliance_type) setApplianceType(initialData.attributes.appliance_type);
+      if (initialData.attributes.voltage) setApplianceVoltage(initialData.attributes.voltage);
+      if (initialData.attributes.console) setGameConsole(initialData.attributes.console);
+      if (initialData.attributes.room) setFurnitureRoom(initialData.attributes.room);
+      if (initialData.attributes.material) setFurnitureMaterial(initialData.attributes.material);
+      if (initialData.attributes.fashion_category) setFashionCategory(initialData.attributes.fashion_category);
+      if (initialData.attributes.gender) setFashionGender(initialData.attributes.gender);
+      if (initialData.attributes.size) setFashionSize(initialData.attributes.size);
+      if (Array.isArray(initialData.attributes.provenance)) setVehicleProvenance(initialData.attributes.provenance);
+
+      // Logística
+      if (initialData.attributes.delivery_mode) setDeliveryMode(initialData.attributes.delivery_mode);
+      if (initialData.attributes.free_shipping_local !== undefined) setFreeShippingLocal(!!initialData.attributes.free_shipping_local);
     } else if (initialData.accepts_card !== undefined) {
       setAcceptsCard(!!initialData.accepts_card);
     }
@@ -952,84 +1231,6 @@ function SpecializedClassifiedEditor({
     if (initialData.condition) setItemCondition(initialData.condition);
   }, [initialData, initialSubcategory]);
 
-
- // Computadores Canônicos
- const [computerType, setComputerType] = useState("Notebook");
- const [computerBrand, setComputerBrand] = useState("Dell");
- const [computerProcessor, setComputerProcessor] = useState("Intel Core i5");
- const [computerRam, setComputerRam] = useState("16 GB");
- const [computerStorage, setComputerStorage] = useState("512 GB SSD");
-
- // Eletrodomésticos Canônicos
- const [applianceType, setApplianceType] = useState("Geladeira / Refrigerador");
- const [applianceBrand, setApplianceBrand] = useState("Brastemp");
- const [applianceVoltage, setApplianceVoltage] = useState("220V");
-
- // Games Canônicos
- const [gameConsole, setGameConsole] = useState("PlayStation 5");
-
- // Moda / Brechó Canônico
- const [fashionCategory, setFashionCategory] = useState("Roupas em Geral");
- const [fashionBrand, setFashionBrand] = useState("");
-
- // Veículo Procedência
- const [vehicleProvenance, setVehicleProvenance] = useState<string[]>([]);
-
- // Móveis & Brechó
- const [furnitureRoom, setFurnitureRoom] = useState("Sala");
- const [furnitureMaterial, setFurnitureMaterial] = useState("Madeira Maciça");
- const [fashionGender, setFashionGender] = useState("Unissex");
- const [fashionSize, setFashionSize] = useState("M");
-
- // Specialized: Oportunidade / Vaga (Microfase 77B)
- const [jobRole, setJobRole] = useState("");
- const [jobModel, setJobModel] = useState<"presencial" | "hibrido" | "remoto">("presencial");
- const [jobRegime, setJobRegime] = useState<"CLT" | "PJ" | "Estágio" | "Freelancer">("CLT");
- const [jobSalaryRange, setJobSalaryRange] = useState("");
- const [jobMinEducation, setJobMinEducation] = useState("Ensino Médio Completo");
- const [jobExperienceLevel, setJobExperienceLevel] = useState("Júnior (1 a 2 anos)");
- const [jobApplicationType, setJobApplicationType] = useState<"perfil_waesy" | "whatsapp" | "email_cv">("perfil_waesy");
- const [jobBenefits, setJobBenefits] = useState<string[]>([
- "Vale Refeição / Alimentação",
- "Vale Transporte",
- "Plano de Saúde",
- ]);
- const [jobSkills, setJobSkills] = useState<string[]>(["Atendimento", "Comunicação"]);
- const [newSkillInput, setNewSkillInput] = useState("");
-
- // Specialized: Logística Avançada & Formas de Pagamento
- const [deliveryMode, setDeliveryMode] = useState<"both" | "pickup" | "local_delivery" | "shipping">("both");
-  const [freeShippingLocal, setFreeShippingLocal] = useState(false);
-
-  // Specialized: Serviço
-  const [serviceModality, setServiceModality] = useState<"presencial" | "remoto" | "domicilio">(
-    "presencial",
-  );
-  const [serviceArea, setServiceArea] = useState("");
-  const [serviceDuration, setServiceDuration] = useState("60");
-  const [servicePricingType, setServicePricingType] = useState<"fixo" | "por_hora" | "a_combinar">(
-    "fixo",
-  );
-  const [serviceBookingEnabled, setServiceBookingEnabled] = useState(true);
-  const [serviceAvailableDays, setServiceAvailableDays] = useState<string[]>([
-    "seg",
-    "ter",
-    "qua",
-    "qui",
-    "sex",
-  ]);
-  const [serviceHoursStart, setServiceHoursStart] = useState("08:00");
-  const [serviceHoursEnd, setServiceHoursEnd] = useState("18:00");
-  const [serviceDailySlots, setServiceDailySlots] = useState("8");
-
-  // Specialized: Produto Digital & Downloads
-  const [digitalFileType, setDigitalFileType] = useState("ebook");
-  const [digitalFileUrl, setDigitalFileUrl] = useState<string | null>(null);
-  const [digitalFileName, setDigitalFileName] = useState<string | null>(null);
-  const [digitalFileSize, setDigitalFileSize] = useState<number | null>(null);
-  const [digitalDownloadLimit, setDigitalDownloadLimit] = useState("5");
-  const [digitalPreviewUrl, setDigitalPreviewUrl] = useState("");
-
   const toggleItem = (list: string[], setList: (l: string[]) => void, item: string) => {
     setList(list.includes(item) ? list.filter((i) => i !== item) : [...list, item]);
   };
@@ -1057,6 +1258,8 @@ function SpecializedClassifiedEditor({
       // Monta os atributos dinâmicos específicos da categoria
       const attributes: Record<string, any> = {
         niche: niche.id,
+        hide_location: hideLocation,
+        location_privacy: hideLocation ? "hidden" : "full",
         city: structuredLoc?.city || undefined,
         state: structuredLoc?.state || undefined,
         neighborhood: structuredLoc?.neighborhood || undefined,
@@ -1109,17 +1312,42 @@ function SpecializedClassifiedEditor({
         attributes.return_date = travelReturnDate;
         attributes.max_installments = travelMaxInstallments;
         attributes.bio_bullets = travelBioBullets.map((b) => b.trim()).filter(Boolean);
+        attributes.departure_options = travelDepartureOptions;
         attributes.flight_details = {
+          transport_type: travelTransportType,
+          // Aéreo
           departure_iata: travelDepartureIATA,
           arrival_iata: travelArrivalIATA,
           airline: travelAirline,
-          transport_type: travelTransportType,
           connections: travelConnections,
           departure_time: travelDepartureTime,
           arrival_time: travelArrivalTime,
           price_text: travelFlightPrice,
           duration_text: travelFlightDuration,
-          origin_text: "Consulte opções saindo da sua cidade",
+          // Terrestre / Excursão
+          bus_category: travelBusCategory,
+          bus_company: travelBusCompany,
+          departure_city: travelDepartureCity,
+          meeting_point: travelMeetingPoint,
+          boarding_gateways: travelBoardingGateways,
+          return_departure_time: travelReturnDepartureTime,
+          guide_service: travelGuideService,
+          // Combo
+          combo_flight_from_iata: travelComboFromIATA,
+          combo_flight_to_iata: travelComboToIATA,
+          combo_airline: travelComboAirline,
+          combo_flight_price_text: travelComboFlightPrice,
+          transfer_vehicle: travelTransferVehicle,
+          transfer_from: travelTransferFrom,
+          transfer_to: travelTransferTo,
+          transfer_duration: travelTransferDuration,
+          transfer_departure_time: travelTransferTime,
+          combo_notes: travelComboNotes,
+          // Cruzeiro
+          ship_name: travelShipName,
+          cruise_line: travelCruiseLine,
+          cabin_category: travelCabinCategory,
+          embarkation_port: travelEmbarkationPort,
         };
       } else if (niche.id === "equipamento") {
         attributes.equipment_period = equipmentPeriod;
@@ -1319,6 +1547,7 @@ function SpecializedClassifiedEditor({
           whatsapp: whatsapp.trim() || undefined,
           contact_whatsapp: whatsapp.trim() || undefined,
           location_name: locationName.trim() || undefined,
+          hide_location: hideLocation,
           images: images,
           attributes,
           status: "active",
@@ -1427,11 +1656,11 @@ function SpecializedClassifiedEditor({
       images: images || [],
       photos: images || [],
       media: images || [],
-      city: structuredLoc?.city || (locationName ? locationName.split(",")[0].trim() : "Chapecó"),
-      neighborhood: (locationName && locationName.split("-")[1]?.trim()) || "",
-      location_name: locationName || "",
-      location_lat: structuredLoc?.lat || null,
-      location_lng: structuredLoc?.lng || null,
+      city: hideLocation ? "" : (structuredLoc?.city || (locationName ? locationName.split(",")[0].trim() : "Chapecó")),
+      neighborhood: hideLocation ? "" : ((locationName && locationName.split("-")[1]?.trim()) || ""),
+      location_name: hideLocation ? "" : (locationName || ""),
+      location_lat: hideLocation ? null : (structuredLoc?.lat || null),
+      location_lng: hideLocation ? null : (structuredLoc?.lng || null),
       contact_whatsapp: whatsapp || "",
       contact_phone: whatsapp || "",
       whatsapp: whatsapp || "",
@@ -1464,16 +1693,38 @@ function SpecializedClassifiedEditor({
         guests_text: travelGuests,
         guest_capacity: travelGuests,
         dates_text: travelDates,
+        departure_options: travelDepartureOptions,
         flight_details: {
+          transport_type: travelTransportType,
           departure_iata: travelDepartureIATA,
           arrival_iata: travelArrivalIATA,
           airline: travelAirline,
-          transport_type: travelTransportType,
           connections: travelConnections,
           departure_time: travelDepartureTime,
           arrival_time: travelArrivalTime,
           price_text: travelFlightPrice,
           duration_text: travelFlightDuration,
+          bus_category: travelBusCategory,
+          bus_company: travelBusCompany,
+          departure_city: travelDepartureCity,
+          meeting_point: travelMeetingPoint,
+          boarding_gateways: travelBoardingGateways,
+          return_departure_time: travelReturnDepartureTime,
+          guide_service: travelGuideService,
+          combo_flight_from_iata: travelComboFromIATA,
+          combo_flight_to_iata: travelComboToIATA,
+          combo_airline: travelComboAirline,
+          combo_flight_price_text: travelComboFlightPrice,
+          transfer_vehicle: travelTransferVehicle,
+          transfer_from: travelTransferFrom,
+          transfer_to: travelTransferTo,
+          transfer_duration: travelTransferDuration,
+          transfer_departure_time: travelTransferTime,
+          combo_notes: travelComboNotes,
+          ship_name: travelShipName,
+          cruise_line: travelCruiseLine,
+          cabin_category: travelCabinCategory,
+          embarkation_port: travelEmbarkationPort,
         },
         story_highlights: travelStoryHighlights,
         itinerary_days: travelItineraryDays,
@@ -1539,6 +1790,7 @@ function SpecializedClassifiedEditor({
     images,
     structuredLoc,
     locationName,
+    hideLocation,
     whatsapp,
     negotiable,
     acceptsTrade,
@@ -2097,115 +2349,474 @@ function SpecializedClassifiedEditor({
                   )}
                 </div>
 
-                {/* 2.3 — Voo e Transporte */}
-                <div className="space-y-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Plane className="size-3.5 text-primary" />
-                    Voo e Transporte
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Tipo de Transporte</Label>
-                      <Select value={travelTransportType} onValueChange={setTravelTransportType}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CANONICAL_TRANSPORT_TYPES.map((t) => (
-                            <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Companhia Aérea</Label>
-                      <Select value={travelAirline} onValueChange={setTravelAirline}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
-                          <SelectValue placeholder="Selecione..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CANONICAL_AIRLINES.map((a) => (
-                            <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Aeroporto de Saída (IATA)</Label>
-                      <Select value={travelDepartureIATA} onValueChange={setTravelDepartureIATA}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
-                          <SelectValue placeholder="XAP — Chapecó, SC" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-72">
-                          {CANONICAL_AIRPORTS.map((a) => (
-                            <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Aeroporto de Chegada (IATA)</Label>
-                      <Select value={travelArrivalIATA} onValueChange={setTravelArrivalIATA}>
-                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
-                          <SelectValue placeholder="FOR — Fortaleza, CE" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-72">
-                          {CANONICAL_AIRPORTS.map((a) => (
-                            <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Horário Embarque</Label>
-                      <Input
-                        type="time"
-                        value={travelDepartureTime}
-                        onChange={(e) => setTravelDepartureTime(e.target.value)}
-                        className="h-11 rounded-xl text-xs bg-background font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Horário Chegada</Label>
-                      <Input
-                        type="time"
-                        value={travelArrivalTime}
-                        onChange={(e) => setTravelArrivalTime(e.target.value)}
-                        className="h-11 rounded-xl text-xs bg-background font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Estimativa de Preço do Voo</Label>
-                      <Input
-                        value={travelFlightPrice}
-                        onChange={(e) => setTravelFlightPrice(e.target.value)}
-                        placeholder="Ex: R$ 1.139+"
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-foreground font-medium">Tempo de Voo / Percurso</Label>
-                      <Input
-                        value={travelFlightDuration}
-                        onChange={(e) => setTravelFlightDuration(e.target.value)}
-                        placeholder="Ex: 2h 15min"
-                        className="h-11 rounded-xl text-xs bg-background font-medium"
-                      />
-                    </div>
+                {/* 2.3 — Transporte Adaptativo (Polimórfico) */}
+                <div className="space-y-3">
+                  {/* Seletor de Modo */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <RouteIcon className="size-3.5 text-primary" />
+                      Logística de Transporte
+                    </p>
+                    <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+                      {CANONICAL_TRANSPORT_TYPES.find(t => t.id === travelTransportType)?.label || "Selecione"}
+                    </Badge>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-foreground font-medium">Conexões / Escalas</Label>
-                    <Select value={String(travelConnections)} onValueChange={(v) => setTravelConnections(Number(v))}>
-                      <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">✈️ Voo Direto (sem escala)</SelectItem>
-                        <SelectItem value="1">🔄 1 Conexão / Escala</SelectItem>
-                        <SelectItem value="2">🔄 2 Conexões</SelectItem>
-                        <SelectItem value="3">🔄 3+ Conexões</SelectItem>
-                      </SelectContent>
-                    </Select>
+
+                  {/* Chips de seleção de modo — visual, não dropdown */}
+                  <div className="flex flex-wrap gap-2">
+                    {CANONICAL_TRANSPORT_TYPES.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setTravelTransportType(t.id)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl border text-[11px] font-semibold transition-all cursor-pointer select-none",
+                          travelTransportType === t.id
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : "bg-background border-border/50 text-muted-foreground hover:border-primary/50 hover:text-primary"
+                        )}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* ── AÉREO ── */}
+                  {travelTransportType === "airplane" && (
+                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Plane className="size-3.5" /> Detalhes do Voo
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Aeroporto de Saída (IATA)</Label>
+                          <Select value={travelDepartureIATA} onValueChange={setTravelDepartureIATA}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectValue placeholder="XAP — Chapecó, SC" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-72">
+                              {CANONICAL_AIRPORTS.map((a) => (
+                                <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Aeroporto de Chegada (IATA)</Label>
+                          <Select value={travelArrivalIATA} onValueChange={setTravelArrivalIATA}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectValue placeholder="FOR — Fortaleza, CE" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-72">
+                              {CANONICAL_AIRPORTS.map((a) => (
+                                <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Companhia Aérea</Label>
+                          <Select value={travelAirline} onValueChange={setTravelAirline}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CANONICAL_AIRLINES.map((a) => (
+                                <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Conexões / Escalas</Label>
+                          <Select value={String(travelConnections)} onValueChange={(v) => setTravelConnections(Number(v))}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="0">✈️ Voo Direto (sem escala)</SelectItem>
+                              <SelectItem value="1">🔄 1 Conexão</SelectItem>
+                              <SelectItem value="2">🔄 2 Conexões</SelectItem>
+                              <SelectItem value="3">🔄 3+ Conexões</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Horário Embarque</Label>
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Horário Chegada (Destino)</Label>
+                          <Input type="time" value={travelArrivalTime} onChange={(e) => setTravelArrivalTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Estimativa de Preço do Aéreo</Label>
+                          <Input value={travelFlightPrice} onChange={(e) => setTravelFlightPrice(e.target.value)} placeholder="Ex: R$ 1.139+" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Duração do Voo</Label>
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 2h 15min" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── TERRESTRE / EXCURSÃO ── */}
+                  {travelTransportType === "bus" && (
+                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Bus className="size-3.5" /> Excursão Rodoviária
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Categoria do Veículo</Label>
+                          <Select value={travelBusCategory} onValueChange={setTravelBusCategory}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                              <SelectValue placeholder="Selecione o tipo..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CANONICAL_BUS_CATEGORIES.map((b) => (
+                                <SelectItem key={b.id} value={b.id}>{b.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Empresa / Fretadora</Label>
+                          <Input value={travelBusCompany} onChange={(e) => setTravelBusCompany(e.target.value)} placeholder="Ex: Expresso Itapemirim, Fretur SC..." className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Cidade / Ponto de Saída Principal</Label>
+                          <Input value={travelDepartureCity} onChange={(e) => setTravelDepartureCity(e.target.value)} placeholder="Ex: Chapecó, SC" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Horário de Embarque (Saída)</Label>
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                        </div>
+                        <div className="sm:col-span-2 space-y-1.5">
+                          <Label className="text-xs font-medium">Ponto de Encontro / Embarque</Label>
+                          <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Posto Bertaso (Rod. SC-480), Chapecó — 22:00h" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Horário Previsto de Retorno</Label>
+                          <Input type="time" value={travelReturnDepartureTime} onChange={(e) => setTravelReturnDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Tempo Total de Percurso</Label>
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 12h (ida), 14h (volta)" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                      </div>
+                      {/* Embarques na Rota (Gateways) */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium flex items-center gap-1.5">
+                          <Navigation className="size-3.5 text-primary" />
+                          Pontos de Embarque na Rota
+                        </Label>
+                        <p className="text-[10px] text-muted-foreground">Cidades ou paradas onde passageiros embarcam ao longo da rota (em ordem).</p>
+                        <div className="flex gap-2">
+                          <Input
+                            value={travelBoardingGatewayInput}
+                            onChange={(e) => setTravelBoardingGatewayInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddGateway(); } }}
+                            placeholder="Ex: Xaxim, Xanxerê, Joaçaba..."
+                            className="h-9 rounded-xl text-xs bg-background flex-1"
+                          />
+                          <Button type="button" variant="outline" size="sm" onClick={handleAddGateway} className="h-9 px-3 rounded-xl text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer">
+                            + Adicionar
+                          </Button>
+                        </div>
+                        {travelBoardingGateways.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {travelBoardingGateways.map((gw) => (
+                              <span key={gw} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-medium text-primary">
+                                <Navigation className="size-2.5" />
+                                {gw}
+                                <button type="button" onClick={() => handleRemoveGateway(gw)} className="size-3.5 hover:bg-destructive/20 rounded-full flex items-center justify-center ml-0.5">
+                                  <X className="size-2.5" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {/* Serviço de Guia */}
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Serviço de Guia Turístico</Label>
+                        <Select value={travelGuideService} onValueChange={setTravelGuideService}>
+                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                            <SelectValue placeholder="Selecione o serviço de guia..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CANONICAL_GUIDE_SERVICES.map((g) => (
+                              <SelectItem key={g.id} value={g.id}>{g.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── MULTIMODAL / COMBO ── */}
+                  {travelTransportType === "combo" && (
+                    <div className="space-y-3">
+                      {/* Leg 1: Voo */}
+                      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-1">
+                          <Plane className="size-3.5" /> Trecho 1 — Voo
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Aeroporto de Origem</Label>
+                            <Select value={travelComboFromIATA} onValueChange={setTravelComboFromIATA}>
+                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                                <SelectValue placeholder="XAP — Chapecó" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-72">
+                                {CANONICAL_AIRPORTS.map((a) => (
+                                  <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Aeroporto de Desembarque (Gateway)</Label>
+                            <Select value={travelComboToIATA} onValueChange={setTravelComboToIATA}>
+                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                                <SelectValue placeholder="FOR — Fortaleza" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-72">
+                                {CANONICAL_AIRPORTS.map((a) => (
+                                  <SelectItem key={a.iata} value={a.iata}>{airportLabel(a)}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Companhia Aérea</Label>
+                            <Select value={travelComboAirline} onValueChange={setTravelComboAirline}>
+                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                                <SelectValue placeholder="Selecione..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CANONICAL_AIRLINES.map((a) => (
+                                  <SelectItem key={a.id} value={a.id}>{a.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Estimativa do Aéreo</Label>
+                            <Input value={travelComboFlightPrice} onChange={(e) => setTravelComboFlightPrice(e.target.value)} placeholder="Ex: R$ 1.139+" className="h-11 rounded-xl text-xs bg-background" />
+                          </div>
+                        </div>
+                      </div>
+                      {/* Leg 2: Transfer */}
+                      <div className="rounded-2xl border border-amber-200/60 bg-amber-50/30 dark:bg-amber-950/10 p-4 space-y-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                          <RouteIcon className="size-3.5" /> Trecho 2 — Transfer Terrestre / Marítimo
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Veículo do Transfer</Label>
+                            <Select value={travelTransferVehicle} onValueChange={setTravelTransferVehicle}>
+                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                                <SelectValue placeholder="Ex: 4x4 Hilux, Van..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CANONICAL_TRANSFER_VEHICLES.map((v) => (
+                                  <SelectItem key={v.id} value={v.id}>{v.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Duração do Transfer</Label>
+                            <Input value={travelTransferDuration} onChange={(e) => setTravelTransferDuration(e.target.value)} placeholder="Ex: 4h, 2h30min" className="h-11 rounded-xl text-xs bg-background" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">De (Ponto de Partida do Transfer)</Label>
+                            <Input value={travelTransferFrom} onChange={(e) => setTravelTransferFrom(e.target.value)} placeholder="Ex: Fortaleza (Aeroporto FOR)" className="h-11 rounded-xl text-xs bg-background" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Até (Destino Final)</Label>
+                            <Input value={travelTransferTo} onChange={(e) => setTravelTransferTo(e.target.value)} placeholder="Ex: Jericoacoara, CE" className="h-11 rounded-xl text-xs bg-background" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Horário Saída do Transfer</Label>
+                            <Input type="time" value={travelTransferTime} onChange={(e) => setTravelTransferTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Serviço de Guia no Destino</Label>
+                            <Select value={travelGuideService} onValueChange={setTravelGuideService}>
+                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
+                                <SelectValue placeholder="Serviço de guia..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CANONICAL_GUIDE_SERVICES.map((g) => (
+                                  <SelectItem key={g.id} value={g.id}>{g.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="sm:col-span-2 space-y-1.5">
+                            <Label className="text-xs font-medium">Observações do Roteiro Multimodal</Label>
+                            <Input value={travelComboNotes} onChange={(e) => setTravelComboNotes(e.target.value)} placeholder="Ex: Transfer privativo, recomendamos cabine com mochila 30L..." className="h-11 rounded-xl text-xs bg-background" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── CRUZEIRO ── */}
+                  {travelTransportType === "cruise" && (
+                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Ship className="size-3.5" /> Detalhes do Cruzeiro
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Nome do Navio</Label>
+                          <Input value={travelShipName} onChange={(e) => setTravelShipName(e.target.value)} placeholder="Ex: MSC Grandiosa" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Armadora / Linha de Cruzeiros</Label>
+                          <Input value={travelCruiseLine} onChange={(e) => setTravelCruiseLine(e.target.value)} placeholder="Ex: MSC Cruzeiros, Costa Cruceros..." className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Categoria da Cabine</Label>
+                          <Input value={travelCabinCategory} onChange={(e) => setTravelCabinCategory(e.target.value)} placeholder="Ex: Cabine Interior, Balcão, Suite" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Porto de Embarque</Label>
+                          <Input value={travelEmbarkationPort} onChange={(e) => setTravelEmbarkationPort(e.target.value)} placeholder="Ex: Terminal de Passageiros Santos, SP" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Horário Embarque</Label>
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Duração da Cruzeiro</Label>
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 7 noites, 8 dias" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── TREM ── */}
+                  {travelTransportType === "train" && (
+                    <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <Train className="size-3.5" /> Detalhes do Trem
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Estação de Partida</Label>
+                          <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Estação da Luz — São Paulo, SP" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Horário de Partida</Label>
+                          <Input type="time" value={travelDepartureTime} onChange={(e) => setTravelDepartureTime(e.target.value)} className="h-11 rounded-xl text-xs bg-background font-mono" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Classe / Categoria</Label>
+                          <Input value={travelBusCategory} onChange={(e) => setTravelBusCategory(e.target.value)} placeholder="Ex: Classe Econômica, Primeira Classe..." className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Duração do Percurso</Label>
+                          <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 3h 40min" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── CARRO PRÓPRIO / HOTEL ONLY ── (sem logística de transporte) */}
+                  {(travelTransportType === "car" || travelTransportType === "hotel_only") && (
+                    <div className="rounded-2xl border border-border/50 bg-muted/10 p-4">
+                      <p className="text-xs text-muted-foreground">
+                        {travelTransportType === "car"
+                          ? "🚗 O passageiro viajará de carro próprio ou alugado até o destino. Preencha o roteiro e hospedagem abaixo."
+                          : "🏨 Pacote local / hospedagem + passeios. Transporte até o destino por conta do passageiro."}
+                      </p>
+                      <div className="mt-3 space-y-1.5">
+                        <Label className="text-xs font-medium">Ponto de Check-in / Encontro no Destino</Label>
+                        <Input value={travelMeetingPoint} onChange={(e) => setTravelMeetingPoint(e.target.value)} placeholder="Ex: Hotel Costa Brava — Recepção — 14:00h" className="h-11 rounded-xl text-xs bg-background" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── MÚLTIPLAS SAÍDAS / DATAS ── */}
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <Calendar className="size-3.5 text-primary" />
+                        Saídas Confirmadas
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddDeparture}
+                        className="h-7 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                      >
+                        <Plus className="size-3.5" /> Adicionar Saída
+                      </Button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">Cadastre múltiplas datas de saída. O cliente verá todas as opções disponíveis no anúncio.</p>
+
+                    {travelDepartureOptions.length === 0 && (
+                      <p className="text-[11px] text-muted-foreground py-2 text-center border border-dashed border-border/50 rounded-xl">
+                        Nenhuma saída cadastrada — as datas acima serão usadas como saída única.
+                      </p>
+                    )}
+
+                    <div className="space-y-2">
+                      {travelDepartureOptions.map((opt, idx) => (
+                        <div key={opt.id} className="rounded-xl border border-border/50 bg-card p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-foreground">Saída {idx + 1}</span>
+                            <button type="button" onClick={() => handleRemoveDeparture(opt.id)} className="size-6 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center">
+                              <X className="size-3.5" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-medium text-muted-foreground">Label (Opcional)</label>
+                              <input type="text" value={opt.label || ""} onChange={(e) => handleUpdateDeparture(opt.id, { label: e.target.value })} placeholder="Ex: Carnaval 2026" className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-medium text-muted-foreground">Data de Saída</label>
+                              <input type="date" value={opt.departure_date} onChange={(e) => handleUpdateDeparture(opt.id, { departure_date: e.target.value })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-medium text-muted-foreground">Data de Retorno</label>
+                              <input type="date" value={opt.return_date} onChange={(e) => handleUpdateDeparture(opt.id, { return_date: e.target.value })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-medium text-muted-foreground">Status</label>
+                              <select value={opt.status} onChange={(e) => handleUpdateDeparture(opt.id, { status: e.target.value as DepartureStatus })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-[11px] focus:outline-none focus:ring-1 focus:ring-primary">
+                                {(Object.keys(DEPARTURE_STATUS_CONFIG) as DepartureStatus[]).map((s) => (
+                                  <option key={s} value={s}>{DEPARTURE_STATUS_CONFIG[s].icon} {DEPARTURE_STATUS_CONFIG[s].label}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-medium text-muted-foreground">Horário Embarque</label>
+                              <input type="time" value={opt.departure_time || ""} onChange={(e) => handleUpdateDeparture(opt.id, { departure_time: e.target.value })} className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-medium text-muted-foreground">Vagas Disponíveis</label>
+                              <input type="number" min={0} value={opt.available_seats ?? ""} onChange={(e) => handleUpdateDeparture(opt.id, { available_seats: e.target.value ? Number(e.target.value) : undefined })} placeholder="Ex: 42" className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-medium text-muted-foreground">Observação</label>
+                              <input type="text" value={opt.notes || ""} onChange={(e) => handleUpdateDeparture(opt.id, { notes: e.target.value })} placeholder="Ex: Pacote diferenciado" className="w-full h-8 px-2 rounded-lg border border-border/60 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -4216,6 +4827,32 @@ function SpecializedClassifiedEditor({
  label="Bairro e Cidade do Anúncio *"
  />
 
+            {/* Controle de Privacidade Total de Endereço (LGPD) */}
+            <div className="p-3.5 bg-muted/20 border border-border/70 rounded-xl space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5 min-w-0">
+                  <Label htmlFor="hide-location-toggle" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-1.5">
+                    <ShieldCheck className="size-3.5 text-primary" />
+                    Ocultar endereço completamente
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    Não exibe cidade, bairro nem mapa no anúncio público.
+                  </p>
+                </div>
+                <Switch
+                  id="hide-location-toggle"
+                  checked={hideLocation}
+                  onCheckedChange={setHideLocation}
+                />
+              </div>
+              {hideLocation && (
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg font-medium flex items-center gap-1.5">
+                  <Check className="size-3 shrink-0" />
+                  Privacidade total ativa: nenhum dado geográfico ou mapa será exposto.
+                </div>
+              )}
+            </div>
+
  <div className="space-y-1.5 pt-1">
  <Label className="text-xs text-foreground font-medium">
  WhatsApp para Contato Direto
@@ -4248,7 +4885,7 @@ function SpecializedClassifiedEditor({
             <div className="max-h-[85vh] overflow-y-auto">
               <EditorialShowcaseView
                 classified={livePreviewClassified}
-                isOwner={true}
+                isOwner={false}
               />
             </div>
           </div>

@@ -92,12 +92,12 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
  profile = null;
  }
 
- classifiedData.profiles = profile || {
- id: classifiedData.author_profile_id,
- full_name: "Morador Verificado Waesy",
- avatar_url: null,
- phone: classifiedData.contact_whatsapp || classifiedData.whatsapp,
- };
+      classifiedData.profiles = profile || {
+        id: classifiedData.author_profile_id,
+        full_name: "Anunciante Verificado",
+        avatar_url: null,
+        phone: classifiedData.contact_whatsapp || classifiedData.whatsapp,
+      };
  }
 
     // Busca informações da loja associada e perguntas personalizadas de atendimento
@@ -138,31 +138,6 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
         }
       } catch (storeErr) {
         console.warn("[classifieds] error fetching store data:", storeErr);
-      }
-    } else if (classifiedData.author_profile_id) {
-      try {
-        const { data: member } = await supabase
-          .from("workspace_members")
-          .select("store_id, stores(id, name, slug, logo_url, phone, pix_key, payment_instructions, settings)")
-          .eq("profile_id", classifiedData.author_profile_id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (member && (member as any).stores) {
-          const s = (member as any).stores;
-          classifiedData.store = {
-            id: s.id,
-            name: s.name,
-            slug: s.slug,
-            logo_url: s.logo_url,
-            phone: s.phone,
-            pix_key: s.pix_key || s.settings?.pix_key || null,
-            payment_instructions: s.payment_instructions || s.settings?.payment_instructions || null,
-            custom_inquiry_fields: s.settings?.custom_inquiry_fields || [],
-          };
-        }
-      } catch {
-        // fallback
       }
     }
 
@@ -358,6 +333,8 @@ const upsertClassifiedInput = z.object({
  trial_days: z.number().int().min(0).optional(),
  recurring_features: z.array(z.string()).optional(),
  sub_category: z.string().optional(),
+ hide_location: z.boolean().optional(),
+ location_privacy: z.enum(["full", "city_only", "hidden"]).optional(),
  attributes: z.record(z.any()).optional().default({}),
  status: z.enum(["draft", "active", "paused", "closed"]).default("active"),
 });
@@ -422,11 +399,15 @@ export const upsertClassified = createServerFn({ method: "POST" })
  images: Array.isArray(rest.images) ? rest.images : [],
  condition: rest.condition || null,
  negotiable: rest.negotiable ?? true,
- attributes: {
-   ...(rest.attributes || {}),
-   pricing_model: rest.pricing_model || rest.attributes?.pricing_model || "one_time",
+  attributes: {
+    ...(rest.attributes || {}),
+    hide_location: rest.hide_location !== undefined ? rest.hide_location : (rest.attributes?.hide_location ?? false),
+    location_privacy: rest.location_privacy || rest.attributes?.location_privacy || "full",
+    pricing_model: rest.pricing_model || rest.attributes?.pricing_model || "one_time",
    billing_cycle: rest.billing_cycle || rest.attributes?.billing_cycle || "monthly",
    setup_fee_cents: rest.setup_fee_cents ?? rest.attributes?.setup_fee_cents ?? 0,
+   trial_days: rest.trial_days ?? rest.attributes?.trial_days ?? 0,
+   recurring_features: rest.recurring_features || rest.attributes?.recurring_features || [],
    sub_category: rest.sub_category || rest.attributes?.sub_category || null,
    accepted_payment_methods: rest.accepted_payment_methods ?? rest.attributes?.accepted_payment_methods ?? ["pix", "cartao_credito", "dinheiro"],
    installments_available: rest.installments_available ?? rest.attributes?.installments_available ?? true,
@@ -437,7 +418,7 @@ export const upsertClassified = createServerFn({ method: "POST" })
  },
  status: rest.status || "active",
  author_profile_id: identity.id,
- store_id: rest.store_id || identity.store_id || null,
+ store_id: rest.store_id || null,
  };
 
  if (isUpdating) {

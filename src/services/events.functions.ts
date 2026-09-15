@@ -417,15 +417,24 @@ async function _getEventWithLots(eventId: string) {
  .eq("status", "published")
  .single();
 
- if (!eventError && event) {
- const { data: lots } = await supabase
- .from("ticket_lots")
- .select("*")
- .eq("event_id", eventId)
- .order("price_cents", { ascending: true });
+    if (!eventError && event) {
+      const [{ data: lots }, { data: relations }] = await Promise.all([
+        supabase
+          .from("ticket_lots")
+          .select("*")
+          .eq("event_id", eventId)
+          .order("price_cents", { ascending: true }),
+        supabase
+          .from("event_news_relations")
+          .select("news_articles(id, title, slug, cover_media_url, kicker, subtitle, published_at)")
+          .eq("event_id", eventId)
+          .limit(1),
+      ]);
 
- return { event, lots: lots || [] };
- }
+      const linkedNews = relations?.[0]?.news_articles || null;
+
+      return { event, lots: lots || [], linkedNews };
+    }
  } catch (err) {
  console.warn("[events] Erro ao buscar evento no banco:", err);
  }
@@ -457,7 +466,7 @@ async function _getPublicEvents(opts: {
     let query = supabase
       .from("events")
       .select(
-        "id, store_id, title, description, event_date, end_date, location, city, state, cover_image, status, category, is_free, is_external_ticket, external_ticket_url, organizer_name, created_at",
+        "id, store_id, title, description, event_date, end_date, location, venue, city, state, cover_image, status, category, is_free, is_external, external_source, is_external_ticket, external_ticket_url, organizer_name, price_min_cents, price_max_cents, rsvp_going_count, rsvp_interested_count, rsvp_not_going_count, created_at",
       )
       .eq("status", "published")
       .gte("event_date", new Date().toISOString()) // só eventos futuros

@@ -454,74 +454,85 @@ export const listAvailableAttributes = createServerFn({ method: "GET" }).handler
 // ---------------------------------------------------------------------------
 
 export const getStoreConfig = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const db = getAnonServerClient();
+  try {
+    const db = getAnonServerClient();
 
- const { resolveTenantStoreId } = await import("@/lib/tenant.server");
- const storeId = await resolveTenantStoreId();
- if (!storeId) {
- return {
- status: "unconfigured",
- reason: "Nenhuma loja configurada.",
- };
- }
+    const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+    let storeId = await resolveTenantStoreId();
 
- const { data, error } = await db
- .from("stores")
- .select("id, name, settings")
- .eq("id", storeId)
- .single();
+    if (!storeId) {
+      const { resolvePlatformRootStore } = await import("@/services/master.functions");
+      const rootStore = await resolvePlatformRootStore(db);
+      storeId = rootStore?.id || null;
+    }
 
- if (error || !data) {
- throw new Error("Nenhuma loja configurada. Crie a loja no painel de administração.");
- }
- if (!storeId) {
- throw new Error("Nenhuma loja foi configurada. Configure a loja no painel de administração.");
- }
+    if (!storeId) {
+      return {
+        status: "unconfigured" as const,
+        reason: "Nenhuma loja configurada.",
+      };
+    }
 
- // settings is a JSONB column — validated here (not trusted as-is).
- const settings = (data.settings ?? {}) as Record<string, unknown>;
+    const { data, error } = await db
+      .from("stores")
+      .select("id, name, settings")
+      .eq("id", storeId)
+      .maybeSingle();
 
- const announcements: AnnouncementDTO[] = Array.isArray(settings.announcements)
- ? (settings.announcements as AnnouncementDTO[]).filter(
- (a) => a && typeof a.text === "string" && a.isActive,
- )
- : [];
+    if (error || !data) {
+      return {
+        status: "unconfigured" as const,
+        reason: "Nenhuma loja configurada. Crie a loja no painel de administração.",
+      };
+    }
 
- const heroBanners: HeroBannerDTO[] = Array.isArray(settings.heroBanners)
- ? (settings.heroBanners as HeroBannerDTO[])
- : [];
+    // settings is a JSONB column — validated here (not trusted as-is).
+    const settings = (data.settings ?? {}) as Record<string, unknown>;
 
- const benefits: BenefitDTO[] = Array.isArray(settings.benefits)
- ? (settings.benefits as BenefitDTO[])
- : [];
+    const announcements: AnnouncementDTO[] = Array.isArray(settings.announcements)
+      ? (settings.announcements as AnnouncementDTO[]).filter(
+          (a) => a && typeof a.text === "string" && a.isActive,
+        )
+      : [];
 
- const config: StoreConfigDTO = {
- storeId: data.id as string,
- name: data.name as string,
- logoUrl: typeof settings.logoUrl === "string" ? settings.logoUrl : null,
- faviconUrl: typeof settings.faviconUrl === "string" ? settings.faviconUrl : null,
- announcements,
- heroBanners,
- benefits,
- contactPhone: typeof settings.contactPhone === "string" ? settings.contactPhone : null,
- contactEmail: typeof settings.contactEmail === "string" ? settings.contactEmail : null,
- contactAddress: typeof settings.contactAddress === "string" ? settings.contactAddress : null,
- businessHours: typeof settings.businessHours === "string" ? settings.businessHours : null,
- instagramHandle:
- typeof settings.instagramHandle === "string" ? settings.instagramHandle : null,
- };
+    const heroBanners: HeroBannerDTO[] = Array.isArray(settings.heroBanners)
+      ? (settings.heroBanners as HeroBannerDTO[])
+      : [];
 
- return config;
- } catch (e) {
- if (e instanceof SupabaseUnconfiguredError) {
- return {
- status: "unconfigured",
- reason: "As configurações e dados da loja estão sendo restabelecidos.",
- };
- }
- throw new Error("Erro inesperado ao carregar configurações da loja.");
- }
+    const benefits: BenefitDTO[] = Array.isArray(settings.benefits)
+      ? (settings.benefits as BenefitDTO[])
+      : [];
+
+    const config: StoreConfigDTO = {
+      storeId: data.id as string,
+      name: data.name as string,
+      logoUrl: typeof settings.logoUrl === "string" ? settings.logoUrl : null,
+      faviconUrl: typeof settings.faviconUrl === "string" ? settings.faviconUrl : null,
+      announcements,
+      heroBanners,
+      benefits,
+      contactPhone: typeof settings.contactPhone === "string" ? settings.contactPhone : null,
+      contactEmail: typeof settings.contactEmail === "string" ? settings.contactEmail : null,
+      contactAddress: typeof settings.contactAddress === "string" ? settings.contactAddress : null,
+      businessHours: typeof settings.businessHours === "string" ? settings.businessHours : null,
+      instagramHandle:
+        typeof settings.instagramHandle === "string" ? settings.instagramHandle : null,
+    };
+
+    return config;
+  } catch (e) {
+    if (e instanceof SupabaseUnconfiguredError) {
+      return {
+        status: "unconfigured" as const,
+        reason: "As configurações e dados da loja estão sendo restabelecidos.",
+      };
+    }
+    console.warn("[catalog.functions] getStoreConfig fallback:", e instanceof Error ? e.message : e);
+    return {
+      status: "unconfigured" as const,
+      reason: "Configurações da loja temporariamente indisponíveis.",
+    };
+  }
 });
 export const searchProducts = createServerFn({ method: "GET" })
  .validator(z.object({ query: z.string().min(1) }))
@@ -707,26 +718,45 @@ export const getPromotionalProducts = createServerFn({ method: "GET" }).handler(
  } catch (e: unknown) {
  throw new Error((e instanceof Error ? e.message : String(e)) || "Erro desconhecido");
  }
-});
+ });
 
 // ---------------------------------------------------------------------------
 // _getProductDetail(PDP)
 // ---------------------------------------------------------------------------
 
 export const getProductDetail = createServerFn({ method: "GET" })
- .validator(z.object({ slug: z.string().min(1) }))
- .handler(async ({ data: { slug } }) => {
- try {
- const { resolveTenantStoreId } = await import("@/lib/tenant.server");
- const storeId = await resolveTenantStoreId();
- if (!storeId) {
- return {
- status: "unconfigured",
- reason: "Nenhuma loja foi configurada.",
- };
- }
+  .validator(z.object({ slug: z.string().min(1) }))
+  .handler(async ({ data: { slug } }) => {
+    try {
+      const db = getAnonServerClient();
 
- const db = getAnonServerClient();
+      const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+      let storeId = await resolveTenantStoreId();
+
+      if (!storeId) {
+        // Se nenhum tenant ativo no cookie/subdomínio, busca diretamente qual loja é dona deste produto
+        const { data: prodStore } = await db
+          .from("products")
+          .select("store_id")
+          .eq("slug", slug)
+          .limit(1)
+          .maybeSingle();
+
+        if (prodStore?.store_id) {
+          storeId = prodStore.store_id;
+        } else {
+          const { resolvePlatformRootStore } = await import("@/services/master.functions");
+          const rootStore = await resolvePlatformRootStore(db);
+          storeId = rootStore?.id || null;
+        }
+      }
+
+      if (!storeId) {
+        return {
+          status: "unconfigured" as const,
+          reason: "Nenhuma loja foi configurada.",
+        };
+      }
 
  // Consulta o produto, mídia e variantes em uma única query
  const { data, error } = await db
@@ -855,6 +885,28 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  if (!storeIdToUse) {
  storeIdToUse = (await resolveTenantStoreId()) ?? undefined;
  }
+ if (!storeIdToUse) {
+ try {
+ const { getIdentity } = await import("@/services/identity.functions");
+ const iden = await getIdentity();
+ if (iden?.store_id) {
+ storeIdToUse = iden.store_id;
+ } else if (iden?.id) {
+ const { getServerClient } = await import("@/lib/supabase");
+ const client = getServerClient();
+ const { data: member } = await client
+ .from("workspace_members")
+ .select("store_id")
+ .eq("profile_id", iden.id)
+ .order("created_at", { ascending: false })
+ .limit(1)
+ .maybeSingle();
+ if (member?.store_id) {
+ storeIdToUse = member.store_id;
+ }
+ }
+ } catch {}
+ }
  if (!storeIdToUse) return null;
 
  const db = getAnonServerClient();
@@ -862,7 +914,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
 
  let query = db
  .from("stores")
- .select("id, name, slug, description, phone, email, address, city, state, logo_url, banner_url, settings");
+ .select("id, name, slug, description, phone, email, address, city, state, logo_url, settings");
 
  if (isUuid) {
  query = query.eq("id", storeIdToUse);
@@ -894,7 +946,7 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  businessHours: typeof settings.businessHours === "string" ? settings.businessHours : null,
  settings: {
  ...settings,
- cover_url: store.banner_url || settings.cover_url || settings.bannerUrl,
+ cover_url: settings.cover_url || settings.bannerUrl || null,
  },
  pixKey: typeof settings.pixKey === "string" ? settings.pixKey : null,
  paymentInstructions:

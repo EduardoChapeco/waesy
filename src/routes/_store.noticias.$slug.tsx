@@ -7,6 +7,10 @@ import {
   Quote,
   Newspaper,
   ChevronRight,
+  Ticket,
+  MapPin,
+  Users,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getArticleDetail, type NewsArticleDTO, type SponsorDTO } from "@/services/news.functions";
@@ -31,14 +35,14 @@ export const Route = createFileRoute("/_store/noticias/$slug")({
       return data;
     } catch (err) {
       console.error("[loader:_store.noticias.$slug] Unhandled error:", err);
-      return { article: null, sponsors: [], related: [] } as any;
+      return { article: null, sponsors: [], related: [], linkedEvent: null } as any;
     }
   },
   component: NoticiaDetailPage,
 });
 
 function NoticiaDetailPage() {
-  const { article, sponsors = [], related = [] } = ((Route.useLoaderData?.() as any) || {});
+  const { article, sponsors = [], related = [], linkedEvent } = ((Route.useLoaderData?.() as any) || {});
   const [scrollProgress, setScrollProgress] = useState(0);
   const scrollTrackedRefs = useRef<Set<number>>(new Set());
 
@@ -294,7 +298,53 @@ function NoticiaDetailPage() {
           )}
         </div>
 
-        {/* ── Tags / Assuntos Relacionados ── */}
+        {/* ── Evento Vinculado (Cross-Indexação Notícia ↔ Evento) ── */}
+        {linkedEvent && (
+          <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+              <Ticket className="size-4" />
+              <span>Evento & Ingressos Relacionados</span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="space-y-1">
+                <h4 className="font-extrabold text-base text-foreground">
+                  {linkedEvent.title}
+                </h4>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  {linkedEvent.event_date && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="size-3.5 text-primary" />
+                      {new Date(linkedEvent.event_date).toLocaleString("pt-BR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                  )}
+                  {(linkedEvent.venue || linkedEvent.location) && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="size-3.5 text-primary" />
+                      {linkedEvent.venue || linkedEvent.location}
+                    </span>
+                  )}
+                  {linkedEvent.rsvp_going_count > 0 && (
+                    <span className="flex items-center gap-1 font-semibold text-foreground">
+                      <Users className="size-3.5 text-emerald-500" />
+                      {linkedEvent.rsvp_going_count} confirmados
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <Button asChild className="rounded-xl font-bold text-xs h-10 px-4 shrink-0">
+                <Link to="/evento/$id" params={{ id: linkedEvent.id }}>
+                  <span>Ver Ingressos & RSVP</span>
+                  <ArrowRight className="size-3.5 ml-1.5" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
         {article.tags && article.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-4">
             {article.tags.map((tag: string) => (

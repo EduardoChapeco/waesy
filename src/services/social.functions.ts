@@ -345,7 +345,7 @@ export const getMuralFeed = createServerFn({ method: "GET" })
         city, state, region, publish_as_handle, paid_partner_handle, paid_partner_label, collaborators, tags,
         metadata, reference_type, reference_id, created_at,
         author_profile_id, author_store_id,
-        profiles(full_name, avatar_url),
+        profiles!posts_author_profile_id_fkey(full_name, avatar_url),
         stores(name, settings)
         `,
       )

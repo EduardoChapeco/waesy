@@ -275,40 +275,49 @@ export const getPublicStoreSettings = createServerFn({ method: "GET" }).handler(
 // ---------------------------------------------------------------------------
 
 export const getThemeSettings = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const db = getServerClient();
+  try {
+    const db = getServerClient();
 
- const { resolveTenantStoreId } = await import("@/lib/tenant.server");
- const storeId = await resolveTenantStoreId();
- const storeData = storeId ? { id: storeId } : null;
- if (!storeData) throw new Error("No store found");
+    const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+    let storeId = await resolveTenantStoreId();
 
- const { data, error } = await db
- .from("theme_settings")
- .select("*")
- .eq("store_id", storeData.id)
- .single();
+    if (!storeId) {
+      const { resolvePlatformRootStore } = await import("@/services/master.functions");
+      const rootStore = await resolvePlatformRootStore(db);
+      storeId = rootStore?.id || null;
+    }
 
- if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
+    if (!storeId) return null;
 
- if (!data) {
- // Create default if it doesn't exist
- const { data: newData, error: insertError } = await db
- .from("theme_settings")
- .insert({ store_id: storeData.id })
- .select()
- .single();
+    const { data, error } = await db
+      .from("theme_settings")
+      .select("*")
+      .eq("store_id", storeId)
+      .maybeSingle();
 
- if (insertError) throw insertError;
- return newData;
- }
+    if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
 
- return data;
- } catch (e) {
- if (e instanceof SupabaseUnconfiguredError) throw e;
- console.error("[cms.functions] getThemeSettings error:", e);
- throw new Error("Erro ao buscar tema.");
- }
+    if (!data) {
+      // Create default if it doesn't exist
+      const { data: newData, error: insertError } = await db
+        .from("theme_settings")
+        .insert({ store_id: storeId })
+        .select()
+        .maybeSingle();
+
+      if (insertError) {
+        console.warn("[cms.functions] getThemeSettings insert error:", insertError);
+        return null;
+      }
+      return newData || null;
+    }
+
+    return data;
+  } catch (e) {
+    if (e instanceof SupabaseUnconfiguredError) return null;
+    console.warn("[cms.functions] getThemeSettings fallback:", e instanceof Error ? e.message : e);
+    return null;
+  }
 });
 
 export const updateThemeSettings = createServerFn({ method: "POST" })
@@ -354,27 +363,36 @@ export const updateThemeSettings = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 export const getNavigationMenus = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const db = getServerClient();
+  try {
+    const db = getServerClient();
 
- const { resolveTenantStoreId } = await import("@/lib/tenant.server");
- const storeId = await resolveTenantStoreId();
- const storeData = storeId ? { id: storeId } : null;
- if (!storeData) throw new Error("No store found");
+    const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+    let storeId = await resolveTenantStoreId();
 
- const { data, error } = await db
- .from("navigation_menus")
- .select("*")
- .eq("store_id", storeData.id)
- .order("handle", { ascending: true });
+    if (!storeId) {
+      const { resolvePlatformRootStore } = await import("@/services/master.functions");
+      const rootStore = await resolvePlatformRootStore(db);
+      storeId = rootStore?.id || null;
+    }
 
- if (error) throw error;
- return data;
- } catch (e) {
- if (e instanceof SupabaseUnconfiguredError) throw e;
- console.error("[cms.functions] getNavigationMenus error:", e);
- throw new Error("Erro ao buscar menus de navegação.");
- }
+    if (!storeId) return [];
+
+    const { data, error } = await db
+      .from("navigation_menus")
+      .select("*")
+      .eq("store_id", storeId)
+      .order("handle", { ascending: true });
+
+    if (error) {
+      console.warn("[cms.functions] getNavigationMenus query error:", error);
+      return [];
+    }
+    return data || [];
+  } catch (e) {
+    if (e instanceof SupabaseUnconfiguredError) return [];
+    console.warn("[cms.functions] getNavigationMenus fallback:", e instanceof Error ? e.message : e);
+    return [];
+  }
 });
 
 export const upsertNavigationMenu = createServerFn({ method: "POST" })
@@ -540,40 +558,49 @@ export const createProductReview = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 export const getLinkInBio = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const db = getServerClient();
+  try {
+    const db = getServerClient();
 
- const { resolveTenantStoreId } = await import("@/lib/tenant.server");
- const storeId = await resolveTenantStoreId();
- const storeData = storeId ? { id: storeId } : null;
- if (!storeData) throw new Error("No store found");
+    const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+    let storeId = await resolveTenantStoreId();
 
- const { data, error } = await db
- .from("link_in_bio")
- .select("*")
- .eq("store_id", storeData.id)
- .single();
+    if (!storeId) {
+      const { resolvePlatformRootStore } = await import("@/services/master.functions");
+      const rootStore = await resolvePlatformRootStore(db);
+      storeId = rootStore?.id || null;
+    }
 
- if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
+    if (!storeId) return null;
 
- if (!data) {
- // Create default if it doesn't exist
- const { data: newData, error: insertError } = await db
- .from("link_in_bio")
- .insert({ store_id: storeData.id })
- .select()
- .single();
+    const { data, error } = await db
+      .from("link_in_bio")
+      .select("*")
+      .eq("store_id", storeId)
+      .maybeSingle();
 
- if (insertError) throw insertError;
- return newData;
- }
+    if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
 
- return data;
- } catch (e) {
- if (e instanceof SupabaseUnconfiguredError) throw e;
- console.error("[cms.functions] getLinkInBio error:", e);
- throw new Error("Erro ao buscar Link da Bio.");
- }
+    if (!data) {
+      // Create default if it doesn't exist
+      const { data: newData, error: insertError } = await db
+        .from("link_in_bio")
+        .insert({ store_id: storeId })
+        .select()
+        .maybeSingle();
+
+      if (insertError) {
+        console.warn("[cms.functions] getLinkInBio insert error:", insertError);
+        return null;
+      }
+      return newData || null;
+    }
+
+    return data;
+  } catch (e) {
+    if (e instanceof SupabaseUnconfiguredError) return null;
+    console.warn("[cms.functions] getLinkInBio fallback:", e instanceof Error ? e.message : e);
+    return null;
+  }
 });
 
 export const upsertLinkInBio = createServerFn({ method: "POST" })
@@ -714,28 +741,37 @@ export const deleteStory = createServerFn({ method: "POST" })
  });
 
 export const listPublicStories = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const db = getServerClient();
+  try {
+    const db = getServerClient();
 
- const { resolveTenantStoreId } = await import("@/lib/tenant.server");
- const storeId = await resolveTenantStoreId();
- const storeData = storeId ? { id: storeId } : null;
- if (!storeData) throw new Error("No store found");
+    const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+    let storeId = await resolveTenantStoreId();
 
- const { data, error } = await db
- .from("stories")
- .select("*")
- .eq("store_id", storeData.id)
- .eq("status", "active")
- .order("sort_order", { ascending: true });
+    if (!storeId) {
+      const { resolvePlatformRootStore } = await import("@/services/master.functions");
+      const rootStore = await resolvePlatformRootStore(db);
+      storeId = rootStore?.id || null;
+    }
 
- if (error) throw error;
- return data;
- } catch (e) {
- if (e instanceof SupabaseUnconfiguredError) throw e;
- console.error("[cms.functions] listPublicStories error:", e);
- throw new Error("Erro ao listar stories.");
- }
+    if (!storeId) return [];
+
+    const { data, error } = await db
+      .from("stories")
+      .select("*")
+      .eq("store_id", storeId)
+      .eq("status", "active")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.warn("[cms.functions] listPublicStories query error:", error);
+      return [];
+    }
+    return data || [];
+  } catch (e) {
+    if (e instanceof SupabaseUnconfiguredError) return [];
+    console.warn("[cms.functions] listPublicStories fallback:", e instanceof Error ? e.message : e);
+    return [];
+  }
 });
 
 export const getPageBySlug = createServerFn({ method: "GET" })

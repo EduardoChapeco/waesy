@@ -193,19 +193,32 @@ function AgendaPadronizadaPage() {
       const rawDate = ev.event_date || ev.date || "";
       const datePart = rawDate.split("T")[0] || "";
 
+      let priceLabel = "Ingressos";
+      if (ev.is_free) {
+        priceLabel = "Gratuito";
+      } else if (ev.price_cents) {
+        priceLabel = formatMoney(ev.price_cents);
+      } else if (ev.price_min_cents && ev.price_min_cents > 0) {
+        priceLabel = `A partir de ${formatMoney(ev.price_min_cents)}`;
+      }
+
       items.push({
         id: `ev-${ev.id}`,
         category: "eventos",
-        badge: ev.category || "Evento",
+        badge: ev.is_external
+          ? ev.external_source
+            ? `Oficial ${ev.external_source}`
+            : "Evento Externo"
+          : ev.category || "Evento",
         title: ev.title,
         subtitle: ev.description || "Evento na cidade",
         date: datePart,
         dateDisplay: ev.date_display || (datePart ? formatDate(datePart) : "Data confirmada"),
         image: cover,
-        priceOrStatus: ev.price_cents ? formatMoney(ev.price_cents) : ev.is_free ? "Gratuito" : "Ingressos",
-        location: ev.location || "Na região",
+        priceOrStatus: priceLabel,
+        location: ev.venue || ev.location || (ev.city ? `${ev.city} - SC` : "Na região"),
         to: `/evento/${ev.id}`,
-        actionLabel: "Ver Ingressos",
+        actionLabel: ev.is_external || ev.is_external_ticket ? "Ver Detalhes" : "Ver Ingressos",
       });
     });
 

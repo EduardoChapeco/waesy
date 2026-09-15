@@ -344,7 +344,7 @@ function PainelEmpresaPage() {
             <CompanyNotificationsBell />
 
             <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50">
-              <Link to="/c/$storeSlug" params={{ storeSlug: store.slug }} target="_blank">
+              <Link to="/perfil-da-loja" search={{ storeId: store.id }} target="_blank">
                 <span className="hidden sm:inline">Ver Perfil</span>
                 <ArrowUpRight className="size-3.5" />
               </Link>

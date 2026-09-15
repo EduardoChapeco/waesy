@@ -19,6 +19,7 @@ import {
  CalendarDots,
  Clock,
  ShareNetwork,
+ ArrowSquareOut,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -303,12 +304,17 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  {/* Gradiente sutil */}
  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
- {/* Badge de Modalidade (Remoto / Presencial / Híbrido) */}
- <div className="absolute top-2.5 left-2.5">
- <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[10px] font-bold px-2 py-0.5 rounded-lg">
- {job.workplace_type || "Presencial"}
- </Badge>
- </div>
+        {/* Badge de Modalidade e Vaga Externa */}
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+          <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[10px] font-bold px-2 py-0.5 rounded-lg">
+            {job.workplace_type || "Presencial"}
+          </Badge>
+          {job.is_external && (
+            <Badge className="bg-primary/90 text-primary-foreground backdrop-blur-md text-[10px] font-bold px-2 py-0.5 rounded-lg">
+              Oficial
+            </Badge>
+          )}
+        </div>
 
  {/* Badge de Regime de Contrato */}
  <div className="absolute top-2.5 right-2.5">
@@ -400,16 +406,29 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  <div />
  )}
 
- <Button
- asChild
- size="sm"
- className="rounded-xl font-bold text-xs h-9 px-4 flex-1 bg-foreground text-background hover:bg-foreground/90 transition-all gap-1.5 "
- >
- <Link to="/empregos/$id" params={{ id: job.id }}>
- <span>Ver Vaga & Candidatar</span>
- <ArrowRight size={14} weight="bold" />
- </Link>
- </Button>
+        {job.is_external && job.external_url ? (
+          <Button
+            asChild
+            size="sm"
+            className="rounded-xl font-bold text-xs h-9 px-4 flex-1 bg-primary text-primary-foreground hover:bg-primary/90 transition-all gap-1.5"
+          >
+            <a href={job.external_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+              <span>Site Oficial</span>
+              <ArrowSquareOut size={14} weight="bold" />
+            </a>
+          </Button>
+        ) : (
+          <Button
+            asChild
+            size="sm"
+            className="rounded-xl font-bold text-xs h-9 px-4 flex-1 bg-foreground text-background hover:bg-foreground/90 transition-all gap-1.5"
+          >
+            <Link to="/empregos/$id" params={{ id: job.id }}>
+              <span>Ver Vaga & Candidatar</span>
+              <ArrowRight size={14} weight="bold" />
+            </Link>
+          </Button>
+        )}
  </div>
  </div>
  </Link>
@@ -491,15 +510,28 @@ function JobListItem({ job }: { job: JobItemDTO }) {
  </a>
  )}
 
- <Button
- asChild
- size="sm"
- className="h-8 px-3 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 "
- >
- <Link to="/empregos/$id" params={{ id: job.id }}>
- Candidatar
- </Link>
- </Button>
+        {job.is_external && job.external_url ? (
+          <Button
+            asChild
+            size="sm"
+            className="h-8 px-3 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-1"
+          >
+            <a href={job.external_url} target="_blank" rel="noopener noreferrer">
+              <span>Site Oficial</span>
+              <ArrowSquareOut size={12} weight="bold" />
+            </a>
+          </Button>
+        ) : (
+          <Button
+            asChild
+            size="sm"
+            className="h-8 px-3 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
+          >
+            <Link to="/empregos/$id" params={{ id: job.id }}>
+              Candidatar
+            </Link>
+          </Button>
+        )}
  </div>
  </div>
  );

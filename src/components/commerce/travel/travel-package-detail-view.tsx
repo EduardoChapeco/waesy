@@ -1,10 +1,18 @@
 import React, { useState } from "react";
-import { Plane, Bus, Ship, Anchor, Layers, Hotel, Calendar, Compass, MapPin, Clock, Check, ChevronRight, ExternalLink, MessageCircle, Share2, Sliders, Sun, CloudSun, CloudRain, ShieldCheck, ShieldAlert, Camera, Star, Coffee, Car, Ticket, Users, Utensils, ArrowRight, Info, Luggage, X } from 'lucide-react';
+import { Plane, Bus, Ship, Anchor, Layers, Hotel, Calendar, Compass, MapPin, Clock, Check, ChevronRight, ExternalLink, MessageCircle, Share2, Sliders, Sun, CloudSun, CloudRain, ShieldCheck, ShieldAlert, Camera, Star, Coffee, Car, Ticket, Users, Utensils, ArrowRight, Info, Luggage, X, Edit3, Navigation } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { TravelPackageData } from "@/types/travel-package";
+import { WeatherWidget } from "@/components/classifieds/weather-widget";
+import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
+import {
+  CANONICAL_BUS_CATEGORIES,
+  CANONICAL_GUIDE_SERVICES,
+  DEPARTURE_STATUS_CONFIG,
+  type DepartureOption,
+} from "@/lib/classifieds/canonical-airports";
 
 interface TravelPackageDetailViewProps {
  packageData?: Partial<TravelPackageData>;
@@ -15,35 +23,67 @@ interface TravelPackageDetailViewProps {
  mediaUrls?: string[];
  storeName?: string;
  storePhone?: string;
- onReserveClick?: () => void;
- isInteractivePreview?: boolean;
+  onReserveClick?: (selectedDeparture?: DepartureOption) => void;
+  isInteractivePreview?: boolean;
+  isOwner?: boolean;
+  onEditClick?: () => void;
 }
 
 export function TravelPackageDetailView({
- packageData,
- productTitle,
- priceCents,
- compareAtCents,
- coverImageUrl,
- mediaUrls = [],
- storeName = "Excelência Tour",
- storePhone = "49991448651",
- onReserveClick,
- isInteractivePreview = false,
+  packageData,
+  productTitle,
+  priceCents,
+  compareAtCents,
+  coverImageUrl,
+  mediaUrls = [],
+  storeName = "Agência Parceira",
+  storePhone = "",
+  onReserveClick,
+  isInteractivePreview = false,
+  isOwner = false,
+  onEditClick,
 }: TravelPackageDetailViewProps) {
- const [activeTab, setActiveTab] = useState<"destination" | "resort" | "itinerary" | "explore">("destination");
- const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({ 1: true });
+  const [activeTab, setActiveTab] = useState<"destination" | "resort" | "itinerary" | "explore">("destination");
+  const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({ 1: true });
+  const [selectedDepartureId, setSelectedDepartureId] = useState<string | null>(null);
 
  const destination = (packageData?.destination || {}) as any;
  const resort = (packageData?.resort || {}) as any;
  const flightDetails = (packageData?.flight_details || {}) as any;
- const transportType = packageData?.transport_type || "aereo";
- const transportLabel: Record<string, string> = {
- aereo: "✈️ Aéreo",
- terrestre: "🚌 Terrestre",
- cruzeiro: "🛳️ Cruzeiro",
- misto: "🔀 Misto",
+ // Suporta tanto os IDs canônicos novos ('bus', 'airplane', 'combo', 'cruise', 'car', 'hotel_only')
+ // quanto os IDs legado do TravelPackageData ('aereo', 'terrestre', 'misto', 'cruzeiro')
+ const rawTransportType = packageData?.transport_type || flightDetails?.transport_type || "aereo";
+ // Normaliza para os novos IDs canônicos
+ const transportTypeNormMap: Record<string, string> = {
+  aereo: "airplane",
+  airplane: "airplane",
+  terrestre: "bus",
+  bus: "bus",
+  misto: "combo",
+  combo: "combo",
+  cruzeiro: "cruise",
+  cruise: "cruise",
+  car: "car",
+  hotel_only: "hotel_only",
  };
+ const transportType = transportTypeNormMap[rawTransportType] || rawTransportType;
+  const isBus = transportType === "bus" || rawTransportType === "terrestre";
+  const isAir = transportType === "airplane" || rawTransportType === "aereo" || !transportType;
+  const isCombo = transportType === "combo" || rawTransportType === "misto";
+  const isCruise = transportType === "cruise" || rawTransportType === "cruzeiro";
+  const isCar = transportType === "car" || transportType === "hotel_only";
+
+  const transportLabel: Record<string, string> = {
+    airplane: "✈️ Aéreo",
+    bus: "🚌 Terrestre / Excursão",
+    combo: "🔄 Multimodal",
+    cruise: "🛳️ Cruzeiro",
+    car: "🚗 Carro Próprio",
+    hotel_only: "🏨 Pacote Local",
+  };
+  const departureOptions: DepartureOption[] = Array.isArray((packageData as any)?.departure_options)
+    ? (packageData as any).departure_options
+    : [];
 
  const inclusions = packageData?.inclusions && packageData.inclusions.length > 0
  ? packageData.inclusions
@@ -59,24 +99,7 @@ export function TravelPackageDetailView({
 
  const recommendations = packageData?.recommendations && packageData.recommendations.length > 0
  ? packageData.recommendations
- : [
- {
- id: "rec_1",
- title: "Restaurante Mar Aberto",
- category: "Frutos do mar & Moquecas",
- distance: "2.5 km do resort",
- rating: 4.8,
- imageUrl: "",
- },
- {
- id: "rec_2",
- title: "Praia dos Milionários",
- category: "Praia paradisíaca local",
- distance: "15 min de caminhada",
- rating: 4.9,
- imageUrl: "",
- },
- ];
+ : [];
 
  const heroImage =
  coverImageUrl ||
@@ -88,14 +111,9 @@ export function TravelPackageDetailView({
  ? destination.gallery_urls
  : mediaUrls.length > 0
  ? mediaUrls
- : [
- heroImage,
- "",
- "",
- "",
- "",
- "",
- ];
+ : heroImage
+ ? [heroImage]
+ : [];
 
  // Condições Comerciais Configuradas pelo Gestor (Bilateral)
  const paymentConditions = packageData?.payment_conditions;
@@ -104,12 +122,18 @@ export function TravelPackageDetailView({
  const pixDiscountPercent = paymentConditions?.pix_discount_percent || 0;
  const depositPercent = paymentConditions?.deposit_percent || 0;
 
- const totalCents = priceCents > 0 ? priceCents : 425000;
- const installmentCents = Math.round(totalCents / maxInstallments);
- const formattedTotal = formatMoney(totalCents);
- const formattedInstallment = formatMoney(installmentCents);
- const pixTotalCents = pixDiscountPercent > 0 ? Math.round(totalCents * (1 - pixDiscountPercent / 100)) : totalCents;
- const formattedPixTotal = formatMoney(pixTotalCents);
+ const selectedDeparture = departureOptions.find(d => (d.id || "") === selectedDepartureId) || departureOptions[0] || null;
+ const effectivePriceCents = (selectedDeparture?.price_override_cents && selectedDeparture.price_override_cents > 0)
+ ? selectedDeparture.price_override_cents
+ : priceCents;
+
+ const totalCents = effectivePriceCents > 0 ? effectivePriceCents : 0;
+ const isPriceOnQuote = totalCents === 0;
+ const installmentCents = maxInstallments > 0 && totalCents > 0 ? Math.round(totalCents / maxInstallments) : 0;
+ const formattedTotal = totalCents > 0 ? formatMoney(totalCents) : "Sob Consulta";
+ const formattedInstallment = installmentCents > 0 ? formatMoney(installmentCents) : "—";
+ const pixTotalCents = pixDiscountPercent > 0 && totalCents > 0 ? Math.round(totalCents * (1 - pixDiscountPercent / 100)) : totalCents;
+ const formattedPixTotal = pixTotalCents > 0 ? formatMoney(pixTotalCents) : "—";
 
  const toggleDay = (day: number) => {
  setExpandedDays((prev) => ({ ...prev, [day]: !prev[day] }));
@@ -117,14 +141,23 @@ export function TravelPackageDetailView({
 
  const handleBooking = () => {
  if (onReserveClick) {
- onReserveClick();
+ onReserveClick(selectedDeparture || undefined);
  return;
  }
- const cleanPhone = storePhone.replace(/\D/g, "");
+ const cleanPhone = storePhone ? storePhone.replace(/\D/g, "") : "";
+ const depInfo = selectedDeparture && selectedDeparture.departure_date
+ ? ` para a saída de ${new Date(selectedDeparture.departure_date + "T00:00:00").toLocaleDateString("pt-BR")}${selectedDeparture.return_date ? ` até ${new Date(selectedDeparture.return_date + "T00:00:00").toLocaleDateString("pt-BR")}` : ""}`
+ : "";
  const message = encodeURIComponent(
- `Olá! Tenho interesse no pacote *${productTitle}* (Valor: ${formattedTotal} em até ${maxInstallments}x de ${formattedInstallment}). Poderiam me enviar mais detalhes de datas e reserva?`
+ totalCents > 0
+ ? `Olá! Tenho interesse no pacote *${productTitle}*${depInfo} (Valor: ${formattedTotal} em até ${maxInstallments}x de ${formattedInstallment}). Poderiam me enviar mais detalhes de datas e confirmação de reserva?`
+ : `Olá! Tenho interesse no pacote *${productTitle}*${depInfo}. Poderiam me enviar mais detalhes de datas, disponibilidade e orçamento?`
  );
+ if (cleanPhone) {
  window.open(`https://wa.me/${cleanPhone}?text=${message}`, "_blank");
+ } else {
+ window.open(`https://wa.me/?text=${message}`, "_blank");
+ }
  };
 
  return (
@@ -142,14 +175,44 @@ export function TravelPackageDetailView({
  </span>
  </div>
 
- {resort.duration_text && (
- <div className="flex items-center gap-1.5">
- <Badge variant="outline" className="text-[10px] font-mono border-border/80">
- {resort.duration_text}
- </Badge>
- </div>
- )}
- </div>
+        <div className="flex items-center gap-2">
+          {resort.duration_text && (
+            <Badge variant="outline" className="text-[10px] font-mono border-border/80">
+              {resort.duration_text}
+            </Badge>
+          )}
+          {isOwner && onEditClick && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onEditClick}
+              className="h-7 text-xs border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 gap-1.5"
+            >
+              <Edit3 className="size-3.5" />
+              Editar
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Painel de Controle do Proprietário (Regra 23: Owner Edit Mode) ── */}
+      {isOwner && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-medium">
+            <Sliders className="size-3.5 shrink-0" />
+            <span>Modo Proprietário: Visualização do Pacote Turístico.</span>
+          </div>
+          {onEditClick && (
+            <button
+              onClick={onEditClick}
+              className="text-amber-600 dark:text-amber-400 hover:underline font-semibold flex items-center gap-1"
+            >
+              <Edit3 className="size-3" />
+              Editar no Gestor
+            </button>
+          )}
+        </div>
+      )}
 
  {/* 4 Abas com Indicador Limpo */}
  <nav className="flex w-full max-w-4xl mx-auto px-2 justify-between border-t border-border/40 text-xs font-semibold">
@@ -221,13 +284,21 @@ export function TravelPackageDetailView({
  <img src={heroImage} alt={productTitle} className="absolute inset-0 size-full object-cover" />
  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
  <div className="absolute bottom-0 left-0 w-full p-5 sm:p-7 flex flex-col justify-end text-white">
+ {(destination.country || destination.region || destination.state) && (
  <div className="flex items-center gap-2 mb-1.5">
+ {destination.country && (
  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">
- {destination.country || "Brasil"}
+ {destination.country}
  </span>
+ )}
+ {destination.country && (destination.region || destination.state) && (
  <span className="text-xs text-white/80">•</span>
- <span className="text-xs text-white/90 font-medium">{destination.region || "Bahia"}</span>
+ )}
+ {(destination.region || destination.state) && (
+ <span className="text-xs text-white/90 font-medium">{destination.region || destination.state}</span>
+ )}
  </div>
+ )}
  <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight drop-shadow-sm">
  {destination.name || productTitle}
  </h1>
@@ -237,32 +308,25 @@ export function TravelPackageDetailView({
  </div>
  </div>
 
- {/* Destaques em Círculos Visuais */}
+ {/* Destaques em Círculos Visuais (Apenas se cadastrados) */}
+ {((packageData?.story_highlights && packageData.story_highlights.length > 0) || (resort.highlights && resort.highlights.length > 0)) && (
  <section className="w-full pt-1 pb-2 overflow-x-auto no-scrollbar">
  <div className="flex gap-4 px-4 sm:px-6">
- {(resort.highlights && resort.highlights.length > 0
- ? resort.highlights
- : [
- { id: "h1", label: "Resort", imageUrl: gallery[0] || heroImage },
- { id: "h2", label: "Estrutura", imageUrl: gallery[1] || heroImage },
- { id: "h3", label: "Gastronomia", imageUrl: gallery[2] || heroImage },
- { id: "h4", label: "Passeios", imageUrl: gallery[3] || heroImage },
- { id: "h5", label: "Praias", imageUrl: gallery[4] || heroImage },
- ]
- ).map((hl: any) => (
+ {(packageData?.story_highlights || resort.highlights || []).map((hl: any) => (
  <div key={hl.id} className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group">
  <div className="size-16 sm:size-18 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-400 via-rose-500 to-sky-500 group-hover:scale-105 transition-transform shadow-2xs">
  <div className="size-full rounded-full bg-background p-[2px] overflow-hidden">
- <img src={hl.imageUrl} alt={hl.label} className="size-full object-cover rounded-full" />
+ <img src={hl.imageUrl || hl.image} alt={hl.label || hl.title || "Destaque"} className="size-full object-cover rounded-full" />
  </div>
  </div>
- <span className="text-[11px] font-medium text-foreground tracking-tight text-center">
- {hl.label}
+ <span className="text-[11px] font-medium text-foreground tracking-tight text-center max-w-[68px] truncate">
+ {hl.label || hl.title}
  </span>
  </div>
  ))}
  </div>
  </section>
+ )}
 
  {/* Checklist de Inclusões ("O que inclui") */}
  <section className="px-4 sm:px-6 space-y-3">
@@ -318,6 +382,80 @@ export function TravelPackageDetailView({
  </section>
  )}
 
+      {/* Datas & Saídas Confirmadas do Pacote (Transparência de Dados) */}
+      {departureOptions.length > 0 && (
+        <section className="px-4 sm:px-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Calendar className="size-4 text-primary" />
+              <span>Datas & Saídas Disponíveis</span>
+            </h3>
+            <span className="text-[11px] font-mono text-primary font-semibold">
+              {departureOptions.length} opções de embarque
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {departureOptions.map((opt, i) => {
+              const cfg = DEPARTURE_STATUS_CONFIG[opt.status] || DEPARTURE_STATUS_CONFIG.confirmed;
+              const depDate = opt.departure_date ? new Date(opt.departure_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
+              const retDate = opt.return_date ? new Date(opt.return_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
+              const optId = opt.id || String(i);
+              const isSelected = selectedDepartureId === optId || (!selectedDepartureId && i === 0);
+              return (
+                <div
+                  key={opt.id || i}
+                  onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
+                  className={cn(
+                    "p-3.5 rounded-xl bg-card border transition-all flex flex-col justify-between gap-2.5 shadow-2xs cursor-pointer text-left",
+                    isSelected
+                      ? "border-primary ring-2 ring-primary/25 bg-primary/5"
+                      : "border-border/70 hover:border-primary/40 hover:bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-foreground">
+                          {opt.label || `Saída ${i + 1}`}
+                        </span>
+                        {isSelected && (
+                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            ✓ Selecionada
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground font-medium">
+                        {depDate}{depDate && retDate && " — "}{retDate}
+                      </p>
+                      {opt.departure_time && (
+                        <p className="text-[10px] text-muted-foreground font-mono">
+                          Embarque: <span className="font-bold text-foreground">{opt.departure_time}</span>
+                        </p>
+                      )}
+                    </div>
+                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0", cfg.color)}>
+                      {cfg.icon} {cfg.label}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1.5 border-t border-border/40 text-[11px]">
+                    <span className="text-muted-foreground">
+                      {opt.available_seats !== undefined && opt.available_seats > 0 ? `${opt.available_seats} vagas disponíveis` : "Vagas limitadas"}
+                    </span>
+                    {opt.price_override_cents && opt.price_override_cents > 0 ? (
+                      <span className="font-mono font-bold text-foreground">
+                        {formatMoney(opt.price_override_cents)}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
  {/* Informações de Como Chegar & Clima */}
  <section className="px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
  {/* Card de Como Chegar */}
@@ -328,43 +466,30 @@ export function TravelPackageDetailView({
  </div>
  <p className="text-xs text-muted-foreground leading-relaxed">
  {destination.flight_summary ||
- "Opções com voos e transfers inclusos. Saídas regionais de Chapecó e principais capitais com conexões otimizadas."}
+ "Consulte opções de traslados, conexões aéreas e saídas disponíveis com nossa equipe de consultores."}
  </p>
  <div className="flex items-center gap-1.5 text-xs font-semibold text-primary pt-1">
- <span>Opções com aéreo garantido</span>
+ <span>Opções com logística garantida</span>
  <ChevronRight className="size-3.5" />
  </div>
  </div>
 
- {/* Card de Clima Ideal */}
+ {/* Card de Clima Real via wttr.in (Regra 21) */}
  <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/70 space-y-2.5 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground">
  <Sun className="size-4 text-amber-500" />
- <h4 className="text-xs font-bold uppercase tracking-wider">Clima Médio no Destino</h4>
+ <h4 className="text-xs font-bold uppercase tracking-wider">Clima no Destino</h4>
  </div>
- <div className="flex items-center justify-around pt-1 text-center">
- <div className="space-y-0.5">
- <span className="text-[10px] uppercase font-bold text-muted-foreground">Hoje</span>
- <Sun className="size-5 text-amber-500 mx-auto" />
- <span className="text-sm font-bold text-foreground">28°</span>
- </div>
- <div className="w-px h-8 bg-border/60" />
- <div className="space-y-0.5">
- <span className="text-[10px] uppercase font-bold text-muted-foreground">Amanhã</span>
- <CloudSun className="size-5 text-amber-400 mx-auto" />
- <span className="text-sm font-bold text-foreground">27°</span>
- </div>
- <div className="w-px h-8 bg-border/60" />
- <div className="space-y-0.5">
- <span className="text-[10px] uppercase font-bold text-muted-foreground">Fim de Sem.</span>
- <Sun className="size-5 text-amber-500 mx-auto" />
- <span className="text-sm font-bold text-foreground">29°</span>
- </div>
- </div>
+ {destination.name || destination.city ? (
+ <WeatherWidget city={destination.city || destination.name} compact={true} />
+ ) : (
+ <p className="text-xs text-muted-foreground">Previsão meteorológica em tempo real disponível após definir o destino.</p>
+ )}
  </div>
  </section>
 
- {/* Galeria do Destino (Grade 3x3) */}
+ {/* Galeria do Destino (Apenas se houver fotos cadastradas) */}
+ {gallery.length > 0 && (
  <section className="px-4 sm:px-6 space-y-2.5">
  <div className="flex items-center justify-between">
  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -384,6 +509,7 @@ export function TravelPackageDetailView({
  ))}
  </div>
  </section>
+ )}
  </div>
  )}
 
@@ -473,18 +599,34 @@ export function TravelPackageDetailView({
  <div className="bg-card border border-border/70 rounded-2xl p-4 flex items-center justify-between shadow-2xs">
  <div className="space-y-0.5">
  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
- {feeFreeInstallments >= maxInstallments ? "Parcelamento sem juros" : `Parcelamento facilitado (${feeFreeInstallments}x sem juros)`}
+ {totalCents > 0
+ ? feeFreeInstallments >= maxInstallments
+ ? "Parcelamento sem juros"
+ : `Parcelamento facilitado (${feeFreeInstallments}x sem juros)`
+ : "Condição Comercial"}
  </span>
  <div className="flex items-baseline gap-1">
+ {totalCents > 0 ? (
+ <>
  <span className="text-xl font-bold text-foreground">{maxInstallments}x</span>
  <span className="text-sm font-bold text-foreground">{formattedInstallment}</span>
+ </>
+ ) : (
+ <span className="text-lg font-bold text-foreground">Sob Consulta</span>
+ )}
  </div>
  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+ {totalCents > 0 ? (
+ <>
  <span>Total: {formattedTotal}</span>
  {pixDiscountPercent > 0 && (
  <span className="text-emerald-600 font-semibold">
  • {formattedPixTotal} à vista no PIX ({pixDiscountPercent}% OFF)
  </span>
+ )}
+ </>
+ ) : (
+ <span>Consulte datas e tarifas com os consultores</span>
  )}
  </div>
  </div>
@@ -492,18 +634,19 @@ export function TravelPackageDetailView({
  <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
  Sinal: {depositPercent}%
  </Badge>
- ) : (
+ ) : totalCents > 0 ? (
  <Badge className="bg-emerald-600 text-white font-semibold text-xs">Melhor Tarifa</Badge>
- )}
+ ) : null}
  </div>
 
- {/* Grid 3x3 de Fotos das Acomodações */}
+ {/* Grid 3x3 de Fotos das Acomodações (Apenas se houver fotos) */}
+ {gallery.length > 0 && (
  <div className="space-y-2">
  <div className="flex items-center justify-between">
  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
  Fotos da Estrutura
  </h4>
- <span className="text-[11px] text-muted-foreground font-mono">6 fotos</span>
+ <span className="text-[11px] text-muted-foreground font-mono">{gallery.length} fotos</span>
  </div>
  <div className="grid grid-cols-3 gap-1.5 rounded-2xl overflow-hidden border border-border/50">
  {gallery.slice(0, 6).map((imgUrl: string, i: number) => (
@@ -517,6 +660,7 @@ export function TravelPackageDetailView({
  ))}
  </div>
  </div>
+ )}
  </div>
  )}
 
@@ -596,6 +740,7 @@ export function TravelPackageDetailView({
  </div>
 
  {/* Recomendações Próximas (Curadoria de Restaurantes e Praias) */}
+ {recommendations.length > 0 && (
  <div className="pt-4 border-t border-border/40 space-y-3">
  <div>
  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -634,6 +779,7 @@ export function TravelPackageDetailView({
  ))}
  </div>
  </div>
+ )}
  </div>
  )}
 
@@ -649,29 +795,29 @@ export function TravelPackageDetailView({
  <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-4 shadow-2xs">
  <div className="flex items-center justify-between">
  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
- {transportType === "terrestre"
+ {isBus
  ? "Logística Rodoviária & Horários Garantidos"
- : transportType === "cruzeiro"
+ : isCruise
  ? "Logística Marítima & Horários Portuários"
- : transportType === "misto"
+ : isCombo
  ? "Logística Multimodal Integrada"
  : "Logística Aérea & Horários Garantidos"}
  </span>
  <Badge variant="outline" className="text-[10px] font-mono">
- {transportType === "terrestre"
+ {isBus
  ? (flightDetails.bus_company || flightDetails.bus_category || "Transporte Terrestre")
- : transportType === "cruzeiro"
+ : isCruise
  ? (flightDetails.ship_name || flightDetails.cruise_line || "Cruzeiro Marítimo")
- : transportType === "misto"
+ : isCombo
  ? "Viagem Multimodal"
  : (flightDetails.airline_name || flightDetails.airline_partner || "Voo Incluso")}
  </Badge>
  </div>
 
  {/* ─── MODAL 1: AÉREO ─── */}
- {(transportType === "aereo" || !transportType || transportType === "misto") && (
+ {(isAir || isCombo) && (
  <div className="space-y-3">
- {transportType === "misto" && (
+ {isCombo && (
  <span className="text-xs font-bold text-primary flex items-center gap-1.5">
  <Plane className="size-3.5" /> Trecho Aéreo do Pacote
  </span>
@@ -748,19 +894,19 @@ export function TravelPackageDetailView({
  </div>
  )}
 
- {/* ─── MODAL 2: TERRESTRE (RODOVIÁRIO / ÔNIBUS) ─── */}
- {(transportType === "terrestre" || transportType === "misto") && (
+ {/* ─── MODAL 2: TERRESTRE (RODOVIÁRIO / ÔNIBUS / EXCURSÃO) ─── */}
+ {(isBus || isCombo) && (
  <div className="space-y-3">
- {transportType === "misto" && (
+ {isCombo && (
  <span className="text-xs font-bold text-primary flex items-center gap-1.5 pt-2">
  <Bus className="size-3.5" /> Trecho Rodoviário do Pacote
  </span>
  )}
 
- <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-2.5">
+ <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
- <Bus className="size-3.5 text-primary" /> Viagem Rodoviária
+ <Bus className="size-3.5 text-primary" /> Viagem Rodoviária / Excursão
  {flightDetails.bus_company && (
  <span className="text-[11px] font-semibold text-foreground">
  • {flightDetails.bus_company}
@@ -769,10 +915,24 @@ export function TravelPackageDetailView({
  </span>
  {flightDetails.bus_category && (
  <Badge variant="secondary" className="text-[10px] font-medium">
- {flightDetails.bus_category}
+ {(() => {
+ const cat = CANONICAL_BUS_CATEGORIES.find(b => b.id === flightDetails.bus_category);
+ return cat ? cat.label : flightDetails.bus_category;
+ })()}
  </Badge>
  )}
  </div>
+
+ {/* Ponto de Encontro Oficial da Excursão */}
+ {flightDetails.meeting_point && (
+ <div className="flex items-start gap-2 p-2.5 rounded-xl bg-background border border-border/60">
+ <MapPin className="size-3.5 text-primary mt-0.5 shrink-0" />
+ <div>
+ <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Ponto de Encontro / Saída</p>
+ <p className="text-xs font-semibold text-foreground leading-relaxed">{flightDetails.meeting_point}</p>
+ </div>
+ </div>
+ )}
 
  {/* Embarque e Chegada Ida */}
  <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
@@ -780,7 +940,7 @@ export function TravelPackageDetailView({
  <span className="text-[10px] text-muted-foreground block">Embarque de Ida</span>
  <span className="font-bold text-foreground">
  {flightDetails.bus_departure_time_out ? `${flightDetails.bus_departure_time_out} — ` : ""}
- {flightDetails.bus_departure_terminal || flightDetails.origin_airport || "Terminal de Embarque"}
+ {flightDetails.bus_departure_terminal || flightDetails.origin_airport || flightDetails.departure_city || "Terminal de Embarque"}
  </span>
  </div>
  <div className="text-right">
@@ -792,13 +952,40 @@ export function TravelPackageDetailView({
  </div>
  </div>
 
+ {/* Embarques e Paradas na Rota Rodoviária */}
+ {Array.isArray(flightDetails.boarding_gateways) && flightDetails.boarding_gateways.length > 0 && (
+ <div className="pt-2 border-t border-border/40">
+ <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+ Pontos de Embarque na Rota
+ </p>
+ <div className="flex flex-wrap gap-1.5">
+ {flightDetails.boarding_gateways.map((gw: string, i: number) => (
+ <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-medium text-primary">
+ <Navigation className="size-2.5" />{gw}
+ </span>
+ ))}
+ </div>
+ </div>
+ )}
+
+ {/* Guia Turístico Cadastur */}
+ {flightDetails.guide_service && (() => {
+ const guide = CANONICAL_GUIDE_SERVICES.find(g => g.id === flightDetails.guide_service);
+ return guide ? (
+ <div className="pt-1 text-[11px] text-muted-foreground flex items-center gap-1.5">
+ <ShieldCheck className="size-3.5 text-emerald-500 shrink-0" />
+ <span>Acompanhamento: <strong className="text-foreground">{guide.label}</strong></span>
+ </div>
+ ) : null;
+ })()}
+
  {/* Embarque e Chegada Volta */}
- {(flightDetails.bus_departure_time_return || flightDetails.bus_arrival_time_return) && (
+ {(flightDetails.bus_departure_time_return || flightDetails.bus_arrival_time_return || flightDetails.return_departure_time) && (
  <div className="flex items-center justify-between text-xs pt-2 border-t border-border/40">
  <div>
  <span className="text-[10px] text-muted-foreground block">Embarque de Retorno</span>
  <span className="font-bold text-foreground">
- {flightDetails.bus_departure_time_return ? `${flightDetails.bus_departure_time_return} — ` : ""}
+ {(flightDetails.bus_departure_time_return || flightDetails.return_departure_time) ? `${flightDetails.bus_departure_time_return || flightDetails.return_departure_time} — ` : ""}
  {flightDetails.bus_arrival_terminal || flightDetails.destination_iata || "Terminal do Destino"}
  </span>
  </div>
@@ -816,9 +1003,9 @@ export function TravelPackageDetailView({
  )}
 
  {/* ─── MODAL 3: CRUZEIRO MARÍTIMO ─── */}
- {(transportType === "cruzeiro" || transportType === "misto") && (
+ {(isCruise || isCombo) && (
  <div className="space-y-3">
- {transportType === "misto" && (
+ {isCombo && (
  <span className="text-xs font-bold text-primary flex items-center gap-1.5 pt-2">
  <Ship className="size-3.5" /> Trecho de Cruzeiro Marítimo
  </span>
@@ -915,9 +1102,9 @@ export function TravelPackageDetailView({
  <div className="flex items-center gap-1.5 text-muted-foreground">
  <Luggage className="size-3.5 text-primary" />
  <span>
- {transportType === "terrestre"
+ {isBus
  ? "Bagagem de Bordo + Bagageiro inclusos"
- : transportType === "cruzeiro"
+ : isCruise
  ? "Franquia Livre de Bagagens Marítimas"
  : "Bagagem Despachada 23kg inclusa"}
  </span>
@@ -929,26 +1116,107 @@ export function TravelPackageDetailView({
  </div>
  </div>
 
- {/* Simulação de Mapa com Pins */}
- <div className="relative w-full h-56 sm:h-64 rounded-2xl overflow-hidden border border-border/60 shadow-xs group">
- <img
- src=""
- alt="Mapa da Região"
- className="size-full object-cover group-hover:scale-102 transition-transform duration-500 brightness-90"
- />
- <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+ {/* Datas & Saídas Confirmadas (Opções Disponíveis de Reserva) */}
+ {departureOptions.length > 0 && (
+ <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-2">
+ <Calendar className="size-4 text-primary" />
+ <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+ Datas & Saídas Disponíveis
+ </h4>
+ </div>
+ <Badge variant="outline" className="text-[10px] font-mono">
+ {departureOptions.length} opções confirmadas
+ </Badge>
+ </div>
 
- {/* Pins de Destaque */}
- <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
- <span className="px-3 py-1 rounded-full bg-background/90 backdrop-blur-md text-xs font-semibold text-foreground flex items-center gap-1.5 shadow-sm">
- <MapPin className="size-3 text-rose-500" />
- <span>{destination.name || "Destino Principal"}</span>
+ <div className="space-y-2 pt-1">
+ {departureOptions.map((opt, i) => {
+ const cfg = DEPARTURE_STATUS_CONFIG[opt.status] || DEPARTURE_STATUS_CONFIG.confirmed;
+ const depDate = opt.departure_date ? new Date(opt.departure_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
+ const retDate = opt.return_date ? new Date(opt.return_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "";
+ const optId = opt.id || String(i);
+ const isSelected = selectedDepartureId === optId || (!selectedDepartureId && i === 0);
+ return (
+ <div
+ key={opt.id || i}
+ onClick={() => setSelectedDepartureId(selectedDepartureId === optId ? null : optId)}
+ className={cn(
+ "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border gap-2 transition-all cursor-pointer text-left",
+ isSelected
+ ? "border-primary ring-2 ring-primary/25 bg-primary/5"
+ : "bg-muted/20 border-border/50 hover:border-primary/40 hover:bg-muted/30"
+ )}
+ >
+ <div className="flex items-start gap-2.5">
+ <Calendar className="size-4 text-primary shrink-0 mt-0.5" />
+ <div>
+ <div className="flex items-center gap-2 flex-wrap">
+ <p className="text-xs font-bold text-foreground">
+ {opt.label || `Opção de Saída ${i + 1}`}
+ </p>
+ {isSelected && (
+ <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+ ✓ Selecionada
  </span>
- <span className="px-3 py-1 rounded-full bg-background/90 backdrop-blur-md text-xs font-semibold text-foreground flex items-center gap-1.5 shadow-sm">
- <Hotel className="size-3 text-sky-500" />
- <span>{resort.name || "Resort & Hotel"}</span>
+ )}
+ <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", cfg.color)}>
+ {cfg.icon} {cfg.label}
  </span>
  </div>
+ <p className="text-[11px] text-muted-foreground mt-0.5">
+ {depDate}{depDate && retDate && " — "}{retDate}
+ {opt.departure_time && <span className="font-mono ml-1 font-semibold text-foreground">• Saída: {opt.departure_time}</span>}
+ </p>
+ {opt.notes && (
+ <p className="text-[10px] text-muted-foreground italic mt-0.5">{opt.notes}</p>
+ )}
+ </div>
+ </div>
+
+ <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/30">
+ {opt.available_seats !== undefined && opt.available_seats > 0 && (
+ <span className="text-[11px] font-semibold text-muted-foreground">
+ {opt.available_seats} vagas restantes
+ </span>
+ )}
+ {opt.price_override_cents && opt.price_override_cents > 0 ? (
+ <span className="font-mono font-bold text-xs text-foreground">
+ {formatMoney(opt.price_override_cents)}
+ </span>
+ ) : null}
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ )}
+
+ {/* Mapa Interativo ou Localização Oficial */}
+ <div className="relative w-full rounded-2xl overflow-hidden border border-border/60 shadow-xs">
+ {(destination.lat && destination.lng) || (resort.lat && resort.lng) ? (
+ <div className="h-56 sm:h-64 w-full">
+ <MapLibreCanvas
+ center={{
+ lat: Number(destination.lat || resort.lat),
+ lng: Number(destination.lng || resort.lng),
+ }}
+ zoom={13}
+ />
+ </div>
+ ) : (
+ <div className="p-6 bg-muted/20 flex flex-col items-center justify-center text-center space-y-2">
+ <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+ <MapPin className="size-5" />
+ </div>
+ <h4 className="text-xs font-bold text-foreground">{destination.name || productTitle}</h4>
+ <p className="text-[11px] text-muted-foreground max-w-sm">
+ {resort.location || destination.region || "Localização privilegiada com fácil acesso às principais atrações da região."}
+ </p>
+ </div>
+ )}
  </div>
  </div>
  )}
@@ -961,6 +1229,8 @@ export function TravelPackageDetailView({
  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
  {resort.guests_text ? `Valor por pacote (${resort.guests_text})` : "Resumo de Valor"}
  </span>
+ {totalCents > 0 ? (
+ <>
  <div className="flex items-baseline gap-1.5">
  <span className="text-xs font-semibold text-muted-foreground">{maxInstallments}x</span>
  <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
@@ -979,6 +1249,15 @@ export function TravelPackageDetailView({
  <>ou {formattedTotal} à vista</>
  )}
  </span>
+ </>
+ ) : (
+ <div className="flex items-baseline gap-1.5">
+ <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+ Sob Consulta
+ </span>
+ <span className="text-[10px] text-muted-foreground">(Consulte disponibilidade)</span>
+ </div>
+ )}
  </div>
 
  <Button

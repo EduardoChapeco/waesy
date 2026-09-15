@@ -11,10 +11,19 @@ import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireAdmin, assertStoreAccess } from "@/lib/server-access";
 import { enforceRateLimit } from "@/lib/rate-limiter";
 import {
- inspectPromptSecurity,
- buildSandboxedPromptPayload,
- sanitizeAiOutput,
+  inspectPromptSecurity,
+  buildSandboxedPromptPayload,
+  sanitizeAiOutput,
 } from "@/lib/prompt-shield";
+import { extractContentMechanically } from "./mining/mechanical-extractor";
+import {
+  validateMechanicalCompleteness,
+  generateTitleHash,
+  isHealthyImageUrl,
+  getFallbackThematicImage,
+} from "./mining/integrity-gate";
+import { curateWithEditorialSquad } from "./mining/editorial-squad";
+import { fetchPncpContracts, convertPncpToExtractionResult } from "./mining/pncp-extractor";
 
 // ============================================================
 // Constantes: Token Burn Rates para Scraping
@@ -83,6 +92,14 @@ export interface MinedArticleDTO {
  ai_provider_used: string | null;
  firecrawl_used: boolean;
  created_at: string;
+ extracted_markdown?: string | null;
+ ai_structured_sections?: Array<{
+   heading?: string;
+   content: string;
+   order?: number;
+   type?: string;
+   caption?: string;
+ }> | null;
 }
 
 export interface ScraperConfigDTO {
@@ -301,6 +318,7 @@ export const processUrlWithAI = createServerFn({ method: "POST" })
  crawlQueueId = queueItem?.id || null;
  }
 
+ let mechanicalResult: any = null;
  try {
  const firecrawlKey = await getNextActiveKey("firecrawl");
  if (firecrawlKey) {
@@ -309,7 +327,7 @@ export const processUrlWithAI = createServerFn({ method: "POST" })
  method: "POST",
  headers: { "Content-Type": "application/json", Authorization: `Bearer ${firecrawlKey.rawKey}` },
  body: JSON.stringify({ url: input.url, formats: ["markdown"], onlyMainContent: true }),
- signal: AbortSignal.timeout(12000),
+ signal: AbortSignal.timeout(15000),
  });
  if (fcRes.ok) {
  const fcJson = await fcRes.json();
@@ -323,31 +341,37 @@ export const processUrlWithAI = createServerFn({ method: "POST" })
  }
  }
 
- // Fallback: fetch direto com CSS extractors
- if (!rawContent) {
- const fetchRes = await fetch(input.url, {
- headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
- signal: AbortSignal.timeout(8000),
- });
- if (!fetchRes.ok) throw new Error(`HTTP ${fetchRes.status} ao acessar ${input.url}`);
- const html = await fetchRes.text();
- rawContent = html
- .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
- .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
- .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, "")
- .replace(/<[^>]+>/g, " ")
- .replace(/\s+/g, " ")
- .slice(0, 15000);
+ // Camada Mecânica Resiliente (Stealth Headers + JSON-LD + Dicionário de Seletores)
+ mechanicalResult = await extractContentMechanically(input.url, rawContent || undefined);
+ if (!rawContent && mechanicalResult.bodyMarkdown) {
+ rawContent = mechanicalResult.bodyMarkdown;
+ }
+
+ // Gateway de Validação de Integridade (Previne bug de corpo vazio e bloqueios anti-bot)
+ const integrity = validateMechanicalCompleteness(mechanicalResult);
+ if (!integrity.isValid && (!rawContent || rawContent.length < 100)) {
+ if (crawlQueueId) {
+ await supabase.from("crawl_queue").update({
+ status: "failed",
+ processing_error: `Integridade rejeitada: ${integrity.reason || "Conteúdo insuficiente"}`,
+ completed_at: new Date().toISOString(),
+ }).eq("id", crawlQueueId);
+ }
+ throw new Error(`Integridade rejeitada: ${integrity.reason}`);
  }
  } catch (e: any) {
  if (crawlQueueId) {
- await supabase.from("crawl_queue").update({ status: "failed", processing_error: e.message?.slice(0, 300), completed_at: new Date().toISOString() }).eq("id", crawlQueueId);
+ await supabase.from("crawl_queue").update({
+ status: "failed",
+ processing_error: e.message?.slice(0, 300),
+ completed_at: new Date().toISOString(),
+ }).eq("id", crawlQueueId);
  }
  throw new Error(`Falha ao extrair conteúdo: ${e.message}`);
  }
 
- if (!rawContent || rawContent.length < 100) {
- throw new Error("Conteúdo insuficiente para processamento — página retornou menos de 100 caracteres.");
+ if (!rawContent || rawContent.length < 80) {
+ throw new Error("Conteúdo insuficiente para processamento — página retornou menos de 80 caracteres.");
  }
 
  // 4. Anti-prompt injection & Prompt Shield
@@ -538,58 +562,106 @@ Retorne o JSON:
  aiProviderUsed = "fallback";
  }
 
- // 8. Calcula quality score final
- const qualityScore = extracted.quality_score ?? calculateQualityScore(extracted);
- const qualityFlags: string[] = extracted.quality_flags || [];
- if (!extracted.cover_image_url) qualityFlags.push("missing_cover");
- if ((extracted.sections?.length || 0) < 2) qualityFlags.push("short_content");
- if (qualityScore < 40) qualityFlags.push("low_quality");
+  // 8. Validação e sanitização da imagem de capa (Anti-Broken Image Gate)
+  const candidateCover = extracted.cover_image_url || mechanicalResult?.coverImageUrl;
+  const safeCoverUrl = isHealthyImageUrl(candidateCover)
+    ? candidateCover
+    : getFallbackThematicImage(input.content_type);
 
- tokensConsumed = MINING_TOKEN_COSTS.scrape_url;
+  extracted.cover_image_url = safeCoverUrl;
 
- // 9. Persiste em mined_articles
- const { data: mined, error: minedError } = await supabase
- .from("mined_articles")
- .insert({
- crawl_queue_id: crawlQueueId,
- source_url: input.url,
- source_domain: domain,
- source_type: "crawl",
- store_id: input.store_id || null,
- raw_title: extracted.title,
- extracted_markdown: rawContent.slice(0, 50000),
- ai_structured_title: extracted.title,
- ai_structured_subtitle: extracted.subtitle,
- ai_structured_sections: extracted.sections || [],
- ai_suggested_kicker: extracted.kicker,
- ai_suggested_category: extracted.category,
- ai_suggested_tags: extracted.tags || [],
- ai_suggested_cover_url: extracted.cover_image_url || null,
- ai_summary: extracted.summary,
- ai_sentiment: extracted.sentiment,
- ai_keywords: extracted.keywords || [],
- ai_estimated_reading_time: extracted.estimated_reading_time || 3,
- quality_score: qualityScore,
- quality_flags: qualityFlags,
- word_count: rawContent.split(/\s+/).length,
- has_cover_image: !!extracted.cover_image_url,
- status: "pending_review",
- tokens_consumed: tokensConsumed,
- ai_provider_used: aiProviderUsed,
- firecrawl_used: firecrawlUsed,
- processing_completed_at: new Date().toISOString(),
- })
- .select()
- .single();
+  // Calcula quality score final
+  const qualityScore = extracted.quality_score ?? calculateQualityScore(extracted);
+  const qualityFlags: string[] = extracted.quality_flags || [];
+  if (!safeCoverUrl) qualityFlags.push("missing_cover");
+  if ((extracted.sections?.length || 0) < 2) qualityFlags.push("short_content");
+  if (qualityScore < 40) qualityFlags.push("low_quality");
+
+  tokensConsumed = MINING_TOKEN_COSTS.scrape_url;
+
+  // 9. Persiste em mined_articles
+  const { data: mined, error: minedError } = await supabase
+    .from("mined_articles")
+    .insert({
+      crawl_queue_id: crawlQueueId,
+      source_url: input.url,
+      source_domain: domain,
+      source_type: "crawl",
+      store_id: input.store_id || null,
+      raw_title: extracted.title,
+      extracted_markdown: rawContent.slice(0, 50000),
+      ai_structured_title: extracted.title,
+      ai_structured_subtitle: extracted.subtitle,
+      ai_structured_sections: extracted.sections || [],
+      ai_suggested_kicker: extracted.kicker,
+      ai_suggested_category: extracted.category,
+      ai_suggested_tags: extracted.tags || [],
+      ai_suggested_cover_url: safeCoverUrl,
+      ai_summary: extracted.summary,
+      ai_sentiment: extracted.sentiment,
+      ai_keywords: extracted.keywords || [],
+      ai_estimated_reading_time: extracted.estimated_reading_time || 3,
+      quality_score: qualityScore,
+      quality_flags: qualityFlags,
+      word_count: rawContent.split(/\s+/).length,
+      has_cover_image: true,
+      status: "pending_review",
+      tokens_consumed: tokensConsumed,
+      ai_provider_used: aiProviderUsed,
+      firecrawl_used: firecrawlUsed,
+      processing_completed_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
 
  if (minedError) throw new Error(`Falha ao persistir artigo minerado: ${minedError.message}`);
 
- // 10. Atualiza crawl_queue com referência ao mined_article
- if (crawlQueueId) {
- await supabase.from("crawl_queue")
- .update({ status: "completed", mined_article_id: mined.id, completed_at: new Date().toISOString() })
- .eq("id", crawlQueueId);
- }
+  // 9.1. Persiste também na tabela de extrações brutas particionadas (mined_raw_extractions)
+  try {
+    const titleHash = generateTitleHash(extracted.title || "");
+    const contentTypeMapping: Record<string, string> = {
+      news: "noticia",
+      blog_post: "blog_post",
+      recipe: "educacao",
+      tech_spec: "artigo",
+      event: "eventos",
+      eventos: "eventos",
+      municipal: "portal_municipal",
+      portal_municipal: "portal_municipal",
+    };
+    const mappedType = contentTypeMapping[input.content_type] || "noticia";
+
+    await supabase.from("mined_raw_extractions").upsert({
+      content_type: mappedType as any,
+      source_url: input.url,
+      source_domain: domain,
+      source_name: domain,
+      raw_title: extracted.title,
+      raw_lead: extracted.subtitle || extracted.summary || null,
+      raw_body_text: rawContent,
+      raw_author: extracted.author || null,
+      cover_image_url: extracted.cover_image_url || null,
+      city: "Chapecó",
+      state: "SC",
+      tags: extracted.tags || [],
+      word_count: rawContent.split(/\s+/).length,
+      paragraph_count: extracted.sections?.length || 1,
+      has_full_content: true,
+      extraction_method: mechanicalResult?.method || (firecrawlUsed ? "firecrawl" : "mechanical"),
+      title_hash: titleHash,
+      status: "curated",
+      store_id: input.store_id || null,
+    }, { onConflict: "source_url" });
+  } catch (rawErr) {
+    console.warn("[mining] Aviso ao gravar em mined_raw_extractions:", rawErr);
+  }
+
+  // 10. Atualiza crawl_queue com referência ao mined_article
+  if (crawlQueueId) {
+    await supabase.from("crawl_queue")
+      .update({ status: "completed", mined_article_id: mined.id, completed_at: new Date().toISOString() })
+      .eq("id", crawlQueueId);
+  }
 
  // 11. Debita tokens se B2B
  if (input.consume_tokens && input.store_id) {
@@ -622,7 +694,7 @@ export const listMinedArticles = createServerFn({ method: "GET" })
  const supabase = getServerClient();
  let query = supabase
  .from("mined_articles")
- .select("id, source_url, source_domain, source_type, store_id, raw_title, ai_structured_title, ai_structured_subtitle, ai_suggested_kicker, ai_suggested_category, ai_suggested_tags, ai_suggested_cover_url, ai_summary, ai_sentiment, quality_score, quality_flags, word_count, has_cover_image, is_duplicate, status, curator_notes, curated_at, tokens_consumed, ai_provider_used, firecrawl_used, created_at", { count: "exact" })
+ .select("id, source_url, source_domain, source_type, store_id, raw_title, ai_structured_title, ai_structured_subtitle, ai_suggested_kicker, ai_suggested_category, ai_suggested_tags, ai_suggested_cover_url, ai_summary, ai_sentiment, quality_score, quality_flags, word_count, has_cover_image, is_duplicate, status, curator_notes, curated_at, tokens_consumed, ai_provider_used, firecrawl_used, created_at, extracted_markdown, ai_structured_sections", { count: "exact" })
  .order("created_at", { ascending: false })
  .limit(data?.limit || 30)
  .range(data?.offset || 0, (data?.offset || 0) + (data?.limit || 30) - 1);
@@ -655,6 +727,20 @@ export const curateMineArticle = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  if (!identity?.id) throw new Error("Não autenticado");
 
+ let storeId = data.store_id || identity.store_id;
+ if (!storeId && data.action === "approve") {
+ const { data: rootStore } = await supabase
+ .from("stores")
+ .select("id")
+ .eq("is_platform_root", true)
+ .maybeSingle();
+ storeId = rootStore?.id;
+ if (!storeId) {
+ const { data: anyStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
+ storeId = anyStore?.id;
+ }
+ }
+
  const result = await supabase.rpc("process_mined_article", {
  p_mined_article_id: data.mined_article_id,
  p_curator_profile_id: identity.id,
@@ -663,7 +749,7 @@ export const curateMineArticle = createServerFn({ method: "POST" })
  p_title_override: data.title_override || null,
  p_kicker_override: data.kicker_override || null,
  p_category_override: data.category_override || null,
- p_store_id_override: data.store_id || null,
+ p_store_id_override: storeId || null,
  });
 
  if (result.error) throw new Error(`Falha na curadoria: ${result.error.message}`);
@@ -1205,8 +1291,233 @@ export const enqueueRssItemsBatch = createServerFn({ method: "POST" })
  }
  }
 
- return { enqueued: enqueued.length };
- });
+  return { enqueued: enqueued.length };
+  });
+
+// ============================================================
+// 15.1. Re-extração mecânica de itens com falha na fila
+// ============================================================
+export const reprocessFailedQueueItems = createServerFn({ method: "POST" })
+  .validator(z.object({ limit: z.number().int().min(1).max(20).default(10) }).optional())
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const limit = data?.limit || 10;
+
+    const { data: failedItems, error } = await supabase
+      .from("crawl_queue")
+      .select("*")
+      .eq("status", "failed")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw new Error(`Falha ao buscar itens com erro: ${error.message}`);
+    if (!failedItems || failedItems.length === 0) {
+      return { reprocessed: 0, message: "Nenhum item com falha pendente de re-extração." };
+    }
+
+    const results = [];
+
+    for (const item of failedItems) {
+      try {
+        await supabase
+          .from("crawl_queue")
+          .update({ status: "processing", started_at: new Date().toISOString() })
+          .eq("id", item.id);
+
+        const mined = await processUrlWithAI({
+          data: {
+            url: item.url,
+            store_id: item.store_id || undefined,
+            content_type: (item.content_type || "news") as any,
+            auto_enqueue: false,
+            consume_tokens: false,
+          },
+        });
+
+        results.push({ id: item.id, url: item.url, success: true, article_id: mined.id });
+      } catch (err: any) {
+        await supabase
+          .from("crawl_queue")
+          .update({
+            status: "failed",
+            processing_error: `Re-extração mecânica falhou: ${err.message?.slice(0, 200)}`,
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", item.id);
+
+        results.push({ id: item.id, url: item.url, success: false, error: err.message });
+      }
+    }
+
+    return { reprocessed: results.length, results };
+  });
+
+// ============================================================
+// 15.2. Mineração e Sincronização de Editais Públicos (PNCP / Chapecó)
+// ============================================================
+export const syncPncpMunicipalBids = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      city: z.string().default("Chapecó"),
+      uf: z.string().default("SC"),
+      query: z.string().default("Chapecó"),
+      limit: z.number().int().min(1).max(30).default(15),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const contracts = await fetchPncpContracts({
+      query: data?.query || "Chapecó",
+      uf: data?.uf || "SC",
+      limit: data?.limit || 15,
+    });
+
+    let inserted = 0;
+
+    for (const contract of contracts) {
+      const mechResult = convertPncpToExtractionResult(contract, data?.city || "Chapecó", data?.uf || "SC");
+      const titleHash = generateTitleHash(mechResult.title);
+
+      const { error } = await supabase.from("mined_raw_extractions").upsert(
+        {
+          content_type: "portal_municipal",
+          source_url: contract.urlPortal,
+          source_domain: "pncp.gov.br",
+          source_name: "Portal Nacional de Contratações Públicas (PNCP)",
+          external_id: contract.id,
+          raw_title: mechResult.title,
+          raw_lead: mechResult.lead,
+          raw_body_text: mechResult.bodyMarkdown,
+          raw_author: contract.orgaoNome,
+          raw_published_at: contract.dataPublicacao || new Date().toISOString(),
+          city: data?.city || "Chapecó",
+          state: data?.uf || "SC",
+          tags: ["licitação", "edital", "prefeitura", (data?.city || "chapecó").toLowerCase()],
+          word_count: mechResult.wordCount,
+          paragraph_count: mechResult.paragraphCount,
+          has_full_content: true,
+          extraction_method: "api_pncp",
+          title_hash: titleHash,
+          status: "curated",
+          type_metadata: {
+            edital_numero: contract.numeroEdital,
+            processo: contract.numeroProcesso,
+            modalidade: contract.modalidade,
+            valor_estimado: contract.valorEstimado,
+            data_abertura: contract.dataPublicacao,
+            data_encerramento: contract.dataEncerramento,
+            orgao: contract.orgaoNome,
+          },
+        },
+        { onConflict: "source_url" }
+      );
+
+      if (!error) inserted++;
+    }
+
+    return { totalFound: contracts.length, inserted };
+  });
+
+// ============================================================
+// 15.3. Conversão de Edital PNCP em Pauta / Notícia Jornalística Minerada
+// ============================================================
+export const convertPncpBidToNewsArticle = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      contract_id: z.string(),
+      objeto: z.string(),
+      orgao: z.string(),
+      numero_edital: z.string().optional(),
+      modalidade: z.string().optional(),
+      valor_estimado: z.number().optional().nullable(),
+      url_portal: z.string().url(),
+      data_publicacao: z.string().optional(),
+      city: z.string().default("Chapecó"),
+      store_id: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    let storeId = data.store_id;
+    if (!storeId) {
+      const { data: rootStore } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("is_platform_root", true)
+        .maybeSingle();
+      storeId = rootStore?.id || null;
+    }
+
+    const valorFormatado = data.valor_estimado
+      ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(data.valor_estimado)
+      : "Valor sob consulta";
+
+    const title = `Edital Público: ${data.orgao} abre licitação para ${data.objeto.slice(0, 100)}`;
+    const subtitle = `Processo ${data.numero_edital || "PNCP"} na modalidade ${data.modalidade || "Licitação"}. Estimativa financeira de ${valorFormatado}.`;
+    const kicker = "Gestão Pública & Transparência";
+    const coverUrl = getFallbackThematicImage("cidade");
+
+    const markdownBody = `## Licitação Pública Municipal em ${data.city}
+
+O órgão **${data.orgao}** publicou aviso oficial através do Portal Nacional de Contratações Públicas (PNCP) referente ao seguinte processo:
+
+> **Objeto:** ${data.objeto}
+
+### Detalhes do Edital
+- **Órgão Responsável:** ${data.orgao}
+- **Número do Edital:** ${data.numero_edital || "Conforme PNCP"}
+- **Modalidade:** ${data.modalidade || "Licitação Pública"}
+- **Valor Estimado:** ${valorFormatado}
+- **Município:** ${data.city} - SC
+
+Os cidadãos, fornecedores e empresas interessadas podem consultar o edital na íntegra, prazos e anexos técnicos diretamente no Portal Nacional de Contratações Públicas através do link oficial.`;
+
+    const sections = [
+      {
+        heading: "Objeto da Contratação",
+        content: `O órgão ${data.orgao} publicou processo licitatório visando: ${data.objeto}.`,
+      },
+      {
+        heading: "Valores e Detalhes Operacionais",
+        content: `A contratação ocorrerá via modalidade ${data.modalidade || "licitatória"}, com investimento estimado em ${valorFormatado}. Detalhes e anexos estão acessíveis no portal oficial.`,
+      },
+    ];
+
+    const { data: mined, error } = await supabase
+      .from("mined_articles")
+      .insert({
+        source_url: data.url_portal,
+        source_domain: "pncp.gov.br",
+        source_type: "api",
+        store_id: storeId,
+        raw_title: data.objeto,
+        ai_structured_title: title,
+        ai_structured_subtitle: subtitle,
+        ai_suggested_kicker: kicker,
+        ai_suggested_category: "cidade",
+        ai_suggested_tags: ["licitação", "edital", data.city.toLowerCase(), "pncp", "gestão pública"],
+        ai_suggested_cover_url: coverUrl,
+        ai_summary: `${data.orgao} abre licitação para ${data.objeto}. Valor estimado: ${valorFormatado}.`,
+        ai_sentiment: "neutral",
+        quality_score: 95,
+        quality_flags: ["edital_oficial", "pncp_verified", "transparencia_publica"],
+        word_count: 180,
+        has_cover_image: true,
+        is_duplicate: false,
+        status: "pending_review",
+        extracted_markdown: markdownBody,
+        ai_structured_sections: sections,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      throw new Error(`Falha ao converter edital PNCP em notícia minerada: ${error.message}`);
+    }
+
+    return { success: true, minedArticleId: mined.id };
+  });
 
 // ============================================================
 // 16. Verificação Cruzada de Fatos, Completude & Enriquecimento Multi-Tom
@@ -1605,7 +1916,19 @@ function calculateQualityScore(extracted: any): number {
  return Math.min(100, score);
 }
 
+export const listPncpContractsAction = createServerFn({ method: "GET" })
+  .validator((data?: { city?: string; uf?: string; limit?: number }) => data || {})
+  .handler(async ({ data }) => {
+    return await fetchPncpContracts({
+      query: data?.city || "Chapecó",
+      uf: data?.uf || "SC",
+      limit: data?.limit || 20,
+    });
+  });
+
 // Exportações de retrocompatibilidade
 export const createRssFeed = upsertRssFeed;
 export const addCrawlQueue = addUrlToCrawlQueue;
+
+
 

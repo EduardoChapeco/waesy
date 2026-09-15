@@ -32,6 +32,7 @@ export interface MapLibreCanvasProps {
  zoom?: number;
  pinMode?: "origin" | "destination" | null;
  onMapClick?: (lat: number, lng: number) => void;
+ provider?: "carto_voyager" | "carto_dark" | "osm_standard" | "google_maps" | "mapbox" | string | null;
  className?: string;
 }
 
@@ -47,6 +48,7 @@ export function MapLibreCanvas({
  zoom = 13.5,
  pinMode = null,
  onMapClick,
+ provider = null,
  className = "",
 }: MapLibreCanvasProps) {
  const mapContainer = useRef<HTMLDivElement>(null);
@@ -64,9 +66,11 @@ export function MapLibreCanvas({
  staleTime: 5 * 60 * 1000,
  });
 
+ const effectiveProvider = provider || mapConfig?.provider || "osm_standard";
+
  // Initialize MapLibre dynamically only in the browser
  useEffect(() => {
- if (typeof window === "undefined" || !mapContainer.current || mapRef.current || isLoadingConfig) return;
+ if (typeof window === "undefined" || !mapContainer.current || isLoadingConfig) return;
  if (mapConfig && !mapConfig.isActive) return;
 
  let isMounted = true;
@@ -79,14 +83,20 @@ export function MapLibreCanvas({
  if (!isMounted || !mapContainer.current) return;
  maplibreModuleRef.current = maplibregl;
 
+ // Se já existe um mapa montado (ex: troca de provider), limpa com segurança
+ if (mapRef.current) {
+ mapRef.current.remove();
+ mapRef.current = null;
+ }
+
  // Detect dark mode from html class
  const isDark = document.documentElement.classList.contains("dark");
 
- let mapStyle: any = getCanonicalMapStyle(isDark);
+ let mapStyle: any = getCanonicalMapStyle(isDark, effectiveProvider);
 
  if (mapConfig?.customTileUrl) {
  mapStyle = mapConfig.customTileUrl;
- } else if (mapConfig?.provider === "mapbox" && mapConfig.apiKey) {
+ } else if (effectiveProvider === "mapbox" && mapConfig?.apiKey) {
  mapStyle = `https://api.mapbox.com/styles/v1/mapbox/${isDark ? "dark-v11" : "light-v11"}?access_token=${mapConfig.apiKey}`;
  }
 
@@ -135,7 +145,7 @@ export function MapLibreCanvas({
  mapRef.current = null;
  }
  };
- }, [mapConfig, isLoadingConfig]);
+ }, [mapConfig, isLoadingConfig, effectiveProvider]);
 
  // Update Origin Marker
  useEffect(() => {

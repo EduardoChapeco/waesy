@@ -76,7 +76,7 @@ vi.mock("@/lib/supabase", () => ({
               single: vi.fn().mockResolvedValue({
                 data: {
                   id: "user-test-uuid-1",
-                  full_name: "Morador Verificado Waesy",
+                  full_name: "Anunciante Verificado",
                   role: "user",
                   avatar_url: null,
                 },

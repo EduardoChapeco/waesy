@@ -60,15 +60,57 @@ export const CANONICAL_MAP_STYLE_DARK: StyleSpecification = {
  ],
 };
 
-export function getCanonicalMapStyle(isDark?: boolean): StyleSpecification {
- if (isDark !== undefined) {
- return isDark ? CANONICAL_MAP_STYLE_DARK : CANONICAL_MAP_STYLE_LIGHT;
- }
- if (typeof document !== "undefined") {
- const isDarkMode = document.documentElement.classList.contains("dark");
- return isDarkMode ? CANONICAL_MAP_STYLE_DARK : CANONICAL_MAP_STYLE_LIGHT;
- }
- return CANONICAL_MAP_STYLE_LIGHT;
+export const CANONICAL_MAP_STYLE_OSM_STANDARD: StyleSpecification = {
+  version: 8,
+  sources: {
+    "osm-standard": {
+      type: "raster",
+      tiles: [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+    },
+  },
+  layers: [
+    {
+      id: "osm-standard-layer",
+      type: "raster",
+      source: "osm-standard",
+      minzoom: 0,
+      maxzoom: 19,
+    },
+  ],
+};
+
+export function getCanonicalMapStyle(
+  isDark?: boolean,
+  provider: string = "osm_standard"
+): StyleSpecification {
+  const effectiveIsDark =
+    isDark !== undefined
+      ? isDark
+      : typeof document !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : false;
+
+  const normalizedProvider = (provider || "osm_standard").toLowerCase();
+
+  if (normalizedProvider === "carto_dark") {
+    return CANONICAL_MAP_STYLE_DARK;
+  }
+  if (normalizedProvider === "carto_voyager") {
+    return CANONICAL_MAP_STYLE_LIGHT;
+  }
+  if (normalizedProvider === "osm_standard" || normalizedProvider === "open_street_map") {
+    return CANONICAL_MAP_STYLE_OSM_STANDARD;
+  }
+
+  // Fallback padrão 100% limpo e livre de marcas d'água
+  return effectiveIsDark ? CANONICAL_MAP_STYLE_DARK : CANONICAL_MAP_STYLE_OSM_STANDARD;
 }
 
 /**

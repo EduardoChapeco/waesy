@@ -70,4 +70,61 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     expect(niche.priceSuffix).toBe("/diária");
     expect(niche.showDeliveryBadges).toBe(false); // Regra: NUNCA exibir entrega para hospedagens
   });
+
+  it("resolve corretamente o nicho de Produto Digital e Download", () => {
+    const classified = {
+      category: "digital",
+      title: "Planilha de Gestão Financeira Avançada 2026",
+      price_cents: 4900,
+      is_digital: true,
+      attributes: {
+        digital_file_type: "xlsx",
+        digital_file_size_bytes: 5242880,
+      },
+    };
+
+    const niche = resolveClassifiedNiche(classified);
+    expect(niche.id).toBe("digital");
+    expect(niche.shortLabel).toBe("Digital / Download");
+    expect(niche.primaryActionLabel).toBe("Comprar & Baixar Arquivo");
+    expect(niche.showDeliveryBadges).toBe(false);
+  });
+
+  it("resolve corretamente o nicho de Assinatura Recorrente", () => {
+    const classified = {
+      category: "subscription",
+      title: "Clube do Café Especial — 2 Pacotes Selecionados por Mês",
+      price_cents: 8900,
+      attributes: {
+        niche: "assinatura",
+        subscription_cycle: "mensal",
+        trial_days: 7,
+      },
+    };
+
+    const niche = resolveClassifiedNiche(classified);
+    expect(niche.id).toBe("subscription");
+    expect(niche.shortLabel).toBe("Assinatura");
+    expect(niche.priceSuffix).toBe("/mês");
+    expect(niche.primaryActionLabel).toBe("Assinar Plano Mensal");
+  });
+
+  it("resolve corretamente o nicho de Vaga de Emprego", () => {
+    const classified = {
+      category: "job",
+      title: "Desenvolvedor Full Stack Sênior",
+      price_cents: 0,
+      attributes: {
+        niche: "vaga",
+        regime: "clt",
+        work_model: "remoto",
+      },
+    };
+
+    const niche = resolveClassifiedNiche(classified);
+    expect(niche.id).toBe("job");
+    expect(niche.shortLabel).toBe("Vaga / Emprego");
+    expect(niche.primaryActionLabel).toBe("Candidatar-se à Vaga");
+    expect(niche.allowEscrowGuarantee).toBe(false);
+  });
 });

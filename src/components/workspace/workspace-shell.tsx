@@ -381,24 +381,24 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative">
       {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
-      <aside className="hidden lg:flex flex-col w-[250px] shrink-0 sticky top-0 h-screen bg-background border-r border-border/60 justify-between select-none z-30">
- {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}
- <div className="h-14 border-b border-border/60 px-3 flex items-center shrink-0">
- <WorkspaceAccountSwitcher
- memberships={memberships}
- activeStoreId={activeStoreId}
- activeStore={activeStore}
- userDisplayName={userDisplayName}
- userEmail={session?.email}
- isSwitching={isSwitching}
- onSwitchStore={handleSwitchStore}
- />
- </div>
+      <aside className="hidden lg:flex flex-col w-[268px] shrink-0 sticky top-0 h-screen bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
+        {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}
+        <div className="h-14 border-b border-border/60 px-3 flex items-center shrink-0">
+          <WorkspaceAccountSwitcher
+            memberships={memberships}
+            activeStoreId={activeStoreId}
+            activeStore={activeStore}
+            userDisplayName={userDisplayName}
+            userEmail={session?.email}
+            isSwitching={isSwitching}
+            onSwitchStore={handleSwitchStore}
+          />
+        </div>
 
- {/* Lista de Navegação com Scroll Suave */}
- <ScrollArea className="flex-1 px-3 py-3 pr-2">
- <NavLinks isMobile={false} />
- </ScrollArea>
+        {/* Lista de Navegação com Scroll Suave */}
+        <ScrollArea className="flex-1 px-3 py-3 pr-2 overflow-x-hidden">
+          <NavLinks isMobile={false} />
+        </ScrollArea>
 
  {/* ── Ações Canônicas de Rodapé da Sidebar (Padrão Meta Business Suite) ── */}
  <div className="p-3 space-y-1 border-t border-border/60 shrink-0">

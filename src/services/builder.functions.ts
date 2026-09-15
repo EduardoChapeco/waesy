@@ -2231,6 +2231,12 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
  resolvedStoreId = await resolveTenantStoreId();
  }
 
+ if (!resolvedStoreId) {
+ const { resolvePlatformRootStore } = await import("@/services/master.functions");
+ const rootStore = await resolvePlatformRootStore(db);
+ resolvedStoreId = rootStore?.id || null;
+ }
+
  if (!resolvedStoreId) return { status: "not_found" as const };
  const storeId = resolvedStoreId;
 
@@ -2412,13 +2418,12 @@ export const getPublicExperienceDocumentBySlug = createServerFn({ method: "GET" 
 
  return { status: "ok" as const, data: { document: doc as ExperienceDocument, tree } };
  } catch (e) {
- // Backend não configurado não é erro fatal de página: a vitrine deve
- // renderizar o estado "em configuração" em vez de derrubar o SSR.
- if (e instanceof SupabaseUnconfiguredError) return { status: "unconfigured" as const };
- logSystemError({ route: "builder.getPublicExperienceDocumentBySlug", error: e, payload: input });
- console.error("[builder.functions] getPublicExperienceDocumentBySlug error:", e);
- throw new Error("Erro ao carregar página.");
- }
+    // Backend não configurado não é erro fatal de página: a vitrine deve
+    // renderizar o estado "em configuração" em vez de derrubar o SSR.
+    if (e instanceof SupabaseUnconfiguredError) return { status: "unconfigured" as const };
+    console.warn("[builder.functions] getPublicExperienceDocumentBySlug handled not_found/error:", e instanceof Error ? e.message : e);
+    return { status: "not_found" as const };
+  }
  });
 
 // ---------------------------------------------------------------------------

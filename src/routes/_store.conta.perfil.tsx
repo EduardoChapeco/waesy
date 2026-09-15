@@ -126,6 +126,7 @@ function ProfilePage() {
     featuredBannerLink: profile?.featuredBannerLink || "",
     isAnonymous: profile?.is_anonymous ?? profile?.isAnonymous ?? false,
     privacyMode: (profile?.privacy_mode || profile?.privacyMode || "public") as "public" | "unlisted" | "private",
+    hideLocation: profile?.hide_location ?? profile?.hideLocation ?? false,
   });
 
   // Biolinks

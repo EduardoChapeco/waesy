@@ -7,6 +7,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import type { EscamasCarouselProject, EscamasSlide, StudioBrandProfile } from "@/types/studio-machine";
+import { DEFAULT_BRAND_PROFILE } from "@/lib/studio-machine-constants";
 
 // ============================================================
 // Schemas & Types
@@ -1123,6 +1125,355 @@ export const generateSocialStoryCard = createServerFn({ method: "POST" })
       svgMarkup: svg,
       shareUrl: data.targetUrl,
       whatsappShareText,
+    };
+  });
+
+// ============================================================
+// STUDIO MACHINE ➔ ESCAMAS CAROUSEL GENERATOR (1-CLICK MINING)
+// ============================================================
+
+export interface GeneratedCarouselResultDTO {
+  projectId: string;
+  title: string;
+  project: EscamasCarouselProject;
+}
+
+/**
+ * generateCarouselFromMinedContent
+ * Sintetiza automaticamente um carrossel 1080x1350 com sistema ESCAMAS (8 camadas)
+ * a partir de matérias de notícias mineradas, editais do PNCP, vagas de emprego ou eventos.
+ */
+export const generateCarouselFromMinedContent = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      contentType: z.enum(["noticias", "licitacoes", "eventos", "empregos"]),
+      itemId: z.string().optional(),
+      title: z.string().min(1),
+      summary: z.string().default(""),
+      coverUrl: z.string().optional().nullable(),
+      details: z.record(z.any()).optional(),
+      storeId: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }): Promise<GeneratedCarouselResultDTO> => {
+    const identity = await getServerIdentity().catch(() => ({ id: "00000000-0000-0000-0000-000000000000", store_id: null }));
+    const supabase = getServerClient();
+
+    const targetStoreId = data.storeId || identity.store_id;
+
+    // 1. Carrega DNA da Marca (Brand Kit & Briefing)
+    let brandProfile: StudioBrandProfile = { ...DEFAULT_BRAND_PROFILE };
+
+    if (targetStoreId) {
+      const { data: brandKit } = await supabase
+        .from("brand_kits")
+        .select("*")
+        .eq("store_id", targetStoreId)
+        .maybeSingle();
+
+      const { data: storeInfo } = await supabase
+        .from("stores")
+        .select("name, slug, logo_url")
+        .eq("id", targetStoreId)
+        .maybeSingle();
+
+      if (storeInfo) {
+        brandProfile.name = storeInfo.name;
+        brandProfile.handle = `@${storeInfo.slug || "waesystore"}`;
+        if (storeInfo.logo_url) brandProfile.logoUrl = storeInfo.logo_url;
+      }
+
+      if (brandKit?.colors) {
+        const c = brandKit.colors as Record<string, any>;
+        if (c.primary) brandProfile.primaryColor = c.primary;
+        if (c.secondary) brandProfile.secondaryColor = c.secondary;
+        if (c.accent) brandProfile.accentColor = c.accent;
+      }
+
+      if (brandKit?.fonts) {
+        const f = brandKit.fonts as Record<string, any>;
+        if (f.heading) brandProfile.fontHeading = f.heading;
+        if (f.body) brandProfile.fontBody = f.body;
+      }
+    }
+
+    // 2. Extrai Pauta & Roteirização Narrativa por Tipo de Conteúdo
+    const slides: EscamasSlide[] = [];
+    const coverImage = data.coverUrl || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&q=80";
+
+    if (data.contentType === "licitacoes") {
+      const orgao = data.details?.orgao || data.details?.orgao_nome || "Órgão Público";
+      const valor = data.details?.valor_total_formatado || data.details?.valor_estimado || "Sob Consulta";
+      const municipio = data.details?.municipio || "Municipal";
+      const objeto = data.summary || data.title;
+
+      // Slide 1: Capa
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 1,
+        layout_type: "escamas_layered",
+        role_in_narrative: "hook",
+        text_content: {
+          badge: "PNCP Transparência",
+          kicker: `${municipio} • AVISO PÚBLICO`,
+          headline: data.title.slice(0, 70),
+          body: `Nova contratação e oportunidade aberta por ${orgao}.`,
+        },
+        background_url: coverImage,
+        background_opacity: 0.28,
+        layers: [
+          {
+            id: crypto.randomUUID(),
+            type: "atmospheric",
+            url: "",
+            x: 50,
+            y: 30,
+            scale: 1,
+            rotation: 0,
+            opacity: 0.8,
+            zIndex: 1,
+            title: "Glow Cívico",
+          },
+        ],
+      });
+
+      // Slide 2: Objeto & Valor
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 2,
+        layout_type: "escamas_layered",
+        role_in_narrative: "numbers",
+        text_content: {
+          badge: "Valores & Prazos",
+          kicker: "MONTANTE ESTIMADO",
+          headline: valor,
+          body: `Objeto: ${objeto.slice(0, 180)}...`,
+        },
+        background_url: coverImage,
+        background_opacity: 0.15,
+        layers: [],
+      });
+
+      // Slide 3: Participação Local
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 3,
+        layout_type: "escamas_layered",
+        role_in_narrative: "impact",
+        text_content: {
+          badge: "Oportunidade Local",
+          kicker: "EMPRESAS & PRESTADORES",
+          headline: "QUEM PODE PARTICIPAR?",
+          body: "Fornecedores habilitados, empresas regionais e microempreendedores podem apresentar propostas oficiais no portal do governo.",
+        },
+        background_url: coverImage,
+        background_opacity: 0.12,
+        layers: [],
+      });
+
+      // Slide 4: CTA
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 4,
+        layout_type: "escamas_layered",
+        role_in_narrative: "cta",
+        text_content: {
+          badge: "Acesso Livre",
+          kicker: "EDITAL COMPLETO",
+          headline: "CONSULTE OS DOCUMENTOS",
+          body: "Acesse os anexos e prazos completos no Radar PNCP da plataforma Waesy.",
+          cta_text: "Ver Edital no Waesy",
+        },
+        background_url: coverImage,
+        background_opacity: 0.2,
+        layers: [],
+      });
+    } else if (data.contentType === "empregos") {
+      const empresa = data.details?.company || data.details?.company_name || "Empresa Contratante";
+      const salario = data.details?.salary_range || "A combinar";
+      const local = data.details?.location || "Presencial / Híbrido";
+
+      // Slide 1: Capa
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 1,
+        layout_type: "escamas_layered",
+        role_in_narrative: "hook",
+        text_content: {
+          badge: "Oportunidade de Trabalho",
+          kicker: `${local} • VAGA ABERTA`,
+          headline: data.title.slice(0, 65),
+          body: `Processo seletivo aberto para contratação imediata na região.`,
+        },
+        background_url: coverImage,
+        background_opacity: 0.3,
+        layers: [],
+      });
+
+      // Slide 2: Empresa & Remuneração
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 2,
+        layout_type: "escamas_layered",
+        role_in_narrative: "details",
+        text_content: {
+          badge: "Condições & Benefícios",
+          kicker: empresa.toUpperCase(),
+          headline: salario,
+          body: (data.summary || "Envie seu currículo ou preencha a ficha oficial de candidatura diretamente pelo link da vaga.").slice(0, 180),
+        },
+        background_url: coverImage,
+        background_opacity: 0.15,
+        layers: [],
+      });
+
+      // Slide 3: CTA
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 3,
+        layout_type: "escamas_layered",
+        role_in_narrative: "cta",
+        text_content: {
+          badge: "Candidatura",
+          kicker: "ENVIE SEU CURRÍCULO",
+          headline: "CANDIDATE-SE AGORA",
+          body: "Acesse a vaga no Waesy Empregos e encaminhe seu contato para a equipe de recrutamento.",
+          cta_text: "Acessar Vaga",
+        },
+        background_url: coverImage,
+        background_opacity: 0.22,
+        layers: [],
+      });
+    } else {
+      // Notícias e Eventos Gerais
+      const sections = (data.details?.ai_structured_sections as Array<{ subtitle: string; content: string }>) || [];
+      
+      // Slide 1: Capa
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 1,
+        layout_type: "escamas_layered",
+        role_in_narrative: "hook",
+        text_content: {
+          badge: "Giro de Notícias",
+          kicker: "DESTAQUE EDITORIAL",
+          headline: data.title.slice(0, 75),
+          body: data.summary.slice(0, 140) + "...",
+        },
+        background_url: coverImage,
+        background_opacity: 0.32,
+        layers: [
+          {
+            id: crypto.randomUUID(),
+            type: "atmospheric",
+            url: "",
+            x: 50,
+            y: 40,
+            scale: 1,
+            rotation: 0,
+            opacity: 0.7,
+            zIndex: 1,
+            title: "Luz de Foco",
+          },
+        ],
+      });
+
+      // Slide 2: Contexto Central
+      const sec1 = sections[0] || { subtitle: "O Que Aconteceu", content: data.summary };
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 2,
+        layout_type: "escamas_layered",
+        role_in_narrative: "context",
+        text_content: {
+          badge: "Entenda o Caso",
+          kicker: "CONTEXTO & FATOS",
+          headline: sec1.subtitle.slice(0, 50).toUpperCase(),
+          body: sec1.content.slice(0, 220) + (sec1.content.length > 220 ? "..." : ""),
+        },
+        background_url: coverImage,
+        background_opacity: 0.16,
+        layers: [],
+      });
+
+      // Slide 3: Desdobramento ou Segunda Seção
+      const sec2 = sections[1] || { subtitle: "Impacto Local", content: "Confira as repercussões e desdobramentos desta reportagem na comunidade." };
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 3,
+        layout_type: "escamas_layered",
+        role_in_narrative: "depth",
+        text_content: {
+          badge: "Repercussão",
+          kicker: "ANÁLISE",
+          headline: sec2.subtitle.slice(0, 50).toUpperCase(),
+          body: sec2.content.slice(0, 220) + (sec2.content.length > 220 ? "..." : ""),
+        },
+        background_url: coverImage,
+        background_opacity: 0.14,
+        layers: [],
+      });
+
+      // Slide 4: CTA
+      slides.push({
+        id: crypto.randomUUID(),
+        slide_number: 4,
+        layout_type: "escamas_layered",
+        role_in_narrative: "cta",
+        text_content: {
+          badge: "Matéria Completa",
+          kicker: "LEITURA RECOMENDADA",
+          headline: "LEIA A REPORTAGEM NA ÍNTEGRA",
+          body: "Acesse o portal Waesy Notícias para ler todos os detalhes, fotos e fontes oficiais.",
+          cta_text: "Ler no Waesy",
+        },
+        background_url: coverImage,
+        background_opacity: 0.25,
+        layers: [],
+      });
+    }
+
+    // 3. Monta o Objeto Completo do Projeto de Carrossel
+    const carouselProject: EscamasCarouselProject = {
+      id: crypto.randomUUID(),
+      topic: data.title,
+      goal: data.contentType === "licitacoes" ? "civic_impact" : "education",
+      brand: brandProfile,
+      slides,
+      title: `Carrossel: ${data.title.slice(0, 40)}`,
+      createdAt: Date.now(),
+      visualStyle: "escamas_ultra",
+      generationMode: "escamas",
+      source_type: data.contentType === "licitacoes" ? "pncp_bid" : data.contentType === "empregos" ? "job_post" : "mined_news",
+      source_id: data.itemId,
+    };
+
+    // 4. Persiste no banco Supabase na tabela studio_projects
+    const { data: savedProject, error } = await supabase
+      .from("studio_projects")
+      .insert({
+        title: carouselProject.title,
+        project_type: "graphic",
+        aspect_ratio: "4:5",
+        canvas_data: carouselProject as any,
+        thumbnail_url: coverImage,
+        store_id: targetStoreId || null,
+        user_id: identity.id !== "00000000-0000-0000-0000-000000000000" ? identity.id : null,
+      })
+      .select("id, title")
+      .single();
+
+    if (error) {
+      console.warn("[studio.functions] Aviso ao salvar studio_project no banco:", error.message);
+    }
+
+    const finalId = savedProject?.id || carouselProject.id;
+    carouselProject.id = finalId;
+
+    return {
+      projectId: finalId,
+      title: carouselProject.title,
+      project: carouselProject,
     };
   });
 

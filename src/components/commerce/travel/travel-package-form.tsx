@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plane, Bus, Ship, Anchor, Hotel, Calendar, Check, Plus, Trash2, Sliders, MapPin, Clock, ShieldCheck, ShieldAlert, Sun, Camera, Layers, Utensils, Coffee, ChevronDown, ChevronUp, Star, X, Compass, ArrowUp, ArrowDown, Loader2, CreditCard, Car } from 'lucide-react';
+import { Plane, Bus, Ship, Anchor, Hotel, Calendar, Check, Plus, Trash2, Sliders, MapPin, Clock, ShieldCheck, ShieldAlert, Sun, Camera, Layers, Utensils, Coffee, ChevronDown, ChevronUp, Star, X, Compass, ArrowUp, ArrowDown, Loader2, CreditCard, Car, Sparkles } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +30,9 @@ import {
  type FlightDetails,
  type PaymentConditions,
 } from "@/types/travel-package";
+import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
+import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
+import { formatMoney } from "@/lib/money";
 
 interface TravelPackageFormProps {
  value: Partial<TravelPackageData>;
@@ -95,6 +98,46 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  airline_partner: "",
  };
  const recommendations = value.recommendations || [];
+
+  // Condições Comerciais & Parcelamento (Bilateral - Regra 22)
+  const paymentConditions = value.payment_conditions || {};
+  const maxInstallments = Math.max(1, Math.min(24, paymentConditions.installments_max ?? 12));
+  const feeFreeInstallments = Math.max(1, Math.min(maxInstallments, paymentConditions.installments_fee_free ?? maxInstallments));
+  const pixDiscountPercent = paymentConditions.pix_discount_percent ?? 0;
+  const depositPercent = paymentConditions.deposit_percent ?? 0;
+
+  const installmentCents = maxInstallments > 0 && priceCents > 0 ? Math.round(priceCents / maxInstallments) : 0;
+  const pixCents = pixDiscountPercent > 0 && priceCents > 0 ? Math.round(priceCents * (1 - pixDiscountPercent / 100)) : priceCents;
+
+  const updatePaymentConditions = (field: keyof PaymentConditions, val: any) => {
+    onChange({
+      ...value,
+      payment_conditions: {
+        ...value.payment_conditions,
+        [field]: val,
+      },
+    });
+  };
+
+  // Destaques Visuais (Story Highlights)
+  const highlights: StoryHighlight[] = (value.story_highlights || resort.highlights || []).map((h: any) => ({
+    id: h.id,
+    title: h.title || h.label || "Destaque",
+    image: h.image || h.imageUrl || "",
+  }));
+
+  const handleHighlightsChange = (newHls: StoryHighlight[]) => {
+    onChange({
+      ...value,
+      story_highlights: newHls.map((h) => ({
+        id: h.id,
+        label: h.title,
+        title: h.title,
+        imageUrl: h.image,
+        image: h.image,
+      })) as any,
+    });
+  };
 
  const updateDestination = (field: string, val: any) => {
  onChange({
@@ -475,6 +518,15 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  value={destination.region || ""}
  onChange={(e) => updateDestination("region", e.target.value)}
  placeholder="Ex: Bahia, Brasil"
+ className="h-9 rounded-xl text-xs bg-background"
+ />
+ </div>
+ <div className="space-y-1 sm:col-span-3">
+ <Label className="text-[11px] font-semibold text-muted-foreground">Resumo de Logística / Como Chegar</Label>
+ <Input
+ value={destination.flight_summary || ""}
+ onChange={(e) => updateDestination("flight_summary", e.target.value)}
+ placeholder="Ex: Voo fretado direto + transfer in/out garantido com saída regional..."
  className="h-9 rounded-xl text-xs bg-background"
  />
  </div>
@@ -1737,6 +1789,118 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  </div>
  </div>
  )}
+ </div>
+
+ {/* ── 8. CONDIÇÕES COMERCIAIS & PARCELAMENTO BILATERAL (REGRA 22) ── */}
+ <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+ <CreditCard className="size-4 text-primary" />
+ <span>Condições Comerciais & Parcelamento</span>
+ </div>
+ <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+ Regra 22: 1-24x
+ </Badge>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+ {/* Slider de Parcelamento Máximo */}
+ <div className="space-y-2 sm:col-span-2 p-3.5 rounded-xl bg-muted/20 border border-border/50">
+ <div className="flex items-center justify-between">
+ <Label className="text-xs font-semibold text-foreground">
+ Parcelamento Máximo no Cartão
+ </Label>
+ <span className="text-sm font-black font-display text-primary">
+ Até {maxInstallments}x {priceCents > 0 ? `de ${formatMoney(installmentCents)}` : ""}
+ </span>
+ </div>
+ <input
+ type="range"
+ min={1}
+ max={24}
+ step={1}
+ value={maxInstallments}
+ onChange={(e) => updatePaymentConditions("installments_max", Number(e.target.value))}
+ className="w-full h-2 rounded-full accent-primary cursor-pointer"
+ aria-label="Máximo de parcelas permitidas"
+ />
+ <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+ <span>1x</span>
+ <span>6x</span>
+ <span>12x</span>
+ <span>18x</span>
+ <span>24x</span>
+ </div>
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-xs text-foreground font-medium">Parcelas Sem Juros</Label>
+ <Input
+ type="number"
+ min={1}
+ max={maxInstallments}
+ value={feeFreeInstallments}
+ onChange={(e) => updatePaymentConditions("installments_fee_free", Number(e.target.value))}
+ placeholder="12"
+ className="h-10 rounded-xl text-xs bg-background font-mono"
+ />
+ <p className="text-[10px] text-muted-foreground">Quantas parcelas o lojista assume a taxa do cartão.</p>
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-xs text-foreground font-medium">Desconto à Vista no PIX (%)</Label>
+ <Input
+ type="number"
+ min={0}
+ max={50}
+ value={pixDiscountPercent}
+ onChange={(e) => updatePaymentConditions("pix_discount_percent", Number(e.target.value))}
+ placeholder="5"
+ className="h-10 rounded-xl text-xs bg-background font-mono"
+ />
+ {pixDiscountPercent > 0 && priceCents > 0 && (
+ <p className="text-[10px] text-emerald-600 font-semibold font-mono">
+ Valor no PIX: {formatMoney(pixCents)} ({pixDiscountPercent}% OFF)
+ </p>
+ )}
+ </div>
+
+ <div className="space-y-1.5 sm:col-span-2">
+ <Label className="text-xs text-foreground font-medium">Sinal Mínimo de Entrada (%)</Label>
+ <Input
+ type="number"
+ min={0}
+ max={100}
+ value={depositPercent}
+ onChange={(e) => updatePaymentConditions("deposit_percent", Number(e.target.value))}
+ placeholder="0 (Sem entrada obrigatória)"
+ className="h-10 rounded-xl text-xs bg-background font-mono"
+ />
+ <p className="text-[10px] text-muted-foreground">Porcentagem exigida no ato da confirmação da reserva.</p>
+ </div>
+ </div>
+ </div>
+
+ {/* ── 9. DESTAQUES VISUAIS EM CÍRCULOS (STORY HIGHLIGHTS — REGRAS 19 & 20) ── */}
+ <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
+ <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+ <Sparkles className="size-4 text-primary" />
+ <span>Destaques Visuais (Story Highlights)</span>
+ </div>
+ <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
+ Regra 20: Upload Contextual
+ </Badge>
+ </div>
+ <p className="text-xs text-muted-foreground">
+ Círculos táteis inspirados no Instagram exibidos no topo da vitrine para destacar Resort, Piscinas, Gastronomia e Praias.
+ </p>
+ <StoryHighlightUploader
+ highlights={highlights}
+ onChange={handleHighlightsChange}
+ onUpload={(file) => uploadClassifiedMedia(file, "travel-highlights")}
+ maxHighlights={8}
+ />
  </div>
  </div>
  );

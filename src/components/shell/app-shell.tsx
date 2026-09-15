@@ -154,8 +154,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
         </main>
       </div>
 
- {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet */}
- <MobileNav session={session} userRole={session?.role} />
+      {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
+      {!isDetailPage && <MobileNav session={session} userRole={session?.role} />}
 
  {/* Global Cart Slide-over */}
  <CartSheet />

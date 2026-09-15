@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { ImageOff, ShoppingBag, ChevronRight, Star, Truck, ShieldCheck, Check, HelpCircle, MapPin, RotateCcw, BadgePercent, Play, MessageCircle, Mail, User, Info, Loader2, Layers, ChevronRight as ChevronIcon, ShieldAlert, Users, Scale, Clock, BellRing } from 'lucide-react';
+import { ImageOff, ShoppingBag, ChevronRight, Star, Truck, ShieldCheck, Check, HelpCircle, MapPin, RotateCcw, BadgePercent, Play, MessageCircle, Mail, User, Info, Loader2, Layers, ChevronRight as ChevronIcon, ShieldAlert, Users, Scale, Clock, BellRing, Package } from 'lucide-react';
 import { TagFraudDialog } from "@/components/commerce/tag-fraud-dialog";
 import { ProductWaitlistSheet } from "@/components/commerce/product-waitlist-sheet";
 
@@ -13,10 +13,12 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { getProductBySlug } from "@/services/product.functions";
 import type { ProductDetailDTO, ProductMediaDTO, VariantDTO } from "@/types/catalog";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
+import type { DepartureOption } from "@/lib/classifieds/canonical-airports";
 import { calculateShipping } from "@/services/shipping.functions";
 import { formatMoney } from "@/lib/money";
 import { getPublicExperienceDocumentBySlug } from "@/services/builder.functions";
 import { addToCart } from "@/services/cart.functions";
+import { getIdentity } from "@/services/identity.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { ProductTelemetry, trackAddToCartEvent } from "@/components/commerce/product-telemetry";
 import { toast } from "sonner";
@@ -236,23 +238,26 @@ export const Route = createFileRoute("/_store/produto/$slug")({
  ],
  };
  },
- loader: async ({ params }) => {
-   try {
- const [productRes, templateRes] = await Promise.all([
- getProductBySlug({ data: { slug: params.slug } }),
- getPublicExperienceDocumentBySlug({
- data: { slug: "default-product-template", document_type: "product_template" },
- }),
- ]);
+  loader: async ({ params }) => {
+    try {
+      const [productRes, templateRes, identityRes] = await Promise.all([
+        getProductBySlug({ data: { slug: params.slug } }),
+        getPublicExperienceDocumentBySlug({
+          data: { slug: "default-product-template", document_type: "product_template" },
+        }),
+        getIdentity().catch(() => null),
+      ]);
       return {
         productResult: productRes,
         templateTree: (templateRes as any)?.tree || [],
+        identity: identityRes || null,
       };
     } catch (err) {
       console.error("[loader:_store.produto.$slug] Unhandled loader error:", err);
       return {
         productResult: null,
         templateTree: [],
+        identity: null,
       };
     }
   },
@@ -264,63 +269,118 @@ function ProductPage() {
   const loaderData = (Route.useLoaderData() as any) || {};
   const product = loaderData.productResult as ProductDetailDTO | null;
   const templateTree = (loaderData.templateTree || []) as any;
+  const identity = loaderData.identity;
+  const router = useRouter();
 
- if (!product || !product.id) {
- return (
- <div className="mx-auto max-w-screen-xl px-4 py-20 md:px-6">
- <EmptyState
- title="Produto não encontrado"
- action={
- <Button asChild>
- <Link to="/mercado">Ver catálogo</Link>
- </Button>
- }
- />
- </div>
- );
- }
+  if (!product || !product.id) {
+    return (
+      <div className="mx-auto max-w-screen-xl px-4 py-20 md:px-6">
+        <EmptyState
+          title="Produto não encontrado"
+          action={
+            <Button asChild>
+              <Link to="/mercado">Ver catálogo</Link>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
- const isTravelPackage = Boolean(
- product.attributes?.travel ||
- (product as any).category?.slug?.includes("turismo") ||
- (product as any).category?.slug?.includes("viag") ||
- (product as any).category?.name?.toLowerCase().includes("turismo") ||
- (product as any).category?.name?.toLowerCase().includes("viagem") ||
- (product as any).category?.name?.toLowerCase().includes("resort")
- );
+  const isOwner = Boolean(
+    identity?.id &&
+      ((product as any)?.store_id === identity.store_id ||
+        (product as any)?.store?.id === identity.store_id ||
+        (product as any)?.store?.owner_id === identity.id ||
+        (product as any)?.store?.user_id === identity.id ||
+        identity.role === "admin")
+  );
 
- if (isTravelPackage) {
- return (
- <TravelPackageDetailView
- packageData={product.attributes?.travel}
- productTitle={product.title}
- priceCents={product.priceCents || 0}
- compareAtCents={product.compareAtCents}
- coverImageUrl={
- product.media?.find((m: any) => m.mediaType === "image")?.url ||
- product.media?.[0]?.url ||
- null
- }
- mediaUrls={
- product.media?.filter((m: any) => m.mediaType === "image")?.map((m: any) => m.url) || []
- }
- storeName={product.store?.name || "Excelência Tour"}
- storePhone={product.store?.phone || "49991448651"}
- />
- );
- }
+  const isTravelPackage = Boolean(
+    product.attributes?.travel ||
+      (product as any).category?.slug?.includes("turismo") ||
+      (product as any).category?.slug?.includes("viag") ||
+      (product as any).category?.name?.toLowerCase().includes("turismo") ||
+      (product as any).category?.name?.toLowerCase().includes("viagem") ||
+      (product as any).category?.name?.toLowerCase().includes("resort")
+  );
 
- return <ProductContent product={product} templateTree={templateTree} />;
+  if (isTravelPackage) {
+    const travelData = product.attributes?.travel;
+    const currentThumbnailUrl =
+      product.media?.find((m: any) => m.mediaType === "image")?.url ||
+      product.media?.[0]?.url ||
+      null;
+    const mediaUrls =
+      product.media?.filter((m: any) => m.mediaType === "image")?.map((m: any) => m.url) || [];
+    const storePhone =
+      product.store?.phone ||
+      product.store?.whatsapp ||
+      (product as any)?.seller?.phone ||
+      "49991448651";
+
+    const { setIsCartOpen } = useCartContext();
+
+    const handleTravelReserve = async (selectedDeparture?: DepartureOption) => {
+      const targetVariantId = product.variants?.[0]?.id;
+      if (targetVariantId && (product.priceCents || 0) > 0) {
+        try {
+          await addToCart({
+            data: {
+              variantId: targetVariantId,
+              quantity: 1,
+            },
+          });
+          toast.success("Pacote de viagem adicionado ao carrinho!");
+          setIsCartOpen(true);
+        } catch (err: any) {
+          toast.error(err?.message || "Erro ao adicionar pacote ao carrinho.");
+        }
+      } else {
+        const cleanPhone = storePhone ? storePhone.replace(/\D/g, "") : "49991448651";
+        const depInfo = selectedDeparture && selectedDeparture.departure_date
+          ? ` para a saída de ${new Date(selectedDeparture.departure_date + "T00:00:00").toLocaleDateString("pt-BR")}`
+          : "";
+        const msg = encodeURIComponent(`Olá! Tenho interesse no pacote *${product.title}*${depInfo}. Gostaria de confirmar disponibilidade e reserva!`);
+        window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
+      }
+    };
+
+    return (
+      <TravelPackageDetailView
+        packageData={travelData}
+        productTitle={product.title}
+        priceCents={product.priceCents || 0}
+        compareAtCents={product.compareAtCents}
+        coverImageUrl={currentThumbnailUrl}
+        mediaUrls={mediaUrls}
+        storeName={(product as any)?.store?.name}
+        storePhone={storePhone}
+        isOwner={isOwner}
+        onReserveClick={handleTravelReserve}
+        onEditClick={() =>
+          router.navigate({
+            to: "/workspace/catalogo/produtos/$id",
+            params: { id: product.id },
+          })
+        }
+      />
+    );
+  }
+
+  return <ProductContent product={product} templateTree={templateTree} isOwner={isOwner} />;
 }
 
 function ProductContent({
- product: rawProduct,
- templateTree,
+  product: rawProduct,
+  templateTree,
+  isOwner = false,
 }: {
- product: ProductDetailDTO;
- templateTree?: any[];
+  product: ProductDetailDTO;
+  templateTree?: any[];
+  isOwner?: boolean;
 }) {
- const coverImage: ProductMediaDTO | null = rawProduct.media[0] ?? null;
+  const coverImage: ProductMediaDTO | null = rawProduct.media[0] ?? null;
 
  // Sanitize variant attributes to avoid UI breakage due to trailing spaces in keys or values
  const product = useMemo(() => {
@@ -684,16 +744,23 @@ function ProductContent({
  <span className="text-foreground font-bold truncate max-w-[250px]">{product.title}</span>
  </nav>
 
- <TravelPackageDetailView
- packageData={travelData}
- productTitle={product.title}
- priceCents={product.priceCents || 0}
- compareAtCents={product.compareAtCents}
- coverImageUrl={currentThumbnailUrl}
- mediaUrls={mediaUrls}
- storeName={(product as any)?.store?.name}
- storePhone={storePhone}
- />
+ 				<TravelPackageDetailView
+					packageData={travelData}
+					productTitle={product.title}
+					priceCents={product.priceCents || 0}
+					compareAtCents={product.compareAtCents}
+					coverImageUrl={currentThumbnailUrl}
+					mediaUrls={mediaUrls}
+					storeName={(product as any)?.store?.name}
+					storePhone={storePhone}
+					isOwner={isOwner}
+					onEditClick={() =>
+						router.navigate({
+							to: "/workspace/catalogo/produtos/$id",
+							params: { id: product.id },
+						})
+					}
+				/>
  </div>
  );
  }
@@ -937,6 +1004,63 @@ function ProductContent({
  </div>
  </div>
  )}
+
+        {/* Especificações Físicas & Logísticas (Dimensões, Peso e Fabricante) */}
+        {((product as any).weightKg || (product as any).weight_kg ||
+          (product as any).widthCm || (product as any).width_cm ||
+          (product as any).heightCm || (product as any).height_cm ||
+          (product as any).lengthCm || (product as any).length_cm ||
+          (product as any).ean || (product as any).sku ||
+          (product as any).manufacturer) && (
+          <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 space-y-3 mt-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+              <Package className="size-3.5 text-primary" />
+              <span>Especificações Técnicas & Dimensões</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+              {((product as any).widthCm || (product as any).width_cm ||
+                (product as any).heightCm || (product as any).height_cm ||
+                (product as any).lengthCm || (product as any).length_cm) && (
+                <div className="p-2.5 rounded-xl bg-background border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block">Dimensões (C x L x A)</span>
+                  <span className="font-bold text-foreground font-mono">
+                    {(product as any).lengthCm || (product as any).length_cm || 0} x {(product as any).widthCm || (product as any).width_cm || 0} x {(product as any).heightCm || (product as any).height_cm || 0} cm
+                  </span>
+                </div>
+              )}
+
+              {((product as any).weightKg || (product as any).weight_kg) && (
+                <div className="p-2.5 rounded-xl bg-background border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block">Peso Líquido</span>
+                  <span className="font-bold text-foreground font-mono">
+                    {(product as any).weightKg || (product as any).weight_kg} kg
+                  </span>
+                </div>
+              )}
+
+              {(product as any).manufacturer && (
+                <div className="p-2.5 rounded-xl bg-background border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block">Fabricante / Marca</span>
+                  <span className="font-bold text-foreground truncate block">
+                    {(product as any).manufacturer}
+                  </span>
+                </div>
+              )}
+
+              {((product as any).ean || (product as any).sku) && (
+                <div className="p-2.5 rounded-xl bg-background border border-border/50">
+                  <span className="text-[10px] text-muted-foreground block">
+                    {(product as any).ean ? "Código de Barras (EAN)" : "Código SKU"}
+                  </span>
+                  <span className="font-bold text-foreground font-mono truncate block">
+                    {(product as any).ean || (product as any).sku}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
  </div>
 
 
