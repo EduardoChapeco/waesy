@@ -156,6 +156,8 @@ export const updateInvoiceStatus = createServerFn({ method: "POST" })
  z.object({
  invoiceId: z.string().uuid(),
  status: z.enum(["pending", "paid", "overdue", "cancelled"]),
+ receiptUrl: z.string().url().optional().nullable(),
+ notes: z.string().optional().nullable(),
  }),
  )
  .handler(async ({ data }) => {
@@ -167,6 +169,12 @@ export const updateInvoiceStatus = createServerFn({ method: "POST" })
  updateData.paid_at = new Date().toISOString();
  } else {
  updateData.paid_at = null;
+ }
+ if (data.receiptUrl !== undefined) {
+ updateData.receipt_url = data.receiptUrl;
+ }
+ if (data.notes !== undefined) {
+ updateData.notes = data.notes;
  }
 
  const { error } = await db
@@ -185,23 +193,68 @@ export const createPlatformInvoice = createServerFn({ method: "POST" })
  description: z.string().min(1, "Descrição obrigatória"),
  amountCents: z.number().positive("Valor deve ser maior que zero"),
  dueDate: z.string(),
+ receiptUrl: z.string().url().optional().nullable(),
+ notes: z.string().optional().nullable(),
  }),
  )
  .handler(async ({ data }) => {
  await requirePlatformAdmin();
  const db = getServerClient();
 
- const { error } = await db.from("platform_invoices").insert({
- store_id: data.storeId,
- description: data.description,
- amount_cents: data.amountCents,
- due_date: data.dueDate,
- status: "pending",
- });
+    const { error } = await db.from("platform_invoices").insert({
+      store_id: data.storeId,
+      description: data.description,
+      amount_cents: data.amountCents,
+      due_date: data.dueDate,
+      receipt_url: data.receiptUrl || null,
+      notes: data.notes || null,
+      status: "pending",
+    });
 
- if (error) throw new Error("Erro ao emitir fatura: " + error.message);
- return { success: true };
- });
+    if (error) throw new Error("Erro ao emitir fatura: " + error.message);
+    return { success: true };
+  });
+
+export const duplicatePlatformInvoice = createServerFn({ method: "POST" })
+  .validator(z.object({ invoiceId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    await requirePlatformAdmin();
+    const db = getServerClient();
+
+    const { data: original, error: fetchErr } = await db
+      .from("platform_invoices")
+      .select("*")
+      .eq("id", data.invoiceId)
+      .single();
+
+    if (fetchErr || !original) throw new Error("Fatura original não encontrada.");
+
+    const { error } = await db.from("platform_invoices").insert({
+      store_id: original.store_id,
+      description: `${original.description} (Cópia)`,
+      amount_cents: original.amount_cents,
+      due_date: original.due_date,
+      status: "pending",
+    });
+
+    if (error) throw new Error("Erro ao duplicar fatura: " + error.message);
+    return { success: true };
+  });
+
+export const deletePlatformInvoice = createServerFn({ method: "POST" })
+  .validator(z.object({ invoiceId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    await requirePlatformAdmin();
+    const db = getServerClient();
+
+    const { error } = await db
+      .from("platform_invoices")
+      .delete()
+      .eq("id", data.invoiceId);
+
+    if (error) throw new Error("Erro ao excluir fatura: " + error.message);
+    return { success: true };
+  });
 
 // ============================================================
 // 3. TRUST & SAFETY — MODERAÇÃO GLOBAL DE CONTEÚDO & DENÚNCIAS

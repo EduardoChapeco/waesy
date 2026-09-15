@@ -1,12 +1,14 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import {
- getPlatformInvoicesList,
- getPlatformStoresList,
- updateInvoiceStatus,
- createPlatformInvoice,
+  getPlatformInvoicesList,
+  getPlatformStoresList,
+  updateInvoiceStatus,
+  createPlatformInvoice,
+  duplicatePlatformInvoice,
+  deletePlatformInvoice,
 } from "@/services/master.functions";
 import { formatMoney, parseMoney } from "@/lib/money";
-import { DollarSign, Plus, Receipt } from "lucide-react";
+import { DollarSign, Plus, Receipt, Copy, Trash2, ExternalLink, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,66 +62,99 @@ function MasterFaturasPage() {
  const [isCreating, setIsCreating] = useState(false);
  const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
- // Form states
- const [storeId, setStoreId] = useState("");
- const [description, setDescription] = useState("");
- const [amountStr, setAmountStr] = useState("");
- const [dueDate, setDueDate] = useState("");
+  // Form states
+  const [storeId, setStoreId] = useState("");
+  const [description, setDescription] = useState("");
+  const [amountStr, setAmountStr] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [receiptUrl, setReceiptUrl] = useState("");
+  const [notes, setNotes] = useState("");
 
- const handleUpdateStatus = async (
- invoiceId: string,
- newStatus: "pending" | "paid" | "overdue" | "cancelled",
- ) => {
- if (!confirm(`Confirmar alteração de status para: ${newStatus.toUpperCase()}?`)) return;
+  const handleUpdateStatus = async (
+    invoiceId: string,
+    newStatus: "pending" | "paid" | "overdue" | "cancelled",
+  ) => {
+    if (!confirm(`Confirmar alteração de status para: ${newStatus.toUpperCase()}?`)) return;
 
- setLoadingAction(invoiceId);
- try {
- await updateInvoiceStatus({ data: { invoiceId, status: newStatus } });
- toast.success("Status da fatura atualizado.");
- router.invalidate();
- } catch (e: unknown) {
- toast.error(e instanceof Error ? e.message : String(e));
- } finally {
- setLoadingAction(null);
- }
- };
+    setLoadingAction(invoiceId);
+    try {
+      await updateInvoiceStatus({ data: { invoiceId, status: newStatus } });
+      toast.success("Status da fatura atualizado.");
+      router.invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
- const handleCreateInvoice = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!storeId || !description || !amountStr || !dueDate) {
- toast.error("Preencha todos os campos da fatura.");
- return;
- }
+  const handleDuplicate = async (invoiceId: string) => {
+    setLoadingAction(invoiceId);
+    try {
+      await duplicatePlatformInvoice({ data: { invoiceId } });
+      toast.success("Fatura duplicada com sucesso.");
+      router.invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
- const amountCents = parseMoney(amountStr);
- if (amountCents <= 0) {
- toast.error("Valor inválido.");
- return;
- }
+  const handleDelete = async (invoiceId: string) => {
+    if (!confirm("Tem certeza que deseja excluir esta fatura definitivamente?")) return;
+    setLoadingAction(invoiceId);
+    try {
+      await deletePlatformInvoice({ data: { invoiceId } });
+      toast.success("Fatura excluída com sucesso.");
+      router.invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
- setLoadingAction("creating");
- try {
- await createPlatformInvoice({
- data: {
- storeId,
- description,
- amountCents,
- dueDate: new Date(dueDate).toISOString(),
- },
- });
- toast.success("Fatura emitida com sucesso.");
- setIsCreating(false);
- setStoreId("");
- setDescription("");
- setAmountStr("");
- setDueDate("");
- router.invalidate();
- } catch (e: unknown) {
- toast.error(e instanceof Error ? e.message : String(e));
- } finally {
- setLoadingAction(null);
- }
- };
+  const handleCreateInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!storeId || !description || !amountStr || !dueDate) {
+      toast.error("Preencha todos os campos obrigatórios da fatura.");
+      return;
+    }
+
+    const amountCents = parseMoney(amountStr);
+    if (amountCents <= 0) {
+      toast.error("Valor inválido.");
+      return;
+    }
+
+    setLoadingAction("creating");
+    try {
+      await createPlatformInvoice({
+        data: {
+          storeId,
+          description,
+          amountCents,
+          dueDate: new Date(dueDate).toISOString(),
+          receiptUrl: receiptUrl.trim() || undefined,
+          notes: notes.trim() || undefined,
+        },
+      });
+      toast.success("Fatura emitida com sucesso.");
+      setIsCreating(false);
+      setStoreId("");
+      setDescription("");
+      setAmountStr("");
+      setDueDate("");
+      setReceiptUrl("");
+      setNotes("");
+      router.invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
  return (
  <div className="space-y-6 animate-in fade-in duration-300">
@@ -200,6 +235,26 @@ function MasterFaturasPage() {
  />
  </div>
 
+ <div className="space-y-1.5 sm:col-span-2">
+ <Label className="text-xs font-semibold">Link do Comprovante / PDF (Opcional)</Label>
+ <Input
+ placeholder="https://.../comprovante.pdf"
+ value={receiptUrl}
+ onChange={(e) => setReceiptUrl(e.target.value)}
+ className="h-9 rounded-xl bg-background text-xs"
+ />
+ </div>
+
+ <div className="space-y-1.5 sm:col-span-2">
+ <Label className="text-xs font-semibold">Observações / Referência (Opcional)</Label>
+ <Input
+ placeholder="Ex: Pagamento referente ao plano Scale"
+ value={notes}
+ onChange={(e) => setNotes(e.target.value)}
+ className="h-9 rounded-xl bg-background text-xs"
+ />
+ </div>
+
  <div className="sm:col-span-2 lg:col-span-4 flex justify-end pt-2">
  <Button
  type="submit"
@@ -224,6 +279,7 @@ function MasterFaturasPage() {
  <th className="px-5 py-3">Loja</th>
  <th className="px-5 py-3">Valor</th>
  <th className="px-5 py-3">Vencimento</th>
+ <th className="px-5 py-3">Comprovante</th>
  <th className="px-5 py-3">Status</th>
  <th className="px-5 py-3 text-right">Ação</th>
  </tr>
@@ -232,12 +288,31 @@ function MasterFaturasPage() {
  {invoices.map((inv: any) => (
  <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
  <td className="px-5 py-3 font-semibold text-foreground">
- {inv.description || "Assinatura Mensal"}
+ <div>{inv.description || "Assinatura Mensal"}</div>
+ {inv.notes && (
+ <div className="text-[10px] text-muted-foreground font-normal">{inv.notes}</div>
+ )}
  </td>
  <td className="px-5 py-3 text-muted-foreground">{inv.stores?.name || "Global"}</td>
  <td className="px-5 py-3 font-bold text-foreground">{formatMoney(inv.amount_cents)}</td>
  <td className="px-5 py-3 text-muted-foreground text-[11px]">
  {format(new Date(inv.due_date || inv.created_at), "dd/MM/yyyy", { locale: ptBR })}
+ </td>
+ <td className="px-5 py-3">
+ {inv.receipt_url ? (
+ <a
+ href={inv.receipt_url}
+ target="_blank"
+ rel="noreferrer"
+ className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+ >
+ <FileText className="size-3.5" />
+ <span>Ver</span>
+ <ExternalLink className="size-3 opacity-60" />
+ </a>
+ ) : (
+ <span className="text-muted-foreground/50 text-[11px]">—</span>
+ )}
  </td>
  <td className="px-5 py-3">
  <Badge
@@ -277,20 +352,40 @@ function MasterFaturasPage() {
  <Button
  size="sm"
  variant="ghost"
- className="h-7 px-2 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10"
+ className="h-7 px-2 rounded-lg text-xs font-medium text-amber-600 hover:bg-amber-500/10"
  disabled={loadingAction === inv.id}
  onClick={() => handleUpdateStatus(inv.id, "cancelled")}
  >
  Cancelar
  </Button>
  )}
+ <Button
+ size="sm"
+ variant="ghost"
+ title="Duplicar Cobrança"
+ className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ disabled={loadingAction === inv.id}
+ onClick={() => handleDuplicate(inv.id)}
+ >
+ <Copy className="size-3.5" />
+ </Button>
+ <Button
+ size="sm"
+ variant="ghost"
+ title="Excluir Fatura"
+ className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+ disabled={loadingAction === inv.id}
+ onClick={() => handleDelete(inv.id)}
+ >
+ <Trash2 className="size-3.5" />
+ </Button>
  </div>
  </td>
  </tr>
  ))}
  {invoices.length === 0 && (
  <tr>
- <td colSpan={6} className="px-5 py-8 text-center text-muted-foreground">
+ <td colSpan={7} className="px-5 py-8 text-center text-muted-foreground">
  Nenhuma fatura registrada.
  </td>
  </tr>
