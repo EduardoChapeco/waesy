@@ -8,6 +8,9 @@ import {
   Car as CarIcon,
   Laptop as LaptopIcon,
   Wrench as WrenchIcon,
+  Plane,
+  Utensils,
+  Gift,
 } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -145,9 +148,12 @@ const CLASSIFIED_CHIPS: FilterChipOption[] = [
   { id: "todos", label: "Todos", emoji: "🏷️", icon: Tag },
   { id: "real_estate", label: "Imóveis & Moradia", emoji: "🏠", icon: Home },
   { id: "vehicle", label: "Veículos & Autos", emoji: "🚗", icon: CarIcon },
+  { id: "travel", label: "Turismo & Viagens", emoji: "✈️", icon: Plane },
+  { id: "food", label: "Gastronomia Artesanal", emoji: "🍲", icon: Utensils },
   { id: "sale", label: "Desapegos & Tech", emoji: "💻", icon: LaptopIcon },
   { id: "digital", label: "Produtos Digitais", emoji: "📁", icon: FileText },
   { id: "service", label: "Serviços & B2B", emoji: "🛠️", icon: WrenchIcon },
+  { id: "donation", label: "Doações Solidárias", emoji: "🎁", icon: Gift },
 ];
 
 const REAL_ESTATE_DEAL_TYPES = [
@@ -244,7 +250,14 @@ function ClassifiedsMasterPage() {
     queryFn: () =>
       getPublicClassifieds({
         data: {
-          category: selectedCategory !== "todos" && selectedCategory !== "digital" ? selectedCategory : undefined,
+          category:
+            selectedCategory !== "todos" &&
+            selectedCategory !== "digital" &&
+            selectedCategory !== "donation" &&
+            selectedCategory !== "travel" &&
+            selectedCategory !== "food"
+              ? selectedCategory
+              : undefined,
           dealType: selectedCategory === "real_estate" && selectedDealType !== "todos" ? selectedDealType : undefined,
           search: search || undefined,
         },
@@ -253,10 +266,26 @@ function ClassifiedsMasterPage() {
   });
 
   const filtered = (classifieds || []).filter((item: any) => {
-    // Tratamento de Categoria
+    // Tratamento de Categoria e Nichos Polimórficos
     if (selectedCategory === "digital") {
       const isDigital = item.is_digital || item.category === "digital" || item.attributes?.is_digital;
       if (!isDigital) return false;
+    } else if (selectedCategory === "donation") {
+      const isDonation = item.is_free_donation || item.price_cents === 0 || item.attributes?.is_free_donation;
+      if (!isDonation) return false;
+    } else if (selectedCategory === "travel") {
+      const isTravel =
+        item.category === "travel" ||
+        item.category === "viagem" ||
+        item.category === "tourism" ||
+        item.attributes?.niche_category === "travel";
+      if (!isTravel) return false;
+    } else if (selectedCategory === "food") {
+      const isFood =
+        item.category === "food" ||
+        item.category === "gastronomia" ||
+        item.attributes?.niche_category === "food";
+      if (!isFood) return false;
     } else if (selectedCategory !== "todos" && item.category !== selectedCategory) {
       return false;
     }

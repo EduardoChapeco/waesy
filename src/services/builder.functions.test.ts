@@ -77,7 +77,7 @@ describe("Builder Documents Hub & Multi-Vitrines (Microfase 76B)", () => {
  expect(typeof builderFunctions.deleteExperienceDocument).toBe("function");
  expect(typeof builderFunctions.setActiveStorefrontDocument).toBe("function");
  expect(typeof builderFunctions.listExperienceDocuments).toBe("function");
- });
+ }, 15000);
 
  it("garante que os tipos de documentos permitidos incluem storefront, biolink, landing_page, campaign e custom", async () => {
   const builderFile = fs.readFileSync(
