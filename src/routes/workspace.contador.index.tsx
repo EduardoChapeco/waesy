@@ -139,8 +139,13 @@ function WorkspaceContadorPage() {
 
   const handleCopyAccountantLink = () => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link do Portal Contábil copiado para a área de transferência!");
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const expiryFormatted = expiresAt.toLocaleDateString("pt-BR");
+      const url = new URL(window.location.href);
+      url.searchParams.set("access", "auditor_readonly");
+      url.searchParams.set("valid_until", expiresAt.toISOString().slice(0, 10));
+      navigator.clipboard.writeText(url.toString());
+      toast.success(`Link temporário com expiração de 7 dias (válido até ${expiryFormatted}) copiado!`);
     }
   };
 

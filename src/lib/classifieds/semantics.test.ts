@@ -127,4 +127,22 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     expect(niche.primaryActionLabel).toBe("Candidatar-se à Vaga");
     expect(niche.allowEscrowGuarantee).toBe(false);
   });
+
+  it("resolve corretamente doação via flag is_free_donation mesmo com categoria genérica", () => {
+    const classified = {
+      category: "outros",
+      title: "Desapego de berço infantil em bom estado",
+      price_cents: 0,
+      is_free_donation: true,
+      attributes: {
+        is_free_donation: true,
+      },
+    };
+
+    const niche = resolveClassifiedNiche(classified);
+    expect(niche.id).toBe("donation");
+    expect(niche.shortLabel).toBe("Doação Gratuita");
+    expect(niche.primaryActionLabel).toBe("Solicitar Doação / Retirada");
+    expect(niche.allowEscrowGuarantee).toBe(false);
+  });
 });

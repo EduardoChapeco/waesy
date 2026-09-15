@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Trash, BedDouble, Users, User, Building, Download, Copy, Printer, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
+import { exportElementAsPdf } from "@/lib/pdf-export";
 
 interface RoomingListManagerProps {
  rooms: HotelRoomAllocationDTO[];
@@ -23,6 +24,7 @@ interface RoomingListManagerProps {
 
 export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingListManagerProps) {
  const [isAddRoomOpen, setIsAddRoomOpen] = useState(false);
+ const [isExportingPdf, setIsExportingPdf] = useState(false);
  const [hotelName, setHotelName] = useState("");
  const [roomNumber, setRoomNumber] = useState("");
  const [roomType, setRoomType] = useState<"single" | "double_couple" | "double_twin" | "triple" | "quadruple">("double_couple");
@@ -145,6 +147,22 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  toast.success("Resumo do Rooming List copiado para a área de transferência!");
  };
 
+ const handleExportPDF = async () => {
+ if (rooms.length === 0) return;
+ try {
+ setIsExportingPdf(true);
+ await exportElementAsPdf(
+ "rooming-list-print-table",
+ `Rooming_List_${(tourTitle || "Hotel").replace(/\s+/g, "_")}.pdf`
+ );
+ toast.success("Rooming List exportado em PDF com sucesso!");
+ } catch (err: any) {
+ toast.error(err?.message || "Erro ao exportar PDF.");
+ } finally {
+ setIsExportingPdf(false);
+ }
+ };
+
  return (
  <div className="space-y-4">
  {/* Header do Rooming List */}
@@ -180,6 +198,18 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  >
  <FileSpreadsheet className="size-3.5 text-emerald-600" />
  <span className="hidden sm:inline">Exportar CSV</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ disabled={isExportingPdf}
+ onClick={handleExportPDF}
+ className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ title="Exportar documento PDF formatado para a recepção"
+ >
+ <Download className="size-3.5 text-blue-600" />
+ <span className="hidden sm:inline">{isExportingPdf ? "Gerando..." : "Exportar PDF"}</span>
  </Button>
  </>
  )}
@@ -285,7 +315,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  <p>Nenhum quarto configurado ainda.</p>
  </div>
  ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+ <div id="rooming-list-print-table" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-1 bg-background">
  {rooms.map((r) => (
  <Card
  key={r.room_id}

@@ -32,10 +32,22 @@ export interface PncpItemDTO {
   urlPortal: string;
 }
 
+// Cache em memória com TTL de 5 minutos para otimização de consultas frequentes e resiliência a timeouts do PNCP
+const pncpMemoryCache = new Map<string, { timestamp: number; data: PncpItemDTO[] }>();
+const PNCP_CACHE_TTL_MS = 5 * 60 * 1000;
+
 export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promise<PncpItemDTO[]> {
   const query = options.query || "Chapecó";
   const uf = options.uf || "SC";
   const limit = options.limit || 15;
+
+  const cacheKey = `${query}_${uf}_${limit}_${options.dataInicio || ""}_${options.dataFim || ""}`;
+  const cached = pncpMemoryCache.get(cacheKey);
+
+  // Retorna cache imediato se válido
+  if (cached && Date.now() - cached.timestamp < PNCP_CACHE_TTL_MS) {
+    return cached.data;
+  }
 
   const params = new URLSearchParams({
     q: query,
@@ -59,13 +71,17 @@ export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promi
     });
 
     if (!res.ok) {
+      if (cached?.data?.length) {
+        console.info("[pncp-extractor] API PNCP indisponível (HTTP " + res.status + "), servindo dados em cache.");
+        return cached.data;
+      }
       return [];
     }
 
     const json = await res.json();
     const items = Array.isArray(json?.data) ? json.data : [];
 
-    return items.map((item: any) => ({
+    const mapped: PncpItemDTO[] = items.map((item: any) => ({
       id: item.numeroControlePNCP || item.id || crypto.randomUUID(),
       numeroEdital: item.numeroEdital || "N/A",
       numeroProcesso: item.numeroProcesso || "N/A",
@@ -79,8 +95,16 @@ export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promi
       urlEdital: item.linkSistemaOrigem || null,
       urlPortal: `https://pncp.gov.br/app/editais/${item.numeroControlePNCP || ""}`,
     }));
+
+    // Atualiza cache em memória
+    pncpMemoryCache.set(cacheKey, { timestamp: Date.now(), data: mapped });
+    return mapped;
   } catch (err) {
     console.warn("[pncp-extractor] Falha ao consultar PNCP:", err);
+    if (cached?.data?.length) {
+      console.info("[pncp-extractor] Servindo dados em cache como fallback resiliente.");
+      return cached.data;
+    }
     return [];
   }
 }

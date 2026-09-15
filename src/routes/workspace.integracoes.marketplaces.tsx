@@ -626,11 +626,11 @@ function MarketplaceHubPage() {
                 <div
                   key={item.platform}
                   className={cn(
-                    "rounded-2xl border p-5 flex flex-col justify-between transition-all bg-card shadow-xs",
+                    "rounded-2xl border p-5 flex flex-col justify-between transition-all bg-card shadow-xs min-h-[195px]",
                     isConnected ? "border-emerald-500/40 bg-emerald-500/[0.02]" : "border-border/70"
                   )}
                 >
-                  <div>
+                  <div className="space-y-1">
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-3">
                         <div className={cn("size-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white shadow-xs", item.color)}>
@@ -652,15 +652,23 @@ function MarketplaceHubPage() {
                       )}
                     </div>
 
-                    {isConnected && conn?.account_nickname && (
-                      <p className="text-xs text-muted-foreground mb-2 truncate">
+                    {isConnected && conn?.account_nickname ? (
+                      <p className="text-xs text-muted-foreground mb-1 truncate">
                         Conta: <span className="font-medium text-foreground">{conn.account_nickname}</span>
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground/70 mb-1 truncate">
+                        {item.description || "Canal disponível para conexão"}
                       </p>
                     )}
 
-                    {isConnected && conn?.last_sync_at && (
-                      <p className="text-[11px] text-muted-foreground mb-3">
+                    {isConnected && conn?.last_sync_at ? (
+                      <p className="text-[11px] text-muted-foreground mb-2">
                         Última sincronização: {formatDateTime(conn.last_sync_at)}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground/50 mb-2">
+                        Pronto para vincular catálogo e pedidos
                       </p>
                     )}
                   </div>

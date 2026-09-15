@@ -166,7 +166,17 @@ function FiscalNFePage() {
           title="Emissão Fiscal & NF-e"
           description="Gestão de notas fiscais eletrônicas, integração com SEFAZ, prefeituras e emissor nacional."
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {!config?.api_token && (
+            <Badge
+              variant="outline"
+              className="border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 text-xs font-semibold gap-1.5 py-1.5 px-3 rounded-xl"
+              title="Configure o provedor fiscal ou certificado A1 na aba de Configurações"
+            >
+              <AlertCircle className="size-3.5 text-amber-600" />
+              Certificado Digital A1 / Provedor Pendente
+            </Badge>
+          )}
           <Button
             className="h-10 rounded-xl text-xs font-semibold bg-foreground text-background"
             onClick={() => setIssueModalOpen(true)}

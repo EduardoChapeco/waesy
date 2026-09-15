@@ -351,12 +351,14 @@ export function resolveClassifiedNiche(classified: any): ClassifiedNicheDefiniti
     return NICHE_DEFINITIONS.subscription;
   }
 
-  // 4. Doação Solidária (preço 0 ou categoria donation/doacao, exceto se for serviço/vaga/imóvel)
+  // 4. Doação Solidária (preço 0, is_free_donation flag ou categoria donation/doacao, exceto se for serviço/vaga/imóvel)
   if (
     category === "donation" ||
     category === "doacao" ||
     rawNiche === "doacao" ||
     rawNiche === "donation" ||
+    classified.is_free_donation ||
+    classified.attributes?.is_free_donation ||
     (priceCents === 0 && !["service", "real_estate", "job"].includes(category))
   ) {
     return NICHE_DEFINITIONS.donation;
