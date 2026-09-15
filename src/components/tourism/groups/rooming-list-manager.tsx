@@ -12,14 +12,16 @@ import {
  DialogTitle,
  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash, BedDouble, Users, User, Building } from "lucide-react";
+import { Plus, Trash, BedDouble, Users, User, Building, Download, Copy, Printer, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
 
 interface RoomingListManagerProps {
  rooms: HotelRoomAllocationDTO[];
  onRoomsChange: (updatedRooms: HotelRoomAllocationDTO[]) => void;
+ tourTitle?: string;
 }
 
-export function RoomingListManager({ rooms, onRoomsChange }: RoomingListManagerProps) {
+export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingListManagerProps) {
  const [isAddRoomOpen, setIsAddRoomOpen] = useState(false);
  const [hotelName, setHotelName] = useState("");
  const [roomNumber, setRoomNumber] = useState("");
@@ -73,20 +75,118 @@ export function RoomingListManager({ rooms, onRoomsChange }: RoomingListManagerP
 
  const totalPaxInRooms = rooms.reduce((acc, r) => acc + r.passengers.length, 0);
 
+ const handleExportCSV = () => {
+ if (rooms.length === 0) {
+ toast.error("Nenhum quarto cadastrado no Rooming List.");
+ return;
+ }
+
+ const headers = ["Hotel", "Numero_Quarto", "Tipo_Acomodacao", "Capacidade", "Hospede_Nome", "Documento"];
+ const rows: string[] = [];
+
+ rooms.forEach((r) => {
+ if (r.passengers.length === 0) {
+ rows.push([
+ `"${r.hotel_name}"`,
+ `"${r.room_number || "A Definir"}"`,
+ `"${r.room_type}"`,
+ r.capacity,
+ `"Vazio"`,
+ `""`,
+ ].join(";"));
+ } else {
+ r.passengers.forEach((p) => {
+ rows.push([
+ `"${r.hotel_name}"`,
+ `"${r.room_number || "A Definir"}"`,
+ `"${r.room_type}"`,
+ r.capacity,
+ `"${p.name}"`,
+ `"${p.document || ""}"`,
+ ].join(";"));
+ });
+ }
+ });
+
+ const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\n");
+ const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+ const url = URL.createObjectURL(blob);
+ const link = document.createElement("a");
+ link.setAttribute("href", url);
+ link.setAttribute("download", `rooming-list-${(tourTitle || "excursao").toLowerCase().replace(/\s+/g, "-")}.csv`);
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ toast.success("Rooming List exportado com sucesso (CSV / Excel).");
+ };
+
+ const handleCopyReceptionSummary = () => {
+ if (rooms.length === 0) {
+ toast.error("Nenhum quarto para copiar.");
+ return;
+ }
+
+ let summary = `📋 ROOMING LIST OFICIAL — ${tourTitle || "Excursão Waesy"}\n`;
+ summary += `Total de Quartos: ${rooms.length} | Total de Hóspedes: ${totalPaxInRooms}\n\n`;
+
+ rooms.forEach((r, idx) => {
+ summary += `Quarto ${idx + 1}: ${r.room_number ? `Nº ${r.room_number}` : "A Definir"} [${r.room_type.toUpperCase()}] — Hotel: ${r.hotel_name}\n`;
+ if (r.passengers.length === 0) {
+ summary += `   (Sem hóspedes alocados)\n`;
+ } else {
+ r.passengers.forEach((p) => {
+ summary += `   • ${p.name}${p.document ? ` (Doc: ${p.document})` : ""}\n`;
+ });
+ }
+ summary += `\n`;
+ });
+
+ navigator.clipboard.writeText(summary);
+ toast.success("Resumo do Rooming List copiado para a área de transferência!");
+ };
+
  return (
  <div className="space-y-4">
  {/* Header do Rooming List */}
- <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/80 text-xs">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-card border border-border/80 text-xs">
  <div className="flex items-center gap-2">
- <Building className="size-4 text-primary" />
+ <Building className="size-4 text-primary shrink-0" />
  <span className="font-bold text-foreground">
  Rooming List: {rooms.length} quartos ({totalPaxInRooms} hóspedes alocados)
  </span>
  </div>
 
+ <div className="flex items-center gap-2 flex-wrap">
+ {rooms.length > 0 && (
+ <>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={handleCopyReceptionSummary}
+ className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ title="Copiar lista formatada para enviar à recepção do hotel via WhatsApp"
+ >
+ <Copy className="size-3.5 text-muted-foreground" />
+ <span className="hidden sm:inline">Copiar Recepção</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={handleExportCSV}
+ className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ title="Exportar planilha CSV / Excel para o hotel"
+ >
+ <FileSpreadsheet className="size-3.5 text-emerald-600" />
+ <span className="hidden sm:inline">Exportar CSV</span>
+ </Button>
+ </>
+ )}
+
  <Dialog open={isAddRoomOpen} onOpenChange={setIsAddRoomOpen}>
  <DialogTrigger asChild>
- <Button size="sm" className="h-8 rounded-xl text-xs font-bold gap-1 bg-foreground text-background">
+ <Button size="sm" className="h-8 rounded-xl text-xs font-bold gap-1 bg-foreground text-background cursor-pointer">
  <Plus className="size-3.5" /> Adicionar Quarto
  </Button>
  </DialogTrigger>

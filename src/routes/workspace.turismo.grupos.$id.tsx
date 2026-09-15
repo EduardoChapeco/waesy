@@ -270,7 +270,7 @@ function WorkspaceGroupTourDetailPage() {
 
  {/* ABA 2: ROOMING LIST DE HOTÉIS */}
  <TabsContent value="hoteis" className="space-y-4">
- <RoomingListManager rooms={tour.rooms} onRoomsChange={handleRoomsChange} />
+ <RoomingListManager rooms={tour.rooms} onRoomsChange={handleRoomsChange} tourTitle={tour.title} />
  </TabsContent>
 
  {/* ABA 3: CUSTOS & FINANCEIRO */}
