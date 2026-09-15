@@ -12,6 +12,15 @@ import {
 // ── CONEXÃO RESILIENTE COM SUPABASE / POSTGRES ──────────────────────────────
 async function getDb() {
   const postgres = (await import("postgres")).default;
+  const dbUrl = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+  if (dbUrl) {
+    return postgres(dbUrl, {
+      ssl: "require",
+      max: 5,
+      idle_timeout: 20,
+      connect_timeout: 10,
+    });
+  }
   return postgres({
     host: process.env.SUPABASE_DB_HOST || "aws-0-sa-east-1.pooler.supabase.com",
     port: Number(process.env.SUPABASE_DB_PORT) || 6543,

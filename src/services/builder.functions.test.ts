@@ -24,7 +24,7 @@ describe("Builder Architecture & Studio Canvas (Microfase 76A)", () => {
 
  it("valida que o canvas do builder não contém elementos cartoonizados (Mac dots e fake shadow)", () => {
  const canvasFile = fs.readFileSync(
- "C:/Users/Excelência Tour SMO/Documents/waesy/src/components/admin/builder/builder-canvas.tsx",
+ require("node:path").resolve(process.cwd(), "src/components/admin/builder/builder-canvas.tsx"),
  "utf8"
  );
 
@@ -80,10 +80,10 @@ describe("Builder Documents Hub & Multi-Vitrines (Microfase 76B)", () => {
  });
 
  it("garante que os tipos de documentos permitidos incluem storefront, biolink, landing_page, campaign e custom", async () => {
- const builderFile = fs.readFileSync(
- "C:/Users/Excelência Tour SMO/Documents/waesy/src/services/builder.functions.ts",
- "utf8"
- );
+  const builderFile = fs.readFileSync(
+    require("node:path").resolve(process.cwd(), "src/services/builder.functions.ts"),
+    "utf8"
+  );
 
  // O enum de criação de documentos deve conter storefront, biolink, landing_page, campaign, custom
  expect(builderFile.includes('"landing_page"')).toBe(true);

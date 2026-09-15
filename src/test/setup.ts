@@ -7,15 +7,12 @@ const secretsPath = path.resolve(process.cwd(), ".env.secrets");
 if (fs.existsSync(secretsPath)) {
   const parsed = dotenv.parse(fs.readFileSync(secretsPath));
   for (const k in parsed) {
-    if (!process.env[k]) {
-      process.env[k] = parsed[k];
-    }
+    process.env[k] = parsed[k];
   }
-  if (!process.env.SUPABASE_DB_HOST) {
-    process.env.SUPABASE_DB_HOST = "db.jfuebqmltksyznovhlwa.supabase.co";
-    process.env.SUPABASE_DB_PORT = "5432";
-    process.env.SUPABASE_DB_USER = "postgres";
-  }
+  process.env.SUPABASE_DB_HOST = "aws-0-sa-east-1.pooler.supabase.com";
+  process.env.SUPABASE_DB_PORT = "6543";
+  process.env.SUPABASE_DB_USER = "postgres.jfuebqmltksyznovhlwa";
+  process.env.SUPABASE_DB_NAME = "postgres";
 }
 
 const createChainableMock = () => {
