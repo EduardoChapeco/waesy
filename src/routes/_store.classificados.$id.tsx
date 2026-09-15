@@ -1147,6 +1147,30 @@ const handleDownloadDigitalFile = async () => {
  sku={classified?.id}
  inStock={classified?.status === "active"}
  />
+
+      {/* ── Modo Proprietário Banner (Regra 23) ── */}
+      {isOwner && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <span className="font-bold flex items-center gap-1.5 shrink-0">
+              <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+              Modo Proprietário Ativo:
+            </span>
+            <span>Você está visualizando este anúncio como autor. Ajustes feitos no formulário de edição refletem imediatamente aqui.</span>
+          </div>
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs rounded-lg border-amber-500/40 hover:bg-amber-500/20 shrink-0 font-medium cursor-pointer"
+          >
+            <Link to="/conta/classificados/novo" search={{ editId: classified.id } as any}>
+              ✏️ Editar Anúncio
+            </Link>
+          </Button>
+        </div>
+      )}
+
  {/* ── Barra Superior de Navegação & Ações Perfeitas ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
  <div className="flex items-center gap-2 flex-wrap">
@@ -3239,7 +3263,7 @@ const handleDownloadDigitalFile = async () => {
           ) : (
             <>
               <ShieldCheck className="size-5" />
-              <span>Comprar com Garantia por {formatMoney(classified.price_cents)}</span>
+              <span>Comprar com Segurança por {formatMoney(classified.price_cents)}</span>
             </>
           )}
         </Button>

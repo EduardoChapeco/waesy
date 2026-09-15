@@ -1300,6 +1300,7 @@ function SpecializedClassifiedEditor({
         template_style: templateStyle,
         story_highlights: travelStoryHighlights,
         itinerary_days: travelItineraryDays,
+        bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
       };
 
       if (niche.id === "viagem") {
@@ -4599,6 +4600,104 @@ function SpecializedClassifiedEditor({
                             ×
                           </button>
                         </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Destaques & Diferenciais Livres (Disponível para todos os outros nichos) */}
+              {niche.id !== "viagem" && (
+                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                      <Sparkles className="size-4 text-primary shrink-0" />
+                      <span>Destaques & Diferenciais</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-bold">
+                      Livre / Opcional
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        Adicione os pontos fortes e diferenciais deste item para atrair mais interessados.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddTravelBullet}
+                        className="h-7 text-xs font-semibold rounded-lg gap-1 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                      >
+                        <Plus className="size-3.5" />
+                        <span>Adicionar</span>
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {travelBioBullets.map((bullet, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-mono text-muted-foreground w-4 text-center shrink-0">
+                            {idx + 1}.
+                          </span>
+                          <Input
+                            value={bullet}
+                            onChange={(e) => handleUpdateTravelBullet(idx, e.target.value)}
+                            placeholder={`Destaque ${idx + 1} (ex: ${
+                              niche.id === "veiculo"
+                                ? "Único Dono, Laudo Aprovado..."
+                                : niche.id === "servico"
+                                ? "Com Nota Fiscal, Plantão 24h..."
+                                : niche.id === "equipamento"
+                                ? "Equipamento Revisado, Cabos Inclusos..."
+                                : "Original, Nota Fiscal, Impecável..."
+                            })`}
+                            className="h-9 rounded-xl text-xs bg-background flex-1"
+                          />
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            {travelBioBullets.length > 1 && (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={idx === 0}
+                                  onClick={() => handleMoveTravelBullet(idx, "up")}
+                                  className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                  title="Mover para cima"
+                                  aria-label="Mover para cima"
+                                >
+                                  <ChevronUp className="size-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={idx === travelBioBullets.length - 1}
+                                  onClick={() => handleMoveTravelBullet(idx, "down")}
+                                  className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                                  title="Mover para baixo"
+                                  aria-label="Mover para baixo"
+                                >
+                                  <ChevronDown className="size-3" />
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveTravelBullet(idx)}
+                              className="h-8 w-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                              title={travelBioBullets.length === 1 ? "Limpar campo" : "Remover diferencial"}
+                              aria-label="Remover diferencial"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>

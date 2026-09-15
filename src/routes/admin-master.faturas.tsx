@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 import { ErrorState } from "@/components/state/states";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 export const Route = createFileRoute("/admin-master/faturas")({
  head: () => ({ meta: [{ title: "Faturas & Planos | Admin Master" }] }),
@@ -235,15 +236,35 @@ function MasterFaturasPage() {
  />
  </div>
 
- <div className="space-y-1.5 sm:col-span-2">
- <Label className="text-xs font-semibold">Link do Comprovante / PDF (Opcional)</Label>
- <Input
- placeholder="https://.../comprovante.pdf"
- value={receiptUrl}
- onChange={(e) => setReceiptUrl(e.target.value)}
- className="h-9 rounded-xl bg-background text-xs"
- />
- </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label className="text-xs font-semibold">Comprovante de Pagamento / Anexo (Opcional)</Label>
+              <div className="space-y-2">
+                <ImageUpload
+                  value={receiptUrl}
+                  onChange={(url) => setReceiptUrl(url)}
+                  aspectPreset="landscape"
+                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Ou informe uma URL direta do arquivo (PDF / Imagem)..."
+                    value={receiptUrl}
+                    onChange={(e) => setReceiptUrl(e.target.value)}
+                    className="h-8 rounded-xl bg-background text-xs flex-1"
+                  />
+                  {receiptUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setReceiptUrl("")}
+                      className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive shrink-0"
+                    >
+                      Remover
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
 
  <div className="space-y-1.5 sm:col-span-2">
  <Label className="text-xs font-semibold">Observações / Referência (Opcional)</Label>

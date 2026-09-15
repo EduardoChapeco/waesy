@@ -276,6 +276,7 @@ export function RoomingListManager({ rooms, onRoomsChange, tourTitle }: RoomingL
  </DialogContent>
  </Dialog>
  </div>
+ </div>
 
  {/* Grid de Quartos Alocados */}
  {rooms.length === 0 ? (

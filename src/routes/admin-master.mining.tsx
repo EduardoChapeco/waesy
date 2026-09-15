@@ -85,6 +85,8 @@ import { generateCarouselFromMinedContent } from "@/services/studio.functions";
 import { CarouselStudioEditor } from "@/components/studio/carousel-studio-editor";
 import type { EscamasCarouselProject } from "@/types/studio-machine";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin-master/mining")({
   head: () => ({ meta: [{ title: "Mining Hub & Content Factory | Admin Master" }] }),
@@ -1413,8 +1415,27 @@ function AdminMiningHubPage() {
   <div className="font-semibold text-foreground">
   {item.orgaoEntidade?.razaoSocial || item.unidadeOrgao?.municipioNome || "Município de Chapecó"}
   </div>
-  <div className="text-[11px] text-muted-foreground font-mono">
+  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+  <span className="text-[11px] text-muted-foreground font-mono">
   {item.numeroControlePNCP}
+  </span>
+  {item.modalidadeNome && (
+  <Badge
+  variant="outline"
+  className={cn(
+  "text-[10px] px-1.5 py-0 font-medium rounded-md",
+  item.modalidadeNome.toLowerCase().includes("pregão")
+  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+  : item.modalidadeNome.toLowerCase().includes("dispensa") || item.modalidadeNome.toLowerCase().includes("inexigibilidade")
+  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+  : item.modalidadeNome.toLowerCase().includes("concorrência") || item.modalidadeNome.toLowerCase().includes("tomada")
+  ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+  )}
+  >
+  {item.modalidadeNome}
+  </Badge>
+  )}
   </div>
   </td>
   <td className="py-3 pr-4 max-w-md">

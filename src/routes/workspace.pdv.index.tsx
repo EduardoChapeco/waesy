@@ -766,6 +766,37 @@ function PdvTerminal() {
  }
  };
 
+ const handlePrintBlindClosing = () => {
+    if (!activeRegister) {
+      toast.error("Nenhum caixa aberto no momento.");
+      return;
+    }
+    const receiptData: ThermalReceiptData = {
+      storeName: store?.name || "Terminal PDV Waesy",
+      headerLines: [
+        "CONFERENCIA CEGA DE TURNO",
+        `Caixa #${activeRegister.id?.slice(0, 8) || "01"}`,
+        `Abertura: ${formatDateTime(activeRegister.opened_at || new Date().toISOString())}`,
+        `Impressao: ${formatDateTime(new Date().toISOString())}`,
+      ],
+      items: [
+        { name: "Total Vendas do Turno", quantity: 1, totalPriceCents: activeRegister.total_sales_cents || 0 },
+      ],
+      totalCents: activeRegister.total_sales_cents || 0,
+      paymentMethod: "Apuracao Cega (Dinheiro / Cartao / Pix)",
+      footerLines: [
+        "--------------------------------",
+        "Conferencia fisica obrigatoria",
+        "Assinatura do Operador:",
+        "",
+        "________________________________",
+        "Waesy PDV - Operacao Segura",
+      ],
+    };
+    printThermalReceipt(receiptData);
+    toast.success("Conferência cega enviada para impressão térmica!");
+  };
+
  return (
  <div className="flex flex-col h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] overflow-hidden bg-background rounded-2xl border border-border/80 shadow-xs">
  {/* ── BARRA SUPERIOR OPERACIONAL (POS Header) ── */}
@@ -845,6 +876,17 @@ function PdvTerminal() {
  >
  <ArrowDownLeft className="size-3.5 text-emerald-500" />
  <span className="hidden xl:inline">Suprimento (F8)</span>
+ </Button>
+
+ <Button
+ variant="outline"
+ size="sm"
+ onClick={handlePrintBlindClosing}
+ className="h-9 rounded-xl text-xs font-bold gap-1 px-2.5 border-border/80 text-foreground hover:bg-muted"
+ title="Conferência Cega / Fechamento de Turno"
+ >
+ <Printer className="size-3.5 text-primary" />
+ <span className="hidden xl:inline">Conferência Cega</span>
  </Button>
 
  <Button
