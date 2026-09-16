@@ -21,6 +21,7 @@ import { formatMoney } from "@/lib/money";
 import { PostOrderAuditModal } from "@/components/commerce/post-order-audit-modal";
 import { getBrowserClient } from "@/lib/supabase";
 import { trackPurchaseEvent } from "@/components/commerce/product-telemetry";
+import { generateContractFromOrder } from "@/services/contracts.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/pedido/$publicToken/confirmacao")({
@@ -44,6 +45,24 @@ function ConfirmationPage() {
  const [order, setOrder] = useState<any>(initialOrder);
  const [isAuditOpen, setIsAuditOpen] = useState(false);
  const trackedPurchaseRef = useRef<string | null>(null);
+
+  // Contrato Digital do Pedido
+  const [isGeneratingContract, setIsGeneratingContract] = useState(false);
+  const [contractInfo, setContractInfo] = useState<{ signingUrl: string; whatsappLink: string | null } | null>(null);
+
+  const handleGenerateContract = async () => {
+    if (!order?.id) return;
+    setIsGeneratingContract(true);
+    try {
+      const res = await generateContractFromOrder({ data: { orderId: order.id } });
+      setContractInfo({ signingUrl: res.signingUrl, whatsappLink: res.whatsappLink });
+      toast.success("Contrato digital gerado com sucesso!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao gerar contrato.");
+    } finally {
+      setIsGeneratingContract(false);
+    }
+  };
 
  // Telemetria Comercial — Disparo de Purchase (Meta Pixel, GA4, TikTok e Server-Side CAPI)
  useEffect(() => {
@@ -422,6 +441,66 @@ function ConfirmationPage() {
  )}
  </div>
  </div>
+
+  {/* Card de Contrato Digital do Pedido */}
+  <div className="border border-border/80 bg-card rounded-2xl p-5 sm:p-6 space-y-4 shadow-2xs">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2.5">
+        <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <ShieldCheck className="size-5" />
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-foreground">Contrato Digital do Pedido</h3>
+          <p className="text-xs text-muted-foreground">Documento com validade jurídica nacional e hash SHA-256</p>
+        </div>
+      </div>
+      <span className="text-[10px] font-mono uppercase font-semibold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+        Lei 14.063/2020
+      </span>
+    </div>
+
+    {contractInfo ? (
+      <div className="p-4 rounded-xl bg-muted/20 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="space-y-0.5">
+          <p className="text-xs font-bold text-foreground">Contrato Pronto para Assinatura</p>
+          <p className="text-[11px] text-muted-foreground">Assine pelo celular no WhatsApp ou diretamente na tela.</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {contractInfo.whatsappLink && (
+            <Button asChild size="sm" className="rounded-xl text-xs h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+              <a href={contractInfo.whatsappLink} target="_blank" rel="noreferrer">
+                <MessageCircle className="size-3.5 mr-1.5" />
+                Assinar no WhatsApp
+              </a>
+            </Button>
+          )}
+          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-9 px-4">
+            <Link to={contractInfo.signingUrl}>
+              Assinar Agora
+              <ArrowRight className="size-3.5 ml-1.5" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+    ) : (
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+        <p className="text-xs text-muted-foreground">
+          Formalize a compra e assegure os termos de garantia, cancelamento e entrega.
+        </p>
+        <Button
+          type="button"
+          onClick={handleGenerateContract}
+          disabled={isGeneratingContract}
+          variant="outline"
+          size="sm"
+          className="rounded-xl text-xs font-semibold h-9 px-4 shrink-0 min-h-[44px] sm:min-h-[36px]"
+        >
+          <ShieldCheck className="size-3.5 mr-1.5 text-primary" />
+          {isGeneratingContract ? "Gerando..." : "Emitir Contrato Digital"}
+        </Button>
+      </div>
+    )}
+  </div>
 
  {/* Bloco de Auditoria e Conformidade de Tags */}
  <div className=" bg-muted/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

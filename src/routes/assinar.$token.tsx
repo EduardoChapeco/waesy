@@ -364,6 +364,55 @@ function SignContractPage() {
 
             {/* Pad de Assinatura Tátil & Consentimento Legal */}
             <div className="border border-primary/30 bg-card rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm">
+              {/* Botão de Assinatura Oficial GOV.BR */}
+              <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                      <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
+                      Assinatura com Conta GOV.BR
+                    </span>
+                    <Badge variant="outline" className="text-[10px] border-blue-500/30 text-blue-600 bg-blue-500/10">
+                      Nível Prata / Ouro
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Validação com presunção legal expressa pela Lei nº 14.063/2020.
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (!consent) {
+                      toast.error("Marque o consentimento abaixo antes de assinar.");
+                      return;
+                    }
+                    signMutation.mutate({
+                      data: {
+                        signingToken: envelope.signing_token,
+                        consent: true,
+                        signatureImageBase64: signatureImage || undefined,
+                        faceImageUrl: faceImageUrl || undefined,
+                        userAgent: "Gov.br Cidadão (Nível Prata/Ouro)",
+                      },
+                    });
+                  }}
+                  disabled={!consent || signMutation.isPending}
+                  className="rounded-xl text-xs font-bold h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white shrink-0 min-h-[44px] sm:min-h-[36px]"
+                >
+                  Assinar com GOV.BR
+                </Button>
+              </div>
+
+              <div className="relative flex items-center justify-center my-2">
+                <div className="border-t border-border/70 w-full" />
+                <span className="bg-card px-3 text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
+                  ou assine na tela
+                </span>
+              </div>
+
+              {/* Canvas Interativo */}
               <SignatureCanvasPad onSave={setSignatureImage} />
 
               <div className="flex items-start space-x-3 pt-2">

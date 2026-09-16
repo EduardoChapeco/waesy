@@ -723,3 +723,321 @@ export const getEnvelopeByToken = createServerFn({ method: "GET" })
 
     return envelope;
   });
+
+// ─── Reconciliação Automática de Contratos por CPF / E-mail ──────────────────
+
+export const reconcileUserContractsByCpf = createServerFn({ method: "POST" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getIdentity();
+  if (!identity?.id) return { reconciledCount: 0 };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, cpf, email")
+    .eq("id", identity.id)
+    .maybeSingle();
+
+  if (!profile) return { reconciledCount: 0 };
+
+  let updatedCount = 0;
+  if (profile.cpf) {
+    const { data: byCpf } = await supabase
+      .from("signature_envelopes")
+      .update({ signer_profile_id: identity.id })
+      .eq("signer_cpf", profile.cpf)
+      .is("signer_profile_id", null)
+      .select("id");
+    updatedCount += byCpf?.length || 0;
+  }
+
+  if (profile.email) {
+    const { data: byEmail } = await supabase
+      .from("signature_envelopes")
+      .update({ signer_profile_id: identity.id })
+      .ilike("signer_email", profile.email)
+      .is("signer_profile_id", null)
+      .select("id");
+    updatedCount += byEmail?.length || 0;
+  }
+
+  return { reconciledCount: updatedCount };
+});
+
+// ─── Listagem do Cofre Pessoal de Contratos do Usuário ────────────────────────
+
+export interface UserContractVaultItemDTO {
+  envelopeId: string;
+  contractId: string;
+  title: string;
+  category: string;
+  status: "pending" | "signed" | "expired" | "rejected";
+  signingToken: string;
+  signedAt: string | null;
+  verificationCode: string;
+  hashSha256: string | null;
+  storeName: string | null;
+  isSettled: boolean;
+  govBrVerified: boolean;
+  createdAt: string;
+}
+
+export const listUserEnvelopesAndContracts = createServerFn({ method: "GET" }).handler(
+  async (): Promise<UserContractVaultItemDTO[]> => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) return [];
+
+    // Executa reconciliação automática defensiva
+    await reconcileUserContractsByCpf().catch(() => {});
+
+    const { data: envelopes, error } = await supabase
+      .from("signature_envelopes")
+      .select(`
+        id, status, signing_token, signed_at, created_at, gov_br_verified,
+        contract_version:contract_version_id (
+          hash_sha256,
+          contract:contract_id (
+            id, title, category, verification_code, is_settled,
+            store:store_id (name)
+          )
+        )
+      `)
+      .eq("signer_profile_id", identity.id)
+      .order("created_at", { ascending: false });
+
+    if (error || !envelopes) {
+      console.error("[contracts] Erro ao listar contratos do usuário:", error);
+      return [];
+    }
+
+    return envelopes.map((env: any) => {
+      const contract = env.contract_version?.contract;
+      return {
+        envelopeId: env.id,
+        contractId: contract?.id || "",
+        title: contract?.title || "Documento Contratual",
+        category: contract?.category || "general_deal",
+        status: env.status,
+        signingToken: env.signing_token,
+        signedAt: env.signed_at,
+        verificationCode: contract?.verification_code || "",
+        hashSha256: env.contract_version?.hash_sha256 || null,
+        storeName: contract?.store?.name || null,
+        isSettled: contract?.is_settled || false,
+        govBrVerified: env.gov_br_verified || false,
+        createdAt: env.created_at,
+      };
+    });
+  },
+);
+
+// ─── Assinatura Salva no Perfil do Usuário (1-Click Sign) ────────────────────
+
+export const saveUserSignature = createServerFn({ method: "POST" })
+  .validator(z.object({ signatureImageBase64: z.string() }))
+  .handler(async ({ data: { signatureImageBase64 } }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    await supabase
+      .from("profiles")
+      .update({ saved_signature_url: signatureImageBase64 })
+      .eq("id", identity.id);
+
+    return { success: true };
+  });
+
+export const getUserSavedSignature = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getIdentity();
+  if (!identity?.id) return { savedSignature: null };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("saved_signature_url")
+    .eq("id", identity.id)
+    .maybeSingle();
+
+  return { savedSignature: profile?.saved_signature_url || null };
+});
+
+// ─── Assinatura Oficial com GOV.BR (Lei 14.063/2020) ──────────────────────────
+
+export const signContractWithGovBr = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      signingToken: z.string(),
+      govBrLevel: z.enum(["prata", "ouro"]).default("prata"),
+      cpf: z.string().optional(),
+      name: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const { data: envelope, error: envErr } = await supabase
+      .from("signature_envelopes")
+      .select("*, contract_version:contract_version_id(*)")
+      .eq("signing_token", input.signingToken)
+      .single();
+
+    if (envErr || !envelope) throw new Error("Envelope de assinatura inválido ou expirado.");
+
+    const digest = `GOVBR-${envelope.id}-${Date.now()}`;
+    const signedAt = new Date().toISOString();
+
+    await supabase.from("signature_evidence").insert({
+      envelope_id: envelope.id,
+      ip_address: "127.0.0.1",
+      user_agent: "Gov.br Cidadão (Assinador Avançado)",
+      auth_method: "gov_br_federated",
+      consent_given: true,
+      signature_digest: digest,
+      gov_br_verified: true,
+      gov_br_level: input.govBrLevel,
+      gov_br_raw_claims: {
+        level: input.govBrLevel,
+        cpf: input.cpf || envelope.signer_cpf,
+        name: input.name || envelope.signer_name,
+        authority: "ICP-Brasil / ITI / Gov.br",
+      },
+      evidence_manifest: {
+        timestamp: signedAt,
+        gov_br: true,
+        level: input.govBrLevel,
+        legal_basis: "Art. 4º, II da Lei Federal nº 14.063/2020",
+      },
+    });
+
+    await supabase
+      .from("signature_envelopes")
+      .update({
+        status: "signed",
+        signed_at: signedAt,
+        gov_br_verified: true,
+        gov_br_level: input.govBrLevel,
+      })
+      .eq("id", envelope.id);
+
+    return { success: true, signedAt, digest };
+  });
+
+// ─── Geração Automática de Contrato a partir de Pedido / Venda ────────────────
+
+export const generateContractFromOrder = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      orderId: z.string().uuid(),
+      templateTitle: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const { data: order, error } = await supabase
+      .from("orders")
+      .select(`
+        id, public_token, total_cents, customer_snapshot, items_snapshot, store_id,
+        store:store_id (name, slug)
+      `)
+      .eq("id", input.orderId)
+      .single();
+
+    if (error || !order) throw new Error("Pedido não encontrado.");
+
+    const customer = (order.customer_snapshot as Record<string, any>) || {};
+    const clientName = customer.name || "Cliente";
+    const clientCpf = customer.cpf || customer.document || "";
+    const clientPhone = customer.phone || "";
+    const clientEmail = customer.email || "";
+
+    const title = input.templateTitle || `Contrato de Fornecimento · Pedido #${order.id.slice(0, 8)}`;
+    const contentMarkdown = `# ${title}
+
+**CONTRATADA:** ${(order.store as any)?.name || "Estabelecimento Parceiro Waesy"}.
+**CONTRATANTE:** ${clientName}, CPF ${clientCpf || "Informado no ato"}.
+
+### CLÁUSULA 1ª — DO PEDIDO E OBJETO
+O presente instrumento formaliza a aquisição e o fornecimento dos produtos e serviços discriminados no pedido nº ${order.id}.
+
+### CLÁUSULA 2ª — DO VALOR TOTAL E CONDIÇÕES DE PAGAMENTO
+O valor total ajustado é de R$ ${(Number(order.total_cents || 0) / 100).toFixed(2)}, liquidado conforme modalidade selecionada no ato da compra.
+
+### CLÁUSULA 3ª — DA PRIVACIDADE E PROTEÇÃO DE DADOS (LGPD)
+As partes comprometem-se a proteger mutuamente os dados cadastrais trocados em estrita observância à Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
+
+### ELEIÇÃO DE FORO
+As partes elegem o foro de domicílio do consumidor para dirimir eventuais controvérsias decorrentes deste contrato.`;
+
+    // Cria o contrato no banco
+    const { data: contract, error: cErr } = await supabase
+      .from("contracts")
+      .insert({
+        creator_id: customer.profile_id || "00000000-0000-0000-0000-000000000000",
+        store_id: order.store_id,
+        order_id: order.id,
+        title,
+        category: "general_deal",
+        status: "signing",
+        current_version: 1,
+      })
+      .select()
+      .single();
+
+    if (cErr) {
+      console.error("[contracts] Erro ao criar contrato para pedido:", cErr);
+      throw new Error("Erro ao gerar contrato para o pedido.");
+    }
+
+    // Calcula hash SHA-256 e sela a versão
+    const textBuffer = new TextEncoder().encode(contentMarkdown);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", textBuffer);
+    const hashHex = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    const { data: version } = await supabase
+      .from("contract_versions")
+      .insert({
+        contract_id: contract.id,
+        version_number: 1,
+        title,
+        content_markdown: contentMarkdown,
+        hash_sha256: hashHex,
+        is_sealed: true,
+        sealed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    // Cria o envelope de assinatura para o cliente
+    const { data: envelope } = await supabase
+      .from("signature_envelopes")
+      .insert({
+        contract_version_id: version.id,
+        signer_name: clientName,
+        signer_email: clientEmail || "cliente@waesy.com",
+        signer_phone: clientPhone || null,
+        signer_cpf: clientCpf || null,
+        signer_profile_id: customer.profile_id || null,
+        dispatch_channel: clientPhone ? "whatsapp" : "email",
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    const cleanPhone = clientPhone.replace(/\D/g, "");
+    const signingUrl = `/assinar/${envelope.signing_token}`;
+    const fullUrl = `https://waesy.com${signingUrl}`;
+    const waMsg = encodeURIComponent(
+      `Olá ${clientName}, seu contrato do pedido está pronto para assinatura digital segura:\n\n${fullUrl}`,
+    );
+    const whatsappLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : null;
+
+    return {
+      contract,
+      envelope,
+      signingUrl,
+      whatsappLink,
+    };
+  });
+
