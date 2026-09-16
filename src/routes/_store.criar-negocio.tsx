@@ -352,7 +352,7 @@ function CriarNegocioPage() {
   <div className="w-full max-w-6xl mx-auto py-2 space-y-6 animate-in fade-in duration-200">
   {/* ── Top Bar de Retorno / Atalho ao Workspace ou Início + Seletor de Modo ── */}
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-  <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground">
+  <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground min-h-[44px] sm:min-h-[36px] h-11 sm:h-9">
   <Link to={session?.memberships && session.memberships.length > 0 ? "/workspace" : "/"}>
   <ArrowLeft className="size-3.5" />
   <span>{session?.memberships && session.memberships.length > 0 ? "Voltar ao Workspace" : "Voltar ao Início"}</span>

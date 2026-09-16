@@ -538,7 +538,7 @@ export function EditorialShowcaseView({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-2 sm:pt-4 space-y-6">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-6 animate-in fade-in duration-200">
         {/* ── Modo Proprietário Banner (Regra 23) ── */}
         {isOwner && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in duration-200">

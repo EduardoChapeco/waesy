@@ -72,7 +72,7 @@ function ContatoPage() {
  const cleanWhatsapp = brand?.support_whatsapp?.replace(/\D/g, "");
 
  return (
- <div className="mx-auto max-w-5xl px-4 py-8 md:py-14 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+ <div className="mx-auto max-w-5xl px-0 sm:px-4 md:px-0 py-6 md:py-14 space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
  {/* Topo Institucional */}
  <div className="text-center max-w-2xl mx-auto space-y-2">
  <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
@@ -100,7 +100,7 @@ function ContatoPage() {
  </p>
  </div>
  {cleanWhatsapp ? (
- <Button asChild size="sm" className="w-full rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer">
+ <Button asChild size="sm" className="w-full min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer">
  <a
  href={`https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(
  `Olá! Gostaria de falar com o suporte da plataforma ${brand?.platform_name || "Waesy"}.`

@@ -101,3 +101,10 @@
 
 4. **Sprint 4 — Validação de Compilação & Runtime Proof:**
    - Execução de `npm run build` completo para comprovação de zero quebras e geração dos bundles de produção.
+
+5. **Sprint 5 — Padronização Universal de Vitrines Editoriais & Onboarding:**
+   - [`src/components/classifieds/editorial-showcase-view.tsx`](file:///c:/Users/Excelência%20Tour%20SMO/Documents/waesy/src/components/classifieds/editorial-showcase-view.tsx) (Zero Dead-Space `px-0 sm:px-4 md:px-0` universal)
+   - [`src/routes/_store.contato.tsx`](file:///c:/Users/Excelência%20Tour%20SMO/Documents/waesy/src/routes/_store.contato.tsx) (Container sem margem dupla e botão WhatsApp de 44px)
+   - [`src/routes/_store.criar-negocio.tsx`](file:///c:/Users/Excelência%20Tour%20SMO/Documents/waesy/src/routes/_store.criar-negocio.tsx) (Touch target de 44px no retorno e abas táteis)
+   - [`src/routes/_store.criar-negocio.avancado.tsx`](file:///c:/Users/Excelência%20Tour%20SMO/Documents/waesy/src/routes/_store.criar-negocio.avancado.tsx) (Touch target de 44px no retorno)
+   - [`src/routes/_store.turismo.$id.tsx`](file:///c:/Users/Excelência%20Tour%20SMO/Documents/waesy/src/routes/_store.turismo.$id.tsx) (Modo Proprietário canônico com store/membership derivation)

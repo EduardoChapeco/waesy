@@ -461,12 +461,19 @@ function TourismDetailPage() {
  </div>
  </div>
 
- <InstagramTravelView
- classified={editorialClassified}
- isOwner={session?.user?.id === (experience as any).author_profile_id}
- onOpenBookingModal={() => setIsBookingOpen(true)}
- onOpenProposalModal={() => setIsTravelQuoteOpen(true)}
- />
+        <InstagramTravelView
+          classified={editorialClassified}
+          isOwner={Boolean(
+            session?.user?.id && (
+              session.user.id === (experience as any).author_profile_id ||
+              session.user.id === (experience as any).user_id ||
+              session.role === "platform_admin" ||
+              session.memberships?.some((m: any) => m.store_id === experience.store_id)
+            )
+          )}
+          onOpenBookingModal={() => setIsBookingOpen(true)}
+          onOpenProposalModal={() => setIsTravelQuoteOpen(true)}
+        />
 
  {renderBookingDialog()}
  <TravelQuoteModal
