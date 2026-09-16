@@ -407,8 +407,8 @@ function SignContractPage() {
 
               <div className="relative flex items-center justify-center my-2">
                 <div className="border-t border-border/70 w-full" />
-                <span className="bg-card px-3 text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
-                  ou assine na tela
+                <span className="bg-card px-3 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                  ou desenhe sua assinatura no celular
                 </span>
               </div>
 
@@ -420,40 +420,39 @@ function SignContractPage() {
                   id="consent-check"
                   checked={consent}
                   onCheckedChange={(c) => setConsent(Boolean(c))}
-                  className="mt-0.5"
+                  className="mt-0.5 size-5 rounded-md"
                 />
                 <label
                   htmlFor="consent-check"
-                  className="text-xs text-foreground leading-relaxed cursor-pointer"
+                  className="text-xs sm:text-sm text-foreground leading-relaxed cursor-pointer"
                 >
                   Eu, <strong className="text-foreground">{envelope.signer_name}</strong>, declaro que
-                  li, compreendi e concordo integralmente com todas as cláusulas deste
-                  contrato, manifestando minha vontade mediante assinatura eletrônica com validade
-                  jurídica plena nos termos da MP 2.200-2/2001 e da Lei nº 14.063/2020.
+                  li, compreendi e concordo integralmente com todas as condições deste documento,
+                  confirmando minha assinatura eletrônica com validade jurídica oficial.
                 </label>
               </div>
 
               {/* Botão de Ação no Terço Inferior (Thumb Zone) */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border/60">
+              <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border/60">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Lock className="size-3.5 text-primary" />
-                  <span>Assinatura Segura · Criptografia SHA-256</span>
+                  <Lock className="size-4 text-primary shrink-0" />
+                  <span>Documento Protegido · Validade Jurídica Nacional</span>
                 </div>
 
                 <Button
                   onClick={handleSign}
                   disabled={!consent || signMutation.isPending}
-                  className="w-full sm:w-auto rounded-xl text-xs font-bold gap-2 h-11 px-8 min-h-[44px]"
+                  className="w-full sm:w-auto rounded-xl text-sm font-bold gap-2 h-12 px-8 min-h-[48px] bg-primary text-primary-foreground shadow-sm"
                 >
                   {signMutation.isPending ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      <span>Registrando Assinatura...</span>
+                      <span>Gravando Assinatura...</span>
                     </>
                   ) : (
                     <>
-                      <FileSignature className="size-4" />
-                      <span>Assinar Eletronicamente</span>
+                      <CheckCircle2 className="size-4" />
+                      <span>Concluir Assinatura</span>
                     </>
                   )}
                 </Button>

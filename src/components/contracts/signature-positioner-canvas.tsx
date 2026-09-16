@@ -210,8 +210,8 @@ export function SignaturePositionerCanvas({
         {/* Barra Lateral de Signatários & Tags */}
         <aside className="w-full md:w-80 border-b md:border-b-0 md:border-r border-border/70 bg-muted/20 p-4 space-y-5 overflow-y-auto">
           <div>
-            <Label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-2 block">
-              1. Selecione o Signatário
+            <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-2.5 block">
+              1. Escolha quem vai assinar
             </Label>
             <div className="space-y-2">
               {signers.map((s, idx) => {
@@ -221,10 +221,10 @@ export function SignaturePositionerCanvas({
                     key={idx}
                     type="button"
                     onClick={() => setActiveSignerIndex(idx)}
-                    className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex items-center justify-between ${
+                    className={`w-full text-left p-3 rounded-xl border transition-all text-xs sm:text-sm flex items-center justify-between min-h-[44px] cursor-pointer ${
                       isSelected
-                        ? "bg-card border-primary/50 shadow-xs ring-1 ring-primary/20"
-                        : "bg-background/60 border-border/70 hover:border-border hover:bg-background"
+                        ? "bg-card border-primary/50 shadow-xs ring-1 ring-primary/20 font-semibold"
+                        : "bg-background/70 border-border/70 hover:border-border hover:bg-background"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -234,11 +234,11 @@ export function SignaturePositionerCanvas({
                       />
                       <div className="truncate">
                         <p className="font-semibold text-foreground truncate">{s.name || `Signatário ${idx + 1}`}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{s.email || s.phone || "Sem contato"}</p>
+                        <p className="text-xs text-muted-foreground truncate">{s.email || s.phone || "Contato cadastrado"}</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-[10px] font-normal capitalize shrink-0 ml-2">
-                      {s.role === "witness" ? "Testemunha" : "Assinar"}
+                    <Badge variant="outline" className="text-xs font-medium capitalize shrink-0 ml-2">
+                      {s.role === "witness" ? "Testemunha" : "Assinante"}
                     </Badge>
                   </button>
                 );
@@ -247,8 +247,8 @@ export function SignaturePositionerCanvas({
           </div>
 
           <div>
-            <Label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-2 block">
-              2. Clique para Adicionar Campo
+            <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground mb-2.5 block">
+              2. Toque para Adicionar o Campo
             </Label>
             <div className="grid grid-cols-2 gap-2">
               {FIELD_TAGS.map((tag) => {
@@ -259,9 +259,9 @@ export function SignaturePositionerCanvas({
                     type="button"
                     disabled={readOnly}
                     onClick={() => handleAddTag(tag.type)}
-                    className="flex items-center gap-2 p-2.5 rounded-xl border border-border/80 bg-card hover:bg-muted/50 transition-all text-left text-xs font-medium text-foreground hover:border-primary/40 active:scale-[0.98]"
+                    className="flex items-center gap-2.5 p-3 rounded-xl border border-border/80 bg-card hover:bg-muted/60 transition-all text-left text-xs sm:text-sm font-semibold text-foreground hover:border-primary/40 active:scale-[0.98] min-h-[44px] cursor-pointer shadow-2xs"
                   >
-                    <Icon className="size-3.5 text-primary shrink-0" />
+                    <Icon className="size-4 text-primary shrink-0" />
                     <span className="truncate">{tag.label}</span>
                   </button>
                 );
@@ -269,13 +269,13 @@ export function SignaturePositionerCanvas({
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-card border border-border/70 space-y-2 text-[11px] text-muted-foreground">
-            <div className="flex items-center gap-1.5 font-semibold text-foreground">
-              <Info className="size-3.5 text-primary" />
-              Dica de Posicionamento
+          <div className="p-3.5 rounded-xl bg-card border border-border/70 space-y-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 font-bold text-foreground">
+              <Info className="size-4 text-primary shrink-0" />
+              <span>Dica de Posicionamento</span>
             </div>
             <p className="leading-relaxed">
-              Campos de <strong>Rubrica</strong> podem ser replicados em todas as páginas exceto a última de forma automática.
+              Você pode repetir o campo de <strong>Rubrica</strong> em todas as páginas com 1 toque.
             </p>
           </div>
         </aside>
@@ -397,10 +397,10 @@ export function SignaturePositionerCanvas({
             type="button"
             size="sm"
             onClick={onAdvance}
-            className="h-10 px-5 rounded-xl text-xs font-semibold"
+            className="h-11 px-6 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] gap-2 shadow-xs cursor-pointer"
           >
-            Avançar
-            <ArrowRight className="size-4 ml-1.5" />
+            <span>Avançar para Envio</span>
+            <ArrowRight className="size-4" />
           </Button>
         )}
       </div>

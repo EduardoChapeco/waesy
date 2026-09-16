@@ -356,59 +356,59 @@ function NovoContratoPage() {
         {/* Painel Esquerdo: Informe os Signatários (Screenshots 4 & 5) */}
         <div className="lg:col-span-5 bg-card border border-border/80 rounded-2xl p-5 space-y-5 shadow-2xs">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-foreground">Informe os signatários</h2>
+            <h2 className="text-sm font-bold text-foreground">Quem vai assinar</h2>
 
-            {/* Alternador Sem Ordem / Com Ordem */}
-            <div className="flex items-center p-1 bg-muted rounded-xl text-xs">
+            {/* Alternador Sem Ordem / Em Sequência */}
+            <div className="flex items-center p-1 bg-muted/80 rounded-xl text-xs">
               <button
                 type="button"
                 onClick={() => setSigningOrder("parallel")}
-                className={`px-3 py-1.5 rounded-lg transition-all font-medium ${
+                className={`px-3 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
                   signingOrder === "parallel"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
+                    ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Sem ordem
+                Ao mesmo tempo
               </button>
               <button
                 type="button"
                 onClick={() => setSigningOrder("sequential")}
-                className={`px-3 py-1.5 rounded-lg transition-all font-medium ${
+                className={`px-3 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
                   signingOrder === "sequential"
-                    ? "bg-card text-foreground shadow-xs font-semibold"
+                    ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Com ordem
+                Em sequência
               </button>
             </div>
           </div>
 
-          {/* Autopreenchimento por OCR Inteligente */}
-          <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+          {/* Autopreenchimento com Foto do Documento */}
+          <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-                <ScanLine className="size-4" />
-                <span>Preenchimento Inteligente via OCR</span>
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-primary">
+                <ScanLine className="size-4.5" />
+                <span>Preencher com Foto do Documento</span>
               </div>
-              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
-                Passaporte · RG · CNH
+              <Badge variant="outline" className="text-xs border-primary/30 text-primary font-medium">
+                RG · CNH · Passaporte
               </Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              Tire foto ou envie o arquivo do documento do cliente para preencher nome, CPF e cláusulas sem digitação manual.
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Tire foto ou envie o arquivo do documento do cliente para preencher nome e CPF na hora, sem digitação.
             </p>
-            <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-medium text-foreground cursor-pointer hover:bg-muted transition-all">
+            <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card border border-border/80 text-xs sm:text-sm font-semibold text-foreground cursor-pointer hover:bg-muted transition-all shadow-2xs">
               {isProcessingOcr ? (
                 <>
-                  <Loader2 className="size-3.5 animate-spin text-primary" />
-                  Lendo documento...
+                  <Loader2 className="size-4 animate-spin text-primary" />
+                  <span>Lendo dados do documento...</span>
                 </>
               ) : (
                 <>
-                  <Upload className="size-3.5 text-primary" />
-                  Carregar Foto do Documento
+                  <Upload className="size-4 text-primary" />
+                  <span>Carregar Foto do Documento</span>
                 </>
               )}
               <input
@@ -426,60 +426,61 @@ function NovoContratoPage() {
             {signers.map((signer, index) => (
               <div
                 key={index}
-                className="p-3.5 rounded-xl border border-border/80 bg-muted/20 space-y-3 relative group"
+                className="p-4 rounded-2xl border border-border/80 bg-card space-y-3 relative shadow-2xs"
               >
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
                     <span
-                      className="size-3 rounded-full"
+                      className="size-3 rounded-full shrink-0"
                       style={{ backgroundColor: signer.colorCode }}
                     />
-                    <span className="font-semibold text-foreground">Signatário {index + 1}</span>
+                    <span className="font-bold text-foreground">Signatário {index + 1}</span>
                   </div>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <Select
                       value={signer.dispatchChannel}
                       onValueChange={(v: any) => updateSigner(index, "dispatchChannel", v)}
                     >
-                      <SelectTrigger className="h-7 text-[11px] rounded-lg border-border/70">
+                      <SelectTrigger className="h-8 text-xs font-semibold rounded-xl border-border/70">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl text-xs">
-                        <SelectItem value="whatsapp">WhatsApp (+55)</SelectItem>
-                        <SelectItem value="email">E-mail</SelectItem>
-                        <SelectItem value="direct_link">Link Direto</SelectItem>
-                        <SelectItem value="sms">SMS</SelectItem>
+                        <SelectItem value="whatsapp">Enviar no WhatsApp</SelectItem>
+                        <SelectItem value="email">Enviar por E-mail</SelectItem>
+                        <SelectItem value="direct_link">Copiar Link Direto</SelectItem>
+                        <SelectItem value="sms">Enviar por SMS</SelectItem>
                       </SelectContent>
                     </Select>
 
                     <button
                       type="button"
                       onClick={() => removeSigner(index)}
-                      className="text-muted-foreground hover:text-destructive p-1"
+                      className="text-muted-foreground hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
+                      title="Remover signatário"
                     >
-                      <Trash2 className="size-3.5" />
+                      <Trash2 className="size-4" />
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <Input
-                    placeholder="Nome completo do signatário"
+                    placeholder="Nome completo de quem vai assinar"
                     value={signer.name}
                     onChange={(e) => updateSigner(index, "name", e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-10 text-xs sm:text-sm rounded-xl"
                   />
 
                   <Input
                     placeholder={
                       signer.dispatchChannel === "whatsapp" || signer.dispatchChannel === "sms"
-                        ? "DDD + Celular (ex: 49 99999-9999)"
-                        : "E-mail do signatário"
+                        ? "Celular com DDD (ex: 49 99999-9999)"
+                        : "E-mail de quem vai assinar"
                     }
                     value={signer.contact}
                     onChange={(e) => updateSigner(index, "contact", e.target.value)}
-                    className="h-9 text-xs rounded-lg"
+                    className="h-10 text-xs sm:text-sm rounded-xl"
                   />
 
                   <div className="grid grid-cols-2 gap-2 pt-1">

@@ -276,15 +276,15 @@ function ContractEditorPage() {
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate max-w-md">
+              <h1 className="text-base sm:text-xl font-bold tracking-tight text-foreground truncate max-w-md">
                 {docTitle || "Editor de Contrato"}
               </h1>
-              <Badge variant={isAlreadySealed ? "default" : "secondary"} className="text-[10px]">
-                {isAlreadySealed ? "Selado Criptograficamente" : "Rascunho"}
+              <Badge variant={isAlreadySealed ? "default" : "secondary"} className="text-xs px-2.5 py-0.5">
+                {isAlreadySealed ? "Pronto para Assinar" : "Rascunho em Edição"}
               </Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              Passo {activeStep} de 3 · {activeStep === 1 ? "Minuta" : activeStep === 2 ? "Posicionamento" : "Configurações"}
+            <p className="text-xs text-muted-foreground">
+              Etapa {activeStep} de 3 · {activeStep === 1 ? "Escrever Documento" : activeStep === 2 ? "Onde Assinar" : "Finalizar e Enviar"}
             </p>
           </div>
         </div>
@@ -297,41 +297,41 @@ function ContractEditorPage() {
               variant="outline"
               size="sm"
               onClick={handleSaveDraft}
-              className="rounded-xl text-xs h-9 px-3.5"
+              className="rounded-xl text-xs sm:text-sm font-semibold h-10 px-4"
             >
-              <Save className="size-3.5 mr-1.5" />
+              <Save className="size-4 mr-1.5" />
               Salvar Rascunho
             </Button>
           )}
 
-          {/* Stepper Superior */}
-          <div className="flex items-center p-1 bg-muted rounded-xl text-xs">
+          {/* Stepper Superior Comercial & Nítido */}
+          <div className="flex items-center p-1 bg-muted/80 rounded-xl text-xs sm:text-sm">
             <button
               type="button"
               onClick={() => setActiveStep(1)}
-              className={`px-3 py-1 rounded-lg transition-all text-xs font-medium ${
-                activeStep === 1 ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+              className={`px-3.5 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
+                activeStep === 1 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              1. Minuta
+              1. Escrever
             </button>
             <button
               type="button"
               onClick={() => setActiveStep(2)}
-              className={`px-3 py-1 rounded-lg transition-all text-xs font-medium ${
-                activeStep === 2 ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+              className={`px-3.5 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
+                activeStep === 2 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              2. Posicionar
+              2. Onde Assinar
             </button>
             <button
               type="button"
               onClick={() => setActiveStep(3)}
-              className={`px-3 py-1 rounded-lg transition-all text-xs font-medium ${
-                activeStep === 3 ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+              className={`px-3.5 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
+                activeStep === 3 ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              3. Configurações
+              3. Enviar
             </button>
           </div>
         </div>
@@ -342,11 +342,11 @@ function ContractEditorPage() {
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-card border border-emerald-500/30 space-y-4">
             <div className="flex items-center gap-3 text-emerald-600">
-              <ShieldCheck className="size-6" />
+              <ShieldCheck className="size-7 shrink-0" />
               <div>
-                <h3 className="font-bold text-sm text-foreground">Documento Selado & Pronto para Assinatura</h3>
-                <p className="text-xs text-muted-foreground">
-                  A integridade criptográfica SHA-256 está gravada e os envelopes foram emitidos.
+                <h3 className="font-bold text-base text-foreground">Documento Autenticado & Pronto para Envio</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  O contrato possui validade jurídica oficial (Lei 14.063/2020). Envie os links abaixo para os clientes assinarem no celular.
                 </p>
               </div>
             </div>
@@ -354,7 +354,7 @@ function ContractEditorPage() {
             {/* Links Rápidos de Despacho (WhatsApp / E-mail) */}
             <div className="space-y-3 pt-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Links de Assinatura por Signatário:
+                Enviar Link para os Assinantes:
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -362,30 +362,30 @@ function ContractEditorPage() {
                   const signingUrl = `/assinar/${env.signing_token}`;
                   const cleanPhone = (env.signer_phone || "").replace(/\D/g, "");
                   const waMsg = encodeURIComponent(
-                    `Olá ${env.signer_name}, seu documento "${docTitle}" está pronto para assinatura digital:\nhttps://waesy.com${signingUrl}`,
+                    `Olá ${env.signer_name}, seu documento "${docTitle}" está pronto para assinatura no celular:\nhttps://waesy.com${signingUrl}`,
                   );
                   const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : null;
 
                   return (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl border border-border/80 bg-muted/20 flex items-center justify-between gap-3 text-xs"
+                      className="p-4 rounded-xl border border-border/80 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm"
                     >
                       <div className="min-w-0">
-                        <p className="font-bold text-foreground truncate">{env.signer_name}</p>
-                        <p className="text-[11px] text-muted-foreground truncate">{env.signer_email || env.signer_phone}</p>
+                        <p className="font-bold text-sm text-foreground truncate">{env.signer_name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{env.signer_phone || env.signer_email}</p>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         {waLink && (
                           <Button
                             asChild
                             size="sm"
-                            className="h-8 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px]"
+                            className="h-9 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
                           >
                             <a href={waLink} target="_blank" rel="noreferrer">
-                              <WhatsappLogo className="size-3.5 mr-1" />
-                              WhatsApp
+                              <WhatsappLogo className="size-4 mr-1.5" />
+                              Enviar no WhatsApp
                             </a>
                           </Button>
                         )}
@@ -393,11 +393,11 @@ function ContractEditorPage() {
                           asChild
                           variant="outline"
                           size="sm"
-                          className="h-8 px-2.5 rounded-lg text-[11px]"
+                          className="h-9 px-3 rounded-xl text-xs font-semibold"
                         >
                           <Link to={signingUrl}>
-                            <ExternalLink className="size-3 mr-1" />
-                            Abrir
+                            <ExternalLink className="size-3.5 mr-1.5" />
+                            Abrir Documento
                           </Link>
                         </Button>
                       </div>
