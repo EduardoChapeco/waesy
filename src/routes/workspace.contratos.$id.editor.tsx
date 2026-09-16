@@ -52,6 +52,7 @@ import {
 } from "@/components/contracts/signature-positioner-canvas";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
+import { autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
 
 export const Route = createFileRoute("/workspace/contratos/$id/editor")({
   head: () => ({ meta: [{ title: "Editor de Contrato & Assinatura | Workspace Waesy" }] }),
@@ -97,9 +98,15 @@ function ContractEditorPage() {
   const [pageCount, setPageCount] = useState(currentVersion.page_count || 1);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Campos de Assinatura Posicionados
+  // Campos de Assinatura Posicionados (com auto-posicionamento inteligente inicial)
   const [signatureFields, setSignatureFields] = useState<SignatureFieldDTO[]>(
-    currentVersion.signature_fields || [],
+    currentVersion.signature_fields && currentVersion.signature_fields.length > 0
+      ? currentVersion.signature_fields
+      : (autoPositionSignatureFieldsFromContent(
+          currentVersion.content_markdown || "",
+          currentVersion.page_count || 1,
+          existingEnvelopes.length || 2,
+        ) as any),
   );
 
   // Signatários

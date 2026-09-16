@@ -2,8 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
-import { getNextActiveKey, markKeyError } from "@/services/api-orchestrator.functions";
-import { interpolateContractVariables } from "@/lib/contracts/contract-semantic-dictionary";
+import {
+  interpolateContractVariables,
+  autoPositionSignatureFieldsFromContent,
+} from "@/lib/contracts/contract-semantic-dictionary";
 
 export const ContractCategoryEnum = z.enum([
   "real_estate_rental",
@@ -1029,6 +1031,9 @@ Data de emissão: {{data_extenso}}`;
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
+    // Auto-posiciona inteligentemente as tags de assinatura para o cliente e empresa
+    const autoFields = autoPositionSignatureFieldsFromContent(contentMarkdown, 1, 2);
+
     const { data: version } = await supabase
       .from("contract_versions")
       .insert({
@@ -1037,6 +1042,8 @@ Data de emissão: {{data_extenso}}`;
         title,
         content_markdown: contentMarkdown,
         hash_sha256: hashHex,
+        signature_fields: autoFields,
+        page_count: 1,
         is_sealed: true,
         sealed_at: new Date().toISOString(),
       })
