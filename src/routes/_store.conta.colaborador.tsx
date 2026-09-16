@@ -186,7 +186,7 @@ function ColaboradorPortalPage() {
       </div>
 
       {!employee && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
+        <div className="max-w-4xl mx-auto px-0 sm:px-4 md:px-0 pt-4">
           <div className="rounded-2xl border border-border/80 bg-muted/30 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">Vínculo em Aberto ou em Homologação</p>
@@ -194,14 +194,14 @@ function ColaboradorPortalPage() {
                 Seu perfil ainda não está associado a uma folha de pagamento ativa. Solicite ao gestor da sua empresa para vincular seu perfil na equipe da loja.
               </p>
             </div>
-            <Button asChild variant="outline" size="sm" className="rounded-xl h-10 text-xs shrink-0">
+            <Button asChild variant="outline" size="sm" className="rounded-xl min-h-[44px] sm:min-h-[36px] h-11 sm:h-10 text-xs shrink-0">
               <Link to="/conta">Voltar para Conta</Link>
             </Button>
           </div>
         </div>
       )}
 
- <div className="max-w-4xl mx-auto px-6 pt-6 space-y-6">
+      <div className="max-w-4xl mx-auto px-0 sm:px-4 md:px-0 pt-4 sm:pt-6 space-y-6">
  {activeTab === "ponto" && (
  <div className="space-y-6">
  {/* Relógio Digital Flutuante */}

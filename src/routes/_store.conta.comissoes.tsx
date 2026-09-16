@@ -166,9 +166,9 @@ function AffiliateCommissionsPage() {
   // Se o usuário ainda não possui cadastro de afiliado
   if (!profile && !isProfileLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 max-w-2xl mx-auto space-y-6">
+      <div className="min-h-screen bg-background text-foreground py-6 sm:py-10 px-0 sm:px-4 md:px-0 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="h-9 px-2 rounded-xl text-xs">
+          <Button variant="ghost" size="sm" asChild className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs">
             <Link to="/conta">
               <ChevronLeft className="h-4 w-4 mr-1" /> Minha Conta
             </Link>
@@ -289,11 +289,11 @@ function AffiliateCommissionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-8 px-4 sm:px-6 max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background text-foreground py-6 sm:py-8 px-0 sm:px-4 md:px-0 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
       {/* Navegação e Cabeçalho */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="h-9 px-2 rounded-xl text-xs">
+          <Button variant="ghost" size="sm" asChild className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs">
             <Link to="/conta">
               <ChevronLeft className="h-4 w-4 mr-1" /> Minha Conta
             </Link>
@@ -305,7 +305,7 @@ function AffiliateCommissionsPage() {
         <Button
           onClick={handleOpenPayout}
           disabled={availableBalanceCents < 5000}
-          className="h-10 px-4 rounded-xl font-semibold bg-foreground text-background cursor-pointer"
+          className="min-h-[44px] h-11 sm:h-10 px-4 rounded-xl font-semibold bg-foreground text-background cursor-pointer"
         >
           <Wallet className="h-4 w-4 mr-1.5" /> Solicitar Saque PIX
         </Button>
