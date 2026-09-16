@@ -18,6 +18,8 @@ export const ContractCategoryEnum = z.enum([
   "legal_retainer",
   "tourism_package",
   "medical_aesthetic_consent",
+  "fashion_retail",
+  "pos_retail",
 ]);
 
 // ─── Tipagens Canônicas de Posicionamento Visual & Despacho Multi-Canal ───────
@@ -870,6 +872,101 @@ export const getUserSavedSignature = createServerFn({ method: "GET" }).handler(a
 
   return { savedSignature: profile?.saved_signature_url || null };
 });
+
+// ─── Verificação Pública de Ativação do Assinador GOV.BR ───────────────────────
+
+export const getPublicGovBrSigningConfig = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      signingToken: z.string(),
+    }),
+  )
+  .handler(async ({ data: { signingToken } }) => {
+    const supabase = getServerClient();
+
+    // 1. Busca o envelope e o contrato para identificar a loja emitente
+    const { data: envelope, error: envErr } = await supabase
+      .from("signature_envelopes")
+      .select(`
+        id, signing_token, status,
+        contract_version:contract_version_id (
+          contract:contract_id (id, store_id)
+        )
+      `)
+      .eq("signing_token", signingToken)
+      .maybeSingle();
+
+    if (envErr || !envelope) {
+      return { isGovBrEnabled: false, authUrl: null, environment: null };
+    }
+
+    const storeId = (envelope.contract_version as any)?.contract?.store_id;
+
+    // 2. Consulta se a loja possui credencial ativa para 'govbr_signature'
+    let credential: { token_payload: any; is_active: boolean } | null = null;
+    if (storeId) {
+      const { data: storeCred } = await supabase
+        .from("integration_credentials")
+        .select("token_payload, is_active")
+        .eq("store_id", storeId)
+        .eq("provider", "govbr_signature")
+        .maybeSingle();
+
+      if (storeCred && storeCred.is_active) {
+        credential = storeCred;
+      }
+    }
+
+    // 3. Fallback de nível de plataforma (Admin Master) caso a loja não tenha chave própria
+    if (!credential) {
+      const { data: masterCred } = await supabase
+        .from("integration_credentials")
+        .select("token_payload, is_active")
+        .is("store_id", null)
+        .eq("provider", "govbr_signature")
+        .maybeSingle();
+
+      if (masterCred && masterCred.is_active) {
+        credential = masterCred;
+      }
+    }
+
+    // Se não estiver configurado ou inativo: NUNCA exibe o botão simulado (Regra Anti-Mock)
+    if (!credential || !credential.is_active || !credential.token_payload) {
+      return { isGovBrEnabled: false, authUrl: null, environment: null };
+    }
+
+    const payload = credential.token_payload as Record<string, string>;
+    const clientId = payload.client_id || payload.clientId;
+    if (!clientId || clientId.trim() === "") {
+      return { isGovBrEnabled: false, authUrl: null, environment: null };
+    }
+
+    const env = (payload.environment || "production").toLowerCase().trim();
+    const ssoBase =
+      env === "staging"
+        ? "https://sso.staging.acesso.gov.br"
+        : "https://sso.acesso.gov.br";
+
+    const callbackUrl =
+      payload.redirect_uri ||
+      payload.redirectUri ||
+      "https://waesy.com/api/auth/govbr/callback";
+
+    // URL canônica de autorização OAuth2 do Gov.br
+    const authUrl = `${ssoBase}/authorize?response_type=code&client_id=${encodeURIComponent(
+      clientId.trim(),
+    )}&scope=openid+email+phone+profile+govbr_confiabilidades&redirect_uri=${encodeURIComponent(
+      callbackUrl.trim(),
+    )}&state=${encodeURIComponent(signingToken)}`;
+
+    return {
+      isGovBrEnabled: true,
+      authUrl,
+      environment: env,
+      minLevel: payload.min_level || "prata_ouro",
+    };
+  });
 
 // ─── Assinatura Oficial com GOV.BR (Lei 14.063/2020) ──────────────────────────
 

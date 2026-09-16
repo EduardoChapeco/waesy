@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plug, Save, CheckCircle, Trash2, Key, BarChart, Facebook, Calendar, MessageCircle, MapPin, Layers } from 'lucide-react';
+import { Plug, Save, CheckCircle, Trash2, Key, BarChart, Facebook, Calendar, MessageCircle, MapPin, Layers, ShieldCheck } from 'lucide-react';
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
@@ -320,6 +320,39 @@ function IntegrationsPage() {
  label: "Permanent System User Access Token",
  type: "password",
  placeholder: "EAA...",
+ },
+ ]}
+ />
+
+ <IntegrationCard
+ provider="govbr_signature"
+ title="Assinatura Eletrônica Avançada GOV.BR"
+ description="Validação de identidade com conta Gov.br (Nível Prata ou Ouro) com presunção legal expressa pela Lei nº 14.063/2020. Quando desativado, o botão do Gov.br não é exibido nas assinaturas públicas."
+ icon={ShieldCheck}
+ existingSetting={settings.find((s: any) => s.provider === "govbr_signature")}
+ onSave={handleSave}
+ onDelete={handleDelete}
+ fields={[
+ {
+ key: "client_id",
+ label: "Client ID da Aplicação (Portal Gov.br)",
+ placeholder: "Ex: waesy-signature-app",
+ },
+ {
+ key: "client_secret",
+ label: "Client Secret (Chave Secreta OAuth2)",
+ type: "password",
+ placeholder: "Chave secreta fornecida pelo Gov.br",
+ },
+ {
+ key: "environment",
+ label: "Ambiente (production | staging)",
+ placeholder: "production",
+ },
+ {
+ key: "redirect_uri",
+ label: "URL de Retorno Autorizada (Callback OAuth)",
+ placeholder: "https://waesy.com/api/auth/govbr/callback",
  },
  ]}
  />

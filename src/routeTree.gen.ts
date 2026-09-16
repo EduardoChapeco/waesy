@@ -315,6 +315,7 @@ import { Route as StoreContaPedidosIdRouteImport } from './routes/_store.conta.p
 import { Route as StoreLojaSlugSenhaRouteImport } from './routes/_store.loja.$slug.senha'
 import { Route as StorePedidoPublicTokenConfirmacaoRouteImport } from './routes/_store.pedido.$publicToken.confirmacao'
 import { Route as AdminMasterSegurancaCertificadosIdRouteImport } from './routes/admin-master.seguranca.certificados.$id'
+import { Route as ApiAuthGovbrCallbackRouteImport } from './routes/api.auth.govbr.callback'
 import { Route as ApiAuthMarketplaceCallbackRouteImport } from './routes/api.auth.marketplace.callback'
 import { Route as WorkspaceAgendaServicosIndexRouteImport } from './routes/workspace.agenda.servicos.index'
 import { Route as WorkspaceBuilderDocumentIdEditorRouteImport } from './routes/workspace.builder.$documentId.editor'
@@ -1958,6 +1959,11 @@ const AdminMasterSegurancaCertificadosIdRoute =
     path: '/$id',
     getParentRoute: () => AdminMasterSegurancaCertificadosRoute,
   } as any)
+const ApiAuthGovbrCallbackRoute = ApiAuthGovbrCallbackRouteImport.update({
+  id: '/api/auth/govbr/callback',
+  path: '/api/auth/govbr/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthMarketplaceCallbackRoute =
   ApiAuthMarketplaceCallbackRouteImport.update({
     id: '/api/auth/marketplace/callback',
@@ -2488,6 +2494,7 @@ export interface FileRoutesByFullPath {
   '/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
+  '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -2826,6 +2833,7 @@ export interface FileRoutesByTo {
   '/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
+  '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -3173,6 +3181,7 @@ export interface FileRoutesById {
   '/_store/loja/$slug/senha': typeof StoreLojaSlugSenhaRoute
   '/_store/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
+  '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -3520,6 +3529,7 @@ export interface FileRouteTypes {
     | '/loja/$slug/senha'
     | '/pedido/$publicToken/confirmacao'
     | '/admin-master/seguranca/certificados/$id'
+    | '/api/auth/govbr/callback'
     | '/api/auth/marketplace/callback'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -3858,6 +3868,7 @@ export interface FileRouteTypes {
     | '/loja/$slug/senha'
     | '/pedido/$publicToken/confirmacao'
     | '/admin-master/seguranca/certificados/$id'
+    | '/api/auth/govbr/callback'
     | '/api/auth/marketplace/callback'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -4204,6 +4215,7 @@ export interface FileRouteTypes {
     | '/_store/loja/$slug/senha'
     | '/_store/pedido/$publicToken/confirmacao'
     | '/admin-master/seguranca/certificados/$id'
+    | '/api/auth/govbr/callback'
     | '/api/auth/marketplace/callback'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -4279,6 +4291,7 @@ export interface RootRouteChildren {
   MLeadLeadIdRoute: typeof MLeadLeadIdRoute
   VerifyDocumentCodeRoute: typeof VerifyDocumentCodeRoute
   ViajanteViagemIdRoute: typeof ViajanteViagemIdRoute
+  ApiAuthGovbrCallbackRoute: typeof ApiAuthGovbrCallbackRoute
   ApiAuthMarketplaceCallbackRoute: typeof ApiAuthMarketplaceCallbackRoute
   WorkspacePedidosIdReciboRoute: typeof WorkspacePedidosIdReciboRoute
   ApiMcpV1ToolsCallRoute: typeof ApiMcpV1ToolsCallRoute
@@ -6428,6 +6441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMasterSegurancaCertificadosIdRouteImport
       parentRoute: typeof AdminMasterSegurancaCertificadosRoute
     }
+    '/api/auth/govbr/callback': {
+      id: '/api/auth/govbr/callback'
+      path: '/api/auth/govbr/callback'
+      fullPath: '/api/auth/govbr/callback'
+      preLoaderRoute: typeof ApiAuthGovbrCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/marketplace/callback': {
       id: '/api/auth/marketplace/callback'
       path: '/api/auth/marketplace/callback'
@@ -7511,6 +7531,7 @@ const rootRouteChildren: RootRouteChildren = {
   MLeadLeadIdRoute: MLeadLeadIdRoute,
   VerifyDocumentCodeRoute: VerifyDocumentCodeRoute,
   ViajanteViagemIdRoute: ViajanteViagemIdRoute,
+  ApiAuthGovbrCallbackRoute: ApiAuthGovbrCallbackRoute,
   ApiAuthMarketplaceCallbackRoute: ApiAuthMarketplaceCallbackRoute,
   WorkspacePedidosIdReciboRoute: WorkspacePedidosIdReciboRoute,
   ApiMcpV1ToolsCallRoute: ApiMcpV1ToolsCallRoute,

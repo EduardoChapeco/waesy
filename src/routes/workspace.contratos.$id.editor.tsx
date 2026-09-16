@@ -98,6 +98,9 @@ function ContractEditorPage() {
   const [pageCount, setPageCount] = useState(currentVersion.page_count || 1);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Signatários existentes
+  const existingEnvelopes = currentVersion.envelopes || [];
+
   // Campos de Assinatura Posicionados (com auto-posicionamento inteligente inicial)
   const [signatureFields, setSignatureFields] = useState<SignatureFieldDTO[]>(
     currentVersion.signature_fields && currentVersion.signature_fields.length > 0
@@ -108,9 +111,6 @@ function ContractEditorPage() {
           existingEnvelopes.length || 2,
         ) as any),
   );
-
-  // Signatários
-  const existingEnvelopes = currentVersion.envelopes || [];
   const [signers, setSigners] = useState<SignerVisualInfo[]>(
     existingEnvelopes.length > 0
       ? existingEnvelopes.map((env: any, idx: number) => ({

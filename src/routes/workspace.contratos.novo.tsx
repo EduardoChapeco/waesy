@@ -62,64 +62,187 @@ const SIGNER_COLORS = ["#2563eb", "#9333ea", "#059669", "#ea580c", "#dc2626"];
 
 const NICHE_TEMPLATES: Record<string, { title: string; category: string; description: string; content: string }> = {
   tourism_package: {
-    title: "Contrato de Prestação de Serviços Turísticos",
+    title: "Turismo & Viagens — Pacote Turístico",
     category: "tourism_package",
-    description: "Pacotes de viagem, hospedagem, aéreo e passeios com cláusulas canônicas Embratur.",
-    content: `# CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TURISMO
+    description: "Pacotes de viagem, hospedagem, aéreo e passeios com cláusulas Cadastur/Embratur.",
+    content: `# CONTRATO DE PRESTAÇÃO DE SERVIÇOS TURÍSTICOS
 
-**CONTRATADA (AGÊNCIA):** Agência de Turismo Credenciada Cadastur.
-**CONTRATANTE / VIAJANTE:** {{cliente_nome}}, portador(a) do CPF {{cpf}}, residente em {{endereco}}.
+**CONTRATADA (AGÊNCIA):** Agência de Viagens Credenciada Cadastur.
+**CONTRATANTE / VIAJANTE:** {{cliente_nome}}, portador(a) do CPF {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
 
-### CLÁUSULA 1ª — DO OBJETO DO CONTRATO
-O presente instrumento tem por objeto a intermediação e prestação dos serviços turísticos especificados na proposta de viagem, compreendendo transporte aéreo/rodoviário, hospedagem com regime acordado e assessoria receptiva.
+### CLÁUSULA 1ª — DO DESTINO E SERVIÇOS INCLUSOS
+O presente instrumento tem por objeto a intermediação e prestação dos serviços turísticos descritos na proposta de viagem:
+* **Destino & Hospedagem:** {{destino_hotel}}
+* **Período da Viagem:** {{periodo_viagem}}
+* **Quantidade de Passageiros:** {{quantidade_passageiros}}
+* **Regime de Alimentação:** {{regime_alimentar}}
 
-### CLÁUSULA 2ª — DO VALOR E CONDIÇÕES DE PAGAMENTO
-Pelo pacote adquirido, o CONTRATANTE pagará à CONTRATADA o valor total ajustado conforme cronograma de parcelamento e confirmação bancária.
+### CLÁUSULA 2ª — DO VALOR TOTAL E PARCELAMENTO
+Pelo pacote adquirido, o CONTRATANTE pagará à CONTRATADA o valor total de **{{valor_total}}**, distribuído em **{{quantidade_parcelas}}**.
+Vencimento da 1ª parcela: {{data_vencimento}}.
 
 ### CLÁUSULA 3ª — DAS REGRAS DE CANCELAMENTO E REEMBOLSO
-As solicitações de desistência ou alteração obedecerão às diretrizes normativas da EMBRATUR e Código de Defesa do Consumidor, com retenção exclusiva de custos operacionais devidamente comprovados.
+{{politica_cancelamento_turismo}}
+
+As solicitações de desistência ou alteração obedecerão às diretrizes normativas da EMBRATUR e Código de Defesa do Consumidor.
 
 ### ELEIÇÃO DE FORO
 As partes elegem o foro da comarca da sede da CONTRATADA para dirimir qualquer controvérsia decorrente deste contrato.`,
   },
   real_estate_rental: {
-    title: "Contrato de Locação Residencial / Comercial",
+    title: "Imóveis & Temporada — Locação Residencial/Comercial",
     category: "real_estate_rental",
-    description: "Locação de imóveis com regras da Lei do Inquilinato (Lei 8.245/91).",
+    description: "Locação de imóveis e temporada regida pela Lei do Inquilinato (Lei 8.245/91).",
     content: `# CONTRATO DE LOCAÇÃO DE IMÓVEL
 
-**LOCADOR:** [Nome do Proprietário], CPF/CNPJ [Número].
-**LOCATÁRIO:** {{cliente_nome}}, CPF {{cpf}}.
+**LOCADOR:** Proprietário / Administradora Imobiliária Parceira Waesy.
+**LOCATÁRIO:** {{cliente_nome}}, portador(a) do CPF {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
 
 ### CLÁUSULA 1ª — DO IMÓVEL E DESTINAÇÃO
-O imóvel objeto deste contrato destina-se estritamente à finalidade ajustada, com entrega das chaves mediante laudo de vistoria inicial.
+O imóvel objeto deste contrato situa-se no endereço:
+* **Endereço do Imóvel:** {{imovel_endereco}}
+* **Tipo do Imóvel:** {{tipo_imovel}}
+* **Finalidade da Locação:** {{finalidade_locacao}}
 
-### CLÁUSULA 2ª — DO VALOR E REAJUSTE
-O aluguel mensal inicial é devido no dia 10 de cada mês, reajustado anualmente pelo índice IPCA/IBGE.`,
+### CLÁUSULA 2ª — DO VALOR DO ALUGUEL E GARANTIA
+O aluguel mensal é ajustado no valor de **{{valor_total}}**, com vencimento estipulado para todo dia **{{dia_vencimento_aluguel}}** de cada mês.
+* **Garantia / Caução:** {{valor_caucao}}
+* **Prazo de Locação:** {{prazo_locacao_meses}}
+
+### CLÁUSULA 3ª — DA VISTORIA E CONSERVAÇÃO
+O LOCATÁRIO compromete-se a restituir o imóvel em perfeito estado de conservação, conforme laudo de vistoria inicial assinado entre as partes.`,
   },
   vehicle_sale: {
-    title: "Contrato de Compra e Venda de Veículo",
+    title: "Veículos & Frota — Compra e Venda Automotiva",
     category: "vehicle_sale",
     description: "Transferência de veículo automotor, quitação e responsabilidade sobre infrações.",
     content: `# CONTRATO DE COMPRA E VENDA DE VEÍCULO AUTOMOTOR
 
-**VENDEDOR:** [Nome do Vendedor], CPF/CNPJ [Número].
-**COMPRADOR:** {{cliente_nome}}, CPF {{cpf}}.
+**VENDEDOR:** Revenda / Proprietário do Veículo.
+**COMPRADOR:** {{cliente_nome}}, portador(a) do CPF {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
 
-### CLÁUSULA 1ª — DO VEÍCULO ALIENADO
-O Vendedor aliena ao Comprador o veículo em perfeitas condições mecânicas e com documentação livre de ônus ou multas até esta data.`,
+### CLÁUSULA 1ª — DO VEÍCULO OBJETO DA NEGOCIAÇÃO
+O VENDEDOR aliena ao COMPRADOR o veículo automotor com as seguintes especificações:
+* **Marca & Modelo:** {{marca_modelo_veiculo}}
+* **Placa do Veículo:** {{placa_veiculo}}
+* **Ano / Fabricação:** {{ano_fabricacao}}
+* **Chassi:** {{chassi_veiculo}}
+* **Renavam:** {{renavam}}
+* **Quilometragem Registrada:** {{quilometragem_atual}}
+
+### CLÁUSULA 2ª — DO PREÇO E CONDIÇÕES DE PAGAMENTO
+O preço total da transação é de **{{valor_total}}**, quitado em **{{quantidade_parcelas}}**, com 1º vencimento em {{data_vencimento}}.
+
+### CLÁUSULA 3ª — DA TRANSFERÊNCIA E RESPONSABILIDADE CIVIL
+O VENDEDOR responde pelas infrações de trânsito até esta data, passando toda a responsabilidade civil, administrativa e penal ao COMPRADOR a partir da entrega do veículo.`,
+  },
+  fashion_retail: {
+    title: "Moda & Varejo — Mala Condicional / Prova em Casa",
+    category: "fashion_retail",
+    description: "Termo de responsabilidade e custódia temporária de peças para prova domiciliar.",
+    content: `# TERMO DE RESPONSABILIDADE & MALA CONDICIONAL
+
+**LOJA CEDENTE:** Loja de Moda & Vestuário Parceira Waesy.
+**CLIENTE / CONSIGNATÁRIA:** {{cliente_nome}}, portador(a) do CPF {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
+
+### CLÁUSULA 1ª — DAS PEÇAS ENTREGUES EM CONDICIONAL
+A LOJA cede em caráter condicional de prova e apreciação os itens sob a guarda temporária da CLIENTE:
+* **Código da Mala / Sacola:** {{sacola_codigo}}
+* **Quantidade Total de Peças:** {{quantidade_pecas}}
+* **Data Limite para Devolução:** {{data_devolucao_condicional}}
+
+**Relação das Peças Sob Custódia:**
+{{tabela_itens}}
+
+### CLÁUSULA 2ª — DO VALOR TOTAL E CONVERSÃO EM VENDA
+O valor global das peças sob responsabilidade é de **{{valor_total}}**. As peças que não forem restituídas à loja até a data de {{data_devolucao_condicional}} serão convertidas em compra faturada e cobradas pelo meio acordado.
+
+### CLÁUSULA 3ª — DA CUSTÓDIA E CONSERVAÇÃO
+{{termo_responsabilidade_condicional}}`,
+  },
+  pos_retail: {
+    title: "Balcão PDV — Venda Presencial & Carnê",
+    category: "pos_retail",
+    description: "Confissão de dívida para vendas balcão com pagamento a prazo / carnê de loja.",
+    content: `# CONTRATO DE COMPRA BALCÃO & CARNÊ DE PAGAMENTO
+
+**ESTABELECIMENTO CREDOR:** Estabelecimento Comercial Parceiro Waesy.
+**CLIENTE DEVEDOR(A):** {{cliente_nome}}, portador(a) do CPF {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
+
+### CLÁUSULA 1ª — DOS PRODUTOS ADQUIRIDOS
+O COMPRADOR confessa ter adquirido e recebido em perfeitas condições as seguintes mercadorias:
+{{tabela_itens}}
+
+### CLÁUSULA 2ª — DO VALOR TOTAL E PARCELAMENTO EM CARNÊ
+O valor total da compra é de **{{valor_total}}**, parcelado em **{{quantidade_parcelas}}**.
+* **Primeiro Vencimento:** {{data_vencimento}}
+* Em caso de atraso superior a 5 dias, incidirá multa contratual de 2% e juros moratórios de 1% ao mês.
+
+### CLÁUSULA 3ª — DA FORÇA EXECUTIVA
+O presente documento constitui título executivo extrajudicial na forma do Art. 784, inciso III do Código de Processo Civil.`,
+  },
+  legal_retainer: {
+    title: "Jurídico & Advocacia — Honorários Advocatícios",
+    category: "legal_retainer",
+    description: "Contrato de prestação de serviços jurídicos e honorários contratuais e sucumbenciais.",
+    content: `# CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS
+
+**CONTRATADO:** Sociedade de Advogados / Advogado(a) OAB.
+**CONTRATANTE:** {{cliente_nome}}, portador(a) do CPF {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
+
+### CLÁUSULA 1ª — DO OBJETO E PATROCÍNIO DA CAUSA
+O CONTRATADO obriga-se a prestar assistência jurídica e defesa dos interesses da CONTRATANTE no âmbito do:
+* **Número do Processo / Procedimento:** {{numero_processo}}
+* **Vara / Comarca de Tramitação:** {{vara_comarca}}
+
+### CLÁUSULA 2ª — DOS HONORÁRIOS ADVOCATÍCIOS
+Pelos serviços pactuados, a CONTRATANTE pagará ao CONTRATADO:
+* **Honorários Iniciais:** {{honorarios_iniciais}}
+* **Percentual de Êxito:** {{percentual_exito}}
+* **Vencimento Inicial:** {{data_vencimento}}
+
+### CLÁUSULA 3ª — DA INDEPENDÊNCIA TÉCNICA E PRESTAÇÃO DE CONTAS
+A prestação dos serviços é de meio e não de resultado, comprometendo-se o advogado a zelar pelo melhor direito e prestar contas periódicas.`,
   },
   service_agreement: {
-    title: "Contrato de Prestação de Serviços Profissionais",
+    title: "Serviços Gerais — Prestação Técnica & Freelancer",
     category: "service_agreement",
     description: "Prestação de serviços técnicos, escopo, entregáveis e prazos.",
     content: `# CONTRATO DE PRESTAÇÃO DE SERVIÇOS TÉCNICOS
 
-**CONTRATANTE:** {{cliente_nome}}, CPF/CNPJ {{cpf}}.
-**CONTRATADO:** [Nome da Empresa Prestadora], CNPJ [Número].
+**CONTRATADO:** Prestador(a) Especializado(a).
+**CONTRATANTE:** {{cliente_nome}}, portador(a) do CPF/CNPJ {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
 
-### CLÁUSULA 1ª — DO ESCOPO E ENTREGAS
-Constitui objeto deste contrato a execução especializada dos serviços acordados em proposta técnica anexa.`,
+### CLÁUSULA 1ª — DO ESCOPO E ENTREGÁVEIS
+Constitui objeto deste contrato a realização especializada das seguintes atividades:
+* **Escopo Detalhado:** {{escopo_servico}}
+* **Prazo de Conclusão / Entrega:** {{prazo_entrega}}
+
+### CLÁUSULA 2ª — DO PREÇO E FORMA DE PAGAMENTO
+Pela execução dos trabalhos, o CONTRATANTE pagará o valor de **{{valor_total}}**, em **{{quantidade_parcelas}}**, com vencimento inicial em {{data_vencimento}}.
+
+### CLÁUSULA 3ª — DA RESCISÃO E MULTA COMPENSATÓRIA
+{{multa_rescisoria}}`,
+  },
+  medical_aesthetic_consent: {
+    title: "Saúde & Estética — Termo de Consentimento Informado",
+    category: "medical_aesthetic_consent",
+    description: "Termo de consentimento e responsabilidade para clínicas, odontologia e estética.",
+    content: `# TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO & PROCEDIMENTOS ESTÉTICOS
+
+**PROFISSIONAL / CLÍNICA:** Clínica Especializada Waesy Saúde & Estética.
+**PACIENTE / CLIENTE:** {{cliente_nome}}, portador(a) do CPF {{cpf}}, telefone {{telefone}}, residente em {{endereco}}.
+
+### CLÁUSULA 1ª — DO PROCEDIMENTO AUTORIZADO
+O(A) PACIENTE declara haver solicitado e expressamente autorizado a realização do procedimento:
+* **Procedimento:** {{procedimento_estetico}}
+
+### CLÁUSULA 2ª — DO HISTÓRICO DE SAÚDE E RESTRIÇÕES
+* **Declaração de Alergias e Restrições Médicas:** {{restricoes_medicas}}
+* **Termo de Consentimento:** {{termo_consentimento_saude}}
+
+### CLÁUSULA 3ª — DAS RECOMENDAÇÕES PÓS-PROCEDIMENTO
+O(A) PACIENTE declara estar plenamente ciente das recomendações e condutas indispensáveis para a recuperação e eficácia do procedimento realizado.`,
   },
 };
 
@@ -593,14 +716,22 @@ function NovoContratoPage() {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => handleSelectTemplate(key)}
-                    className={`p-3.5 rounded-xl border text-left space-y-1.5 transition-all ${
+                    onClick={() => {
+                      handleSelectTemplate(key);
+                      setActiveTab("whatsapp");
+                    }}
+                    className={`p-4 rounded-xl border text-left space-y-2 transition-all cursor-pointer ${
                       category === t.category
-                        ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20"
+                        ? "bg-primary/5 border-primary/60 ring-2 ring-primary/20 shadow-xs"
                         : "bg-card border-border/70 hover:border-border hover:bg-muted/30"
                     }`}
                   >
-                    <p className="text-xs font-bold text-foreground truncate">{t.title}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-bold text-foreground truncate">{t.title}</p>
+                      <Badge variant="secondary" className="text-[10px] shrink-0 font-medium">
+                        Usar Modelo
+                      </Badge>
+                    </div>
                     <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
                       {t.description}
                     </p>

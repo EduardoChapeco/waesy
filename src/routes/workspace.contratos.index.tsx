@@ -19,6 +19,7 @@ import {
   Sliders,
   Share2,
 } from "lucide-react";
+import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
@@ -51,10 +52,21 @@ export const Route = createFileRoute("/workspace/contratos/")({
 });
 
 const CATEGORY_LABELS: Record<string, string> = {
+  tourism_package: "Turismo & Viagens",
+  real_estate_rental: "Imóveis & Locação",
+  real_estate_sale: "Imóveis & Venda",
+  vehicle_sale: "Veículos & Frota",
+  vehicle_consignation: "Consignação de Veículo",
+  fashion_retail: "Moda & Mala Condicional",
+  pos_retail: "Balcão PDV & Carnê",
+  legal_retainer: "Jurídico & Advocacia",
   service_agreement: "Prestação de Serviços",
-  ndas: "Confidencialidade (NDA)",
+  medical_aesthetic_consent: "Saúde & Estética",
+  employment: "Contrato de Trabalho",
+  general_deal: "Acordo Comercial",
   partnership: "Parceria Comercial",
-  lease: "Locação / Aluguel",
+  ndas: "Confidencialidade (NDA)",
+  lease: "Locação de Bens",
   general: "Acordo Geral",
 };
 
@@ -146,6 +158,16 @@ function ContractsDashboard() {
     setCopiedContractId(contractId);
     toast.success("Link do contrato copiado com sucesso!");
     setTimeout(() => setCopiedContractId(null), 2500);
+  };
+
+  const handleShareWhatsApp = (e: React.MouseEvent, contract: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const link = contract.verification_code
+      ? `${window.location.origin}/verify/document/${contract.verification_code}`
+      : `${window.location.origin}/workspace/contratos/${contract.id}/editor`;
+    const text = `Olá! Segue o link de acesso ao contrato *${contract.title}*: ${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   return (
@@ -275,6 +297,17 @@ function ContractsDashboard() {
                     >
                       {isCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
                       <span className="hidden sm:inline">{isCopied ? "Copiado!" : "Copiar"}</span>
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer gap-1"
+                      onClick={(e) => handleShareWhatsApp(e, contract)}
+                      title="Enviar por WhatsApp"
+                    >
+                      <WhatsappLogo className="size-3.5" weight="fill" />
+                      <span className="hidden sm:inline">WhatsApp</span>
                     </Button>
 
                     {contract.verification_code && (

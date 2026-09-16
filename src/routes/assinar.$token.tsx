@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   FileSignature,
@@ -19,7 +19,11 @@ import {
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
-import { getEnvelopeByToken, signContractEnvelope } from "@/services/contracts.functions";
+import {
+  getEnvelopeByToken,
+  signContractEnvelope,
+  getPublicGovBrSigningConfig,
+} from "@/services/contracts.functions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -28,16 +32,27 @@ import { ContractAuditManifest } from "@/components/contracts/contract-audit-man
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/assinar/$token")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    signed: typeof search.signed === "string" ? search.signed : undefined,
+    error: typeof search.error === "string" ? search.error : undefined,
+  }),
   head: () => ({ meta: [{ title: "Assinatura Eletrônica de Documento | Waesy" }] }),
   loader: async ({ params }) => {
     try {
-      const envelope = await getEnvelopeByToken({ data: params.token });
+      const [envelope, govBrConfig] = await Promise.all([
+        getEnvelopeByToken({ data: params.token }),
+        getPublicGovBrSigningConfig({ data: { signingToken: params.token } }).catch(() => ({
+          isGovBrEnabled: false,
+          authUrl: null,
+          environment: null,
+        })),
+      ]);
       if (!envelope) {
-        return { envelope: null, error: "Link de assinatura inválido ou expirado." };
+        return { envelope: null, govBrConfig: null, error: "Link de assinatura inválido ou expirado." };
       }
-      return { envelope, error: null };
+      return { envelope, govBrConfig, error: null };
     } catch {
-      return { envelope: null, error: "Link de assinatura inválido ou expirado." };
+      return { envelope: null, govBrConfig: null, error: "Link de assinatura inválido ou expirado." };
     }
   },
   component: SignContractPage,
@@ -45,10 +60,19 @@ export const Route = createFileRoute("/assinar/$token")({
 
 function SignContractPage() {
   const navigate = useNavigate();
-  const { envelope, error } = ((Route.useLoaderData?.() as any) || {});
+  const search = Route.useSearch();
+  const { envelope, govBrConfig, error } = ((Route.useLoaderData?.() as any) || {});
   const [consent, setConsent] = useState(false);
   const [signatureImage, setSignatureImage] = useState("");
-  const [isSignedLocal, setIsSignedLocal] = useState(envelope?.status === "signed");
+  const [isSignedLocal, setIsSignedLocal] = useState(
+    envelope?.status === "signed" || search?.signed === "true",
+  );
+
+  useEffect(() => {
+    if (search?.error) {
+      toast.error(`Atenção: Houve um problema na validação com o GOV.BR (${search.error}). Utilize o traçado manual.`);
+    }
+  }, [search?.error]);
 
   // Biometria Facial
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -364,53 +388,50 @@ function SignContractPage() {
 
             {/* Pad de Assinatura Tátil & Consentimento Legal */}
             <div className="border border-primary/30 bg-card rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm">
-              {/* Botão de Assinatura Oficial GOV.BR */}
-              <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                      <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
-                      Assinatura com Conta GOV.BR
-                    </span>
-                    <Badge variant="outline" className="text-[10px] border-blue-500/30 text-blue-600 bg-blue-500/10">
-                      Nível Prata / Ouro
-                    </Badge>
+              {/* Card de Destaque: Assinatura Oficial GOV.BR (Exibido estritamente quando a API estiver configurada e ativa no Hub) */}
+              {govBrConfig?.isGovBrEnabled && govBrConfig?.authUrl && (
+                <>
+                  <div className="p-4 sm:p-5 rounded-2xl border border-blue-500/30 bg-blue-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                          <ShieldCheck className="size-4 text-blue-600 dark:text-blue-400" />
+                          Assinatura com Conta GOV.BR
+                        </span>
+                        <Badge variant="outline" className="text-[10px] font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10">
+                          Nível Prata / Ouro
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Autenticação eletrônica avançada com presunção legal e fé pública expressa pela Lei Federal nº 14.063/2020.
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (!consent) {
+                          toast.error("Marque o consentimento abaixo antes de prosseguir com o GOV.BR.");
+                          return;
+                        }
+                        window.location.href = govBrConfig.authUrl;
+                      }}
+                      disabled={!consent}
+                      className="w-full sm:w-auto rounded-xl text-xs font-bold h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white shrink-0 min-h-[44px] cursor-pointer shadow-xs gap-2"
+                    >
+                      <ExternalLink className="size-4" />
+                      <span>Assinar com GOV.BR</span>
+                    </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Validação com presunção legal expressa pela Lei nº 14.063/2020.
-                  </p>
-                </div>
 
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (!consent) {
-                      toast.error("Marque o consentimento abaixo antes de assinar.");
-                      return;
-                    }
-                    signMutation.mutate({
-                      data: {
-                        signingToken: envelope.signing_token,
-                        consent: true,
-                        signatureImageBase64: signatureImage || undefined,
-                        faceImageUrl: faceImageUrl || undefined,
-                        userAgent: "Gov.br Cidadão (Nível Prata/Ouro)",
-                      },
-                    });
-                  }}
-                  disabled={!consent || signMutation.isPending}
-                  className="rounded-xl text-xs font-bold h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white shrink-0 min-h-[44px] sm:min-h-[36px]"
-                >
-                  Assinar com GOV.BR
-                </Button>
-              </div>
-
-              <div className="relative flex items-center justify-center my-2">
-                <div className="border-t border-border/70 w-full" />
-                <span className="bg-card px-3 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  ou desenhe sua assinatura no celular
-                </span>
-              </div>
+                  <div className="relative flex items-center justify-center my-2">
+                    <div className="border-t border-border/70 w-full" />
+                    <span className="bg-card px-3 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                      ou desenhe sua assinatura no celular
+                    </span>
+                  </div>
+                </>
+              )}
 
               {/* Canvas Interativo */}
               <SignatureCanvasPad onSave={setSignatureImage} />
