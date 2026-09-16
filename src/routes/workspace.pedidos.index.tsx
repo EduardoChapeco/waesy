@@ -33,6 +33,7 @@ import { getNicheSemantics } from "@/lib/niche-semantics";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
+import { generateContractFromOrder } from "@/services/contracts.functions";
 
 export const Route = createFileRoute("/workspace/pedidos/")({
  head: () => ({ meta: [{ title: "Emissões & Vendas | Workspace Waesy" }] }),
@@ -238,7 +239,27 @@ function AdminOrdersPage() {
  }
  };
 
- // Grupos de pedidos para Kanban de Turismo e Cozinha
+   const handleGenerateContract = async (orderId: string) => {
+    setIsProcessing(true);
+    try {
+      toast.loading("Gerando contrato do pedido...", { id: "order-contract" });
+      const res = await generateContractFromOrder({ data: { orderId } });
+      toast.success("Contrato gerado com sucesso!", { id: "order-contract" });
+      if (res.whatsappLink) {
+        window.open(res.whatsappLink, "_blank");
+      }
+      router.navigate({
+        to: "/workspace/contratos/$id/editor",
+        params: { id: res.contract.id },
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao gerar contrato do pedido.", { id: "order-contract" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Grupos de pedidos para Kanban de Turismo e Cozinha
  const newOrders = orders.filter(
  (o) => o.status === "awaiting_payment" || o.status === "payment_processing",
  );
@@ -1268,9 +1289,13 @@ function AdminOrdersPage() {
  </Link>
  </DropdownMenuItem>
  <DropdownMenuItem onClick={() => setSelectedShippingLabelOrderId(order.id)}>
- <Printer className="size-3.5 mr-2 text-primary" />
- {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
- </DropdownMenuItem>
+									<Printer className="size-3.5 mr-2 text-primary" />
+									{isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => handleGenerateContract(order.id)}>
+									<FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
+									Gerar Contrato & Assinatura Digital
+								</DropdownMenuItem>
  <DropdownMenuSeparator />
 
  {order.status === "awaiting_payment" && (
