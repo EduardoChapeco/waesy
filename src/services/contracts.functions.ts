@@ -557,7 +557,7 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
 
     // Tenta por verification_code ou por hash_sha256
     let query = supabase.from("contracts").select(`
-      id, title, category, status, verification_code, created_at, dispatch_settings, observers,
+      id, title, category, status, verification_code, created_at, dispatch_settings, observers, is_settled, discharge_hash_sha256, discharge_issued_at,
       creator:creator_id (id, full_name),
       versions:contract_versions (
         version_number, hash_sha256, sealed_at, is_sealed, signature_fields, page_count,
@@ -610,6 +610,9 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
             status: tourismContract.status === "signed" ? "sealed" : tourismContract.status,
             verificationCode: meta.certificate_serial || tourismContract.verification_code,
             createdAt: tourismContract.created_at,
+            isSettled: Boolean(tourismContract.is_settled),
+            dischargeHash: tourismContract.discharge_hash_sha256 || null,
+            dischargeIssuedAt: tourismContract.discharge_issued_at || null,
             sealedVersion: {
               version_number: tourismContract.current_version || 1,
               hash_sha256: meta.content_hash || null,
@@ -643,6 +646,9 @@ export const verifyDocumentPublic = createServerFn({ method: "GET" })
       dispatchSettings: contract.dispatch_settings,
       observers: contract.observers,
       sealedVersion: (contract.versions as any[])?.find((v) => v.is_sealed) || null,
+      isSettled: Boolean(contract.is_settled),
+      dischargeHash: contract.discharge_hash_sha256 || null,
+      dischargeIssuedAt: contract.discharge_issued_at || null,
     };
   });
 

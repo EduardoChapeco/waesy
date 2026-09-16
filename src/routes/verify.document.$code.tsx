@@ -109,6 +109,41 @@ function DocumentVerificationPage() {
           </div>
         </div>
 
+        {/* Banner de Quitação Plena (Se Aplicável) */}
+        {result.isSettled && (
+          <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-2xl p-6 space-y-3 text-center sm:text-left flex flex-col sm:flex-row items-center gap-5 shadow-2xs">
+            <div className="size-14 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+              <CheckCircle2 className="size-8" />
+            </div>
+            <div className="space-y-1 flex-1">
+              <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+                <h2 className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                  Termo de Quitação Plena & Irrevogável (Quitado ✓)
+                </h2>
+                <Badge className="bg-emerald-600 text-white font-mono text-[10px]">
+                  OBRIGAÇÃO EXTINTA
+                </Badge>
+              </div>
+              <p className="text-xs text-foreground/80 leading-relaxed">
+                Todas as parcelas e contraprestações financeiras deste contrato foram integralmente liquidadas. O credor confere quitação plena, geral e irrevogável quanto ao valor contratado.
+              </p>
+              {result.dischargeIssuedAt && (
+                <p className="text-[11px] text-muted-foreground pt-1 flex items-center gap-1.5 justify-center sm:justify-start">
+                  <Calendar className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Data da Baixa de Quitação: {formatDate(result.dischargeIssuedAt)}
+                </p>
+              )}
+              {result.dischargeHash && (
+                <div className="pt-1">
+                  <p className="text-[10px] text-muted-foreground font-mono break-all bg-emerald-500/5 p-2 rounded-lg border border-emerald-500/20">
+                    Hash SHA-256 da Quitação: {result.dischargeHash}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Protocolo Completo com SHA-256 e QR Code */}
         <ContractAuditManifest
           documentTitle={result.title}
@@ -118,6 +153,9 @@ function DocumentVerificationPage() {
           sealedAt={sealed?.sealed_at || result.createdAt}
           signers={signers}
           observers={result.observers || []}
+          isSettled={result.isSettled}
+          dischargeHash={result.dischargeHash}
+          dischargeIssuedAt={result.dischargeIssuedAt}
         />
 
         {/* Ações Inferiores */}

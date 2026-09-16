@@ -27,6 +27,7 @@ import {
   Percent,
   ExternalLink,
   FileCheck,
+  MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
@@ -591,32 +592,58 @@ function ClientCarnesPage() {
             </div>
           </div>
 
-          {/* Chave PIX da Loja */}
+          {/* Chave PIX da Loja & Notificação Rápida */}
           {selectedCarne?.store?.phone && (
-            <div className="p-3 rounded-xl border border-dashed border-border bg-card space-y-1.5">
+            <div className="p-3.5 rounded-2xl border border-dashed border-border bg-card space-y-2.5">
               <span className="text-[11px] font-medium text-muted-foreground uppercase">
                 Chave PIX da Loja (Telefone)
               </span>
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-sm font-semibold text-foreground">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                <span className="font-mono text-sm font-semibold text-foreground bg-muted/40 p-2 rounded-xl border border-border/60">
                   {selectedCarne.store.phone}
                 </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-2.5 text-xs rounded-lg"
-                  onClick={() => handleCopyPix(selectedCarne.store.phone)}
-                >
-                  {copiedPix ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 mr-1 text-emerald-500" /> Copiado
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5 mr-1" /> Copiar PIX
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-10 sm:h-9 px-3 text-xs rounded-xl font-medium cursor-pointer flex-1 sm:flex-initial"
+                    onClick={() => handleCopyPix(selectedCarne.store.phone)}
+                  >
+                    {copiedPix ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-500" /> Chave Copiada
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 mr-1.5" /> Copiar PIX
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-10 sm:h-9 px-3 text-xs rounded-xl font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border border-emerald-500/20 cursor-pointer flex-1 sm:flex-initial"
+                    onClick={() => {
+                      const phone = (selectedCarne.store.phone || "").replace(/\D/g, "");
+                      const amount = formatMoney(
+                        selectedInstallment?.final_amount_cents ||
+                          selectedInstallment?.original_amount_cents ||
+                          selectedInstallment?.amount_cents ||
+                          0,
+                      );
+                      const msg = encodeURIComponent(
+                        `Olá! Estou enviando o comprovante de pagamento da parcela ${selectedInstallment?.installment_number} do carnê "${selectedCarne.title}" no valor de ${amount}.`,
+                      );
+                      window.open(`https://wa.me/55${phone}?text=${msg}`, "_blank");
+                    }}
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                    Avisar no WhatsApp
+                  </Button>
+                </div>
               </div>
             </div>
           )}

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -66,6 +66,7 @@ import {
   type StoreCondicionalDTO,
   type CondicionalItemDTO,
 } from "@/services/condicionais.functions";
+import { createContract } from "@/services/contracts.functions";
 import {
   Dialog,
   DialogContent,
@@ -99,6 +100,7 @@ function ReceivablesDashboard() {
     condicionais: initialCondicionais,
   } = ((Route.useLoaderData?.() as any) || {});
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [activeFilter, setActiveFilter] = useState<
     "all" | "due_soon" | "late" | "pending_conciliation" | "settled"
@@ -211,6 +213,64 @@ function ReceivablesDashboard() {
         priceCents: Math.round(it.priceReais * 100),
       })),
     });
+  };
+
+  const handleGenerateCondicionalContract = async (cond: any) => {
+    try {
+      toast.loading("Gerando termo de responsabilidade...", { id: "draft-cond" });
+      const totalCents = (cond.items || []).reduce(
+        (acc: number, it: any) => acc + (it.priceCents || it.price_cents || 0),
+        0,
+      );
+      const itemsListText = (cond.items || [])
+        .map(
+          (it: any, i: number) =>
+            `${i + 1}. ${it.name || "Peça"} (Tam: ${it.size || "M"}) — ${formatMoney(it.priceCents || it.price_cents || 0)}`,
+        )
+        .join("\n");
+
+      const termContent = `TERMO DE CONSIGNAÇÃO & RESPONSABILIDADE — MALA CONDICIONAL
+CÓDIGO DA MALA: #${cond.id.substring(0, 8).toUpperCase()}
+
+1. CLIENTE (CONSIGNATÁRIO):
+Nome: ${cond.customerName}
+Telefone: ${cond.customerPhone || "Não informado"}
+
+2. PEÇAS ENTREGUES PARA PROVA EM DOMICÍLIO:
+${itemsListText}
+
+VALOR TOTAL ESTIMADO DAS PEÇAS: ${formatMoney(totalCents)}
+PRAZO LIMITE PARA DEVOLUÇÃO: ${formatDate(cond.returnDueDate)}
+
+3. DECLARAÇÃO DE RESPONSABILIDADE:
+O Consignatário declara haver recebido as peças acima discriminadas em perfeitas condições, assumindo integral responsabilidade pela guarda, conservação e integridade dos itens até sua efetiva devolução.
+As peças não devolvidas no prazo acordado serão consideradas adquiridas pelo Consignatário e lançadas em débito ou carnê.
+
+Data de Emissão: ${new Date().toLocaleDateString("pt-BR")}
+
+____________________________________
+Assinatura do Cliente (Consignatário)
+
+____________________________________
+Assinatura da Loja (Consignante)`;
+
+      const res = await createContract({
+        data: {
+          title: `Mala Condicional #${cond.id.substring(0, 8).toUpperCase()} - ${cond.customerName}`,
+          category: "service_agreement",
+          contentMarkdown: termContent,
+          pageCount: 1,
+        },
+      });
+
+      toast.success("Termo criado com sucesso!", { id: "draft-cond" });
+      navigate({
+        to: "/workspace/contratos/$id/editor",
+        params: { id: res.contract.id },
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao gerar termo da mala condicional.", { id: "draft-cond" });
+    }
   };
 
   // Queries
@@ -368,6 +428,29 @@ function ReceivablesDashboard() {
         reason: rejectReason,
       },
     });
+  };
+
+  const handleSendWhatsAppReminder = (carne: any, inst: any) => {
+    const phone = (carne.debtor?.phone || "").replace(/\D/g, "");
+    if (!phone) {
+      toast.error("Cliente sem telefone cadastrado.");
+      return;
+    }
+    const isLate = inst.status === "late" || (inst.late_days && inst.late_days > 0);
+    const amountStr = formatMoney(inst.final_amount_cents || inst.amount_cents || 0);
+    const dueDateStr = formatDate(inst.due_date);
+    const clientName = carne.debtor?.full_name || carne.debtor?.name || "Cliente";
+
+    let message = "";
+    if (isLate) {
+      message = `Olá, ${clientName}! Passando para lembrar que a parcela ${inst.installment_number}/${carne.installments_count} de ${amountStr} venceu em ${dueDateStr}. Caso precise do código PIX para regularização, é só nos responder por aqui!`;
+    } else {
+      message = `Olá, ${clientName}! Lembrando sobre o vencimento da parcela ${inst.installment_number}/${carne.installments_count} de ${amountStr} no dia ${dueDateStr}. Ficamos à disposição!`;
+    }
+
+    const encoded = encodeURIComponent(message);
+    window.open(`https://wa.me/55${phone}?text=${encoded}`, "_blank");
+    toast.success("Abrindo WhatsApp para envio do lembrete...");
   };
 
   const handleCreateCarneSubmit = (e: React.FormEvent) => {
@@ -825,25 +908,40 @@ function ReceivablesDashboard() {
                           </div>
 
                           {!isPaid && (
-                            <Button
-                              size="sm"
-                              variant={isPending ? "default" : "outline"}
-                              className={cn(
-                                "h-11 sm:h-8 px-3.5 text-xs rounded-xl font-medium cursor-pointer shadow-2xs",
-                                isPending
-                                  ? "bg-amber-600 hover:bg-amber-700 text-white"
-                                  : "text-foreground",
+                            <div className="flex items-center gap-2">
+                              {carne.debtor?.phone && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-11 sm:h-8 px-2.5 text-xs rounded-xl font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                                  onClick={() => handleSendWhatsAppReminder(carne, inst)}
+                                  title="Enviar lembrete via WhatsApp"
+                                >
+                                  <MessageSquare className="size-3.5 mr-1" />
+                                  <span className="hidden sm:inline">WhatsApp</span>
+                                </Button>
                               )}
-                              onClick={() => handleOpenConciliation(carne, inst)}
-                            >
-                              {isPending ? (
-                                <>
-                                  <Eye className="h-3.5 w-3.5 mr-1" /> Analisar Comprovante
-                                </>
-                              ) : (
-                                <>Conciliar / Renegociar</>
-                              )}
-                            </Button>
+
+                              <Button
+                                size="sm"
+                                variant={isPending ? "default" : "outline"}
+                                className={cn(
+                                  "h-11 sm:h-8 px-3.5 text-xs rounded-xl font-medium cursor-pointer shadow-2xs",
+                                  isPending
+                                    ? "bg-amber-600 hover:bg-amber-700 text-white"
+                                    : "text-foreground",
+                                )}
+                                onClick={() => handleOpenConciliation(carne, inst)}
+                              >
+                                {isPending ? (
+                                  <>
+                                    <Eye className="h-3.5 w-3.5 mr-1" /> Analisar Comprovante
+                                  </>
+                                ) : (
+                                  <>Conciliar / Renegociar</>
+                                )}
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1044,6 +1142,17 @@ function ReceivablesDashboard() {
                             <MessageSquare className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-emerald-500" /> WhatsApp
                           </a>
                         )}
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-11 sm:h-8 px-3 text-xs rounded-xl font-medium border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
+                          onClick={() => handleGenerateCondicionalContract(cond)}
+                          title="Gerar Termo de Responsabilidade com Assinatura Digital"
+                        >
+                          <FileText className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1" />
+                          <span className="hidden sm:inline">Termo /</span> Contrato
+                        </Button>
 
                         {!isClosed && (
                           <Button

@@ -39,6 +39,9 @@ interface ContractAuditManifestProps {
   observers?: Array<{ name: string; email: string; role?: string }>;
   appOrigin?: string;
   className?: string;
+  isSettled?: boolean;
+  dischargeHash?: string | null;
+  dischargeIssuedAt?: string | null;
 }
 
 export function ContractAuditManifest({
@@ -51,6 +54,9 @@ export function ContractAuditManifest({
   observers = [],
   appOrigin = "https://waesy.com",
   className = "",
+  isSettled = false,
+  dischargeHash,
+  dischargeIssuedAt,
 }: ContractAuditManifestProps) {
   const verifyUrl = `${appOrigin}/verify/document/${verificationCode}`;
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(
@@ -82,6 +88,38 @@ export function ContractAuditManifest({
           Assinatura Avançada · Lei 14.063/2020
         </Badge>
       </div>
+
+      {/* Selo e Certificado Oficial de Quitação (Se Aplicável) */}
+      {isSettled && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="font-bold text-sm text-emerald-800 dark:text-emerald-300">
+                Termo de Quitação e Extinção de Obrigações Financeiras
+              </span>
+            </div>
+            <Badge className="bg-emerald-600 text-white font-mono text-[10px] px-2 py-0.5">
+              QUITADO · SEM PENDÊNCIAS
+            </Badge>
+          </div>
+          <p className="text-xs text-foreground/80 leading-relaxed">
+            Certificamos que as obrigações financeiras pactuadas neste instrumento foram integralmente adimplidas, conferindo-se quitação plena, geral, irrevogável e irretratável.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+            {dischargeIssuedAt && (
+              <p className="text-muted-foreground">
+                <strong>Data de Liquidação:</strong> {formatDate(dischargeIssuedAt)}
+              </p>
+            )}
+            {dischargeHash && (
+              <p className="text-muted-foreground font-mono truncate" title={dischargeHash}>
+                <strong>Hash de Quitação:</strong> {dischargeHash.substring(0, 24)}...
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Metadados de Autenticidade & Hash SHA-256 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs bg-muted/30 p-4 rounded-xl border border-border/60">
