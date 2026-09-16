@@ -1233,9 +1233,9 @@ function CommunityHomePage() {
                               entityTitle: item.title,
                             })
                           }
-                          className="h-8 px-2.5 rounded-xl text-xs gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                          className="h-10 sm:h-8 px-3 rounded-xl text-xs gap-1.5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
                         >
-                          <WhatsappLogo size={14} weight="bold" />
+                          <WhatsappLogo size={15} weight="bold" />
                           <span>WhatsApp</span>
                         </Button>
                       )}
@@ -1243,11 +1243,11 @@ function CommunityHomePage() {
                       <Button
                         asChild
                         size="sm"
-                        className="h-8 px-3 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer"
+                        className="h-10 sm:h-8 px-3.5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer"
                       >
                         <Link to={item.to as any}>
                           <span>Ver</span>
-                          <ArrowRight size={13} className="ml-1" />
+                          <ArrowRight size={14} className="ml-1" />
                         </Link>
                       </Button>
                     </div>

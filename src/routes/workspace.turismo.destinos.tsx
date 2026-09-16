@@ -746,12 +746,12 @@ export default function WorkspaceDestinationsPage() {
  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
  <div className="space-y-1.5">
  <div className="flex items-center justify-between">
- <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-1">
+ <h3 className="text-base font-bold text-foreground leading-tight line-clamp-1">
  {dest.name}
  </h3>
  </div>
 
- <p className="text-[11px] text-muted-foreground line-clamp-1 flex items-center gap-1 font-medium">
+ <p className="text-xs text-muted-foreground line-clamp-1 flex items-center gap-1 font-medium">
  <MapPin className="size-3 text-primary shrink-0" />
  <span>{dest.city ? `${dest.city}, ${dest.state}` : dest.state}</span>
  </p>
@@ -785,14 +785,14 @@ export default function WorkspaceDestinationsPage() {
  </div>
 
  {/* Ações */}
- <div className="pt-2.5 border-t border-border/50 flex items-center justify-between">
+ <div className="pt-2.5 border-t border-border/50 flex items-center justify-between gap-1">
  <div className="flex items-center gap-1">
  <Button
  type="button"
  size="sm"
  variant="ghost"
  onClick={() => handleOpenEdit(dest)}
- className="rounded-xl text-xs gap-1.5 h-8 font-bold"
+ className="rounded-xl text-xs gap-1.5 h-10 sm:h-8 px-2.5 font-bold cursor-pointer"
  >
  <Edit2 className="size-3.5" />
  <span>Editar Studio</span>
@@ -803,7 +803,7 @@ export default function WorkspaceDestinationsPage() {
  size="sm"
  variant="ghost"
  onClick={() => setPreviewModalDest(dest)}
- className="rounded-xl text-xs gap-1 h-8 font-semibold text-muted-foreground hover:text-foreground"
+ className="rounded-xl text-xs gap-1 h-10 sm:h-8 px-2 font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
  title="Visualizar Página Completa do Destino"
  >
  <Eye className="size-3.5" />
@@ -820,7 +820,8 @@ export default function WorkspaceDestinationsPage() {
  deleteMut.mutate(dest.id);
  }
  }}
- className="size-8 text-destructive hover:bg-destructive/10 rounded-xl"
+ className="size-10 sm:size-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+ title="Remover Destino"
  >
  <Trash2 className="size-3.5" />
  </Button>

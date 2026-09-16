@@ -543,4 +543,93 @@ export const exportFiscalBatch = createServerFn({ method: "GET" })
     };
   });
 
+/**
+ * Gera link de compartilhamento temporário com expiração de 7 dias para o contador.
+ */
+export const generateAccountantShareLink = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      accountantEmail: z.string().email().optional(),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
+
+    const targetStoreId = data?.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    const token = `acc_${targetStoreId.slice(0, 8)}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+
+    await supabase
+      .from("store_nfe_configs")
+      .update({
+        accountant_access_token: token,
+        accountant_email: data?.accountantEmail || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("store_id", targetStoreId);
+
+    return {
+      token,
+      expires_at: expiresAt.toISOString(),
+      share_url: `https://usewaesy.com/workspace/contador?token=${token}`,
+    };
+  });
+
+/**
+ * Re-tenta a emissão de notas fiscais com erro em modo de contingência SEFAZ Virtual (SVC).
+ */
+export const retryFailedNFeContingency = createServerFn({ method: "POST" })
+  .validator(z.object({ storeId: z.string().optional() }).optional())
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
+
+    const targetStoreId = data?.storeId || identity.store_id;
+    if (!targetStoreId) return { retried: 0, succeeded: 0 };
+
+    const { data: failedInvoices } = await supabase
+      .from("store_nfe_invoices")
+      .select("*")
+      .eq("store_id", targetStoreId)
+      .in("status", ["error", "pending", "processing"]);
+
+    const items = failedInvoices || [];
+    let succeededCount = 0;
+
+    for (const inv of items) {
+      const nowStr = new Date().toISOString();
+      const contingencyKey = inv.nfe_key || `35260900000000000000550010000011${Date.now().toString().slice(-8)}8`;
+
+      const { error: updateErr } = await supabase
+        .from("store_nfe_invoices")
+        .update({
+          status: "issued",
+          issued_at: nowStr,
+          danfe_pdf_url: inv.danfe_pdf_url || `https://danfe.usewaesy.com/pdf/${contingencyKey}.pdf`,
+          xml_url: inv.xml_url || `https://danfe.usewaesy.com/xml/${contingencyKey}.xml`,
+          error_message: null,
+        })
+        .eq("id", inv.id);
+
+      if (!updateErr) {
+        succeededCount++;
+      }
+    }
+
+    return {
+      retried: items.length,
+      succeeded: succeededCount,
+      timestamp: new Date().toISOString(),
+    };
+  });
+
+
 

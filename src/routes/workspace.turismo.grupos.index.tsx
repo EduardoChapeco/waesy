@@ -169,7 +169,7 @@ export default function WorkspaceGroupToursIndexPage() {
       toolDescription="Gestão de excursões rodoviárias, controle de lotação de assentos em mapa 2D, check-in de embarque e rooming list de passageiros."
       store={store}
     >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
         <WorkspaceCanonicalToolbar
           tabs={TABS}
@@ -195,16 +195,16 @@ export default function WorkspaceGroupToursIndexPage() {
 
         {/* ── 2. GRID DE VIAGENS EM GRUPO ── */}
         {filteredTours.length === 0 ? (
-          <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-dashed border-border/70 p-8">
+          <div className="py-16 sm:py-20 text-center space-y-3 bg-card rounded-2xl border border-dashed border-border/70 p-6 sm:p-8">
             <Bus className="size-12 mx-auto text-muted-foreground/40" />
             <h3 className="text-sm font-bold text-foreground">Nenhuma excursão encontrada</h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               Utilize o Studio de Excursões para cadastrar sua viagem com roteiro, ônibus virtual da frota e pontos de embarque.
             </p>
             <Button
-              size="sm"
+              size="default"
               onClick={() => setIsNewSheetOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-9 mt-2 cursor-pointer shadow-xs"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-2 mt-2 cursor-pointer shadow-xs"
             >
               <Plus className="size-4" />
               <span>Criar Primeira Excursão</span>
@@ -317,29 +317,28 @@ export default function WorkspaceGroupToursIndexPage() {
                     <div className="pt-4 border-t border-border/60 flex items-center justify-between gap-2">
                       <Button
                         asChild
-                        size="sm"
                         variant="default"
-                        className="rounded-xl text-xs font-bold gap-1.5 flex-1 cursor-pointer shadow-xs"
+                        className="rounded-xl text-xs font-bold gap-2 h-11 sm:h-9 px-4 flex-1 cursor-pointer shadow-xs"
                       >
                         <Link to={`/workspace/turismo/grupos/${t.id}` as any}>
-                          <UserCheck className="size-3.5" />
+                          <UserCheck className="size-4 sm:size-3.5" />
                           <span>Gestão & Poltronas</span>
                         </Link>
                       </Button>
 
                       <Button
                         type="button"
+                        size="icon"
                         variant="ghost"
-                        size="sm"
                         onClick={() => {
                           if (confirm(`Deseja excluir a excursão "${t.title}"?`)) {
                             deleteMutation.mutate(t.id);
                           }
                         }}
-                        className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive"
+                        className="size-11 sm:size-8 p-0 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
                         title="Excluir excursão"
                       >
-                        <Trash className="size-3.5" />
+                        <Trash className="size-4 sm:size-3.5" />
                       </Button>
                     </div>
                   </div>

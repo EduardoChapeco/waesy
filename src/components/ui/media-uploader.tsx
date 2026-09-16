@@ -373,24 +373,26 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  )}
 
  {/* Botões de Ação sobre o Card */}
- <div className="absolute top-1.5 right-1.5 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+ <div className="absolute top-1.5 right-1.5 flex items-center gap-1.5 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
  {item.type === "image" && enableCrop && (
  <button
  type="button"
  onClick={() => handleOpenRecrop(idx)}
  title="Ajustar e Recortar"
- className="p-1 rounded-lg bg-black/70 text-white hover:bg-primary hover:text-white transition-colors cursor-pointer"
+ className="size-8 sm:size-7 flex items-center justify-center rounded-xl bg-black/75 backdrop-blur-xs text-white hover:bg-primary hover:text-white transition-colors cursor-pointer shadow-xs"
+ aria-label="Ajustar e Recortar Imagem"
  >
- <Crop className="size-3.5" />
+ <Crop className="size-4" />
  </button>
  )}
  <button
  type="button"
  onClick={() => removeMedia(idx)}
  title="Remover"
- className="p-1 rounded-lg bg-black/70 text-white hover:bg-destructive hover:text-white transition-colors cursor-pointer"
+ className="size-8 sm:size-7 flex items-center justify-center rounded-xl bg-black/75 backdrop-blur-xs text-white hover:bg-destructive hover:text-white transition-colors cursor-pointer shadow-xs"
+ aria-label="Remover Mídia"
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  </button>
  </div>
 

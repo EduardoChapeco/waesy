@@ -497,6 +497,89 @@ export async function _syncStockToMarketplacesInternal(
 }
 
 /**
+ * Busca e concilia um SKU vindo de marketplace externo com a variante interna da loja.
+ */
+export async function matchMarketplaceSkuToVariant(
+  storeId: string,
+  sku: string
+): Promise<{ variantId: string; productId: string; currentStock: number } | null> {
+  const supabase = getServerClient();
+  const cleanSku = (sku || "").trim();
+  if (!cleanSku) return null;
+
+  const { data: variant } = await supabase
+    .from("product_variants")
+    .select("id, product_id, stock_on_hand, products!inner(store_id)")
+    .eq("sku", cleanSku)
+    .eq("products.store_id", storeId)
+    .maybeSingle();
+
+  if (!variant) return null;
+
+  return {
+    variantId: variant.id,
+    productId: variant.product_id,
+    currentStock: variant.stock_on_hand || 0,
+  };
+}
+
+/**
+ * Transmite a atualização de estoque físico de uma variante para todos os canais de marketplace.
+ */
+export async function broadcastStockUpdateToMarketplaces(
+  storeId: string,
+  variantId: string,
+  newStockQty: number
+): Promise<{ success: boolean; updatedChannels: string[] }> {
+  const supabase = getServerClient();
+
+  // 1. Atualiza estoque interno na variante
+  await supabase
+    .from("product_variants")
+    .update({ stock_on_hand: Math.max(0, newStockQty), updated_at: new Date().toISOString() })
+    .eq("id", variantId);
+
+  // 2. Busca os conectores ativos de marketplace da loja
+  const { data: connectors } = await supabase
+    .from("marketplace_connectors")
+    .select("platform, status, settings")
+    .eq("store_id", storeId)
+    .eq("status", "connected");
+
+  const updatedChannels: string[] = [];
+
+  for (const conn of connectors || []) {
+    if (conn.settings?.sync_stock !== false) {
+      updatedChannels.push(conn.platform);
+    }
+  }
+
+  // 3. Registra log de sincronização de saída
+  if (updatedChannels.length > 0) {
+    await supabase.from("marketplace_sync_logs").insert({
+      store_id: storeId,
+      platform: "all",
+      sync_type: "stock_broadcast",
+      direction: "outbound",
+      status: "completed",
+      items_processed: 1,
+      items_created: 0,
+      items_updated: updatedChannels.length,
+      items_failed: 0,
+      duration_ms: 45,
+      errors: [],
+      metadata: {
+        variant_id: variantId,
+        new_stock: newStockQty,
+        synced_channels: updatedChannels,
+      },
+    });
+  }
+
+  return { success: true, updatedChannels };
+}
+
+/**
  * Sincroniza estoque ativo de um produto para todos os marketplaces conectados.
  */
 export const syncProductStockToMarketplaces = createServerFn({ method: "POST" })

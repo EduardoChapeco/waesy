@@ -379,14 +379,19 @@ function AdminProductsPage() {
  toast.success("Catálogo exportado em arquivo JSON.");
  };
 
- const ProductActionsMenu = ({ product }: { product: AdminProductRow }) => (
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" aria-label="Ações do item">
- <MoreVertical className="size-4 text-muted-foreground" />
- </Button>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="w-48">
+  const ProductActionsMenu = ({ product }: { product: AdminProductRow }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Ações do item"
+          className="size-11 rounded-xl hover:bg-muted cursor-pointer shrink-0"
+        >
+          <MoreVertical className="size-5 text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52 p-1.5 rounded-xl">
  <DropdownMenuLabel className="text-xs">Ações Comerciais</DropdownMenuLabel>
  <DropdownMenuItem asChild>
  <Link to={`/workspace/catalogo/produtos/${product.id}` as never}>
@@ -571,7 +576,10 @@ function AdminProductsPage() {
  </p>
  </div>
  {statusFilter === "active" && (
- <Button asChild size="sm" className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground ">
+ <Button
+ asChild
+ className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+ >
  <Link to="/workspace/catalogo/produtos/novo">
  <Plus className="size-4" />
  <span>{semantics.newItemAction}</span>
@@ -580,13 +588,9 @@ function AdminProductsPage() {
  )}
  </div>
  ) : (
- <Surface
- variant="default"
- padding="none"
- className="flex flex-col overflow-hidden"
- >
- {/* VISÃO MOBILE: Cartões (Cards) */}
- <div className="md:hidden flex flex-col divide-y divide-border bg-surface-paper">
+ <div>
+ {/* VISÃO MOBILE: Lista Espaçosa de Cartões (Zero-Aperto & Tipografia Ampla) */}
+ <div className="md:hidden space-y-3">
  {filteredProducts.map((product) => {
  const cover = product.product_media?.[0]?.url;
  const isSelected = selectedIds.includes(product.id);
@@ -595,35 +599,44 @@ function AdminProductsPage() {
  return (
  <div
  key={product.id}
- className={`flex flex-col p-4 ${isSelected ? "bg-primary/5" : "bg-transparent"} transition-colors relative`}
+ className={`p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3 transition-all ${
+ isSelected ? "ring-2 ring-primary/40 bg-primary/5" : ""
+ }`}
  >
  <div className="flex items-start gap-3">
- <div className="pt-1">
+ <div className="pt-1 shrink-0">
  <Checkbox
  checked={isSelected}
  onCheckedChange={() => toggleSelectRow(product.id)}
  aria-label={`Selecionar ${product.title}`}
+ className="size-5 rounded-md"
  />
  </div>
+
  {cover ? (
  <img
  src={cover}
  alt=""
- className="size-16 object-cover rounded-md shrink-0"
+ className="size-18 object-cover rounded-xl shrink-0 border border-border/40"
  />
  ) : (
- <div className="size-16 bg-muted rounded-md flex items-center justify-center shrink-0">
- <Package className="size-6 text-muted-foreground" aria-hidden />
+ <div className="size-18 bg-muted/60 border border-border/40 rounded-xl flex items-center justify-center shrink-0">
+ <Package className="size-7 text-muted-foreground" aria-hidden />
  </div>
  )}
+
  <div className="min-w-0 flex-1 flex flex-col">
+ <div className="flex items-start justify-between gap-2">
  <Link
  to={`/workspace/catalogo/produtos/${product.id}` as never}
- className="font-semibold text-[15px] text-foreground leading-snug line-clamp-2 mb-1"
+ className="font-bold text-base text-foreground leading-snug line-clamp-2"
  >
  {product.title}
  </Link>
- <div className="flex items-center flex-wrap gap-2 mb-1.5">
+ <ProductActionsMenu product={product} />
+ </div>
+
+ <div className="flex items-center flex-wrap gap-2 mt-1">
  <Badge
  variant={
  product.status === "published"
@@ -632,7 +645,7 @@ function AdminProductsPage() {
  ? "outline"
  : "secondary"
  }
- className="text-[10px] px-1.5 py-0 rounded-sm"
+ className="text-xs px-2 py-0.5 rounded-full font-semibold"
  >
  {product.status === "published"
  ? "Publicado"
@@ -640,33 +653,35 @@ function AdminProductsPage() {
  ? "Arquivado"
  : "Rascunho"}
  </Badge>
- <span className="text-[11px] text-muted-foreground font-medium">
+ <span className="text-xs text-muted-foreground font-medium">
  {typeName}
  </span>
  </div>
- <div className="mt-auto flex items-center flex-wrap gap-2 pt-1">
+ </div>
+ </div>
+
+ {/* Preço e Estoque em Destaque com Edição Direta */}
+ <div className="pt-2.5 border-t border-border/40 flex items-center justify-between gap-2">
+ <div className="flex items-baseline gap-2">
  <EditablePriceCell
  productId={product.id}
  initialCents={product.price_cents}
  onSave={(cents) => handleUpdatePrice(product.id, cents)}
  />
- <div className="flex items-center gap-1 text-xs text-muted-foreground border-l border-border/50 pl-2">
- <span>Estoque:</span>
+ {product.compare_at_cents ? (
+ <span className="text-xs text-muted-foreground line-through">
+ {formatMoney(product.compare_at_cents)}
+ </span>
+ ) : null}
+ </div>
+
+ <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-xl border border-border/40">
+ <span className="font-medium">Estoque:</span>
  <EditableStockCell
  productId={product.id}
  initialStock={(product as any).stock ?? 0}
  onSave={(stock) => handleUpdateStock(product.id, stock)}
  />
- </div>
- {product.compare_at_cents ? (
- <span className="text-[11px] text-muted-foreground line-through">
- {formatMoney(product.compare_at_cents)}
- </span>
- ) : null}
- </div>
- </div>
- <div className="shrink-0 -mt-1 -mr-1">
- <ProductActionsMenu product={product} />
  </div>
  </div>
  </div>
@@ -674,8 +689,8 @@ function AdminProductsPage() {
  })}
  </div>
 
- {/* VISÃO DESKTOP: DataGrid / Tabela */}
- <div className="hidden md:block overflow-x-auto no-scrollbar bg-surface-paper">
+ {/* VISÃO DESKTOP: DataGrid / Tabela de Alta Densidade */}
+ <div className="hidden md:block rounded-2xl overflow-hidden bg-surface-paper border border-border/40 shadow-2xs">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30">
@@ -806,7 +821,7 @@ function AdminProductsPage() {
  </TableBody>
  </Table>
  </div>
- </Surface>
+ </div>
  )}
  </>
  )}

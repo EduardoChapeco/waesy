@@ -374,16 +374,15 @@ export function CardDetailPanel({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={handleShareBriefing}
-                    className="h-8 gap-1.5 text-xs font-bold rounded-xl border-emerald-500/30 text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer"
+                    className="h-10 sm:h-11 px-4 gap-2 text-xs sm:text-sm font-bold rounded-xl border-emerald-500/30 text-emerald-600 bg-emerald-500/10 hover:bg-emerald-500/20 cursor-pointer shadow-2xs"
                     title="Enviar briefing por WhatsApp"
                   >
-                    <Send className="size-3.5" />
-                    <span>Briefing</span>
+                    <Send className="size-4" />
+                    <span>Briefing WhatsApp</span>
                   </Button>
                   <Button
                     variant="ghost"
@@ -394,16 +393,16 @@ export function CardDetailPanel({
                       }
                     }}
                     disabled={deleteDepartureMutation.isPending}
-                    className="size-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                    className="size-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                     title="Excluir embarque"
                   >
-                    <Trash2 className="size-3.5" />
+                    <Trash2 className="size-4" />
                   </Button>
                 </div>
               </div>
 
               {/* Navegação por Abas */}
-              <div className="flex border-b border-border/60 gap-1 -mb-6 pt-2">
+              <div className="flex border-b border-border/60 gap-2 -mb-6 pt-2 overflow-x-auto no-scrollbar">
                 {[
                   { id: 'checklist', label: `Checklist (${checklist.length})` },
                   { id: 'documents', label: `Documentos (${documents.length})` },
@@ -413,7 +412,7 @@ export function CardDetailPanel({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-3 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+                    className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-all cursor-pointer min-h-[44px] whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-primary text-primary'
                         : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -490,13 +489,13 @@ export function CardDetailPanel({
                   )}
 
                   {/* Adicionar Novo Item */}
-                  <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-2.5">
-                    <Label className="text-xs font-bold text-foreground">Novo Item no Checklist</Label>
-                    <div className="flex gap-2">
+                  <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-muted/20 space-y-3">
+                    <Label className="text-xs sm:text-sm font-bold text-foreground">Novo Item no Checklist</Label>
+                    <div className="flex flex-col sm:flex-row gap-2.5">
                       <select
                         value={newItemCategory}
                         onChange={(e) => setNewItemCategory(e.target.value as ChecklistCategory)}
-                        className="h-9 px-2 rounded-xl border border-input bg-background text-xs shrink-0"
+                        className="h-11 px-3 rounded-xl border border-input bg-background text-sm shrink-0"
                       >
                         {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
                           <option key={k} value={k}>
@@ -508,18 +507,17 @@ export function CardDetailPanel({
                         value={newItemLabel}
                         onChange={(e) => setNewItemLabel(e.target.value)}
                         placeholder="Descrição da pendência..."
-                        className="h-9 text-xs flex-1 rounded-xl"
+                        className="h-11 text-sm flex-1 rounded-xl"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') addItemMutation.mutate();
                         }}
                       />
                       <Button
-                        size="sm"
                         disabled={!newItemLabel.trim() || addItemMutation.isPending}
                         onClick={() => addItemMutation.mutate()}
-                        className="h-9 px-3 rounded-xl font-bold text-xs cursor-pointer shrink-0"
+                        className="h-11 px-5 rounded-xl font-bold text-sm cursor-pointer shrink-0 shadow-2xs"
                       >
-                        <Plus className="size-3.5 mr-1" />
+                        <Plus className="size-4 mr-1.5" />
                         Adicionar
                       </Button>
                     </div>

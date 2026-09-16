@@ -202,7 +202,7 @@ function AutomacoesWorkflowsPage() {
   const activeCount = workflows.filter((w) => w.status === "active").length;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Header ── */}
       <PageHeader
         title="Automações Visuais"
@@ -310,9 +310,9 @@ function AutomacoesWorkflowsPage() {
               return (
                 <div
                   key={wf.id}
-                  className="bg-card rounded-2xl border border-border/60 p-5 flex items-center justify-between gap-4 group hover:border-primary/30 transition-all"
+                  className="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group hover:border-primary/30 transition-all"
                 >
-                  <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
                     <div
                       className={`size-11 rounded-xl border flex items-center justify-center shrink-0 ${meta.color}`}
                     >
@@ -347,13 +347,13 @@ function AutomacoesWorkflowsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t border-border/40 sm:border-0 w-full sm:w-auto">
                     <Button
                       variant="ghost"
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleRunTest(wf)}
-                      className="size-9 rounded-xl text-primary hover:bg-primary/10 cursor-pointer"
+                      className="size-11 sm:size-9 rounded-xl text-primary hover:bg-primary/10 cursor-pointer"
                       title="Disparar Teste Manual do Workflow"
                     >
                       {executingId === wf.id ? (
@@ -367,7 +367,7 @@ function AutomacoesWorkflowsPage() {
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleToggle(wf)}
-                      className={`size-9 rounded-xl cursor-pointer ${isActive ? "text-emerald-600" : "text-muted-foreground"}`}
+                      className={`size-11 sm:size-9 rounded-xl cursor-pointer ${isActive ? "text-emerald-600" : "text-muted-foreground"}`}
                       title={isActive ? "Desativar" : "Ativar"}
                     >
                       {isActive ? <ToggleRight className="size-5" /> : <ToggleLeft className="size-5" />}
@@ -377,7 +377,7 @@ function AutomacoesWorkflowsPage() {
                       size="icon"
                       disabled={isLoading || executingId === wf.id}
                       onClick={() => handleDelete(wf.id)}
-                      className="size-9 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
+                      className="size-11 sm:size-9 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
                       title="Deletar"
                     >
                       <Trash2 className="size-4" />

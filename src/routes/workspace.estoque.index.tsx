@@ -232,97 +232,190 @@ function AdminStockPage() {
         ]}
       />
 
- {/* Tabela de Estoque */}
- {stock.length === 0 ? (
- <EmptyState title="Sem variações cadastradas" />
- ) : (
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden mb-6">
- <Table>
- <TableHeader>
- <TableRow className="bg-muted/40">
- <TableHead>SKU</TableHead>
- <TableHead>Produto</TableHead>
- <TableHead className="text-right">Em Mãos (Disponível)</TableHead>
- <TableHead className="text-center">Nível</TableHead>
- <TableHead className="text-center">Operar Estoque</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {filteredStock.map((variant) => {
- const onHand = variant.stock_on_hand ?? 0;
- const available = Math.max(0, onHand);
+      {/* ── LISTAGEM DE ESTOQUE: DUAL-VIEW MOBILE / DESKTOP ── */}
+      {stock.length === 0 ? (
+        <EmptyState title="Sem variações cadastradas" />
+      ) : (
+        <>
+          {/* Visualização Mobile: Cards Verticais Independentes (block md:hidden) */}
+          <div className="block md:hidden space-y-3 mb-6">
+            {filteredStock.length === 0 ? (
+              <div className="rounded-2xl border border-border/60 bg-card p-6 text-center text-sm text-muted-foreground">
+                Nenhum SKU encontrado para os filtros aplicados.
+              </div>
+            ) : (
+              filteredStock.map((variant) => {
+                const onHand = variant.stock_on_hand ?? 0;
+                const available = Math.max(0, onHand);
 
- return (
- <TableRow key={variant.id} className="hover:bg-muted/30 transition-colors">
- <TableCell className="font-mono text-xs font-semibold">{variant.sku}</TableCell>
+                return (
+                  <div
+                    key={variant.id}
+                    className="rounded-2xl border border-border/60 bg-card p-4 space-y-3.5 shadow-2xs"
+                  >
+                    {/* Topo do Card: SKU e Nível */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-muted/60 text-foreground border border-border/40">
+                        {variant.sku}
+                      </span>
+                      <div>
+                        {available <= 0 ? (
+                          <Badge variant="destructive" className="text-[11px] font-semibold px-2 py-0.5">
+                            Esgotado
+                          </Badge>
+                        ) : available <= 5 ? (
+                          <Badge variant="warning" className="text-[11px] font-semibold px-2 py-0.5">
+                            Crítico
+                          </Badge>
+                        ) : (
+                          <Badge variant="default" className="text-[11px] font-semibold px-2 py-0.5">
+                            Regular
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
 
- <TableCell>
- <div className="flex items-center gap-2">
- <span className="font-medium text-sm text-foreground">
- {variant.products?.title || "Produto sem título"}
- </span>
- {variant.products?.status !== "published" && (
- <Badge variant="secondary" className="text-[10px]">
- Inativo
- </Badge>
- )}
- </div>
- </TableCell>
+                    {/* Título do Produto */}
+                    <div>
+                      <h3 className="font-bold text-base text-foreground leading-snug">
+                        {variant.products?.title || "Produto sem título"}
+                      </h3>
+                      {variant.products?.status !== "published" && (
+                        <Badge variant="secondary" className="text-[10px] mt-1">
+                          Inativo
+                        </Badge>
+                      )}
+                    </div>
 
- <TableCell className="text-right font-bold text-sm">{available}</TableCell>
+                    {/* Saldo Disponível */}
+                    <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
+                      <span className="text-xs font-medium text-muted-foreground">Saldo disponível em mãos</span>
+                      <span className="text-xl font-mono font-black text-foreground">
+                        {available}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">un.</span>
+                      </span>
+                    </div>
 
- <TableCell className="text-center">
- {available <= 0 ? (
- <Badge variant="destructive" className="text-[10px]">
- Esgotado
- </Badge>
- ) : available <= 5 ? (
- <Badge variant="warning" className="text-[10px]">
- Crítico
- </Badge>
- ) : (
- <Badge variant="default" className="text-[10px]">
- Regular
- </Badge>
- )}
- </TableCell>
+                    {/* Ações Rápidas de Estoque Touch Ergonomic (44px) */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleOpenMovementModal(variant, "purchase")}
+                        className="h-11 flex-1 rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                      >
+                        <Plus className="size-4 mr-1" /> Entrada
+                      </Button>
 
- <TableCell className="text-center">
- <div className="flex items-center justify-center gap-1.5">
- <Button
- variant="outline"
- size="sm"
- className="text-xs h-8 text-success hover:text-success hover:bg-success/10"
- onClick={() => handleOpenMovementModal(variant, "purchase")}
- >
- <Plus className="size-3.5 mr-1" /> Entrada
- </Button>
- <Button
- variant="outline"
- size="sm"
- className="text-xs h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
- onClick={() => handleOpenMovementModal(variant, "damage")}
- >
- <Minus className="size-3.5 mr-1" /> Avaria
- </Button>
- <StockAuditDialog variant={variant} />
- </div>
- </TableCell>
- </TableRow>
- );
- })}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleOpenMovementModal(variant, "damage")}
+                        className="h-11 flex-1 rounded-xl text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
+                      >
+                        <Minus className="size-4 mr-1" /> Avaria
+                      </Button>
 
- {filteredStock.length === 0 && (
- <TableRow>
- <TableCell colSpan={7} className="h-24 text-center text-xs text-muted-foreground">
- Nenhum SKU encontrado para os filtros aplicados.
- </TableCell>
- </TableRow>
- )}
- </TableBody>
- </Table>
- </div>
- )}
+                      <StockAuditDialog
+                        variant={variant}
+                        className="h-11 px-3.5 rounded-xl text-xs font-semibold border-border/60 hover:bg-muted/40 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Visualização Desktop: Tabela de Alta Densidade (hidden md:block) */}
+          <div className="hidden md:block bg-card rounded-2xl border border-border/60 overflow-hidden mb-6">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40">
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Produto</TableHead>
+                  <TableHead className="text-right">Em Mãos (Disponível)</TableHead>
+                  <TableHead className="text-center">Nível</TableHead>
+                  <TableHead className="text-center">Operar Estoque</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStock.map((variant) => {
+                  const onHand = variant.stock_on_hand ?? 0;
+                  const available = Math.max(0, onHand);
+
+                  return (
+                    <TableRow key={variant.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell className="font-mono text-xs font-semibold">{variant.sku}</TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm text-foreground">
+                            {variant.products?.title || "Produto sem título"}
+                          </span>
+                          {variant.products?.status !== "published" && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              Inativo
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-right font-bold text-sm">{available}</TableCell>
+
+                      <TableCell className="text-center">
+                        {available <= 0 ? (
+                          <Badge variant="destructive" className="text-[10px]">
+                            Esgotado
+                          </Badge>
+                        ) : available <= 5 ? (
+                          <Badge variant="warning" className="text-[10px]">
+                            Crítico
+                          </Badge>
+                        ) : (
+                          <Badge variant="default" className="text-[10px]">
+                            Regular
+                          </Badge>
+                        )}
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-8 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            onClick={() => handleOpenMovementModal(variant, "purchase")}
+                          >
+                            <Plus className="size-3.5 mr-1" /> Entrada
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10 cursor-pointer"
+                            onClick={() => handleOpenMovementModal(variant, "damage")}
+                          >
+                            <Minus className="size-3.5 mr-1" /> Avaria
+                          </Button>
+                          <StockAuditDialog variant={variant} />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+
+                {filteredStock.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center text-xs text-muted-foreground">
+                      Nenhum SKU encontrado para os filtros aplicados.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
 
  {/* SheetPage de Movimentação por Linha */}
  <SheetPage

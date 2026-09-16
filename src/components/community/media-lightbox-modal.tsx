@@ -141,23 +141,24 @@ export function MediaLightboxModal({
  </div>
 
  <button
- onClick={onClose}
- className="size-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
- >
- <X className="size-5" />
- </button>
+  onClick={onClose}
+  className="size-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+  aria-label="Fechar"
+  >
+  <X className="size-5" />
+  </button>
  </div>
 
  {/* Main Image Stage */}
  <div className="relative flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
  {/* Previous Button */}
  {post.media_urls.length > 1 && currentIndex > 0 && (
- <button
- onClick={() => setCurrentIndex((prev) => prev - 1)}
- className="absolute left-3 sm:left-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95"
- >
- <ChevronLeft className="size-6" />
- </button>
+  <button
+  onClick={() => setCurrentIndex((prev) => prev - 1)}
+  className="absolute left-3 sm:left-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
+  >
+  <ChevronLeft className="size-6" />
+  </button>
  )}
 
  <img
@@ -168,31 +169,30 @@ export function MediaLightboxModal({
 
  {/* Next Button */}
  {post.media_urls.length > 1 && currentIndex < post.media_urls.length - 1 && (
- <button
- onClick={() => setCurrentIndex((prev) => prev + 1)}
- className="absolute right-3 sm:right-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95"
- >
- <ChevronRight className="size-6" />
- </button>
+  <button
+  onClick={() => setCurrentIndex((prev) => prev + 1)}
+  className="absolute right-3 sm:right-6 z-20 size-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
+  >
+  <ChevronRight className="size-6" />
+  </button>
  )}
  </div>
 
   {/* Bottom Floating Interaction Bar */}
-  <div className="px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-white shrink-0">
-    <div className="flex items-center gap-2">
+  <div className="px-4 py-3.5 pb-[max(1rem,env(safe-area-inset-bottom))] bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between text-white shrink-0">
+    <div className="flex items-center gap-2.5">
       {/* Curtir foto específica */}
       <Button
-        size="sm"
         variant="ghost"
         onClick={() => toggleLikeMutation.mutate()}
-        className={`h-10 px-3 sm:px-3.5 rounded-xl gap-2 text-xs font-bold transition-all ${
+        className={`h-11 px-4 rounded-xl gap-2 text-sm font-semibold transition-all cursor-pointer shadow-2xs ${
           currentStat.user_liked
             ? "bg-destructive/20 text-destructive hover:bg-destructive/30"
             : "bg-white/10 hover:bg-white/20 text-white"
         }`}
       >
         <Heart
-          className={`size-4 ${currentStat.user_liked ? "fill-current text-destructive" : ""}`}
+          className={`size-4.5 ${currentStat.user_liked ? "fill-current text-destructive" : ""}`}
         />
         <span className="hidden sm:inline">{currentStat.likes_count} curtidas nesta foto</span>
         <span className="sm:hidden">{currentStat.likes_count}</span>
@@ -200,12 +200,11 @@ export function MediaLightboxModal({
 
       {/* Comentar na foto específica */}
       <Button
-        size="sm"
         variant="ghost"
         onClick={() => setIsCommentDrawerOpen(true)}
-        className="h-10 px-3 sm:px-3.5 rounded-xl gap-2 text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition-all"
+        className="h-11 px-4 rounded-xl gap-2 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer shadow-2xs"
       >
-        <MessageSquare className="size-4" />
+        <MessageSquare className="size-4.5" />
         <span className="hidden sm:inline">
           {currentStat.comments_count > 0
             ? `${currentStat.comments_count} comentários`

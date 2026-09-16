@@ -117,141 +117,297 @@ function AdminCategoriesPage() {
         }}
       />
 
- {filteredCategories.length === 0 ? (
- <div className="py-12 text-center rounded-2xl border-0 bg-card/60 space-y-4">
- <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
- <Plus className="size-6" />
- </div>
- <div className="space-y-1">
- <h3 className="text-base font-bold text-foreground">
- {statusFilter === "active"
- ? "Nenhuma categoria cadastrada"
- : "Nenhuma categoria no arquivo morto"}
- </h3>
- <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Crie categorias para estruturar e organizar os produtos da sua loja.
- </p>
- </div>
- {statusFilter === "active" && (
- <Button asChild size="sm" className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground ">
- <Link to="/workspace/catalogo/categorias/novo">
- <Plus className="size-4" />
- <span>Criar Primeira Categoria</span>
- </Link>
- </Button>
- )}
- </div>
- ) : (
- <div className=" rounded-2xl overflow-hidden bg-card ">
- <div className="overflow-x-auto no-scrollbar">
- <Table>
- <TableHeader>
- <TableRow className="bg-muted/40">
- <TableHead>Nome</TableHead>
- <TableHead>Slug</TableHead>
- <TableHead>Status</TableHead>
- <TableHead className="w-[80px] text-right">Ações</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {filteredCategories.map((cat: any) => (
- <TableRow key={cat.id} className="hover:bg-muted/30 transition-colors">
- <TableCell className="font-semibold text-sm text-foreground">
- <div className="flex items-center gap-2">
- {cat.cover_url && (
- <img
- src={cat.cover_url}
- alt={cat.name}
- className="size-8 rounded object-cover"
- />
- )}
- <div className="flex flex-col">
- <span>{cat.name}</span>
- {cat.parent_id && (
- <span className="text-[10px] text-muted-foreground font-normal">
- Subcategoria de{""}
- {categories.find((c: any) => c.id === cat.parent_id)?.name || "outra"}
- </span>
- )}
- </div>
- </div>
- </TableCell>
- <TableCell className="text-muted-foreground font-mono text-xs">
- {cat.slug}
- </TableCell>
- <TableCell>
- <Badge
- variant={
- cat.status === "active"
- ? "default"
- : cat.status === "archived"
- ? "outline"
- : "secondary"
- }
- className="text-xs"
- >
- {cat.status === "active"
- ? "Ativa"
- : cat.status === "inactive"
- ? "Inativa"
- : "Arquivada"}
- </Badge>
- </TableCell>
- <TableCell className="text-right">
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" aria-label="Ações da categoria">
- <MoreHorizontal className="size-4" />
- </Button>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end">
- {cat.status !== "archived" ? (
- <>
- <DropdownMenuItem asChild>
- <Link to={`/workspace/catalogo/categorias/${cat.id}` as any}>
- <Edit className="mr-2 size-3.5" />
- Editar Categoria
- </Link>
- </DropdownMenuItem>
- {cat.status === "active" ? (
- <DropdownMenuItem
- onClick={() => handleUpdateStatus(cat.id, "inactive")}
- >
- <EyeOff className="mr-2 size-3.5" />
- Desativar
- </DropdownMenuItem>
- ) : (
- <DropdownMenuItem
- onClick={() => handleUpdateStatus(cat.id, "active")}
- >
- <Check className="mr-2 size-3.5 text-success" />
- Ativar
- </DropdownMenuItem>
- )}
- <DropdownMenuItem
- className="text-destructive focus:text-destructive"
- onClick={() => handleUpdateStatus(cat.id, "archived")}
- >
- <Archive className="mr-2 size-3.5" />
- Arquivar
- </DropdownMenuItem>
- </>
- ) : (
- <DropdownMenuItem onClick={() => handleUpdateStatus(cat.id, "active")}>
- <RotateCcw className="mr-2 size-3.5" />
- Restaurar
- </DropdownMenuItem>
- )}
- </DropdownMenuContent>
- </DropdownMenu>
- </TableCell>
- </TableRow>
- ))}
- </TableBody>
- </Table>
- </div>
- </div>
- )}
- </div>
- );
+      {filteredCategories.length === 0 ? (
+        <div className="py-16 text-center rounded-2xl border border-border/40 bg-card/60 space-y-4 px-4">
+          <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+            <Plus className="size-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">
+              {statusFilter === "active"
+                ? "Nenhuma categoria cadastrada"
+                : "Nenhuma categoria no arquivo morto"}
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              Crie categorias para estruturar o cardápio e os produtos da sua loja com navegação rápida.
+            </p>
+          </div>
+          {statusFilter === "active" && (
+            <Button
+              asChild
+              className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+            >
+              <Link to="/workspace/catalogo/categorias/novo">
+                <Plus className="size-4" />
+                <span>Criar Primeira Categoria</span>
+              </Link>
+            </Button>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* ── 1. Mobile List Layout (Zero-Cramping, Large Text & 44px Controls) ── */}
+          <div className="space-y-3 block md:hidden">
+            {filteredCategories.map((cat: any) => {
+              const parentCat = cat.parent_id
+                ? categories.find((c: any) => c.id === cat.parent_id)
+                : null;
+
+              return (
+                <div
+                  key={cat.id}
+                  className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3.5 transition-all"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {cat.cover_url ? (
+                        <img
+                          src={cat.cover_url}
+                          alt={cat.name}
+                          className="size-12 rounded-xl object-cover shrink-0 border border-border/40"
+                        />
+                      ) : (
+                        <div className="size-12 rounded-xl bg-muted/60 border border-border/40 flex items-center justify-center shrink-0 text-muted-foreground font-bold text-sm">
+                          {cat.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h4 className="text-base font-bold text-foreground truncate">
+                          {cat.name}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs font-mono text-muted-foreground truncate">
+                            /{cat.slug}
+                          </span>
+                          {parentCat && (
+                            <span className="text-[11px] text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md truncate">
+                              Sub de: {parentCat.name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Badge
+                      variant={
+                        cat.status === "active"
+                          ? "default"
+                          : cat.status === "archived"
+                          ? "outline"
+                          : "secondary"
+                      }
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full shrink-0"
+                    >
+                      {cat.status === "active"
+                        ? "Ativa"
+                        : cat.status === "inactive"
+                        ? "Inativa"
+                        : "Arquivada"}
+                    </Badge>
+                  </div>
+
+                  {/* Ações Móveis Ergonômicas (44px min height) */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-border/30">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="flex-1 h-11 rounded-xl text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                    >
+                      <Link to={`/workspace/catalogo/categorias/${cat.id}` as any}>
+                        <Edit className="size-4 text-muted-foreground" />
+                        <span>Editar</span>
+                      </Link>
+                    </Button>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="h-11 px-4 rounded-xl border-border/60 hover:bg-muted cursor-pointer"
+                          aria-label="Mais opções"
+                        >
+                          <MoreHorizontal className="size-5 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-xl">
+                        {cat.status !== "archived" ? (
+                          <>
+                            {cat.status === "active" ? (
+                              <DropdownMenuItem
+                                onClick={() => handleUpdateStatus(cat.id, "inactive")}
+                                className="h-10 rounded-lg text-sm font-medium cursor-pointer"
+                              >
+                                <EyeOff className="mr-2 size-4 text-muted-foreground" />
+                                Desativar Categoria
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => handleUpdateStatus(cat.id, "active")}
+                                className="h-10 rounded-lg text-sm font-medium cursor-pointer"
+                              >
+                                <Check className="mr-2 size-4 text-success" />
+                                Ativar Categoria
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              className="h-10 rounded-lg text-sm font-medium text-destructive focus:text-destructive cursor-pointer"
+                              onClick={() => handleUpdateStatus(cat.id, "archived")}
+                            >
+                              <Archive className="mr-2 size-4" />
+                              Arquivar
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => handleUpdateStatus(cat.id, "active")}
+                            className="h-10 rounded-lg text-sm font-medium cursor-pointer"
+                          >
+                            <RotateCcw className="mr-2 size-4" />
+                            Restaurar Categoria
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── 2. Desktop High-Density Table Layout ── */}
+          <div className="hidden md:block rounded-2xl overflow-hidden bg-card border border-border/40 shadow-2xs">
+            <div className="overflow-x-auto no-scrollbar">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/40">
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                      Nome da Categoria
+                    </TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                      Slug URL
+                    </TableHead>
+                    <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                      Status
+                    </TableHead>
+                    <TableHead className="w-[100px] text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                      Ações
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCategories.map((cat: any) => (
+                    <TableRow key={cat.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell className="font-semibold text-sm text-foreground py-3.5">
+                        <div className="flex items-center gap-3">
+                          {cat.cover_url ? (
+                            <img
+                              src={cat.cover_url}
+                              alt={cat.name}
+                              className="size-9 rounded-lg object-cover border border-border/30"
+                            />
+                          ) : (
+                            <div className="size-9 rounded-lg bg-muted/60 border border-border/40 flex items-center justify-center text-xs font-bold text-muted-foreground">
+                              {cat.name.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="flex flex-col">
+                            <span className="font-bold text-foreground">{cat.name}</span>
+                            {cat.parent_id && (
+                              <span className="text-[11px] text-muted-foreground font-normal">
+                                Subcategoria de{" "}
+                                {categories.find((c: any) => c.id === cat.parent_id)?.name || "outra"}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-xs py-3.5">
+                        /{cat.slug}
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <Badge
+                          variant={
+                            cat.status === "active"
+                              ? "default"
+                              : cat.status === "archived"
+                              ? "outline"
+                              : "secondary"
+                          }
+                          className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                        >
+                          {cat.status === "active"
+                            ? "Ativa"
+                            : cat.status === "inactive"
+                            ? "Inativa"
+                            : "Arquivada"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right py-3.5">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-9 rounded-lg hover:bg-muted cursor-pointer"
+                              aria-label="Ações da categoria"
+                            >
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-xl">
+                            {cat.status !== "archived" ? (
+                              <>
+                                <DropdownMenuItem asChild className="h-9 rounded-lg text-sm cursor-pointer">
+                                  <Link to={`/workspace/catalogo/categorias/${cat.id}` as any}>
+                                    <Edit className="mr-2 size-4" />
+                                    Editar Categoria
+                                  </Link>
+                                </DropdownMenuItem>
+                                {cat.status === "active" ? (
+                                  <DropdownMenuItem
+                                    onClick={() => handleUpdateStatus(cat.id, "inactive")}
+                                    className="h-9 rounded-lg text-sm cursor-pointer"
+                                  >
+                                    <EyeOff className="mr-2 size-4 text-muted-foreground" />
+                                    Desativar
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem
+                                    onClick={() => handleUpdateStatus(cat.id, "active")}
+                                    className="h-9 rounded-lg text-sm cursor-pointer"
+                                  >
+                                    <Check className="mr-2 size-4 text-success" />
+                                    Ativar
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem
+                                  className="h-9 rounded-lg text-sm text-destructive focus:text-destructive cursor-pointer"
+                                  onClick={() => handleUpdateStatus(cat.id, "archived")}
+                                >
+                                  <Archive className="mr-2 size-4" />
+                                  Arquivar
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => handleUpdateStatus(cat.id, "active")}
+                                className="h-9 rounded-lg text-sm cursor-pointer"
+                              >
+                                <RotateCcw className="mr-2 size-4" />
+                                Restaurar
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

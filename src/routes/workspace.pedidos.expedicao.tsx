@@ -398,10 +398,10 @@ function WmsExpedicaoPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-[11px] rounded-lg gap-1 cursor-pointer shrink-0"
+                      className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] rounded-xl sm:rounded-lg gap-1.5 cursor-pointer shrink-0 font-medium"
                       onClick={() => setSelectedShippingLabelOrderId(oId)}
                     >
-                      <Printer className="size-3 text-primary" /> Etiqueta
+                      <Printer className="size-3.5 text-primary" /> Etiqueta
                     </Button>
                   </div>
                 );
@@ -420,13 +420,13 @@ function WmsExpedicaoPage() {
             </h3>
             <p className="text-xs text-muted-foreground">Pedidos do Mercado Livre, iFood, Shopee e loja própria.</p>
           </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
             {["all", "mercadolivre", "ifood", "shopee"].map((ch) => (
               <button
                 key={ch}
                 type="button"
                 onClick={() => setChannelFilter(ch)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                className={`h-10 sm:h-8 px-3.5 rounded-xl sm:rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                   channelFilter === ch ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -443,7 +443,7 @@ function WmsExpedicaoPage() {
         ) : (
           <div className="divide-y divide-border/60">
             {externalOrders.map((ord: ExternalOrderDTO) => (
-              <div key={ord.id} className="py-3 flex items-center justify-between gap-4">
+              <div key={ord.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-bold text-foreground">#{ord.external_order_id}</span>
@@ -453,8 +453,8 @@ function WmsExpedicaoPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">{ord.buyer_name || "Cliente Final"} • {ord.items?.length || 1} item(s)</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
+                <div className="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0 border-t border-border/40 sm:border-0">
+                  <div className="text-left sm:text-right">
                     <p className="text-xs font-semibold text-foreground">{formatMoney(ord.total_amount_cents)}</p>
                     <p className="text-[10px] text-muted-foreground">Taxa: {formatMoney(ord.marketplace_fee_cents)}</p>
                   </div>
@@ -462,7 +462,7 @@ function WmsExpedicaoPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8 px-2.5 text-xs rounded-lg gap-1.5 cursor-pointer shrink-0"
+                      className="h-11 sm:h-8 px-4 sm:px-2.5 text-xs rounded-xl sm:rounded-lg gap-1.5 cursor-pointer shrink-0 font-semibold sm:font-normal"
                       onClick={() => setSelectedShippingLabelOrderId(ord.id)}
                     >
                       <Printer className="size-3.5 text-primary" /> Etiqueta

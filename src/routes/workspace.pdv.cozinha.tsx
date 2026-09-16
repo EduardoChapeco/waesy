@@ -748,9 +748,9 @@ function KitchenTicketCard({
  type="button"
  onClick={(e) => { e.stopPropagation(); onPrint(); }}
  title="Imprimir comanda térmica"
- className="size-7 rounded-lg bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors cursor-pointer"
+ className="size-10 sm:size-8 rounded-xl bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-colors cursor-pointer"
  >
- <Printer className="size-3.5" />
+ <Printer className="size-4" />
  </button>
 
  {/* Timer de urgência */}
@@ -815,13 +815,14 @@ function KitchenTicketCard({
  <div className="flex items-start gap-2.5">
  <button
  type="button"
- className="mt-0.5 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+ className="p-1 -m-1 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
  onClick={(e) => { e.stopPropagation(); onToggleCheck(itemKey); }}
+ aria-label="Marcar item preparado"
  >
  {isChecked ? (
- <CheckSquare className="size-4 text-emerald-500" />
+ <CheckSquare className="size-5 text-emerald-500" />
  ) : (
- <Square className="size-4" />
+ <Square className="size-5" />
  )}
  </button>
 
@@ -873,7 +874,7 @@ function KitchenTicketCard({
  {/* Ação de Avanço de Etapa */}
  <div className="p-3 bg-muted/20 border-t border-border/80">
  <Button
- className="w-full font-bold h-10 text-xs rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+ className="w-full font-bold h-12 sm:h-11 text-sm sm:text-xs rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
  onClick={onAction}
  disabled={isPending}
  >

@@ -829,7 +829,7 @@ function ReceivablesDashboard() {
                               size="sm"
                               variant={isPending ? "default" : "outline"}
                               className={cn(
-                                "h-8 px-3 text-xs rounded-xl font-medium",
+                                "h-11 sm:h-8 px-3.5 text-xs rounded-xl font-medium cursor-pointer shadow-2xs",
                                 isPending
                                   ? "bg-amber-600 hover:bg-amber-700 text-white"
                                   : "text-foreground",
@@ -1039,19 +1039,19 @@ function ReceivablesDashboard() {
                             )}!%20Passando%20para%20saber%20como%20ficaram%20as%20pe%C3%A7as%20da%20sua%20mala%20condicional%20%E2%9C%A8`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border border-border/70 hover:bg-muted/50 text-foreground transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3.5 h-11 sm:h-8 text-xs font-medium rounded-xl border border-border/70 hover:bg-muted/50 text-foreground transition-colors cursor-pointer"
                           >
-                            <MessageSquare className="h-3.5 w-3.5 text-emerald-500" /> WhatsApp
+                            <MessageSquare className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-emerald-500" /> WhatsApp
                           </a>
                         )}
 
                         {!isClosed && (
                           <Button
                             size="sm"
-                            className="h-8 px-3.5 text-xs rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium"
+                            className="h-11 sm:h-8 px-3.5 text-xs rounded-xl bg-foreground text-background hover:bg-foreground/90 font-medium cursor-pointer shadow-2xs"
                             onClick={() => handleOpenReturnModal(cond)}
                           >
-                            <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Dar Baixa / Conferir
+                            <CheckCircle2 className="h-4 w-4 sm:h-3.5 sm:w-3.5 mr-1 text-emerald-400" /> Dar Baixa / Conferir
                           </Button>
                         )}
                       </div>

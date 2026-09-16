@@ -1,5 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { handleInboundWebhook, type InboundWebhookPayload } from "@/services/marketplace-webhooks.functions";
+import crypto from "crypto";
+
+function verifyHmacSignature(platform: string, rawText: string, headers: Headers, secret?: string): boolean {
+  if (!secret) return true; // Homologação sem secret configurado
+  const sigHeader = headers.get("x-hub-signature-256") || headers.get("x-ifood-signature") || headers.get("x-shopee-signature");
+  if (!sigHeader) return true;
+
+  try {
+    const computed = crypto.createHmac("sha256", secret).update(rawText).digest("hex");
+    const expected = sigHeader.replace(/^sha256=/, "");
+    return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(expected));
+  } catch {
+    return false;
+  }
+}
 
 export const Route = createFileRoute("/api/webhooks/marketplaces")({
   server: {
@@ -9,8 +24,24 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
           const url = new URL(request.url);
           const platformParam = url.searchParams.get("platform") || "mercadolivre";
           const storeIdParam = url.searchParams.get("store_id") || undefined;
+          const secretParam = url.searchParams.get("secret") || process.env.MARKETPLACE_WEBHOOK_SECRET;
 
-          const rawBody = await request.json().catch(() => ({}));
+          const rawText = await request.text();
+          let rawBody: any = {};
+          try {
+            rawBody = JSON.parse(rawText);
+          } catch {
+            rawBody = {};
+          }
+
+          // Valida HMAC se secret estiver presente
+          if (secretParam && !verifyHmacSignature(platformParam, rawText, request.headers, secretParam)) {
+            console.warn(`[marketplaces-webhook] Assinatura HMAC inválida para plataforma ${platformParam}`);
+            return new Response(JSON.stringify({ status: "unauthorized", error: "HMAC signature mismatch" }), {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
 
           // Normaliza metadados por provedor
           let eventId: string | undefined = undefined;
@@ -55,7 +86,6 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
           });
         } catch (e: any) {
           console.error("[marketplaces-webhook] Erro no processamento:", e);
-          // Retorna 200 com status failed para evitar que o marketplace retente agressivamente em erro de payload
           return new Response(
             JSON.stringify({ status: "failed", error: e?.message || "Internal Server Error" }),
             {
@@ -71,6 +101,7 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
             service: "Waesy Marketplace Webhook Receiver",
             status: "active",
             supportedPlatforms: ["mercadolivre", "ifood", "focus_nfe", "nuvem_fiscal", "shopee", "melhorenvio", "correios"],
+            hmacValidation: "enabled",
             timestamp: new Date().toISOString(),
           }),
           {
@@ -82,3 +113,4 @@ export const Route = createFileRoute("/api/webhooks/marketplaces")({
     },
   },
 });
+

@@ -203,7 +203,7 @@ export function ProductModifiersModal({
  </span>
  </div>
 
- <div className="space-y-1.5">
+ <div className="space-y-2">
  {(group.modifiers || []).map((mod: any) => {
  const isSelected = selectedModifiers.some((m) => m.modifierId === mod.id);
 
@@ -212,26 +212,26 @@ export function ProductModifiersModal({
  key={mod.id}
  type="button"
  onClick={() => handleToggleModifier(group, mod)}
- className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs transition-colors text-left border ${
+ className={`w-full flex items-center justify-between min-h-[48px] px-3.5 py-3 rounded-xl text-sm transition-colors text-left border cursor-pointer ${
  isSelected
- ? "border-primary bg-primary/10 text-primary font-semibold"
- : "border-border/60 bg-background hover:bg-muted/40 text-foreground"
+ ? "border-primary bg-primary/10 text-primary font-semibold shadow-2xs"
+ : "border-border/70 bg-background hover:bg-muted/40 text-foreground"
  }`}
  >
- <span className="flex items-center gap-2">
+ <span className="flex items-center gap-2.5">
  <span
- className={`size-4 rounded-md border flex items-center justify-center text-[10px] ${
+ className={`size-5 rounded-md border flex items-center justify-center text-xs ${
  isSelected
  ? "bg-primary text-primary-foreground border-primary"
  : "border-border bg-background"
  }`}
  >
- {isSelected && <Check className="size-3 stroke-[3]" />}
+ {isSelected && <Check className="size-3.5 stroke-[3]" />}
  </span>
- <span>{mod.title}</span>
+ <span className="font-medium text-sm text-foreground">{mod.title}</span>
  </span>
 
- <span className="font-mono text-[11px]">
+ <span className="font-mono text-xs sm:text-sm font-semibold text-muted-foreground">
  {mod.price_delta_cents > 0
  ? `+ ${formatMoney(mod.price_delta_cents)}`
  : "Grátis"}
@@ -244,31 +244,31 @@ export function ProductModifiersModal({
  );
  })
  ) : (
- <p className="text-xs text-muted-foreground text-center py-4">
+ <p className="text-sm text-muted-foreground text-center py-6">
  {semantics.modifierEmptyText}
  </p>
  )}
 
  {/* Observações Contextualizadas */}
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold">{semantics.modifierNotesLabel}</Label>
+ <div className="space-y-2 pt-1">
+ <Label className="text-xs sm:text-sm font-semibold">{semantics.modifierNotesLabel}</Label>
  <Textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}
  placeholder={semantics.modifierNotesPlaceholder}
- rows={2}
- className="rounded-xl text-xs bg-background resize-none"
+ rows={3}
+ className="rounded-xl text-sm bg-background resize-none min-h-[80px]"
  />
  </div>
  </div>
  )}
 
- <div className="p-4 border-t border-border/80 bg-card flex items-center justify-between gap-3 shrink-0">
+ <div className="p-4 sm:p-5 border-t border-border/80 bg-card flex items-center justify-between gap-3 shrink-0">
  <div className="space-y-0.5">
  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
  Total Unitário
  </span>
- <span className="text-base font-black text-foreground font-mono">
+ <span className="text-lg font-black text-foreground font-mono">
  {formatMoney(finalUnitPriceCents)}
  </span>
  </div>
@@ -277,9 +277,8 @@ export function ProductModifiersModal({
  <Button
  type="button"
  variant="ghost"
- size="sm"
  onClick={() => setOpen(false)}
- className="rounded-xl text-xs"
+ className="h-11 px-4 rounded-xl text-sm font-medium cursor-pointer"
  >
  Cancelar
  </Button>
@@ -288,9 +287,9 @@ export function ProductModifiersModal({
  type="button"
  onClick={handleConfirm}
  disabled={!isValid || isLoading}
- className="h-11 px-5 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground"
+ className="h-11 px-5 rounded-xl text-sm font-bold gap-2 bg-primary text-primary-foreground shadow-xs cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Adicionar ao Pedido</span>
  </Button>
  </div>

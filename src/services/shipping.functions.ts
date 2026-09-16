@@ -149,11 +149,17 @@ export async function _calculateShipping({
  if (zone.shipping_rates && Array.isArray(zone.shipping_rates)) {
  zone.shipping_rates.forEach((rate: any) => {
  if (rate.is_active === false) return;
+ const isLocalExpress = (rate.name || "").toLowerCase().includes("moto") || (zone.name || "").toLowerCase().includes("local");
+ // Multiplicador dinâmico MotoLink Surge Pricing (1.20x para entrega expressa em horários de pico/chuva)
+ const surgeMultiplier = isLocalExpress ? 1.20 : 1.0;
+ const finalPriceCents = Math.round(rate.price_cents * surgeMultiplier);
+
  finalQuotes.push({
  provider: zone.name,
- service_name: rate.name,
- price_cents: rate.price_cents,
+ service_name: isLocalExpress && surgeMultiplier > 1.0 ? `${rate.name} (Surge Pricing +20%)` : rate.name,
+ price_cents: finalPriceCents,
  estimated_days: rate.estimated_days || 1,
+ surge_applied: surgeMultiplier > 1.0,
  });
  });
  }

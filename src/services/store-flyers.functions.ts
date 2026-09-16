@@ -513,3 +513,5 @@ export const recordFlyerInteraction = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+export const incrementFlyerMetrics = recordFlyerInteraction;

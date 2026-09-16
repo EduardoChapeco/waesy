@@ -175,12 +175,12 @@ function WorkspaceStoreHotpagesPage() {
  eyebrow="Vitrine & Divulgação"
  title="Destaques & Hotpages"
  actions={
- <div className="flex items-center gap-2">
+ <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
  <Select
  value={selectedModuleFilter}
  onValueChange={(val: any) => handleModuleFilterChange(val)}
  >
- <SelectTrigger className="w-[180px] rounded-xl text-xs h-9 bg-background">
+ <SelectTrigger className="w-full sm:w-[200px] rounded-xl text-sm h-11 bg-background shadow-2xs">
  <SelectValue placeholder="Filtrar por vitrine" />
  </SelectTrigger>
  <SelectContent className="rounded-xl">
@@ -200,10 +200,9 @@ function WorkspaceStoreHotpagesPage() {
 
  <Button
  onClick={handleOpenCreate}
- size="sm"
- className="rounded-xl font-bold text-xs h-9 bg-primary text-primary-foreground gap-1.5 shadow-xs cursor-pointer"
+ className="rounded-xl font-bold text-sm h-11 px-5 bg-primary text-primary-foreground gap-2 shadow-xs cursor-pointer"
  >
- <Plus className="size-3.5" />
+ <Plus className="size-4" />
  <span>Novo Destaque</span>
  </Button>
  </div>
@@ -212,39 +211,39 @@ function WorkspaceStoreHotpagesPage() {
 
  {/* ── Grade de Destaques ou Empty State ── */}
  {hotpages.length === 0 ? (
- <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
- <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
- <Layers className="size-6" />
+ <div className="py-16 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
+ <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+ <Layers className="size-7" />
  </div>
- <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground">Nenhum destaque cadastrado</h3>
- <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+ <div className="space-y-1.5">
+ <h3 className="text-base font-bold text-foreground">Nenhum destaque cadastrado</h3>
+ <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
  Adicione cartões especiais para promover combos, lançamentos ou seções exclusivas no seu perfil.
  </p>
  </div>
- <Button onClick={handleOpenCreate} size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9">
- <Plus className="size-3.5 mr-1" />
+ <Button onClick={handleOpenCreate} className="rounded-xl text-sm font-bold h-11 px-6 shadow-xs cursor-pointer">
+ <Plus className="size-4 mr-1.5" />
  Criar Primeiro Destaque
  </Button>
  </div>
  ) : (
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+ <div className="flex flex-col gap-3.5 sm:grid sm:grid-cols-2 lg:grid-cols-3">
  {hotpages.map((h) => (
  <div
  key={h.id}
- className="p-4 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs flex flex-col justify-between"
+ className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-2xs flex flex-col justify-between"
  >
- <div className="space-y-2">
+ <div className="space-y-2.5">
  <div className="flex items-center justify-between">
- <Badge variant="outline" className="text-[10px] font-mono">
+ <Badge variant="outline" className="text-xs font-mono font-bold px-2 py-0.5">
  {h.badge_label || "Card"}
  </Badge>
- <span className="text-[10px] text-muted-foreground font-mono">
+ <span className="text-[11px] text-muted-foreground font-mono">
  {h.bg_texture !== "none" ? `Textura: ${h.bg_texture}` : "Padrão"}
  </span>
  </div>
 
- <h3 className="text-sm font-bold text-foreground line-clamp-1">{h.title}</h3>
+ <h3 className="text-base font-bold text-foreground line-clamp-1">{h.title}</h3>
  <p className="text-xs text-muted-foreground truncate">{h.target_route || "/loja"}</p>
 
  {/* Mini Preview do Chip */}
@@ -261,22 +260,20 @@ function WorkspaceStoreHotpagesPage() {
  </div>
  </div>
 
- <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/30">
+ <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">
  <Button
  onClick={() => handleOpenEdit(h)}
- size="sm"
  variant="outline"
- className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1"
+ className="h-10 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
  >
- <Pencil className="size-3" /> Editar
+ <Pencil className="size-3.5" /> Editar
  </Button>
  <Button
  onClick={() => handleDelete(h.id)}
- size="sm"
  variant="ghost"
- className="h-8 px-2.5 rounded-xl text-xs text-destructive hover:bg-destructive/10"
+ className="h-10 px-3 rounded-xl text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
  >
- <Trash2 className="size-3" />
+ <Trash2 className="size-4" />
  </Button>
  </div>
  </div>
@@ -305,23 +302,23 @@ function WorkspaceStoreHotpagesPage() {
  />
  </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-bold">Título do Destaque *</Label>
+ <div className="space-y-2">
+ <Label className="text-xs sm:text-sm font-semibold">Título do Destaque *</Label>
  <Input
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  placeholder="Ex: Combo Família ou Oferta do Dia"
- className="rounded-xl text-xs h-9"
+ className="rounded-xl text-sm h-11 bg-background"
  />
  </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-bold">Badge / Tag de Destaque</Label>
+ <div className="space-y-2">
+ <Label className="text-xs sm:text-sm font-semibold">Badge / Tag de Destaque</Label>
  <Input
  value={badgeLabel}
  onChange={(e) => setBadgeLabel(e.target.value)}
  placeholder="Ex: 20% OFF, Novo, Combo Especial"
- className="rounded-xl text-xs h-9"
+ className="rounded-xl text-sm h-11 bg-background"
  />
  </div>
 
@@ -334,10 +331,10 @@ function WorkspaceStoreHotpagesPage() {
  />
 
  {/* Módulo / Vitrine de Exibição */}
- <div className="space-y-1.5">
- <Label className="text-xs font-bold">Vitrine / Módulo de Exibição</Label>
+ <div className="space-y-2">
+ <Label className="text-xs sm:text-sm font-semibold">Vitrine / Módulo de Exibição</Label>
  <Select value={module} onValueChange={(val: any) => setModule(val)}>
- <SelectTrigger className="rounded-xl text-xs h-9">
+ <SelectTrigger className="rounded-xl text-sm h-11 bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-xl">
@@ -361,12 +358,12 @@ function WorkspaceStoreHotpagesPage() {
 
  {/* Mídia de Fundo */}
  <div className="space-y-2 pt-2 border-t border-border/30">
- <Label className="text-xs font-bold">Tipo de Mídia de Fundo</Label>
+ <Label className="text-xs sm:text-sm font-semibold">Tipo de Mídia de Fundo</Label>
  <Select
  value={bgMediaType}
  onValueChange={(val: any) => setBgMediaType(val)}
  >
- <SelectTrigger className="rounded-xl text-xs h-9">
+ <SelectTrigger className="rounded-xl text-sm h-11 bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-xl">
@@ -378,8 +375,8 @@ function WorkspaceStoreHotpagesPage() {
  </Select>
 
  {bgMediaType !== "none" && (
- <div className="space-y-1.5 pt-1">
- <Label className="text-xs">Upload de Mídia ou URL</Label>
+ <div className="space-y-2 pt-1">
+ <Label className="text-xs sm:text-sm font-semibold">Upload de Mídia ou URL</Label>
  <MediaUploader
  value={bgMediaUrl ? [bgMediaUrl] : []}
  onChange={(urls) => setBgMediaUrl(urls[0] || "")}
@@ -394,13 +391,13 @@ function WorkspaceStoreHotpagesPage() {
  </div>
 
  {/* Textura */}
- <div className="space-y-1.5">
- <Label className="text-xs font-bold">Textura Visual</Label>
+ <div className="space-y-2">
+ <Label className="text-xs sm:text-sm font-semibold">Textura Visual</Label>
  <Select
  value={bgTexture}
  onValueChange={(val: any) => setBgTexture(val)}
  >
- <SelectTrigger className="rounded-xl text-xs h-9">
+ <SelectTrigger className="rounded-xl text-sm h-11 bg-background">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-xl">
@@ -417,31 +414,29 @@ function WorkspaceStoreHotpagesPage() {
  {/* Switches de Exibição */}
  <div className="space-y-3 pt-2 border-t border-border/30">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold">Exibir Título</Label>
+ <Label className="text-xs sm:text-sm font-semibold">Exibir Título</Label>
  <Switch checked={showTitle} onCheckedChange={setShowTitle} />
  </div>
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold">Exibir Badge</Label>
+ <Label className="text-xs sm:text-sm font-semibold">Exibir Badge</Label>
  <Switch checked={showBadge} onCheckedChange={setShowBadge} />
  </div>
  </div>
 
- <div className="pt-4 flex items-center justify-end gap-2">
+ <div className="pt-5 flex items-center justify-end gap-2.5">
  <Button
  onClick={() => setIsModalOpen(false)}
  variant="outline"
- size="sm"
- className="rounded-xl text-xs"
+ className="h-11 px-5 rounded-xl text-sm font-medium cursor-pointer"
  >
  Cancelar
  </Button>
  <Button
  onClick={handleSave}
  disabled={isSubmitting}
- size="sm"
- className="rounded-xl text-xs font-bold bg-primary text-primary-foreground min-w-[100px]"
+ className="h-11 px-6 rounded-xl text-sm font-bold bg-primary text-primary-foreground min-w-[120px] shadow-xs cursor-pointer"
  >
- {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : "Salvar Destaque"}
+ {isSubmitting ? <Loader2 className="size-4 animate-spin mr-1.5" /> : "Salvar Destaque"}
  </Button>
  </div>
  </div>

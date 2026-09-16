@@ -243,139 +243,134 @@ function GroupTourBoardingPage() {
   }
 
   return (
- <div className="w-full space-y-6">
- {/* ── 1. Top Bar & Ações ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/60">
- <div className="flex items-center gap-3">
- <Button asChild variant="outline" size="icon" className="size-10 rounded-xl cursor-pointer">
- <Link to={"/workspace/turismo/grupos/$id" as any} params={{ id: tour.id } as any}>
- <ArrowLeft className="size-4" />
- </Link>
- </Button>
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      {/* ── 1. Top Bar & Ações ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" size="icon" className="size-11 sm:size-10 rounded-xl cursor-pointer shrink-0">
+            <Link to={"/workspace/turismo/grupos/$id" as any} params={{ id: tour.id } as any}>
+              <ArrowLeft className="size-4" />
+            </Link>
+          </Button>
 
- <div>
- <div className="flex items-center gap-2">
- <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
- Embarque: {tour.title}
- </h1>
- <Badge variant="outline" className="text-[10px] font-mono">
- {tour.destination}
- </Badge>
- </div>
- <p className="text-xs text-muted-foreground">
- Saída: {tour.departure_date} às {tour.departure_time} • Controle em tempo real na porta do ônibus.
- </p>
- </div>
- </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight truncate">
+                Embarque: {tour.title}
+              </h1>
+              <Badge variant="outline" className="text-[10px] font-mono font-bold">
+                {tour.destination}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Saída: {tour.departure_date} às {tour.departure_time} • Controle em tempo real na porta do ônibus.
+            </p>
+          </div>
+        </div>
 
- <div className="flex items-center gap-2 flex-wrap">
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={handleExportCsv}
- className="h-10 px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
- >
- <Download className="size-3.5" /> Planilha CSV
- </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleExportCsv}
+            className="h-11 sm:h-10 px-4 sm:px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+          >
+            <Download className="size-4 sm:size-3.5" /> Planilha CSV
+          </Button>
 
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={() => window.print()}
- className="h-10 px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer hidden sm:inline-flex"
- >
- <Printer className="size-3.5" /> Imprimir
- </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => window.print()}
+            className="h-11 sm:h-10 px-4 sm:px-3 rounded-xl text-xs font-bold gap-1.5 cursor-pointer hidden sm:inline-flex"
+          >
+            <Printer className="size-4 sm:size-3.5" /> Imprimir
+          </Button>
 
- <Button
- type="button"
- onClick={() => setPointModalOpen(true)}
- className="h-10 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-xs"
- >
- <Plus className="size-3.5" /> Pontos de Parada
- </Button>
- </div>
- </div>
+          <Button
+            type="button"
+            onClick={() => setPointModalOpen(true)}
+            className="h-11 sm:h-10 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-xs"
+          >
+            <Plus className="size-4 sm:size-3.5" /> Pontos de Parada
+          </Button>
+        </div>
+      </div>
 
- {/* ── 2. Cards de Métricas de Embarque ── */}
- <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
- <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
- <span className="text-[11px] font-semibold text-muted-foreground">Total de Vagas</span>
- <p className="text-xl font-extrabold text-foreground font-mono">
- {overview?.totalReserved ?? 0}
- </p>
- <p className="text-[10px] text-muted-foreground">Confirmados na lista</p>
- </div>
+      {/* ── 2. Cards de Métricas de Embarque ── */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
+          <span className="text-[11px] font-semibold text-muted-foreground">Total de Vagas</span>
+          <p className="text-xl font-extrabold text-foreground font-mono">
+            {overview?.totalReserved ?? 0}
+          </p>
+          <p className="text-[10px] text-muted-foreground">Confirmados na lista</p>
+        </div>
 
- <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-0.5">
- <span className="text-[11px] font-semibold text-emerald-700">Embarcados</span>
- <p className="text-xl font-extrabold text-emerald-700 font-mono">
- {overview?.checkedInCount ?? 0}
- </p>
- <p className="text-[10px] text-emerald-600 font-semibold">Dentro do veículo</p>
- </div>
+        <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-0.5">
+          <span className="text-[11px] font-semibold text-emerald-700">Embarcados</span>
+          <p className="text-xl font-extrabold text-emerald-700 font-mono">
+            {overview?.checkedInCount ?? 0}
+          </p>
+          <p className="text-[10px] text-emerald-600 font-semibold">Dentro do veículo</p>
+        </div>
 
- <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-0.5">
- <span className="text-[11px] font-semibold text-amber-700">Aguardando</span>
- <p className="text-xl font-extrabold text-amber-700 font-mono">
- {overview?.pendingCount ?? 0}
- </p>
- <p className="text-[10px] text-amber-600">Ainda não chegaram</p>
- </div>
+        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-0.5">
+          <span className="text-[11px] font-semibold text-amber-700">Aguardando</span>
+          <p className="text-xl font-extrabold text-amber-700 font-mono">
+            {overview?.pendingCount ?? 0}
+          </p>
+          <p className="text-[10px] text-amber-600">Ainda não chegaram</p>
+        </div>
 
- <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-0.5 col-span-3 sm:col-span-1">
- <span className="text-[11px] font-semibold text-rose-700">Ausentes (No-show)</span>
- <p className="text-xl font-extrabold text-rose-700 font-mono">
- {overview?.noShowCount ?? 0}
- </p>
- <p className="text-[10px] text-rose-600">Não compareceram</p>
- </div>
- </div>
+        <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-0.5 col-span-3 sm:col-span-1">
+          <span className="text-[11px] font-semibold text-rose-700">Ausentes (No-show)</span>
+          <p className="text-xl font-extrabold text-rose-700 font-mono">
+            {overview?.noShowCount ?? 0}
+          </p>
+          <p className="text-[10px] text-rose-600">Não compareceram</p>
+        </div>
+      </div>
 
- {/* ── 3. Barra de Busca & Filtros ── */}
- <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
- <div className="relative flex-1 w-full sm:max-w-md">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
- <Input
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- placeholder="Buscar por nome, CPF ou nº da poltrona..."
- className="h-10 pl-9 rounded-xl text-xs"
- />
- </div>
+      {/* ── 3. Barra de Busca & Filtros ── */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative flex-1 w-full sm:max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nome, CPF ou nº da poltrona..."
+            className="h-11 pl-10 rounded-xl text-xs sm:text-sm"
+          />
+        </div>
 
- <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1 sm:pb-0">
- <Button
- type="button"
- variant={statusFilter === "all" ? "default" : "outline"}
- size="sm"
- onClick={() => setStatusFilter("all")}
- className="h-9 px-3 rounded-lg text-xs cursor-pointer"
- >
- Todos
- </Button>
- <Button
- type="button"
- variant={statusFilter === "pending" ? "default" : "outline"}
- size="sm"
- onClick={() => setStatusFilter("pending")}
- className="h-9 px-3 rounded-lg text-xs cursor-pointer"
- >
- Aguardando ({overview?.pendingCount ?? 0})
- </Button>
- <Button
- type="button"
- variant={statusFilter === "checked_in" ? "default" : "outline"}
- size="sm"
- onClick={() => setStatusFilter("checked_in")}
- className="h-9 px-3 rounded-lg text-xs cursor-pointer"
- >
- Embarcados ({overview?.checkedInCount ?? 0})
- </Button>
- </div>
- </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+          <Button
+            type="button"
+            variant={statusFilter === "all" ? "default" : "outline"}
+            onClick={() => setStatusFilter("all")}
+            className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs font-semibold cursor-pointer"
+          >
+            Todos
+          </Button>
+          <Button
+            type="button"
+            variant={statusFilter === "pending" ? "default" : "outline"}
+            onClick={() => setStatusFilter("pending")}
+            className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs font-semibold cursor-pointer"
+          >
+            Aguardando ({overview?.pendingCount ?? 0})
+          </Button>
+          <Button
+            type="button"
+            variant={statusFilter === "checked_in" ? "default" : "outline"}
+            onClick={() => setStatusFilter("checked_in")}
+            className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-4 sm:px-3 rounded-xl text-xs font-semibold cursor-pointer"
+          >
+            Embarcados ({overview?.checkedInCount ?? 0})
+          </Button>
+        </div>
+      </div>
 
  {/* ── 4. Lista Rápida de Passageiros ── */}
  <div className="space-y-2.5">
@@ -453,7 +448,6 @@ function GroupTourBoardingPage() {
  <div className="flex items-center gap-1.5 shrink-0">
  <Button
  type="button"
- size="sm"
  variant={isCheckedIn ? "default" : "outline"}
  onClick={() =>
  handleToggleCheckin(
@@ -463,7 +457,7 @@ function GroupTourBoardingPage() {
  )
  }
  className={cn(
- "h-10 px-3.5 rounded-xl text-xs font-bold gap-1 cursor-pointer",
+ "h-11 sm:h-10 px-4 sm:px-3.5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer",
  isCheckedIn
  ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600"
  : "border-border/80 hover:border-emerald-500 hover:text-emerald-600"
@@ -487,7 +481,7 @@ function GroupTourBoardingPage() {
  )
  }
  title={isNoShow ? "Cancelar ausência" : "Marcar como ausente"}
- className="size-10 rounded-xl cursor-pointer text-muted-foreground hover:text-rose-600"
+ className="size-11 sm:size-10 rounded-xl cursor-pointer text-muted-foreground hover:text-rose-600 shrink-0"
  >
  <UserX className="size-4" />
  </Button>
@@ -589,14 +583,14 @@ function GroupTourBoardingPage() {
      </div>
 
      <SheetFooter className="pt-4 border-t border-border/60">
-       <Button
-         type="submit"
-         form="new-boarding-point-form"
-         disabled={submittingPoint || !pointName.trim()}
-         className="w-full h-9 rounded-xl text-xs font-bold cursor-pointer"
-       >
-         {submittingPoint ? "Cadastrando..." : "Cadastrar Ponto de Embarque"}
-       </Button>
+        <Button
+          type="submit"
+          form="new-boarding-point-form"
+          disabled={submittingPoint || !pointName.trim()}
+          className="w-full h-11 sm:h-9 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+        >
+          {submittingPoint ? "Cadastrando..." : "Cadastrar Ponto de Embarque"}
+        </Button>
      </SheetFooter>
    </SheetContent>
  </Sheet>

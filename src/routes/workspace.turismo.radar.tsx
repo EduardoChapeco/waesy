@@ -311,7 +311,7 @@ export default function TurismoRadarPage() {
   );
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── Toolbar Canônica de 2 Tiers (Apple HIG & Sem Colisões) ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -363,9 +363,9 @@ export default function TurismoRadarPage() {
               variant="ghost"
               size="sm"
               onClick={() => setIsAddAlertOpen(true)}
-              className="text-xs text-primary h-7 gap-1"
+              className="text-xs text-primary h-10 sm:h-7 px-3 gap-1 rounded-xl cursor-pointer"
             >
-              <Plus className="size-3" /> Adicionar Alerta
+              <Plus className="size-3.5" /> Adicionar Alerta
             </Button>
           </div>
           <div className="space-y-2">
@@ -395,7 +395,7 @@ export default function TurismoRadarPage() {
 
       {/* ── Grid de Cards de Destino ── */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/80 p-12 text-center bg-card/40 space-y-4">
+        <div className="rounded-2xl border border-dashed border-border/80 p-8 sm:p-12 text-center bg-card/40 space-y-4">
           <Globe className="size-12 mx-auto text-muted-foreground/40" />
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-foreground">Nenhum destino monitorado neste filtro</h3>
@@ -403,20 +403,20 @@ export default function TurismoRadarPage() {
               Você pode cadastrar novos destinos sob demanda ou carregar a base canônica recomendada.
             </p>
           </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
             <Button
               variant="outline"
-              size="sm"
+              size="default"
               onClick={handleSeedCanonical}
-              className="rounded-xl text-xs font-semibold gap-1.5"
+              className="h-11 sm:h-9 px-4 rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
             >
               <TrendingUp className="size-3.5 text-amber-500" />
               <span>Semear Destinos Recomendados</span>
             </Button>
             <Button
-              size="sm"
+              size="default"
               onClick={() => setIsAddDestOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
             >
               <Plus className="size-3.5" />
               <span>Novo Destino</span>
@@ -541,20 +541,22 @@ export default function TurismoRadarPage() {
                       </div>
                     )}
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
                       <Button
+                        type="button"
                         size="sm"
                         variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate({ to: '/workspace/turismo/destinos' });
                         }}
-                        className="flex-1 rounded-xl text-xs font-semibold h-9"
+                        className="flex-1 rounded-xl text-xs font-semibold h-11 sm:h-9 cursor-pointer"
                       >
                         <Eye className="size-3.5 mr-1" />
                         CMS do Destino
                       </Button>
                       <Button
+                        type="button"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -562,7 +564,7 @@ export default function TurismoRadarPage() {
                             to: '/workspace/turismo/cotacoes',
                           });
                         }}
-                        className="flex-1 rounded-xl text-xs font-bold h-9"
+                        className="flex-1 rounded-xl text-xs font-bold h-11 sm:h-9 bg-primary text-primary-foreground cursor-pointer shadow-2xs"
                       >
                         <Plane className="size-3.5 mr-1" />
                         Criar Cotação
@@ -757,13 +759,13 @@ export default function TurismoRadarPage() {
           </div>
 
           <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
-            <Button variant="outline" onClick={() => setIsAddDestOpen(false)} className="rounded-xl text-xs">
+            <Button variant="outline" onClick={() => setIsAddDestOpen(false)} className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>
             <Button
               onClick={() => createDestMutation.mutate()}
               disabled={createDestMutation.isPending || !formDestination.trim()}
-              className="rounded-xl text-xs font-bold"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
             >
               {createDestMutation.isPending ? 'Salvando...' : 'Salvar no Radar'}
             </Button>
@@ -854,13 +856,13 @@ export default function TurismoRadarPage() {
           </div>
 
           <SheetFooter className="p-4 border-t border-border bg-card/60 flex items-center justify-end gap-2 shrink-0">
-            <Button variant="outline" onClick={() => setIsAddAlertOpen(false)} className="rounded-xl text-xs">
+            <Button variant="outline" onClick={() => setIsAddAlertOpen(false)} className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer">
               Cancelar
             </Button>
             <Button
               onClick={() => createAlertMutation.mutate()}
               disabled={createAlertMutation.isPending || !alertDestName.trim() || !alertTitle.trim()}
-              className="rounded-xl text-xs font-bold"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
             >
               {createAlertMutation.isPending ? 'Salvando...' : 'Publicar Alerta'}
             </Button>

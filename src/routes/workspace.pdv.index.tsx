@@ -1100,7 +1100,7 @@ function PdvTerminal() {
  variant="ghost"
  size="sm"
  onClick={() => setCart([])}
- className="h-7 text-xs text-destructive hover:bg-destructive/10"
+ className="h-8 px-2.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
  >
  Limpar
  </Button>
@@ -1146,7 +1146,7 @@ function PdvTerminal() {
  <Button
  variant="ghost"
  size="icon"
- className="size-7 rounded-lg cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg cursor-pointer"
  onClick={() => updateQty(item.id, -1)}
  >
  <Minus className="size-3.5" />
@@ -1155,7 +1155,7 @@ function PdvTerminal() {
  <Button
  variant="ghost"
  size="icon"
- className="size-7 rounded-lg cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg cursor-pointer"
  onClick={() => updateQty(item.id, 1)}
  >
  <Plus className="size-3.5" />
@@ -1165,10 +1165,10 @@ function PdvTerminal() {
  <Button
  variant="ghost"
  size="icon"
- className="size-7 text-destructive hover:bg-destructive/10 cursor-pointer"
+ className="size-9 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
  onClick={() => removeItem(item.id)}
  >
- <X className="size-3.5" />
+ <X className="size-4" />
  </Button>
  </div>
  </div>
@@ -1342,20 +1342,20 @@ function PdvTerminal() {
  </div>
 
  {/* Botões Rápidos de Cédulas */}
- {selectedPaymentMethod === "cash" && (
- <div className="flex items-center gap-2">
- {[10, 20, 50, 100, 200].map((val) => (
- <button
- key={val}
- type="button"
- onClick={() => setPaymentAmountInput(`${val},00`)}
- className="flex-1 py-1.5 rounded-lg border border-border/80 text-xs font-bold font-mono hover:bg-muted transition-colors cursor-pointer"
- >
- R$ {val}
- </button>
- ))}
- </div>
- )}
+            {selectedPaymentMethod === "cash" && (
+              <div className="flex items-center gap-2">
+                {[10, 20, 50, 100, 200].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setPaymentAmountInput(`${val},00`)}
+                    className="flex-1 h-10 sm:h-9 rounded-xl border border-border/80 text-xs font-bold font-mono hover:bg-muted active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                  >
+                    R$ {val}
+                  </button>
+                ))}
+              </div>
+            )}
 
  {/* Lista de Pagamentos Lançados (Divisão de Conta) */}
  {splitPayments.length > 0 && (
@@ -1377,17 +1377,17 @@ function PdvTerminal() {
  )}
  <span className="font-bold uppercase font-mono">{p.method}</span>
  </div>
- <div className="flex items-center gap-2">
- <span className="font-mono font-bold">{formatMoney(p.amountCents)}</span>
- <Button
- variant="ghost"
- size="icon"
- className="size-6 text-destructive cursor-pointer"
- onClick={() => handleRemoveSplitPayment(idx)}
- >
- <Trash2 className="size-3" />
- </Button>
- </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold">{formatMoney(p.amountCents)}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                        onClick={() => handleRemoveSplitPayment(idx)}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
  </div>
  ))}
  </div>

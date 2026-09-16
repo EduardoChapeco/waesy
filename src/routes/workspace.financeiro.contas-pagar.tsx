@@ -523,142 +523,281 @@ function ContasPagarPage() {
           }
         />
       ) : (
-        <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border/60 hover:bg-transparent">
-                <TableHead className="text-xs font-bold">Título & Categoria</TableHead>
-                <TableHead className="text-xs font-bold">Fornecedor / Favorecido</TableHead>
-                <TableHead className="text-xs font-bold">Vencimento</TableHead>
-                <TableHead className="text-xs font-bold font-mono">Valor a Pagar</TableHead>
-                <TableHead className="text-xs font-bold">Linha Digitável / Pix</TableHead>
-                <TableHead className="text-xs font-bold text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredObligations.map((ob) => {
-                const catInfo = CATEGORY_LABELS[ob.category] || CATEGORY_LABELS.other;
-                const CatIcon = catInfo.icon;
-                const isPaid = ob.status === "paid";
-                const isOverdue = ob.status === "overdue";
-                const isToday = ob.due_date === today && !isPaid;
+        <>
+          {/* ── VISUALIZAÇÃO MOBILE: CARDS VERTICAIS ERGONÔMICOS (block md:hidden) ── */}
+          <div className="block md:hidden space-y-3">
+            {filteredObligations.map((ob) => {
+              const catInfo = CATEGORY_LABELS[ob.category] || CATEGORY_LABELS.other;
+              const CatIcon = catInfo.icon;
+              const isPaid = ob.status === "paid";
+              const isOverdue = ob.status === "overdue";
+              const isToday = ob.due_date === today && !isPaid;
 
-                return (
-                  <TableRow key={ob.id} className="border-border/40 hover:bg-muted/30 transition-colors">
-                    <TableCell>
-                      <div className="flex items-start gap-2.5">
-                        <div className={`p-1.5 rounded-lg border shrink-0 ${catInfo.color}`}>
-                          <CatIcon className="size-4" />
-                        </div>
-                        <div className="space-y-0.5">
-                          <div className="font-bold text-xs text-foreground flex items-center gap-1.5">
-                            {ob.title}
-                            {ob.recurrence !== "none" && (
-                              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-mono">
-                                {ob.recurrence === "monthly" ? "Mensal" : ob.recurrence === "weekly" ? "Semanal" : "Anual"}
-                              </Badge>
-                            )}
-                          </div>
-                          <span className="text-[11px] text-muted-foreground block">
-                            {catInfo.label}
-                          </span>
-                        </div>
+              return (
+                <div
+                  key={ob.id}
+                  className="rounded-2xl border border-border/70 bg-card p-4 space-y-3.5 shadow-2xs"
+                >
+                  {/* Topo do Card: Categoria, Recorrência e Status */}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded-lg border shrink-0 ${catInfo.color}`}>
+                        <CatIcon className="size-3.5" />
                       </div>
-                    </TableCell>
-
-                    <TableCell className="text-xs font-medium text-foreground">
-                      <div className="truncate max-w-[180px]" title={ob.supplier_name}>
-                        {ob.supplier_name}
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="space-y-0.5">
-                        <div className="text-xs font-mono font-medium text-foreground">
-                          {ob.due_date.split("-").reverse().join("/")}
-                        </div>
-                        {isPaid ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px] font-bold">
-                            Pago em {ob.paid_at ? ob.paid_at.slice(0, 10).split("-").reverse().join("/") : "dia"}
-                          </Badge>
-                        ) : isOverdue ? (
-                          <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[10px] font-bold animate-pulse">
-                            Vencido
-                          </Badge>
-                        ) : isToday ? (
-                          <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-bold">
-                            Vence Hoje
-                          </Badge>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground font-mono">
-                            No prazo
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="font-mono text-xs font-bold text-foreground">
-                      {formatMoney(ob.amount_cents)}
-                    </TableCell>
-
-                    <TableCell>
-                      {ob.barcode ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopyBarcode(ob.id, ob.barcode!)}
-                          className="h-7 px-2 text-[11px] font-mono gap-1 text-muted-foreground hover:text-foreground cursor-pointer rounded-lg"
-                        >
-                          {copiedId === ob.id ? (
-                            <>
-                              <Check className="size-3 text-emerald-600" />
-                              <span className="text-emerald-600 font-bold">Copiado</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="size-3" />
-                              <span>Copiar Linha</span>
-                            </>
-                          )}
-                        </Button>
-                      ) : (
-                        <span className="text-[11px] text-muted-foreground/60">—</span>
+                      <span className="text-xs font-semibold text-foreground">
+                        {catInfo.label}
+                      </span>
+                      {ob.recurrence !== "none" && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-mono">
+                          {ob.recurrence === "monthly" ? "Mensal" : ob.recurrence === "weekly" ? "Semanal" : "Anual"}
+                        </Badge>
                       )}
-                    </TableCell>
+                    </div>
 
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {!isPaid ? (
+                    <div>
+                      {isPaid ? (
+                        <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[11px] font-bold px-2 py-0.5">
+                          Liquidado
+                        </Badge>
+                      ) : isOverdue ? (
+                        <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[11px] font-bold px-2 py-0.5 animate-pulse">
+                          Vencido
+                        </Badge>
+                      ) : isToday ? (
+                        <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[11px] font-bold px-2 py-0.5">
+                          Vence Hoje
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[11px] text-muted-foreground font-mono px-2 py-0.5">
+                          No prazo
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Título da Obrigação */}
+                  <div>
+                    <h3 className="font-bold text-base text-foreground leading-snug">
+                      {ob.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <Building2 className="size-3 shrink-0" />
+                      <span className="truncate">{ob.supplier_name || "Favorecido não informado"}</span>
+                    </p>
+                  </div>
+
+                  {/* Vencimento e Valor */}
+                  <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
+                    <div className="space-y-0.5">
+                      <span className="text-[11px] text-muted-foreground block">Data de Vencimento</span>
+                      <span className="text-xs font-mono font-bold text-foreground">
+                        {ob.due_date.split("-").reverse().join("/")}
+                      </span>
+                    </div>
+
+                    <div className="text-right space-y-0.5">
+                      <span className="text-[11px] text-muted-foreground block">Valor</span>
+                      <span className="text-xl font-mono font-black text-foreground">
+                        {formatMoney(ob.amount_cents)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Código de Barras / Linha Digitável */}
+                  {ob.barcode && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleCopyBarcode(ob.id, ob.barcode!)}
+                      className="h-10 w-full rounded-xl text-xs font-mono gap-1.5 border-dashed border-border/80 text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      {copiedId === ob.id ? (
+                        <>
+                          <Check className="size-3.5 text-emerald-600" />
+                          <span className="text-emerald-600 font-bold">Linha Digitável Copiada</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="size-3.5" />
+                          <span className="truncate">Copiar Linha Digitável / Pix</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {/* Ações Rápidas com Touch Ergonomic (44px) */}
+                  <div className="flex items-center gap-2 pt-1">
+                    {!isPaid ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setPayModal({ isOpen: true, obligation: ob })}
+                        className="h-11 flex-1 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-2xs"
+                      >
+                        <CheckCircle2 className="size-4" />
+                        <span>Dar Baixa / Pagar</span>
+                      </Button>
+                    ) : (
+                      <div className="h-11 flex-1 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-center gap-1.5 text-emerald-600 text-xs font-semibold">
+                        <CheckCircle2 className="size-4" />
+                        <span>Pago em {ob.paid_at ? ob.paid_at.slice(0, 10).split("-").reverse().join("/") : "dia"}</span>
+                      </div>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleDelete(ob.id, ob.title)}
+                      className="size-11 shrink-0 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-border/70 cursor-pointer"
+                      title="Remover conta"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── VISUALIZAÇÃO DESKTOP: TABELA TRADICIONAL (hidden md:block) ── */}
+          <div className="hidden md:block rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/60 hover:bg-transparent">
+                  <TableHead className="text-xs font-bold">Título & Categoria</TableHead>
+                  <TableHead className="text-xs font-bold">Fornecedor / Favorecido</TableHead>
+                  <TableHead className="text-xs font-bold">Vencimento</TableHead>
+                  <TableHead className="text-xs font-bold font-mono">Valor a Pagar</TableHead>
+                  <TableHead className="text-xs font-bold">Linha Digitável / Pix</TableHead>
+                  <TableHead className="text-xs font-bold text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredObligations.map((ob) => {
+                  const catInfo = CATEGORY_LABELS[ob.category] || CATEGORY_LABELS.other;
+                  const CatIcon = catInfo.icon;
+                  const isPaid = ob.status === "paid";
+                  const isOverdue = ob.status === "overdue";
+                  const isToday = ob.due_date === today && !isPaid;
+
+                  return (
+                    <TableRow key={ob.id} className="border-border/40 hover:bg-muted/30 transition-colors">
+                      <TableCell>
+                        <div className="flex items-start gap-2.5">
+                          <div className={`p-1.5 rounded-lg border shrink-0 ${catInfo.color}`}>
+                            <CatIcon className="size-4" />
+                          </div>
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                              {ob.title}
+                              {ob.recurrence !== "none" && (
+                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-mono">
+                                  {ob.recurrence === "monthly" ? "Mensal" : ob.recurrence === "weekly" ? "Semanal" : "Anual"}
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-muted-foreground block">
+                              {catInfo.label}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-xs font-medium text-foreground">
+                        <div className="truncate max-w-[180px]" title={ob.supplier_name}>
+                          {ob.supplier_name}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="space-y-0.5">
+                          <div className="text-xs font-mono font-medium text-foreground">
+                            {ob.due_date.split("-").reverse().join("/")}
+                          </div>
+                          {isPaid ? (
+                            <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px] font-bold">
+                              Pago em {ob.paid_at ? ob.paid_at.slice(0, 10).split("-").reverse().join("/") : "dia"}
+                            </Badge>
+                          ) : isOverdue ? (
+                            <Badge className="bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[10px] font-bold animate-pulse">
+                              Vencido
+                            </Badge>
+                          ) : isToday ? (
+                            <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-bold">
+                              Vence Hoje
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground font-mono">
+                              No prazo
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="font-mono text-xs font-bold text-foreground">
+                        {formatMoney(ob.amount_cents)}
+                      </TableCell>
+
+                      <TableCell>
+                        {ob.barcode ? (
                           <Button
+                            variant="ghost"
                             size="sm"
-                            onClick={() => setPayModal({ isOpen: true, obligation: ob })}
-                            className="h-8 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 cursor-pointer"
+                            onClick={() => handleCopyBarcode(ob.id, ob.barcode!)}
+                            className="h-7 px-2 text-[11px] font-mono gap-1 text-muted-foreground hover:text-foreground cursor-pointer rounded-lg"
                           >
-                            <CheckCircle2 className="size-3.5" />
-                            <span>Pagar</span>
+                            {copiedId === ob.id ? (
+                              <>
+                                <Check className="size-3 text-emerald-600" />
+                                <span className="text-emerald-600 font-bold">Copiado</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="size-3" />
+                                <span>Copiar Linha</span>
+                              </>
+                            )}
                           </Button>
                         ) : (
-                          <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold">
-                            Liquidado
-                          </Badge>
+                          <span className="text-[11px] text-muted-foreground/60">—</span>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(ob.id, ob.title)}
-                          className="size-8 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer"
-                          title="Remover conta"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {!isPaid ? (
+                            <Button
+                              size="sm"
+                              onClick={() => setPayModal({ isOpen: true, obligation: ob })}
+                              className="h-8 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 cursor-pointer"
+                            >
+                              <CheckCircle2 className="size-3.5" />
+                              <span>Pagar</span>
+                            </Button>
+                          ) : (
+                            <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold">
+                              Liquidado
+                            </Badge>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(ob.id, ob.title)}
+                            className="size-8 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer"
+                            title="Remover conta"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
 
       {/* ── GAVETA DE CADASTRO DE NOVA CONTA (SHEETPAGE) ── */}

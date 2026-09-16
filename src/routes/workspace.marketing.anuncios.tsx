@@ -596,25 +596,25 @@ function AnunciosWorkspacePage() {
         {/* ── LISTA DE CAMPANHAS DE ANÚNCIOS LOCAIS ── */}
         {["all", "active", "paused"].includes(activeTab) && (
         <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-xs">
-          <div className="p-4 bg-muted/20 flex items-center justify-between border-b border-border/40">
+          <div className="p-4 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40">
             <div className="flex items-center gap-2">
               <Megaphone className="size-4 text-primary" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Campanhas Veiculadas ({filteredCampaigns.length})
               </h2>
             </div>
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/pixels">
                   Pixels CAPI
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium">
+              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium shrink-0">
                 <Link to="/workspace/integracoes/marketplaces">
                   Marketplaces
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium">
+              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/afiliados">
                   Afiliados & Saques
                 </Link>
@@ -623,7 +623,7 @@ function AnunciosWorkspacePage() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground"
+                className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground shrink-0"
               >
                 <Link to="/workspace/marketing/anuncios/novo">
                   <Sliders className="size-3.5 mr-1" />

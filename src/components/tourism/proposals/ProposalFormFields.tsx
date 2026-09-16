@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Trash2, Plus } from "lucide-react";
 
 export const SMALL_INPUT =
-  "w-full h-8 px-3 rounded-2xl border border-border/50 bg-surface-alt/50 text-xs font-medium outline-none transition-all hover:bg-surface focus:bg-surface focus:border-border-strong focus:ring-2 focus:ring-brand/20";
+  "w-full h-11 sm:h-9 px-3.5 rounded-xl border border-border/60 bg-background text-sm sm:text-xs font-medium outline-none transition-all hover:bg-muted/30 focus:bg-background focus:border-primary/50 focus:ring-2 focus:ring-primary/20";
 
 export function replaceAt<T>(arr: T[], i: number, item: T): T[] {
   const c = arr.slice();
@@ -25,7 +25,7 @@ export function Accordion({
       <Button
         variant="ghost"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left ds-label-caps text-muted-foreground hover:bg-surface-alt/50 transition-colors shadow-none"
+        className="flex w-full items-center justify-between px-4 py-3.5 text-left ds-label-caps text-muted-foreground hover:bg-surface-alt/50 transition-colors shadow-none min-h-[44px]"
       >
         <span>{title}</span>
         {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -158,9 +158,9 @@ export function Card({ children, onRemove }: { children: React.ReactNode; onRemo
         variant="ghost"
         type="button"
         onClick={onRemove}
-        className="absolute right-2 top-2 rounded p-1 text-muted-foreground hover:bg-surface hover:text-danger transition-colors shadow-none"
+        className="absolute right-2 top-2 size-10 sm:size-8 rounded-xl p-1 text-muted-foreground hover:bg-surface hover:text-danger transition-colors shadow-none cursor-pointer"
       >
-        <Trash2 className="h-3.5 w-3.5" />
+        <Trash2 className="h-4 w-4" />
       </Button>
       {children}
     </div>
@@ -294,7 +294,7 @@ export function PhotoUpload({
           className="h-14 w-20 rounded object-cover ring-1 ring-border/50"
         />
       )}
-      <label className="cursor-pointer rounded-2xl border border-border/60 bg-surface px-3 py-1.5 text-xs font-semibold hover:bg-surface-alt transition-colors">
+      <label className="cursor-pointer inline-flex items-center justify-center rounded-xl border border-border/60 bg-surface px-4 h-11 sm:h-8 text-xs font-semibold hover:bg-surface-alt transition-colors">
         {loading ? "Enviando…" : url ? "Trocar foto" : "Adicionar foto"}
         <input
           type="file"
@@ -313,9 +313,9 @@ export function AddBtn({ children, onClick }: { children: React.ReactNode; onCli
       variant="outline"
       type="button"
       onClick={onClick}
-      className="flex h-8 items-center gap-1.5 rounded-2xl border border-border/60 bg-surface px-3 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none"
+      className="flex h-11 sm:h-8 items-center gap-1.5 rounded-xl border border-border/60 bg-surface px-4 text-xs font-semibold hover:bg-surface-alt transition-colors shadow-none cursor-pointer"
     >
-      <Plus className="h-3.5 w-3.5" />
+      <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
       {children}
     </Button>
   );

@@ -149,23 +149,23 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="p-4 sm:p-8 space-y-6">
  {/* ── 1. PASSAGEIROS TITULARES & ROOMING LIST ── */}
  {voucher.passengers && voucher.passengers.length > 0 && (
- <div className="space-y-2">
- <div className="flex items-center gap-2 pb-1 border-b border-neutral-200">
- <Users className="size-3.5 text-neutral-500" />
- <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+ <div className="space-y-3">
+ <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+ <Users className="size-4 text-neutral-500" />
+ <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
  Passageiros & Documentação
  </span>
  </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+ <div className="flex flex-col gap-2.5 sm:grid sm:grid-cols-2 lg:grid-cols-3">
  {voucher.passengers.map((p: any, idx: number) => (
  <div
  key={idx}
- className="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/50 flex flex-col justify-between"
+ className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/60 flex flex-col justify-between space-y-1.5"
  >
- <span className="font-bold text-neutral-900 text-xs truncate">{p.name}</span>
- <div className="flex items-center gap-3 text-[10px] text-neutral-500 mt-1 font-mono">
- {p.document && <span>Doc: {p.document}</span>}
- {p.seat && <span>Assento: {p.seat}</span>}
+ <span className="font-bold text-neutral-900 text-sm truncate">{p.name}</span>
+ <div className="flex items-center gap-3 text-xs text-neutral-600 font-mono">
+ {p.document && <span>Doc: <strong className="text-neutral-800">{p.document}</strong></span>}
+ {p.seat && <span>Assento: <strong className="text-neutral-800">{p.seat}</strong></span>}
  </div>
  </div>
  ))}
@@ -175,57 +175,57 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
 
  {/* ── 2. VOOS & BILHETES AÉREOS ── */}
  {voucher.flights && voucher.flights.length > 0 && (
- <div className="space-y-2.5">
- <div className="flex items-center gap-2 pb-1 border-b border-neutral-200">
- <Plane className="size-3.5 text-neutral-500" />
- <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+ <div className="space-y-3">
+ <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+ <Plane className="size-4 text-neutral-500" />
+ <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
  Malha Aérea & Cartões de Embarque
  </span>
  </div>
 
- <div className="space-y-2">
+ <div className="flex flex-col gap-3">
  {voucher.flights.map((flight: any, idx: number) => (
  <div
  key={idx}
- className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+ className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-2xs"
  >
- <div className="space-y-1">
- <div className="flex items-center gap-2">
- <span className="font-black text-sm text-neutral-900">
+ <div className="space-y-1.5">
+ <div className="flex items-center gap-2 flex-wrap">
+ <span className="font-black text-base sm:text-lg text-neutral-900">
  {flight.origin || "Origem"} → {flight.destination || "Destino"}
  </span>
  {flight.class && (
- <span className="px-2 py-0.5 rounded-md bg-neutral-200 text-neutral-700 text-[10px] font-bold uppercase">
+ <span className="px-2.5 py-0.5 rounded-md bg-neutral-200 text-neutral-800 text-xs font-bold uppercase">
  {flight.class}
  </span>
  )}
  </div>
- <p className="text-[11px] text-neutral-600">
- {flight.airline || "Cia Aérea"} • Voo {flight.flight_number || "—"}
+ <p className="text-xs sm:text-sm text-neutral-600">
+ {flight.airline || "Cia Aérea"} • Voo <strong className="text-neutral-800">{flight.flight_number || "—"}</strong>
  {flight.date && ` • ${flight.date}`}
  </p>
  </div>
 
- <div className="flex items-center gap-4 text-[11px] text-neutral-600 sm:text-right font-mono">
+ <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-neutral-700 sm:text-right font-mono">
  {(flight.departure_time || flight.arrival_time) && (
  <div>
- <span className="text-[9px] text-neutral-400 block uppercase">Horários</span>
- <span className="font-semibold text-neutral-900">
+ <span className="text-[10px] text-neutral-400 block uppercase">Horários</span>
+ <span className="font-bold text-neutral-900 text-sm">
  {flight.departure_time || "--:--"} ➔ {flight.arrival_time || "--:--"}
  </span>
  </div>
  )}
  {flight.locator && (
- <div className="bg-white px-2.5 py-1 rounded-lg border border-neutral-200">
- <span className="text-[9px] text-neutral-400 block uppercase">Localizador PNR</span>
- <span className="font-black text-neutral-900 text-xs tracking-wider">
+ <div className="bg-white px-3 py-1.5 rounded-lg border border-neutral-200 shadow-2xs">
+ <span className="text-[10px] text-neutral-400 block uppercase font-sans">Localizador PNR</span>
+ <span className="font-black text-neutral-900 text-sm tracking-wider">
  {flight.locator}
  </span>
  </div>
  )}
  {flight.baggage && (
- <div className="flex items-center gap-1 text-[10px] text-neutral-500">
- <Luggage className="size-3" />
+ <div className="flex items-center gap-1.5 text-xs text-neutral-600">
+ <Luggage className="size-3.5" />
  <span>{flight.baggage}</span>
  </div>
  )}
@@ -236,123 +236,123 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  )}
 
- {/* ── 3. HOSPEDAGEM & ACOMODAÇÃO ── */}
- {voucher.hotels && voucher.hotels.length > 0 && (
- <div className="space-y-2.5">
- <div className="flex items-center gap-2 pb-1 border-b border-neutral-200">
- <Building2 className="size-3.5 text-neutral-500" />
- <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
- Hospedagem & Voucher Hoteleiro
- </span>
- </div>
+  {/* ── 3. HOSPEDAGEM & ACOMODAÇÃO ── */}
+  {voucher.hotels && voucher.hotels.length > 0 && (
+  <div className="space-y-3">
+  <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+  <Building2 className="size-4 text-neutral-500" />
+  <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
+  Hospedagem & Voucher Hoteleiro
+  </span>
+  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- {voucher.hotels.map((hotel: any, idx: number) => (
- <div
- key={idx}
- className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50/60 space-y-2"
- >
- <div className="flex items-start justify-between gap-2">
- <div>
- <h4 className="font-bold text-neutral-900 text-xs">{hotel.name}</h4>
- {hotel.city && (
- <span className="text-[10px] text-neutral-500 flex items-center gap-1 mt-0.5">
- <MapPin className="size-3" /> {hotel.city}
- </span>
- )}
- </div>
- {hotel.confirmation && (
- <div className="text-right font-mono">
- <span className="text-[9px] text-neutral-400 block uppercase">Reserva</span>
- <span className="font-bold text-neutral-900 text-[11px]">
- {hotel.confirmation}
- </span>
- </div>
- )}
- </div>
+  <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
+  {voucher.hotels.map((hotel: any, idx: number) => (
+  <div
+  key={idx}
+  className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/70 space-y-3 shadow-2xs"
+  >
+  <div className="flex items-start justify-between gap-2">
+  <div>
+  <h4 className="font-bold text-neutral-900 text-sm sm:text-base">{hotel.name}</h4>
+  {hotel.city && (
+  <span className="text-xs text-neutral-500 flex items-center gap-1 mt-0.5">
+  <MapPin className="size-3.5" /> {hotel.city}
+  </span>
+  )}
+  </div>
+  {hotel.confirmation && (
+  <div className="text-right font-mono">
+  <span className="text-[10px] text-neutral-400 block uppercase">Reserva</span>
+  <span className="font-bold text-neutral-900 text-xs sm:text-sm">
+  {hotel.confirmation}
+  </span>
+  </div>
+  )}
+  </div>
 
- <div className="grid grid-cols-2 gap-2 text-[10px] bg-white p-2 rounded-lg border border-neutral-150">
- <div>
- <span className="text-neutral-400 block uppercase">Check-in</span>
- <span className="font-semibold text-neutral-800">{hotel.checkin || "—"}</span>
- </div>
- <div>
- <span className="text-neutral-400 block uppercase">Check-out</span>
- <span className="font-semibold text-neutral-800">{hotel.checkout || "—"}</span>
- </div>
- {hotel.room_type && (
- <div>
- <span className="text-neutral-400 block uppercase">Quarto</span>
- <span className="font-semibold text-neutral-800 truncate block">
- {hotel.room_type}
- </span>
- </div>
- )}
- {hotel.meal_plan && (
- <div>
- <span className="text-neutral-400 block uppercase">Regime</span>
- <span className="font-semibold text-neutral-800">{hotel.meal_plan}</span>
- </div>
- )}
- </div>
- </div>
- ))}
- </div>
- </div>
- )}
+  <div className="grid grid-cols-2 gap-2.5 text-xs bg-white p-2.5 rounded-lg border border-neutral-200">
+  <div>
+  <span className="text-[10px] text-neutral-400 block uppercase">Check-in</span>
+  <span className="font-bold text-neutral-800">{hotel.checkin || "—"}</span>
+  </div>
+  <div>
+  <span className="text-[10px] text-neutral-400 block uppercase">Check-out</span>
+  <span className="font-bold text-neutral-800">{hotel.checkout || "—"}</span>
+  </div>
+  {hotel.room_type && (
+  <div>
+  <span className="text-[10px] text-neutral-400 block uppercase">Quarto</span>
+  <span className="font-semibold text-neutral-800 truncate block">
+  {hotel.room_type}
+  </span>
+  </div>
+  )}
+  {hotel.meal_plan && (
+  <div>
+  <span className="text-[10px] text-neutral-400 block uppercase">Regime</span>
+  <span className="font-semibold text-neutral-800">{hotel.meal_plan}</span>
+  </div>
+  )}
+  </div>
+  </div>
+  ))}
+  </div>
+  </div>
+  )}
 
- {/* ── 4. TRANSFERS, PASSEIOS & SERVIÇOS ── */}
- {((voucher.transfers && voucher.transfers.length > 0) ||
- (voucher.tours && voucher.tours.length > 0)) && (
- <div className="space-y-2.5">
- <div className="flex items-center gap-2 pb-1 border-b border-neutral-200">
- <Car className="size-3.5 text-neutral-500" />
- <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
- Transfers & Passeios Inclusos
- </span>
- </div>
+  {/* ── 4. TRANSFERS, PASSEIOS & SERVIÇOS ── */}
+  {((voucher.transfers && voucher.transfers.length > 0) ||
+  (voucher.tours && voucher.tours.length > 0)) && (
+  <div className="space-y-3">
+  <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
+  <Car className="size-4 text-neutral-500" />
+  <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
+  Transfers & Passeios Inclusos
+  </span>
+  </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
- {voucher.transfers?.map((t: any, idx: number) => (
- <div
- key={idx}
- className="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/50 flex items-center justify-between text-[11px]"
- >
- <div className="space-y-0.5">
- <span className="font-bold text-neutral-900 block">{t.type || "Transfer"}</span>
- <span className="text-neutral-500 text-[10px]">
- {t.origin} ➔ {t.destination}
- </span>
- </div>
- {t.date && (
- <span className="font-mono text-[10px] text-neutral-600 bg-white px-2 py-0.5 rounded border border-neutral-200">
- {t.date}
- </span>
- )}
- </div>
- ))}
+  <div className="flex flex-col gap-2.5 sm:grid sm:grid-cols-2">
+  {voucher.transfers?.map((t: any, idx: number) => (
+  <div
+  key={idx}
+  className="p-3 rounded-xl border border-neutral-200 bg-neutral-50/60 flex items-center justify-between text-xs sm:text-sm"
+  >
+  <div className="space-y-0.5">
+  <span className="font-bold text-neutral-900 block">{t.type || "Transfer"}</span>
+  <span className="text-neutral-500 text-xs">
+  {t.origin} ➔ {t.destination}
+  </span>
+  </div>
+  {t.date && (
+  <span className="font-mono text-xs text-neutral-700 bg-white px-2.5 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
+  {t.date}
+  </span>
+  )}
+  </div>
+  ))}
 
- {voucher.tours?.map((tour: any, idx: number) => (
- <div
- key={idx}
- className="p-2.5 rounded-xl border border-neutral-200 bg-neutral-50/50 flex items-center justify-between text-[11px]"
- >
- <div className="space-y-0.5">
- <span className="font-bold text-neutral-900 block">{tour.title}</span>
- {tour.location && (
- <span className="text-neutral-500 text-[10px]">{tour.location}</span>
- )}
- </div>
- {tour.date && (
- <span className="font-mono text-[10px] text-neutral-600 bg-white px-2 py-0.5 rounded border border-neutral-200">
- {tour.date}
- </span>
- )}
- </div>
- ))}
- </div>
- </div>
- )}
+  {voucher.tours?.map((tour: any, idx: number) => (
+  <div
+  key={idx}
+  className="p-3 rounded-xl border border-neutral-200 bg-neutral-50/60 flex items-center justify-between text-xs sm:text-sm"
+  >
+  <div className="space-y-0.5">
+  <span className="font-bold text-neutral-900 block">{tour.title}</span>
+  {tour.location && (
+  <span className="text-neutral-500 text-xs">{tour.location}</span>
+  )}
+  </div>
+  {tour.date && (
+  <span className="font-mono text-xs text-neutral-700 bg-white px-2.5 py-1 rounded border border-neutral-200 shadow-2xs font-semibold">
+  {tour.date}
+  </span>
+  )}
+  </div>
+  ))}
+  </div>
+  </div>
+  )}
 
  {/* ── 5. SEGURO VIAGEM & ASSISTÊNCIA ── */}
  {voucher.insurance && voucher.insurance.policy_number && (

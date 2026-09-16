@@ -233,7 +233,7 @@ function VehicleLayoutsListPage() {
  toolDescription="Editor interativo de plantas baixas de ônibus (Double Decker, Executivo, Leito) com mapa de assentos para agências de turismo e fretamento."
  store={store}
  >
- <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full">
+ <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20">
  {/* ── 1. BARRA CANÔNICA APPLE HIG ── */}
  <WorkspaceCanonicalToolbar
  placeholder="Buscar modelo de veículo..."
@@ -260,7 +260,7 @@ function VehicleLayoutsListPage() {
  {filtered.map((layout) => (
  <div
  key={layout.id}
- className="flex flex-col justify-between p-5 rounded-2xl border border-border/70 bg-card hover:border-primary/40 transition-all space-y-4"
+ className="flex flex-col justify-between p-4 sm:p-5 rounded-2xl border border-border/70 bg-card hover:border-primary/40 transition-all space-y-4"
  >
  <div className="space-y-3">
  <div className="flex items-start justify-between gap-2">
@@ -303,16 +303,17 @@ function VehicleLayoutsListPage() {
 
  {/* Rodapé de Ações */}
  <div className="flex items-center justify-between pt-3 border-t border-border/60">
- <div className="flex items-center gap-1">
+ <div className="flex items-center gap-1.5">
  <Button
  type="button"
  variant="ghost"
  size="icon"
  onClick={() => handleDuplicate(layout)}
  title="Duplicar modelo"
- className="size-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+ aria-label="Duplicar modelo"
+ className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
  >
- <Copy className="size-3.5" />
+ <Copy className="size-4 sm:size-3.5" />
  </Button>
  <Button
  type="button"
@@ -320,9 +321,10 @@ function VehicleLayoutsListPage() {
  size="icon"
  onClick={() => handleDelete(layout)}
  title="Excluir modelo"
- className="size-8 rounded-lg text-muted-foreground hover:text-rose-600 cursor-pointer"
+ aria-label="Excluir modelo"
+ className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-rose-600 cursor-pointer"
  >
- <Trash2 className="size-3.5" />
+ <Trash2 className="size-4 sm:size-3.5" />
  </Button>
  </div>
 
@@ -330,7 +332,7 @@ function VehicleLayoutsListPage() {
  asChild
  variant="outline"
  size="sm"
- className="h-8.5 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+ className="h-11 sm:h-8.5 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
  >
  <Link to={"/workspace/turismo/frota/$id" as any} params={{ id: layout.id } as any}>
  <Edit3 className="size-3.5" /> Editar Mapa 2D
@@ -423,14 +425,14 @@ function VehicleLayoutsListPage() {
             variant="ghost"
             onClick={() => setModalOpen(false)}
             disabled={submitting}
-            className="h-10 px-4 rounded-xl text-xs cursor-pointer"
+            className="h-11 sm:h-10 px-4 rounded-xl text-xs cursor-pointer"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={submitting || !name.trim()}
-            className="h-10 px-5 rounded-xl text-xs font-semibold cursor-pointer"
+            className="h-11 sm:h-10 px-5 rounded-xl text-xs font-semibold cursor-pointer"
           >
             {submitting ? "Criando..." : "Criar Modelo"}
           </Button>
@@ -461,7 +463,7 @@ function VehicleLayoutsListPage() {
         <AlertDialogFooter className="mt-4 gap-2">
           <AlertDialogCancel
             disabled={isDeleting}
-            className="h-10 px-4 rounded-xl text-xs font-semibold"
+            className="h-11 sm:h-10 px-4 rounded-xl text-xs font-semibold"
           >
             Cancelar
           </AlertDialogCancel>
@@ -471,7 +473,7 @@ function VehicleLayoutsListPage() {
               confirmDelete();
             }}
             disabled={isDeleting}
-            className="h-10 px-4 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white"
+            className="h-11 sm:h-10 px-4 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white"
           >
             {isDeleting ? "Excluindo..." : "Excluir Definitivamente"}
           </AlertDialogAction>

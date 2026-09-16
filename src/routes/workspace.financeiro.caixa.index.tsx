@@ -511,61 +511,31 @@ function CashRegisterManagerPage() {
       </div>
 
       {filteredEntries.length === 0 ? (
-        <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border/70 rounded-xl bg-card/40">
+        <div className="py-12 text-center text-sm text-muted-foreground border border-dashed border-border/70 rounded-2xl bg-card/40 p-6">
           Nenhuma movimentação registrada no canal selecionado neste turno.
         </div>
       ) : (
-        <div className="bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30">
-                <TableHead className="text-xs font-bold">Horário</TableHead>
-                <TableHead className="text-xs font-bold">Origem / Canal</TableHead>
-                <TableHead className="text-xs font-bold">Tipo / Método</TableHead>
-                <TableHead className="text-xs font-bold">Descrição / Notas</TableHead>
-                <TableHead className="text-xs font-bold text-right">Valor</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEntries.map((entry: any) => {
-                const isNegative = entry.amount_cents < 0;
-                return (
-                  <TableRow key={entry.id} className="hover:bg-muted/20 text-xs">
-                    <TableCell className="font-mono text-muted-foreground whitespace-nowrap">
-                      {formatDateTime(entry.created_at)}
-                    </TableCell>
-                    <TableCell>
+        <>
+          {/* ── 1. Mobile List Layout para Movimentações do Turno ── */}
+          <div className="space-y-3 block md:hidden">
+            {filteredEntries.map((entry: any) => {
+              const isNegative = entry.amount_cents < 0;
+
+              return (
+                <div
+                  key={entry.id}
+                  className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-2.5 transition-all"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {formatDateTime(entry.created_at)}
+                      </span>
                       {getChannelBadge(entry.channel)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <Badge
-                          variant={isNegative ? "destructive" : "outline"}
-                          className="text-[10px] font-mono uppercase"
-                        >
-                          {entry.method}
-                        </Badge>
-                        {entry.order_id ? (
-                          <Badge variant="outline" className="text-[9px] font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
-                            NF-e
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[9px] font-mono text-muted-foreground border-border/40">
-                            Não Fiscal
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-md truncate text-foreground font-medium">
-                      <span>{entry.description || "Venda balcão / Lançamento"}</span>
-                      {entry.marketplace_fee_cents && entry.marketplace_fee_cents > 0 ? (
-                        <span className="block text-[10px] text-muted-foreground font-mono">
-                          Taxa canal: -{formatMoney(entry.marketplace_fee_cents)}
-                        </span>
-                      ) : null}
-                    </TableCell>
-                    <TableCell
-                      className={`text-right font-mono font-bold ${
+                    </div>
+
+                    <span
+                      className={`font-mono text-base font-bold ${
                         isNegative
                           ? "text-rose-600 dark:text-rose-400"
                           : "text-emerald-600 dark:text-emerald-400"
@@ -573,6 +543,290 @@ function CashRegisterManagerPage() {
                     >
                       {isNegative ? "-" : "+"}
                       {formatMoney(Math.abs(entry.amount_cents))}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      {entry.description || "Venda balcão / Lançamento"}
+                    </p>
+                    {entry.marketplace_fee_cents && entry.marketplace_fee_cents > 0 ? (
+                      <span className="block text-xs text-muted-foreground font-mono">
+                        Taxa canal: -{formatMoney(entry.marketplace_fee_cents)}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1 border-t border-border/30">
+                    <Badge
+                      variant={isNegative ? "destructive" : "outline"}
+                      className="text-xs font-mono uppercase px-2.5 py-0.5"
+                    >
+                      {entry.method}
+                    </Badge>
+                    {entry.order_id ? (
+                      <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5 px-2 py-0.5">
+                        NF-e
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs font-mono text-muted-foreground border-border/40 px-2 py-0.5">
+                        Não Fiscal
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── 2. Desktop High-Density Table Layout ── */}
+          <div className="hidden md:block bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Horário</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Origem / Canal</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Tipo / Método</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Descrição / Notas</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Valor</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredEntries.map((entry: any) => {
+                  const isNegative = entry.amount_cents < 0;
+                  return (
+                    <TableRow key={entry.id} className="hover:bg-muted/20 text-xs">
+                      <TableCell className="font-mono text-muted-foreground whitespace-nowrap py-3.5">
+                        {formatDateTime(entry.created_at)}
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        {getChannelBadge(entry.channel)}
+                      </TableCell>
+                      <TableCell className="py-3.5">
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            variant={isNegative ? "destructive" : "outline"}
+                            className="text-[10px] font-mono uppercase"
+                          >
+                            {entry.method}
+                          </Badge>
+                          {entry.order_id ? (
+                            <Badge variant="outline" className="text-[9px] font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
+                              NF-e
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[9px] font-mono text-muted-foreground border-border/40">
+                              Não Fiscal
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-md truncate text-foreground font-medium py-3.5">
+                        <span>{entry.description || "Venda balcão / Lançamento"}</span>
+                        {entry.marketplace_fee_cents && entry.marketplace_fee_cents > 0 ? (
+                          <span className="block text-[10px] text-muted-foreground font-mono">
+                            Taxa canal: -{formatMoney(entry.marketplace_fee_cents)}
+                          </span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell
+                        className={`text-right font-mono font-bold py-3.5 ${
+                          isNegative
+                            ? "text-rose-600 dark:text-rose-400"
+                            : "text-emerald-600 dark:text-emerald-400"
+                        }`}
+                      >
+                        {isNegative ? "-" : "+"}
+                        {formatMoney(Math.abs(entry.amount_cents))}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
+      </div>
+    ) : (
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-2xl bg-card/40 px-4">
+        <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+          <ReceiptText className="size-6" />
+        </div>
+        <div className="space-y-1.5">
+          <h3 className="text-base sm:text-lg font-bold text-foreground">Nenhum turno aberto no momento</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            Abra um turno de caixa para começar a registrar movimentações de PDV e vendas.
+          </p>
+        </div>
+        <Button
+          onClick={() => setIsOpenModalOpen(true)}
+          className="rounded-xl text-sm font-bold h-11 px-6 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+        >
+          <Play className="size-4 mr-2" />
+          Abrir Turno de Caixa
+        </Button>
+      </div>
+    )}
+  </TabsContent>
+
+  {/* ── Conteúdo: Histórico de Turnos Anteriores ── */}
+  <TabsContent value="history" className="mt-0 space-y-4">
+    {history.length === 0 ? (
+      <div className="py-16 text-center space-y-4 border border-border/50 rounded-2xl bg-card/40 px-4">
+        <div className="size-14 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
+          <History className="size-6" />
+        </div>
+        <div className="space-y-1.5">
+          <h3 className="text-base sm:text-lg font-bold text-foreground">Nenhum histórico disponível</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            Quando você fechar os turnos de caixa, o relatório e auditoria ficarão salvos aqui.
+          </p>
+        </div>
+      </div>
+    ) : (
+      <>
+        {/* ── 1. Mobile List Layout para Histórico de Turnos ── */}
+        <div className="space-y-3 block md:hidden">
+          {history.map((turn: any) => {
+            const diff =
+              turn.final_balance_cents !== null && turn.expected_balance_cents !== null
+                ? turn.final_balance_cents - turn.expected_balance_cents
+                : 0;
+
+            return (
+              <div
+                key={turn.id}
+                className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3 transition-all"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="text-sm font-bold text-foreground">
+                      Aberto: {formatDateTime(turn.opened_at)}
+                    </h4>
+                    {turn.closed_at && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Fechado: {formatDateTime(turn.closed_at)}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Operador: {turn.opened_by_profile?.full_name || "Operador"}
+                    </p>
+                  </div>
+
+                  {turn.status === "open" ? (
+                    <Badge variant="default" className="text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                      Aberto
+                    </Badge>
+                  ) : diff === 0 ? (
+                    <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                      Exato
+                    </Badge>
+                  ) : diff > 0 ? (
+                    <Badge variant="outline" className="text-xs font-semibold text-cyan-600 border-cyan-500/30 px-2.5 py-0.5 rounded-full">
+                      Sobra +{formatMoney(diff)}
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                      Falta -{formatMoney(Math.abs(diff))}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-border/40 grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="p-2 rounded-xl bg-muted/30">
+                    <span className="text-[11px] text-muted-foreground block">Troco</span>
+                    <span className="font-mono font-bold text-foreground">{formatMoney(turn.initial_balance_cents)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-muted/30">
+                    <span className="text-[11px] text-muted-foreground block">Esperado</span>
+                    <span className="font-mono font-bold text-foreground">{formatMoney(turn.expected_balance_cents ?? turn.currentBalanceCents ?? 0)}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-muted/30">
+                    <span className="text-[11px] text-muted-foreground block">Contado</span>
+                    <span className="font-mono font-bold text-foreground">
+                      {turn.final_balance_cents !== null ? formatMoney(turn.final_balance_cents) : "Em Aberto"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── 2. Desktop High-Density Table Layout ── */}
+        <div className="hidden md:block bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Abertura / Fechamento</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Responsáveis</TableHead>
+                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Troco Inicial</TableHead>
+                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Esperado</TableHead>
+                <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Contado</TableHead>
+                <TableHead className="text-center font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Diferença</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {history.map((turn: any) => {
+                const diff =
+                  turn.final_balance_cents !== null && turn.expected_balance_cents !== null
+                    ? turn.final_balance_cents - turn.expected_balance_cents
+                    : 0;
+
+                return (
+                  <TableRow key={turn.id} className="hover:bg-muted/20 text-xs">
+                    <TableCell className="font-mono text-muted-foreground whitespace-nowrap py-3.5">
+                      <div>
+                        <span className="text-foreground font-semibold">
+                          {formatDateTime(turn.opened_at)}
+                        </span>
+                        {turn.closed_at && (
+                          <p className="text-[10px] text-muted-foreground">
+                            Até {formatDateTime(turn.closed_at)}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3.5">
+                      <div className="text-foreground">
+                        <span>{turn.opened_by_profile?.full_name || "Operador"}</span>
+                        {turn.closed_by_profile && (
+                          <p className="text-[10px] text-muted-foreground">
+                            Fechado por {turn.closed_by_profile.full_name}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-mono py-3.5">
+                      {formatMoney(turn.initial_balance_cents)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono py-3.5">
+                      {formatMoney(turn.expected_balance_cents ?? turn.currentBalanceCents ?? 0)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono font-bold py-3.5">
+                      {turn.final_balance_cents !== null
+                        ? formatMoney(turn.final_balance_cents)
+                        : "Em Aberto"}
+                    </TableCell>
+                    <TableCell className="text-center py-3.5">
+                      {turn.status === "open" ? (
+                        <Badge variant="default" className="text-[10px]">
+                          Aberto
+                        </Badge>
+                      ) : diff === 0 ? (
+                        <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30">
+                          Exato (R$ 0,00)
+                        </Badge>
+                      ) : diff > 0 ? (
+                        <Badge variant="outline" className="text-[10px] text-cyan-600 border-cyan-500/30">
+                          Sobra +{formatMoney(diff)}
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-[10px]">
+                          Falta -{formatMoney(Math.abs(diff))}
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -580,126 +834,10 @@ function CashRegisterManagerPage() {
             </TableBody>
           </Table>
         </div>
-      )}
-    </div>
-  ) : (
- <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
- <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
- <ReceiptText className="size-6" />
- </div>
- <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground">Nenhuma movimentação neste turno</h3>
- <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- As vendas realizadas no Terminal PDV, sangrias e suprimentos serão listadas aqui em tempo real.
- </p>
- </div>
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9">
- <Link to="/workspace/pdv">
- <Layers className="size-3.5 mr-1" />
- Ir para Terminal PDV
- </Link>
- </Button>
- </div>
- )}
- </TabsContent>
-
- {/* ── Conteúdo: Histórico de Turnos Anteriores ── */}
- <TabsContent value="history" className="mt-0 space-y-4">
- {history.length === 0 ? (
- <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
- <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
- <History className="size-6" />
- </div>
- <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground">Nenhum histórico disponível</h3>
- <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Quando você fechar os turnos de caixa, o relatório e auditoria ficarão salvos aqui.
- </p>
- </div>
- </div>
- ) : (
- <div className="bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
- <Table>
- <TableHeader>
- <TableRow className="bg-muted/30">
- <TableHead className="text-xs font-bold">Abertura / Fechamento</TableHead>
- <TableHead className="text-xs font-bold">Responsáveis</TableHead>
- <TableHead className="text-xs font-bold text-right">Troco Inicial</TableHead>
- <TableHead className="text-xs font-bold text-right">Esperado</TableHead>
- <TableHead className="text-xs font-bold text-right">Contado</TableHead>
- <TableHead className="text-xs font-bold text-center">Diferença</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {history.map((turn: any) => {
- const diff =
- turn.final_balance_cents !== null && turn.expected_balance_cents !== null
- ? turn.final_balance_cents - turn.expected_balance_cents
- : 0;
-
- return (
- <TableRow key={turn.id} className="hover:bg-muted/20 text-xs">
- <TableCell className="font-mono text-muted-foreground whitespace-nowrap">
- <div>
- <span className="text-foreground font-semibold">
- {formatDateTime(turn.opened_at)}
- </span>
- {turn.closed_at && (
- <p className="text-[10px] text-muted-foreground">
- Até {formatDateTime(turn.closed_at)}
- </p>
- )}
- </div>
- </TableCell>
- <TableCell>
- <div className="text-foreground">
- <span>{turn.opened_by_profile?.full_name || "Operador"}</span>
- {turn.closed_by_profile && (
- <p className="text-[10px] text-muted-foreground">
- Fechado por {turn.closed_by_profile.full_name}
- </p>
- )}
- </div>
- </TableCell>
- <TableCell className="text-right font-mono">
- {formatMoney(turn.initial_balance_cents)}
- </TableCell>
- <TableCell className="text-right font-mono">
- {formatMoney(turn.expected_balance_cents ?? turn.currentBalanceCents ?? 0)}
- </TableCell>
- <TableCell className="text-right font-mono font-bold">
- {turn.final_balance_cents !== null
- ? formatMoney(turn.final_balance_cents)
- : "Em Aberto"}
- </TableCell>
- <TableCell className="text-center">
- {turn.status === "open" ? (
- <Badge variant="default" className="text-[10px]">
- Aberto
- </Badge>
- ) : diff === 0 ? (
- <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30">
- Exato (R$ 0,00)
- </Badge>
- ) : diff > 0 ? (
- <Badge variant="outline" className="text-[10px] text-cyan-600 border-cyan-500/30">
- Sobra +{formatMoney(diff)}
- </Badge>
- ) : (
- <Badge variant="destructive" className="text-[10px]">
- Falta -{formatMoney(Math.abs(diff))}
- </Badge>
- )}
- </TableCell>
- </TableRow>
- );
- })}
- </TableBody>
- </Table>
- </div>
- )}
- </TabsContent>
- </Tabs>
+      </>
+    )}
+  </TabsContent>
+</Tabs>
 
  {/* ── Side Sheet: Abertura de Turno ── */}
  <Sheet open={isOpenModalOpen} onOpenChange={setIsOpenModalOpen}>

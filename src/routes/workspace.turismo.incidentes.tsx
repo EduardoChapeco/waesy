@@ -254,7 +254,7 @@ export default function TourismIncidentsPage() {
   const anacRights = detail?.anac_rights_summary as any;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 min-h-[calc(100vh-8.5rem)] pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 min-h-[calc(100vh-8.5rem)] pb-20 animate-in fade-in duration-200">
       {/* ── Toolbar Canônica ── */}
       <WorkspaceCanonicalToolbar
         tabs={[
@@ -432,7 +432,7 @@ export default function TourismIncidentsPage() {
                         size="sm"
                         onClick={() => updateStatusMutation.mutate({ status: 'awaiting_airline' })}
                         disabled={updateStatusMutation.isPending}
-                        className="h-7 px-2.5 text-[11px] gap-1 font-semibold cursor-pointer"
+                        className="h-10 sm:h-8 px-3.5 sm:px-2.5 text-xs rounded-xl sm:rounded-lg gap-1 font-semibold cursor-pointer"
                       >
                         Aguardando CIA
                       </Button>
@@ -442,9 +442,9 @@ export default function TourismIncidentsPage() {
                       size="sm"
                       onClick={() => updateStatusMutation.mutate({ status: 'resolved', note: 'Incidente resolvido pela agência.' })}
                       disabled={updateStatusMutation.isPending}
-                      className="h-7 px-2.5 text-[11px] gap-1 text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
+                      className="h-10 sm:h-8 px-3.5 sm:px-2.5 text-xs rounded-xl sm:rounded-lg gap-1 text-emerald-600 hover:text-emerald-700 font-semibold cursor-pointer"
                     >
-                      <CheckCircle2 className="size-3" />
+                      <CheckCircle2 className="size-3.5" />
                       Marcar Resolvido
                     </Button>
                   </div>
@@ -488,7 +488,7 @@ export default function TourismIncidentsPage() {
                   <select
                     value={replyType}
                     onChange={(e) => setReplyType(e.target.value as TourismEventType)}
-                    className="h-8 px-2 rounded-lg border border-input bg-background text-[11px] font-medium text-foreground focus:outline-none shrink-0"
+                    className="h-10 sm:h-8 px-3 rounded-xl sm:rounded-lg border border-input bg-background text-xs font-medium text-foreground focus:outline-none shrink-0 cursor-pointer"
                   >
                     <option value="note">Nota Interna</option>
                     <option value="airline_contact">Contato CIA</option>
@@ -522,7 +522,7 @@ export default function TourismIncidentsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full h-9 gap-2 text-xs font-semibold text-emerald-700 hover:text-emerald-800 border-emerald-500/30 cursor-pointer"
+                    className="w-full h-11 sm:h-9 rounded-xl gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 border-emerald-500/30 cursor-pointer"
                     onClick={() => {
                       const msg = encodeURIComponent(
                         `Olá${detail.passenger_name ? ` ${detail.passenger_name}` : ''}! Estamos acompanhando sua situação${detail.booking_reference ? ` (Reserva: ${detail.booking_reference})` : ''} e trabalhando para resolver o mais rápido possível. Por favor aguarde nosso contato.`

@@ -450,7 +450,7 @@ function WorkspaceBoardingPage() {
     : null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col min-h-[calc(100vh-4rem)] pb-12 overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-[calc(100vh-4rem)] pb-12 overflow-x-hidden">
       {/* ── Canonical Toolbar ── */}
       <WorkspaceCanonicalToolbar
         viewModes={[
@@ -472,7 +472,7 @@ function WorkspaceBoardingPage() {
           variant: 'outline',
         }}
         filterSlot={
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full">
             {[
               { id: 'all', label: 'Todos' },
               { id: 'urgent', label: `Urgentes (${urgentCount})` },
@@ -483,9 +483,9 @@ function WorkspaceBoardingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`h-8 sm:h-7 px-3 sm:px-2.5 rounded-lg text-xs sm:text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
+                className={`min-h-[44px] sm:min-h-[32px] h-11 sm:h-7 px-4 sm:px-2.5 rounded-xl text-xs sm:text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
                   activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-primary text-primary-foreground font-bold shadow-2xs'
                     : 'bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -503,11 +503,12 @@ function WorkspaceBoardingPage() {
             {/* Calendar header */}
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-foreground capitalize">{monthName}</h2>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 p-0 cursor-pointer"
+                  aria-label="Mês anterior"
+                  className="size-11 sm:size-8 p-0 rounded-xl cursor-pointer"
                   onClick={() => {
                     if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
                     else setCalMonth(m => m - 1);
@@ -518,7 +519,7 @@ function WorkspaceBoardingPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-3 text-xs cursor-pointer"
+                  className="h-11 sm:h-8 px-4 sm:px-3 text-xs font-bold rounded-xl cursor-pointer"
                   onClick={() => { setCalYear(today.getFullYear()); setCalMonth(today.getMonth()); }}
                 >
                   Hoje
@@ -526,7 +527,8 @@ function WorkspaceBoardingPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 p-0 cursor-pointer"
+                  aria-label="Próximo mês"
+                  className="size-11 sm:size-8 p-0 rounded-xl cursor-pointer"
                   onClick={() => {
                     if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
                     else setCalMonth(m => m + 1);
@@ -763,12 +765,12 @@ function WorkspaceBoardingPage() {
                 )}
 
                 {/* Stage selector */}
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-[11px] text-muted-foreground">Etapa:</span>
+                <div className="flex items-center gap-2 pt-1.5">
+                  <span className="text-xs sm:text-[11px] text-muted-foreground font-medium">Etapa:</span>
                   <select
                     value={detail.stage}
                     onChange={e => stageMutation.mutate({ id: detail.id, stage: e.target.value })}
-                    className="h-7 px-2 rounded-lg border border-input bg-background text-[11px] font-semibold focus:outline-none flex-1"
+                    className="h-10 sm:h-7 px-3 sm:px-2 rounded-xl border border-input bg-background text-xs sm:text-[11px] font-semibold focus:outline-none flex-1 cursor-pointer"
                   >
                     {DEPARTURE_STAGES.map(s => (
                       <option key={s.id} value={s.id}>{s.label}</option>
@@ -781,10 +783,10 @@ function WorkspaceBoardingPage() {
                       href={`https://wa.me/55${detail.client_phone.replace(/\D/g, '')}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center hover:bg-emerald-500/20 shrink-0"
+                      className="size-10 sm:size-7 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center hover:bg-emerald-500/20 shrink-0 cursor-pointer"
                       title="Conversar no WhatsApp"
                     >
-                      <Send className="size-3.5" />
+                      <Send className="size-4 sm:size-3.5" />
                     </a>
                   )}
 
@@ -794,16 +796,16 @@ function WorkspaceBoardingPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => exportGuiaPdf(detail)}
-                    className="h-7 px-2 text-[11px] font-bold gap-1 rounded-lg border-border cursor-pointer shrink-0"
+                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] font-bold gap-1.5 rounded-xl border-border cursor-pointer shrink-0"
                     title="Exportar Guia de Embarque PDF"
                   >
-                    <Download className="size-3" />
+                    <Download className="size-3.5 sm:size-3" />
                     <span>Guia PDF</span>
                   </Button>
                 </div>
 
                 {/* Tab navigation inside sheet */}
-                <div className="flex border-b border-border/60 gap-0 -mx-5 px-5 mt-1">
+                <div className="flex border-b border-border/60 gap-0 -mx-5 px-5 mt-2">
                   {[
                     { id: 'checklist', label: `Checklist (${checklist.length})` },
                     { id: 'documents', label: `Docs (${documents.length})` },
@@ -812,9 +814,9 @@ function WorkspaceBoardingPage() {
                     <button
                       key={tab.id}
                       onClick={() => setDetailTab(tab.id as any)}
-                      className={`px-4 py-2 text-[11px] font-semibold border-b-2 transition-colors cursor-pointer ${
+                      className={`min-h-[44px] sm:min-h-[36px] px-4 py-2.5 sm:py-2 text-xs sm:text-[11px] font-semibold border-b-2 transition-colors cursor-pointer flex items-center justify-center ${
                         detailTab === tab.id
-                          ? 'border-primary text-primary'
+                          ? 'border-primary text-primary font-bold'
                           : 'border-transparent text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -1236,11 +1238,11 @@ function WorkspaceBoardingPage() {
             </div>
 
             <div className="px-5 py-4 border-t border-border/60 bg-muted/20 flex items-center justify-end gap-2 shrink-0">
-              <Button type="button" variant="outline" onClick={() => setNewOpen(false)} className="h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer">
+              <Button type="button" variant="outline" onClick={() => setNewOpen(false)} className="h-11 sm:h-10 px-4 rounded-xl text-xs font-semibold cursor-pointer">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-10 px-5 rounded-xl text-xs font-bold cursor-pointer">
-                {createMutation.isPending ? <><Loader2 className="size-3 animate-spin mr-1.5" />Criando...</> : 'Criar Embarque'}
+              <Button type="submit" disabled={createMutation.isPending || !clientName.trim() || !destination.trim() || !departureDate} className="h-11 sm:h-10 px-5 rounded-xl text-xs font-bold cursor-pointer shadow-xs">
+                {createMutation.isPending ? <><Loader2 className="size-3.5 animate-spin mr-1.5" />Criando...</> : 'Criar Embarque'}
               </Button>
             </div>
           </form>
@@ -1272,7 +1274,7 @@ function DepartureCard({
   return (
     <div
       onClick={onOpen}
-      className={`p-3.5 rounded-2xl border cursor-pointer hover:shadow-sm transition-all ${urgencyClass}`}
+      className={`p-4 sm:p-3.5 rounded-2xl border cursor-pointer hover:shadow-sm transition-all ${urgencyClass}`}
     >
       <div className="flex items-start justify-between gap-1 mb-2">
         <div>

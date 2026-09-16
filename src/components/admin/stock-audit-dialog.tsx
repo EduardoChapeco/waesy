@@ -19,7 +19,15 @@ import { Textarea } from "@/components/ui/textarea";
 // Importa a função de auditoria.
 import { performStockAudit } from "@/services/stock.functions";
 
-export function StockAuditDialog({ variant }: { variant: any }) {
+export function StockAuditDialog({
+  variant,
+  className,
+  children,
+}: {
+  variant: any;
+  className?: string;
+  children?: React.ReactNode;
+}) {
  const router = useRouter();
  const [open, setOpen] = useState(false);
  const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,9 +83,13 @@ export function StockAuditDialog({ variant }: { variant: any }) {
  setCountedQty(variant.stock_on_hand.toString());
  setOpen(true);
  }}
- className="text-xs h-8 rounded-xl font-medium"
+ className={className || "text-xs h-8 rounded-xl font-medium"}
  >
+ {children || (
+ <>
  <ClipboardCheck className="mr-1.5 size-3.5" /> Balanço
+ </>
+ )}
  </Button>
 
  <SheetPage

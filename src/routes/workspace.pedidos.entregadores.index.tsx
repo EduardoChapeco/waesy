@@ -205,7 +205,7 @@ function CouriersListPage() {
 
   return (
     <NicheOperationalGuard requiredNiches={[]}>
-      <div className="flex flex-col h-full space-y-6 max-w-7xl mx-auto">
+      <div className="flex flex-col h-full space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
         {/* ── TOOLBAR CANÔNICA SOBERANA Waesy ── */}
         <WorkspaceCanonicalToolbar
           tabs={tabs}
@@ -262,68 +262,45 @@ function CouriersListPage() {
               </Button>
             </div>
 
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/10 text-xs text-muted-foreground uppercase tracking-wider">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Entregador</th>
-                  <th className="px-4 py-3 font-medium">Veículo</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium text-right">Taxa Padrão</th>
-                  <th className="px-4 py-3 font-medium w-16 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {filteredCouriers.map((courier: any) => {
-                  const VehicleIcon = VEHICLE_ICONS[courier.vehicle_type] ?? Bike;
-                  const isSuspended = courier.status === "suspended";
+            {/* ── Visualização Móvel: Cards Verticais Ergonômicos (Apple HIG / Paradigma Clean) ── */}
+            <div className="block md:hidden divide-y divide-border/60">
+              {filteredCouriers.map((courier: any) => {
+                const VehicleIcon = VEHICLE_ICONS[courier.vehicle_type] ?? Bike;
+                const isSuspended = courier.status === "suspended";
 
-                  return (
-                    <tr
-                      key={courier.id}
-                      className="hover:bg-muted/20 transition-colors group cursor-pointer"
-                      onClick={() => setSelectedCourier(courier)}
-                    >
-                      <td className="px-4 py-3.5">
-                        <p className="font-bold text-foreground">{courier.name}</p>
+                return (
+                  <div
+                    key={courier.id}
+                    className="p-4 space-y-3 bg-card hover:bg-muted/20 transition-colors cursor-pointer"
+                    onClick={() => setSelectedCourier(courier)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-0.5">
+                        <p className="font-bold text-base text-foreground">{courier.name}</p>
                         {courier.phone && (
-                          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                            <Phone className="size-3" />
+                          <a
+                            href={`tel:${courier.phone}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium"
+                          >
+                            <Phone className="size-3 text-primary" />
                             {courier.phone}
-                          </p>
+                          </a>
                         )}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <div className="size-7 rounded-lg bg-muted flex items-center justify-center">
-                            <VehicleIcon className="size-3.5 text-muted-foreground" />
-                          </div>
-                          {courier.vehicle_plate && (
-                            <span className="text-xs font-mono bg-muted/80 px-2 py-0.5 rounded-md uppercase font-bold">
-                              {courier.vehicle_plate}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5">
+                      </div>
+                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                         <StatusBadge status={courier.status} />
-                      </td>
-                      <td className="px-4 py-3.5 text-right font-mono font-bold">
-                        {courier.default_fee_cents > 0
-                          ? formatMoney(courier.default_fee_cents)
-                          : "---"}
-                      </td>
-                      <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-9 rounded-xl hover:bg-muted/60"
+                              className="size-11 sm:size-9 rounded-xl hover:bg-muted/60 cursor-pointer"
                             >
                               <MoreVertical className="size-4 text-muted-foreground" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 rounded-xl p-1">
+                          <DropdownMenuContent align="end" className="w-52 rounded-xl p-1">
                             <DropdownMenuItem asChild>
                               <Link
                                 to="/workspace/pedidos/entregadores/$id"
@@ -346,12 +323,129 @@ function CouriersListPage() {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="size-8 rounded-lg bg-muted flex items-center justify-center">
+                          <VehicleIcon className="size-4 text-muted-foreground" />
+                        </div>
+                        {courier.vehicle_plate && (
+                          <span className="font-mono bg-muted/80 px-2 py-0.5 rounded-md uppercase font-bold text-foreground">
+                            {courier.vehicle_plate}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
+                          Taxa Padrão
+                        </span>
+                        <span className="font-mono font-black text-sm text-foreground">
+                          {courier.default_fee_cents > 0
+                            ? formatMoney(courier.default_fee_cents)
+                            : "---"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── Visualização Desktop: Tabela Analítica ── */}
+            <div className="hidden md:block">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-muted/10 text-xs text-muted-foreground uppercase tracking-wider">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Entregador</th>
+                    <th className="px-4 py-3 font-medium">Veículo</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium text-right">Taxa Padrão</th>
+                    <th className="px-4 py-3 font-medium w-16 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {filteredCouriers.map((courier: any) => {
+                    const VehicleIcon = VEHICLE_ICONS[courier.vehicle_type] ?? Bike;
+                    const isSuspended = courier.status === "suspended";
+
+                    return (
+                      <tr
+                        key={courier.id}
+                        className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                        onClick={() => setSelectedCourier(courier)}
+                      >
+                        <td className="px-4 py-3.5">
+                          <p className="font-bold text-foreground">{courier.name}</p>
+                          {courier.phone && (
+                            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                              <Phone className="size-3" />
+                              {courier.phone}
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <div className="size-7 rounded-lg bg-muted flex items-center justify-center">
+                              <VehicleIcon className="size-3.5 text-muted-foreground" />
+                            </div>
+                            {courier.vehicle_plate && (
+                              <span className="text-xs font-mono bg-muted/80 px-2 py-0.5 rounded-md uppercase font-bold">
+                                {courier.vehicle_plate}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <StatusBadge status={courier.status} />
+                        </td>
+                        <td className="px-4 py-3.5 text-right font-mono font-bold">
+                          {courier.default_fee_cents > 0
+                            ? formatMoney(courier.default_fee_cents)
+                            : "---"}
+                        </td>
+                        <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-9 rounded-xl hover:bg-muted/60"
+                              >
+                                <MoreVertical className="size-4 text-muted-foreground" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-1">
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  to="/workspace/pedidos/entregadores/$id"
+                                  params={{ id: courier.id }}
+                                >
+                                  Ver Perfil Completo
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  toggleStatusMutation.mutate({
+                                    courierId: courier.id,
+                                    newStatus: isSuspended ? "available" : "suspended",
+                                  })
+                                }
+                                disabled={toggleStatusMutation.isPending}
+                                className={isSuspended ? "text-emerald-600 font-bold" : "text-destructive"}
+                              >
+                                {isSuspended ? "Reativar Entregador" : "Suspender Entregador"}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

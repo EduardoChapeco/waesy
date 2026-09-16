@@ -1374,3 +1374,31 @@ export const getStoreConcursos = createServerFn({ method: "GET" })
     }));
   });
 
+/**
+ * Revoga e expira imediatamente um convite de equipe ou parceiro da loja.
+ */
+export const revokeInviteToken = createServerFn({ method: "POST" })
+  .validator(z.object({ token: z.string().min(4) }))
+  .handler(async ({ data: { token } }) => {
+    const identity = await getIdentity().catch(() => null);
+    if (!identity?.id) throw new Error("Usuário não autenticado.");
+
+    const supabase = getServerClient();
+
+    const { error } = await supabase
+      .from("store_invites")
+      .update({
+        status: "revoked",
+        revoked_at: new Date().toISOString(),
+        revoked_by: identity.id,
+      })
+      .eq("token", token);
+
+    if (error) {
+      console.error("[invite] Erro ao revogar token:", error);
+      throw new Error(`Falha ao revogar convite: ${error.message}`);
+    }
+
+    return { success: true, revoked_at: new Date().toISOString() };
+  });
+

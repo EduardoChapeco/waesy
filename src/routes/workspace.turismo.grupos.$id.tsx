@@ -163,18 +163,18 @@ function WorkspaceGroupTourDetailPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto space-y-6 animate-in fade-in duration-200">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* ── 1. TOP HEADER DA VIAGEM ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80">
  <div className="flex items-center gap-3">
- <Button asChild size="sm" variant="ghost" className="size-8 p-0 rounded-xl">
+ <Button asChild size="icon" variant="ghost" className="size-11 sm:size-8 p-0 rounded-xl shrink-0 cursor-pointer">
  <Link to="/workspace/turismo/grupos">
  <ArrowLeft className="size-4" />
  </Link>
  </Button>
 
- <div className="space-y-0.5">
- <div className="flex items-center gap-2">
+ <div className="space-y-0.5 min-w-0">
+ <div className="flex items-center gap-2 flex-wrap">
  <h1 className="text-sm font-bold text-foreground truncate max-w-xs sm:max-w-md">
  {tour.title}
  </h1>
@@ -197,42 +197,39 @@ function WorkspaceGroupTourDetailPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2">
+ <div className="flex flex-wrap items-center gap-2">
  <Button
  asChild
- size="sm"
  variant="outline"
- className="rounded-xl text-xs font-bold gap-1.5 h-9 cursor-pointer"
+ className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
  >
  <Link
  to={"/workspace/turismo/grupos/$id/embarque" as any}
  params={{ id: tour.id } as any}
  >
- <UserCheck className="size-3.5 text-emerald-600" />
+ <UserCheck className="size-4 sm:size-3.5 text-emerald-600" />
  <span>Embarque</span>
  </Link>
  </Button>
 
  <Button
  type="button"
- size="sm"
  variant="outline"
  onClick={() => setMagicLinkModalOpen(true)}
- className="rounded-xl text-xs font-bold gap-1.5 h-9"
+ className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
  >
- <Link2 className="size-3.5" />
+ <Link2 className="size-4 sm:size-3.5" />
  <span>Link Mágico</span>
  </Button>
 
  <Button
  type="button"
- size="sm"
  variant="outline"
  disabled={isExportingManifest}
  onClick={handleExportManifest}
- className="rounded-xl text-xs font-bold gap-1.5 h-9"
+ className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
  >
- <Download className="size-3.5" />
+ <Download className="size-4 sm:size-3.5" />
  <span>{isExportingManifest ? "Gerando..." : "Manifesto ANTT (PDF)"}</span>
  </Button>
  </div>
@@ -240,24 +237,24 @@ function WorkspaceGroupTourDetailPage() {
 
  {/* ── 2. ABAS DE GESTÃO DA VIAGEM ── */}
  <Tabs defaultValue="onibus" className="space-y-4">
- <TabsList className="flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar p-1 rounded-xl h-11">
- <TabsTrigger value="onibus" className="text-xs rounded-xl font-bold gap-1.5 py-2">
+ <TabsList className="flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar p-1 rounded-xl min-h-[48px] h-auto sm:h-11">
+ <TabsTrigger value="onibus" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
  <Bus className="size-3.5" />
  <span>Mapa do Ônibus</span>
  </TabsTrigger>
- <TabsTrigger value="hoteis" className="text-xs rounded-xl font-bold gap-1.5 py-2">
+ <TabsTrigger value="hoteis" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
  <Building className="size-3.5" />
  <span>Rooming List</span>
  </TabsTrigger>
- <TabsTrigger value="orcamento" className="text-xs rounded-xl font-bold gap-1.5 py-2">
+ <TabsTrigger value="orcamento" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
  <DollarSign className="size-3.5" />
  <span>Orçamento</span>
  </TabsTrigger>
- <TabsTrigger value="caixa" className="text-xs rounded-xl font-bold gap-1.5 py-2">
+ <TabsTrigger value="caixa" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
  <Wallet className="size-3.5" />
  <span>Caixa da Viagem</span>
  </TabsTrigger>
- <TabsTrigger value="transporte" className="text-xs rounded-xl font-bold gap-1.5 py-2">
+ <TabsTrigger value="transporte" className="min-h-[44px] sm:min-h-[36px] text-xs rounded-xl font-bold gap-1.5 py-2.5 sm:py-2 cursor-pointer flex items-center justify-center">
  <ShieldCheck className="size-3.5" />
  <span>Veículo / ANTT</span>
  </TabsTrigger>
@@ -337,13 +334,13 @@ function WorkspaceGroupTourDetailPage() {
  </div>
  </div>
 
- <Button
- type="button"
- onClick={handleSaveOperational}
- className="h-10 px-5 rounded-xl text-xs font-bold bg-foreground text-background"
- >
- Salvar Dados do Transporte
- </Button>
+            <Button
+              type="button"
+              onClick={handleSaveOperational}
+              className="h-11 sm:h-10 px-5 rounded-xl text-xs font-bold bg-foreground text-background cursor-pointer shadow-xs"
+            >
+              Salvar Dados do Transporte
+            </Button>
  </div>
  </TabsContent>
  </Tabs>

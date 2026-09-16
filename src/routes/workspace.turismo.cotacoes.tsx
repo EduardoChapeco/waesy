@@ -237,7 +237,7 @@ export default function AgencyQuotesPage() {
  toolDescription="O pipeline de cotações, orçamentos e captação de passageiros para pacotes aéreos, cruzeiros e hotéis foi projetado especificamente para agências de viagens e turismo."
  store={store}
  >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)] pb-20">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)] pb-20">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -466,7 +466,7 @@ export default function AgencyQuotesPage() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => createProposalMutation.mutate(q)}
-                                  className="h-6 px-1.5 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-md"
+                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] rounded-xl sm:rounded-lg font-bold text-primary hover:bg-primary/10"
                                   title="Criar Proposta no Studio"
                                 >
                                   Lâmina
@@ -476,7 +476,7 @@ export default function AgencyQuotesPage() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => openManageModal(q)}
-                                  className="h-6 px-1.5 text-[10px] font-bold rounded-md"
+                                  className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] rounded-xl sm:rounded-lg font-bold gap-1 cursor-pointer"
                                 >
                                   Gerenciar
                                 </Button>
@@ -627,47 +627,49 @@ export default function AgencyQuotesPage() {
  </span>
  </div>
 
- <div className="flex items-center gap-1.5 flex-wrap">
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => openManageModal(q)}
- className="rounded-xl font-bold text-xs h-8 px-2.5 border-border gap-1 cursor-pointer"
- >
- <PencilSimple size={13} weight="bold" />
- <span>Gerenciar</span>
- </Button>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full sm:w-auto pt-2 sm:pt-0 border-t border-border/40 sm:border-0">
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openManageModal(q)}
+                        className="flex-1 sm:flex-none rounded-xl font-bold text-xs h-11 sm:h-8 px-3.5 sm:px-2.5 border-border gap-1 cursor-pointer"
+                      >
+                        <PencilSimple size={13} weight="bold" />
+                        <span>Gerenciar</span>
+                      </Button>
 
- <Button
- type="button"
- size="sm"
- variant="outline"
- disabled={createProposalMutation.isPending}
- onClick={() => createProposalMutation.mutate(q)}
- className="rounded-xl font-bold text-xs h-8 px-2.5 border-border gap-1 cursor-pointer text-primary"
- >
- <FileText size={13} weight="bold" />
- <span>Criar Lâmina</span>
- </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={createProposalMutation.isPending}
+                        onClick={() => createProposalMutation.mutate(q)}
+                        className="flex-1 sm:flex-none rounded-xl font-bold text-xs h-11 sm:h-8 px-3.5 sm:px-2.5 border-border gap-1 cursor-pointer text-primary"
+                      >
+                        <FileText size={13} weight="bold" />
+                        <span>Criar Lâmina</span>
+                      </Button>
+                    </div>
 
- <Button
- asChild
- size="sm"
- className="rounded-xl font-bold text-xs h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
- >
- <a
- href={`https://wa.me/55${cleanWhatsapp}?text=${waMessage}`}
- target="_blank"
- rel="noopener noreferrer"
- >
- <WhatsappLogo size={14} weight="bold" />
- <span>WhatsApp</span>
- </a>
- </Button>
- </div>
- </div>
- </Card>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="w-full sm:w-auto rounded-xl font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+                    >
+                      <a
+                        href={`https://wa.me/55${cleanWhatsapp}?text=${waMessage}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <WhatsappLogo size={14} weight="bold" />
+                        <span>WhatsApp</span>
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </Card>
  );
  })}
  </div>

@@ -192,7 +192,7 @@ export default function ReaccommodationPage() {
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -213,7 +213,7 @@ export default function ReaccommodationPage() {
 
         <Button
           onClick={() => setIsSheetOpen(true)}
-          className="h-10 px-5 gap-2 text-sm font-semibold rounded-xl shadow-xs bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+          className="h-11 px-5 gap-2 text-sm font-semibold rounded-xl shadow-xs bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
         >
           <Plus className="size-4" />
           Registrar Novo Caso
@@ -292,7 +292,7 @@ export default function ReaccommodationPage() {
           </p>
           <Button
             onClick={() => setIsSheetOpen(true)}
-            className="h-10 px-4 gap-2 text-xs font-semibold rounded-xl bg-amber-600 hover:bg-amber-700 text-white"
+            className="h-11 px-5 gap-2 text-xs font-semibold rounded-xl bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
           >
             <Plus className="size-4" />
             Registrar Primeiro Caso
@@ -325,7 +325,7 @@ export default function ReaccommodationPage() {
 
                 <div className="flex items-center gap-2">
                   <select
-                    className="h-8 px-2.5 rounded-lg border border-input bg-background text-xs font-medium focus:outline-none"
+                    className="h-10 sm:h-8 px-3 rounded-xl sm:rounded-lg border border-input bg-background text-xs font-medium focus:outline-none cursor-pointer"
                     value={c.workflow_status}
                     onChange={(e) =>
                       updateStatusMutation.mutate({
@@ -395,7 +395,7 @@ export default function ReaccommodationPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-3 text-xs gap-1.5 rounded-lg cursor-pointer"
+                  className="h-11 sm:h-9 px-4 sm:px-3 text-xs font-bold gap-1.5 rounded-xl cursor-pointer w-full sm:w-auto"
                   onClick={() => {
                     const text = encodeURIComponent(
                       `Olá! Estamos acompanhando a contingência do seu voo (${getReasonLabel(c.change_reason)}). Conforme a Resolução ANAC 400, você possui direitos de assistência material garantidos. Estamos trabalhando na sua reacomodação agora.`
@@ -403,7 +403,7 @@ export default function ReaccommodationPage() {
                     window.open(`https://wa.me/?text=${text}`, '_blank');
                   }}
                 >
-                  <PhoneCall className="size-3.5 text-emerald-500" />
+                  <PhoneCall className="size-4 text-emerald-500" />
                   Notificar Passageiro (WhatsApp)
                 </Button>
               </div>

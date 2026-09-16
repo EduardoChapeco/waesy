@@ -323,242 +323,451 @@ function CarteiraClientesPage() {
  </div>
  )}
 
- {/* ── 5. Tabela de Clientes da Carteira ── */}
- {filteredCustomers.length === 0 ? (
- <div className="py-16 text-center rounded-2xl border border-dashed border-border bg-card/40 p-8 space-y-3">
- <Users className="size-12 mx-auto text-muted-foreground/30" />
- <div className="space-y-1">
- <h3 className="font-bold text-base text-foreground">Nenhum cliente encontrado</h3>
- <p className="text-xs text-muted-foreground max-w-md mx-auto">
- {searchTerm || statusFilter !== "all" || kindFilter !== "all" || channelFilter !== "all"
- ? "Nenhum cliente atende aos filtros atuais. Tente ajustar os parâmetros de busca."
- : "Sua carteira de clientes ainda está vazia. Comece cadastrando passageiros ou empresas parceiras."}
- </p>
- </div>
- <Button
- size="sm"
- onClick={() => setIsWizardOpen(true)}
- className="rounded-xl font-bold text-xs gap-1.5 h-9 bg-primary text-primary-foreground"
- >
- <Plus className="size-4" />
- <span>Cadastrar Primeiro Cliente</span>
- </Button>
- </div>
- ) : (
- <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs">
- <Table>
- <TableHeader className="bg-muted/40">
- <TableRow>
- <TableHead className="w-[300px] text-xs font-bold text-foreground">
- {isTourism ? "Passageiro / Titular" : "Cliente / Razão Social"}
- </TableHead>
- <TableHead className="text-xs font-bold text-foreground">Tipo</TableHead>
- <TableHead className="text-xs font-bold text-foreground">
- {isTourism ? "CPF / Passaporte" : "Documento"}
- </TableHead>
- <TableHead className="text-xs font-bold text-foreground">Contato / WhatsApp</TableHead>
- <TableHead className="text-xs font-bold text-foreground">Localização</TableHead>
- <TableHead className="text-xs font-bold text-foreground">Documentos</TableHead>
- <TableHead className="text-xs font-bold text-foreground">Status</TableHead>
- <TableHead className="text-right text-xs font-bold text-foreground">Ações</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {filteredCustomers.map((c: any) => {
- const isCompany = c.kind === "company";
- const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
- const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
 
- return (
- <TableRow key={c.id} className="hover:bg-muted/20 transition-colors">
- {/* Nome & Razão Social */}
- <TableCell>
- <div className="flex items-center gap-3">
- <div className={`size-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
- isCompany
- ? "bg-primary/10 text-primary"
- : "bg-muted text-muted-foreground"
- }`}>
- {isCompany ? <Building2 className="size-4" /> : c.fullName[0]?.toUpperCase() || <User className="size-4" />}
- </div>
- <div className="min-w-0">
- <Link
- to="/workspace/clientes/$id"
- params={{ id: c.id }}
- className="font-bold text-xs text-foreground hover:text-primary hover:underline transition-colors block truncate"
- >
- {c.fullName}
- </Link>
- {c.legalName && c.legalName !== c.fullName && (
- <span className="text-[10px] text-muted-foreground block truncate font-mono">
- {c.legalName}
- </span>
- )}
- </div>
- </div>
- </TableCell>
+      {/* ── 5. Carteira de Clientes (Dual View: Mobile Cards & Desktop Table) ── */}
+      {filteredCustomers.length === 0 ? (
+        <div className="py-16 text-center rounded-2xl border border-border/40 bg-card/60 space-y-4 px-4">
+          <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+            <Users className="size-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">
+              Nenhum cliente encontrado
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              {searchTerm || statusFilter !== "all" || kindFilter !== "all" || channelFilter !== "all"
+                ? "Nenhum cliente atende aos filtros atuais. Tente ajustar os parâmetros de busca."
+                : "Sua carteira de clientes ainda está vazia. Comece cadastrando passageiros ou empresas parceiras."}
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsWizardOpen(true)}
+            className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
+          >
+            <Plus className="size-4" />
+            <span>Cadastrar Primeiro Cliente</span>
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* ── 1. Mobile List Layout (Zero-Cramping, Large Text & 44px Controls) ── */}
+          <div className="space-y-3.5 block md:hidden">
+            {filteredCustomers.map((c: any) => {
+              const isCompany = c.kind === "company";
+              const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
+              const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
 
- {/* Tipo PF / PJ */}
- <TableCell>
- <Badge variant="outline" className="text-[10px] font-bold uppercase">
- {isCompany ? "PJ (B2B)" : "PF (B2C)"}
- </Badge>
- </TableCell>
+              return (
+                <div
+                  key={c.id}
+                  className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3.5 transition-all"
+                >
+                  {/* Top: Avatar, Nome, Tipo & Status */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`size-12 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border border-border/40 ${
+                          isCompany
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {isCompany ? (
+                          <Building2 className="size-5" />
+                        ) : (
+                          c.fullName[0]?.toUpperCase() || <User className="size-5" />
+                        )}
+                      </div>
 
- {/* Documento CPF / CNPJ */}
- <TableCell>
- <span className="font-mono text-xs text-muted-foreground">
- {c.document || "—"}
- </span>
- </TableCell>
+                      <div className="min-w-0">
+                        <Link
+                          to="/workspace/clientes/$id"
+                          params={{ id: c.id }}
+                          className="font-bold text-base text-foreground hover:text-primary transition-colors block truncate"
+                        >
+                          {c.fullName}
+                        </Link>
+                        {c.legalName && c.legalName !== c.fullName && (
+                          <span className="text-xs text-muted-foreground block truncate font-mono">
+                            {c.legalName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
- {/* Contato & WhatsApp */}
- <TableCell>
- <div className="flex flex-col text-xs space-y-0.5">
- {c.phone ? (
- <button
- type="button"
- onClick={() => openWhatsApp(c.phone, c.fullName)}
- className="font-mono text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
- title="Conversar no WhatsApp"
- >
- <MessageCircle className="size-3 shrink-0" />
- <span>{c.phone}</span>
- </button>
- ) : (
- <span className="text-muted-foreground text-xs">—</span>
- )}
- {c.email && (
- <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
- {c.email}
- </span>
- )}
- </div>
- </TableCell>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge
+                        variant={c.status === "active" ? "secondary" : "outline"}
+                        className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                          c.status === "active"
+                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
+                      </Badge>
+                      <Badge variant="outline" className="text-[11px] font-bold uppercase">
+                        {isCompany ? "PJ (B2B)" : "PF (B2C)"}
+                      </Badge>
+                    </div>
+                  </div>
 
- {/* Localização */}
- <TableCell>
- <span className="text-xs text-muted-foreground">
- {c.city ? `${c.city} - ${c.state || "UF"}` : "—"}
- </span>
- </TableCell>
+                  {/* Informações de Contato e Documentos */}
+                  <div className="space-y-1.5 pt-1 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <span className="font-mono text-foreground font-medium">
+                        Doc: {c.document || "Não informado"}
+                      </span>
+                      {c.city && (
+                        <span>
+                          {c.city} - {c.state || "UF"}
+                        </span>
+                      )}
+                    </div>
 
- {/* Alertas de Documentos */}
- <TableCell>
- {hasExpiredDocs ? (
- <Badge variant="destructive" className="text-[10px] font-bold py-0 h-5 gap-1">
- <AlertTriangle className="size-2.5" />
- <span>{c.docAlerts.expired} Vencido</span>
- </Badge>
- ) : hasSoonDocs ? (
- <Badge variant="secondary" className="text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-5 gap-1">
- <Clock className="size-2.5" />
- <span>{c.docAlerts.soon} Vence em breve</span>
- </Badge>
- ) : (
- <span className="text-[11px] text-muted-foreground">Regular</span>
- )}
- </TableCell>
+                    {c.email && (
+                      <p className="text-xs text-muted-foreground truncate">{c.email}</p>
+                    )}
 
- {/* Status */}
- <TableCell>
- <Badge
- variant={c.status === "active" ? "secondary" : "outline"}
- className={`text-[10px] font-semibold ${
- c.status === "active"
- ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
- : "text-muted-foreground"
- }`}
- >
- {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
- </Badge>
- </TableCell>
+                    {/* Alertas de Documentos */}
+                    {(hasExpiredDocs || hasSoonDocs) && (
+                      <div className="pt-1">
+                        {hasExpiredDocs ? (
+                          <Badge variant="destructive" className="text-xs font-bold gap-1 px-2.5 py-0.5">
+                            <AlertTriangle className="size-3" />
+                            <span>{c.docAlerts.expired} Documento(s) Vencido(s)</span>
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 gap-1 px-2.5 py-0.5">
+                            <Clock className="size-3" />
+                            <span>{c.docAlerts.soon} Vence em breve</span>
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
- {/* Menu de Ações */}
- <TableCell className="text-right">
- <div className="flex items-center justify-end gap-1">
- <Link
- to="/workspace/clientes/$id"
- params={{ id: c.id }}
- className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
- >
- Ficha 360°
- </Link>
+                  {/* Ações Móveis Ergonômicas (44px min height) */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-border/30">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="flex-1 h-11 rounded-xl text-sm font-semibold gap-2 border-border/60 hover:bg-muted cursor-pointer"
+                    >
+                      <Link to="/workspace/clientes/$id" params={{ id: c.id }}>
+                        <FileText className="size-4 text-muted-foreground" />
+                        <span>Ficha 360°</span>
+                      </Link>
+                    </Button>
 
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" className="size-7 rounded-lg">
- <MoreVertical className="size-3.5" />
- </Button>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="w-52 rounded-xl text-xs">
- <DropdownMenuItem asChild>
- <Link to="/workspace/clientes/$id" params={{ id: c.id }} className="cursor-pointer gap-2">
- <FileText className="size-3.5" />
- <span>Ver Ficha Completa</span>
- </Link>
- </DropdownMenuItem>
+                    {c.phone && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => openWhatsApp(c.phone, c.fullName)}
+                        className="h-11 px-4 rounded-xl border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+                        title="Conversar no WhatsApp"
+                      >
+                        <MessageCircle className="size-5" />
+                      </Button>
+                    )}
 
- <DropdownMenuItem asChild>
- <Link to="/workspace/comercial" className="cursor-pointer gap-2">
- <Plane className="size-3.5 text-primary" />
- <span>Criar Oportunidade / Viagem</span>
- </Link>
- </DropdownMenuItem>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="h-11 px-4 rounded-xl border-border/60 hover:bg-muted cursor-pointer shrink-0"
+                          aria-label="Mais opções do cliente"
+                        >
+                          <MoreVertical className="size-5 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl">
+                        <DropdownMenuItem asChild className="h-10 text-sm cursor-pointer">
+                          <Link to="/workspace/comercial" className="gap-2">
+                            <Plane className="size-4 text-primary" />
+                            <span>Criar Oportunidade</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="h-10 text-sm cursor-pointer">
+                          <Link
+                            to="/workspace/turismo/cotacoes"
+                            search={{
+                              leadName: c.fullName,
+                              leadPhone: c.phone || undefined,
+                              leadEmail: c.email || undefined,
+                              clientId: c.id,
+                            } as any}
+                            className="gap-2"
+                          >
+                            <DollarSign className="size-4 text-primary" />
+                            <span>Iniciar Cotação</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="h-10 text-sm cursor-pointer">
+                          <Link to="/workspace/turismo/aereos" className="gap-2">
+                            <Ticket className="size-4 text-primary" />
+                            <span>Emitir Bilhete Aéreo</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleArchive(c.id, c.fullName)}
+                          className="h-10 text-sm cursor-pointer gap-2 text-destructive focus:text-destructive"
+                        >
+                          <Archive className="size-4" />
+                          <span>Arquivar Cliente</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
- <DropdownMenuItem asChild>
- <Link
- to="/workspace/turismo/cotacoes"
- search={{
- leadName: c.fullName,
- leadPhone: c.phone || undefined,
- leadEmail: c.email || undefined,
- clientId: c.id,
- } as any}
- className="cursor-pointer gap-2"
- >
- <DollarSign className="size-3.5 text-primary" />
- <span>Iniciar Cotação de Viagem</span>
- </Link>
- </DropdownMenuItem>
+          {/* ── 2. Desktop High-Density Table Layout ── */}
+          <div className="hidden md:block rounded-2xl border border-border bg-card overflow-hidden shadow-2xs">
+            <Table>
+              <TableHeader className="bg-muted/40">
+                <TableRow>
+                  <TableHead className="w-[300px] font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    {isTourism ? "Passageiro / Titular" : "Cliente / Razão Social"}
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    Tipo
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    {isTourism ? "CPF / Passaporte" : "Documento"}
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    Contato / WhatsApp
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    Localização
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    Documentos
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
+                    Ações
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCustomers.map((c: any) => {
+                  const isCompany = c.kind === "company";
+                  const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
+                  const hasSoonDocs = (c.docAlerts?.soon || 0) > 0;
 
- <DropdownMenuItem asChild>
- <Link to="/workspace/turismo/aereos" className="cursor-pointer gap-2">
- <Ticket className="size-3.5 text-primary" />
- <span>Emitir Bilhete Aéreo</span>
- </Link>
- </DropdownMenuItem>
+                  return (
+                    <TableRow key={c.id} className="hover:bg-muted/20 transition-colors">
+                      {/* Nome & Razão Social */}
+                      <TableCell className="py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`size-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                              isCompany
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {isCompany ? (
+                              <Building2 className="size-4" />
+                            ) : (
+                              c.fullName[0]?.toUpperCase() || <User className="size-4" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <Link
+                              to="/workspace/clientes/$id"
+                              params={{ id: c.id }}
+                              className="font-bold text-sm text-foreground hover:text-primary hover:underline transition-colors block truncate"
+                            >
+                              {c.fullName}
+                            </Link>
+                            {c.legalName && c.legalName !== c.fullName && (
+                              <span className="text-[11px] text-muted-foreground block truncate font-mono">
+                                {c.legalName}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
 
- {c.phone && (
- <DropdownMenuItem
- onClick={() => openWhatsApp(c.phone, c.fullName)}
- className="cursor-pointer gap-2 text-emerald-600"
- >
- <MessageCircle className="size-3.5" />
- <span>Iniciar WhatsApp</span>
- </DropdownMenuItem>
- )}
+                      {/* Tipo PF / PJ */}
+                      <TableCell className="py-3.5">
+                        <Badge variant="outline" className="text-[11px] font-bold uppercase">
+                          {isCompany ? "PJ (B2B)" : "PF (B2C)"}
+                        </Badge>
+                      </TableCell>
 
- <DropdownMenuSeparator />
+                      {/* Documento CPF / CNPJ */}
+                      <TableCell className="py-3.5">
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {c.document || "—"}
+                        </span>
+                      </TableCell>
 
- <DropdownMenuItem
- onClick={() => handleArchive(c.id, c.fullName)}
- className="cursor-pointer gap-2 text-destructive"
- >
- <Archive className="size-3.5" />
- <span>Arquivar Cliente</span>
- </DropdownMenuItem>
- </DropdownMenuContent>
- </DropdownMenu>
- </div>
- </TableCell>
- </TableRow>
- );
- })}
- </TableBody>
- </Table>
- </div>
- )}
+                      {/* Contato & WhatsApp */}
+                      <TableCell className="py-3.5">
+                        <div className="flex flex-col text-xs space-y-0.5">
+                          {c.phone ? (
+                            <button
+                              type="button"
+                              onClick={() => openWhatsApp(c.phone, c.fullName)}
+                              className="font-mono text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                              title="Conversar no WhatsApp"
+                            >
+                              <MessageCircle className="size-3.5 shrink-0" />
+                              <span>{c.phone}</span>
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                          {c.email && (
+                            <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
+                              {c.email}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      {/* Localização */}
+                      <TableCell className="py-3.5">
+                        <span className="text-xs text-muted-foreground">
+                          {c.city ? `${c.city} - ${c.state || "UF"}` : "—"}
+                        </span>
+                      </TableCell>
+
+                      {/* Alertas de Documentos */}
+                      <TableCell className="py-3.5">
+                        {hasExpiredDocs ? (
+                          <Badge variant="destructive" className="text-[10px] font-bold py-0 h-5 gap-1">
+                            <AlertTriangle className="size-2.5" />
+                            <span>{c.docAlerts.expired} Vencido</span>
+                          </Badge>
+                        ) : hasSoonDocs ? (
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-400 py-0 h-5 gap-1"
+                          >
+                            <Clock className="size-2.5" />
+                            <span>{c.docAlerts.soon} Vence em breve</span>
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Regular</span>
+                        )}
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell className="py-3.5">
+                        <Badge
+                          variant={c.status === "active" ? "secondary" : "outline"}
+                          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                            c.status === "active"
+                              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {c.status === "active" ? "Ativo" : c.status === "blocked" ? "Bloqueado" : "Inativo"}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Menu de Ações */}
+                      <TableCell className="text-right py-3.5">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            to="/workspace/clientes/$id"
+                            params={{ id: c.id }}
+                            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
+                          >
+                            Ficha 360°
+                          </Link>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 rounded-lg hover:bg-muted cursor-pointer"
+                              >
+                                <MoreVertical className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-52 p-1.5 rounded-xl text-xs">
+                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
+                                <Link to="/workspace/clientes/$id" params={{ id: c.id }} className="gap-2">
+                                  <FileText className="size-3.5" />
+                                  <span>Ver Ficha Completa</span>
+                                </Link>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
+                                <Link to="/workspace/comercial" className="gap-2">
+                                  <Plane className="size-3.5 text-primary" />
+                                  <span>Criar Oportunidade / Viagem</span>
+                                </Link>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
+                                <Link
+                                  to="/workspace/turismo/cotacoes"
+                                  search={{
+                                    leadName: c.fullName,
+                                    leadPhone: c.phone || undefined,
+                                    leadEmail: c.email || undefined,
+                                    clientId: c.id,
+                                  } as any}
+                                  className="gap-2"
+                                >
+                                  <DollarSign className="size-3.5 text-primary" />
+                                  <span>Iniciar Cotação de Viagem</span>
+                                </Link>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
+                                <Link to="/workspace/turismo/aereos" className="gap-2">
+                                  <Ticket className="size-3.5 text-primary" />
+                                  <span>Emitir Bilhete Aéreo</span>
+                                </Link>
+                              </DropdownMenuItem>
+
+                              {c.phone && (
+                                <DropdownMenuItem
+                                  onClick={() => openWhatsApp(c.phone, c.fullName)}
+                                  className="h-9 text-xs cursor-pointer gap-2 text-emerald-600"
+                                >
+                                  <MessageCircle className="size-3.5" />
+                                  <span>Iniciar WhatsApp</span>
+                                </DropdownMenuItem>
+                              )}
+
+                              <DropdownMenuSeparator />
+
+                              <DropdownMenuItem
+                                onClick={() => handleArchive(c.id, c.fullName)}
+                                className="h-9 text-xs cursor-pointer gap-2 text-destructive focus:text-destructive"
+                              >
+                                <Archive className="size-3.5" />
+                                <span>Arquivar Cliente</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
+
 
  {/* ── 6. Wizard Multi-Etapa de Novo Cliente ── */}
  <NewClientWizard

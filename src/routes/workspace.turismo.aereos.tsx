@@ -303,7 +303,7 @@ export default function FlightsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200 overflow-x-hidden">
       <WorkspaceCanonicalToolbar
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
@@ -711,27 +711,28 @@ export default function FlightsPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(primarySeg.record_locator!, 'Localizador PNR')}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] sm:min-h-[28px] rounded-xl text-xs font-mono font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-colors cursor-pointer"
                         title="Clique para copiar localizador"
                       >
-                        <Hash className="size-3" />
+                        <Hash className="size-3.5" />
                         PNR: {primarySeg.record_locator}
-                        <Copy className="size-3 ml-1 opacity-70" />
+                        <Copy className="size-3.5 ml-1 opacity-70" />
                       </button>
                     )}
 
                     {primarySeg?.ticket_number && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono bg-muted text-muted-foreground border border-border">
-                        <Ticket className="size-3" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-mono bg-muted text-muted-foreground border border-border">
+                        <Ticket className="size-3.5" />
                         e-Ticket: {primarySeg.ticket_number}
                       </span>
                     )}
 
                     <Button
+                      type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteMutation.mutate(it.id)}
-                      className="size-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                      className="size-11 sm:size-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
                     >
                       <Trash2 className="size-4" />
                     </Button>

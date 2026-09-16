@@ -213,15 +213,15 @@ function PdvComandasPage() {
  toolDescription="O controle de mesas físicas, consumo aberto e chamadas de garçom foi projetado especificamente para operações de bares, restaurantes e estabelecimentos gastronômicos."
  store={store}
  >
- <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background text-foreground pb-20">
- {/* ── Top Bar ── */}
- <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
- <div className="flex items-center gap-3">
- <Button variant="outline" size="icon" asChild className="size-9 rounded-xl">
- <Link to="/workspace/pdv">
- <ArrowLeft className="size-4" />
- </Link>
- </Button>
+      <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+        {/* ── Top Bar ── */}
+        <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" asChild className="size-11 sm:size-9 rounded-xl cursor-pointer shrink-0">
+              <Link to="/workspace/pdv">
+                <ArrowLeft className="size-4" />
+              </Link>
+            </Button>
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-xl font-bold tracking-tight text-foreground">Comandas & Mesas</h1>
@@ -444,16 +444,16 @@ function PdvComandasPage() {
  </div>
  </div>
 
- <div className="p-3 bg-muted/10 border-t border-border/60 flex gap-2">
- <Button
- size="sm"
- className="w-full font-bold text-xs h-9 rounded-xl"
- onClick={() => handleOpenCheckout(comanda)}
- >
- <Check className="mr-1.5 size-3.5" />
- Fechar Conta
- </Button>
- </div>
+                    <div className="p-3 bg-muted/10 border-t border-border/60 flex gap-2">
+                      <Button
+                        size="sm"
+                        className="w-full font-bold text-xs h-11 sm:h-9 rounded-xl cursor-pointer"
+                        onClick={() => handleOpenCheckout(comanda)}
+                      >
+                        <Check className="mr-1.5 size-3.5" />
+                        Fechar Conta
+                      </Button>
+                    </div>
  </div>
  ))}
  </div>
@@ -546,42 +546,42 @@ function PdvComandasPage() {
  Lançar Itens na Mesa (Garçom / Salão)
  </Button>
 
- {selectedTable.status !== "awaiting_payment" && (
- <Button
- variant="outline"
- className="w-full font-bold text-xs h-10 rounded-xl text-amber-600 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
- onClick={() => requestBillMutation.mutate(selectedTable.table_number)}
- disabled={requestBillMutation.isPending}
- >
- <Receipt className="size-4 mr-2" />
- Solicitar Fechamento / Conta
- </Button>
- )}
+                  {selectedTable.status !== "awaiting_payment" && (
+                    <Button
+                      variant="outline"
+                      className="w-full font-bold text-xs h-11 rounded-xl text-amber-600 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+                      onClick={() => requestBillMutation.mutate(selectedTable.table_number)}
+                      disabled={requestBillMutation.isPending}
+                    >
+                      <Receipt className="size-4 mr-2" />
+                      Solicitar Fechamento / Conta
+                    </Button>
+                  )}
 
- <Button
- className="w-full font-bold text-xs h-10 rounded-xl"
- onClick={() => handleOpenCheckout(selectedTable.order)}
- >
- <Check className="size-4 mr-2" />
- Fechar Conta / Receber
- </Button>
+                  <Button
+                    className="w-full font-bold text-xs h-11 rounded-xl cursor-pointer"
+                    onClick={() => handleOpenCheckout(selectedTable.order)}
+                  >
+                    <Check className="size-4 mr-2" />
+                    Fechar Conta / Receber
+                  </Button>
 
- <Button
- variant="outline"
- asChild
- className="w-full font-bold text-xs h-10 rounded-xl"
- >
- <Link
- to="/workspace/pdv"
- search={{
- mesa: selectedTable.table_number,
- orderId: selectedTable.order?.id,
- }}
- >
- <Plus className="size-4 mr-2" />
- Lançar Mais Itens no PDV
- </Link>
- </Button>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="w-full font-bold text-xs h-11 rounded-xl cursor-pointer"
+                  >
+                    <Link
+                      to="/workspace/pdv"
+                      search={{
+                        mesa: selectedTable.table_number,
+                        orderId: selectedTable.order?.id,
+                      }}
+                    >
+                      <Plus className="size-4 mr-2" />
+                      Lançar Mais Itens no PDV
+                    </Link>
+                  </Button>
  </div>
  </div>
  ) : selectedTable?.reservation ? (

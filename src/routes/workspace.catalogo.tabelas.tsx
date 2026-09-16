@@ -332,92 +332,167 @@ function WorkspacePriceTablesPage() {
  />
  </div>
 
- {/* Tabela de Produtos com Edição Inline */}
- <div className="rounded-xl border border-border/40 overflow-hidden">
- <table className="w-full text-xs">
- <thead className="bg-muted/40 text-muted-foreground font-semibold">
- <tr>
- <th className="py-2.5 px-3 text-left">Produto</th>
- <th className="py-2.5 px-3 text-right">Preço Base</th>
- <th className="py-2.5 px-3 text-right">Preço nesta Tabela</th>
- <th className="py-2.5 px-3 text-center w-20">Ação</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-border/40">
- {filteredItems.length === 0 ? (
- <tr>
- <td colSpan={4} className="py-8 text-center text-muted-foreground">
- {isLoadingItems
- ? "Carregando catálogo de produtos..."
- : "Nenhum produto encontrado."}
- </td>
- </tr>
- ) : (
- filteredItems.map((item) => (
- <tr key={item.product_id} className="hover:bg-muted/20 transition-colors">
- <td className="py-2.5 px-3">
- <div className="flex items-center gap-2.5">
- {item.product_image_url ? (
- <img
- src={item.product_image_url}
- alt={item.product_name}
- className="size-8 rounded-lg object-cover shrink-0"
- />
- ) : (
- <div className="size-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
- <Package className="size-4 text-muted-foreground/50" />
- </div>
- )}
- <div className="min-w-0">
- <span className="font-bold text-foreground block truncate">
- {item.product_name}
- </span>
- {item.product_sku && (
- <span className="text-[10px] text-muted-foreground font-mono">
- SKU: {item.product_sku}
- </span>
- )}
- </div>
- </div>
- </td>
+              {/* ── LISTAGEM DE PRODUTOS DA TABELA: DUAL-VIEW MOBILE / DESKTOP ── */}
+              {/* Visualização Mobile: Cards Verticais Independentes (block md:hidden) */}
+              <div className="block md:hidden space-y-3">
+                {filteredItems.length === 0 ? (
+                  <div className="py-8 text-center text-sm text-muted-foreground">
+                    {isLoadingItems
+                      ? "Carregando catálogo de produtos..."
+                      : "Nenhum produto encontrado."}
+                  </div>
+                ) : (
+                  filteredItems.map((item) => (
+                    <div
+                      key={item.product_id}
+                      className="rounded-2xl border border-border/50 bg-background p-3.5 space-y-3 shadow-2xs"
+                    >
+                      {/* Topo do Card: Imagem e Dados do Produto */}
+                      <div className="flex items-center gap-3">
+                        {item.product_image_url ? (
+                          <img
+                            src={item.product_image_url}
+                            alt={item.product_name}
+                            className="size-12 rounded-xl object-cover shrink-0 border border-border/40"
+                          />
+                        ) : (
+                          <div className="size-12 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 border border-border/40">
+                            <Package className="size-6 text-muted-foreground/50" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-base text-foreground leading-snug truncate">
+                            {item.product_name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {item.product_sku && (
+                              <span className="text-xs text-muted-foreground font-mono">
+                                SKU: {item.product_sku}
+                              </span>
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              • Base: <strong className="font-mono text-foreground">{formatMoney(item.base_price_cents)}</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
- <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
- {formatMoney(item.base_price_cents)}
- </td>
+                      {/* Campo de Ajuste de Preço Touch (44px) */}
+                      <div className="pt-2 border-t border-border/30 space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-muted-foreground">
+                          Preço nesta Tabela (R$)
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <CurrencyField
+                            value={item.custom_price_cents}
+                            onChange={(cents) => {
+                              handleInlinePriceChange(item.product_id, cents ?? 0);
+                            }}
+                            onEnter={() => handleSaveInlineItem(item)}
+                            placeholder="0,00"
+                            className="h-11 rounded-xl text-base font-mono font-bold flex-1 bg-card border-border/70"
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => handleSaveInlineItem(item)}
+                            className="h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shrink-0 cursor-pointer shadow-2xs"
+                          >
+                            <Save className="size-4" />
+                            <span>Salvar</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
 
- <td className="py-2.5 px-3 text-right">
- <div className="inline-flex items-center gap-1.5 justify-end w-36 ml-auto">
- <CurrencyField
- compact
- value={item.custom_price_cents}
- onChange={(cents) => {
- handleInlinePriceChange(item.product_id, cents ?? 0);
- }}
- onEnter={() => handleSaveInlineItem(item)}
- placeholder="0,00"
- className="text-right font-mono font-bold bg-background text-xs"
- />
- </div>
- </td>
+              {/* Visualização Desktop: Tabela de Produtos com Edição Inline (hidden md:block) */}
+              <div className="hidden md:block rounded-xl border border-border/40 overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/40 text-muted-foreground font-semibold">
+                    <tr>
+                      <th className="py-2.5 px-3 text-left">Produto</th>
+                      <th className="py-2.5 px-3 text-right">Preço Base</th>
+                      <th className="py-2.5 px-3 text-right">Preço nesta Tabela</th>
+                      <th className="py-2.5 px-3 text-center w-20">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {filteredItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                          {isLoadingItems
+                            ? "Carregando catálogo de produtos..."
+                            : "Nenhum produto encontrado."}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredItems.map((item) => (
+                        <tr key={item.product_id} className="hover:bg-muted/20 transition-colors">
+                          <td className="py-2.5 px-3">
+                            <div className="flex items-center gap-2.5">
+                              {item.product_image_url ? (
+                                <img
+                                  src={item.product_image_url}
+                                  alt={item.product_name}
+                                  className="size-8 rounded-lg object-cover shrink-0"
+                                />
+                              ) : (
+                                <div className="size-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                                  <Package className="size-4 text-muted-foreground/50" />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <span className="font-bold text-foreground block truncate">
+                                  {item.product_name}
+                                </span>
+                                {item.product_sku && (
+                                  <span className="text-[10px] text-muted-foreground font-mono">
+                                    SKU: {item.product_sku}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
 
- <td className="py-2.5 px-3 text-center">
- <Button
- variant="ghost"
- size="icon"
- onClick={() => handleSaveInlineItem(item)}
- className="size-7 text-primary hover:bg-primary/10"
- title="Salvar Preço (Enter)"
- >
- <Save className="size-3.5" />
- </Button>
- </td>
- </tr>
- ))
- )}
- </tbody>
- </table>
- </div>
- </div>
+                          <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                            {formatMoney(item.base_price_cents)}
+                          </td>
+
+                          <td className="py-2.5 px-3 text-right">
+                            <div className="inline-flex items-center gap-1.5 justify-end w-36 ml-auto">
+                              <CurrencyField
+                                compact
+                                value={item.custom_price_cents}
+                                onChange={(cents) => {
+                                  handleInlinePriceChange(item.product_id, cents ?? 0);
+                                }}
+                                onEnter={() => handleSaveInlineItem(item)}
+                                placeholder="0,00"
+                                className="text-right font-mono font-bold bg-background text-xs"
+                              />
+                            </div>
+                          </td>
+
+                          <td className="py-2.5 px-3 text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleSaveInlineItem(item)}
+                              className="size-7 text-primary hover:bg-primary/10"
+                              title="Salvar Preço (Enter)"
+                            >
+                              <Save className="size-3.5" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
  ) : (
  <EmptyState
  title="Selecione ou crie uma tabela de preços"

@@ -237,7 +237,7 @@ function FrotaEntregasPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  {/* Header */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
  <div>
@@ -315,7 +315,7 @@ function FrotaEntregasPage() {
  <Button
  size="sm"
  onClick={() => openDispatchForOrder(ord)}
- className="w-full h-8 rounded-lg font-bold text-xs gap-1.5"
+ className="w-full h-11 sm:h-9 rounded-xl font-bold text-xs gap-1.5 cursor-pointer"
  >
  <Truck className="size-3.5" />
  <span>Despachar Este Pedido</span>
@@ -533,14 +533,14 @@ function FrotaEntregasPage() {
  variant="outline"
  size="sm"
  onClick={() => handleCopyLink(d.delivery_token)}
- className="flex-1 rounded-xl text-xs font-semibold gap-1.5 h-8"
+ className="flex-1 rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 cursor-pointer"
  >
  <Copy className="size-3.5" />
  Copiar Link Mágico
  </Button>
- <Button asChild variant="ghost" size="icon" className="rounded-xl size-8">
+ <Button asChild variant="ghost" size="icon" className="rounded-xl size-11 sm:size-9 cursor-pointer">
  <Link to="/entrega/$token" params={{ token: d.delivery_token }} target="_blank">
- <ExternalLink className="size-3.5" />
+ <ExternalLink className="size-4" />
  </Link>
  </Button>
  </div>
@@ -701,10 +701,10 @@ function FrotaEntregasPage() {
  variant="ghost"
  size="icon"
  onClick={() => handleDeletePriceTable(tbl.id)}
- className="size-7 rounded-lg text-muted-foreground hover:text-destructive"
+ className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
  aria-label="Remover tabela de tarifa"
  >
- <Trash2 className="size-3.5" />
+ <Trash2 className="size-4" />
  </Button>
  </div>
 

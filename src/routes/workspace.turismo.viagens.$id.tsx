@@ -354,19 +354,19 @@ function WorkspaceTripDetailPage() {
   const cleanWhatsapp = (trip.client_whatsapp || "").replace(/\D/g, "");
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. CABEÇALHO DA VIAGEM ── */}
-      <div className="flex flex-col gap-4 p-5 rounded-2xl bg-card border border-border/80">
+      <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl bg-card border border-border/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Button asChild size="sm" variant="ghost" className="size-8 p-0 rounded-xl">
+            <Button asChild size="icon" variant="ghost" className="size-11 sm:size-8 p-0 rounded-xl shrink-0 cursor-pointer">
               <Link to="/workspace/turismo/viagens">
                 <ArrowLeft className="size-4" />
               </Link>
             </Button>
 
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
+            <div className="space-y-0.5 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-mono font-bold text-muted-foreground uppercase">
                   {trip.trip_number}
                 </span>
@@ -379,7 +379,7 @@ function WorkspaceTripDetailPage() {
                   </Badge>
                 )}
               </div>
-              <h1 className="text-base font-bold text-foreground">
+              <h1 className="text-base font-bold text-foreground truncate">
                 {trip.destination_city || trip.title}
               </h1>
             </div>
@@ -388,49 +388,47 @@ function WorkspaceTripDetailPage() {
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
-              size="sm"
               variant="outline"
               onClick={() => setIsImportVoucherOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 cursor-pointer"
             >
-              <FileText className="size-3.5" />
+              <FileText className="size-4 sm:size-3.5" />
               <span>Importar da Operadora (OCR)</span>
             </Button>
 
             {voucherPublicUrl && (
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
                 onClick={handleCopyVoucherUrl}
-                className="rounded-xl text-xs font-bold gap-1.5 h-9"
+                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer"
               >
-                {isCopied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
+                {isCopied ? <Check className="size-4 sm:size-3.5 text-emerald-600" /> : <Copy className="size-4 sm:size-3.5" />}
                 <span>Copiar Voucher</span>
               </Button>
             )}
 
             {voucherPublicUrl && (
-              <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-9">
+              <Button asChild variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
                 <a href={voucherPublicUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="size-3.5" />
+                  <ExternalLink className="size-4 sm:size-3.5" />
                   <span>Abrir Voucher</span>
                 </a>
               </Button>
             )}
 
             {contractPublicUrl && (
-              <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-9">
+              <Button asChild variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
                 <a href={contractPublicUrl} target="_blank" rel="noopener noreferrer">
-                  <FileCheck2 className="size-3.5 text-primary" />
+                  <FileCheck2 className="size-4 sm:size-3.5 text-primary" />
                   <span>Contrato</span>
                 </a>
               </Button>
             )}
 
-            <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-9">
+            <Button asChild variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
               <Link to="/workspace/turismo/vouchers">
-                <Ticket className="size-3.5 text-primary" />
+                <Ticket className="size-4 sm:size-3.5 text-primary" />
                 <span>Central de Vouchers</span>
               </Link>
             </Button>
@@ -470,7 +468,7 @@ function WorkspaceTripDetailPage() {
       <div className="flex items-center gap-1 border-b border-border/80 overflow-x-auto pb-px">
         <button
           onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "overview"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -482,7 +480,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("passengers")}
-          className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "passengers"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -494,7 +492,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("locators")}
-          className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "locators"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -506,7 +504,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("contract")}
-          className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "contract"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -518,7 +516,7 @@ function WorkspaceTripDetailPage() {
 
         <button
           onClick={() => setActiveTab("vouchers")}
-          className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 ${
+          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
             activeTab === "vouchers"
               ? "border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -836,11 +834,10 @@ function WorkspaceTripDetailPage() {
 
             <Button
               type="button"
-              size="sm"
               onClick={openNewPassenger}
-              className="rounded-xl text-xs font-bold gap-1.5 h-8.5 self-start sm:self-auto"
+              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 self-start sm:self-auto cursor-pointer shadow-xs"
             >
-              <Plus className="size-3.5" />
+              <Plus className="size-4 sm:size-3.5" />
               <span>Novo Passageiro</span>
             </Button>
           </div>
@@ -854,10 +851,9 @@ function WorkspaceTripDetailPage() {
               </div>
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
                 onClick={openNewPassenger}
-                className="rounded-xl text-xs font-bold"
+                className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer"
               >
                 Cadastrar Passageiro Titular
               </Button>
@@ -902,16 +898,16 @@ function WorkspaceTripDetailPage() {
                         <div className="flex items-center gap-1">
                           <Button
                             type="button"
-                            size="sm"
+                            size="icon"
                             variant="ghost"
                             onClick={() => openEditPassenger(pax)}
-                            className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                            className="size-10 sm:size-7 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
                           >
-                            <Edit2 className="size-3.5" />
+                            <Edit2 className="size-4 sm:size-3.5" />
                           </Button>
                           <Button
                             type="button"
-                            size="sm"
+                            size="icon"
                             variant="ghost"
                             disabled={deletePassengerMut.isPending}
                             onClick={() => {
@@ -919,9 +915,9 @@ function WorkspaceTripDetailPage() {
                                 deletePassengerMut.mutate(pax.id);
                               }
                             }}
-                            className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive"
+                            className="size-10 sm:size-7 p-0 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
                           >
-                            <Trash2 className="size-3.5" />
+                            <Trash2 className="size-4 sm:size-3.5" />
                           </Button>
                         </div>
                       </div>
@@ -993,11 +989,10 @@ function WorkspaceTripDetailPage() {
 
             <Button
               type="button"
-              size="sm"
               onClick={() => setIsAddLocatorOpen(true)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-8.5"
+              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
             >
-              <Plus className="size-3.5" />
+              <Plus className="size-4 sm:size-3.5" />
               <span>Novo Localizador</span>
             </Button>
           </div>
@@ -1008,10 +1003,9 @@ function WorkspaceTripDetailPage() {
               <p>Nenhum localizador específico cadastrado ainda.</p>
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
                 onClick={() => setIsAddLocatorOpen(true)}
-                className="rounded-xl text-xs font-bold"
+                className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold cursor-pointer"
               >
                 Cadastrar Primeiro Localizador
               </Button>
@@ -1039,15 +1033,15 @@ function WorkspaceTripDetailPage() {
                     </div>
                     <Button
                       type="button"
-                      size="sm"
+                      size="icon"
                       variant="ghost"
                       onClick={() => {
                         navigator.clipboard.writeText(item.locator_code);
                         toast.success(`Localizador ${item.locator_code} copiado!`);
                       }}
-                      className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                      className="size-10 sm:size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
                     >
-                      <Copy className="size-3.5" />
+                      <Copy className="size-4 sm:size-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -1128,7 +1122,7 @@ function WorkspaceTripDetailPage() {
       {/* ABA 5: CENTRAL DE VOUCHERS */}
       {activeTab === "vouchers" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2 p-4 rounded-2xl bg-card border border-border/80">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80">
             <div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Voucher Oficial de Embarque (Padrão A4)
@@ -1138,37 +1132,34 @@ function WorkspaceTripDetailPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
                 onClick={() => setIsImportVoucherOpen(true)}
-                className="rounded-xl text-xs font-bold gap-1.5 h-8.5 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8.5 px-4 sm:px-3 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 cursor-pointer"
               >
-                <FileText className="size-3.5" />
+                <FileText className="size-4 sm:size-3.5" />
                 <span>Importar Voucher (OCR)</span>
               </Button>
 
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
                 disabled={isExportingPdf}
                 onClick={handleExportPdf}
-                className="rounded-xl text-xs font-bold gap-1.5 h-8.5"
+                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8.5 px-4 sm:px-3 cursor-pointer"
               >
-                {isExportingPdf ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+                {isExportingPdf ? <Loader2 className="size-4 sm:size-3.5 animate-spin" /> : <Download className="size-4 sm:size-3.5" />}
                 <span>Baixar PDF</span>
               </Button>
 
               <Button
                 type="button"
-                size="sm"
                 onClick={handlePrint}
-                className="rounded-xl text-xs font-bold gap-1.5 h-8.5 bg-foreground text-background hover:bg-foreground/90"
+                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8.5 px-4 sm:px-3 bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs"
               >
-                <Printer className="size-3.5" />
+                <Printer className="size-4 sm:size-3.5" />
                 <span>Imprimir Voucher</span>
               </Button>
             </div>
@@ -1326,22 +1317,20 @@ function WorkspaceTripDetailPage() {
             </div>
           </div>
 
-          <SheetFooter className="gap-2 sm:gap-0 pt-4 border-t border-border/60">
+          <SheetFooter className="gap-2 sm:gap-2 pt-4 border-t border-border/60 flex items-center justify-end">
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() => setIsPassengerSheetOpen(false)}
-              className="rounded-xl text-xs font-bold"
+              className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
             <Button
               type="button"
-              size="sm"
               disabled={savePassengerMut.isPending || !passengerForm.fullName}
               onClick={() => savePassengerMut.mutate(passengerForm)}
-              className="rounded-xl text-xs font-bold gap-1.5"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
             >
               {savePassengerMut.isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
               <span>Salvar Passageiro</span>
@@ -1423,22 +1412,20 @@ function WorkspaceTripDetailPage() {
             </div>
           </div>
 
-          <SheetFooter className="gap-2 sm:gap-0 pt-4 border-t border-border/60">
+          <SheetFooter className="gap-2 sm:gap-2 pt-4 border-t border-border/60 flex items-center justify-end">
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() => setIsAddLocatorOpen(false)}
-              className="rounded-xl text-xs font-bold"
+              className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer"
             >
               Cancelar
             </Button>
             <Button
               type="button"
-              size="sm"
               disabled={saveLocatorMutation.isPending || !locatorForm.providerName || !locatorForm.locatorCode}
               onClick={() => saveLocatorMutation.mutate(locatorForm)}
-              className="rounded-xl text-xs font-bold gap-1.5"
+              className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
             >
               {saveLocatorMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
               <span>Salvar Localizador</span>

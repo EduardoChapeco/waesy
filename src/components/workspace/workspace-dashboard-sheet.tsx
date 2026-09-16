@@ -96,12 +96,12 @@ export function WorkspaceDashboardSheet({
             </div>
 
             {/* Seletor de Período Temporal */}
-            <div className="flex items-center p-0.5 rounded-lg bg-muted/60 border border-border/50 text-[11px] font-semibold">
+            <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/50 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setPeriod("today")}
                 className={cn(
-                  "px-2 py-1 rounded-md transition-all cursor-pointer",
+                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
                   period === "today"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -113,7 +113,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("7d")}
                 className={cn(
-                  "px-2 py-1 rounded-md transition-all cursor-pointer",
+                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
                   period === "7d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -125,7 +125,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("30d")}
                 className={cn(
-                  "px-2 py-1 rounded-md transition-all cursor-pointer",
+                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
                   period === "30d"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -137,7 +137,7 @@ export function WorkspaceDashboardSheet({
                 type="button"
                 onClick={() => setPeriod("all")}
                 className={cn(
-                  "px-2 py-1 rounded-md transition-all cursor-pointer",
+                  "px-3 py-1.5 rounded-lg transition-all cursor-pointer min-h-[36px]",
                   period === "all"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -147,7 +147,7 @@ export function WorkspaceDashboardSheet({
               </button>
             </div>
           </div>
-          <SheetDescription className="text-xs text-muted-foreground">
+          <SheetDescription className="text-xs sm:text-sm text-muted-foreground">
             {description}
           </SheetDescription>
         </div>
@@ -156,37 +156,37 @@ export function WorkspaceDashboardSheet({
         <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-5">
           {/* Grid de Cards de Indicadores Principais */}
           {metrics.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-3.5">
               {metrics.map((m) => {
                 const Icon = m.icon;
                 return (
                   <div
                     key={m.id || m.label || m.title}
                     className={cn(
-                      "p-4 rounded-xl border space-y-1.5 transition-all",
+                      "p-4 sm:p-5 rounded-2xl border space-y-2 transition-all shadow-2xs",
                       getVariantStyles(m.variant)
                     )}
                   >
-                    <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                    <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-muted-foreground">
                       <span className="truncate">{m.label || m.title}</span>
-                      {Icon && <Icon className="size-4 shrink-0" />}
+                      {Icon && <Icon className="size-4.5 shrink-0" />}
                     </div>
 
-                    <p className="text-2xl font-bold font-mono font-tabular-nums tracking-tight">
+                    <p className="text-2xl sm:text-3xl font-bold font-mono font-tabular-nums tracking-tight">
                       {m.value}
                     </p>
 
                     {m.subtext && (
-                      <p className="text-[11px] text-muted-foreground line-clamp-1">
+                      <p className="text-xs text-muted-foreground line-clamp-1">
                         {m.subtext}
                       </p>
                     )}
 
                     {m.trend && (
-                      <div className="flex items-center gap-1 text-[10px] font-semibold pt-0.5">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold pt-1">
                         <TrendingUp
                           className={cn(
-                            "size-3",
+                            "size-3.5",
                             m.trend.isPositive ? "text-emerald-500" : "text-rose-500"
                           )}
                         />
@@ -197,7 +197,7 @@ export function WorkspaceDashboardSheet({
                         >
                           {m.trend.value}
                         </span>
-                        <span className="text-muted-foreground/60 font-normal">vs. anterior</span>
+                        <span className="text-muted-foreground/60 font-normal text-[11px]">vs. anterior</span>
                       </div>
                     )}
                   </div>

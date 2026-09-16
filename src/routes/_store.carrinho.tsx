@@ -186,37 +186,37 @@ function StoreCartPage() {
                           </p>
                         </div>
 
-                        {/* Controles de Quantidade e Ação com hit-area mínima de 36-40px */}
+                        {/* Controles de Quantidade e Ação com hit-area mínima de 44px (Apple HIG) */}
                         <div className="flex items-center justify-between mt-3 pt-1">
-                          <div className="inline-flex items-center rounded-lg border border-border/80 bg-background overflow-hidden shadow-xs">
+                          <div className="inline-flex items-center rounded-xl border border-border/80 bg-background overflow-hidden shadow-2xs">
                             <button
                               type="button"
-                              className="size-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
+                              className="size-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
                               aria-label="Diminuir quantidade"
                               onClick={() => handleUpdateQty(item.variantId, -1)}
                             >
-                              <Minus className="size-3.5" />
+                              <Minus className="size-4" />
                             </button>
-                            <span className="text-xs font-bold font-mono w-9 text-center select-none">
+                            <span className="text-sm font-bold font-mono w-10 text-center select-none">
                               {item.qty}
                             </span>
                             <button
                               type="button"
-                              className="size-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer"
+                              className="size-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer"
                               aria-label="Aumentar quantidade"
                               onClick={() => handleUpdateQty(item.variantId, 1)}
                             >
-                              <Plus className="size-3.5" />
+                              <Plus className="size-4" />
                             </button>
                           </div>
 
                           <button
                             type="button"
-                            className="h-9 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
+                            className="h-11 px-3 text-xs sm:text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer font-semibold"
                             onClick={() => handleRemove(item.id)}
                           >
-                            <Trash2 className="size-3.5" />
-                            <span className="hidden sm:inline">Remover</span>
+                            <Trash2 className="size-4" />
+                            <span>Remover</span>
                           </button>
                         </div>
                       </div>
@@ -306,17 +306,17 @@ function StoreCartPage() {
             </div>
 
             {selectedCart.items.some((i: any) => i.isOutOfStock) ? (
-              <Button size="sm" className="h-11 px-4 font-bold rounded-xl text-xs" disabled>
+              <Button className="h-12 px-5 font-bold rounded-xl text-xs" disabled>
                 Itens sem estoque
               </Button>
             ) : (
               <Link
                 to="/checkout"
                 search={{ store: selectedCart.storeId }}
-                className="flex-1 max-w-[200px]"
+                className="flex-1 max-w-[220px]"
               >
-                <Button size="lg" className="w-full h-11 font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5">
-                  <span>Finalizar</span>
+                <Button className="w-full h-12 font-bold rounded-xl text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-md active:scale-98 transition-all cursor-pointer">
+                  <span>Finalizar Compra</span>
                   <ArrowRight className="size-4 shrink-0" />
                 </Button>
               </Link>

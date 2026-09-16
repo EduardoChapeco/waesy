@@ -450,12 +450,12 @@ export function PostCreationDrawer({
  <div className="flex items-center gap-3">
  <button
  onClick={() => onOpenChange(false)}
- className="size-9 rounded-xl flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+ className="size-10 rounded-xl flex items-center justify-center hover:bg-muted active:scale-95 transition-all text-muted-foreground hover:text-foreground cursor-pointer"
  aria-label="Fechar"
  >
- <X size={18} weight="bold" />
+ <X size={20} weight="bold" />
  </button>
- <DrawerTitle className="text-base font-bold tracking-tight text-foreground">
+ <DrawerTitle className="text-base sm:text-lg font-bold tracking-tight text-foreground">
  Criar Publicação
  </DrawerTitle>
  </div>
@@ -463,12 +463,11 @@ export function PostCreationDrawer({
  <Button
  onClick={handlePublish}
  disabled={isSubmitting || isUploadingMedia}
- size="sm"
- className="bg-primary text-primary-foreground font-bold rounded-xl h-9 px-5 text-xs hover:scale-102 active:scale-98 transition-all cursor-pointer"
+ className="bg-primary text-primary-foreground font-bold rounded-xl h-10 sm:h-11 px-6 text-sm hover:scale-102 active:scale-98 transition-all shadow-xs cursor-pointer"
  >
  {isSubmitting ? (
  <>
- <CircleNotch size={14} className="animate-spin mr-1.5" />
+ <CircleNotch size={16} className="animate-spin mr-2" />
  Publicando...
  </>
  ) : (
@@ -478,8 +477,8 @@ export function PostCreationDrawer({
  </DrawerHeader>
 
  {/* ── Seletor Horizontal de Formatos Sociais Puros ── */}
- <div className="px-4 py-2.5 bg-muted/30 overflow-x-auto no-scrollbar shrink-0">
- <div className="flex items-center gap-1.5 min-w-max">
+ <div className="px-4 py-3 bg-muted/20 overflow-x-auto no-scrollbar shrink-0 border-b border-border/40">
+ <div className="flex items-center gap-2 min-w-max">
  {formats.map((fmt) => {
  const Icon = fmt.icon;
  const isActive = activeFormat === fmt.id;
@@ -488,13 +487,13 @@ export function PostCreationDrawer({
  key={fmt.id}
  type="button"
  onClick={() => setActiveFormat(fmt.id)}
- className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+ className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[38px] ${
  isActive
- ? "bg-foreground text-background scale-102"
- : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80"
+ ? "bg-foreground text-background shadow-xs scale-102"
+ : "bg-card text-muted-foreground hover:text-foreground hover:bg-card/80 border border-border/50"
  }`}
  >
- <Icon size={14} weight={isActive ? "fill" : "bold"} className={isActive ? "" : fmt.color} />
+ <Icon size={16} weight={isActive ? "fill" : "bold"} className={isActive ? "" : fmt.color} />
  <span>{fmt.label}</span>
  </button>
  );
@@ -623,8 +622,8 @@ export function PostCreationDrawer({
  </div>
 
  {/* ── Barra Inferior de Ações e Anexos ── */}
- <div className="p-3.5 bg-background/95 backdrop-blur-md flex items-center justify-between shrink-0">
- <div className="flex items-center gap-2">
+ <div className="p-3.5 sm:p-4 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-2.5 shrink-0 border-t border-border/50">
+ <div className="flex flex-wrap items-center gap-2.5">
  <input
  ref={fileInputRef}
  type="file"
@@ -635,24 +634,23 @@ export function PostCreationDrawer({
  <Button
  type="button"
  variant="outline"
- size="sm"
  onClick={() => fileInputRef.current?.click()}
  disabled={isUploadingMedia || mediaPreviews.length >= 6}
- className="rounded-xl text-xs font-bold h-9 gap-1.5 px-3 cursor-pointer"
+ className="rounded-xl text-sm font-semibold h-11 gap-2 px-4 cursor-pointer shadow-2xs"
  >
  {isUploadingMedia ? (
  <>
- <CircleNotch size={14} className="animate-spin text-primary" />
+ <CircleNotch size={16} className="animate-spin text-primary" />
  <span>Enviando...</span>
  </>
  ) : activeFormat === "moment" ? (
  <>
- <FilmStrip size={15} weight="bold" className="text-amber-500" />
+ <FilmStrip size={18} weight="bold" className="text-amber-500" />
  <span>Adicionar Vídeo</span>
  </>
  ) : (
  <>
- <ImageSquare size={15} weight="bold" className="text-primary" />
+ <ImageSquare size={18} weight="bold" className="text-primary" />
  <span>Foto / Vídeo</span>
  </>
  )}
@@ -661,22 +659,21 @@ export function PostCreationDrawer({
  <Button
  type="button"
  variant="outline"
- size="sm"
  onClick={handleInsertHighlight}
- className="rounded-xl text-xs font-bold h-9 gap-1.5 px-3 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer"
+ className="rounded-xl text-sm font-semibold h-11 gap-2 px-4 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer shadow-2xs"
  title="Destacar com marca-texto estilo Threads (==texto==)"
  >
- <Highlighter size={15} className="text-amber-500" />
+ <Highlighter size={18} className="text-amber-500" />
  <span>Destaque</span>
  </Button>
 
- <div className="flex items-center gap-1.5 bg-muted/40 px-2.5 py-1 rounded-xl ">
- <MapPin size={13} className="text-muted-foreground shrink-0" />
+ <div className="flex items-center gap-2 bg-muted/40 px-3.5 h-11 rounded-xl border border-border/40">
+ <MapPin size={16} className="text-muted-foreground shrink-0" />
  <Input
  value={locationName}
  onChange={(e) => setLocationName(e.target.value)}
  placeholder="Localização..."
- className="h-7 border-none shadow-none focus-visible:ring-0 text-xs p-0 w-28 bg-transparent"
+ className="h-full border-none shadow-none focus-visible:ring-0 text-sm p-0 w-32 bg-transparent"
  />
  </div>
  </div>

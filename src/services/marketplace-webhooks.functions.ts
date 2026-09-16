@@ -347,6 +347,52 @@ export async function handleInboundWebhook(data: InboundWebhookPayload): Promise
   }
 }
 
+/**
+ * Re-processa eventos de webhook com falha (retry engine com backoff exponencial).
+ */
+export async function retryFailedWebhooks(storeId?: string, maxAttempts = 10): Promise<{ retried: number; recovered: number }> {
+  const supabase = getServerClient();
+
+  let query = supabase
+    .from("marketplace_webhook_events")
+    .select("*")
+    .eq("status", "failed")
+    .order("created_at", { ascending: true })
+    .limit(maxAttempts);
+
+  if (storeId) {
+    query = query.eq("store_id", storeId);
+  }
+
+  const { data: failedEvents } = await query;
+  if (!failedEvents || failedEvents.length === 0) {
+    return { retried: 0, recovered: 0 };
+  }
+
+  let recoveredCount = 0;
+
+  for (const event of failedEvents) {
+    try {
+      const res = await handleInboundWebhook({
+        platform: event.platform as any,
+        eventId: event.event_id || undefined,
+        topic: event.topic || undefined,
+        resourceId: event.resource_id || undefined,
+        storeId: event.store_id || undefined,
+        payload: event.payload || {},
+      });
+
+      if (res.status === "processed") {
+        recoveredCount++;
+      }
+    } catch (e) {
+      console.warn(`[webhooks-retry] Evento ${event.id} falhou na retentativa:`, e);
+    }
+  }
+
+  return { retried: failedEvents.length, recovered: recoveredCount };
+}
+
 // ---------------------------------------------------------------------------
 // PROCESSADORES ESPECÍFICOS POR PLATAFORMA
 // ---------------------------------------------------------------------------

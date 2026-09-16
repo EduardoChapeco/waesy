@@ -215,7 +215,7 @@ export default function WorkspaceTripsListPage() {
                       <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase block">
                         {trip.trip_number}
                       </span>
-                      <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                      <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors">
                         {trip.destination_city || trip.title}
                       </h3>
                     </div>
@@ -280,7 +280,7 @@ export default function WorkspaceTripsListPage() {
                     </span>
                   </div>
 
-                  <Button asChild size="sm" className="rounded-xl text-xs font-bold gap-1 h-8.5 px-3.5 cursor-pointer">
+                  <Button asChild size="sm" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 cursor-pointer shadow-2xs">
                     <Link to="/workspace/turismo/viagens/$id" params={{ id: trip.id }}>
                       <span>Gerenciar</span>
                       <ArrowUpRight className="size-3.5" />

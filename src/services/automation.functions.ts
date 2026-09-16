@@ -112,7 +112,7 @@ export const createWorkflowSchema = z.object({
     "order_paid", "order_created", "order_cancelled",
     "customer_created", "lead_created", "lead_won", "lead_lost",
     "booking_confirmed", "booking_cancelled", "cart_abandoned",
-    "product_low_stock", "manual",
+    "product_low_stock", "travel_reminder_24h", "travel_flight_delay", "manual",
   ]),
   nodes: z.array(z.any()).default([]),
   edges: z.array(z.any()).default([]),
@@ -165,7 +165,7 @@ export const updateWorkflowSchema = z.object({
     "order_paid", "order_created", "order_cancelled",
     "customer_created", "lead_created", "lead_won", "lead_lost",
     "booking_confirmed", "booking_cancelled", "cart_abandoned",
-    "product_low_stock", "manual",
+    "product_low_stock", "travel_reminder_24h", "travel_flight_delay", "manual",
   ]).optional(),
   nodes: z.array(z.any()).optional(),
   edges: z.array(z.any()).optional(),
@@ -249,4 +249,47 @@ export const getWorkflowExecutions = createServerFn({ method: "GET" })
       .limit(limit);
 
     return data || [];
+  });
+
+export const triggerTravelReminders24h = createServerFn({ method: "POST" })
+  .validator(z.object({ storeId: z.string().optional() }).optional())
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = data?.storeId || identity.store_id;
+    if (!targetStoreId) return { processed: 0, reminders_sent: 0 };
+
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const { data: bookings } = await supabase
+      .from("travel_bookings")
+      .select("*")
+      .eq("store_id", targetStoreId)
+      .gte("travel_date", now.toISOString())
+      .lte("travel_date", in24h.toISOString());
+
+    const items = bookings || [];
+    let sentCount = 0;
+
+    for (const b of items) {
+      if (b.customer_id) {
+        await supabase.from("notifications").insert({
+          user_id: b.customer_id,
+          type: "travel_reminder_24h",
+          title: "Sua viagem é amanhã! ✈️",
+          message: `Lembrete: sua viagem para ${b.destination || 'o destino'} parte em breve. Verifique seu voucher digital e documentos.`,
+          link_url: `/conta/viagens`,
+          is_read: false,
+        }).then(() => { sentCount++; }, () => null);
+      }
+    }
+
+    return {
+      processed: items.length,
+      reminders_sent: sentCount,
+      timestamp: new Date().toISOString(),
+    };
   });

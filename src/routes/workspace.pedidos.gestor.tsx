@@ -612,6 +612,88 @@ function KDSPage() {
  </Badge>
  </div>
 
+ {/* ── Visualização Móvel: Cards Verticais Ergonômicos (Apple HIG / Paradigma Clean) ── */}
+ <div className="block md:hidden divide-y divide-border/60">
+ {orders.map((ord) => {
+ const elapsed = Math.floor((Date.now() - new Date(ord.created_at).getTime()) / 60000);
+ const isLate = elapsed > 30 && !["delivered", "completed", "cancelled"].includes(ord.status);
+ const ch = getChannelInfo(ord);
+
+ return (
+ <div
+ key={ord.id}
+ onClick={() => setSelectedOrder(ord)}
+ className="p-4 space-y-3 bg-card hover:bg-muted/30 transition-colors cursor-pointer"
+ >
+ <div className="flex items-center justify-between gap-2">
+ <div className="flex items-center gap-2">
+ <span className="font-mono font-bold text-sm text-foreground">
+ #{ord.id.split("-")[0].toUpperCase()}
+ </span>
+ <Badge variant="outline" className={cn("text-[10px] font-bold border", ch.color)}>
+ {ch.label}
+ </Badge>
+ </div>
+ <Badge variant="secondary" className="text-[10px] uppercase font-bold">
+ {ord.status}
+ </Badge>
+ </div>
+
+ <div className="flex items-center justify-between gap-2">
+ <p className="text-sm font-semibold text-foreground truncate">
+ {ord.customer_snapshot?.name || ord.customer?.name || "Cliente Avulso"}
+ </p>
+ <span className="font-mono font-bold text-base text-foreground shrink-0">
+ {formatMoney(ord.total_cents)}
+ </span>
+ </div>
+
+ <div className="space-y-1.5 pt-1">
+ <div className="flex items-center justify-between text-xs font-mono">
+ <span className={isLate ? "text-rose-500 font-bold" : "text-muted-foreground"}>
+ {elapsed} min {isLate && "• ATRASO"}
+ </span>
+ <span className="text-muted-foreground">Meta: 30 min</span>
+ </div>
+ <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+ <div
+ className={cn(
+ "h-full transition-all",
+ isLate ? "bg-rose-500" : elapsed > 20 ? "bg-amber-500" : "bg-emerald-500",
+ )}
+ style={{ width: `${Math.min(100, Math.round((elapsed / 30) * 100))}%` }}
+ />
+ </div>
+ </div>
+
+ <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
+ {(ord.customer_snapshot?.phone || ord.customer?.phone) && (
+ <Button
+ size="icon"
+ variant="outline"
+ title="Avisar cliente WhatsApp"
+ onClick={(e) => handleNotifyCustomerWhatsApp(ord, e)}
+ className="size-11 sm:size-9 rounded-xl text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ >
+ <MessageCircle className="size-4" />
+ </Button>
+ )}
+ <Button
+ size="sm"
+ variant="outline"
+ onClick={() => setSelectedOrder(ord)}
+ className="flex-1 h-11 sm:h-9 rounded-xl text-xs font-bold cursor-pointer"
+ >
+ Ver Detalhes
+ </Button>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+
+ {/* ── Visualização Desktop: Tabela Analítica de Alta Densidade ── */}
+ <div className="hidden md:block">
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/30">
@@ -698,6 +780,7 @@ function KDSPage() {
  })}
  </TableBody>
  </Table>
+ </div>
  </div>
 
  {/* Relatórios de Curva ABC & Canais do Turno (Diggy / Food Intelligence) */}
@@ -942,7 +1025,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Imprimir comanda térmica (80mm)"
- className="size-9 rounded-xl text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="size-11 sm:size-9 rounded-xl text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
  onClick={(e) => {
  e.stopPropagation();
  setSelectedOrder(order);
@@ -958,7 +1041,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Ver / Imprimir Recibo Formal A4"
- className="size-9 rounded-xl text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
+ className="size-11 sm:size-9 rounded-xl text-foreground/80 border-border/80 hover:bg-muted cursor-pointer shrink-0"
  onClick={(e) => {
  e.stopPropagation();
  window.open(`/workspace/pedidos/${order.id}/recibo`, "_blank");
@@ -974,7 +1057,7 @@ function KDSPage() {
  variant="outline"
  size="icon"
  title="Avisar cliente no WhatsApp"
- className="size-9 rounded-xl text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
+ className="size-11 sm:size-9 rounded-xl text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer shrink-0"
  onClick={(e) => handleNotifyCustomerWhatsApp(order, e)}
  >
  <MessageCircle className="size-4" />
@@ -985,7 +1068,7 @@ function KDSPage() {
  type="button"
  variant="outline"
  size="sm"
- className="flex-1 h-9 rounded-xl text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 cursor-pointer"
+ className="flex-1 h-11 sm:h-9 rounded-xl text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 cursor-pointer"
  onClick={(e) => {
  e.stopPropagation();
  if (confirm("Deseja realmente recusar e cancelar este pedido?")) {
@@ -1000,7 +1083,7 @@ function KDSPage() {
  <Button
  type="button"
  size="sm"
- className="flex-1 h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
+ className="flex-1 h-11 sm:h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs cursor-pointer"
  onClick={(e) => handleStatusChange(e, order.id, col.nextStatus!)}
  >
  {col.nextLabel}

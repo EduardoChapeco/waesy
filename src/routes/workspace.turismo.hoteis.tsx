@@ -624,7 +624,7 @@ function WorkspaceHotelsPage() {
  toolDescription="Catálogo de hospedagens, redes hoteleiras e resorts com acomodações estruturadas, fotos, comodidades, políticas e tarifas base para pacotes e propostas."
  store={store}
  >
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
         <WorkspaceCanonicalToolbar
           viewModes={[
             { id: "grid", label: "Cards", icon: LayoutGrid },
@@ -697,7 +697,7 @@ function WorkspaceHotelsPage() {
 
  {/* ── CONTEÚDO PRINCIPAL (GRID OU TABELA) ── */}
  {filtered.length === 0 ? (
- <div className="p-12 text-center rounded-2xl bg-card border border-border/60 space-y-4">
+ <div className="p-8 sm:p-12 text-center rounded-2xl bg-card border border-border/60 space-y-4">
  <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Hotel className="size-7" />
  </div>
@@ -707,8 +707,8 @@ function WorkspaceHotelsPage() {
  Cadastre os resorts parceiros ou utilize nossos presets de 1 toque (Nannai, Salinas, Pratagy, Colline de France, etc.) com acomodações e fotos de alta resolução.
  </p>
  </div>
- <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
- <Button onClick={handleOpenCreate} size="sm" className="rounded-xl font-bold bg-primary text-primary-foreground">
+ <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+ <Button onClick={handleOpenCreate} size="default" className="h-11 sm:h-9 px-5 rounded-xl font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs">
  <Plus className="size-4 mr-1.5" />
  Cadastrar Hotel do Zero
  </Button>
@@ -717,9 +717,9 @@ function WorkspaceHotelsPage() {
  handleOpenCreate();
  handleApplyPreset(FAMOUS_HOTEL_PRESETS[0]);
  }}
- size="sm"
+ size="default"
  variant="outline"
- className="rounded-xl font-medium"
+ className="h-11 sm:h-9 px-5 rounded-xl font-medium cursor-pointer"
  >
  <Zap className="size-4 mr-1.5 text-amber-500" />
  Importar Nannai Muro Alto (Preset Completo)
@@ -851,27 +851,25 @@ function WorkspaceHotelsPage() {
 
  {/* Ações do Card */}
  <div className="pt-3 border-t border-border/40 flex items-center justify-between">
- <div className="flex items-center gap-1">
+ <div className="flex items-center gap-1.5 sm:gap-1">
  <Button
  type="button"
- size="sm"
  variant="secondary"
  onClick={() => setPreviewHotel(hotel)}
- className="rounded-xl text-xs gap-1.5 h-8 font-semibold"
+ className="h-11 sm:h-8 px-3.5 sm:px-3 rounded-xl text-xs gap-1.5 font-bold cursor-pointer"
  title="Visualizar Raio-X Completo do Hotel"
  >
- <Eye className="size-3.5" />
+ <Eye className="size-4 sm:size-3.5" />
  <span>Raio-X</span>
  </Button>
 
  <Button
  type="button"
- size="sm"
  variant="outline"
  onClick={() => handleOpenEdit(hotel)}
- className="rounded-xl text-xs gap-1 h-8 font-semibold"
+ className="h-11 sm:h-8 px-3.5 sm:px-3 rounded-xl text-xs gap-1 font-bold cursor-pointer"
  >
- <Edit2 className="size-3" />
+ <Edit2 className="size-4 sm:size-3" />
  <span>Editar</span>
  </Button>
 
@@ -880,10 +878,10 @@ function WorkspaceHotelsPage() {
  size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-8 rounded-xl text-muted-foreground hover:text-foreground"
+ className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
  title="Duplicar Hotel"
  >
- <Copy className="size-3.5" />
+ <Copy className="size-4 sm:size-3.5" />
  </Button>
  </div>
 
@@ -896,7 +894,7 @@ function WorkspaceHotelsPage() {
  deleteMut.mutate(hotel.id);
  }
  }}
- className="size-8 text-destructive hover:bg-destructive/10 rounded-xl"
+ className="size-11 sm:size-8 text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
  title="Remover Hotel"
  >
  <Trash2 className="size-3.5" />
@@ -977,41 +975,41 @@ function WorkspaceHotelsPage() {
  <td className="p-3 text-right whitespace-nowrap">
  <div className="flex items-center justify-end gap-1">
  <Button
- size="sm"
+ size="icon"
  variant="ghost"
  onClick={() => setPreviewHotel(hotel)}
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
  title="Raio-X do Hotel"
  >
- <Eye className="size-3.5" />
+ <Eye className="size-4 sm:size-3.5" />
  </Button>
  <Button
- size="sm"
+ size="icon"
  variant="ghost"
  onClick={() => handleOpenEdit(hotel)}
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
  title="Editar"
  >
- <Edit2 className="size-3.5" />
+ <Edit2 className="size-4 sm:size-3.5" />
  </Button>
  <Button
- size="sm"
+ size="icon"
  variant="ghost"
  onClick={() => duplicateMut.mutate(hotel.id)}
- className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+ className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
  title="Duplicar"
  >
- <Copy className="size-3.5" />
+ <Copy className="size-4 sm:size-3.5" />
  </Button>
  <Button
- size="sm"
+ size="icon"
  variant="ghost"
  onClick={() => {
  if (confirm(`Remover hotel "${hotel.name}"?`)) {
  deleteMut.mutate(hotel.id);
  }
  }}
- className="size-8 p-0 rounded-lg text-destructive hover:bg-destructive/10"
+ className="size-9 sm:size-8 rounded-xl text-destructive hover:bg-destructive/10 cursor-pointer"
  title="Excluir"
  >
  <Trash2 className="size-3.5" />
@@ -1854,7 +1852,7 @@ function WorkspaceHotelsPage() {
  </Label>
  <div className="space-y-1.5">
  {formData.bio_bullets.map((bullet, idx) => (
- <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-muted/40 text-xs border border-border/50">
+ <div key={idx} className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/40 text-xs border border-border/50">
  <span className="flex-1 text-foreground font-medium">{bullet}</span>
  <button
  type="button"
@@ -1864,7 +1862,7 @@ function WorkspaceHotelsPage() {
  bio_bullets: formData.bio_bullets.filter((_, i) => i !== idx),
  })
  }
- className="size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer"
+ className="size-8 sm:size-5 text-muted-foreground hover:text-destructive flex items-center justify-center cursor-pointer rounded-lg"
  >
  ×
  </button>
@@ -1889,11 +1887,10 @@ function WorkspaceHotelsPage() {
  }
  }}
  placeholder="Adicionar bullet persuasivo (Ex: 🌴 Piscinas naturais com bar molhado)..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
+ className="h-11 sm:h-9 rounded-xl text-xs bg-background flex-1"
  />
  <Button
  type="button"
- size="sm"
  variant="outline"
  onClick={() => {
  if (newBullet.trim()) {
@@ -1904,7 +1901,7 @@ function WorkspaceHotelsPage() {
  setNewBullet("");
  }
  }}
- className="rounded-xl h-9"
+ className="h-11 sm:h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer shrink-0"
  >
  + Adicionar
  </Button>
@@ -1918,7 +1915,7 @@ function WorkspaceHotelsPage() {
  type="button"
  variant="outline"
  onClick={() => setIsSheetOpen(false)}
- className="rounded-xl font-medium"
+ className="h-11 sm:h-9 px-4 rounded-xl font-semibold cursor-pointer"
  >
  Cancelar
  </Button>

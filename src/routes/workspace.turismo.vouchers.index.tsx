@@ -144,7 +144,7 @@ export default function WorkspaceVouchersPage() {
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
       <WorkspaceCanonicalToolbar
         tabs={TABS}
@@ -177,30 +177,30 @@ export default function WorkspaceVouchersPage() {
           Carregando vouchers emitidos...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-dashed border-border/70 bg-card space-y-3">
+        <div className="p-8 sm:p-12 text-center rounded-2xl border border-dashed border-border/70 bg-card space-y-3">
           <FileText className="size-8 text-muted-foreground mx-auto" />
-          <p className="text-xs font-bold text-foreground">Nenhum voucher emitido no momento</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm font-bold text-foreground">Nenhum voucher emitido no momento</p>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
             Emita cartões de embarque aéreos, vouchers de hotelaria e transfers para seus passageiros.
           </p>
           <Button
-            size="sm"
+            size="default"
             onClick={() => {
               setCreationType("flight");
               setIsCreationSheetOpen(true);
             }}
-            className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-xs"
+            className="h-11 sm:h-9 px-5 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-xs"
           >
-            <Plus className="size-3.5" />
+            <Plus className="size-4 sm:size-3.5" />
             <span>Emitir Primeiro Voucher</span>
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((v) => (
             <div
               key={v.id}
-              className="p-5 rounded-2xl bg-card border border-border/70 hover:border-foreground/20 transition-all shadow-2xs flex flex-col justify-between space-y-4"
+              className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 hover:border-foreground/20 transition-all shadow-2xs flex flex-col justify-between space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -259,27 +259,25 @@ export default function WorkspaceVouchersPage() {
                 )}
               </div>
 
-              <div className="border-t border-border/50 pt-3 flex items-center justify-between text-xs">
+              <div className="border-t border-border/50 pt-3 flex items-center gap-2 justify-between text-xs">
                 <Button
                   type="button"
-                  size="sm"
                   variant="outline"
                   onClick={() => handleDownloadPdf(v)}
-                  className="rounded-xl h-8 px-3 text-xs font-bold gap-1.5 border-border/70"
+                  className="h-11 sm:h-8 px-4 sm:px-3 rounded-xl text-xs font-bold gap-1.5 border-border/70 flex-1 sm:flex-initial cursor-pointer"
                 >
-                  <Download className="size-3.5" />
+                  <Download className="size-4 sm:size-3.5" />
                   <span>Baixar PDF</span>
                 </Button>
 
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
                   onClick={() => handleDelete(v.id, v.voucher_number)}
-                  className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive"
+                  className="size-11 sm:size-8 p-0 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
                   title="Excluir voucher"
                 >
-                  <Trash2 className="size-3.5" />
+                  <Trash2 className="size-4 sm:size-3.5" />
                 </Button>
               </div>
             </div>

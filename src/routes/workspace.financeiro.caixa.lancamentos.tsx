@@ -511,15 +511,72 @@ function CaixaLancamentosPage() {
         </div>
       </div>
 
-      {/* ── TABELA DE LANÇAMENTOS DO TURNO ── */}
+      {/* ── LISTAGEM DE LANÇAMENTOS DO TURNO: DUAL-VIEW MOBILE / DESKTOP ── */}
       {filteredEntries.length === 0 ? (
         <EmptyState
           title="Nenhum lançamento no filtro"
           description="Nenhuma movimentação corresponde aos critérios de pesquisa selecionados."
         />
       ) : (
-        <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto no-scrollbar">
+        <>
+          {/* ── VISUALIZAÇÃO MOBILE: CARDS VERTICAIS (block md:hidden) ── */}
+          <div className="block md:hidden space-y-3">
+            {filteredEntries.map((entry: any) => {
+              const isPositive = entry.amount_cents >= 0;
+
+              return (
+                <div
+                  key={entry.id}
+                  className="rounded-2xl border border-border/70 bg-card p-4 space-y-2.5 shadow-2xs"
+                >
+                  {/* Topo do Card: Data/Hora, Canal e Forma */}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {formatDateTime(entry.created_at)}
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      {renderChannelBadge(entry.channel_source || entry.channel)}
+                      <Badge variant="outline" className="capitalize text-[10px] font-medium">
+                        {translateMethod(entry.method)}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Descrição da Movimentação */}
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground leading-snug">
+                      {entry.description || entry.notes || "Movimentação de caixa"}
+                    </h3>
+
+                    {entry.marketplace_fee_cents > 0 && (
+                      <p className="text-[11px] text-muted-foreground font-mono mt-1">
+                        Taxa canal: -{formatMoney(entry.marketplace_fee_cents)} • Líquido: {formatMoney(entry.net_payout_cents || (entry.amount_cents - entry.marketplace_fee_cents))}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Valor da Operação */}
+                  <div className="flex items-baseline justify-between pt-2 border-t border-border/30">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {isPositive ? "Entrada (+)" : "Saída (-)"}
+                    </span>
+                    <span
+                      className={`text-lg font-mono font-black ${
+                        isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                      }`}
+                    >
+                      {isPositive ? "+" : "-"}
+                      {formatMoney(Math.abs(entry.amount_cents))}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── VISUALIZAÇÃO DESKTOP: TABELA (hidden md:block) ── */}
+          <div className="hidden md:block bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
@@ -565,7 +622,7 @@ function CaixaLancamentosPage() {
               </TableBody>
             </Table>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
