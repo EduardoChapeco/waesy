@@ -1,269 +1,657 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Save, Lock, UserPlus, Trash, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  Lock,
+  Save,
+  PenTool,
+  Settings2,
+  FileText,
+  UserCheck,
+  Layers,
+  Copy,
+  Folder,
+  Bell,
+  Eye,
+  Calendar,
+  ExternalLink,
+  QrCode,
+  Loader2,
+} from "lucide-react";
+import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
-import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { getContractById, sealAndIssueContract } from "@/services/contracts.functions";
+import {
+  getContractById,
+  updateContractDraft,
+  sealAndIssueContract,
+  type SignatureFieldDTO,
+  type ObserverDTO,
+  type DispatchSettingsDTO,
+} from "@/services/contracts.functions";
+import {
+  SignaturePositionerCanvas,
+  type SignerVisualInfo,
+} from "@/components/contracts/signature-positioner-canvas";
+import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
 
 export const Route = createFileRoute("/workspace/contratos/$id/editor")({
- head: () => ({ meta: [{ title: "Editor de Contrato | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Editor de Contrato & Assinatura | Workspace Waesy" }] }),
   loader: async ({ params }) => {
     try {
       return await getContractById({ data: params.id });
     } catch (err) {
-      console.error("[loader:workspace.contratos.$id.editor] Unhandled error:", err);
+      console.error("[loader:workspace.contratos.$id.editor] Error:", err);
       return {} as any;
     }
   },
- component: ContractEditorPage,
+  component: ContractEditorPage,
 });
 
+const SIGNER_COLORS = ["#2563eb", "#9333ea", "#059669", "#ea580c", "#dc2626"];
+
 function ContractEditorPage() {
- const contract = Route.useLoaderData();
- const navigate = useNavigate();
+  const contract = Route.useLoaderData();
+  const navigate = useNavigate();
 
- const currentVersion = contract.versions.sort((a: any, b: any) => b.version_number - a.version_number)[0];
+  if (!contract || !contract.id) {
+    return (
+      <div className="max-w-md mx-auto py-20 text-center space-y-4">
+        <p className="text-sm text-muted-foreground">Contrato não encontrado.</p>
+        <Button asChild variant="outline" size="sm" className="rounded-xl">
+          <Link to="/workspace/contratos">Voltar</Link>
+        </Button>
+      </div>
+    );
+  }
 
- const [content, setContent] = useState(currentVersion.content_markdown || "");
- const [signers, setSigners] = useState<any[]>([]);
- const [isSealing, setIsSealing] = useState(false);
+  const versions = contract.versions || [];
+  const currentVersion = versions.sort(
+    (a: any, b: any) => b.version_number - a.version_number,
+  )[0] || { content_markdown: "", signature_fields: [], page_count: 1 };
 
- const addSigner = () => {
- setSigners([...signers, { name: "", email: "", role: "party", authLevel: "basic" }]);
- };
+  // Etapa ativa: 1 = Revisão, 2 = Posicionamento, 3 = Configurações & Selagem
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(2);
 
- const updateSigner = (index: number, key: string, value: string) => {
- const updated = [...signers];
- updated[index][key] = value;
- setSigners(updated);
- };
+  // Estados do Contrato & Versão
+  const [docTitle, setDocTitle] = useState(contract.title || "");
+  const [contentMarkdown, setContentMarkdown] = useState(currentVersion.content_markdown || "");
+  const [pageCount, setPageCount] = useState(currentVersion.page_count || 1);
+  const [currentPage, setCurrentPage] = useState(1);
 
- const removeSigner = (index: number) => {
- setSigners(signers.filter((_, i) => i !== index));
- };
+  // Campos de Assinatura Posicionados
+  const [signatureFields, setSignatureFields] = useState<SignatureFieldDTO[]>(
+    currentVersion.signature_fields || [],
+  );
 
- const handleSeal = async () => {
- if (signers.length === 0) {
- toast.error("Adicione pelo menos um signatário antes de selar o contrato.");
- return;
- }
- 
- // Validar emails
- if (signers.some(s => !s.email || !s.name)) {
- toast.error("Preencha todos os nomes e emails dos signatários.");
- return;
- }
+  // Signatários
+  const existingEnvelopes = currentVersion.envelopes || [];
+  const [signers, setSigners] = useState<SignerVisualInfo[]>(
+    existingEnvelopes.length > 0
+      ? existingEnvelopes.map((env: any, idx: number) => ({
+          index: idx,
+          name: env.signer_name,
+          email: env.signer_email,
+          phone: env.signer_phone || "",
+          role: env.signer_role || "party",
+          colorCode: env.color_code || SIGNER_COLORS[idx % SIGNER_COLORS.length],
+        }))
+      : [
+          {
+            index: 0,
+            name: "Contratada / Empresa",
+            email: "financeiro@waesy.com",
+            phone: "",
+            role: "party",
+            colorCode: SIGNER_COLORS[0],
+          },
+          {
+            index: 1,
+            name: "Contratante / Cliente",
+            email: "cliente@email.com",
+            phone: "",
+            role: "party",
+            colorCode: SIGNER_COLORS[1],
+          },
+        ],
+  );
 
- setIsSealing(true);
- try {
- // Nota: Idealmente salvaríamos o rascunho (content) aqui antes de selar se houvesse edição,
- // mas como o `sealAndIssueContract` sela a versão existente, 
- // precisariamos de um `updateContractVersion` antes. Para simplificar nesta micro-fase, 
- // selamos diretamente (o backend assume que a versão no banco é a que vale).
- 
- const res = await sealAndIssueContract({
- data: {
- contractId: contract.id,
- versionId: currentVersion.id,
- signers: signers,
- },
- });
+  // Configurações Adicionais (Screenshot 3)
+  const [folderName, setFolderName] = useState("Sem pasta");
+  const [authMarkPosition, setAuthMarkPosition] = useState<"footer" | "header" | "side">("footer");
+  const [authMarkSize, setAuthMarkSize] = useState<"standard" | "compact" | "mini">("standard");
+  const [forceSignatureAppearance, setForceSignatureAppearance] = useState(false);
+  const [observers, setObservers] = useState<ObserverDTO[]>(contract.observers || []);
+  const [newObserverEmail, setNewObserverEmail] = useState("");
+  const [newObserverName, setNewObserverName] = useState("");
+  const [sendReminders, setSendReminders] = useState(true);
 
- toast.success("Contrato selado criptograficamente com sucesso!");
- // Em produção, isso geraria um link, mas aqui apenas voltamos
- navigate({ to: "/workspace/contratos" });
- 
- } catch (err: any) {
- toast.error(err.message || "Erro ao selar contrato.");
- setIsSealing(false);
- }
- };
+  // Estado de Selagem
+  const [isSealing, setIsSealing] = useState(false);
+  const [sealedData, setSealedData] = useState<any>(null);
 
- if (contract.status !== "draft") {
- return (
- <div className="w-full max-w-xl mx-auto py-20 px-0 sm:px-4 text-center space-y-4">
- <ShieldCheck size={48} className="text-emerald-600 mx-auto" />
- <h2 className="text-xl font-bold">Este contrato já está selado/assinado</h2>
- <p className="text-muted-foreground">
- Documentos após entrarem em estado de assinatura não podem ser editados para garantir a validade criptográfica (Imutabilidade).
- </p>
- <Button onClick={() => navigate({ to: "/workspace/contratos" })}>Voltar ao Painel</Button>
- </div>
- );
- }
+  // Salvar Rascunho
+  const handleSaveDraft = async () => {
+    try {
+      await updateContractDraft({
+        data: {
+          contractId: contract.id,
+          versionId: currentVersion.id,
+          title: docTitle,
+          contentMarkdown,
+          signatureFields,
+          pageCount,
+          observers,
+          dispatchSettings: {
+            signing_order: "parallel",
+            send_reminders: sendReminders,
+            reminder_days: 3,
+            auth_mark_position: authMarkPosition,
+            auth_mark_size: authMarkSize,
+            force_signature_appearance: forceSignatureAppearance,
+            delivery_channels: ["whatsapp", "email"],
+          },
+        },
+      });
+      toast.success("Rascunho salvo com sucesso!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar rascunho.");
+    }
+  };
 
- return (
- <div className="flex flex-col h-[calc(100vh-4rem)] max-w-[1400px] mx-auto overflow-hidden">
- {/* Topbar */}
- <div className="flex items-center justify-between border-b px-6 py-4 bg-background">
- <div className="flex items-center gap-4">
- <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/workspace/contratos" })}>
- <ArrowLeft size={18} />
- </Button>
- <div>
- <h1 className="font-bold text-lg">{contract.title}</h1>
- <Badge variant="outline" className="text-[10px]">Rascunho V{currentVersion.version_number}</Badge>
- </div>
- </div>
+  // Selar Criptograficamente o Contrato
+  const handleSealContract = async () => {
+    if (signers.length === 0) {
+      toast.error("Adicione pelo menos um signatário.");
+      return;
+    }
 
- <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                try {
-                  localStorage.setItem(`contract_draft_${contract.id}`, JSON.stringify({
-                    content,
-                    signers,
-                    updatedAt: new Date().toISOString()
-                  }));
-                  toast.success("Rascunho salvo no armazenamento local!");
-                } catch {
-                  toast.error("Falha ao salvar rascunho localmente.");
-                }
-              }}
+    setIsSealing(true);
+    try {
+      // Salva antes de selar
+      await updateContractDraft({
+        data: {
+          contractId: contract.id,
+          versionId: currentVersion.id,
+          title: docTitle,
+          contentMarkdown,
+          signatureFields,
+          pageCount,
+          observers,
+        },
+      });
+
+      const res = await sealAndIssueContract({
+        data: {
+          contractId: contract.id,
+          versionId: currentVersion.id,
+          signatureFields,
+          signers: signers.map((s) => ({
+            name: s.name,
+            email: s.email || `${s.name.toLowerCase().replace(/\s+/g, "")}@waesy.com`,
+            phone: s.phone || undefined,
+            role: (s.role as any) || "party",
+            authLevel: "advanced",
+            dispatchChannel: s.phone ? "whatsapp" : "email",
+            signingOrderIndex: s.index + 1,
+            colorCode: s.colorCode,
+            requireFacialBiometrics: false,
+            requireCpfConfirmation: false,
+          })),
+        },
+      });
+
+      setSealedData(res);
+      toast.success("Contrato selado criptograficamente com sucesso!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao selar contrato.");
+    } finally {
+      setIsSealing(false);
+    }
+  };
+
+  const addObserver = () => {
+    if (!newObserverEmail.trim()) return;
+    setObservers([
+      ...observers,
+      {
+        name: newObserverName.trim() || "Observador",
+        email: newObserverEmail.trim(),
+        role: "observer",
+      },
+    ]);
+    setNewObserverEmail("");
+    setNewObserverName("");
+    toast.success("Observador adicionado à lista de notificações.");
+  };
+
+  // Se já foi selado nesta sessão ou previamente
+  const isAlreadySealed = contract.status !== "draft" || Boolean(sealedData);
+
+  return (
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
+      {/* Barra de Topo do Editor */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/70 pb-4">
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" size="sm" className="rounded-xl h-9 w-9 p-0">
+            <Link to="/workspace/contratos">
+              <ArrowLeft className="size-4" />
+            </Link>
+          </Button>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate max-w-md">
+                {docTitle || "Editor de Contrato"}
+              </h1>
+              <Badge variant={isAlreadySealed ? "default" : "secondary"} className="text-[10px]">
+                {isAlreadySealed ? "Selado Criptograficamente" : "Rascunho"}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Passo {activeStep} de 3 · {activeStep === 1 ? "Minuta" : activeStep === 2 ? "Posicionamento" : "Configurações"}
+            </p>
+          </div>
+        </div>
+
+        {/* Botões de Ação do Topo */}
+        <div className="flex items-center gap-2">
+          {!isAlreadySealed && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSaveDraft}
+              className="rounded-xl text-xs h-9 px-3.5"
             >
-              <Save size={16} className="mr-2" /> Salvar Rascunho
+              <Save className="size-3.5 mr-1.5" />
+              Salvar Rascunho
             </Button>
- <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={handleSeal} disabled={isSealing}>
- <Lock size={16} className="mr-2" />
- {isSealing ? "Selando..." : "Selar e Enviar"}
- </Button>
- </div>
- </div>
+          )}
 
- {/* Editor & Preview Split Pane */}
- <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 overflow-hidden bg-muted/20">
- 
- {/* Lado Esquerdo: Editor Markdown e Configurações */}
- <div className="border-r overflow-y-auto no-scrollbar p-6 space-y-8 bg-card">
- <div className="space-y-3">
- <Label className="text-lg font-bold">Corpo do Documento (Markdown)</Label>
- <p className="text-xs text-muted-foreground">Utilize formatação Markdown para criar as cláusulas do documento.</p>
- <Textarea 
- className="min-h-[400px] font-mono text-sm leading-relaxed"
- value={content}
- onChange={(e) => setContent(e.target.value)}
- />
- </div>
+          {/* Stepper Superior */}
+          <div className="flex items-center p-1 bg-muted rounded-xl text-xs">
+            <button
+              type="button"
+              onClick={() => setActiveStep(1)}
+              className={`px-3 py-1 rounded-lg transition-all text-xs font-medium ${
+                activeStep === 1 ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+              }`}
+            >
+              1. Minuta
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveStep(2)}
+              className={`px-3 py-1 rounded-lg transition-all text-xs font-medium ${
+                activeStep === 2 ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+              }`}
+            >
+              2. Posicionar
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveStep(3)}
+              className={`px-3 py-1 rounded-lg transition-all text-xs font-medium ${
+                activeStep === 3 ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+              }`}
+            >
+              3. Configurações
+            </button>
+          </div>
+        </div>
+      </div>
 
- <div className="space-y-4 pt-4 border-t">
- <div className="flex items-center justify-between">
- <Label className="text-lg font-bold flex items-center gap-2">
- <UserPlus size={18} /> Signatários
- </Label>
- <Button size="sm" variant="secondary" onClick={addSigner}>Adicionar</Button>
- </div>
+      {/* SE O CONTRATO JÁ ESTÁ SELADO: EXIBE PAINEL DE DISPARO & PROTOCOLO */}
+      {isAlreadySealed ? (
+        <div className="space-y-6">
+          <div className="p-6 rounded-2xl bg-card border border-emerald-500/30 space-y-4">
+            <div className="flex items-center gap-3 text-emerald-600">
+              <ShieldCheck className="size-6" />
+              <div>
+                <h3 className="font-bold text-sm text-foreground">Documento Selado & Pronto para Assinatura</h3>
+                <p className="text-xs text-muted-foreground">
+                  A integridade criptográfica SHA-256 está gravada e os envelopes foram emitidos.
+                </p>
+              </div>
+            </div>
 
- {signers.length === 0 ? (
- <div className="p-6 text-center border-2 border-dashed rounded-2xl text-muted-foreground text-sm">
- Nenhum signatário adicionado. Adicione as partes envolvidas para poder selar o contrato.
- </div>
- ) : (
- <div className="space-y-3">
- {signers.map((signer, idx) => (
- <div key={idx} className="p-4 border rounded-2xl bg-background space-y-3 relative">
- <Button 
- variant="ghost" 
- size="icon" 
- className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
- onClick={() => removeSigner(idx)}
- >
- <Trash size={14} />
- </Button>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-8 sm:pr-8">
- <div className="space-y-1">
- <Label className="text-xs">Nome Completo</Label>
- <Input 
- value={signer.name} 
- onChange={(e) => updateSigner(idx, "name", e.target.value)} 
- placeholder="João da Silva" 
- />
- </div>
- <div className="space-y-1">
- <Label className="text-xs">E-mail</Label>
- <Input 
- type="email"
- value={signer.email} 
- onChange={(e) => updateSigner(idx, "email", e.target.value)} 
- placeholder="joao@email.com" 
- />
- </div>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <Label className="text-xs">Papel</Label>
- <Select value={signer.role} onValueChange={(v) => updateSigner(idx, "role", v)}>
- <SelectTrigger><SelectValue /></SelectTrigger>
- <SelectContent>
- <SelectItem value="party">Parte</SelectItem>
- <SelectItem value="witness">Testemunha</SelectItem>
- <SelectItem value="guarantor">Fiador</SelectItem>
- </SelectContent>
- </Select>
- </div>
- <div className="space-y-1">
- <Label className="text-xs">Nível de Assinatura</Label>
- <Select value={signer.authLevel} onValueChange={(v) => updateSigner(idx, "authLevel", v)}>
- <SelectTrigger><SelectValue /></SelectTrigger>
- <SelectContent>
- <SelectItem value="basic">Consentimento Simples</SelectItem>
- <SelectItem value="advanced">Avançada (Email/OTP)</SelectItem>
- <SelectItem value="qualified">Qualificada (Token)</SelectItem>
- </SelectContent>
- </Select>
- </div>
- </div>
- </div>
- ))}
- </div>
- )}
- </div>
- </div>
+            {/* Links Rápidos de Despacho (WhatsApp / E-mail) */}
+            <div className="space-y-3 pt-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Links de Assinatura por Signatário:
+              </h4>
 
- {/* Lado Direito: Preview WYSIWYG */}
- <div className="overflow-y-auto no-scrollbar p-8 bg-muted/40">
- <div className="max-w-[800px] mx-auto bg-white border shadow-sm min-h-[1056px] p-12 sm:p-20 relative">
- {/* Margens tipo folha A4 */}
- <div className="prose prose-sm sm:prose-base prose-slate max-w-none prose-headings:font-bold prose-a:text-primary">
- <ReactMarkdown>{content}</ReactMarkdown>
- </div>
- 
- {/* Preview da Régua de Assinaturas */}
- {signers.length > 0 && (
- <div className="mt-20 pt-10 border-t-2 border-dashed border-gray-300">
- <h3 className="text-lg font-bold text-black mb-8 text-center">Local de Assinaturas</h3>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-12 gap-x-8">
- {signers.map((s, i) => (
- <div key={i} className="text-center">
- <div className="border-b border-black mx-4 mb-2"></div>
- <p className="font-bold text-sm text-black">{s.name || "Nome do Signatário"}</p>
- <p className="text-xs text-gray-500 uppercase">{s.role === "witness" ? "Testemunha" : s.role === "guarantor" ? "Fiador" : "Parte"}</p>
- {s.email && <p className="text-xs text-gray-400 mt-1">{s.email}</p>}
- </div>
- ))}
- </div>
- </div>
- )}
- </div>
- </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {(sealedData?.envelopes || existingEnvelopes).map((env: any, idx: number) => {
+                  const signingUrl = `/assinar/${env.signing_token}`;
+                  const cleanPhone = (env.signer_phone || "").replace(/\D/g, "");
+                  const waMsg = encodeURIComponent(
+                    `Olá ${env.signer_name}, seu documento "${docTitle}" está pronto para assinatura digital:\nhttps://waesy.com${signingUrl}`,
+                  );
+                  const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : null;
 
- </div>
- </div>
- );
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3.5 rounded-xl border border-border/80 bg-muted/20 flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-bold text-foreground truncate">{env.signer_name}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{env.signer_email || env.signer_phone}</p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {waLink && (
+                          <Button
+                            asChild
+                            size="sm"
+                            className="h-8 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px]"
+                          >
+                            <a href={waLink} target="_blank" rel="noreferrer">
+                              <WhatsappLogo className="size-3.5 mr-1" />
+                              WhatsApp
+                            </a>
+                          </Button>
+                        )}
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2.5 rounded-lg text-[11px]"
+                        >
+                          <Link to={signingUrl}>
+                            <ExternalLink className="size-3 mr-1" />
+                            Abrir
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Folha de Rosto / Protocolo de Auditoria */}
+          <ContractAuditManifest
+            documentTitle={docTitle}
+            category={contract.category}
+            verificationCode={contract.verification_code}
+            hashSha256={sealedData?.hashSha256 || currentVersion.hash_sha256 || "CÁLCULO CRIPTOGRÁFICO"}
+            sealedAt={currentVersion.sealed_at || new Date().toISOString()}
+            signers={signers.map((s) => ({
+              name: s.name,
+              email: s.email,
+              phone: s.phone,
+              role: s.role,
+              status: "pending",
+            }))}
+            observers={observers}
+          />
+        </div>
+      ) : (
+        <>
+          {/* PASSO 1: REVISÃO DE MINUTA & CONTEÚDO */}
+          {activeStep === 1 && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-8 bg-card border border-border/80 rounded-2xl p-5 space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold">Título do Instrumento</Label>
+                  <Input
+                    value={docTitle}
+                    onChange={(e) => setDocTitle(e.target.value)}
+                    className="h-10 text-xs rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold">Cláusulas do Contrato (Markdown)</Label>
+                  <Textarea
+                    rows={16}
+                    value={contentMarkdown}
+                    onChange={(e) => setContentMarkdown(e.target.value)}
+                    className="font-mono text-xs rounded-xl p-3.5 leading-relaxed resize-y"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    type="button"
+                    onClick={() => setActiveStep(2)}
+                    className="rounded-xl text-xs h-10 px-5 font-semibold"
+                  >
+                    Avançar para Posicionamento
+                    <ArrowRight className="size-4 ml-1.5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Prévia ao Lado */}
+              <div className="lg:col-span-4 bg-card border border-border/80 rounded-2xl p-5 space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Prévia de Leitura
+                </h3>
+                <div className="max-h-[500px] overflow-y-auto pr-2 text-xs font-serif leading-relaxed text-foreground/90 prose prose-sm dark:prose-invert">
+                  <ReactMarkdown>{contentMarkdown}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PASSO 2: POSICIONAMENTO VISUAL DE TAGS (SignaturePositionerCanvas) */}
+          {activeStep === 2 && (
+            <div className="h-[760px]">
+              <SignaturePositionerCanvas
+                signers={signers}
+                fields={signatureFields}
+                pageCount={pageCount}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+                onFieldsChange={setSignatureFields}
+                onAdvance={() => setActiveStep(3)}
+                documentTitle={docTitle}
+              />
+            </div>
+          )}
+
+          {/* PASSO 3: CONFIGURAÇÕES ADICIONAIS & SELAGEM (Screenshot 3) */}
+          {activeStep === 3 && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Formulário de Configurações Adicionais */}
+              <div className="lg:col-span-7 bg-card border border-border/80 rounded-2xl p-6 space-y-6">
+                <div>
+                  <h2 className="text-base font-bold text-foreground">Configurações adicionais</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Personalize o comportamento e a aparência jurídica do seu documento
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold">Nome do Documento</Label>
+                    <Input
+                      value={docTitle}
+                      onChange={(e) => setDocTitle(e.target.value)}
+                      className="h-10 text-xs rounded-xl"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold">Arquivar em pasta</Label>
+                    <Select value={folderName} onValueChange={setFolderName}>
+                      <SelectTrigger className="h-10 text-xs rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl text-xs">
+                        <SelectItem value="Sem pasta">Sem pasta</SelectItem>
+                        <SelectItem value="Turismo 2026">Turismo & Viagens 2026</SelectItem>
+                        <SelectItem value="Contratos Gerais">Contratos Gerais</SelectItem>
+                        <SelectItem value="Imobiliário">Locações & Imóveis</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Bloco de Aparência */}
+                  <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+                    <h3 className="text-xs font-bold text-foreground">Aparência da Autenticação Eletrônica</h3>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-[11px] text-muted-foreground">Posição da Marca</Label>
+                        <Select
+                          value={authMarkPosition}
+                          onValueChange={(v: any) => setAuthMarkPosition(v)}
+                        >
+                          <SelectTrigger className="h-9 text-xs rounded-lg">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl text-xs">
+                            <SelectItem value="footer">Rodapé</SelectItem>
+                            <SelectItem value="header">Cabeçalho</SelectItem>
+                            <SelectItem value="side">Lateral</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-[11px] text-muted-foreground">Tamanho</Label>
+                        <Select
+                          value={authMarkSize}
+                          onValueChange={(v: any) => setAuthMarkSize(v)}
+                        >
+                          <SelectTrigger className="h-9 text-xs rounded-lg">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl text-xs">
+                            <SelectItem value="standard">Padrão</SelectItem>
+                            <SelectItem value="compact">Compacto</SelectItem>
+                            <SelectItem value="mini">Mini</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2 pt-1">
+                      <Checkbox
+                        id="force_sig"
+                        checked={forceSignatureAppearance}
+                        onCheckedChange={(c) => setForceSignatureAppearance(Boolean(c))}
+                      />
+                      <Label htmlFor="force_sig" className="text-xs text-muted-foreground cursor-pointer">
+                        Forçar traçado manual da assinatura no celular
+                      </Label>
+                    </div>
+                  </div>
+
+                  {/* Observadores e Notificações */}
+                  <div className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-3">
+                    <h3 className="text-xs font-bold text-foreground">Observadores (Recebem cópia assinada)</h3>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Nome"
+                        value={newObserverName}
+                        onChange={(e) => setNewObserverName(e.target.value)}
+                        className="h-9 text-xs rounded-lg"
+                      />
+                      <Input
+                        placeholder="E-mail do observador"
+                        value={newObserverEmail}
+                        onChange={(e) => setNewObserverEmail(e.target.value)}
+                        className="h-9 text-xs rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addObserver}
+                        className="rounded-lg h-9 text-xs shrink-0"
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+
+                    {observers.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {observers.map((obs, i) => (
+                          <Badge key={i} variant="secondary" className="text-[11px]">
+                            {obs.name} ({obs.email})
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-border/70">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveStep(2)}
+                    className="rounded-xl text-xs h-10 px-4"
+                  >
+                    Voltar ao Posicionamento
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handleSealContract}
+                    disabled={isSealing}
+                    className="rounded-xl text-xs h-11 px-8 font-bold bg-primary hover:bg-primary/90"
+                  >
+                    {isSealing ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin mr-2" />
+                        Selando Criptograficamente...
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="size-4 mr-2" />
+                        Criar Documento & Selar
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Resumo do Envelope & Validade Jurídica */}
+              <div className="lg:col-span-5 space-y-4">
+                <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <Lock className="size-3.5 text-primary" />
+                    Validade Jurídica Assegurada
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Ao clicar em <strong>Criar Documento & Selar</strong>, o hash SHA-256 será computado de forma irreversível sobre o conteúdo e as caixas de assinatura.
+                  </p>
+                  <div className="space-y-1.5 text-[11px] text-muted-foreground border-t border-border/50 pt-2.5">
+                    <p>✓ Trilha de auditoria com IP, User-Agent e Timestamp UTC</p>
+                    <p>✓ Folha de rosto anexada com QR Code oficial de verificação</p>
+                    <p>✓ Envio instantâneo via WhatsApp e E-mail para os signatários</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
