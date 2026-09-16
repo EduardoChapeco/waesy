@@ -287,7 +287,7 @@ function PainelEmpresaPage() {
 
   if (!store) {
     return (
-      <div className="min-h-screen bg-background py-16 px-4">
+      <div className="min-h-screen bg-background py-10 sm:py-16 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Store className="size-8" />
@@ -357,14 +357,14 @@ function PainelEmpresaPage() {
               </Link>
             </Button>
 
-            <Button asChild size="sm" className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-xs">
+            <Button asChild size="sm" className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-xs">
               <Link to="/workspace">
                 <Store className="size-3.5" />
                 <span>Portal</span>
               </Link>
             </Button>
 
-            <Button asChild size="sm" variant="outline" className="h-9 rounded-xl text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/5">
+            <Button asChild size="sm" variant="outline" className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/5">
               <Link to="/portal-completo">
                 <Layers className="size-3.5" />
                 <span className="hidden sm:inline">Gestão Pro</span>
@@ -397,7 +397,7 @@ function PainelEmpresaPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-6xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
         {/* Métricas Principais em Grid Simétrico 4-Col (Apple HIG) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-1">

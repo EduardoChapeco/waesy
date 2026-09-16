@@ -108,7 +108,11 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/ofertas") ||
     location.pathname.includes("/salvos") ||
     location.pathname.includes("/negociacoes") ||
-    location.pathname.includes("/explorar");
+    location.pathname.includes("/explorar") ||
+    location.pathname.includes("/entregador") ||
+    location.pathname.includes("/criar-negocio") ||
+    location.pathname.includes("/mural") ||
+    location.pathname.includes("/voucher");
 
   const isFeedPage = location.pathname.startsWith("/feed");
 

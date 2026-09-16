@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/commerce/page-header";
 import {
  DropdownMenu,
  DropdownMenuContent,
@@ -83,57 +84,53 @@ function AfiliadosFinanceiroPage() {
   ) || [];
 
   return (
-    <div className="flex flex-col h-full gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
-        <div>
-          <h1 className="text-base font-bold text-foreground">Comissões de Parceiros & Equipe</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Desempenho e repasses consolidados de vendedores e afiliados.
-          </p>
+    <div className="flex flex-col h-full gap-6 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pb-20 font-sans animate-in fade-in duration-200">
+      {/* Header Canônico */}
+      <PageHeader
+        title="Comissões de Parceiros & Equipe"
+        description="Desempenho e repasses consolidados de vendedores e afiliados."
+      />
+
+      {/* Summary Cards (Clean Paradigm - Apple HIG) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className="size-4 text-warning" />
+            <h2 className="text-xs font-semibold text-muted-foreground">Comissões Pendentes</h2>
+          </div>
+          {isSummaryLoading ? (
+            <div className="h-8 bg-muted animate-pulse rounded-xl w-32 mt-1" />
+          ) : (
+            <p className="text-2xl font-bold text-foreground font-mono">
+              {formatMoney(summary?.totalPendingCents ?? 0)}
+            </p>
+          )}
+        </div>
+        <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle2 className="size-4 text-emerald-600" />
+            <h2 className="text-xs font-semibold text-muted-foreground">Comissões Pagas</h2>
+          </div>
+          {isSummaryLoading ? (
+            <div className="h-8 bg-muted animate-pulse rounded-xl w-32 mt-1" />
+          ) : (
+            <p className="text-2xl font-bold text-foreground font-mono">
+              {formatMoney(summary?.totalPaidCents ?? 0)}
+            </p>
+          )}
+        </div>
+        <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="size-4 text-primary" />
+            <h2 className="text-xs font-semibold text-muted-foreground">Parceiros Ativos</h2>
+          </div>
+          {isSummaryLoading ? (
+            <div className="h-8 bg-muted animate-pulse rounded-xl w-16 mt-1" />
+          ) : (
+            <p className="text-2xl font-bold text-foreground font-mono">{summary?.sellerCount ?? 0}</p>
+          )}
         </div>
       </div>
-
- {/* Summary Cards */}
- <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
- <div className="p-5 rounded-lg bg-background">
- <div className="flex items-center gap-2 mb-2">
- <Clock className="size-4 text-warning" />
- <h2 className="text-sm font-medium text-muted-foreground">Comissões Pendentes</h2>
- </div>
- {isSummaryLoading ? (
- <div className="h-8 bg-muted animate-pulse rounded-xl w-32 mt-1" />
- ) : (
- <p className="text-2xl font-bold text-foreground">
- {formatMoney(summary?.totalPendingCents ?? 0)}
- </p>
- )}
- </div>
- <div className="p-5 rounded-lg bg-background">
- <div className="flex items-center gap-2 mb-2">
- <CheckCircle2 className="size-4 text-success" />
- <h2 className="text-sm font-medium text-muted-foreground">Comissões Pagas</h2>
- </div>
- {isSummaryLoading ? (
- <div className="h-8 bg-muted animate-pulse rounded-xl w-32 mt-1" />
- ) : (
- <p className="text-2xl font-bold text-foreground">
- {formatMoney(summary?.totalPaidCents ?? 0)}
- </p>
- )}
- </div>
- <div className="p-5 rounded-lg bg-background">
- <div className="flex items-center gap-2 mb-2">
- <Users className="size-4 text-primary" />
- <h2 className="text-sm font-medium text-muted-foreground">Parceiros Ativos</h2>
- </div>
- {isSummaryLoading ? (
- <div className="h-8 bg-muted animate-pulse rounded-xl w-16 mt-1" />
- ) : (
- <p className="text-2xl font-bold text-foreground">{summary?.sellerCount ?? 0}</p>
- )}
- </div>
- </div>
 
  {/* Toolbar */}
  <div className="flex items-center gap-3">

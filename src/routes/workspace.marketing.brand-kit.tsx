@@ -467,7 +467,7 @@ export function BrandKitPage() {
       </div>
 
       {/* ── CONTEÚDO POR ABA ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 sm:py-8 space-y-6 animate-in fade-in duration-200">
         {/* ABA: CORES */}
         {activeTab === "cores" && (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

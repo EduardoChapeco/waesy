@@ -96,8 +96,8 @@ function PublicTravelVoucherPage() {
 
  const cleanPhone = (store.whatsapp_phone || "").replace(/\D/g, "");
 
- return (
- <div className="min-h-screen bg-muted/20 py-8 px-4 sm:px-6 space-y-6">
+  return (
+    <div className="min-h-screen bg-muted/20 py-4 sm:py-8 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
  {/* ── BARRA DE AÇÕES SUPERIOR (OCULTA NA IMPRESSÃO) ── */}
  <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/80 print:hidden">
  <div className="flex items-center gap-2">
@@ -112,43 +112,43 @@ function PublicTravelVoucherPage() {
  </div>
  </div>
 
- <div className="flex flex-wrap items-center gap-2">
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={handleCopyLink}
- className="rounded-xl text-xs font-bold gap-1.5 h-9"
- >
- {isCopied ? <Check className="size-3.5 text-emerald-600" /> : <Share2 className="size-3.5" />}
- <span>{isCopied ? "Copiado" : "Compartilhar"}</span>
- </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={handleCopyLink}
+            className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px] sm:min-h-[36px] h-11 sm:h-9"
+          >
+            {isCopied ? <Check className="size-3.5 text-emerald-600" /> : <Share2 className="size-3.5" />}
+            <span>{isCopied ? "Copiado" : "Compartilhar"}</span>
+          </Button>
 
- <Button
- type="button"
- size="sm"
- variant="outline"
- disabled={isExportingPdf}
- onClick={handleExportPdf}
- className="rounded-xl text-xs font-bold gap-1.5 h-9"
- >
- {isExportingPdf ? (
- <Loader2 className="size-3.5 animate-spin" />
- ) : (
- <Download className="size-3.5" />
- )}
- <span>Baixar PDF</span>
- </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={isExportingPdf}
+            onClick={handleExportPdf}
+            className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px] sm:min-h-[36px] h-11 sm:h-9"
+          >
+            {isExportingPdf ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Download className="size-3.5" />
+            )}
+            <span>Baixar PDF</span>
+          </Button>
 
- <Button
- type="button"
- size="sm"
- onClick={handlePrint}
- className="rounded-xl text-xs font-bold gap-1.5 h-9 bg-foreground text-background hover:bg-foreground/90"
- >
- <Printer className="size-3.5" />
- <span>Imprimir</span>
- </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handlePrint}
+            className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 bg-foreground text-background hover:bg-foreground/90"
+          >
+            <Printer className="size-3.5" />
+            <span>Imprimir</span>
+          </Button>
 
  {cleanPhone && (
  <Button

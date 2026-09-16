@@ -370,8 +370,8 @@ function DedicatedHotpageView() {
  const storeSection = marketFeed.sections?.find((s: any) => s.type === "store_rail");
  const relatedStores = storeSection?.items || [];
 
- return (
- <div className="w-full space-y-0 pb-20 -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 lg:-mx-8">
+  return (
+    <div className="w-full space-y-0 pb-20 -mt-2 sm:-mt-4">
  {/* ── 1. HERO IMERSIVO FULL NO TOPO COM CAPA CONTEXTUAL ── */}
  <section className={`relative w-full ${hotpage?.cover_image_url ? "bg-black" : theme.bgGradient} text-white pt-6 sm:pt-8 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
  {/* Cover Background Fotográfico em Alta Resolução */}
@@ -454,7 +454,7 @@ function DedicatedHotpageView() {
  </section>
 
  {/* ── 2. CORPO SOBREPOSTO COM CANTOS ARREDONDADOS (FOLHA / CARD FLUTUANTE) ── */}
- <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-4 sm:px-6 lg:px-8 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
+      <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
  {/* ── 2.1. Sub-abas de Navegação por Nicho (Dinâmicas por Módulo) ── */}
  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">

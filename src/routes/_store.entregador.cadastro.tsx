@@ -146,8 +146,8 @@ function CourierOnboardingPage() {
     const isRejected = application.crosscheck_status === "fraud_rejected";
 
     return (
-      <div className="min-h-screen bg-background pb-24 pt-6">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 space-y-6">
+      <div className="min-h-screen bg-background pb-24 pt-4 sm:pt-6">
+        <div className="mx-auto max-w-2xl px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
           <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Credenciamento de Parceiro
@@ -239,8 +239,8 @@ function CourierOnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28 pt-6">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 space-y-6">
+    <div className="min-h-screen bg-background pb-28 pt-4 sm:pt-6">
+      <div className="mx-auto max-w-2xl px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
         {/* Cabeçalho */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">

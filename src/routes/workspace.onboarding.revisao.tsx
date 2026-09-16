@@ -298,7 +298,7 @@ export function OnboardingReviewPage() {
       </header>
 
       {/* Conteúdo Principal */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-0 sm:px-4 md:px-0 py-4 sm:py-6 space-y-6 animate-in fade-in duration-200">
         {/* ABA 1: REVISÃO MULTIMODAL HUMAN-IN-THE-LOOP */}
         {activeTab === "multimodal" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -592,7 +592,7 @@ export function OnboardingReviewPage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }
