@@ -150,6 +150,9 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
       name: z.string().min(2),
       external_account_id: z.string().optional().nullable(),
       account_nickname: z.string().optional().nullable(),
+      // Credenciais específicas por plataforma (client_id, client_secret, partner_key, etc.)
+      credential_payload: z.record(z.string()).optional().nullable(),
+      // Legacy single token (mantido para retrocompatibilidade)
       access_token: z.string().optional().nullable(),
       refresh_token: z.string().optional().nullable(),
       status: z.enum(["connected", "disconnected", "error", "pending"]).default("connected"),
@@ -164,16 +167,34 @@ export const saveMarketplaceConnector = createServerFn({ method: "POST" })
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
 
+    // Extrai o token principal do credential_payload (suporta múltiplos nomes de campo)
+    const creds = data.credential_payload || {};
+    const primaryToken =
+      data.access_token ||
+      creds.access_token ||
+      creds.api_token ||
+      creds.api_key ||
+      creds.refresh_token ||
+      null;
+
+    // Armazena credenciais no settings.credentials (JSONB server-side somente)
+    const mergedSettings = {
+      ...(data.settings || {}),
+      credentials: Object.fromEntries(
+        Object.entries(creds).filter(([, v]) => typeof v === "string" && v.trim() !== "")
+      ),
+    };
+
     const payload = {
       store_id: targetStoreId,
       platform: data.platform,
       name: data.name,
       external_account_id: data.external_account_id || null,
       account_nickname: data.account_nickname || null,
-      access_token: data.access_token || null,
-      refresh_token: data.refresh_token || null,
+      access_token: primaryToken,
+      refresh_token: creds.refresh_token || data.refresh_token || null,
       status: data.status,
-      settings: data.settings,
+      settings: mergedSettings,
       updated_at: new Date().toISOString(),
     };
 
@@ -214,6 +235,16 @@ export const disconnectMarketplaceConnector = createServerFn({ method: "POST" })
     const targetStoreId = data.storeId || identity.store_id;
     if (!targetStoreId) throw new Error("Loja não identificada.");
 
+    // Busca settings atuais para preservar preferências de sync e limpar só as credenciais
+    const { data: current } = await supabase
+      .from("marketplace_connectors")
+      .select("settings")
+      .eq("store_id", targetStoreId)
+      .eq("platform", data.platform)
+      .maybeSingle();
+
+    const cleanSettings = { ...(current?.settings || {}), credentials: null };
+
     const { error } = await supabase
       .from("marketplace_connectors")
       .update({
@@ -221,6 +252,7 @@ export const disconnectMarketplaceConnector = createServerFn({ method: "POST" })
         access_token: null,
         refresh_token: null,
         sync_status: "idle",
+        settings: cleanSettings,
         updated_at: new Date().toISOString(),
       })
       .eq("store_id", targetStoreId)

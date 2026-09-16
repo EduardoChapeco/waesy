@@ -39,6 +39,7 @@ import {
 import { createContractFromProposal } from "@/services/travel-contract.functions";
 import { formatMoney } from "@/lib/money";
 import { formatRelativeTime } from "@/lib/datetime";
+import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/orcamentos/$id")({
  head: () => ({ meta: [{ title: "Detalhe do Orçamento | Workspace Waesy" }] }),
@@ -113,11 +114,12 @@ function QuoteDetailPage() {
 
  const handleApprove = useMutation({
  mutationFn: () => approveQuote({ data: { quote_id: params.id } }),
- onSuccess: () => {
- qc.invalidateQueries({ queryKey: ["quote-detail", params.id] });
- qc.invalidateQueries({ queryKey: ["quotes"] });
- toast.success("Orçamento aprovado!");
- },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["quote-detail", params.id] });
+      qc.invalidateQueries({ queryKey: ["quotes"] });
+      playCashRegisterSound();
+      toast.success("Orçamento aprovado com sucesso!");
+    },
  onError: (e: any) => toast.error(e?.message ?? "Erro ao aprovar orçamento."),
  });
 

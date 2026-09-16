@@ -23,6 +23,8 @@ export interface OnboardingOverview {
  partiallyConfiguredSteps: number;
  progressPercentage: number;
  isStoreReadyToSell: boolean;
+ storeCategory?: string;
+ storeName?: string;
 }
 
 export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
@@ -47,7 +49,7 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  const { data, error } = await db
  .from("stores")
  .select(
- "id, name, email, phone, cnpj, address, city, state, zip_code, logo_url, policies, seo_title, seo_description, pix_key, settings",
+ "id, name, category, email, phone, cnpj, address, city, state, zip_code, logo_url, policies, seo_title, seo_description, pix_key, settings",
  )
  .eq("id", storeId)
  .single();
@@ -470,6 +472,10 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  const hasPayment = steps.find((s) => s.id === "payment")?.status === "completed";
  const isStoreReadyToSell = Boolean(hasProduct && hasPayment);
 
+ const storeData = storeRes.status === "ok" ? storeRes.data : null;
+ const storeCategory = storeData?.category || storeData?.settings?.category || "retail";
+ const storeName = storeData?.name || "Sua Loja";
+
  return {
  steps,
  totalSteps,
@@ -477,6 +483,8 @@ export async function _getOnboardingStatus(): Promise<OnboardingOverview> {
  partiallyConfiguredSteps,
  progressPercentage,
  isStoreReadyToSell,
+ storeCategory,
+ storeName,
  };
 }
 

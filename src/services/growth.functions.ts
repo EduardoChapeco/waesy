@@ -105,6 +105,84 @@ export const deleteCoupon = createServerFn({ method: "POST" })
  }
  });
 
+export async function validateCouponLogic(data: {
+  storeId: string;
+  code: string;
+  cartTotalCents: number;
+}) {
+  const db = getServerClient();
+  const cleanCode = data.code.trim().toUpperCase();
+
+  const { data: coupon, error } = await db
+    .from("coupons")
+    .select("*")
+    .eq("store_id", data.storeId)
+    .eq("code", cleanCode)
+    .maybeSingle();
+
+  if (error || !coupon) {
+    throw new Error("Cupom inválido ou não encontrado.");
+  }
+
+  if (!coupon.is_active) {
+    throw new Error("Este cupom está temporariamente desativado.");
+  }
+
+  if (coupon.expires_at && new Date(coupon.expires_at).getTime() < Date.now()) {
+    throw new Error("Este cupom já expirou.");
+  }
+
+  if (coupon.max_uses && coupon.uses_count >= coupon.max_uses) {
+    throw new Error("Este cupom atingiu o limite máximo de utilizações.");
+  }
+
+  if (coupon.min_order_cents && data.cartTotalCents < coupon.min_order_cents) {
+    const minFormatted = (coupon.min_order_cents / 100).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+    throw new Error(`Este cupom exige um pedido mínimo de ${minFormatted}.`);
+  }
+
+  let discountCents = 0;
+  let isFreeShipping = false;
+
+  if (coupon.discount_type === "percentage") {
+    discountCents = Math.round((data.cartTotalCents * Number(coupon.discount_value)) / 100);
+  } else if (coupon.discount_type === "fixed_amount") {
+    discountCents = Math.min(data.cartTotalCents, Math.round(Number(coupon.discount_value) * 100));
+  } else if (coupon.discount_type === "free_shipping") {
+    isFreeShipping = true;
+  }
+
+  return {
+    valid: true,
+    coupon_id: coupon.id,
+    code: coupon.code,
+    discount_type: coupon.discount_type,
+    discount_value: Number(coupon.discount_value),
+    discount_cents: discountCents,
+    is_free_shipping: isFreeShipping,
+  };
+}
+
+export const validateCoupon = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().uuid(),
+      code: z.string().min(1),
+      cartTotalCents: z.number().int().min(0),
+    }),
+  )
+  .handler(async ({ data }) => {
+    try {
+      return await validateCouponLogic(data);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Erro ao validar cupom.";
+      throw new Error(msg);
+    }
+  });
+
 // ---------------------------------------------------------------------------
 // Integrations (Delegated to canonical integrations.functions.ts)
 // ---------------------------------------------------------------------------

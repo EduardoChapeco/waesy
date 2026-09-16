@@ -809,24 +809,64 @@ export const updateAppointmentStatus = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data: { id, status } }) => {
- try {
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "professional"]);
- const storeId = await resolveTenantStoreId();
+  try {
+   const identity = await getServerIdentity();
+   assertStoreAccess(identity, ["owner", "admin", "manager", "professional"]);
+   const storeId = await resolveTenantStoreId();
 
- const db = getServerClient();
- const { error } = await db
- .from("booking_appointments")
- .update({ status })
- .eq("id", id)
- .eq("store_id", storeId);
+   const db = getServerClient();
 
- if (error) throw error;
- return { success: true };
- } catch (e: unknown) {
- console.error("[booking] updateAppointmentStatus error:", e);
- throw new Error("Erro ao atualizar status do agendamento.");
- }
+   // Se for cancelado, estorno automático do passe de sessões se houver pass_id
+   if (status === "cancelled") {
+    const { data: appt } = await db
+     .from("booking_appointments")
+     .select("id, pass_id, status")
+     .eq("id", id)
+     .eq("store_id", storeId)
+     .maybeSingle();
+
+    if (appt && appt.status !== "cancelled" && appt.pass_id) {
+     const { data: passRow } = await db
+      .from("customer_service_passes")
+      .select("id, remaining_credits, total_credits")
+      .eq("id", appt.pass_id)
+      .maybeSingle();
+
+     if (passRow) {
+      const restoredBalance = Math.min(passRow.total_credits, passRow.remaining_credits + 1);
+      await db
+       .from("customer_service_passes")
+       .update({
+        remaining_credits: restoredBalance,
+        status: "active",
+        updated_at: new Date().toISOString(),
+       })
+       .eq("id", appt.pass_id);
+
+      await db.from("service_pass_ledger").insert({
+       pass_id: appt.pass_id,
+       appointment_id: appt.id,
+       movement_type: "session_cancelled_refund",
+       credits_delta: 1,
+       balance_after: restoredBalance,
+       reason: "Reembolso automático de crédito por cancelamento do agendamento pela recepção",
+      });
+     }
+    }
+   }
+
+   const { error } = await db
+    .from("booking_appointments")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("store_id", storeId);
+
+   if (error) throw error;
+   return { success: true };
+  } catch (e: unknown) {
+   console.error("[booking] updateAppointmentStatus error:", e);
+   throw new Error("Erro ao atualizar status do agendamento.");
+  }
  });
 
 export const addClinicalRecord = createServerFn({ method: "POST" })

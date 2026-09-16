@@ -6,9 +6,10 @@ import {
   createPlatformInvoice,
   duplicatePlatformInvoice,
   deletePlatformInvoice,
+  toggleStoreDebtBlock,
 } from "@/services/master.functions";
 import { formatMoney, parseMoney } from "@/lib/money";
-import { DollarSign, Plus, Receipt, Copy, Trash2, ExternalLink, FileText } from "lucide-react";
+import { DollarSign, Plus, Receipt, Copy, Trash2, ExternalLink, FileText, ShieldAlert, ShieldCheck, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +18,11 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -30,38 +31,39 @@ import { ErrorState } from "@/components/state/states";
 import { ImageUpload } from "@/components/ui/image-upload";
 
 export const Route = createFileRoute("/admin-master/faturas")({
- head: () => ({ meta: [{ title: "Faturas & Planos | Admin Master" }] }),
- loader: async () => {
- try {
- const [invoices, stores] = await Promise.all([
- getPlatformInvoicesList().catch(() => []),
- getPlatformStoresList().catch(() => []),
- ]);
- return { invoices: invoices || [], stores: stores || [] };
- } catch {
- return { invoices: [], stores: [] };
- }
- },
- component: MasterFaturasPage,
- errorComponent: () => (
- <div className="mx-auto max-w-xl px-4 py-20">
- <ErrorState
- title="Faturas Indisponíveis"
- description="Não foi possível carregar as faturas e planos da plataforma. Tente novamente."
- onRetry={() => {
- if (typeof window !== "undefined") window.location.reload();
- }}
- />
- </div>
- ),
+  head: () => ({ meta: [{ title: "Faturas & Planos | Admin Master" }] }),
+  loader: async () => {
+    try {
+      const [invoices, stores] = await Promise.all([
+        getPlatformInvoicesList().catch(() => []),
+        getPlatformStoresList().catch(() => []),
+      ]);
+      return { invoices: invoices || [], stores: stores || [] };
+    } catch {
+      return { invoices: [], stores: [] };
+    }
+  },
+  component: MasterFaturasPage,
+  errorComponent: () => (
+    <div className="mx-auto max-w-xl px-4 py-20">
+      <ErrorState
+        title="Faturas Indisponíveis"
+        description="Não foi possível carregar as faturas e planos da plataforma. Tente novamente."
+        onRetry={() => {
+          if (typeof window !== "undefined") window.location.reload();
+        }}
+      />
+    </div>
+  ),
 });
 
 function MasterFaturasPage() {
- const { invoices, stores } = ((Route.useLoaderData?.() as any) || {});
- const router = useRouter();
+  const { invoices, stores } = ((Route.useLoaderData?.() as any) || {});
+  const router = useRouter();
 
- const [isCreating, setIsCreating] = useState(false);
- const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Form states
   const [storeId, setStoreId] = useState("");
@@ -81,6 +83,30 @@ function MasterFaturasPage() {
     try {
       await updateInvoiceStatus({ data: { invoiceId, status: newStatus } });
       toast.success("Status da fatura atualizado.");
+      router.invalidate();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleToggleDebtBlock = async (store: any) => {
+    if (!store?.id) return;
+    const isCurrentlyBlocked = Boolean(store?.settings?.blocked_due_to_debt);
+    const actionLabel = isCurrentlyBlocked ? "desbloquear" : "bloquear por inadimplência";
+    if (!confirm(`Deseja realmente ${actionLabel} a conta da loja "${store.name}"?`)) return;
+
+    setLoadingAction(`debt-${store.id}`);
+    try {
+      await toggleStoreDebtBlock({
+        data: {
+          storeId: store.id,
+          blocked: !isCurrentlyBlocked,
+          reason: !isCurrentlyBlocked ? "Bloqueio preventivo por atraso de fatura" : "Desbloqueio regular após regularização",
+        },
+      });
+      toast.success(`Conta da loja ${isCurrentlyBlocked ? "desbloqueada com sucesso" : "bloqueada por inadimplência"}.`);
       router.invalidate();
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : String(e));
@@ -119,12 +145,12 @@ function MasterFaturasPage() {
   const handleCreateInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!storeId || !description || !amountStr || !dueDate) {
-      toast.error("Preencha todos os campos obrigatórios da fatura.");
+      toast.error("Preencha os campos obrigatórios (Loja, Descrição, Valor e Vencimento).");
       return;
     }
 
-    const amountCents = parseMoney(amountStr);
-    if (amountCents <= 0) {
+    const cents = parseMoney(amountStr);
+    if (!cents || cents <= 0) {
       toast.error("Valor inválido.");
       return;
     }
@@ -135,10 +161,10 @@ function MasterFaturasPage() {
         data: {
           storeId,
           description,
-          amountCents,
+          amountCents: cents,
           dueDate: new Date(dueDate).toISOString(),
-          receiptUrl: receiptUrl.trim() || undefined,
-          notes: notes.trim() || undefined,
+          receiptUrl: receiptUrl || null,
+          notes: notes || null,
         },
       });
       toast.success("Fatura emitida com sucesso.");
@@ -157,84 +183,134 @@ function MasterFaturasPage() {
     }
   };
 
- return (
- <div className="space-y-6 animate-in fade-in duration-300">
- {/* Header */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
- <div>
- <div className="flex items-center gap-2">
- <h1 className="text-2xl font-bold tracking-tight text-foreground">Faturas & Planos</h1>
- <Badge variant="secondary" className="text-xs font-normal">
- {invoices.length} {invoices.length === 1 ? "fatura" : "faturas"}
- </Badge>
- </div>
- <p className="text-xs text-muted-foreground mt-0.5">
- Gestão de cobranças, repasses e faturamento do ecossistema.
- </p>
- </div>
- <Button
- onClick={() => setIsCreating(!isCreating)}
- size="sm"
- className="rounded-xl font-medium gap-1.5 h-9 px-4 cursor-pointer"
- >
- <Plus className="size-4" />
- <span>{isCreating ? "Fechar Formulário" : "Emitir Fatura"}</span>
- </Button>
- </div>
+  const filteredInvoices = (invoices || []).filter((inv: any) => {
+    if (statusFilter === "all") return true;
+    if (statusFilter === "paid") return inv.status === "paid";
+    if (statusFilter === "overdue") return inv.status === "overdue" || (inv.status !== "paid" && inv.is_overdue);
+    if (statusFilter === "pending") return inv.status === "pending" && !inv.is_overdue;
+    return true;
+  });
 
- {/* Manual Invoice Form */}
- {isCreating && (
- <div className="bg-card rounded-2xl p-5 border border-border/60 shadow-2xs space-y-4 animate-in fade-in duration-200">
- <p className="text-sm font-semibold text-foreground">Nova Cobrança Manual</p>
- <form
- onSubmit={handleCreateInvoice}
- className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end"
- >
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold">Loja</Label>
- <Select value={storeId} onValueChange={setStoreId}>
- <SelectTrigger className="h-9 rounded-xl bg-background text-xs">
- <SelectValue placeholder="Selecione a loja" />
- </SelectTrigger>
- <SelectContent>
- {stores.map((s: any) => (
- <SelectItem key={s.id} value={s.id} className="text-xs">
- {s.name}
- </SelectItem>
- ))}
- </SelectContent>
- </Select>
- </div>
+  const totalInvoicedCents = (invoices || []).reduce((acc: number, inv: any) => acc + (inv.amount_cents || 0), 0);
+  const totalPaidCents = (invoices || []).filter((inv: any) => inv.status === "paid").reduce((acc: number, inv: any) => acc + (inv.amount_cents || 0), 0);
+  const totalOverdueCents = (invoices || []).filter((inv: any) => inv.status !== "paid" && (inv.status === "overdue" || inv.is_overdue)).reduce((acc: number, inv: any) => acc + (inv.total_updated_cents || inv.amount_cents || 0), 0);
 
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold">Descrição</Label>
- <Input
- placeholder="Ex: Mensalidade - Outubro"
- value={description}
- onChange={(e) => setDescription(e.target.value)}
- className="h-9 rounded-xl bg-background text-xs"
- />
- </div>
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            Faturas & Planos
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Emissão de cobranças, cálculo automático de juros pós-vencimento e gestão de bloqueio por inadimplência.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setIsCreating(!isCreating)}
+            className="rounded-xl text-xs font-semibold gap-1.5"
+          >
+            <Plus className="size-3.5" />
+            <span>{isCreating ? "Fechar Formulário" : "Nova Fatura"}</span>
+          </Button>
+        </div>
+      </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold">Valor (R$)</Label>
- <Input
- placeholder="0,00"
- value={amountStr}
- onChange={(e) => setAmountStr(e.target.value)}
- className="h-9 rounded-xl bg-background text-xs"
- />
- </div>
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Total Emitido</span>
+            <Receipt className="size-4 text-primary" />
+          </div>
+          <div className="text-xl font-bold mt-2 text-foreground">
+            {formatMoney(totalInvoicedCents)}
+          </div>
+          <span className="text-[11px] text-muted-foreground mt-0.5 block">
+            {invoices.length} faturas registradas
+          </span>
+        </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold">Vencimento</Label>
- <Input
- type="date"
- value={dueDate}
- onChange={(e) => setDueDate(e.target.value)}
- className="h-9 rounded-xl bg-background text-xs"
- />
- </div>
+        <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Total Liquidado</span>
+            <DollarSign className="size-4 text-emerald-600" />
+          </div>
+          <div className="text-xl font-bold mt-2 text-emerald-600">
+            {formatMoney(totalPaidCents)}
+          </div>
+          <span className="text-[11px] text-muted-foreground mt-0.5 block">
+            Recebimento confirmado
+          </span>
+        </div>
+
+        <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">Vencido (c/ Multa e Juros)</span>
+            <ShieldAlert className="size-4 text-destructive" />
+          </div>
+          <div className="text-xl font-bold mt-2 text-destructive">
+            {formatMoney(totalOverdueCents)}
+          </div>
+          <span className="text-[11px] text-muted-foreground mt-0.5 block">
+            Inadimplência atualizada pro-rata
+          </span>
+        </div>
+      </div>
+
+      {/* Create Form */}
+      {isCreating && (
+        <div className="bg-card rounded-2xl border border-border/80 p-5 shadow-sm">
+          <h2 className="text-sm font-semibold mb-3">Emitir Nova Fatura / Cobrança</h2>
+          <form onSubmit={handleCreateInvoice} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Loja / Empresa Destino</Label>
+              <Select value={storeId} onValueChange={setStoreId}>
+                <SelectTrigger className="h-9 rounded-xl bg-background text-xs">
+                  <SelectValue placeholder="Selecione a loja..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {stores.map((s: any) => (
+                    <SelectItem key={s.id} value={s.id} className="text-xs">
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Descrição</Label>
+              <Input
+                placeholder="Ex: Mensalidade - Outubro"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="h-9 rounded-xl bg-background text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Valor (R$)</Label>
+              <Input
+                placeholder="0,00"
+                value={amountStr}
+                onChange={(e) => setAmountStr(e.target.value)}
+                className="h-9 rounded-xl bg-background text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Vencimento</Label>
+              <Input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="h-9 rounded-xl bg-background text-xs"
+              />
+            </div>
 
             <div className="space-y-1.5 sm:col-span-2">
               <Label className="text-xs font-semibold">Comprovante de Pagamento / Anexo (Opcional)</Label>
@@ -266,155 +342,220 @@ function MasterFaturasPage() {
               </div>
             </div>
 
- <div className="space-y-1.5 sm:col-span-2">
- <Label className="text-xs font-semibold">Observações / Referência (Opcional)</Label>
- <Input
- placeholder="Ex: Pagamento referente ao plano Scale"
- value={notes}
- onChange={(e) => setNotes(e.target.value)}
- className="h-9 rounded-xl bg-background text-xs"
- />
- </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label className="text-xs font-semibold">Observações / Referência (Opcional)</Label>
+              <Input
+                placeholder="Ex: Pagamento referente ao plano Scale"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="h-9 rounded-xl bg-background text-xs"
+              />
+            </div>
 
- <div className="sm:col-span-2 lg:col-span-4 flex justify-end pt-2">
- <Button
- type="submit"
- size="sm"
- disabled={loadingAction === "creating"}
- className="rounded-xl text-xs font-semibold px-4"
- >
- {loadingAction === "creating" ? "Emitindo..." : "Confirmar Emissão"}
- </Button>
- </div>
- </form>
- </div>
- )}
+            <div className="sm:col-span-2 lg:col-span-4 flex justify-end pt-2">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={loadingAction === "creating"}
+                className="rounded-xl text-xs font-semibold px-4"
+              >
+                {loadingAction === "creating" ? "Emitindo..." : "Confirmar Emissão"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
 
- {/* Invoices Table Card */}
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-2xs">
- <div className="overflow-x-auto no-scrollbar">
- <table className="w-full text-xs text-left">
- <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px] tracking-wider">
- <tr>
- <th className="px-5 py-3">Descrição</th>
- <th className="px-5 py-3">Loja</th>
- <th className="px-5 py-3">Valor</th>
- <th className="px-5 py-3">Vencimento</th>
- <th className="px-5 py-3">Comprovante</th>
- <th className="px-5 py-3">Status</th>
- <th className="px-5 py-3 text-right">Ação</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-border/40">
- {invoices.map((inv: any) => (
- <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
- <td className="px-5 py-3 font-semibold text-foreground">
- <div>{inv.description || "Assinatura Mensal"}</div>
- {inv.notes && (
- <div className="text-[10px] text-muted-foreground font-normal">{inv.notes}</div>
- )}
- </td>
- <td className="px-5 py-3 text-muted-foreground">{inv.stores?.name || "Global"}</td>
- <td className="px-5 py-3 font-bold text-foreground">{formatMoney(inv.amount_cents)}</td>
- <td className="px-5 py-3 text-muted-foreground text-[11px]">
- {format(new Date(inv.due_date || inv.created_at), "dd/MM/yyyy", { locale: ptBR })}
- </td>
- <td className="px-5 py-3">
- {inv.receipt_url ? (
- <a
- href={inv.receipt_url}
- target="_blank"
- rel="noreferrer"
- className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
- >
- <FileText className="size-3.5" />
- <span>Ver</span>
- <ExternalLink className="size-3 opacity-60" />
- </a>
- ) : (
- <span className="text-muted-foreground/50 text-[11px]">—</span>
- )}
- </td>
- <td className="px-5 py-3">
- <Badge
- variant={
- inv.status === "paid"
- ? "default"
- : inv.status === "overdue"
- ? "destructive"
- : "secondary"
- }
- className={cn(
- "text-[10px] font-medium px-2 py-0.5",
- inv.status === "paid" ? "bg-emerald-600/90 text-white" : ""
- )}
- >
- {inv.status === "paid"
- ? "Pago"
- : inv.status === "overdue"
- ? "Vencido"
- : "Pendente"}
- </Badge>
- </td>
- <td className="px-5 py-3 text-right">
- <div className="flex items-center justify-end gap-1">
- {inv.status !== "paid" && (
- <Button
- size="sm"
- variant="ghost"
- className="h-7 px-2 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-500/10"
- disabled={loadingAction === inv.id}
- onClick={() => handleUpdateStatus(inv.id, "paid")}
- >
- Marcar Pago
- </Button>
- )}
- {inv.status === "pending" && (
- <Button
- size="sm"
- variant="ghost"
- className="h-7 px-2 rounded-lg text-xs font-medium text-amber-600 hover:bg-amber-500/10"
- disabled={loadingAction === inv.id}
- onClick={() => handleUpdateStatus(inv.id, "cancelled")}
- >
- Cancelar
- </Button>
- )}
- <Button
- size="sm"
- variant="ghost"
- title="Duplicar Cobrança"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
- disabled={loadingAction === inv.id}
- onClick={() => handleDuplicate(inv.id)}
- >
- <Copy className="size-3.5" />
- </Button>
- <Button
- size="sm"
- variant="ghost"
- title="Excluir Fatura"
- className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
- disabled={loadingAction === inv.id}
- onClick={() => handleDelete(inv.id)}
- >
- <Trash2 className="size-3.5" />
- </Button>
- </div>
- </td>
- </tr>
- ))}
- {invoices.length === 0 && (
- <tr>
- <td colSpan={7} className="px-5 py-8 text-center text-muted-foreground">
- Nenhuma fatura registrada.
- </td>
- </tr>
- )}
- </tbody>
- </table>
- </div>
- </div>
- </div>
- );
+      {/* Filter Tabs & Invoices Table */}
+      <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-2xs">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border/40 bg-muted/10">
+          <div className="flex items-center gap-1.5">
+            <Filter className="size-3.5 text-muted-foreground" />
+            <span className="text-xs font-semibold text-foreground">Filtro:</span>
+            <div className="flex items-center gap-1 ml-1">
+              {[
+                { id: "all", label: "Todas" },
+                { id: "pending", label: "Pendentes" },
+                { id: "overdue", label: "Vencidas" },
+                { id: "paid", label: "Pagas" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs transition-colors",
+                    statusFilter === tab.id
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:bg-muted/50"
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            Exibindo {filteredInvoices.length} de {invoices.length}
+          </span>
+        </div>
+
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-muted/30 text-muted-foreground border-b border-border/40 font-semibold uppercase text-[10px] tracking-wider">
+              <tr>
+                <th className="px-5 py-3">Descrição</th>
+                <th className="px-5 py-3">Loja / Status da Conta</th>
+                <th className="px-5 py-3">Valor / Atualizado</th>
+                <th className="px-5 py-3">Vencimento</th>
+                <th className="px-5 py-3">Comprovante</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {filteredInvoices.map((inv: any) => {
+                const isOverdue = inv.is_overdue || inv.status === "overdue";
+                const isStoreBlocked = inv.is_store_debt_blocked || Boolean(inv.stores?.settings?.blocked_due_to_debt);
+                const canBlockStore = inv.stores?.id && !inv.stores?.is_platform_root && inv.stores?.slug !== "waesy";
+
+                return (
+                  <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-5 py-3 font-semibold text-foreground">
+                      <div>{inv.description || "Assinatura Mensal"}</div>
+                      {inv.notes && (
+                        <div className="text-[10px] text-muted-foreground font-normal">{inv.notes}</div>
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">{inv.stores?.name || "Global"}</span>
+                        {isStoreBlocked && (
+                          <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
+                            Bloqueada
+                          </Badge>
+                        )}
+                      </div>
+                      {canBlockStore && (
+                        <button
+                          onClick={() => handleToggleDebtBlock(inv.stores)}
+                          disabled={loadingAction === `debt-${inv.stores?.id}`}
+                          className="text-[10px] text-muted-foreground hover:text-foreground underline block mt-0.5"
+                        >
+                          {isStoreBlocked ? "Desbloquear conta" : "Bloquear por inadimplência"}
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="font-bold text-foreground">{formatMoney(inv.amount_cents)}</div>
+                      {isOverdue && inv.status !== "paid" && (
+                        <div className="text-[10px] font-semibold text-destructive mt-0.5">
+                          Total: {formatMoney(inv.total_updated_cents)}
+                          <span className="block text-[9px] font-normal text-muted-foreground">
+                            (+{formatMoney(inv.fine_cents + inv.interest_cents)} juros/multa)
+                          </span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 text-muted-foreground text-[11px]">
+                      {format(new Date(inv.due_date || inv.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                    </td>
+                    <td className="px-5 py-3">
+                      {inv.receipt_url ? (
+                        <a
+                          href={inv.receipt_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                        >
+                          <FileText className="size-3.5" />
+                          <span>Ver</span>
+                          <ExternalLink className="size-3 opacity-60" />
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground/50 text-[11px]">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge
+                        variant={
+                          inv.status === "paid"
+                            ? "default"
+                            : isOverdue
+                            ? "destructive"
+                            : "secondary"
+                        }
+                        className={cn(
+                          "text-[10px] font-medium px-2 py-0.5",
+                          inv.status === "paid" ? "bg-emerald-600/90 text-white" : ""
+                        )}
+                      >
+                        {inv.status === "paid"
+                          ? "Pago"
+                          : isOverdue
+                          ? `Vencido (+${inv.days_overdue || 1}d)`
+                          : "Pendente"}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {inv.status !== "paid" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-500/10"
+                            disabled={loadingAction === inv.id}
+                            onClick={() => handleUpdateStatus(inv.id, "paid")}
+                          >
+                            Marcar Pago
+                          </Button>
+                        )}
+                        {inv.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 rounded-lg text-xs font-medium text-amber-600 hover:bg-amber-500/10"
+                            disabled={loadingAction === inv.id}
+                            onClick={() => handleUpdateStatus(inv.id, "cancelled")}
+                          >
+                            Cancelar
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Duplicar Cobrança"
+                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                          disabled={loadingAction === inv.id}
+                          onClick={() => handleDuplicate(inv.id)}
+                        >
+                          <Copy className="size-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Excluir Fatura"
+                          className="size-7 p-0 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          disabled={loadingAction === inv.id}
+                          onClick={() => handleDelete(inv.id)}
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredInvoices.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-5 py-8 text-center text-muted-foreground">
+                    Nenhuma fatura encontrada para o filtro selecionado.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -33,6 +33,9 @@ import {
  Receipt,
  Eye,
  Megaphone,
+ Share2,
+ Star,
+ Bell,
  Plane,
  Bus,
  FileText,
@@ -43,6 +46,7 @@ import {
  Percent,
  Layers,
  Award,
+ Target,
 } from "lucide-react";
 import {
  Dialog,
@@ -271,8 +275,9 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Atendimento multicanal, base de contatos e avaliações",
     tools: [
       { title: "Caixa de Entrada / Chat", path: "/workspace/atendimento", icon: MessageSquare },
+      { title: "Central de Notificações", path: "/workspace/notificacoes", icon: Bell },
       { title: "Base de Clientes (CRM)", path: "/workspace/clientes", icon: Users },
-      { title: "Avaliações & Reputação", path: "/workspace/cms/avaliacoes", icon: Award },
+      { title: "Avaliações & Reputação", path: "/workspace/avaliacoes", icon: Star },
       { title: "Agenda de Atendimentos", path: "/workspace/agenda", icon: Calendar },
       { title: "Orçamentos & Propostas", path: "/workspace/orcamentos", icon: FileSpreadsheet },
     ],
@@ -286,6 +291,8 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
       { title: "Hotpages & Biolinks", path: "/workspace/marketing/hotpages", icon: Globe },
       { title: "Cupons & Promoções", path: "/workspace/marketing/promocoes", icon: Ticket },
       { title: "Campanhas & Anúncios", path: "/workspace/marketing/anuncios", icon: Zap },
+      { title: "Compartilhamento & Redes", path: "/workspace/marketing/social", icon: Share2 },
+      { title: "Avaliações & Reputação", path: "/workspace/avaliacoes", icon: Star },
       { title: "Notícias & Publicações", path: "/workspace/noticias", icon: Newspaper },
     ],
   },
@@ -307,7 +314,9 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Indicadores de faturamento, vendas e fluxo de caixa",
     tools: [
       { title: "Visão Geral de Desempenho", path: "/workspace", icon: BarChart3 },
+      { title: "Metas de Vendas & Forecast", path: "/workspace/relatorios/metas", icon: Target, badge: "Preditivo" },
       { title: "Fluxo de Caixa & DRE", path: "/workspace/financeiro/caixa", icon: DollarSign },
+      { title: "Contas a Pagar & Despesas", path: "/workspace/financeiro/contas-pagar", icon: Receipt },
       { title: "Relatórios & Métricas", path: "/workspace/relatorios", icon: Package },
       { title: "Relatórios de Gastronomia", path: "/workspace/relatorios/gastronomia", icon: UtensilsCrossed },
       { title: "Pagamentos & Repasses", path: "/workspace/financeiro/pagamentos", icon: Coins },

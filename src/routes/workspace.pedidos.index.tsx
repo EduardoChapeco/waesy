@@ -32,6 +32,7 @@ import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
+import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 
 export const Route = createFileRoute("/workspace/pedidos/")({
  head: () => ({ meta: [{ title: "Emissões & Vendas | Workspace Waesy" }] }),
@@ -145,6 +146,7 @@ function AdminOrdersPage() {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [selectedShippingLabelOrderId, setSelectedShippingLabelOrderId] = useState<string | null>(null);
 
   // Filter orders by search, status tab & sales channel
   const filteredOrders = useMemo(() => {
@@ -1265,6 +1267,10 @@ function AdminOrdersPage() {
  {isTourism ? "Imprimir Contrato / Voucher" : "Imprimir Recibo / Comprovante"}
  </Link>
  </DropdownMenuItem>
+ <DropdownMenuItem onClick={() => setSelectedShippingLabelOrderId(order.id)}>
+ <Printer className="size-3.5 mr-2 text-primary" />
+ {isTourism ? "Emitir Voucher / Etiqueta" : "Etiqueta de Envio & Declaração"}
+ </DropdownMenuItem>
  <DropdownMenuSeparator />
 
  {order.status === "awaiting_payment" && (
@@ -1313,6 +1319,17 @@ function AdminOrdersPage() {
  </div>
  </div>
  ) : null}
+
+ {selectedShippingLabelOrderId && (
+ <ShippingLabelModal
+ orderId={selectedShippingLabelOrderId}
+ isOpen={!!selectedShippingLabelOrderId}
+ onClose={() => setSelectedShippingLabelOrderId(null)}
+ onDispatchSuccess={() => {
+ router.invalidate();
+ }}
+ />
+ )}
  </div>
  );
 }

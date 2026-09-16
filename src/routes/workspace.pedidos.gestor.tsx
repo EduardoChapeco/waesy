@@ -28,6 +28,7 @@ import {
 import { getBrowserClient } from "@/lib/supabase";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
 import { formatMoney } from "@/lib/money";
+import { playNewOrderAlert, unlockAudioContext } from "@/lib/audio-chimes";
 import { formatDateTime } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,22 +78,7 @@ export const Route = createFileRoute("/workspace/pedidos/gestor")({
 });
 
 function playOrderChime() {
- try {
- const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
- const osc = ctx.createOscillator();
- const gain = ctx.createGain();
- osc.type = "sine";
- osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
- osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
- gain.gain.setValueAtTime(0.3, ctx.currentTime);
- gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
- osc.connect(gain);
- gain.connect(ctx.destination);
- osc.start();
- osc.stop(ctx.currentTime + 0.45);
- } catch (e) {
- console.warn("Web Audio chime not supported:", e);
- }
+  playNewOrderAlert();
 }
 
 function KDSPage() {
@@ -105,9 +91,8 @@ function KDSPage() {
  const [viewMode, setViewMode] = useState<"kanban" | "live_dashboard">("kanban");
  const [alertModalOpen, setAlertModalOpen] = useState(false);
  const [isFullscreen, setIsFullscreen] = useState(false);
- const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
- const [audioUnlocked, setAudioUnlocked] = useState(false);
- const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
 
  // Estados de Abas Operacionais (Agora vs Agendados) e Filtros Omnichannel
  const [timingTab, setTimingTab] = useState<"now" | "scheduled">("now");
@@ -199,40 +184,17 @@ function KDSPage() {
  map[ch].totalCents += ord.total_cents || 0;
  }
  return Object.values(map).sort((a, b) => b.count - a.count);
- }, [orders]);
-
- useEffect(() => {
- const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
- setAudioCtx(ctx);
- if (ctx.state === "running") setAudioUnlocked(true);
- 
- const unlock = () => {
- if (ctx.state === "suspended") {
- ctx.resume().then(() => setAudioUnlocked(true));
- }
- };
- 
- document.addEventListener("click", unlock, { once: true });
- return () => document.removeEventListener("click", unlock);
- }, []);
+ }, [orders]);  useEffect(() => {
+    const handleUnlock = () => {
+      unlockAudioContext();
+      setAudioUnlocked(true);
+    };
+    document.addEventListener("click", handleUnlock, { once: true });
+    return () => document.removeEventListener("click", handleUnlock);
+  }, []);
 
  function playOrderChime() {
- if (!audioCtx || audioCtx.state !== "running") return;
- try {
- const osc = audioCtx.createOscillator();
- const gain = audioCtx.createGain();
- osc.type = "sine";
- osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
- osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
- gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
- gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.45);
- osc.connect(gain);
- gain.connect(audioCtx.destination);
- osc.start();
- osc.stop(audioCtx.currentTime + 0.45);
- } catch (e) {
- console.warn("Web Audio chime not supported:", e);
- }
+   playNewOrderAlert();
  }
 
  // Supabase Realtime WebSockets Listener
@@ -287,7 +249,7 @@ function KDSPage() {
  return () => {
  supabase.removeChannel(channel);
  };
- }, [storeId, audioCtx]);
+  }, [storeId]);
 
  const toggleFullscreen = () => {
  if (!document.fullscreenElement) {
@@ -478,11 +440,18 @@ function KDSPage() {
  Abrir KDS Cozinha
  </Link>
  </Button>
- {!audioUnlocked && (
- <Badge variant="warning" className="cursor-pointer text-xs" onClick={() => document.body.click()}>
- Ativar Áudio
- </Badge>
- )}
+        {!audioUnlocked && (
+          <Badge
+            variant="warning"
+            className="cursor-pointer text-xs select-none"
+            onClick={() => {
+              unlockAudioContext();
+              setAudioUnlocked(true);
+            }}
+          >
+            Ativar Áudio
+          </Badge>
+        )}
  <Button variant="outline" size="sm" onClick={toggleFullscreen} className="gap-1.5 text-xs font-bold">
  <Maximize className="size-3.5" />
  {isFullscreen ? "Sair" : "Tela Cheia"}

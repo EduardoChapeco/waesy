@@ -43,6 +43,7 @@ import {
   type ExternalOrderDTO
 } from "@/services/marketplace-hub.functions";
 import { formatMoney } from "@/lib/money";
+import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 
 export const Route = createFileRoute("/workspace/pedidos/expedicao")({
   head: () => ({ meta: [{ title: "WMS Expedição & Picking | Waesy" }] }),
@@ -56,6 +57,7 @@ function WmsExpedicaoPage() {
   const [channelFilter, setChannelFilter] = useState<string>("all");
   const [isCreateBatchModalOpen, setIsCreateBatchModalOpen] = useState(false);
   const [selectedOrderIdsForBatch, setSelectedOrderIdsForBatch] = useState<string[]>([]);
+  const [selectedShippingLabelOrderId, setSelectedShippingLabelOrderId] = useState<string | null>(null);
 
   // 1. Consultas Reais ao Banco de Dados
   const { data: store } = useQuery({
@@ -146,6 +148,12 @@ function WmsExpedicaoPage() {
   });
 
   const handlePrintThermalLabels = async () => {
+    const candidateOrderId = batchOrderIds[0] || pendingOrdersForPicking[0]?.id || (allStoreOrders[0] as any)?.id || null;
+    if (candidateOrderId && (!("serial" in (typeof navigator !== "undefined" ? navigator : {})) || externalOrders.length === 0)) {
+      setSelectedShippingLabelOrderId(candidateOrderId);
+      return;
+    }
+
     if (typeof navigator !== "undefined" && "serial" in navigator && externalOrders.length > 0) {
       try {
         const { buildZplShippingLabel, sendZplToSerialPrinter } = await import("@/lib/thermal-printer");
@@ -369,6 +377,38 @@ function WmsExpedicaoPage() {
             })}
           </div>
         )}
+
+        {selectedBatch && batchOrderIds.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border/60 space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-foreground">Pedidos no Lote ({selectedBatch.batch_code})</h4>
+              <span className="text-[11px] text-muted-foreground">{batchOrderIds.length} pedido(s)</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {batchOrderIds.map((oId) => {
+                const matchedOrder = allStoreOrders.find((o: any) => o.id === oId);
+                return (
+                  <div key={oId} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border text-xs">
+                    <div className="truncate pr-2">
+                      <span className="font-mono font-bold text-foreground">#{matchedOrder?.public_token || oId.substring(0, 8)}</span>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {matchedOrder?.customer_snapshot?.name || "Cliente Final"}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-[11px] rounded-lg gap-1 cursor-pointer shrink-0"
+                      onClick={() => setSelectedShippingLabelOrderId(oId)}
+                    >
+                      <Printer className="size-3 text-primary" /> Etiqueta
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Camada 3: Pedidos Multicanal & Expedição Integrada */}
@@ -413,9 +453,21 @@ function WmsExpedicaoPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">{ord.buyer_name || "Cliente Final"} • {ord.items?.length || 1} item(s)</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs font-semibold text-foreground">{formatMoney(ord.total_amount_cents)}</p>
-                  <p className="text-[10px] text-muted-foreground">Taxa: {formatMoney(ord.marketplace_fee_cents)}</p>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-xs font-semibold text-foreground">{formatMoney(ord.total_amount_cents)}</p>
+                    <p className="text-[10px] text-muted-foreground">Taxa: {formatMoney(ord.marketplace_fee_cents)}</p>
+                  </div>
+                  {ord.id && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 px-2.5 text-xs rounded-lg gap-1.5 cursor-pointer shrink-0"
+                      onClick={() => setSelectedShippingLabelOrderId(ord.id)}
+                    >
+                      <Printer className="size-3.5 text-primary" /> Etiqueta
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
@@ -510,6 +562,19 @@ function WmsExpedicaoPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {selectedShippingLabelOrderId && (
+        <ShippingLabelModal
+          orderId={selectedShippingLabelOrderId}
+          isOpen={!!selectedShippingLabelOrderId}
+          onClose={() => setSelectedShippingLabelOrderId(null)}
+          onDispatchSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["wms-batches"] });
+            queryClient.invalidateQueries({ queryKey: ["orders-for-picking"] });
+            queryClient.invalidateQueries({ queryKey: ["marketplace-external-orders"] });
+          }}
+        />
+      )}
     </div>
   );
 }

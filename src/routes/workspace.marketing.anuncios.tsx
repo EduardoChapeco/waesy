@@ -19,6 +19,11 @@ import {
   Image as ImageIcon,
   Loader2,
   Sliders,
+  Globe,
+  Share2,
+  Copy,
+  Check,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +51,11 @@ import {
   toggleAdCampaignStatus,
   createAdCampaign,
   getStoreAdTargets,
+  getStoreAdChannelsSettings,
+  saveStoreAdChannelsSettings,
+  generateUtmTrackingLink,
   type AdCampaign,
+  type StoreAdChannelsDTO,
 } from "@/services/ads.functions";
 import {
   WorkspaceCanonicalToolbar,
@@ -62,13 +71,14 @@ export const Route = createFileRoute("/workspace/marketing/anuncios")({
   head: () => ({ meta: [{ title: "Campanhas de Anúncios | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [campaigns, storeTargets] = await Promise.all([
+      const [campaigns, storeTargets, channelsSettings] = await Promise.all([
         listAdCampaigns().catch(() => []),
         getStoreAdTargets().catch(() => ({ products: [], storePhone: null, storeSlug: "" })),
+        getStoreAdChannelsSettings().catch(() => null),
       ]);
-      return { campaigns, storeTargets };
+      return { campaigns, storeTargets, channelsSettings };
     } catch {
-      return { campaigns: [], storeTargets: { products: [], storePhone: null, storeSlug: "" } };
+      return { campaigns: [], storeTargets: { products: [], storePhone: null, storeSlug: "" }, channelsSettings: null };
     }
   },
   component: AnunciosWorkspacePage,
@@ -90,7 +100,7 @@ const QUICK_FORMATS = [
 
 function AnunciosWorkspacePage() {
   const router = useRouter();
-  const { campaigns: initialCampaigns, storeTargets } = ((Route.useLoaderData?.() as any) || {});
+  const { campaigns: initialCampaigns, storeTargets, channelsSettings } = ((Route.useLoaderData?.() as any) || {});
   const [campaigns, setCampaigns] = useState<AdCampaign[]>(initialCampaigns);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -98,6 +108,22 @@ function AnunciosWorkspacePage() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [dashboardOpen, setDashboardOpen] = useState(false);
+
+  // Estados de Tráfego Pago Externo (Meta & Google)
+  const [metaPixelId, setMetaPixelId] = useState(channelsSettings?.meta_ads?.pixel_id || "");
+  const [metaAdAccountId, setMetaAdAccountId] = useState(channelsSettings?.meta_ads?.ad_account_id || "");
+  const [googleConversionId, setGoogleConversionId] = useState(channelsSettings?.google_ads?.conversion_id || "");
+  const [googleCustomerId, setGoogleCustomerId] = useState(channelsSettings?.google_ads?.customer_id || "");
+  const [isSavingChannels, setIsSavingChannels] = useState(false);
+  const [copiedFeed, setCopiedFeed] = useState<string | null>(null);
+
+  // Estados do Gerador UTM
+  const [utmPath, setUtmPath] = useState("/");
+  const [utmSource, setUtmSource] = useState<"meta_ads" | "google_ads" | "whatsapp" | "influencer">("meta_ads");
+  const [utmCampaign, setUtmCampaign] = useState("promocao_primavera");
+  const [utmMedium, setUtmMedium] = useState<"cpc" | "stories" | "feed" | "search">("cpc");
+  const [generatedUtmUrl, setGeneratedUtmUrl] = useState("");
+  const [isGeneratingUtm, setIsGeneratingUtm] = useState(false);
 
   // Estado do Sheet Lateral de Criação Rápida (Profundidade 3)
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
@@ -125,6 +151,9 @@ function AnunciosWorkspacePage() {
     { id: "all", label: "Todas", count: campaigns.length },
     { id: "active", label: "Veiculando", count: activeCount },
     { id: "paused", label: "Pausadas", count: pausedCount },
+    { id: "meta_ads", label: "Meta Ads & Instagram" },
+    { id: "google_ads", label: "Google Ads & Shopping" },
+    { id: "utm_builder", label: "Gerador de Links UTM" },
   ];
 
   const filteredCampaigns = useMemo(() => {
@@ -248,7 +277,324 @@ function AnunciosWorkspacePage() {
           }}
         />
 
-        {/* ── LISTA DE CAMPANHAS DE ANÚNCIOS ── */}
+        {/* ── CONDICIONAL: META ADS & INSTAGRAM ── */}
+        {activeTab === "meta_ads" && (
+          <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-foreground">Meta Ads & Instagram Shopping</h3>
+                  <Badge variant={channelsSettings?.meta_ads?.connected ? "default" : "secondary"} className="text-[10px]">
+                    {channelsSettings?.meta_ads?.connected ? "Integrado" : "Pendente"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Sincronização de catálogo de produtos com o Gerenciador de Comércio do Facebook e Pixel CAPI.
+                </p>
+              </div>
+            </div>
+
+            {/* Feed XML/CSV de Produtos */}
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-primary" />
+                  Feed de Produtos para o Meta Catalog (CSV Oficial)
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (!channelsSettings?.meta_ads?.catalog_feed_url) return;
+                    navigator.clipboard.writeText(channelsSettings.meta_ads.catalog_feed_url);
+                    setCopiedFeed("meta");
+                    toast.success("URL do Catálogo Meta copiada!");
+                    setTimeout(() => setCopiedFeed(null), 2000);
+                  }}
+                  className="h-7 text-xs gap-1"
+                >
+                  {copiedFeed === "meta" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
+                  <span>{copiedFeed === "meta" ? "Copiado" : "Copiar Feed URL"}</span>
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Cole este link no Gerenciador de Comércio do Meta (Catálogo &gt; Fontes de Dados &gt; Carregamento por Feed Programado).
+              </p>
+              <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
+                {channelsSettings?.meta_ads?.catalog_feed_url || "Carregando feed..."}
+              </div>
+            </div>
+
+            {/* Form de Configuração Meta */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Pixel ID do Meta (Facebook / Instagram)</Label>
+                <Input
+                  value={metaPixelId}
+                  onChange={(e) => setMetaPixelId(e.target.value)}
+                  placeholder="Ex: 123456789012345"
+                  className="h-9 rounded-xl bg-background text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">ID da Conta de Anúncios (Ad Account ID)</Label>
+                <Input
+                  value={metaAdAccountId}
+                  onChange={(e) => setMetaAdAccountId(e.target.value)}
+                  placeholder="Ex: act_123456789"
+                  className="h-9 rounded-xl bg-background text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                size="sm"
+                disabled={isSavingChannels}
+                onClick={async () => {
+                  setIsSavingChannels(true);
+                  try {
+                    await saveStoreAdChannelsSettings({
+                      data: {
+                        meta_pixel_id: metaPixelId,
+                        meta_ad_account_id: metaAdAccountId,
+                      },
+                    });
+                    toast.success("Configurações do Meta Ads salvas com sucesso!");
+                    router.invalidate();
+                  } catch (e: any) {
+                    toast.error(e?.message || "Erro ao salvar Meta Ads.");
+                  } finally {
+                    setIsSavingChannels(false);
+                  }
+                }}
+                className="rounded-xl text-xs font-semibold px-4"
+              >
+                {isSavingChannels ? "Salvando..." : "Salvar Configurações Meta"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── CONDICIONAL: GOOGLE ADS & SHOPPING ── */}
+        {activeTab === "google_ads" && (
+          <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-foreground">Google Ads & Merchant Center</h3>
+                  <Badge variant={channelsSettings?.google_ads?.connected ? "default" : "secondary"} className="text-[10px]">
+                    {channelsSettings?.google_ads?.connected ? "Integrado" : "Pendente"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Feed XML compatível com Google Merchant Center para anúncios de Shopping e Performance Max.
+                </p>
+              </div>
+            </div>
+
+            {/* Feed XML do Google Merchant */}
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Globe className="size-3.5 text-primary" />
+                  Feed XML para o Google Merchant Center (RSS 2.0 Oficial)
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (!channelsSettings?.google_ads?.merchant_feed_url) return;
+                    navigator.clipboard.writeText(channelsSettings.google_ads.merchant_feed_url);
+                    setCopiedFeed("google");
+                    toast.success("URL do Feed Google copiada!");
+                    setTimeout(() => setCopiedFeed(null), 2000);
+                  }}
+                  className="h-7 text-xs gap-1"
+                >
+                  {copiedFeed === "google" ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
+                  <span>{copiedFeed === "google" ? "Copiado" : "Copiar Feed XML"}</span>
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Cole este link no Google Merchant Center (Produtos &gt; Feeds &gt; Adicionar Feed &gt; Busca Programada).
+              </p>
+              <div className="p-2 rounded-lg bg-background font-mono text-[10px] text-muted-foreground break-all border">
+                {channelsSettings?.google_ads?.merchant_feed_url || "Carregando feed..."}
+              </div>
+            </div>
+
+            {/* Form de Configuração Google */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">ID de Conversão Google / GTM</Label>
+                <Input
+                  value={googleConversionId}
+                  onChange={(e) => setGoogleConversionId(e.target.value)}
+                  placeholder="Ex: AW-123456789 ou GTM-XXXXXX"
+                  className="h-9 rounded-xl bg-background text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">ID de Cliente do Google Ads (Customer ID)</Label>
+                <Input
+                  value={googleCustomerId}
+                  onChange={(e) => setGoogleCustomerId(e.target.value)}
+                  placeholder="Ex: 123-456-7890"
+                  className="h-9 rounded-xl bg-background text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                size="sm"
+                disabled={isSavingChannels}
+                onClick={async () => {
+                  setIsSavingChannels(true);
+                  try {
+                    await saveStoreAdChannelsSettings({
+                      data: {
+                        google_conversion_id: googleConversionId,
+                        google_customer_id: googleCustomerId,
+                      },
+                    });
+                    toast.success("Configurações do Google Ads salvas com sucesso!");
+                    router.invalidate();
+                  } catch (e: any) {
+                    toast.error(e?.message || "Erro ao salvar Google Ads.");
+                  } finally {
+                    setIsSavingChannels(false);
+                  }
+                }}
+                className="rounded-xl text-xs font-semibold px-4"
+              >
+                {isSavingChannels ? "Salvando..." : "Salvar Configurações Google"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ── CONDICIONAL: GERADOR DE LINKS UTM ── */}
+        {activeTab === "utm_builder" && (
+          <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-6 shadow-xs">
+            <div className="border-b border-border/40 pb-4">
+              <h3 className="text-base font-bold text-foreground">Gerador de Links Rastreados (Parâmetros UTM)</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Construa URLs parametrizadas para anúncios no Instagram, TikTok, Google ou parcerias com influenciadores.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Página de Destino</Label>
+                <Input
+                  value={utmPath}
+                  onChange={(e) => setUtmPath(e.target.value)}
+                  placeholder="Ex: / ou /produto/vestido"
+                  className="h-9 rounded-xl bg-background text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Origem do Tráfego (utm_source)</Label>
+                <Select value={utmSource} onValueChange={(v) => setUtmSource(v as any)}>
+                  <SelectTrigger className="h-9 rounded-xl bg-background text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="meta_ads">Meta Ads (Instagram / Facebook)</SelectItem>
+                    <SelectItem value="google_ads">Google Ads</SelectItem>
+                    <SelectItem value="whatsapp">WhatsApp Direto</SelectItem>
+                    <SelectItem value="influencer">Influenciador / Parceria</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Nome da Campanha (utm_campaign)</Label>
+                <Input
+                  value={utmCampaign}
+                  onChange={(e) => setUtmCampaign(e.target.value)}
+                  placeholder="Ex: verao_2026"
+                  className="h-9 rounded-xl bg-background text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Mídia / Posicionamento (utm_medium)</Label>
+                <Select value={utmMedium} onValueChange={(v) => setUtmMedium(v as any)}>
+                  <SelectTrigger className="h-9 rounded-xl bg-background text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cpc">CPC (Anúncio Pago)</SelectItem>
+                    <SelectItem value="stories">Stories</SelectItem>
+                    <SelectItem value="feed">Feed</SelectItem>
+                    <SelectItem value="search">Search (Busca)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-start">
+              <Button
+                size="sm"
+                disabled={isGeneratingUtm}
+                onClick={async () => {
+                  setIsGeneratingUtm(true);
+                  try {
+                    const res = await generateUtmTrackingLink({
+                      data: {
+                        targetPath: utmPath,
+                        source: utmSource,
+                        campaignName: utmCampaign,
+                        medium: utmMedium,
+                      },
+                    });
+                    setGeneratedUtmUrl(res.trackingUrl);
+                    toast.success("Link UTM gerado!");
+                  } catch (e: any) {
+                    toast.error(e?.message || "Erro ao gerar link.");
+                  } finally {
+                    setIsGeneratingUtm(false);
+                  }
+                }}
+                className="rounded-xl text-xs font-semibold px-4"
+              >
+                Gerar Link Rastreado
+              </Button>
+            </div>
+
+            {generatedUtmUrl && (
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground">Link Pronto para o Anúncio</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedUtmUrl);
+                      toast.success("Link copiado para a área de transferência!");
+                    }}
+                    className="h-7 text-xs gap-1"
+                  >
+                    <Copy className="size-3" />
+                    <span>Copiar Link</span>
+                  </Button>
+                </div>
+                <div className="p-2 rounded-lg bg-background font-mono text-[11px] text-foreground break-all border">
+                  {generatedUtmUrl}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── LISTA DE CAMPANHAS DE ANÚNCIOS LOCAIS ── */}
+        {["all", "active", "paused"].includes(activeTab) && (
         <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-xs">
           <div className="p-4 bg-muted/20 flex items-center justify-between border-b border-border/40">
             <div className="flex items-center gap-2">
@@ -383,6 +729,7 @@ function AnunciosWorkspacePage() {
             </div>
           )}
         </div>
+        )}
 
         {/* ── DASHBOARD SHEET EXECUTIVO ── */}
         <WorkspaceDashboardSheet

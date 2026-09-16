@@ -1,119 +1,288 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Plus, FileSignature, CheckCircle, XCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import {
+  FileText,
+  Plus,
+  FileSignature,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  ShieldCheck,
+  TrendingUp,
+  DollarSign,
+  Copy,
+  Check,
+  Sparkles,
+  ArrowRight,
+  Eye,
+  Sliders,
+  Share2,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { listContracts } from "@/services/contracts.functions";
 import { formatMoney } from "@/lib/money";
+import { formatDate } from "@/lib/datetime";
+import {
+  WorkspaceCanonicalToolbar,
+  type WorkspaceToolbarTab,
+} from "@/components/workspace/workspace-canonical-toolbar";
+import {
+  WorkspaceDashboardSheet,
+  type MetricCardItem,
+} from "@/components/workspace/workspace-dashboard-sheet";
 
 export const Route = createFileRoute("/workspace/contratos/")({
- head: () => ({ meta: [{ title: "Meus Contratos | Workspace Waesy" }] }),
- loader: async () => {
-   try {
- const contracts = await listContracts().catch(() => []);
- return { contracts };
-   } catch (err) {
-     console.error("[loader:workspace.contratos.index] Unhandled error:", err);
-     return { contracts: null };
-   }
- },
- component: ContractsDashboard,
+  head: () => ({ meta: [{ title: "Contratos & Assinaturas Digitais | Workspace Waesy" }] }),
+  loader: async () => {
+    try {
+      const contracts = await listContracts().catch(() => []);
+      return { contracts };
+    } catch (err) {
+      console.error("[loader:workspace.contratos.index] Unhandled error:", err);
+      return { contracts: null };
+    }
+  },
+  component: ContractsDashboard,
 });
 
+const CATEGORY_LABELS: Record<string, string> = {
+  service_agreement: "Prestação de Serviços",
+  ndas: "Confidencialidade (NDA)",
+  partnership: "Parceria Comercial",
+  lease: "Locação / Aluguel",
+  general: "Acordo Geral",
+};
+
 function ContractsDashboard() {
- const { contracts: initialContracts } = ((Route.useLoaderData?.() as any) || {});
+  const { contracts: initialContracts } = ((Route.useLoaderData?.() as any) || {});
 
- const { data: contracts } = useQuery({
- queryKey: ["contracts-list"],
- queryFn: () => listContracts(),
- initialData: initialContracts,
- });
+  const { data: contracts = [] } = useQuery({
+    queryKey: ["contracts-list"],
+    queryFn: () => listContracts(),
+    initialData: initialContracts || [],
+  });
 
- return (
- <div className="space-y-6 max-w-6xl mx-auto">
- <PageHeader
- title="Contratos e Assinaturas"
- actions={
- <Button asChild size="sm" className="font-bold rounded-xl">
- <Link to="/workspace/contratos/novo" className="flex items-center gap-2">
- <Plus className="size-4" />
- Novo Contrato
- </Link>
- </Button>
- }
- />
- <p className="text-muted-foreground text-sm max-w-2xl">
- Gerencie acordos formais, aditivos e termos de prestação de serviços. 
- Gere evidências criptográficas imutáveis na blockchain interna.
- </p>
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dashboardOpen, setDashboardOpen] = useState(false);
+  const [copiedContractId, setCopiedContractId] = useState<string | null>(null);
 
- {contracts.length === 0 ? (
- <div className="py-20 text-center space-y-4 bg-muted/10 rounded-2xl p-8 border border-dashed">
- <FileSignature size={48} className="text-muted-foreground/30 mx-auto" />
- <h2 className="text-sm font-bold text-foreground">Nenhum contrato criado ainda</h2>
- <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Comece criando o seu primeiro documento legal ou utilize um template inteligente.
- </p>
- <Button asChild size="sm" variant="outline" className="rounded-xl mt-4">
- <Link to="/workspace/contratos/novo">Criar Contrato</Link>
- </Button>
- </div>
- ) : (
- <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
- {contracts.map((contract: any) => {
- const isSigned = contract.status === "signed";
- const isSigning = contract.status === "signing";
- 
- return (
- <Link
- key={contract.id}
- to="/workspace/contratos/$id/editor"
- params={{ id: contract.id }}
- className="block p-5 bg-card hover:border-foreground/30 border border-transparent rounded-2xl transition-all space-y-4 group"
- >
- <div className="flex justify-between items-start">
- <div className="p-2 bg-primary/10 rounded-lg text-primary">
- <FileText size={20} />
- </div>
- {isSigned ? (
- <Badge variant="default" className="bg-emerald-600 text-[10px]">
- <CheckCircle size={10} className="mr-1" /> Assinado
- </Badge>
- ) : isSigning ? (
- <Badge variant="secondary" className="text-primary text-[10px]">
- Aguardando Assinatura
- </Badge>
- ) : (
- <Badge variant="outline" className="text-[10px]">
- Rascunho
- </Badge>
- )}
- </div>
+  const contractsList = (contracts || []) as any[];
+  const totalContracts = contractsList.length;
+  const signedContracts = contractsList.filter((c) => c.status === "signed").length;
+  const signingContracts = contractsList.filter((c) => c.status === "signing").length;
+  const draftContracts = contractsList.filter((c) => c.status === "draft" || !c.status).length;
+  const totalValueCents = contractsList.reduce((acc, c) => acc + (c.deal?.proposed_price_cents || 0), 0);
+  const signedRate = totalContracts > 0 ? Math.round((signedContracts / totalContracts) * 100) : 0;
 
- <div>
- <h3 className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
- {contract.title}
- </h3>
- <p className="text-xs text-muted-foreground mt-1">
- {new Date(contract.created_at).toLocaleDateString()}
- </p>
- </div>
+  const tabs: WorkspaceToolbarTab[] = [
+    { id: "all", label: "Todos", count: totalContracts },
+    { id: "signed", label: "Assinados", count: signedContracts },
+    { id: "signing", label: "Aguardando", count: signingContracts },
+    { id: "draft", label: "Rascunhos", count: draftContracts },
+  ];
 
- {contract.deal && (
- <div className="pt-3 border-t text-xs font-mono text-muted-foreground flex justify-between">
- <span>Deal Vinculado</span>
- <span className="font-bold text-foreground">
- {formatMoney(contract.deal.proposed_price_cents || 0)}
- </span>
- </div>
- )}
- </Link>
- );
- })}
- </div>
- )}
- </div>
- );
+  const filteredContracts = useMemo(() => {
+    return contractsList.filter((c) => {
+      if (activeTab === "signed" && c.status !== "signed") return false;
+      if (activeTab === "signing" && c.status !== "signing") return false;
+      if (activeTab === "draft" && c.status !== "draft" && c.status) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = (c.title || "").toLowerCase().includes(q);
+        const matchesCategory = (CATEGORY_LABELS[c.category] || c.category || "").toLowerCase().includes(q);
+        const matchesCreator = (c.creator?.full_name || "").toLowerCase().includes(q);
+        if (!matchesTitle && !matchesCategory && !matchesCreator) return false;
+      }
+      return true;
+    });
+  }, [contractsList, activeTab, searchQuery]);
+
+  const dashboardMetrics: MetricCardItem[] = [
+    {
+      id: "total_contracts",
+      label: "Contratos Criados",
+      value: String(totalContracts),
+      description: "Total de documentos legais gerenciados",
+      icon: FileText,
+      variant: "primary",
+    },
+    {
+      id: "signed_contracts",
+      label: "Contratos Assinados",
+      value: String(signedContracts),
+      description: `${signedRate}% de taxa de efetivação jurídica`,
+      icon: CheckCircle2,
+      variant: "success",
+    },
+    {
+      id: "signing_pending",
+      label: "Aguardando Assinatura",
+      value: String(signingContracts),
+      description: "Envelopes enviados para partes e testemunhas",
+      icon: Clock,
+      variant: "warning",
+    },
+    {
+      id: "total_value",
+      label: "Volume Negociado",
+      value: formatMoney(totalValueCents),
+      description: "Valor econômico protegido por contratos",
+      icon: DollarSign,
+      variant: "info",
+    },
+  ];
+
+  const handleCopyLink = (e: React.MouseEvent, contractId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/workspace/contratos/${contractId}/editor`;
+    navigator.clipboard.writeText(url);
+    setCopiedContractId(contractId);
+    toast.success("Link do contrato copiado com sucesso!");
+    setTimeout(() => setCopiedContractId(null), 2500);
+  };
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pb-20">
+      {/* ── 1. Top Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <PageHeader
+          eyebrow="Gestão Jurídica & Compliance"
+          title="Contratos & Assinaturas Digitais"
+          description="Gestão de acordos formais, envelopes de assinatura eletrônica com carimbo de tempo e evidências criptográficas imutáveis."
+        />
+        <div className="flex items-center gap-2">
+          <Button asChild className="h-11 rounded-xl text-xs font-semibold bg-primary text-primary-foreground cursor-pointer shadow-xs">
+            <Link to="/workspace/contratos/novo" className="flex items-center gap-2">
+              <Plus className="size-4" />
+              Novo Contrato
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      {/* ── 2. Toolbar Canônica ── */}
+      <WorkspaceCanonicalToolbar
+        searchPlaceholder="Buscar por título do contrato, signatário ou categoria..."
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onOpenDashboard={() => setDashboardOpen(true)}
+      />
+
+      {/* ── 3. Painel de Métricas Lateral (Dashboard Sheet) ── */}
+      <WorkspaceDashboardSheet
+        open={dashboardOpen}
+        onOpenChange={setDashboardOpen}
+        title="Painel Jurídico & Contratos"
+        description="Métricas consolidadas de conformidade, envelopes emitidos e volume financeiro sob contrato."
+        metrics={dashboardMetrics}
+      />
+
+      {/* ── 4. Conteúdo: Listagem em Cards Elegantes (Paradigma Clean) ── */}
+      {filteredContracts.length === 0 ? (
+        <div className="py-20 text-center space-y-4 bg-card rounded-2xl p-8 border border-dashed border-border">
+          <div className="size-12 mx-auto rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground">
+            <FileSignature className="size-6" />
+          </div>
+          <h2 className="text-sm font-bold text-foreground">Nenhum contrato encontrado</h2>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            {searchQuery || activeTab !== "all"
+              ? "Tente ajustar o termo de busca ou selecione outra aba de status."
+              : "Comece criando o seu primeiro documento legal ou utilize um template inteligente de prestação de serviços."}
+          </p>
+          <Button asChild size="sm" variant="outline" className="rounded-xl h-10 px-4 text-xs font-semibold mt-2 cursor-pointer">
+            <Link to="/workspace/contratos/novo">Criar Primeiro Contrato</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredContracts.map((contract: any) => {
+            const isSigned = contract.status === "signed";
+            const isSigning = contract.status === "signing";
+            const isCopied = copiedContractId === contract.id;
+            const categoryLabel = CATEGORY_LABELS[contract.category] || "Geral";
+
+            return (
+              <div
+                key={contract.id}
+                className="bg-card border border-border hover:border-primary/40 rounded-2xl p-5 transition-all shadow-xs space-y-4 flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <Badge variant="outline" className="text-[10px] font-medium bg-muted/40">
+                      {categoryLabel}
+                    </Badge>
+
+                    {isSigned ? (
+                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-semibold gap-1">
+                        <CheckCircle2 size={11} /> Assinado
+                      </Badge>
+                    ) : isSigning ? (
+                      <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-semibold gap-1">
+                        <Clock size={11} /> Em Assinatura
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] text-muted-foreground font-medium">
+                        Rascunho
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div>
+                    <h3 className="font-bold text-sm text-foreground line-clamp-2 leading-snug">
+                      {contract.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                      <Clock className="size-3 text-muted-foreground" />
+                      Criado em {formatDate(contract.created_at)}
+                    </p>
+                  </div>
+
+                  {contract.deal && (
+                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/50 text-xs flex items-center justify-between">
+                      <span className="text-muted-foreground font-medium">Valor sob Contrato:</span>
+                      <span className="font-bold text-foreground font-mono">
+                        {formatMoney(contract.deal.proposed_price_cents || 0)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer gap-1.5"
+                    onClick={(e) => handleCopyLink(e, contract.id)}
+                    title="Copiar link direto do contrato"
+                  >
+                    {isCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                    <span>{isCopied ? "Copiado!" : "Copiar Link"}</span>
+                  </Button>
+
+                  <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer gap-1">
+                    <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
+                      <span>Abrir Editor</span>
+                      <ArrowRight className="size-3 ml-0.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
+
+export default ContractsDashboard;

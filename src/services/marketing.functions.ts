@@ -251,3 +251,121 @@ export const duplicateCampaign = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+// ── Social Share & Open Graph Settings ─────────────────────────────────────
+
+export interface StoreSocialShareSettingsDTO {
+  og_title_template: string;
+  og_description_template: string;
+  default_og_image_url: string;
+  whatsapp_share_template: string;
+  twitter_card_type: "summary_large_image" | "summary";
+  facebook_app_id?: string;
+  site_name_suffix?: string;
+  enable_smart_preview: boolean;
+  store_name: string;
+  store_slug: string;
+  store_logo_url?: string;
+  store_banner_url?: string;
+}
+
+const SocialShareSettingsSchema = z.object({
+  og_title_template: z.string().default("{item_title} | {store_name}"),
+  og_description_template: z.string().default("Confira {item_title} na {store_name}. Atendimento rápido e direto no WhatsApp!"),
+  default_og_image_url: z.string().default(""),
+  whatsapp_share_template: z.string().default("Olá! Encontrei isso na {store_name} e achei que você iria gostar: {item_title} {item_price} 👉 {item_url}"),
+  twitter_card_type: z.enum(["summary_large_image", "summary"]).default("summary_large_image"),
+  facebook_app_id: z.string().optional().default(""),
+  site_name_suffix: z.string().optional().default("Waesy"),
+  enable_smart_preview: z.boolean().default(true),
+});
+
+export const getStoreSocialShareSettings = createServerFn({ method: "GET" }).handler(
+  async (): Promise<StoreSocialShareSettingsDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "operator"]);
+
+    const { data: store, error } = await supabase
+      .from("stores")
+      .select("id, name, slug, logo_url, banner_url, headline, settings")
+      .eq("id", identity.store_id)
+      .single();
+
+    if (error || !store) {
+      throw error || new Error("Loja não encontrada.");
+    }
+
+    const settings = (store.settings as Record<string, any>) || {};
+    const rawSocial = settings.social_share || {};
+
+    const storeName = store.name || "Minha Loja";
+    const storeSlug = store.slug || "loja";
+    const defaultImage = rawSocial.default_og_image_url || store.banner_url || store.logo_url || "";
+
+    return {
+      og_title_template: rawSocial.og_title_template || `{item_title} | ${storeName}`,
+      og_description_template:
+        rawSocial.og_description_template ||
+        (store.headline ? `${store.headline} • Compre online ou reserve com atendimento direto.` : `Confira os produtos e serviços de ${storeName}.`),
+      default_og_image_url: defaultImage,
+      whatsapp_share_template:
+        rawSocial.whatsapp_share_template ||
+        `Olá! Veja o que encontrei na ${storeName}: {item_title} por apenas {item_price}! Acesse: {item_url}`,
+      twitter_card_type: rawSocial.twitter_card_type || "summary_large_image",
+      facebook_app_id: rawSocial.facebook_app_id || "",
+      site_name_suffix: rawSocial.site_name_suffix || "Waesy",
+      enable_smart_preview: rawSocial.enable_smart_preview ?? true,
+      store_name: storeName,
+      store_slug: storeSlug,
+      store_logo_url: store.logo_url || "",
+      store_banner_url: store.banner_url || "",
+    };
+  }
+);
+
+export const saveStoreSocialShareSettings = createServerFn({ method: "POST" })
+  .validator(SocialShareSettingsSchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { data: store, error: fetchErr } = await supabase
+      .from("stores")
+      .select("id, settings")
+      .eq("id", identity.store_id)
+      .single();
+
+    if (fetchErr || !store) {
+      throw fetchErr || new Error("Loja não encontrada.");
+    }
+
+    const currentSettings = (store.settings as Record<string, any>) || {};
+    const updatedSettings = {
+      ...currentSettings,
+      social_share: {
+        og_title_template: data.og_title_template,
+        og_description_template: data.og_description_template,
+        default_og_image_url: data.default_og_image_url,
+        whatsapp_share_template: data.whatsapp_share_template,
+        twitter_card_type: data.twitter_card_type,
+        facebook_app_id: data.facebook_app_id,
+        site_name_suffix: data.site_name_suffix,
+        enable_smart_preview: data.enable_smart_preview,
+        updated_at: new Date().toISOString(),
+      },
+    };
+
+    const { error: updateErr } = await supabase
+      .from("stores")
+      .update({ settings: updatedSettings })
+      .eq("id", identity.store_id);
+
+    if (updateErr) {
+      throw updateErr;
+    }
+
+    return { success: true };
+  });
+

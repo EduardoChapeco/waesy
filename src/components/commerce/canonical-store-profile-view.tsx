@@ -827,27 +827,50 @@ export function CanonicalStoreProfileView({
               </a>
             )}
 
-            {store.address && (
-              <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
-                <MapPin className="size-3.5 text-primary shrink-0" />
-                <span>
-                  {store.address}
-                  {store.city ? ` — ${store.city}, ${store.state || "SC"}` : ""}
-                </span>
-              </span>
-            )}
+            {(() => {
+              const isAddressHidden = Boolean(
+                store.settings?.hide_address_completely ||
+                store.settings?.is_address_public === false ||
+                store.settings?.hide_location
+              );
 
-            {store.latitude && store.longitude && (
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary font-bold hover:underline flex items-center gap-1 ml-auto sm:ml-0"
-              >
-                <Navigation className="size-3.5" />
-                <span>Como Chegar</span>
-              </a>
-            )}
+              if (isAddressHidden) {
+                return (store.city || store.state) ? (
+                  <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
+                    <MapPin className="size-3.5 text-primary shrink-0" />
+                    <span>
+                      {[store.city, store.state || "SC"].filter(Boolean).join(" - ")}
+                    </span>
+                  </span>
+                ) : null;
+              }
+
+              return (
+                <>
+                  {store.address && (
+                    <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
+                      <MapPin className="size-3.5 text-primary shrink-0" />
+                      <span>
+                        {store.address}
+                        {store.city ? ` — ${store.city}, ${store.state || "SC"}` : ""}
+                      </span>
+                    </span>
+                  )}
+
+                  {store.latitude && store.longitude && (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary font-bold hover:underline flex items-center gap-1 ml-auto sm:ml-0"
+                    >
+                      <Navigation className="size-3.5" />
+                      <span>Como Chegar</span>
+                    </a>
+                  )}
+                </>
+              );
+            })()}
 
             {/* Modal de Horários Semanal */}
             <Dialog>

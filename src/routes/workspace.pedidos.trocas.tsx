@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import {
@@ -24,6 +24,11 @@ import {
   RefreshCw,
   Banknote,
   XCircle,
+  FileSpreadsheet,
+  RotateCcw,
+  Clock,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
@@ -36,9 +41,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
+import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/pedidos/trocas")({
-  head: () => ({ meta: [{ title: "Trocas e Devoluções | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Trocas e Devoluções (RMA) | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const data = await listExchanges();
@@ -81,15 +87,35 @@ function getStatusBadge(
 function getExchangeChannelBadge(channel?: string) {
   switch (channel) {
     case "mercadolivre":
-      return <Badge variant="outline" className="text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">Mercado Livre</Badge>;
+      return (
+        <Badge variant="outline" className="text-[10px] font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
+          Mercado Livre
+        </Badge>
+      );
     case "ifood":
-      return <Badge variant="outline" className="text-[10px] font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">iFood</Badge>;
+      return (
+        <Badge variant="outline" className="text-[10px] font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30">
+          iFood
+        </Badge>
+      );
     case "amazon":
-      return <Badge variant="outline" className="text-[10px] font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">Amazon</Badge>;
+      return (
+        <Badge variant="outline" className="text-[10px] font-medium bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30">
+          Amazon
+        </Badge>
+      );
     case "whatsapp":
-      return <Badge variant="outline" className="text-[10px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">WhatsApp</Badge>;
+      return (
+        <Badge variant="outline" className="text-[10px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+          WhatsApp
+        </Badge>
+      );
     default:
-      return <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60">Balcão / Loja</Badge>;
+      return (
+        <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground border-border/60">
+          Balcão / Loja
+        </Badge>
+      );
   }
 }
 
@@ -139,11 +165,12 @@ function ResolutionDrawer({
           refundCents,
         },
       });
-      toast.success("Troca concluída com sucesso!");
+      playCashRegisterSound();
+      toast.success("Troca / Devolução concluída com sucesso!");
       onResolved();
       onClose();
-    } catch (e: any) {
-      toast.error(e.message || "Erro ao concluir troca");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : String(e)) || "Erro ao concluir troca");
     } finally {
       setIsSubmitting(false);
     }
@@ -177,7 +204,7 @@ function ResolutionDrawer({
                 <button
                   type="button"
                   onClick={() => setResolutionType("store_credit")}
-                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors ${
+                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors cursor-pointer ${
                     resolutionType === "store_credit"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
@@ -197,7 +224,7 @@ function ResolutionDrawer({
                 <button
                   type="button"
                   onClick={() => setResolutionType("refund")}
-                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors ${
+                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors cursor-pointer ${
                     resolutionType === "refund"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
@@ -217,7 +244,7 @@ function ResolutionDrawer({
                 <button
                   type="button"
                   onClick={() => setResolutionType("replacement")}
-                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors ${
+                  className={`flex items-center gap-3 p-3.5 border rounded-xl text-left transition-colors cursor-pointer ${
                     resolutionType === "replacement"
                       ? "border-primary bg-primary/5 ring-1 ring-primary"
                       : "border-border/70 hover:bg-muted/30"
@@ -250,7 +277,7 @@ function ResolutionDrawer({
             )}
 
             <Button
-              className="w-full mt-4 font-bold rounded-xl h-11"
+              className="w-full mt-4 font-bold rounded-xl h-11 cursor-pointer"
               onClick={handleResolve}
               disabled={isSubmitting}
             >
@@ -272,6 +299,90 @@ function ExchangesDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [resolvingExchange, setResolvingExchange] = useState<any>(null);
 
+  // ── KPIS DE TROCAS E DEVOLUÇÕES ──────────────────────────────────────────
+  const kpis = useMemo(() => {
+    let pendingCount = 0;
+    let completedCount = 0;
+    let refundedCents = 0;
+    let storeCreditCents = 0;
+
+    exchanges.forEach((ex: any) => {
+      if (ex.status === "requested" || ex.status === "approved") {
+        pendingCount += 1;
+      } else if (ex.status === "completed") {
+        completedCount += 1;
+        if (ex.resolutionType === "refund") {
+          refundedCents += ex.refundCents || ex.orderTotal || 0;
+        } else if (ex.resolutionType === "store_credit") {
+          storeCreditCents += ex.refundCents || ex.orderTotal || 0;
+        }
+      }
+    });
+
+    return {
+      total: exchanges.length,
+      pendingCount,
+      completedCount,
+      refundedCents,
+      storeCreditCents,
+    };
+  }, [exchanges]);
+
+  // ── EXPORTAÇÃO CSV CONTÁBIL ──────────────────────────────────────────────
+  const handleExportCsv = () => {
+    if (exchanges.length === 0) {
+      toast.info("Nenhuma solicitação de troca para exportar.");
+      return;
+    }
+
+    const headers = [
+      "ID Pedido",
+      "Cliente",
+      "Canal",
+      "Motivo da Troca",
+      "Data da Solicitação",
+      "Status",
+      "Tipo de Resolução",
+      "Valor da Troca (R$)",
+    ];
+
+    const rows = exchanges.map((ex: any) => {
+      const channelName = ex.channel || ex.origin_channel || "Balcão";
+      const resolution =
+        ex.resolutionType === "store_credit"
+          ? "Vale-Compras"
+          : ex.resolutionType === "refund"
+            ? "Estorno Financeiro"
+            : ex.resolutionType === "replacement"
+              ? "Substituição"
+              : "Pendente";
+
+      return [
+        `"#${ex.orderToken || ""}"`,
+        `"${(ex.customerName || "Cliente").replace(/"/g, '""')}"`,
+        `"${channelName}"`,
+        `"${(ex.reason || "").replace(/"/g, '""')}"`,
+        formatDate(ex.requestedAt),
+        translateStatus(ex.status),
+        `"${resolution}"`,
+        ((ex.refundCents || ex.orderTotal || 0) / 100).toFixed(2),
+      ].join(";");
+    });
+
+    const csvContent = [headers.join(";"), ...rows].join("\r\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `trocas_devolucoes_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    playCashRegisterSound();
+    toast.success("Relatório de trocas e devoluções exportado com sucesso!");
+  };
+
   const filteredExchanges = exchanges.filter((ex: any) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -286,7 +397,12 @@ function ExchangesDashboardPage() {
     setProcessingId(exchangeId);
     try {
       await updateExchangeStatus({ data: { exchangeId, status } });
-      toast.success(`Troca ${status === "approved" ? "aprovada" : "rejeitada"} com sucesso!`);
+      if (status === "approved") {
+        playCashRegisterSound();
+      } else {
+        playWarningAlert();
+      }
+      toast.success(`Troca ${status === "approved" ? "aprovada para triagem" : "rejeitada"} com sucesso!`);
       router.invalidate();
     } catch (e: unknown) {
       toast.error((e instanceof Error ? e.message : String(e)) || "Erro ao atualizar troca.");
@@ -303,7 +419,7 @@ function ExchangesDashboardPage() {
             <Button
               size="sm"
               variant="default"
-              className="rounded-xl h-9 text-xs font-semibold"
+              className="rounded-xl h-8 text-xs font-semibold cursor-pointer"
               onClick={() => handleUpdateStatus(exchange.id, "approved")}
               disabled={processingId === exchange.id}
             >
@@ -312,7 +428,7 @@ function ExchangesDashboardPage() {
             <Button
               size="sm"
               variant="outline"
-              className="rounded-xl h-9 text-xs font-semibold text-destructive hover:bg-destructive/10"
+              className="rounded-xl h-8 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
               onClick={() => handleUpdateStatus(exchange.id, "rejected")}
               disabled={processingId === exchange.id}
             >
@@ -324,7 +440,7 @@ function ExchangesDashboardPage() {
           <Button
             size="sm"
             variant="default"
-            className="rounded-xl h-9 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700"
+            className="rounded-xl h-8 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
             onClick={() => setResolvingExchange(exchange)}
             disabled={processingId === exchange.id}
           >
@@ -336,35 +452,118 @@ function ExchangesDashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <PageHeader title="Trocas & Devoluções" />
-        <div className="flex bg-muted/40 p-1 rounded-xl border border-border/60">
-          <Button
-            variant={viewMode === "kanban" ? "secondary" : "ghost"}
-            size="sm"
-            className="rounded-lg h-8 text-xs font-semibold"
-            onClick={() => setViewMode("kanban")}
-          >
-            <KanbanSquare className="h-3.5 w-3.5 mr-1.5" /> Kanban
-          </Button>
-          <Button
-            variant={viewMode === "table" ? "secondary" : "ghost"}
-            size="sm"
-            className="rounded-lg h-8 text-xs font-semibold"
-            onClick={() => setViewMode("table")}
-          >
-            <TableIcon className="h-3.5 w-3.5 mr-1.5" /> Tabela
-          </Button>
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <PageHeader
+        eyebrow="Pós-Venda & Logística Reversa"
+        title="Trocas & Devoluções (RMA)"
+        description="Gerencie solicitações de trocas de produtos, estornos financeiros (Pix/Cartão) e emissão de vale-compras com baixa contábil."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleExportCsv}
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+            >
+              <FileSpreadsheet className="size-3.5 text-emerald-600" />
+              <span>Exportar CSV</span>
+            </Button>
+            <div className="flex bg-muted/60 p-1 rounded-xl border border-border/60">
+              <Button
+                variant={viewMode === "kanban" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-lg h-7 text-xs font-semibold cursor-pointer"
+                onClick={() => setViewMode("kanban")}
+              >
+                <KanbanSquare className="h-3.5 w-3.5 mr-1.5" /> Kanban
+              </Button>
+              <Button
+                variant={viewMode === "table" ? "secondary" : "ghost"}
+                size="sm"
+                className="rounded-lg h-7 text-xs font-semibold cursor-pointer"
+                onClick={() => setViewMode("table")}
+              >
+                <TableIcon className="h-3.5 w-3.5 mr-1.5" /> Tabela
+              </Button>
+            </div>
+          </div>
+        }
+      />
+
+      {/* ── ALERTA DE SOLICITAÇÕES PENDENTES ── */}
+      {kpis.pendingCount > 0 && (
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs">
+          <div className="flex items-center gap-2.5">
+            <AlertTriangle className="size-4 shrink-0 text-amber-600" />
+            <span>
+              <strong>Atenção operacional:</strong> Você possui <strong>{kpis.pendingCount} solicitação(ões) de troca/devolução</strong> aguardando análise de recebimento ou resolução.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── KPIS OPERACIONAIS & FINANCEIROS ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <RotateCcw className="size-3.5 text-blue-600" />
+            Total de Solicitações
+          </span>
+          <div className="text-2xl font-mono font-bold text-foreground">
+            {kpis.total}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            {kpis.completedCount} concluídas com êxito
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Clock className="size-3.5 text-amber-500" />
+            Em Triagem / Pendentes
+          </span>
+          <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-400">
+            {kpis.pendingCount}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            {kpis.pendingCount > 0 ? "Aguardando conferência física" : "Todas as solicitações atendidas"}
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Gift className="size-3.5 text-purple-600" />
+            Vale-Compras Gerados
+          </span>
+          <div className="text-2xl font-mono font-bold text-purple-600 dark:text-purple-400">
+            {formatMoney(kpis.storeCreditCents)}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            Retenção de crédito na loja
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Banknote className="size-3.5 text-rose-600" />
+            Total Estornado
+          </span>
+          <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
+            {formatMoney(kpis.refundedCents)}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            Reembolsos via Pix / Cartão
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="relative flex-1 sm:w-80">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+      {/* ── BARRA DE CONTROLE & BUSCA ── */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-3 rounded-2xl border border-border/70">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por pedido, cliente ou motivo..."
-            className="pl-9 h-10 bg-card border-border/70 rounded-xl"
+            className="pl-10 h-10 bg-background border-border/70 rounded-xl text-xs"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -372,41 +571,49 @@ function ExchangesDashboardPage() {
       </div>
 
       {filteredExchanges.length === 0 ? (
-        <EmptyState title="Nenhuma solicitação de troca encontrada" />
+        <EmptyState
+          title="Nenhuma solicitação de troca encontrada"
+          description="Nenhuma troca ou devolução corresponde à busca atual ou todas as solicitações já foram concluídas."
+        />
       ) : viewMode === "table" ? (
         <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
           <Table>
             <TableHeader>
               <TableRow className="border-border/60 bg-muted/20">
-                <TableHead>Data</TableHead>
-                <TableHead>Canal</TableHead>
-                <TableHead>Pedido</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Motivo</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="text-xs font-bold">Pedido & Origem</TableHead>
+                <TableHead className="text-xs font-bold">Cliente</TableHead>
+                <TableHead className="text-xs font-bold">Motivo da Devolução</TableHead>
+                <TableHead className="text-xs font-bold">Data</TableHead>
+                <TableHead className="text-xs font-bold font-mono">Valor Total</TableHead>
+                <TableHead className="text-xs font-bold">Status</TableHead>
+                <TableHead className="text-xs font-bold text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredExchanges.map((ex: any) => (
-                <TableRow key={ex.id} className="border-border/50">
-                  <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
-                    {formatDate(ex.requestedAt)}
-                  </TableCell>
+                <TableRow key={ex.id} className="border-border/40 hover:bg-muted/30 transition-colors">
                   <TableCell>
-                    {getExchangeChannelBadge(ex.channel || ex.origin_channel)}
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold font-mono text-xs text-foreground">#{ex.orderToken}</span>
+                      {getExchangeChannelBadge(ex.channel || ex.origin_channel)}
+                    </div>
                   </TableCell>
-                  <TableCell className="font-mono font-semibold text-xs">#{ex.orderToken}</TableCell>
-                  <TableCell className="text-xs font-medium">{ex.customerName}</TableCell>
-                  <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground" title={ex.reason}>
+                  <TableCell className="text-xs font-medium text-foreground">{ex.customerName}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground max-w-xs truncate" title={ex.reason}>
                     {ex.reason}
                   </TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono">
+                    {formatDate(ex.requestedAt)}
+                  </TableCell>
+                  <TableCell className="text-xs font-bold font-mono text-foreground">
+                    {formatMoney(ex.orderTotal || 0)}
+                  </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadge(ex.status)} className="text-[11px] font-medium">
+                    <Badge variant={getStatusBadge(ex.status)} className="text-[10px]">
                       {translateStatus(ex.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell>
                     <div className="flex justify-end">{getActionButtons(ex)}</div>
                   </TableCell>
                 </TableRow>

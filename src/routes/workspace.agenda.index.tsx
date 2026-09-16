@@ -11,11 +11,13 @@ import {
  ChevronRight,
  DollarSign,
  Users,
+ MessageCircle,
 } from "lucide-react";
 import { format, addDays, subDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 import {
  listAppointments,
@@ -139,8 +141,15 @@ function AdminAppointmentsPage() {
  mutationFn: async ({ id, status }: { id: string; status: any }) => {
  return await updateAppointmentStatus({ data: { id, status } });
  },
- onSuccess: () => {
+ onSuccess: (_data, variables) => {
+ if (variables.status === "completed") {
+ playCashRegisterSound();
+ toast.success("Atendimento concluído com sucesso!");
+ } else if (variables.status === "cancelled") {
+ toast.success("Agendamento cancelado. Saldo de sessões estornado quando aplicável.");
+ } else {
  toast.success("Status atualizado!");
+ }
  queryClient.invalidateQueries({ queryKey: ["admin-appointments"] });
  },
  onError: (e: any) => toast.error(e.message || "Erro ao atualizar status"),
@@ -405,9 +414,23 @@ function AdminAppointmentsPage() {
  </div>
 
  <div className="pt-2 flex items-center justify-between text-xs">
- <span className="font-semibold text-foreground truncate max-w-[150px]">
+ <span className="font-semibold text-foreground truncate max-w-[130px]">
  {appt.guest_name || "Cliente"}
  </span>
+ <div className="flex items-center gap-1">
+ {appt.guest_phone && (
+ <a
+ href={`https://api.whatsapp.com/send?phone=${appt.guest_phone.replace(/\D/g, "")}&text=${encodeURIComponent(
+ `Olá, *${appt.guest_name || "Cliente"}*! Confirmamos seu agendamento de *${appt.booking_services?.title || "Atendimento"}* para *${format(new Date(appt.scheduled_at), "dd/MM 'às' HH:mm")}*. Qualquer dúvida estamos à disposição!`
+ )}`}
+ target="_blank"
+ rel="noopener noreferrer"
+ className="size-7 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors"
+ title="Enviar Lembrete / Confirmação no WhatsApp"
+ >
+ <MessageCircle className="size-3.5" />
+ </a>
+ )}
  <Button
  variant="ghost"
  size="icon"
@@ -419,6 +442,7 @@ function AdminAppointmentsPage() {
  >
  <FileText className="size-3.5 text-primary" />
  </Button>
+ </div>
  </div>
 
  {["pending", "confirmed"].includes(appt.status) && (
@@ -446,18 +470,32 @@ function AdminAppointmentsPage() {
  Concluir
  </Button>
  </div>
+ <div className="flex items-center justify-between gap-1">
  <Button
  size="sm"
  variant="ghost"
- className="h-7 text-[10px] text-muted-foreground hover:text-destructive cursor-pointer"
+ className="h-7 text-[10px] text-muted-foreground hover:text-rose-600 cursor-pointer px-2"
+ onClick={() => {
+ if (confirm(`Cancelar o agendamento de ${appt.guest_name || "o cliente"}? Se houver passe de sessões, o crédito será estornado automaticamente.`)) {
+ statusMutation.mutate({ id: appt.id, status: "cancelled" });
+ }
+ }}
+ >
+ Cancelar
+ </Button>
+ <Button
+ size="sm"
+ variant="ghost"
+ className="h-7 text-[10px] text-muted-foreground hover:text-destructive cursor-pointer px-2"
  onClick={() => {
  if (confirm(`Registrar falta / No-show para ${appt.guest_name || "o cliente"}?`)) {
  statusMutation.mutate({ id: appt.id, status: "no_show" });
  }
  }}
  >
- Registrar Falta (No-Show)
+ Falta (No-Show)
  </Button>
+ </div>
  </div>
  )}
  </div>

@@ -637,7 +637,7 @@ export async function executeGenerateStorefrontFromOnboarding(
 
   const businessProfile = session?.extracted_business_profile || {};
   const niche = businessProfile.extracted_niche || "Gastronomia & Comércio";
-  const title = `Vitrine Oficial - ${niche}`;
+  const title = `Catálogo Online - ${niche}`;
 
   // 2. Busca ou cria experience_document para storefront 'home'
   let documentId: string;

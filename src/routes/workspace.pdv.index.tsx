@@ -46,6 +46,7 @@ import {
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
+import { playCashRegisterSound } from "@/lib/audio-chimes";
 import { parseCurrencyInputToCents } from "@/lib/cash";
 import { addItemsToTableComanda } from "@/services/order.functions";
 import { Button } from "@/components/ui/button";
@@ -651,6 +652,7 @@ function PdvTerminal() {
  });
 
  toast.success("Venda finalizada com sucesso!");
+ playCashRegisterSound();
 
  setLastSaleReceipt({
  saleId: res?.receiptId || res?.orderId || `PDV${Date.now().toString(36).toUpperCase().slice(-6)}`,

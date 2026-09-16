@@ -114,6 +114,15 @@ interface PlatformMeta {
   color: string;
   docUrl: string;
   badgeLabel: string;
+  // Campos específicos de credencial por plataforma (anti-GAP C1)
+  credentialFields: Array<{
+    key: string;
+    label: string;
+    placeholder: string;
+    type?: "text" | "password";
+    required?: boolean;
+    hint?: string;
+  }>;
 }
 
 const PLATFORMS_CATALOG: PlatformMeta[] = [
@@ -125,6 +134,12 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-amber-400 to-yellow-500",
     docUrl: "https://developers.mercadolivre.com.br/",
     badgeLabel: "MLB Sync & Full",
+    credentialFields: [
+      { key: "client_id", label: "App ID (Client ID)", placeholder: "1234567890", required: true },
+      { key: "client_secret", label: "Client Secret", placeholder: "xxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "access_token", label: "Access Token", placeholder: "APP_USR-1234...", type: "password" },
+      { key: "seller_id", label: "Seller ID (MLB)", placeholder: "MLB123456789", hint: "Visível no painel do Mercado Livre" },
+    ],
   },
   {
     platform: "ifood",
@@ -134,6 +149,11 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-red-500 to-rose-600",
     docUrl: "https://developer.ifood.com.br/",
     badgeLabel: "OpenDelivery v1.0",
+    credentialFields: [
+      { key: "client_id", label: "Client ID (Portal do Parceiro)", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", required: true },
+      { key: "client_secret", label: "Client Secret", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "merchant_uuid", label: "Merchant UUID da Loja", placeholder: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", hint: "Encontrado em: Portal do Parceiro → Minha Conta" },
+    ],
   },
   {
     platform: "shopee",
@@ -143,6 +163,11 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-orange-500 to-amber-600",
     docUrl: "https://open.shopee.com.br/",
     badgeLabel: "Shopee Open API",
+    credentialFields: [
+      { key: "partner_id", label: "Partner ID", placeholder: "1234567", required: true },
+      { key: "partner_key", label: "Partner Key", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "shop_id", label: "Shop ID", placeholder: "123456789", hint: "Encontrado em: Shopee Seller Centre → Minha Loja" },
+    ],
   },
   {
     platform: "amazon",
@@ -152,6 +177,13 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-amber-600 to-neutral-800",
     docUrl: "https://developer-docs.amazon.com/sp-api/",
     badgeLabel: "SP-API Brasil",
+    credentialFields: [
+      { key: "seller_id", label: "Seller ID / MerchantToken", placeholder: "AXXXXXXXXXXXXX", required: true },
+      { key: "marketplace_id", label: "Marketplace ID (Brasil)", placeholder: "A2Q3Y263D00KWC" },
+      { key: "lwa_client_id", label: "LWA Client ID (SP-API)", placeholder: "amzn1.application-oa2-client.xxx", required: true },
+      { key: "lwa_client_secret", label: "LWA Client Secret", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "refresh_token", label: "Refresh Token", placeholder: "Atzr|IwEB...", type: "password", hint: "Gerado no SP-API Self Authorization" },
+    ],
   },
   {
     platform: "magalu",
@@ -161,6 +193,11 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-blue-500 to-indigo-600",
     docUrl: "https://developers.magazineluiza.com.br/",
     badgeLabel: "IntegraCommerce",
+    credentialFields: [
+      { key: "client_id", label: "Client ID (IntegraCommerce)", placeholder: "xxxxxxxxxxxxxxxx", required: true },
+      { key: "client_secret", label: "Client Secret", placeholder: "xxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "seller_id", label: "Código do Vendedor Magalu", placeholder: "MAGXXXXX" },
+    ],
   },
   {
     platform: "melhorenvio",
@@ -170,15 +207,24 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-emerald-500 to-teal-600",
     docUrl: "https://docs.melhorenvio.com.br/",
     badgeLabel: "Cotação & Etiquetas",
+    credentialFields: [
+      { key: "api_token", label: "Token de Acesso (Bearer)", placeholder: "Cole o token gerado no portal", type: "password", required: true, hint: "Gere em: app.melhorenvio.com.br → Tokens → Criar token" },
+    ],
   },
   {
     platform: "correios",
-    name: "Correios",
+    name: "Correios (CWS)",
     category: "logistics",
     icon: Truck,
     color: "from-yellow-600 to-blue-600",
     docUrl: "https://cws.correios.com.br/",
     badgeLabel: "CWS Contrato",
+    credentialFields: [
+      { key: "username", label: "Usuário / CPF CNPJ", placeholder: "00.000.000/0000-00", required: true },
+      { key: "access_code", label: "Código de Acesso (CWS)", placeholder: "Código fornecido pelos Correios", type: "password", required: true },
+      { key: "contract_number", label: "Nº do Contrato", placeholder: "0000000000", hint: "No contrato de postagem com os Correios" },
+      { key: "card_number", label: "Nº do Cartão de Postagem", placeholder: "0000000000" },
+    ],
   },
   {
     platform: "loggi",
@@ -188,6 +234,10 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-blue-600 to-sky-500",
     docUrl: "https://docs.loggi.com/",
     badgeLabel: "Coleta & Entrega",
+    credentialFields: [
+      { key: "api_key", label: "API Key (Bearer)", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true, hint: "Obtida em: app.loggi.com → Configurações → Integrações" },
+      { key: "shop_id", label: "Shop ID Loggi", placeholder: "12345" },
+    ],
   },
   {
     platform: "jadlog",
@@ -197,6 +247,12 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-red-600 to-rose-700",
     docUrl: "https://www.jadlog.com.br/jadlog/servicos",
     badgeLabel: "Cargas Expressas",
+    credentialFields: [
+      { key: "api_user", label: "Usuário API Jadlog", placeholder: "seu@email.com", required: true },
+      { key: "api_password", label: "Senha API", placeholder: "xxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "cnpj", label: "CNPJ da Empresa", placeholder: "00.000.000/0000-00" },
+      { key: "modalidade", label: "Modalidade Padrão", placeholder: "Ex: .COM, Economico", hint: "Modalidade default para cotações automáticas" },
+    ],
   },
   {
     platform: "rappi",
@@ -206,6 +262,10 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-orange-400 to-red-500",
     docUrl: "https://developer.rappi.com/",
     badgeLabel: "REST / Webhooks",
+    credentialFields: [
+      { key: "api_key", label: "API Key do Parceiro", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "webhook_secret", label: "Webhook Secret (HMAC)", placeholder: "xxxxxxxxxxxxxxxx", type: "password" },
+    ],
   },
   {
     platform: "amodelivery",
@@ -215,6 +275,10 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-pink-500 to-rose-600",
     docUrl: "https://amodelivery.com/",
     badgeLabel: "Delivery Local",
+    credentialFields: [
+      { key: "api_key", label: "API Key", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "restaurant_id", label: "ID do Restaurante", placeholder: "12345" },
+    ],
   },
   {
     platform: "google_business",
@@ -224,6 +288,11 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     color: "from-blue-500 to-green-500",
     docUrl: "https://developers.google.com/my-business/",
     badgeLabel: "Business Profile API",
+    credentialFields: [
+      { key: "client_id", label: "OAuth2 Client ID", placeholder: "xxxxxxxxxx.apps.googleusercontent.com", required: true },
+      { key: "client_secret", label: "OAuth2 Client Secret", placeholder: "GOCSPX-xxxxxxxxxxxxxxxxx", type: "password", required: true },
+      { key: "location_id", label: "Location ID (Google Business)", placeholder: "locations/12345678", hint: "Encontrado no painel Google Business Profile" },
+    ],
   },
 ];
 
@@ -250,9 +319,8 @@ function MarketplaceHubPage() {
   const [testOrderModalOpen, setTestOrderModalOpen] = useState(false);
 
   // Form states for Connector Config
-  const [accountId, setAccountId] = useState("");
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [accountNickname, setAccountNickname] = useState("");
-  const [apiToken, setApiToken] = useState("");
   const [autoAccept, setAutoAccept] = useState(false);
   const [syncStock, setSyncStock] = useState(true);
 
@@ -391,28 +459,46 @@ function MarketplaceHubPage() {
     setSelectedPlatform(p);
     const existing = connectors.find((c: MarketplaceConnectorDTO) => c.platform === p.platform);
     if (existing) {
-      setAccountId(existing.external_account_id || "");
       setAccountNickname(existing.account_nickname || "");
       setAutoAccept(existing.settings?.auto_accept_orders ?? false);
       setSyncStock(existing.settings?.sync_stock ?? true);
+      // Preenche campos com credenciais salvas (sem expor tokens — valores são mascarados no type="password")
+      const savedCreds = (existing.settings?.credentials || {}) as Record<string, string>;
+      const initialVals: Record<string, string> = {};
+      p.credentialFields.forEach((f) => {
+        initialVals[f.key] = savedCreds[f.key] ? "••••••••" : "";
+      });
+      setFormValues(initialVals);
     } else {
-      setAccountId("");
       setAccountNickname("");
       setAutoAccept(false);
       setSyncStock(true);
+      setFormValues({});
     }
-    setApiToken("");
     setConfigModalOpen(true);
   };
 
   const handleSaveConfig = () => {
     if (!selectedPlatform) return;
+    // Filtra apenas campos preenchidos e não-mascarados (ignora placeholder de senha existente)
+    const cleanPayload = Object.fromEntries(
+      Object.entries(formValues).filter(([, v]) => v.trim() !== "" && v !== "••••••••")
+    );
+    // Deriva external_account_id do payload de credencial
+    const extId =
+      cleanPayload.seller_id ||
+      cleanPayload.shop_id ||
+      cleanPayload.merchant_uuid ||
+      cleanPayload.restaurant_id ||
+      cleanPayload.location_id ||
+      accountNickname ||
+      undefined;
     saveConnectorMutation.mutate({
       platform: selectedPlatform.platform,
       name: selectedPlatform.name,
-      external_account_id: accountId.trim() || undefined,
+      external_account_id: extId?.trim() || undefined,
       account_nickname: accountNickname.trim() || undefined,
-      access_token: apiToken.trim() || undefined,
+      credential_payload: cleanPayload,
       status: "connected",
       settings: {
         auto_accept_orders: autoAccept,
@@ -1028,36 +1114,41 @@ function MarketplaceHubPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            {/* Apelido da conta */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Nome / Apelido da Loja</Label>
+              <Label className="text-xs font-medium">Apelido da Conta / Loja</Label>
               <Input
-                placeholder="Ex: Minha Loja Oficial"
+                id="connector-nickname"
+                placeholder="Ex: Loja Oficial SP"
                 value={accountNickname}
                 onChange={(e) => setAccountNickname(e.target.value)}
                 className="h-10 text-xs rounded-xl"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">ID do Vendedor / Conta Externa</Label>
-              <Input
-                placeholder="Ex: MLB9823412 ou ifood_store_12"
-                value={accountId}
-                onChange={(e) => setAccountId(e.target.value)}
-                className="h-10 text-xs rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Token de Acesso / API Key</Label>
-              <Input
-                type="password"
-                placeholder="Cole o token de autenticação..."
-                value={apiToken}
-                onChange={(e) => setApiToken(e.target.value)}
-                className="h-10 text-xs rounded-xl font-mono"
-              />
-            </div>
+            {/* Campos dinâmicos específicos da plataforma (Anti-GAP C1) */}
+            {selectedPlatform?.credentialFields.map((field) => (
+              <div key={field.key} className="space-y-1.5">
+                <Label htmlFor={`cred-${field.key}`} className="text-xs font-medium">
+                  {field.label}
+                  {field.required && <span className="text-rose-500 ml-0.5">*</span>}
+                </Label>
+                <Input
+                  id={`cred-${field.key}`}
+                  type={field.type === "password" ? "password" : "text"}
+                  placeholder={field.placeholder}
+                  value={formValues[field.key] || ""}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  className="h-10 text-xs rounded-xl font-mono"
+                  autoComplete={field.type === "password" ? "new-password" : undefined}
+                />
+                {field.hint && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {field.hint}
+                  </p>
+                )}
+              </div>
+            ))}
 
             <div className="pt-2 border-t border-border/60 space-y-3">
               <div className="flex items-center justify-between">

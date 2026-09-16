@@ -18,6 +18,9 @@ import {
   ClipboardList,
   ShieldAlert,
   Megaphone,
+  Share2,
+  Star,
+  Bell,
   Flame,
   Kanban,
   Newspaper,
@@ -132,6 +135,8 @@ const GROUP_MASTER_INBOX: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace/atendimento", label: "Atendimento & WhatsApp", icon: MessageSquare },
+    { path: "/workspace/avaliacoes", label: "Avaliações & Reputação", icon: Star },
+    { path: "/workspace/notificacoes", label: "Central de Notificações", icon: Bell },
     { path: "/workspace/suporte", label: "Central de Suporte", icon: LifeBuoy },
   ],
 };
@@ -367,6 +372,7 @@ const GROUP_TURISMO_MARKETING: NavGroup = {
     { path: "/workspace/marketing/promocoes", label: "Ofertas & Descontos", icon: Flame },
     { path: "/workspace/marketing/concursos", label: "Sorteios da Loja", icon: Ticket },
     { path: "/workspace/marketing/anuncios", label: "Campanhas Publicitárias", icon: Megaphone },
+    { path: "/workspace/marketing/social", label: "Compartilhamento & Redes", icon: Share2 },
   ],
 };
 
@@ -536,6 +542,8 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
     { path: "/workspace/marketing/gift-cards", label: "Vales-Presente", icon: Gift },
     { path: "/workspace/marketing/pixels", label: "Pixels & Telemetria", icon: Target },
     { path: "/workspace/marketing/anuncios", label: "Campanhas de Anúncios", icon: Megaphone },
+    { path: "/workspace/marketing/social", label: "Compartilhamento & Redes", icon: Share2 },
+    { path: "/workspace/avaliacoes", label: "Avaliações & Prova Social", icon: Star },
   ],
 };
 
@@ -562,7 +570,9 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/financeiro/caixa", label: "Fluxo de Caixa", icon: Banknote },
+    { path: "/workspace/relatorios/metas", label: "Metas de Vendas & Forecast", icon: Target },
     { path: "/workspace/financeiro/pagamentos", label: "Pagamentos & Repasses", icon: DollarSign },
+    { path: "/workspace/financeiro/contas-pagar", label: "Contas a Pagar & Despesas", icon: Receipt },
     { path: "/workspace/financeiro/recebiveis", label: "Recebíveis, Carnês & Malas", icon: Receipt },
     { path: "/workspace/financeiro/relatorios-canal", label: "DRE & Canais de Venda", icon: FileSpreadsheet },
     { path: "/workspace/financeiro/afiliados", label: "Comissões de Afiliados", icon: Coins },

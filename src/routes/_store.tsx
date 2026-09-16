@@ -10,6 +10,7 @@ import { AppShell } from "@/components/shell/app-shell";
 import { GlobalPopupRenderer } from "@/components/commerce/global-popup-renderer";
 import { CartProvider, useCartContext } from "@/lib/cart-context";
 import { ErrorState, UnconfiguredState } from "@/components/state/states";
+import { StoreAnalyticsInjector } from "@/components/analytics/StoreAnalyticsInjector";
 
 export const Route = createFileRoute("/_store")({
  loader: async () => {
@@ -174,6 +175,7 @@ function StoreLayout() {
 
  return (
  <AppShell session={session} brandSettings={brandSettings}>
+ <StoreAnalyticsInjector storeSettings={storeData?.settings} />
  <script
  type="application/ld+json"
  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

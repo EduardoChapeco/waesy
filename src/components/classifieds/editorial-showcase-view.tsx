@@ -678,7 +678,7 @@ export function EditorialShowcaseView({
           )}
         </div>
 
-        {/* ── Card Oficial do Anunciante / Loja Parceira vs Morador (Visível no Mobile) ── */}
+        {/* ── Card do Anunciante / Loja Parceira (Visível no Mobile) ── */}
         <div className="lg:hidden p-3.5 rounded-2xl bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-11 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">

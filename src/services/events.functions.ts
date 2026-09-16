@@ -345,7 +345,7 @@ async function _validateTicketCheckin(eventId: string, ticketCode: string) {
  // Find the ticket by ID (uuid), QR Hash, or participant name/document
  let query = supabase
  .from("tickets")
- .select("id, status, qr_hash, profiles!inner(full_name, tax_id, phone), ticket_lots!inner(name)")
+ .select("id, status, qr_hash, updated_at, profiles!inner(full_name, tax_id, phone), ticket_lots!inner(name)")
  .eq("event_id", eventId);
 
  const cleanInput = ticketCode.trim();
@@ -370,17 +370,20 @@ async function _validateTicketCheckin(eventId: string, ticketCode: string) {
  }
 
  if (ticket.status === "used") {
- throw new Error("Ingresso já utilizado.");
+ const usedTime = ticket.updated_at
+ ? new Date(ticket.updated_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+ : "anteriormente";
+ throw new Error(`Ingresso já utilizado às ${usedTime}. Entrada duplicada bloqueada.`);
  }
 
  if (ticket.status === "revoked") {
- throw new Error("Ingresso cancelado ou revogado.");
+ throw new Error("Ingresso cancelado ou revogado pela organização.");
  }
 
- // Atomically update the status to 'used'
+ // Atomically update the status to 'used' with timestamp
  const { error: updateErr } = await supabase
  .from("tickets")
- .update({ status: "used" })
+ .update({ status: "used", updated_at: new Date().toISOString() })
  .eq("id", ticket.id)
  .eq("status", "valid"); // extra concurrency safety
 

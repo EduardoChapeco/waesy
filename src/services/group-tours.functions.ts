@@ -138,6 +138,7 @@ export const createGroupTour = createServerFn({ method: "POST" })
       extraOptions: z.array(z.any()).default([]),
       itinerary: z.array(z.any()).default([]),
       isPublic: z.boolean().default(true),
+      viewTemplate: z.enum(["standard", "instagram_editorial"]).default("instagram_editorial").optional(),
       status: z.enum(["open", "confirmed", "closed", "completed", "cancelled"]).default("open"),
     })
   )
@@ -147,6 +148,50 @@ export const createGroupTour = createServerFn({ method: "POST" })
 
     if (!identity?.id) {
       throw new Error("Não autorizado.");
+    }
+
+    // Resolução defensiva do store_id
+    let effectiveStoreId = identity.store_id || null;
+    if (!effectiveStoreId && identity.memberships && identity.memberships.length > 0) {
+      effectiveStoreId = identity.memberships[0].store_id || null;
+    }
+    if (!effectiveStoreId) {
+      try {
+        const { data: userStore } = await supabase
+          .from("stores")
+          .select("id")
+          .or(`owner_id.eq.${identity.id},is_platform_root.eq.true`)
+          .limit(1)
+          .maybeSingle();
+        if (userStore) {
+          effectiveStoreId = userStore.id;
+        }
+      } catch {}
+    }
+
+    // Helper de conversão segura de data
+    const parseSafeIsoDate = (val: string | undefined): string => {
+      if (!val) return new Date().toISOString();
+      try {
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return new Date().toISOString();
+        return d.toISOString();
+      } catch {
+        return new Date().toISOString();
+      }
+    };
+
+    const depIso = parseSafeIsoDate(input.departureDate);
+    const retIso = parseSafeIsoDate(input.returnDate);
+
+    let durationText = "1 dia";
+    try {
+      const dep = new Date(depIso);
+      const ret = new Date(retIso);
+      const diffDays = Math.max(1, Math.round((ret.getTime() - dep.getTime()) / (1000 * 60 * 60 * 24)));
+      durationText = `${diffDays} ${diffDays === 1 ? "dia" : "dias"}`;
+    } catch {
+      durationText = "Excursão";
     }
 
     let finalSeats = generateDefaultBusSeats(input.totalSeats);
@@ -209,29 +254,41 @@ export const createGroupTour = createServerFn({ method: "POST" })
       extra_options: input.extraOptions || [],
       itinerary: input.itinerary || [],
       is_public: input.isPublic,
+      view_template: input.viewTemplate || "instagram_editorial",
       status: input.status,
     };
+
+    const priceDisplay = input.priceCents > 0
+      ? (input.priceCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      : "Sob Consulta";
 
     const { data: inserted, error } = await supabase
       .from("tourism_experiences")
       .insert({
-        store_id: identity.store_id || null,
+        store_id: effectiveStoreId,
         author_profile_id: identity.id,
         title: input.title.trim(),
         subtitle: `${input.departureCity} ➔ ${input.destination} (${input.departureDate})`,
         category: "group_tour",
         destination: input.destination.trim(),
+        destination_city: input.destination.trim(),
         departure_city: input.departureCity.trim(),
-        departure_date: new Date(input.departureDate).toISOString(),
-        departure_time: input.departureTime,
-        return_date: new Date(input.returnDate).toISOString(),
-        return_time: input.returnTime,
+        departure_date: depIso,
+        departure_time: input.departureTime || "06:00",
+        return_date: retIso,
+        return_time: input.returnTime || "20:00",
         location: input.destination.trim(),
         price_cents: input.priceCents,
+        price_display: priceDisplay,
+        duration: durationText,
         total_seats: finalTotalSeats,
+        available_seats: finalTotalSeats,
         seats: finalSeats,
         rooms: [],
         included_items: input.includedItems,
+        excluded_items: input.excludedItems || [],
+        cover_image_url: input.coverImageUrl || null,
+        image_url: input.coverImageUrl || null,
         notes: input.notes?.trim() || null,
         status: input.status,
         description: JSON.stringify(metaPayload),

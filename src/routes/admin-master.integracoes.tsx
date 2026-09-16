@@ -1110,14 +1110,14 @@ function AdminMasterIntegracoesPage() {
         </div>
       )}
 
-      {/* ── ABA 4: PAGAMENTOS (ASAAS & STRIPE) ── */}
+      {/* ── ABA 4: PAGAMENTOS (ASAAS, STRIPE, ABACATEPAY, MERCADO PAGO) ── */}
  {activeTab === "payments" && (
  <form onSubmit={handleSave} className="space-y-6">
  <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
  <div>
  <h3 className="text-sm font-bold text-foreground">Gateways de Pagamento (PIX & Cartão)</h3>
  <p className="text-xs text-muted-foreground mt-0.5">
- Configure as credenciais de liquidação central do Asaas e Stripe.
+   Configure as credenciais de liquidação central dos gateways de pagamento. Taxas da plataforma sempre usam as chaves Master.
  </p>
  </div>
 
@@ -1145,6 +1145,72 @@ function AdminMasterIntegracoesPage() {
  className="h-10 text-xs font-mono rounded-xl"
  />
  </div>
+
+ {/* AbacatePay */}
+ <div className="space-y-1.5">
+   <div className="flex items-center justify-between">
+     <Label htmlFor="abacatepay_api_key" className="text-xs font-bold flex items-center gap-1.5">
+       <span>AbacatePay API Key</span>
+       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-green-500/40 text-green-700 dark:text-green-400 bg-green-500/10 px-1.5">PIX</Badge>
+     </Label>
+     {formData.abacatepay_api_key ? (
+       <Badge variant="outline" className="text-[9px] font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
+     ) : (
+       <Badge variant="outline" className="text-[9px] font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
+     )}
+   </div>
+   <div className="relative">
+     <Input
+       id="abacatepay_api_key"
+       type={visibleKeys["abacatepay"] ? "text" : "password"}
+       value={formData.abacatepay_api_key || ""}
+       onChange={(e) => handleInputChange("abacatepay_api_key", e.target.value)}
+       placeholder="sk_live_abct_..."
+       className="h-10 text-xs font-mono rounded-xl pr-10"
+     />
+     <button
+       type="button"
+       onClick={() => setVisibleKeys(v => ({ ...v, abacatepay: !v.abacatepay }))}
+       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+     >
+       {visibleKeys["abacatepay"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+     </button>
+   </div>
+   <p className="text-[11px] text-muted-foreground">Gere sua chave em <span className="font-mono">app.abacatepay.com</span> → Integrações → API Keys.</p>
+ </div>
+
+ {/* Mercado Pago */}
+ <div className="space-y-1.5">
+   <div className="flex items-center justify-between">
+     <Label htmlFor="mercadopago_access_token" className="text-xs font-bold flex items-center gap-1.5">
+       <span>Mercado Pago Access Token</span>
+       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-blue-500/40 text-blue-700 dark:text-blue-400 bg-blue-500/10 px-1.5">PIX+Cartão</Badge>
+     </Label>
+     {formData.mercadopago_access_token ? (
+       <Badge variant="outline" className="text-[9px] font-bold border-green-500/40 text-green-600 bg-green-500/10">✓ Ativo</Badge>
+     ) : (
+       <Badge variant="outline" className="text-[9px] font-bold border-muted-foreground/30 text-muted-foreground">Não Configurado</Badge>
+     )}
+   </div>
+   <div className="relative">
+     <Input
+       id="mercadopago_access_token"
+       type={visibleKeys["mercadopago"] ? "text" : "password"}
+       value={formData.mercadopago_access_token || ""}
+       onChange={(e) => handleInputChange("mercadopago_access_token", e.target.value)}
+       placeholder="APP_USR-..."
+       className="h-10 text-xs font-mono rounded-xl pr-10"
+     />
+     <button
+       type="button"
+       onClick={() => setVisibleKeys(v => ({ ...v, mercadopago: !v.mercadopago }))}
+       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+     >
+       {visibleKeys["mercadopago"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+     </button>
+   </div>
+   <p className="text-[11px] text-muted-foreground">Access token de produção em <span className="font-mono">mercadopago.com.br</span> → Suas integrações → Credenciais.</p>
+ </div>
  </div>
 
  <div className="flex justify-end pt-4">
@@ -1156,6 +1222,7 @@ function AdminMasterIntegracoesPage() {
  </div>
  </form>
  )}
+
 
  {/* ── ABA 5: E-MAIL & WHATSAPP ── */}
  {activeTab === "comms" && (

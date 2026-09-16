@@ -212,4 +212,158 @@ export const toggleAdCampaignStatus = createServerFn({ method: "POST" })
  }
 
  return updated;
- });
+});
+
+/**
+ * 2. GESTÃO DE CANAIS EXTERNOS DE TRÁFEGO PAGO (META ADS & GOOGLE ADS)
+ * ====================================================================
+ */
+
+export interface StoreAdChannelsDTO {
+  meta_ads: {
+    connected: boolean;
+    pixel_id: string;
+    ad_account_id: string;
+    catalog_feed_url: string;
+  };
+  google_ads: {
+    connected: boolean;
+    conversion_id: string;
+    customer_id: string;
+    merchant_feed_url: string;
+  };
+  tiktok_ads: {
+    connected: boolean;
+    pixel_id: string;
+  };
+}
+
+export const getStoreAdChannelsSettings = createServerFn({ method: "GET" }).handler(
+  async (): Promise<StoreAdChannelsDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("slug, settings")
+      .eq("id", identity.store_id)
+      .single();
+
+    const settings = (store?.settings as Record<string, any>) || {};
+    const channels = settings.ad_channels || {};
+    const storeSlug = store?.slug || identity.store_id;
+
+    const baseUrl = process.env.VITE_APP_URL || "https://usewaesy.pages.dev";
+
+    return {
+      meta_ads: {
+        connected: Boolean(channels.meta_ad_account_id || settings.meta_pixel_id),
+        pixel_id: settings.meta_pixel_id || channels.meta_pixel_id || "",
+        ad_account_id: channels.meta_ad_account_id || "",
+        catalog_feed_url: `${baseUrl}/api/feed/meta.csv?store=${storeSlug}`,
+      },
+      google_ads: {
+        connected: Boolean(channels.google_customer_id || channels.google_conversion_id),
+        conversion_id: channels.google_conversion_id || settings.gtm_id || "",
+        customer_id: channels.google_customer_id || "",
+        merchant_feed_url: `${baseUrl}/api/feed/xml?store=${storeSlug}`,
+      },
+      tiktok_ads: {
+        connected: Boolean(channels.tiktok_pixel_id),
+        pixel_id: channels.tiktok_pixel_id || "",
+      },
+    };
+  },
+);
+
+export const saveStoreAdChannelsSettings = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      meta_pixel_id: z.string().optional(),
+      meta_ad_account_id: z.string().optional(),
+      google_conversion_id: z.string().optional(),
+      google_customer_id: z.string().optional(),
+      tiktok_pixel_id: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("settings")
+      .eq("id", identity.store_id)
+      .single();
+
+    const currentSettings = (store?.settings as Record<string, any>) || {};
+    const currentChannels = currentSettings.ad_channels || {};
+
+    const updatedChannels = {
+      ...currentChannels,
+      meta_ad_account_id: data.meta_ad_account_id?.trim() || currentChannels.meta_ad_account_id,
+      google_conversion_id: data.google_conversion_id?.trim() || currentChannels.google_conversion_id,
+      google_customer_id: data.google_customer_id?.trim() || currentChannels.google_customer_id,
+      tiktok_pixel_id: data.tiktok_pixel_id?.trim() || currentChannels.tiktok_pixel_id,
+    };
+
+    const updatedSettings = {
+      ...currentSettings,
+      meta_pixel_id: data.meta_pixel_id?.trim() || currentSettings.meta_pixel_id,
+      ad_channels: updatedChannels,
+    };
+
+    const { error } = await supabase
+      .from("stores")
+      .update({ settings: updatedSettings })
+      .eq("id", identity.store_id);
+
+    if (error) {
+      throw new Error("Erro ao salvar configurações dos canais de tráfego pago: " + error.message);
+    }
+
+    return { success: true };
+  });
+
+export const generateUtmTrackingLink = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      targetPath: z.string(),
+      source: z.enum(["meta_ads", "google_ads", "tiktok_ads", "whatsapp", "influencer"]),
+      campaignName: z.string().min(1, "Nome da campanha obrigatório"),
+      medium: z.enum(["cpc", "stories", "feed", "reels", "search", "shopping", "direct"]).default("cpc"),
+      content: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("slug")
+      .eq("id", identity.store_id)
+      .single();
+
+    const baseUrl = process.env.VITE_APP_URL || "https://usewaesy.pages.dev";
+    const path = data.targetPath.startsWith("/") ? data.targetPath : `/${data.targetPath}`;
+
+    const cleanCampaign = data.campaignName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "_");
+
+    const url = new URL(`${baseUrl}${path}`);
+    url.searchParams.set("utm_source", data.source);
+    url.searchParams.set("utm_medium", data.medium);
+    url.searchParams.set("utm_campaign", cleanCampaign);
+    if (data.content) {
+      url.searchParams.set("utm_content", data.content);
+    }
+
+    return { trackingUrl: url.toString(), cleanCampaign };
+  });

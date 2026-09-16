@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStoredLocation } from "@/components/location/location-master-pill";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicMapConfig } from "@/services/integrations.functions";
 import { toast } from "sonner";
 
 export type BusinessModelType =
@@ -219,6 +221,11 @@ export function BusinessLocationPicker({
  const [isGeocoding, setIsGeocoding] = useState(false);
  const [isGettingGps, setIsGettingGps] = useState(false);
  const [newCoverageCity, setNewCoverageCity] = useState("");
+ const { data: mapConfig } = useQuery({
+   queryKey: ["public-map-config"],
+   queryFn: () => getPublicMapConfig(),
+   staleTime: 5 * 60 * 1000,
+ });
 
  const mapContainer = useRef<HTMLDivElement>(null);
  const map = useRef<Map | null>(null);
@@ -235,6 +242,8 @@ export function BusinessLocationPicker({
    const initialLat = value.latitude || stored?.lat || -27.1004;
    const initialLng = value.longitude || stored?.lng || -52.6152;
 
+   const effectiveProvider = mapConfig?.provider || "osm_standard";
+
    import("maplibre-gl").then((maplibreglModule) => {
      if (!isMounted || !mapContainer.current || map.current) return;
      const maplibregl = (maplibreglModule as any).default || maplibreglModule;
@@ -242,7 +251,7 @@ export function BusinessLocationPicker({
      try {
        const mapInstance = new maplibregl.Map({
          container: mapContainer.current,
-         style: getCanonicalMapStyle(),
+         style: getCanonicalMapStyle(undefined, effectiveProvider),
          center: [initialLng, initialLat],
          zoom: value.latitude ? 16 : 13,
          attributionControl: false,

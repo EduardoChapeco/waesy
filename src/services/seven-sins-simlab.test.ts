@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
-  generateSevenSinCopy,
-  runSimLabPersonaTest,
+  generateSevenSinCopyLogic,
+  runSimLabPersonaTestLogic,
+  saveSevenSinHookToStoreLogic,
+  listStoreProductsQuickLogic,
   SEVEN_SINS_DEFINITIONS,
 } from "./seven-sins-simlab.functions";
 
@@ -21,7 +23,8 @@ describe("Seven Sins Canvas & SimLab V2 (Big Tech Council)", () => {
   });
 
   it("2. Deve redigir copy estruturada por pecado capital (Orgulho)", async () => {
-    const hook = await generateSevenSinCopy(realStoreId, {
+    const hook = await generateSevenSinCopyLogic({
+      storeId: realStoreId,
       sin: "orgulho",
       productNameFallback: "Combo Executivo Supreme",
       targetChannel: "whatsapp",
@@ -35,19 +38,21 @@ describe("Seven Sins Canvas & SimLab V2 (Big Tech Council)", () => {
   });
 
   it("3. Deve redigir copy estruturada por pecado capital (Preguiça / Zero Esforço)", async () => {
-    const hook = await generateSevenSinCopy(realStoreId, {
+    const hook = await generateSevenSinCopyLogic({
+      storeId: realStoreId,
       sin: "preguica",
       productNameFallback: "Pacote Final de Semana Express",
       targetChannel: "instagram_ad",
     });
 
+    expect(hook).toBeDefined();
     expect(hook.sin).toBe("preguica");
     expect(hook.copy_headline).toContain("Pacote Final de Semana Express");
     expect(hook.copy_body).toContain("WhatsApp");
   });
 
-  it("4. Deve simular impacto da copy no SimLab V2 com 5 personas sintéticas", async () => {
-    const results = await runSimLabPersonaTest({
+  it("4. Deve simular impacto da copy no SimLab V2 com 5 personas sintéticas", () => {
+    const results = runSimLabPersonaTestLogic({
       sin: "orgulho",
       copyHeadline: "Não é para qualquer um: Conheça o padrão oficial",
       copyBody: "Quem entende de qualidade reconhece à primeira vista.",
@@ -63,5 +68,28 @@ describe("Seven Sins Canvas & SimLab V2 (Big Tech Council)", () => {
       expect(r.conversion_probability).toBeLessThanOrEqual(100);
       expect(r.reaction_verbatim.length).toBeGreaterThan(10);
     }
+  });
+
+  it("5. Deve listar produtos rápidos do catálogo para o seletor da loja", async () => {
+    const products = await listStoreProductsQuickLogic({ storeId: realStoreId });
+    expect(Array.isArray(products)).toBe(true);
+  });
+
+  it("6. Deve salvar o gancho gerado como gatilho oficial no Brand DNA da loja", async () => {
+    const hook = await generateSevenSinCopyLogic({
+      storeId: realStoreId,
+      sin: "luxuria",
+      productNameFallback: "Experiência Gastronômica Sensorial",
+      targetChannel: "instagram_ad",
+    });
+
+    const res = await saveSevenSinHookToStoreLogic({
+      storeId: realStoreId,
+      sin: "luxuria",
+      hook,
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.message).toContain("luxuria");
   });
 });

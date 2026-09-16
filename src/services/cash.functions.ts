@@ -618,11 +618,41 @@ export const validateManagerOverride = createServerFn({ method: "POST" })
  throw new Error("PIN de autorização de gerente inválido.");
  }
 
- const managerProfile = (matchedManager as any).profiles;
- return {
- authorized: true,
- managerName: managerProfile?.full_name || "Gerente de Turno",
- actionType,
- };
- });
+  const managerProfile = (matchedManager as any).profiles;
+  return {
+    authorized: true,
+    managerName: managerProfile?.full_name || "Gerente de Turno",
+    actionType,
+  };
+  });
 
+export const getRegisterShiftDetails = createServerFn({ method: "GET" })
+  .validator(z.object({ registerId: z.string().uuid() }))
+  .handler(async ({ data: { registerId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+    const { data: register, error: regError } = await supabase
+      .from("cash_registers")
+      .select("*")
+      .eq("id", registerId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (regError || !register) {
+      throw new Error("Turno de caixa não encontrado.");
+    }
+
+    const profiles = await getProfilesById([register.opened_by, register.closed_by].filter(Boolean) as string[]);
+    const entries = await getEntriesForRegister(register.id);
+    const summary = summarizeCashEntries(entries);
+
+    return {
+      ...register,
+      ...summary,
+      opened_by_profile: profileFor(profiles, register.opened_by),
+      closed_by_profile: profileFor(profiles, register.closed_by),
+      entries,
+    };
+  });

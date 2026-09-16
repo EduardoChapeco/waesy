@@ -83,12 +83,12 @@ export function MarketRadarPage() {
     setLoading(true);
     try {
       const [comps, dna] = await Promise.all([
-        listCompetitors(storeId),
-        getStoreBrandDna(storeId),
+        listCompetitors({ data: { storeId } }),
+        getStoreBrandDna({ data: { storeId } }),
       ]);
-      setCompetitors(comps);
-      setBrandDna(dna);
-      if (comps.length > 0 && !selectedCompetitor) {
+      setCompetitors(comps || []);
+      setBrandDna(dna || null);
+      if (comps && comps.length > 0 && !selectedCompetitor) {
         setSelectedCompetitor(comps[0]);
       }
     } catch (err: any) {
@@ -113,14 +113,22 @@ export function MarketRadarPage() {
 
     setActionLoading("creating");
     try {
-      const created = await createCompetitor(storeId, {
-        name: newName.trim(),
-        website_url: newWebsite.trim() || undefined,
-        instagram_handle: newInstagram.trim() || undefined,
-        notes: newNotes.trim() || undefined,
+      const created = await createCompetitor({
+        data: {
+          storeId,
+          name: newName.trim(),
+          website_url: newWebsite.trim() || undefined,
+          instagram_handle: newInstagram.trim() || undefined,
+          notes: newNotes.trim() || undefined,
+        },
       });
 
-      await captureAndAnalyzeCompetitor(storeId, created.id);
+      await captureAndAnalyzeCompetitor({
+        data: {
+          competitorId: created.id,
+          storeId,
+        },
+      });
 
       setFeedback({
         type: "success",
@@ -147,7 +155,12 @@ export function MarketRadarPage() {
   async function handleRefreshSnapshot(competitorId: string) {
     setActionLoading(`analyzing-${competitorId}`);
     try {
-      await captureAndAnalyzeCompetitor(storeId, competitorId);
+      await captureAndAnalyzeCompetitor({
+        data: {
+          competitorId,
+          storeId,
+        },
+      });
       setFeedback({
         type: "success",
         message: "Análise forense e extração de DNA atualizadas com sucesso!",

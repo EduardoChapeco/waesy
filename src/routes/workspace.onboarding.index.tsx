@@ -48,8 +48,88 @@ export const Route = createFileRoute("/workspace/onboarding/")({
   component: WorkspaceOnboardingPage,
 });
 
+interface NicheCopy {
+  badgeLabel: string;
+  title: string;
+  subtitle: string;
+  multimodalTitle: string;
+  multimodalDescription: string;
+  stepsSectionTitle: string;
+}
+
+const NICHE_COPIES: Record<string, NicheCopy> = {
+  tourism: {
+    badgeLabel: "Ativação de Turismo & Hospedagem",
+    title: "Ativação da Agência & Experiências",
+    subtitle: "Configure seus pacotes, excursões, meios de pagamento e canais de reserva direta para clientes e viajantes.",
+    multimodalTitle: "Importação de Tarifários & Vouchers de Turismo",
+    multimodalDescription: "Digitalize orçamentos em PDF ou crie pacotes completos com roteiro dia a dia sem digitação manual.",
+    stepsSectionTitle: "Etapas de Fundamentação da Operação Turística",
+  },
+  restaurant: {
+    badgeLabel: "Ativação de Gastronomia & Delivery",
+    title: "Ativação do Restaurante & Cardápio",
+    subtitle: "Cadastre seus pratos, defina taxas de entrega com MotoLink e ative pagamentos instantâneos via Pix e Cartão.",
+    multimodalTitle: "Digitalização Rápida de Cardápio com IA",
+    multimodalDescription: "Envie uma foto do seu cardápio físico para importar pratos, combos e adicionais automaticamente.",
+    stepsSectionTitle: "Etapas de Ativação da Cozinha & Entregas",
+  },
+  services: {
+    badgeLabel: "Ativação de Escritório & Serviços",
+    title: "Ativação do Escritório & Serviços Profissionais",
+    subtitle: "Defina sua grade de atendimento, tabela de honorários e canais seguros de cobrança e agendamento.",
+    multimodalTitle: "Importação de Portfólio & Tabela de Serviços",
+    multimodalDescription: "Digitalize sua tabela de serviços ou converta propostas em itens contratáveis com 1 clique.",
+    stepsSectionTitle: "Etapas de Fundamentação da Consultoria / Escritório",
+  },
+  retail: {
+    badgeLabel: "Ativação Comercial & Catálogo",
+    title: "Ativação da Vitrine & Catálogo Comercial",
+    subtitle: "Complete os passos essenciais para liberar pagamentos online, cálculo de frete automático e vitrine ativa.",
+    multimodalTitle: "Ingestão Rápida com IA & Catálogo Mestre",
+    multimodalDescription: "Fotografe seus produtos ou importe itens validados do catálogo comunitário sem digitação manual.",
+    stepsSectionTitle: "Etapas de Fundamentação da Loja",
+  },
+};
+
+function getNicheCopy(category?: string): NicheCopy {
+  const normalized = (category || "").toLowerCase().trim();
+  if (
+    normalized.includes("turis") ||
+    normalized.includes("viage") ||
+    normalized.includes("hotel") ||
+    normalized.includes("pousada") ||
+    normalized.includes("experien") ||
+    normalized.includes("chale")
+  ) {
+    return NICHE_COPIES.tourism;
+  }
+  if (
+    normalized.includes("rest") ||
+    normalized.includes("gastro") ||
+    normalized.includes("aliment") ||
+    normalized.includes("bar") ||
+    normalized.includes("lanche") ||
+    normalized.includes("pizz")
+  ) {
+    return NICHE_COPIES.restaurant;
+  }
+  if (
+    normalized.includes("serv") ||
+    normalized.includes("advoc") ||
+    normalized.includes("jus") ||
+    normalized.includes("consult") ||
+    normalized.includes("saude") ||
+    normalized.includes("imove")
+  ) {
+    return NICHE_COPIES.services;
+  }
+  return NICHE_COPIES.retail;
+}
+
 export default function WorkspaceOnboardingPage() {
   const { onboarding } = ((Route.useLoaderData?.() as any) || {});
+  const niche = getNicheCopy(onboarding?.storeCategory);
 
   const categoryIcons: Record<string, any> = {
     fundamentos: Store,
@@ -66,12 +146,12 @@ export default function WorkspaceOnboardingPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-semibold px-2.5 py-0.5">
-                Setup Guiado & Ativação 360°
+                {niche.badgeLabel}
               </Badge>
               {onboarding.isStoreReadyToSell ? (
                 <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs font-semibold gap-1">
                   <CheckCircle2 className="size-3" />
-                  Pronta para Vender
+                  Pronta para Operar
                 </Badge>
               ) : (
                 <Badge variant="secondary" className="text-xs font-semibold gap-1">
@@ -81,10 +161,10 @@ export default function WorkspaceOnboardingPage() {
               )}
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-              Ativação da Loja & Catálogo
+              {niche.title}
             </h1>
-            <p className="text-sm text-muted-foreground max-w-xl">
-              Complete os passos essenciais para liberar pagamentos online, cálculo de frete automático e publicação da sua vitrine oficial.
+            <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
+              {niche.subtitle}
             </p>
           </div>
 
@@ -104,7 +184,7 @@ export default function WorkspaceOnboardingPage() {
           </div>
         </div>
 
-        {/* Banner de Ação Rápida: Ingestão de Catálogo Multimodal */}
+        {/* Banner de Ação Rápida: Ingestão Semântica por Nicho */}
         <div className="p-4 sm:p-5 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
@@ -112,17 +192,17 @@ export default function WorkspaceOnboardingPage() {
             </div>
             <div>
               <h3 className="font-bold text-sm text-foreground flex items-center gap-1.5">
-                Ingestão Multimodal com IA & Catálogo Mestre
+                {niche.multimodalTitle}
                 <Badge variant="outline" className="text-[10px] uppercase font-mono">1-Clique</Badge>
               </h3>
               <p className="text-xs text-muted-foreground">
-                Digitalize seu cardápio em foto ou busque 500 SKUs validados no Master Catalog sem digitação manual.
+                {niche.multimodalDescription}
               </p>
             </div>
           </div>
           <Button asChild className="h-9 px-4 rounded-xl text-xs font-bold gap-1.5 shrink-0 w-full sm:w-auto">
             <Link to="/workspace/onboarding/revisao">
-              <span>Abrir Ingestão Multimodal</span>
+              <span>Abrir Ingestão Inteligente</span>
               <ArrowRight className="size-3.5" />
             </Link>
           </Button>
@@ -132,7 +212,7 @@ export default function WorkspaceOnboardingPage() {
       {/* ── 2. LISTA DE ETAPAS DE CONFIGURAÇÃO ── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-foreground">Etapas de Fundamentação da Loja</h2>
+          <h2 className="text-base font-bold text-foreground">{niche.stepsSectionTitle}</h2>
           <span className="text-xs text-muted-foreground">Ordem recomendada de execução</span>
         </div>
 

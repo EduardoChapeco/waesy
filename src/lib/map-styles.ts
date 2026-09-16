@@ -105,11 +105,17 @@ export function getCanonicalMapStyle(
   if (normalizedProvider === "carto_voyager") {
     return CANONICAL_MAP_STYLE_LIGHT;
   }
-  if (normalizedProvider === "osm_standard" || normalizedProvider === "open_street_map") {
+  if (
+    normalizedProvider === "osm_standard" ||
+    normalizedProvider === "open_street_map" ||
+    normalizedProvider === "openstreetmap" ||
+    normalizedProvider === "openmaps" ||
+    normalizedProvider === "osm"
+  ) {
     return CANONICAL_MAP_STYLE_OSM_STANDARD;
   }
 
-  // Fallback padrão 100% limpo e livre de marcas d'água
+  // Fallback padrão 100% limpo e livre de marcas d'água (Prioriza OSM Standard quando não há Carto explícito)
   return effectiveIsDark ? CANONICAL_MAP_STYLE_DARK : CANONICAL_MAP_STYLE_OSM_STANDARD;
 }
 

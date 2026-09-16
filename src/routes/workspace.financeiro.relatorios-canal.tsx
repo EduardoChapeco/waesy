@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   TrendingDown,
@@ -9,9 +9,16 @@ import {
   ShoppingCart,
   Package,
   Filter,
+  Search,
+  ArrowUpDown,
+  FileSpreadsheet,
+  PieChart,
+  Layers,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -19,18 +26,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableFooter,
+} from "@/components/ui/table";
+import { PageHeader } from "@/components/commerce/page-header";
+import { EmptyState } from "@/components/state/states";
 import { getChannelDRE, exportChannelDRECsv } from "@/services/channel-reports.functions";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
+import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/financeiro/relatorios-canal")({
   head: () => ({
-    meta: [{ title: "DRE por Canal | Workspace Waesy" }],
+    meta: [{ title: "DRE por Canal & Marketplaces | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
       const dre = await getChannelDRE();
-      return { initialDre: dre };
+      return { initialDre: Array.isArray(dre) ? dre : [] };
     } catch {
       return { initialDre: [] };
     }
@@ -39,25 +59,32 @@ export const Route = createFileRoute("/workspace/financeiro/relatorios-canal")({
 });
 
 const CHANNEL_COLORS: Record<string, string> = {
-  mercadolivre: "bg-amber-400/15 text-amber-700 border-amber-400/30",
-  amazon: "bg-orange-400/15 text-orange-700 border-orange-400/30",
-  magalu: "bg-blue-400/15 text-blue-700 border-blue-400/30",
-  shopee: "bg-orange-500/15 text-orange-800 border-orange-500/30",
-  ifood: "bg-red-400/15 text-red-700 border-red-400/30",
-  rappi: "bg-emerald-400/15 text-emerald-700 border-emerald-400/30",
-  amodelivery: "bg-purple-400/15 text-purple-700 border-purple-400/30",
-  correios: "bg-yellow-400/15 text-yellow-700 border-yellow-400/30",
-  balcao_pos: "bg-slate-400/15 text-slate-700 border-slate-400/30",
-  vitrine_online: "bg-sky-400/15 text-sky-700 border-sky-400/30",
-  outros: "bg-zinc-400/15 text-zinc-600 border-zinc-400/30",
+  mercadolivre: "bg-amber-400/15 text-amber-700 dark:text-amber-400 border-amber-400/30",
+  amazon: "bg-orange-400/15 text-orange-700 dark:text-orange-400 border-orange-400/30",
+  magalu: "bg-blue-400/15 text-blue-700 dark:text-blue-400 border-blue-400/30",
+  shopee: "bg-orange-500/15 text-orange-800 dark:text-orange-300 border-orange-500/30",
+  ifood: "bg-red-400/15 text-red-700 dark:text-red-400 border-red-400/30",
+  rappi: "bg-emerald-400/15 text-emerald-700 dark:text-emerald-400 border-emerald-400/30",
+  amodelivery: "bg-purple-400/15 text-purple-700 dark:text-purple-400 border-purple-400/30",
+  correios: "bg-yellow-400/15 text-yellow-700 dark:text-yellow-400 border-yellow-400/30",
+  balcao_pos: "bg-slate-400/15 text-slate-700 dark:text-slate-300 border-slate-400/30",
+  vitrine_online: "bg-sky-400/15 text-sky-700 dark:text-sky-300 border-sky-400/30",
+  outros: "bg-zinc-400/15 text-zinc-600 dark:text-zinc-400 border-zinc-400/30",
 };
 
-function formatBRL(cents: number): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(cents / 100);
-}
+const CHANNEL_BAR_COLORS: Record<string, string> = {
+  mercadolivre: "bg-amber-500",
+  amazon: "bg-orange-500",
+  magalu: "bg-blue-500",
+  shopee: "bg-orange-600",
+  ifood: "bg-red-500",
+  rappi: "bg-emerald-500",
+  amodelivery: "bg-purple-500",
+  correios: "bg-yellow-500",
+  balcao_pos: "bg-slate-600",
+  vitrine_online: "bg-sky-500",
+  outros: "bg-zinc-500",
+};
 
 function MarginBadge({ value }: { value: number }) {
   const isGood = value >= 70;
@@ -65,14 +92,14 @@ function MarginBadge({ value }: { value: number }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-xs font-semibold",
-        isGood ? "text-emerald-600" : isWarn ? "text-amber-600" : "text-red-600"
+        "inline-flex items-center gap-1 text-xs font-mono font-bold",
+        isGood ? "text-emerald-600 dark:text-emerald-400" : isWarn ? "text-amber-600 dark:text-amber-400" : "text-rose-600 dark:text-rose-400"
       )}
     >
       {isGood ? (
-        <TrendingUp className="w-3.5 h-3.5" />
+        <TrendingUp className="size-3.5" />
       ) : (
-        <TrendingDown className="w-3.5 h-3.5" />
+        <TrendingDown className="size-3.5" />
       )}
       {value.toFixed(1)}%
     </span>
@@ -82,6 +109,8 @@ function MarginBadge({ value }: { value: number }) {
 function ChannelDREPage() {
   const { initialDre } = Route.useLoaderData();
   const [period, setPeriod] = useState<string>("30d");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"gross" | "net" | "margin" | "orders">("gross");
   const [exporting, setExporting] = useState(false);
 
   const getDateRange = () => {
@@ -104,11 +133,39 @@ function ChannelDREPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const totalGross = dreRows.reduce((s, r) => s + r.gross_revenue_cents, 0);
-  const totalNet = dreRows.reduce((s, r) => s + r.net_revenue_cents, 0);
-  const totalFees = dreRows.reduce((s, r) => s + r.platform_fees_cents, 0);
-  const totalOrders = dreRows.reduce((s, r) => s + r.order_count, 0);
+  // ── KPIS GLOBAIS ─────────────────────────────────────────────────────────
+  const totals = useMemo(() => {
+    const gross = dreRows.reduce((s, r) => s + (r.gross_revenue_cents || 0), 0);
+    const net = dreRows.reduce((s, r) => s + (r.net_revenue_cents || 0), 0);
+    const fees = dreRows.reduce((s, r) => s + (r.platform_fees_cents || 0), 0);
+    const shipping = dreRows.reduce((s, r) => s + (r.shipping_costs_cents || 0), 0);
+    const orders = dreRows.reduce((s, r) => s + (r.order_count || 0), 0);
+    const margin = gross > 0 ? (net / gross) * 100 : 0;
 
+    return { gross, net, fees, shipping, orders, margin };
+  }, [dreRows]);
+
+  // ── FILTROS E ORDENAÇÃO ──────────────────────────────────────────────────
+  const sortedAndFilteredRows = useMemo(() => {
+    return dreRows
+      .filter((r) => {
+        if (!searchTerm.trim()) return true;
+        const term = searchTerm.toLowerCase();
+        return (
+          (r.channel_label || "").toLowerCase().includes(term) ||
+          (r.channel || "").toLowerCase().includes(term)
+        );
+      })
+      .sort((a, b) => {
+        if (sortBy === "gross") return b.gross_revenue_cents - a.gross_revenue_cents;
+        if (sortBy === "net") return b.net_revenue_cents - a.net_revenue_cents;
+        if (sortBy === "margin") return b.gross_margin_percent - a.gross_margin_percent;
+        if (sortBy === "orders") return b.order_count - a.order_count;
+        return 0;
+      });
+  }, [dreRows, searchTerm, sortBy]);
+
+  // ── EXPORTAÇÃO CSV ───────────────────────────────────────────────────────
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -118,6 +175,8 @@ function ChannelDREPage() {
       link.href = URL.createObjectURL(blob);
       link.download = result.filename;
       link.click();
+      playCashRegisterSound();
+      toast.success("Relatório DRE exportado em CSV com sucesso!");
     } catch {
       toast.error("Falha ao exportar relatório.");
     } finally {
@@ -126,162 +185,280 @@ function ChannelDREPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            DRE por Canal
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Receita, taxas e margem consolidados por plataforma
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <PageHeader
+        eyebrow="Financeiro & Inteligência"
+        title="DRE por Canal de Venda & Marketplaces"
+        description="Demonstrativo de Resultado com faturamento bruto, taxas retidas pelas plataformas e margem líquida real de cada canal."
+        actions={
+          <div className="flex items-center gap-2">
+            <Select value={period} onValueChange={setPeriod}>
+              <SelectTrigger className="h-9 rounded-xl text-xs font-bold w-36 bg-background">
+                <Filter className="size-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                <SelectItem value="90d">Últimos 90 dias</SelectItem>
+                <SelectItem value="1y">Último ano</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={exporting}
+              className="rounded-xl text-xs font-bold h-9 gap-1.5 cursor-pointer"
+            >
+              <FileSpreadsheet className="size-3.5 text-emerald-600" />
+              <span>{exporting ? "Exportando..." : "Exportar CSV"}</span>
+            </Button>
+          </div>
+        }
+      />
+
+      {/* ── KPIS RESUMO CONSOLIDADOS ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <ShoppingCart className="size-3.5 text-foreground" />
+            Pedidos Totais
+          </span>
+          <div className="text-2xl font-mono font-bold text-foreground">
+            {totals.orders}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            Transações no período
           </p>
         </div>
+
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <BarChart3 className="size-3.5 text-primary" />
+            Receita Bruta
+          </span>
+          <div className="text-2xl font-mono font-bold text-foreground">
+            {formatMoney(totals.gross)}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            Volume total faturado
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <TrendingDown className="size-3.5 text-rose-600" />
+            Taxas Plataformas
+          </span>
+          <div className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
+            -{formatMoney(totals.fees)}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            Comissões dos canais
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <TrendingUp className="size-3.5 text-emerald-600" />
+            Receita Líquida
+          </span>
+          <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
+            {formatMoney(totals.net)}
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            Repasse líquido à loja
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="size-3.5 text-amber-500" />
+            Margem Média
+          </span>
+          <div className="text-2xl font-mono font-bold text-foreground">
+            {totals.margin.toFixed(1)}%
+          </div>
+          <p className="text-[11px] text-muted-foreground font-mono">
+            Aproveitamento da receita
+          </p>
+        </div>
+      </div>
+
+      {/* ── MARKET SHARE POR CANAL (BARRA VISUAL) ── */}
+      {totals.gross > 0 && (
+        <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <PieChart className="size-3.5 text-primary" />
+              Participação no Faturamento Bruto (Market Share)
+            </span>
+            <span className="text-[11px] text-muted-foreground font-mono">
+              {dreRows.length} canal(is) ativo(s)
+            </span>
+          </div>
+
+          {/* Barra Segmentada */}
+          <div className="w-full h-3 rounded-full overflow-hidden flex bg-muted/40">
+            {dreRows.map((row) => {
+              const sharePercent = totals.gross > 0 ? (row.gross_revenue_cents / totals.gross) * 100 : 0;
+              if (sharePercent < 1) return null;
+              return (
+                <div
+                  key={row.channel}
+                  style={{ width: `${sharePercent}%` }}
+                  className={cn("h-full transition-all", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")}
+                  title={`${row.channel_label}: ${sharePercent.toFixed(1)}% (${formatMoney(row.gross_revenue_cents)})`}
+                />
+              );
+            })}
+          </div>
+
+          {/* Legenda dos Canais */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
+            {dreRows.map((row) => {
+              const sharePercent = totals.gross > 0 ? (row.gross_revenue_cents / totals.gross) * 100 : 0;
+              return (
+                <div key={row.channel} className="flex items-center gap-1.5 text-[11px]">
+                  <span className={cn("size-2 rounded-full", CHANNEL_BAR_COLORS[row.channel] || "bg-primary")} />
+                  <span className="font-medium text-foreground">{row.channel_label}</span>
+                  <span className="text-muted-foreground font-mono">({sharePercent.toFixed(1)}%)</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── BARRA DE CONTROLE & BUSCA ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/70">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nome do canal..."
+            className="pl-10 h-10 rounded-xl text-xs bg-background"
+          />
+        </div>
+
         <div className="flex items-center gap-2">
-          <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="h-9 w-36 text-sm">
-              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+          <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
+            <ArrowUpDown className="size-3.5" /> Ordenar por:
+          </span>
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="h-9 rounded-xl text-xs font-bold w-44 bg-background">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">Últimos 7 dias</SelectItem>
-              <SelectItem value="30d">Últimos 30 dias</SelectItem>
-              <SelectItem value="90d">Últimos 90 dias</SelectItem>
-              <SelectItem value="1y">Último ano</SelectItem>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="gross">Maior Faturamento Bruto</SelectItem>
+              <SelectItem value="net">Maior Faturamento Líquido</SelectItem>
+              <SelectItem value="margin">Maior Margem (%)</SelectItem>
+              <SelectItem value="orders">Mais Pedidos</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            disabled={exporting}
-            className="h-9"
-          >
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            {exporting ? "Exportando..." : "CSV"}
-          </Button>
         </div>
       </div>
 
-      {/* KPIs resumo */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: "Pedidos", value: totalOrders.toString(), icon: ShoppingCart },
-          { label: "Receita Bruta", value: formatBRL(totalGross), icon: BarChart3 },
-          { label: "Taxas Plataformas", value: formatBRL(totalFees), icon: TrendingDown },
-          { label: "Receita Líquida", value: formatBRL(totalNet), icon: TrendingUp },
-        ].map(({ label, value, icon: Icon }) => (
-          <div
-            key={label}
-            className="bg-card border border-border/80 rounded-xl px-4 py-3 space-y-1"
-          >
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Icon className="w-3.5 h-3.5" />
-              {label}
-            </div>
-            <p className="text-lg font-semibold tracking-tight">{value}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Tabela de DRE */}
+      {/* ── TABELA DRE ANALÍTICA ── */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
-          Carregando dados...
+        <div className="flex items-center justify-center py-20 text-xs text-muted-foreground font-mono">
+          Carregando demonstrativo DRE...
         </div>
-      ) : dreRows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-          <Package className="w-8 h-8 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">
-            Nenhuma transação encontrada no período.
-          </p>
-          <p className="text-xs text-muted-foreground/60">
-            Conecte um marketplace em{" "}
-            <Link to="/workspace/integracoes/marketplaces" className="underline">
-              Integrações
-            </Link>{" "}
-            para ver dados aqui.
-          </p>
-        </div>
+      ) : sortedAndFilteredRows.length === 0 ? (
+        <EmptyState
+          title="Nenhum canal no período"
+          description="Nenhum pedido ou transação foi registrado para os canais selecionados. Conecte marketplaces em Integrações para acompanhar."
+          action={
+            <Link to="/workspace/integracoes/marketplaces">
+              <Button size="sm" className="rounded-xl text-xs font-bold">
+                Ver Integrações
+              </Button>
+            </Link>
+          }
+        />
       ) : (
-        <div className="bg-card border border-border/80 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/60 bg-muted/30">
-                  <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                    Canal
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-3">
-                    Pedidos
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-3">
-                    Bruto
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-3">
-                    Taxas
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-3">
-                    Frete
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-3">
-                    Líquido
-                  </th>
-                  <th className="text-right font-medium text-muted-foreground px-4 py-3">
-                    Margem
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {dreRows.map((row) => (
-                  <tr
-                    key={row.channel}
-                    className="hover:bg-muted/20 transition-colors"
-                  >
-                    <td className="px-4 py-3">
+        <div className="bg-card rounded-2xl border border-border/70 overflow-hidden shadow-2xs">
+          <div className="overflow-x-auto no-scrollbar">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/60 hover:bg-transparent">
+                  <TableHead className="text-xs font-bold">Canal / Origem</TableHead>
+                  <TableHead className="text-right text-xs font-bold font-mono">Pedidos</TableHead>
+                  <TableHead className="text-right text-xs font-bold font-mono">Bruto</TableHead>
+                  <TableHead className="text-right text-xs font-bold font-mono">Taxas Plataforma</TableHead>
+                  <TableHead className="text-right text-xs font-bold font-mono">Frete Cobrado</TableHead>
+                  <TableHead className="text-right text-xs font-bold font-mono">Líquido Repassado</TableHead>
+                  <TableHead className="text-right text-xs font-bold font-mono">Margem Líquida</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedAndFilteredRows.map((row) => (
+                  <TableRow key={row.channel} className="border-border/40 hover:bg-muted/30 transition-colors">
+                    <TableCell className="text-xs font-medium">
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-xs font-medium rounded-lg px-2.5 py-0.5",
+                          "text-[10px] font-bold rounded-lg px-2.5 py-0.5",
                           CHANNEL_COLORS[row.channel] || CHANNEL_COLORS.outros
                         )}
                       >
                         {row.channel_label}
                       </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
                       {row.order_count}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums font-medium">
-                      {formatBRL(row.gross_revenue_cents)}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-red-600/80">
-                      {row.platform_fees_cents > 0
-                        ? `− ${formatBRL(row.platform_fees_cents)}`
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-muted-foreground">
-                      {row.shipping_costs_cents > 0
-                        ? formatBRL(row.shipping_costs_cents)
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums font-semibold text-foreground">
-                      {formatBRL(row.net_revenue_cents)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs font-bold text-foreground">
+                      {formatMoney(row.gross_revenue_cents)}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-rose-600 dark:text-rose-400">
+                      {row.platform_fees_cents > 0 ? `- ${formatMoney(row.platform_fees_cents)}` : "—"}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                      {row.shipping_costs_cents > 0 ? formatMoney(row.shipping_costs_cents) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(row.net_revenue_cents)}
+                    </TableCell>
+                    <TableCell className="text-right">
                       <MarginBadge value={row.gross_margin_percent} />
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+              <TableFooter className="bg-muted/40 border-t border-border/60">
+                <TableRow>
+                  <TableCell className="text-xs font-bold text-foreground">Totais Consolidados</TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold text-muted-foreground">
+                    {totals.orders}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold text-foreground">
+                    {formatMoney(totals.gross)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold text-rose-600 dark:text-rose-400">
+                    -{formatMoney(totals.fees)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold text-muted-foreground">
+                    {formatMoney(totals.shipping)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    {formatMoney(totals.net)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs font-bold text-foreground">
+                    {totals.margin.toFixed(1)}%
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
           </div>
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground/60">
-        Dados de pedidos externos e vitrine própria. Taxas baseadas em{" "}
-        <code className="font-mono">marketplace_fee_cents</code> reportadas pelos webhooks das plataformas.
+      <p className="text-[11px] text-muted-foreground font-mono">
+        Valores apurados em tempo real a partir de pedidos locais (PDV e E-commerce) e webhooks dos marketplaces parceiros. As taxas consideram os percentuais contratuais reportados em <code className="text-foreground">marketplace_fee_cents</code>.
       </p>
     </div>
   );

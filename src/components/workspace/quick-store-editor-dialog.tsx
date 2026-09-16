@@ -22,6 +22,7 @@ import {
 import { useRouter } from "@tanstack/react-router";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { updateStoreDetails } from "@/services/store.functions";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 import { NICHE_SEMANTICS_REGISTRY } from "@/lib/niche-semantics";
@@ -41,6 +42,7 @@ export interface QuickStoreData {
  cnpj?: string | null;
  description?: string | null;
  status?: "active" | "draft" | "maintenance";
+ settings?: Record<string, any>;
 }
 
 interface QuickStoreEditorDialogProps {
@@ -76,6 +78,7 @@ export function QuickStoreEditorDialog({
  const [address, setAddress] = useState("");
  const [cnpj, setCnpj] = useState("");
  const [status, setStatus] = useState<"active" | "draft" | "maintenance">("active");
+ const [hideAddressCompletely, setHideAddressCompletely] = useState(false);
 
  const [isSaving, setIsSaving] = useState(false);
 
@@ -94,6 +97,13 @@ export function QuickStoreEditorDialog({
  setAddress(store.address || "");
  setCnpj(store.cnpj || "");
  setStatus(store.status || "active");
+ setHideAddressCompletely(
+ Boolean(
+ store.settings?.hide_address_completely ||
+ store.settings?.is_address_public === false ||
+ store.settings?.hide_location
+ )
+ );
  }
  }, [store]);
 
@@ -123,6 +133,8 @@ export function QuickStoreEditorDialog({
  state: state.trim().toUpperCase() || null,
  address: address.trim() || null,
  cnpj: cnpj.trim() || null,
+ hide_address_completely: hideAddressCompletely,
+ is_address_public: !hideAddressCompletely,
  status,
  },
  });
@@ -381,6 +393,22 @@ export function QuickStoreEditorDialog({
  className="rounded-xl text-xs h-10 uppercase font-mono"
  />
  </div>
+ </div>
+
+ <div className="flex items-center justify-between p-3.5 rounded-2xl bg-muted/30 border border-border/70">
+ <div className="space-y-0.5">
+ <Label htmlFor="hide-address-store" className="text-xs font-bold text-foreground cursor-pointer">
+ Ocultar endereço completo na visualização pública
+ </Label>
+ <p className="text-[11px] text-muted-foreground">
+ Exibe publicamente apenas Cidade e Estado, preservando rua, número e rotas GPS.
+ </p>
+ </div>
+ <Switch
+ id="hide-address-store"
+ checked={hideAddressCompletely}
+ onCheckedChange={setHideAddressCompletely}
+ />
  </div>
  </TabsContent>
  </Tabs>

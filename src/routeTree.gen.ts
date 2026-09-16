@@ -104,7 +104,9 @@ import { Route as ViajanteTokenRouteImport } from './routes/viajante.$token'
 import { Route as ViajanteCarteiraRouteImport } from './routes/viajante.carteira'
 import { Route as WorkspaceIndexRouteImport } from './routes/workspace.index'
 import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.automacoes'
+import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
+import { Route as WorkspaceNotificacoesRouteImport } from './routes/workspace.notificacoes'
 import { Route as WorkspaceQualidadeRouteImport } from './routes/workspace.qualidade'
 import { Route as WorkspaceRelatoriosRouteImport } from './routes/workspace.relatorios'
 import { Route as WorkspaceReservasRouteImport } from './routes/workspace.reservas'
@@ -235,6 +237,7 @@ import { Route as WorkspaceEventosIdRouteImport } from './routes/workspace.event
 import { Route as WorkspaceFinanceiroAfiliadosRouteImport } from './routes/workspace.financeiro.afiliados'
 import { Route as WorkspaceFinanceiroComissoesRouteImport } from './routes/workspace.financeiro.comissoes'
 import { Route as WorkspaceFinanceiroComprovantesRouteImport } from './routes/workspace.financeiro.comprovantes'
+import { Route as WorkspaceFinanceiroContasPagarRouteImport } from './routes/workspace.financeiro.contas-pagar'
 import { Route as WorkspaceFinanceiroFuncionariosRouteImport } from './routes/workspace.financeiro.funcionarios'
 import { Route as WorkspaceFinanceiroPagamentosRouteImport } from './routes/workspace.financeiro.pagamentos'
 import { Route as WorkspaceFinanceiroRecebiveisRouteImport } from './routes/workspace.financeiro.recebiveis'
@@ -263,6 +266,7 @@ import { Route as WorkspaceMarketingPatrocinadoresRouteImport } from './routes/w
 import { Route as WorkspaceMarketingPixelsRouteImport } from './routes/workspace.marketing.pixels'
 import { Route as WorkspaceMarketingPromocoesRouteImport } from './routes/workspace.marketing.promocoes'
 import { Route as WorkspaceMarketingPublicacoesRouteImport } from './routes/workspace.marketing.publicacoes'
+import { Route as WorkspaceMarketingSocialRouteImport } from './routes/workspace.marketing.social'
 import { Route as WorkspaceMarketingStoriesRouteImport } from './routes/workspace.marketing.stories'
 import { Route as WorkspaceMarketingStudioRouteImport } from './routes/workspace.marketing.studio'
 import { Route as WorkspaceMarketingTelemetriaRouteImport } from './routes/workspace.marketing.telemetria'
@@ -288,6 +292,7 @@ import { Route as WorkspacePedidosFrotaRouteImport } from './routes/workspace.pe
 import { Route as WorkspacePedidosGestorRouteImport } from './routes/workspace.pedidos.gestor'
 import { Route as WorkspacePedidosTrocasRouteImport } from './routes/workspace.pedidos.trocas'
 import { Route as WorkspaceRelatoriosGastronomiaRouteImport } from './routes/workspace.relatorios.gastronomia'
+import { Route as WorkspaceRelatoriosMetasRouteImport } from './routes/workspace.relatorios.metas'
 import { Route as WorkspaceRhPontoRouteImport } from './routes/workspace.rh.ponto'
 import { Route as WorkspaceSimlabFocusGroupRouteImport } from './routes/workspace.simlab.focus-group'
 import { Route as WorkspaceSquadsIndexRouteImport } from './routes/workspace.squads.index'
@@ -825,9 +830,19 @@ const WorkspaceAutomacoesRoute = WorkspaceAutomacoesRouteImport.update({
   path: '/automacoes',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceAvaliacoesRoute = WorkspaceAvaliacoesRouteImport.update({
+  id: '/avaliacoes',
+  path: '/avaliacoes',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceComercialRoute = WorkspaceComercialRouteImport.update({
   id: '/comercial',
   path: '/comercial',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceNotificacoesRoute = WorkspaceNotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceQualidadeRoute = WorkspaceQualidadeRouteImport.update({
@@ -1503,6 +1518,12 @@ const WorkspaceFinanceiroComprovantesRoute =
     path: '/financeiro/comprovantes',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceFinanceiroContasPagarRoute =
+  WorkspaceFinanceiroContasPagarRouteImport.update({
+    id: '/financeiro/contas-pagar',
+    path: '/financeiro/contas-pagar',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceFinanceiroFuncionariosRoute =
   WorkspaceFinanceiroFuncionariosRouteImport.update({
     id: '/financeiro/funcionarios',
@@ -1668,6 +1689,12 @@ const WorkspaceMarketingPublicacoesRoute =
     path: '/marketing/publicacoes',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceMarketingSocialRoute =
+  WorkspaceMarketingSocialRouteImport.update({
+    id: '/marketing/social',
+    path: '/marketing/social',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceMarketingStoriesRoute =
   WorkspaceMarketingStoriesRouteImport.update({
     id: '/marketing/stories',
@@ -1801,6 +1828,12 @@ const WorkspaceRelatoriosGastronomiaRoute =
   WorkspaceRelatoriosGastronomiaRouteImport.update({
     id: '/gastronomia',
     path: '/gastronomia',
+    getParentRoute: () => WorkspaceRelatoriosRoute,
+  } as any)
+const WorkspaceRelatoriosMetasRoute =
+  WorkspaceRelatoriosMetasRouteImport.update({
+    id: '/metas',
+    path: '/metas',
     getParentRoute: () => WorkspaceRelatoriosRoute,
   } as any)
 const WorkspaceRhPontoRoute = WorkspaceRhPontoRouteImport.update({
@@ -2245,7 +2278,9 @@ export interface FileRoutesByFullPath {
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
+  '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
   '/workspace/reservas': typeof WorkspaceReservasRoute
@@ -2359,6 +2394,7 @@ export interface FileRoutesByFullPath {
   '/workspace/financeiro/afiliados': typeof WorkspaceFinanceiroAfiliadosRoute
   '/workspace/financeiro/comissoes': typeof WorkspaceFinanceiroComissoesRoute
   '/workspace/financeiro/comprovantes': typeof WorkspaceFinanceiroComprovantesRoute
+  '/workspace/financeiro/contas-pagar': typeof WorkspaceFinanceiroContasPagarRoute
   '/workspace/financeiro/funcionarios': typeof WorkspaceFinanceiroFuncionariosRoute
   '/workspace/financeiro/pagamentos': typeof WorkspaceFinanceiroPagamentosRoute
   '/workspace/financeiro/recebiveis': typeof WorkspaceFinanceiroRecebiveisRoute
@@ -2386,6 +2422,7 @@ export interface FileRoutesByFullPath {
   '/workspace/marketing/pixels': typeof WorkspaceMarketingPixelsRoute
   '/workspace/marketing/promocoes': typeof WorkspaceMarketingPromocoesRoute
   '/workspace/marketing/publicacoes': typeof WorkspaceMarketingPublicacoesRoute
+  '/workspace/marketing/social': typeof WorkspaceMarketingSocialRoute
   '/workspace/marketing/stories': typeof WorkspaceMarketingStoriesRoute
   '/workspace/marketing/studio': typeof WorkspaceMarketingStudioRoute
   '/workspace/marketing/telemetria': typeof WorkspaceMarketingTelemetriaRoute
@@ -2404,6 +2441,7 @@ export interface FileRoutesByFullPath {
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
+  '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
@@ -2577,7 +2615,9 @@ export interface FileRoutesByTo {
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
+  '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
   '/workspace/reservas': typeof WorkspaceReservasRoute
@@ -2692,6 +2732,7 @@ export interface FileRoutesByTo {
   '/workspace/financeiro/afiliados': typeof WorkspaceFinanceiroAfiliadosRoute
   '/workspace/financeiro/comissoes': typeof WorkspaceFinanceiroComissoesRoute
   '/workspace/financeiro/comprovantes': typeof WorkspaceFinanceiroComprovantesRoute
+  '/workspace/financeiro/contas-pagar': typeof WorkspaceFinanceiroContasPagarRoute
   '/workspace/financeiro/funcionarios': typeof WorkspaceFinanceiroFuncionariosRoute
   '/workspace/financeiro/pagamentos': typeof WorkspaceFinanceiroPagamentosRoute
   '/workspace/financeiro/recebiveis': typeof WorkspaceFinanceiroRecebiveisRoute
@@ -2719,6 +2760,7 @@ export interface FileRoutesByTo {
   '/workspace/marketing/pixels': typeof WorkspaceMarketingPixelsRoute
   '/workspace/marketing/promocoes': typeof WorkspaceMarketingPromocoesRoute
   '/workspace/marketing/publicacoes': typeof WorkspaceMarketingPublicacoesRoute
+  '/workspace/marketing/social': typeof WorkspaceMarketingSocialRoute
   '/workspace/marketing/stories': typeof WorkspaceMarketingStoriesRoute
   '/workspace/marketing/studio': typeof WorkspaceMarketingStudioRoute
   '/workspace/marketing/telemetria': typeof WorkspaceMarketingTelemetriaRoute
@@ -2737,6 +2779,7 @@ export interface FileRoutesByTo {
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
+  '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
@@ -2919,7 +2962,9 @@ export interface FileRoutesById {
   '/viajante/$token': typeof ViajanteTokenRoute
   '/viajante/carteira': typeof ViajanteCarteiraRoute
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
+  '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
   '/workspace/reservas': typeof WorkspaceReservasRoute
@@ -3034,6 +3079,7 @@ export interface FileRoutesById {
   '/workspace/financeiro/afiliados': typeof WorkspaceFinanceiroAfiliadosRoute
   '/workspace/financeiro/comissoes': typeof WorkspaceFinanceiroComissoesRoute
   '/workspace/financeiro/comprovantes': typeof WorkspaceFinanceiroComprovantesRoute
+  '/workspace/financeiro/contas-pagar': typeof WorkspaceFinanceiroContasPagarRoute
   '/workspace/financeiro/funcionarios': typeof WorkspaceFinanceiroFuncionariosRoute
   '/workspace/financeiro/pagamentos': typeof WorkspaceFinanceiroPagamentosRoute
   '/workspace/financeiro/recebiveis': typeof WorkspaceFinanceiroRecebiveisRoute
@@ -3061,6 +3107,7 @@ export interface FileRoutesById {
   '/workspace/marketing/pixels': typeof WorkspaceMarketingPixelsRoute
   '/workspace/marketing/promocoes': typeof WorkspaceMarketingPromocoesRoute
   '/workspace/marketing/publicacoes': typeof WorkspaceMarketingPublicacoesRoute
+  '/workspace/marketing/social': typeof WorkspaceMarketingSocialRoute
   '/workspace/marketing/stories': typeof WorkspaceMarketingStoriesRoute
   '/workspace/marketing/studio': typeof WorkspaceMarketingStudioRoute
   '/workspace/marketing/telemetria': typeof WorkspaceMarketingTelemetriaRoute
@@ -3079,6 +3126,7 @@ export interface FileRoutesById {
   '/workspace/pedidos/gestor': typeof WorkspacePedidosGestorRoute
   '/workspace/pedidos/trocas': typeof WorkspacePedidosTrocasRoute
   '/workspace/relatorios/gastronomia': typeof WorkspaceRelatoriosGastronomiaRoute
+  '/workspace/relatorios/metas': typeof WorkspaceRelatoriosMetasRoute
   '/workspace/rh/ponto': typeof WorkspaceRhPontoRoute
   '/workspace/simlab/focus-group': typeof WorkspaceSimlabFocusGroupRoute
   '/workspace/turismo/aereos': typeof WorkspaceTurismoAereosRoute
@@ -3262,7 +3310,9 @@ export interface FileRouteTypes {
     | '/viajante/$token'
     | '/viajante/carteira'
     | '/workspace/automacoes'
+    | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/notificacoes'
     | '/workspace/qualidade'
     | '/workspace/relatorios'
     | '/workspace/reservas'
@@ -3376,6 +3426,7 @@ export interface FileRouteTypes {
     | '/workspace/financeiro/afiliados'
     | '/workspace/financeiro/comissoes'
     | '/workspace/financeiro/comprovantes'
+    | '/workspace/financeiro/contas-pagar'
     | '/workspace/financeiro/funcionarios'
     | '/workspace/financeiro/pagamentos'
     | '/workspace/financeiro/recebiveis'
@@ -3403,6 +3454,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/pixels'
     | '/workspace/marketing/promocoes'
     | '/workspace/marketing/publicacoes'
+    | '/workspace/marketing/social'
     | '/workspace/marketing/stories'
     | '/workspace/marketing/studio'
     | '/workspace/marketing/telemetria'
@@ -3421,6 +3473,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/gestor'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
+    | '/workspace/relatorios/metas'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
@@ -3594,7 +3647,9 @@ export interface FileRouteTypes {
     | '/viajante/$token'
     | '/viajante/carteira'
     | '/workspace/automacoes'
+    | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/notificacoes'
     | '/workspace/qualidade'
     | '/workspace/relatorios'
     | '/workspace/reservas'
@@ -3709,6 +3764,7 @@ export interface FileRouteTypes {
     | '/workspace/financeiro/afiliados'
     | '/workspace/financeiro/comissoes'
     | '/workspace/financeiro/comprovantes'
+    | '/workspace/financeiro/contas-pagar'
     | '/workspace/financeiro/funcionarios'
     | '/workspace/financeiro/pagamentos'
     | '/workspace/financeiro/recebiveis'
@@ -3736,6 +3792,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/pixels'
     | '/workspace/marketing/promocoes'
     | '/workspace/marketing/publicacoes'
+    | '/workspace/marketing/social'
     | '/workspace/marketing/stories'
     | '/workspace/marketing/studio'
     | '/workspace/marketing/telemetria'
@@ -3754,6 +3811,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/gestor'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
+    | '/workspace/relatorios/metas'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
@@ -3935,7 +3993,9 @@ export interface FileRouteTypes {
     | '/viajante/$token'
     | '/viajante/carteira'
     | '/workspace/automacoes'
+    | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/notificacoes'
     | '/workspace/qualidade'
     | '/workspace/relatorios'
     | '/workspace/reservas'
@@ -4050,6 +4110,7 @@ export interface FileRouteTypes {
     | '/workspace/financeiro/afiliados'
     | '/workspace/financeiro/comissoes'
     | '/workspace/financeiro/comprovantes'
+    | '/workspace/financeiro/contas-pagar'
     | '/workspace/financeiro/funcionarios'
     | '/workspace/financeiro/pagamentos'
     | '/workspace/financeiro/recebiveis'
@@ -4077,6 +4138,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/pixels'
     | '/workspace/marketing/promocoes'
     | '/workspace/marketing/publicacoes'
+    | '/workspace/marketing/social'
     | '/workspace/marketing/stories'
     | '/workspace/marketing/studio'
     | '/workspace/marketing/telemetria'
@@ -4095,6 +4157,7 @@ export interface FileRouteTypes {
     | '/workspace/pedidos/gestor'
     | '/workspace/pedidos/trocas'
     | '/workspace/relatorios/gastronomia'
+    | '/workspace/relatorios/metas'
     | '/workspace/rh/ponto'
     | '/workspace/simlab/focus-group'
     | '/workspace/turismo/aereos'
@@ -4888,11 +4951,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceAutomacoesRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/avaliacoes': {
+      id: '/workspace/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/workspace/avaliacoes'
+      preLoaderRoute: typeof WorkspaceAvaliacoesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/comercial': {
       id: '/workspace/comercial'
       path: '/comercial'
       fullPath: '/workspace/comercial'
       preLoaderRoute: typeof WorkspaceComercialRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/notificacoes': {
+      id: '/workspace/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/workspace/notificacoes'
+      preLoaderRoute: typeof WorkspaceNotificacoesRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/qualidade': {
@@ -5805,6 +5882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceFinanceiroComprovantesRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/financeiro/contas-pagar': {
+      id: '/workspace/financeiro/contas-pagar'
+      path: '/financeiro/contas-pagar'
+      fullPath: '/workspace/financeiro/contas-pagar'
+      preLoaderRoute: typeof WorkspaceFinanceiroContasPagarRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/financeiro/funcionarios': {
       id: '/workspace/financeiro/funcionarios'
       path: '/financeiro/funcionarios'
@@ -6001,6 +6085,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceMarketingPublicacoesRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/marketing/social': {
+      id: '/workspace/marketing/social'
+      path: '/marketing/social'
+      fullPath: '/workspace/marketing/social'
+      preLoaderRoute: typeof WorkspaceMarketingSocialRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/marketing/stories': {
       id: '/workspace/marketing/stories'
       path: '/marketing/stories'
@@ -6174,6 +6265,13 @@ declare module '@tanstack/react-router' {
       path: '/gastronomia'
       fullPath: '/workspace/relatorios/gastronomia'
       preLoaderRoute: typeof WorkspaceRelatoriosGastronomiaRouteImport
+      parentRoute: typeof WorkspaceRelatoriosRoute
+    }
+    '/workspace/relatorios/metas': {
+      id: '/workspace/relatorios/metas'
+      path: '/metas'
+      fullPath: '/workspace/relatorios/metas'
+      preLoaderRoute: typeof WorkspaceRelatoriosMetasRouteImport
       parentRoute: typeof WorkspaceRelatoriosRoute
     }
     '/workspace/rh/ponto': {
@@ -7017,10 +7115,12 @@ const AdminMasterRouteWithChildren = AdminMasterRoute._addFileChildren(
 
 interface WorkspaceRelatoriosRouteChildren {
   WorkspaceRelatoriosGastronomiaRoute: typeof WorkspaceRelatoriosGastronomiaRoute
+  WorkspaceRelatoriosMetasRoute: typeof WorkspaceRelatoriosMetasRoute
 }
 
 const WorkspaceRelatoriosRouteChildren: WorkspaceRelatoriosRouteChildren = {
   WorkspaceRelatoriosGastronomiaRoute: WorkspaceRelatoriosGastronomiaRoute,
+  WorkspaceRelatoriosMetasRoute: WorkspaceRelatoriosMetasRoute,
 }
 
 const WorkspaceRelatoriosRouteWithChildren =
@@ -7070,7 +7170,9 @@ const WorkspaceTurismoGruposIdRouteWithChildren =
 
 interface WorkspaceRouteChildren {
   WorkspaceAutomacoesRoute: typeof WorkspaceAutomacoesRoute
+  WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
+  WorkspaceNotificacoesRoute: typeof WorkspaceNotificacoesRoute
   WorkspaceQualidadeRoute: typeof WorkspaceQualidadeRoute
   WorkspaceRelatoriosRoute: typeof WorkspaceRelatoriosRouteWithChildren
   WorkspaceReservasRoute: typeof WorkspaceReservasRoute
@@ -7105,6 +7207,7 @@ interface WorkspaceRouteChildren {
   WorkspaceFinanceiroAfiliadosRoute: typeof WorkspaceFinanceiroAfiliadosRoute
   WorkspaceFinanceiroComissoesRoute: typeof WorkspaceFinanceiroComissoesRoute
   WorkspaceFinanceiroComprovantesRoute: typeof WorkspaceFinanceiroComprovantesRoute
+  WorkspaceFinanceiroContasPagarRoute: typeof WorkspaceFinanceiroContasPagarRoute
   WorkspaceFinanceiroFuncionariosRoute: typeof WorkspaceFinanceiroFuncionariosRoute
   WorkspaceFinanceiroPagamentosRoute: typeof WorkspaceFinanceiroPagamentosRoute
   WorkspaceFinanceiroRecebiveisRoute: typeof WorkspaceFinanceiroRecebiveisRoute
@@ -7132,6 +7235,7 @@ interface WorkspaceRouteChildren {
   WorkspaceMarketingPixelsRoute: typeof WorkspaceMarketingPixelsRoute
   WorkspaceMarketingPromocoesRoute: typeof WorkspaceMarketingPromocoesRoute
   WorkspaceMarketingPublicacoesRoute: typeof WorkspaceMarketingPublicacoesRoute
+  WorkspaceMarketingSocialRoute: typeof WorkspaceMarketingSocialRoute
   WorkspaceMarketingStoriesRoute: typeof WorkspaceMarketingStoriesRoute
   WorkspaceMarketingStudioRoute: typeof WorkspaceMarketingStudioRoute
   WorkspaceMarketingTelemetriaRoute: typeof WorkspaceMarketingTelemetriaRoute
@@ -7216,7 +7320,9 @@ interface WorkspaceRouteChildren {
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAutomacoesRoute: WorkspaceAutomacoesRoute,
+  WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
+  WorkspaceNotificacoesRoute: WorkspaceNotificacoesRoute,
   WorkspaceQualidadeRoute: WorkspaceQualidadeRoute,
   WorkspaceRelatoriosRoute: WorkspaceRelatoriosRouteWithChildren,
   WorkspaceReservasRoute: WorkspaceReservasRoute,
@@ -7254,6 +7360,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceFinanceiroAfiliadosRoute: WorkspaceFinanceiroAfiliadosRoute,
   WorkspaceFinanceiroComissoesRoute: WorkspaceFinanceiroComissoesRoute,
   WorkspaceFinanceiroComprovantesRoute: WorkspaceFinanceiroComprovantesRoute,
+  WorkspaceFinanceiroContasPagarRoute: WorkspaceFinanceiroContasPagarRoute,
   WorkspaceFinanceiroFuncionariosRoute: WorkspaceFinanceiroFuncionariosRoute,
   WorkspaceFinanceiroPagamentosRoute: WorkspaceFinanceiroPagamentosRoute,
   WorkspaceFinanceiroRecebiveisRoute: WorkspaceFinanceiroRecebiveisRoute,
@@ -7282,6 +7389,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceMarketingPixelsRoute: WorkspaceMarketingPixelsRoute,
   WorkspaceMarketingPromocoesRoute: WorkspaceMarketingPromocoesRoute,
   WorkspaceMarketingPublicacoesRoute: WorkspaceMarketingPublicacoesRoute,
+  WorkspaceMarketingSocialRoute: WorkspaceMarketingSocialRoute,
   WorkspaceMarketingStoriesRoute: WorkspaceMarketingStoriesRoute,
   WorkspaceMarketingStudioRoute: WorkspaceMarketingStudioRoute,
   WorkspaceMarketingTelemetriaRoute: WorkspaceMarketingTelemetriaRoute,

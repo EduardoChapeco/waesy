@@ -42,6 +42,7 @@ import {
   CheckCircle2,
   Copy,
 } from "lucide-react";
+import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 import {
   getOrderById,
   updateOrderStatus,
@@ -132,6 +133,7 @@ function AdminOrderDetailPage() {
 
   const [pickingModalOpen, setPickingModalOpen] = useState(false);
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [shippingModalOpen, setShippingModalOpen] = useState(false);
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [trackingForm, setTrackingForm] = useState({
@@ -414,6 +416,14 @@ function AdminOrderDetailPage() {
             disabled={isPrintingEscPos}
           >
             <Printer className="mr-1.5 h-3.5 w-3.5" /> Térmica 80mm
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
+            onClick={() => setShippingModalOpen(true)}
+          >
+            <Truck className="mr-1.5 h-3.5 w-3.5" /> Etiqueta & Despacho
           </Button>
           <Button
             variant="outline"
@@ -981,6 +991,15 @@ function AdminOrderDetailPage() {
  await handleStatusChange(
  order.shipping_method === "pickup" ? "ready_for_pickup" : "shipped",
  );
+ }}
+ />
+
+ <ShippingLabelModal
+ orderId={order.id}
+ isOpen={shippingModalOpen}
+ onClose={() => setShippingModalOpen(false)}
+ onDispatchSuccess={async () => {
+ await router.invalidate();
  }}
  />
  </div>

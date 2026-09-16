@@ -805,6 +805,8 @@ export const updateStoreDetailsSchema = z.object({
  state: z.string().max(2).optional().nullable(),
  address: z.string().max(250).optional().nullable(),
  cnpj: z.string().max(20).optional().nullable(),
+ hide_address_completely: z.boolean().optional(),
+ is_address_public: z.boolean().optional(),
  status: z.enum(["active", "draft", "maintenance"]).optional(),
 });
 
@@ -832,6 +834,8 @@ export const updateStoreDetails = createServerFn({ method: "POST" })
  logoUrl: data.logo_url,
  bannerUrl: data.banner_url,
  type: data.type,
+ hide_address_completely: data.hide_address_completely !== undefined ? data.hide_address_completely : (currentSettings.hide_address_completely ?? false),
+ is_address_public: data.is_address_public !== undefined ? data.is_address_public : (data.hide_address_completely ? false : (currentSettings.is_address_public ?? true)),
  };
 
  const updatePayload: Record<string, any> = {

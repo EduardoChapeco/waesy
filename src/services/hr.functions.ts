@@ -699,3 +699,63 @@ export const acknowledgeCompanyDocumentRead = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+export const getEmployeeFinancialStatement = createServerFn({ method: "GET" })
+  .validator(z.object({ employeeId: z.string().uuid() }))
+  .handler(async ({ data: { employeeId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+    // Busca perfil do colaborador
+    const { data: member, error: memberErr } = await supabase
+      .from("workspace_members")
+      .select("profile_id, role, profiles(id, full_name, email, avatar_url)")
+      .eq("store_id", identity.store_id)
+      .eq("profile_id", employeeId)
+      .single();
+
+    if (memberErr || !member) {
+      throw new Error("Colaborador não encontrado nesta loja.");
+    }
+
+    // Busca histórico financeiro
+    const { data: records, error: recordsErr } = await supabase
+      .from("employee_financial_records")
+      .select("*")
+      .eq("store_id", identity.store_id)
+      .eq("employee_id", employeeId)
+      .order("created_at", { ascending: false });
+
+    if (recordsErr) {
+      throw new Error("Erro ao buscar extrato do colaborador: " + recordsErr.message);
+    }
+
+    let totalCredits = 0;
+    let totalDebits = 0;
+
+    (records || []).forEach((r) => {
+      if (r.amount_cents > 0) {
+        totalCredits += r.amount_cents;
+      } else {
+        totalDebits += Math.abs(r.amount_cents);
+      }
+    });
+
+    return {
+      employee: {
+        id: member.profile_id,
+        name: (member.profiles as any)?.full_name || "Colaborador",
+        email: (member.profiles as any)?.email || "",
+        avatar_url: (member.profiles as any)?.avatar_url || null,
+        role: member.role,
+      },
+      summary: {
+        totalCreditsCents: totalCredits,
+        totalDebitsCents: totalDebits,
+        netBalanceCents: totalCredits - totalDebits,
+      },
+      records: records || [],
+    };
+  });
+

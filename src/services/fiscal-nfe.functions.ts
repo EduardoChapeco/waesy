@@ -171,6 +171,8 @@ export const emitNFeInvoice = createServerFn({ method: "POST" })
       tomadorDocumento: z.string().min(11),
       tomadorNome: z.string().min(3),
       tomadorEmail: z.string().email().optional().nullable(),
+      codigoServicoMunicipal: z.string().optional().nullable(),
+      discriminacaoServico: z.string().optional().nullable(),
     })
   )
   .handler(async ({ data }): Promise<StoreNFeInvoiceDTO> => {
@@ -194,9 +196,13 @@ export const emitNFeInvoice = createServerFn({ method: "POST" })
 
     const nfeNumber = String(config.proximo_numero || 1).padStart(6, "0");
     const nfeSerie = config.serie_nfe || "1";
-    // Gera chave de acesso determinística de 44 dígitos
-    const randomHex = Math.random().toString(36).substring(2, 12).toUpperCase();
-    const nfeKey = `352609${config.cnpj.padStart(14, "0")}55001${nfeNumber}1${Date.now().toString().slice(-8)}8`;
+    
+    // Define o modelo SEFAZ/SPED: 55 (NF-e Mercadorias), 65 (NFC-e PDV) ou NFS-e (Nacional/Municipal)
+    const modelo = data.invoiceType === "nfce" ? "65" : data.invoiceType === "nfe" ? "55" : "00";
+    const nfeKey =
+      data.invoiceType === "nfse"
+        ? `NFSE-${config.cnpj.padStart(14, "0")}-${nfeSerie}-${nfeNumber}-${Date.now().toString().slice(-6)}`
+        : `352609${config.cnpj.padStart(14, "0")}${modelo}001${nfeNumber}1${Date.now().toString().slice(-8)}8`;
 
     const invoicePayload = {
       store_id: targetStoreId,

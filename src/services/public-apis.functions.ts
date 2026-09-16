@@ -590,22 +590,25 @@ export const getPublicApiGovernanceSettings = createServerFn({ method: "GET" }).
   async (): Promise<PublicApiGovernanceDTO> => {
     const supabase = getServerClient();
 
-    // 1. Tentar ler da loja raiz da plataforma (Single Source of Truth para Governança Global)
+    // 1. Tentar ler de qualquer loja raiz da plataforma com governança salva
     try {
-      const { data: rootStore } = await supabase
+      const { data: rootStores } = await supabase
         .from("stores")
-        .select("settings")
+        .select("id, settings")
         .or("slug.eq.waesy-matriz,is_platform_root.eq.true")
-        .limit(1)
-        .maybeSingle();
+        .order("updated_at", { ascending: false });
 
-      const rootGov = (rootStore?.settings as any)?.public_apis_governance;
-      if (rootGov && typeof rootGov === "object") {
-        return {
-          ...DEFAULT_PUBLIC_API_GOVERNANCE,
-          ...rootGov,
-          isMapServiceActive: rootGov.isMapServiceActive ?? true,
-        };
+      if (rootStores && rootStores.length > 0) {
+        for (const store of rootStores) {
+          const rootGov = (store?.settings as any)?.public_apis_governance;
+          if (rootGov && typeof rootGov === "object" && rootGov.defaultMapProvider) {
+            return {
+              ...DEFAULT_PUBLIC_API_GOVERNANCE,
+              ...rootGov,
+              isMapServiceActive: rootGov.isMapServiceActive ?? true,
+            };
+          }
+        }
       }
     } catch {
       // Falha defensiva: prosseguir para fallback
@@ -617,6 +620,8 @@ export const getPublicApiGovernanceSettings = createServerFn({ method: "GET" }).
         .from("integration_credentials")
         .select("token_payload, is_active")
         .eq("provider", "public_apis_governance")
+        .order("updated_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (record && record.token_payload) {
@@ -656,44 +661,63 @@ export const savePublicApiGovernanceSettings = createServerFn({ method: "POST" }
   )
   .handler(async ({ data: { settings } }) => {
     const supabase = getServerClient();
-    const identity = await getServerIdentity();
+    let storeId: string | null = null;
+    try {
+      const identity = await getServerIdentity();
+      storeId = identity.store_id || null;
+    } catch {
+      // Admin master global sem store_id fixo na sessão
+    }
 
-    // 1. Persistir no root store da plataforma (Governança Global)
-    const { data: rootStore } = await supabase
+    // 1. Atualizar todas as lojas raiz identificadas para sincronia total
+    const { data: rootStores } = await supabase
       .from("stores")
       .select("id, settings")
-      .or("slug.eq.waesy-matriz,is_platform_root.eq.true")
-      .limit(1)
-      .maybeSingle();
+      .or("slug.eq.waesy-matriz,is_platform_root.eq.true");
 
-    if (rootStore) {
-      const existingSettings = (rootStore.settings as Record<string, any>) || {};
-      const { error: rootUpdateErr } = await supabase
-        .from("stores")
-        .update({
-          settings: {
-            ...existingSettings,
-            public_apis_governance: settings,
-          },
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", rootStore.id);
-
-      if (rootUpdateErr) {
-        console.warn("[governance] Erro ao salvar na loja raiz:", rootUpdateErr.message);
+    if (rootStores && rootStores.length > 0) {
+      if (!storeId) {
+        storeId = rootStores[0].id;
+      }
+      for (const store of rootStores) {
+        const existingSettings = (store.settings as Record<string, any>) || {};
+        await supabase
+          .from("stores")
+          .update({
+            settings: {
+              ...existingSettings,
+              public_apis_governance: settings,
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", store.id);
       }
     }
 
-    // 2. Persistir também em integration_credentials se houver store_id associado
-    if (identity.store_id) {
+    // 2. Persistir em integration_credentials com o storeId do root ou do admin
+    if (storeId) {
       await supabase
         .from("integration_credentials")
         .upsert(
           {
-            store_id: identity.store_id,
+            store_id: storeId,
             provider: "public_apis_governance",
             is_active: settings.isMapServiceActive,
             token_payload: settings,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "store_id, provider" }
+        );
+
+      // Sincronizar também com a credencial legada map_service
+      await supabase
+        .from("integration_credentials")
+        .upsert(
+          {
+            store_id: storeId,
+            provider: "map_service",
+            is_active: settings.isMapServiceActive,
+            token_payload: { provider: settings.defaultMapProvider },
             updated_at: new Date().toISOString(),
           },
           { onConflict: "store_id, provider" }

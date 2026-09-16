@@ -1,6 +1,94 @@
+# -----------------------------------------------------------------------------
+# Waesy Platform - Robots & Autonomous AI Agent Directives
+# Single Source of Truth for Search Engines & LLM WebMCP Crawlers
+# -----------------------------------------------------------------------------
+
+# Regras Gerais para Crawlers e Mecanismos de Busca (Googlebot, Bingbot, DuckDuckBot, etc.)
 User-agent: *
 Allow: /
+Allow: /api/webmcp.json
+Allow: /api/openapi.json
+Allow: /api/feed/
+Allow: /api/feed/xml
+Allow: /api/feed/meta.csv
+Allow: /api/feed.xml
+Allow: /api/feed.meta.csv
+Allow: /api/pwa.manifest.json
+Allow: /api/webhooks/shipment
 
-Disallow: /admin
-Disallow: /conta
-Disallow: /checkout
+# Superfícies Privadas, Sessões e Painéis de Gestão (Proteção Deny-by-Default)
+Disallow: /workspace/
+Disallow: /admin-master/
+Disallow: /admin/
+Disallow: /conta/
+Disallow: /checkout/
+Disallow: /carrinho
+Disallow: /auth/
+Disallow: /api/
+
+# Prevenção de Conteúdo Duplicado e Tokens Efêmeros
+Disallow: /*?*preview=
+Disallow: /*?*token=
+Disallow: /*?*sessionId=
+Disallow: /*?*auth=
+
+# -----------------------------------------------------------------------------
+# Agentes de IA Autônomos (OpenAI GPTBot, Anthropic ClaudeBot, Perplexity, etc.)
+# -----------------------------------------------------------------------------
+User-agent: GPTBot
+Allow: /
+Allow: /api/webmcp.json
+Allow: /api/openapi.json
+Disallow: /workspace/
+Disallow: /admin-master/
+Disallow: /conta/
+Disallow: /checkout/
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /api/webmcp.json
+Allow: /api/openapi.json
+Disallow: /workspace/
+Disallow: /admin-master/
+Disallow: /conta/
+Disallow: /checkout/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /api/webmcp.json
+Allow: /api/openapi.json
+Disallow: /workspace/
+Disallow: /admin-master/
+Disallow: /conta/
+Disallow: /checkout/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Allow: /api/webmcp.json
+Disallow: /workspace/
+Disallow: /admin-master/
+Disallow: /conta/
+Disallow: /checkout/
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Allow: /api/webmcp.json
+Disallow: /workspace/
+Disallow: /admin-master/
+Disallow: /conta/
+Disallow: /checkout/
+Disallow: /api/
+
+# -----------------------------------------------------------------------------
+# Sitemaps Canônicos da Rede Waesy
+# -----------------------------------------------------------------------------
+Sitemap: https://waesy.com.br/sitemap.xml
+Sitemap: https://waesy.com.br/sitemap-products.xml
+Sitemap: https://waesy.com.br/sitemap-news.xml
+Sitemap: https://waesy.pages.dev/sitemap.xml
+Sitemap: https://waesy.pages.dev/sitemap-products.xml
+Sitemap: https://waesy.pages.dev/sitemap-news.xml

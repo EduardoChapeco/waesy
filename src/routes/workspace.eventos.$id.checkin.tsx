@@ -20,6 +20,7 @@ import { validateTicketCheckin, getEventWithLots } from "@/services/events.funct
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { playCheckinSuccessSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/eventos/$id/checkin")({
  head: () => ({ meta: [{ title: "Portaria & Check-in de Ingressos | Workspace Waesy" }] }),
@@ -41,6 +42,8 @@ function EventCheckinPage() {
  const [isCameraActive, setIsCameraActive] = useState(false);
  const videoRef = useRef<HTMLVideoElement>(null);
  const mediaStreamRef = useRef<MediaStream | null>(null);
+ const animFrameRef = useRef<number | null>(null);
+ const lastScannedRef = useRef<{ code: string; time: number } | null>(null);
  const [lastCheckin, setLastCheckin] = useState<{
  success: boolean;
  name?: string;
@@ -59,45 +62,6 @@ function EventCheckinPage() {
  }>
  >([]);
 
-function playCheckinSuccessTone() {
- try {
- const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
- if (!AudioCtx) return;
- const ctx = new AudioCtx();
- const now = ctx.currentTime;
- const osc = ctx.createOscillator();
- const gain = ctx.createGain();
- osc.type = "sine";
- osc.frequency.setValueAtTime(880, now); // A5
- osc.frequency.exponentialRampToValueAtTime(1760, now + 0.15); // A6
- gain.gain.setValueAtTime(0.2, now);
- gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
- osc.connect(gain);
- gain.connect(ctx.destination);
- osc.start(now);
- osc.stop(now + 0.2);
- } catch {}
-}
-
-function playCheckinErrorTone() {
- try {
- const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
- if (!AudioCtx) return;
- const ctx = new AudioCtx();
- const now = ctx.currentTime;
- const osc = ctx.createOscillator();
- const gain = ctx.createGain();
- osc.type = "sawtooth";
- osc.frequency.setValueAtTime(220, now); // A3
- gain.gain.setValueAtTime(0.2, now);
- gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
- osc.connect(gain);
- gain.connect(ctx.destination);
- osc.start(now);
- osc.stop(now + 0.35);
- } catch {}
-}
-
  const handleValidate = async (e?: React.FormEvent, customCode?: string) => {
  if (e) e.preventDefault();
  const code = (customCode || ticketCode).trim();
@@ -113,7 +77,8 @@ function playCheckinErrorTone() {
  });
 
  if (res.status === "success") {
- playCheckinSuccessTone();
+ playCheckinSuccessSound();
+ if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
  toast.success(`Check-in confirmado: ${res.name}`);
  setLastCheckin({
  success: true,
@@ -135,7 +100,8 @@ function playCheckinErrorTone() {
  setTicketCode("");
  }
  } catch (err: any) {
- playCheckinErrorTone();
+ playWarningAlert();
+ if (navigator.vibrate) navigator.vibrate(300);
  const errMsg = err?.message || "Ingresso inválido ou não encontrado.";
  toast.error(errMsg);
  setLastCheckin({
@@ -156,6 +122,46 @@ function playCheckinErrorTone() {
  }
  };
 
+ // ── SCANNER CONTÍNUO DE QR CODE VIA BARCODEDETECTOR ──────────────────────
+ const runScanLoop = () => {
+ if (!videoRef.current || !mediaStreamRef.current) return;
+
+ if ("BarcodeDetector" in window) {
+ try {
+ const detector = new (window as any).BarcodeDetector({
+ formats: ["qr_code", "code_128", "code_39"],
+ });
+
+ detector
+ .detect(videoRef.current)
+ .then((barcodes: any[]) => {
+ if (barcodes && barcodes.length > 0) {
+ const raw = barcodes[0].rawValue?.trim();
+ const now = Date.now();
+
+ // Debounce de 3 segundos para o mesmo código lido
+ if (
+ raw &&
+ (!lastScannedRef.current ||
+ lastScannedRef.current.code !== raw ||
+ now - lastScannedRef.current.time > 3000)
+ ) {
+ lastScannedRef.current = { code: raw, time: now };
+ handleValidate(undefined, raw);
+ }
+ }
+ })
+ .catch(() => {
+ // Ignorar frames intermediários sem código
+ });
+ } catch {
+ // Fallback silencioso
+ }
+ }
+
+ animFrameRef.current = requestAnimationFrame(runScanLoop);
+ };
+
  const startCamera = async () => {
  try {
  if (navigator?.mediaDevices?.getUserMedia) {
@@ -165,9 +171,13 @@ function playCheckinErrorTone() {
  mediaStreamRef.current = stream;
  if (videoRef.current) {
  videoRef.current.srcObject = stream;
+ videoRef.current.onloadedmetadata = () => {
+ videoRef.current?.play().catch(() => {});
+ runScanLoop();
+ };
  }
  setIsCameraActive(true);
- toast.info("Câmera traseira ativada.");
+ toast.info("Câmera ativada. Aponte para o QR Code do ingresso.");
  } else {
  toast.error("Câmera não suportada neste navegador.");
  }
@@ -178,6 +188,10 @@ function playCheckinErrorTone() {
  };
 
  const stopCamera = () => {
+ if (animFrameRef.current) {
+ cancelAnimationFrame(animFrameRef.current);
+ animFrameRef.current = null;
+ }
  if (mediaStreamRef.current) {
  mediaStreamRef.current.getTracks().forEach((track) => track.stop());
  mediaStreamRef.current = null;
@@ -190,6 +204,9 @@ function playCheckinErrorTone() {
  stopCamera();
  };
  }, []);
+
+ const totalSuccess = history.filter((h) => h.success).length;
+ const totalBlocked = history.filter((h) => !h.success).length;
 
  return (
  <div className="w-full min-h-full bg-background text-foreground flex flex-col">
@@ -214,6 +231,20 @@ function playCheckinErrorTone() {
  </div>
  </div>
 
+ <div className="flex items-center gap-2.5">
+ <div className="hidden sm:flex items-center gap-2">
+ <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20 font-mono">
+ <CheckCircle2 className="size-3.5" />
+ {totalSuccess} liberados
+ </span>
+ {totalBlocked > 0 && (
+ <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold border border-rose-500/20 font-mono">
+ <AlertCircle className="size-3.5" />
+ {totalBlocked} barrados
+ </span>
+ )}
+ </div>
+
  <Button
  type="button"
  size="sm"
@@ -224,6 +255,7 @@ function playCheckinErrorTone() {
  {isCameraActive ? <CameraOff className="size-4" /> : <Camera className="size-4" />}
  <span className="hidden sm:inline">{isCameraActive ? "Desativar Câmera" : "Câmera Traseira"}</span>
  </Button>
+ </div>
  </header>
 
  {/* Main Container */}

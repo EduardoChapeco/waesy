@@ -22,6 +22,8 @@ import { getIdentity } from "@/services/identity.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { ProductTelemetry, trackAddToCartEvent } from "@/components/commerce/product-telemetry";
 import { toast } from "sonner";
+import { playMessageChime } from "@/lib/audio-chimes";
+
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ExperienceRenderer } from "@/components/commerce/experience-renderer";
@@ -572,9 +574,10 @@ function ProductContent({
 
  setCartData(((res as any).cart || (res as any).globalCarts?.[0]) as any, (res as any).globalCarts as any);
 
- // Feedback imediato com animação e abertura da gaveta
- toast.success("Adicionado ao carrinho com sucesso!");
- setIsCartOpen(true);
+  // Feedback imediato com som, animação e abertura da gaveta
+  playMessageChime();
+  toast.success("Adicionado ao carrinho com sucesso!");
+  setIsCartOpen(true);
 
  // Omni-telemetria para Meta Pixel + CAPI + Google Ads
  trackAddToCartEvent({

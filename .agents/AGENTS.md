@@ -152,6 +152,14 @@ Antes de escrever qualquer linha de código, você DEVE ativar a skill `bigtech-
     - O `isOwner` deve ser derivado da sessão segura do servidor, nunca de query param no cliente.
     - O padrão canônico está em `instagram-travel-view.tsx` com a prop `isOwner` e o banner `bg-amber-500/10`.
 
+24. **Protocolo de Economia Extrema de Tokens & Eficiência Cirúrgica (Token Economy Mandate).**
+    - Todo agente ou IA DEVE operar sob as diretrizes da skill `token-economy`.
+    - **Proibição de Leitura Cega:** Proibido executar `view_file` sem delimitadores de linha (`StartLine`/`EndLine`) em arquivos grandes. A leitura DEVE ser precedida por `grep_search` direcionado.
+    - **Mutação Atômica em Lote Único:** Proibido realizar múltiplos ciclos de edições quebradas. Modificações em um mesmo arquivo devem ser consolidadas em chamada única (`multi_replace_file_content` ou `replace_file_content`).
+    - **Orçamento de Interação (Turn Budget):** 1 mensagem = 1 sub-tarefa atômica concreta, teto de 5 tool calls por turno, máximo 1 a 2 arquivos editados por rodada.
+    - **Comunicação Enxuta:** Não duplicar relatórios de artifacts no corpo do chat. Respostas diretas, com links para os arquivos e sem prolixidade.
+    - **Qualidade Inviolável:** A economia de tokens decorre da precisão cirúrgica de engenharia, nunca da omissão de camadas ou inserção de mocks. O build com 0 erros (`npm run build`) e a integridade de banco/BFF permanecem mandatórios.
+
 ## Fase Atual de Desenvolvimento
 
 Estamos solidificando a **Fase 1** (Zines, Ferramentas de Apresentação, Multi-tenant) e transicionando o núcleo canônico do Builder e do CMS. Siga as orientações de Fases do `MASTER_PLAN.md` e do `ROADMAP.md` rigidamente.

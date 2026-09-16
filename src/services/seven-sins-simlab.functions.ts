@@ -1,7 +1,9 @@
+import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { SevenSinHookDTO, SevenSinHookSchema } from "../types/squads-and-onboarding";
+import { SevenSinHookDTO } from "../types/squads-and-onboarding";
 import { getStoreBrandDna } from "./market-radar.functions";
 import { getServerClient } from "@/lib/supabase";
+import { getServerIdentity } from "@/lib/server-access";
 
 // ── DEFINIÇÃO DOS 7 PECADOS & GATILHOS PSICOLÓGICOS ─────────────────────────
 export const SEVEN_SINS_DEFINITIONS = {
@@ -63,100 +65,121 @@ export interface SimLabPersonaResult {
   recommended_fix?: string;
 }
 
-// ── 1. GERAR COPY DE ALTA CONVERSÃO POR PECADO CAPITAL (V4 COMPANY AGENT) ──
-export async function generateSevenSinCopy(
-  storeId: string,
-  params: {
-    sin: SinType;
-    productId?: string;
-    productNameFallback?: string;
-    targetChannel: "whatsapp" | "instagram_ad" | "push_notification" | "storefront_banner";
+// ── LÓGICA DE NEGÓCIO: GERAR COPY ──────────────────────────────────────────
+export async function generateSevenSinCopyLogic(data: {
+  storeId?: string;
+  sin: SinType;
+  productId?: string;
+  productNameFallback?: string;
+  targetChannel: "whatsapp" | "instagram_ad" | "push_notification" | "storefront_banner";
+}): Promise<SevenSinHookDTO> {
+  const supabase = getServerClient();
+  let storeId = data.storeId;
+  if (!storeId) {
+    const identity = await getServerIdentity().catch(() => null);
+    storeId = identity?.store_id;
   }
-): Promise<SevenSinHookDTO> {
-  const serverClient = getServerClient();
-  let productName = params.productNameFallback || "Produto Destaque";
+
+  let productName = data.productNameFallback || "Produto Destaque";
   let productPrice = "R$ 49,90";
 
-  if (params.productId) {
-    const { data: prod } = await serverClient
-      .from("products")
-      .select("name, price, description")
-      .eq("id", params.productId)
-      .eq("store_id", storeId)
-      .maybeSingle();
+  if (data.productId && storeId) {
+    try {
+      const { data: prod } = await supabase
+        .from("products")
+        .select("title, name, price_cents, price, description")
+        .eq("id", data.productId)
+        .eq("store_id", storeId)
+        .maybeSingle();
 
-    if (prod) {
-      productName = prod.name;
-      if (prod.price) {
-        productPrice = `R$ ${(Number(prod.price) / 100).toFixed(2).replace(".", ",")}`;
+      if (prod) {
+        productName = prod.title || prod.name || productName;
+        const cents = prod.price_cents ?? (prod.price ? Number(prod.price) : null);
+        if (cents !== null && !isNaN(cents)) {
+          productPrice = `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
+        }
       }
+    } catch {
+      // Fallback gracioso
     }
   }
 
-  const dna = await getStoreBrandDna(storeId);
-  const def = SEVEN_SINS_DEFINITIONS[params.sin] || SEVEN_SINS_DEFINITIONS.orgulho;
+  let brandArchetype = "O Criador";
+  if (storeId) {
+    try {
+      const dna = await getStoreBrandDna({ data: { storeId } }).catch(() => null);
+      if (dna?.archetype) brandArchetype = dna.archetype;
+    } catch {
+      // Fallback
+    }
+  }
 
-  // Redação estruturada do Agente "agent.v4_copywriter" (Copywriter Sênior & Psicanalista)
+  const def = SEVEN_SINS_DEFINITIONS[data.sin as SinType] || SEVEN_SINS_DEFINITIONS.orgulho;
+
   let headline = "";
   let body = "";
   let cta = "";
 
-  switch (params.sin) {
+  switch (data.sin) {
     case "orgulho":
       headline = `Não é para qualquer um: Conheça o padrão oficial de ${productName}`;
-      body = `Quem entende de qualidade reconhece à primeira vista. Selecionado sob critérios rigorosos para clientes que exigem excelência sem concessões. Disponível por apenas ${productPrice}.`;
+      body = `Quem entende de qualidade reconhece à primeira vista. Feito sob medida com a essência de ${brandArchetype} para clientes que exigem excelência sem concessões. Adquira agora por apenas ${productPrice}.`;
       cta = "Garantir Edição Limitada";
       break;
     case "ganancia":
       headline = `Pague por 1, sinta o valor de 2: O melhor custo-benefício de ${productName}`;
-      body = `Economize margem real sem abrir mão do padrão premium. Ao pedir hoje por ${productPrice}, você tem retorno de sabor e economia imediata comprovada.`;
+      body = `Economize margem real sem abrir mão do padrão premium. Ao pedir hoje por ${productPrice}, você tem retorno em satisfação e economia imediata comprovada.`;
       cta = "Aproveitar Oportunidade Exclusiva";
       break;
     case "luxuria":
       headline = `Uma explosão sensorial inesquecível: ${productName}`;
-      body = `A textura perfeita, o aroma irresistível e o sabor que conquista no primeiro instante. Você merece se dar esse presente especial hoje por ${productPrice}.`;
-      cta = "Quero Sentir Esse Sabor Agora";
+      body = `A textura perfeita, o acabamento impecável e a experiência que conquista no primeiro instante. Você merece se dar esse presente especial hoje por ${productPrice}.`;
+      cta = "Quero Experimentar Agora";
       break;
     case "inveja":
-      headline = `O que todos estão comentando na cidade: Experimente o novo ${productName}`;
-      body = `Descubra por que quem experimenta não consegue mais voltar atrás. Seja o primeiro do seu círculo a ter a experiência completa por ${productPrice}.`;
+      headline = `O que todos estão comentando: Descubra o novo ${productName}`;
+      body = `Descubra por que quem experimenta não consegue mais voltar atrás. Seja a referência entre os seus e garanta sua unidade por ${productPrice}.`;
       cta = "Ver Por Que É Tão Desejado";
       break;
     case "gula":
-      headline = `Fartura sem limites: Surpreenda seu apetite com ${productName}`;
-      body = `Uma porção generosa e irresistível, preparada com os melhores ingredientes da casa. Satisfação garantida do início ao fim por apenas ${productPrice}.`;
-      cta = "Pedir Minha Porção Especial";
+      headline = `Fartura sem limites: Surpreenda suas expectativas com ${productName}`;
+      body = `Uma experiência generosa e irresistível, preparada com os melhores materiais e ingredientes. Satisfação plena do início ao fim por apenas ${productPrice}.`;
+      cta = "Pedir Agora";
       break;
     case "ira":
-      headline = `Cansado de pagar caro por comida sem graça? Chegou o verdadeiro ${productName}`;
-      body = `Chega de promessas não cumpridas e entregas que frustram. Nós respeitamos seu tempo e seu dinheiro com padrão rigoroso de qualidade por ${productPrice}.`;
+      headline = `Cansado de promessas vazias? Chegou o verdadeiro ${productName}`;
+      body = `Chega de produtos genéricos e atendimentos que frustram. Nós respeitamos seu tempo e seu dinheiro com padrão rigoroso de qualidade por ${productPrice}.`;
       cta = "Exigir o Padrão Que Eu Mereço";
       break;
     case "preguica":
-      headline = `Em 1 toque no seu celular: ${productName} na sua porta`;
-      body = `Sem filas, sem dor de cabeça, sem cadastros complicados. Peça agora em segundos pelo WhatsApp e receba quentinho onde estiver por ${productPrice}.`;
+      headline = `Em 1 toque no seu celular: ${productName} na sua mão`;
+      body = `Sem filas, sem dor de cabeça, sem cadastros demorados. Peça agora em segundos pelo WhatsApp e receba diretamente onde estiver por ${productPrice}.`;
       cta = "Pedir em 1 Clique Sem Esforço";
+      break;
+    default:
+      headline = `Descubra o padrão único de ${productName}`;
+      body = `Qualidade comprovada por ${productPrice}. Peça em poucos toques.`;
+      cta = "Comprar Agora";
       break;
   }
 
   return {
-    sin: params.sin,
+    sin: data.sin as SinType,
     title: `${def.label} — ${productName}`,
     subconscious_trigger: def.subconscious,
     copy_headline: headline,
     copy_body: body,
     call_to_action: cta,
-    recommended_channel: params.targetChannel,
+    recommended_channel: data.targetChannel,
   };
 }
 
-// ── 2. SIMLAB V2: TESTE DE IMPACTO COM PERSONAS SINTÉTICAS ─────────────────
-export async function runSimLabPersonaTest(params: {
+// ── LÓGICA DE NEGÓCIO: SIMLAB PERSONAS ─────────────────────────────────────
+export function runSimLabPersonaTestLogic(data: {
+  sin: SinType;
   copyHeadline: string;
   copyBody: string;
-  sin: SinType;
-}): Promise<SimLabPersonaResult[]> {
-  // 5 Personas sintéticas calibradas com comportamento de consumo real brasileiro
+}): SimLabPersonaResult[] {
   const personas = [
     {
       persona_id: "persona_lucas_universitario",
@@ -185,7 +208,7 @@ export async function runSimLabPersonaTest(params: {
     {
       persona_id: "persona_amanda_foodie",
       name: "Amanda Fontana, 28 anos",
-      archetype_label: "Entusiasta Gastronômica & Design",
+      archetype_label: "Entusiasta Experiencial & Design",
       avatar_url: null,
       preferredSins: ["luxuria", "orgulho", "inveja"],
       bias: 0.88,
@@ -201,7 +224,7 @@ export async function runSimLabPersonaTest(params: {
   ];
 
   return personas.map((p) => {
-    const isPreferred = p.preferredSins.includes(params.sin);
+    const isPreferred = p.preferredSins.includes(data.sin);
     const score = Math.min(
       98,
       Math.max(45, Math.round(p.bias * 100 + (isPreferred ? 15 : -10) + (Math.random() * 8 - 4)))
@@ -214,13 +237,13 @@ export async function runSimLabPersonaTest(params: {
     if (score >= 85) {
       verbatim = `\"Essa headline me pegou de cara. A promessa é clara e toca exatamente no que me faz decidir comprar agora sem pensar duas vezes.\"`;
     } else if (score >= 70) {
-      verbatim = `\"Gostei da abordagem e faz sentido, mas ainda precisaria confirmar o prazo exato de entrega ou a taxa de conveniência.\"`;
-      objection = "Dúvida sobre transparência de taxas ou prazo final.";
-      fix = "Inserir prazo estimado explícito (ex: 'Entrega em até 35 min').";
+      verbatim = `\"Gostei da abordagem e faz sentido, mas ainda precisaria confirmar o prazo exato de entrega ou garantia.\"`;
+      objection = "Dúvida sobre transparência de taxas, prazos ou garantia.";
+      fix = "Inserir prazo estimado ou garantia explícita (ex: 'Envio em até 24h' ou 'Satisfação garantida').";
     } else {
       verbatim = `\"Parece um anúncio comum como outros que vejo. Precisa de uma prova social mais forte para me convencer a agir imediatamente.\"`;
       objection = "Falta de comprovação social ou garantia incontestável.";
-      fix = "Adicionar menção de satisfação garantida ou depoimento real.";
+      fix = "Adicionar menção de satisfação comprovada ou depoimento real de cliente.";
     }
 
     return {
@@ -235,3 +258,125 @@ export async function runSimLabPersonaTest(params: {
     };
   });
 }
+
+// ── LÓGICA DE NEGÓCIO: SALVAR GANCHO ──────────────────────────────────────
+export async function saveSevenSinHookToStoreLogic(data: {
+  storeId?: string;
+  sin: SinType;
+  hook: SevenSinHookDTO;
+}): Promise<{ success: boolean; message: string }> {
+  const supabase = getServerClient();
+  let storeId = data.storeId;
+  if (!storeId) {
+    const identity = await getServerIdentity().catch(() => null);
+    storeId = identity?.store_id;
+  }
+  if (!storeId) {
+    throw new Error("Loja não identificada para salvar o gancho de marketing.");
+  }
+
+  const { data: existing } = await supabase
+    .from("brand_dna_profiles")
+    .select("seven_sins_triggers")
+    .eq("store_id", storeId)
+    .maybeSingle();
+
+  const currentTriggers = (existing?.seven_sins_triggers as Record<string, string>) || {};
+  currentTriggers[data.sin] = `${data.hook.copy_headline} — ${data.hook.copy_body}`;
+
+  const { error: dnaErr } = await supabase
+    .from("brand_dna_profiles")
+    .upsert(
+      {
+        store_id: storeId,
+        seven_sins_triggers: currentTriggers,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "store_id" }
+    );
+
+  if (dnaErr) {
+    console.warn("[seven-sins] Erro ao atualizar brand_dna_profiles:", dnaErr);
+  }
+
+  return {
+    success: true,
+    message: `Gatilho do pecado "${data.sin}" salvo com sucesso no Brand DNA oficial da loja!`,
+  };
+}
+
+// ── LÓGICA DE NEGÓCIO: LISTAR PRODUTOS RÁPIDOS ─────────────────────────────
+export async function listStoreProductsQuickLogic(data: {
+  storeId?: string;
+}): Promise<Array<{ id: string; title: string; price_cents: number | null }>> {
+  const supabase = getServerClient();
+  let storeId = data?.storeId;
+  if (!storeId) {
+    const identity = await getServerIdentity().catch(() => null);
+    storeId = identity?.store_id;
+  }
+  if (!storeId) return [];
+
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("id, title, price_cents")
+    .eq("store_id", storeId)
+    .in("status", ["active", "published"])
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  if (error || !products) return [];
+
+  return products.map((p) => ({
+    id: p.id,
+    title: p.title || "Produto sem título",
+    price_cents: p.price_cents,
+  }));
+}
+
+// ── SERVER FUNCTIONS (BFF TANSTACK START RPC) ──────────────────────────────
+export const generateSevenSinCopy = createServerFn({ method: "POST" })
+  .validator((input: {
+    storeId?: string;
+    sin: SinType;
+    productId?: string;
+    productNameFallback?: string;
+    targetChannel: "whatsapp" | "instagram_ad" | "push_notification" | "storefront_banner";
+  } | { storeId: string; params: any } | any) => {
+    if (input?.params && typeof input.params === "object") {
+      return { storeId: input.storeId, ...input.params };
+    }
+    return input;
+  })
+  .handler(async ({ data }): Promise<SevenSinHookDTO> => {
+    return generateSevenSinCopyLogic(data);
+  });
+
+export const runSimLabPersonaTest = createServerFn({ method: "POST" })
+  .validator((input: {
+    sin: SinType;
+    copyHeadline: string;
+    copyBody: string;
+  }) => input)
+  .handler(async ({ data }): Promise<SimLabPersonaResult[]> => {
+    return runSimLabPersonaTestLogic(data);
+  });
+
+export const saveSevenSinHookToStore = createServerFn({ method: "POST" })
+  .validator((input: {
+    storeId?: string;
+    sin: SinType;
+    hook: SevenSinHookDTO;
+  }) => input)
+  .handler(async ({ data }) => {
+    return saveSevenSinHookToStoreLogic(data);
+  });
+
+export const listStoreProductsQuick = createServerFn({ method: "GET" })
+  .validator((input: { storeId?: string } | string | undefined) => {
+    if (typeof input === "string") return { storeId: input };
+    return input || {};
+  })
+  .handler(async ({ data }) => {
+    return listStoreProductsQuickLogic(data);
+  });

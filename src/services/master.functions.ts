@@ -91,16 +91,103 @@ export const getPlatformMetrics = createServerFn({ method: "GET" }).handler(asyn
 // ============================================================
 
 export const getPlatformInvoicesList = createServerFn({ method: "GET" }).handler(async () => {
- await requirePlatformAdmin();
- const db = getServerClient();
- const { data, error } = await db
- .from("platform_invoices")
- .select("*, stores(name, slug)")
- .order("created_at", { ascending: false });
+  await requirePlatformAdmin();
+  const db = getServerClient();
+  const { data, error } = await db
+    .from("platform_invoices")
+    .select("*, stores(id, name, slug, is_active, settings, is_platform_root)")
+    .order("created_at", { ascending: false });
 
- if (error) throw new Error("Erro ao buscar faturas: " + error.message);
- return data || [];
+  if (error) throw new Error("Erro ao buscar faturas: " + error.message);
+
+  const now = new Date();
+  const enriched = (data || []).map((inv: any) => {
+    const isPaid = inv.status === "paid";
+    const dueDate = inv.due_date ? new Date(inv.due_date) : null;
+    let daysOverdue = 0;
+    let fineCents = 0;
+    let interestCents = 0;
+    let totalUpdatedCents = inv.amount_cents || 0;
+    let isOverdue = false;
+
+    if (!isPaid && dueDate && now.getTime() > dueDate.getTime()) {
+      const diffMs = now.getTime() - dueDate.getTime();
+      daysOverdue = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+      isOverdue = true;
+      // Multa padrão brasileira de 2%
+      fineCents = Math.round((inv.amount_cents || 0) * 0.02);
+      // Juros pro-rata die de 1% ao mês (0,033% ao dia)
+      const dailyRate = 0.01 / 30;
+      interestCents = Math.round((inv.amount_cents || 0) * dailyRate * daysOverdue);
+      totalUpdatedCents = (inv.amount_cents || 0) + fineCents + interestCents;
+    }
+
+    const storeSettings = (inv.stores?.settings as Record<string, any>) || {};
+    const isStoreDebtBlocked = Boolean(storeSettings.blocked_due_to_debt);
+
+    return {
+      ...inv,
+      is_overdue: isOverdue,
+      days_overdue: daysOverdue,
+      fine_cents: fineCents,
+      interest_cents: interestCents,
+      total_updated_cents: totalUpdatedCents,
+      is_store_debt_blocked: isStoreDebtBlocked,
+    };
+  });
+
+  return enriched;
 });
+
+export const toggleStoreDebtBlock = createServerFn({ method: "POST" })
+  .validator(z.object({ storeId: z.string().uuid(), blocked: z.boolean(), reason: z.string().optional() }))
+  .handler(async ({ data }) => {
+    const admin = await requirePlatformAdmin();
+    const db = getServerClient();
+
+    const { data: targetStore, error: fetchErr } = await db
+      .from("stores")
+      .select("id, slug, is_platform_root, settings")
+      .eq("id", data.storeId)
+      .single();
+
+    if (fetchErr || !targetStore) {
+      throw new Error("Loja não encontrada para alteração de bloqueio.");
+    }
+
+    if (targetStore.is_platform_root || targetStore.slug === "waesy") {
+      throw new Error("A loja oficial da plataforma (Waesy Root) é protegida contra bloqueio.");
+    }
+
+    const currentSettings = (targetStore.settings as Record<string, any>) || {};
+    const updatedSettings = {
+      ...currentSettings,
+      blocked_due_to_debt: data.blocked,
+      blocked_at: data.blocked ? new Date().toISOString() : null,
+      debt_block_reason: data.blocked ? (data.reason || "Inadimplência de fatura da plataforma") : null,
+    };
+
+    const { error } = await db
+      .from("stores")
+      .update({
+        settings: updatedSettings,
+        is_active: data.blocked ? false : true,
+      })
+      .eq("id", data.storeId);
+
+    if (error) throw new Error("Erro ao atualizar bloqueio por dívida: " + error.message);
+
+    await db.from("forensic_audit_events").insert({
+      actor_id: admin.id,
+      actor_role: "platform_admin",
+      target_entity_type: "store",
+      target_entity_id: data.storeId,
+      action: data.blocked ? "store_blocked_due_to_debt" : "store_unblocked_debt",
+      payload_snapshot: { reason: data.reason || (data.blocked ? "Bloqueio administrativo por inadimplência" : "Desbloqueio regular") },
+    });
+
+    return { success: true, blocked: data.blocked };
+  });
 
 export const getPlatformStoresList = createServerFn({ method: "GET" }).handler(async () => {
  await requirePlatformAdmin();

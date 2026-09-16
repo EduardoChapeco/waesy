@@ -61,6 +61,39 @@ export const payCommission = createServerFn({ method: "POST" })
  return { status: "success" };
  });
 
+export const payAllPendingCommissionsForSeller = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      sellerId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: { sellerId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+    const { data: updated, error } = await supabase
+      .from("commissions")
+      .update({
+        status: "paid",
+        paid_at: new Date().toISOString(),
+      })
+      .eq("employee_id", sellerId)
+      .eq("store_id", identity.store_id)
+      .eq("status", "pending")
+      .select("id, amount_cents");
+
+    if (error) throw new Error("Erro ao quitar comissões do vendedor: " + error.message);
+    const count = updated?.length || 0;
+    const totalSettledCents = (updated || []).reduce((sum, item) => sum + (item.amount_cents || 0), 0);
+
+    return {
+      status: "success",
+      count,
+      totalSettledCents,
+    };
+  });
+
 export const listSellers = createServerFn({ method: "GET" }).handler(async () => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();

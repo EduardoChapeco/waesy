@@ -8,6 +8,8 @@ import { getCanonicalMapStyle, setupMapResizeObserver } from "@/lib/map-styles";
 import { lookupCep, parseAddressWithAI, reverseGeocode } from "@/services/public-apis.functions";
 import { formatCep } from "@/lib/document-validator";
 import { getStoredLocation } from "@/components/location/location-master-pill";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicMapConfig } from "@/services/integrations.functions";
 import { toast } from "sonner";
 
 export interface AddressData {
@@ -37,11 +39,17 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
   const [aiText, setAiText] = useState("");
   const [isParsingAi, setIsParsingAi] = useState(false);
 
+  const { data: mapConfig } = useQuery({
+    queryKey: ["public-map-config"],
+    queryFn: () => getPublicMapConfig(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const marker = useRef<Marker | null>(null);
 
-  // Inicializa o mapa com estilo canônico OpenStreetMap / CARTO (100% gratuito)
+  // Inicializa o mapa com estilo canônico OpenStreetMap / CARTO conforme governança
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
     let isMounted = true;
@@ -55,9 +63,11 @@ export const AddressField: React.FC<AddressFieldProps> = ({ value, onChange, cla
       const initialLat = value?.lat || stored?.lat || -27.1004;
       const initialLng = value?.lng || stored?.lng || -52.6152;
 
+      const effectiveProvider = mapConfig?.provider || "osm_standard";
+
       const mapInstance = new maplibregl.Map({
         container: mapContainer.current,
-        style: getCanonicalMapStyle(),
+        style: getCanonicalMapStyle(undefined, effectiveProvider),
         center: [initialLng, initialLat],
         zoom: value?.lat ? 15 : 12,
         attributionControl: false,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Target,
@@ -17,12 +17,16 @@ import {
   Flame,
   ShieldCheck,
   AlertTriangle,
+  BookmarkCheck,
+  ShoppingBag,
 } from "lucide-react";
 import {
   SEVEN_SINS_DEFINITIONS,
   SinType,
   generateSevenSinCopy,
   runSimLabPersonaTest,
+  saveSevenSinHookToStore,
+  listStoreProductsQuick,
   SimLabPersonaResult,
 } from "@/services/seven-sins-simlab.functions";
 import { getStoreSettings } from "@/services/store.functions";
@@ -32,8 +36,8 @@ export const Route = createFileRoute("/workspace/marketing/canvas-pecados")({
   head: () => ({ meta: [{ title: "Canvas dos 7 Pecados Capitais | Waesy" }] }),
   loader: async () => {
     try {
-    const store = await getStoreSettings().catch(() => null);
-    return { store };
+      const store = await getStoreSettings().catch(() => null);
+      return { store };
     } catch (err) {
       console.error("[loader:workspace.marketing.canvas-pecados] Unhandled loader error:", err);
       return { store: null };
@@ -48,6 +52,8 @@ export function SevenSinsCanvasPage() {
 
   const [selectedSin, setSelectedSin] = useState<SinType>("orgulho");
   const [productName, setProductName] = useState("Combo Executivo Especial");
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [productsList, setProductsList] = useState<Array<{ id: string; title: string; price_cents: number | null }>>([]);
   const [targetChannel, setTargetChannel] = useState<
     "whatsapp" | "instagram_ad" | "push_notification" | "storefront_banner"
   >("whatsapp");
@@ -57,24 +63,75 @@ export function SevenSinsCanvasPage() {
 
   const [generating, setGenerating] = useState(false);
   const [simulating, setSimulating] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [savingDna, setSavingDna] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  // ── CARREGAR PRODUTOS DA LOJA PARA O SELETOR ─────────────────────────────
+  useEffect(() => {
+    if (!storeId) return;
+    listStoreProductsQuick({ data: { storeId } })
+      .then((prods) => {
+        if (prods && prods.length > 0) {
+          setProductsList(prods);
+        }
+      })
+      .catch((err) => console.warn("[canvas-pecados] Falha ao listar produtos:", err));
+  }, [storeId]);
 
   // ── GERAR COPY AUTOMÁTICA DO PECADO SELECIONADO ───────────────────────────
   async function handleGenerateCopy(sinToUse = selectedSin) {
     setGenerating(true);
     setPersonaResults([]);
     try {
-      const hook = await generateSevenSinCopy(storeId, {
-        sin: sinToUse,
-        productNameFallback: productName,
-        targetChannel: targetChannel,
+      const hook = await generateSevenSinCopy({
+        data: {
+          storeId,
+          sin: sinToUse,
+          productId: selectedProductId || undefined,
+          productNameFallback: productName,
+          targetChannel: targetChannel,
+        },
       });
       setGeneratedHook(hook);
+      setFeedback({
+        type: "success",
+        message: `Copy gerada com sucesso com base no gatilho "${sinToUse}"!`,
+      });
     } catch (err) {
       console.error("Erro ao gerar copy dos 7 pecados:", err);
-      setFeedback("Erro ao estruturar a copy com o Agente V4. Tente novamente.");
+      setFeedback({
+        type: "error",
+        message: "Erro ao estruturar a copy com o Agente V4. Tente novamente.",
+      });
     } finally {
       setGenerating(false);
+    }
+  }
+
+  // ── SALVAR GANCHO OFICIAL NO BRAND DNA DA LOJA ───────────────────────────
+  async function handleSaveToBrandDna() {
+    if (!generatedHook || !storeId) return;
+    setSavingDna(true);
+    try {
+      const res = await saveSevenSinHookToStore({
+        data: {
+          storeId,
+          sin: generatedHook.sin,
+          hook: generatedHook,
+        },
+      });
+      setFeedback({
+        type: "success",
+        message: res.message || "Gatilho salvo no Brand DNA da loja com sucesso!",
+      });
+    } catch (err) {
+      console.error("Erro ao salvar no Brand DNA:", err);
+      setFeedback({
+        type: "error",
+        message: "Falha ao salvar gatilho no Brand DNA da loja.",
+      });
+    } finally {
+      setSavingDna(false);
     }
   }
 
@@ -84,14 +141,19 @@ export function SevenSinsCanvasPage() {
     setSimulating(true);
     try {
       const results = await runSimLabPersonaTest({
-        sin: generatedHook.sin,
-        copyHeadline: generatedHook.copy_headline,
-        copyBody: generatedHook.copy_body,
+        data: {
+          sin: generatedHook.sin,
+          copyHeadline: generatedHook.copy_headline,
+          copyBody: generatedHook.copy_body,
+        },
       });
       setPersonaResults(results);
     } catch (err) {
       console.error("Erro ao simular com personas:", err);
-      setFeedback("Falha ao rodar simulação no SimLab V2.");
+      setFeedback({
+        type: "error",
+        message: "Falha ao rodar simulação no SimLab V2.",
+      });
     } finally {
       setSimulating(false);
     }
@@ -100,8 +162,19 @@ export function SevenSinsCanvasPage() {
   // Copiar para área de transferência
   function handleCopy(text: string) {
     navigator.clipboard.writeText(text);
-    setFeedback("Copiado para a área de transferência!");
-    setTimeout(() => setFeedback(null), 3000);
+    setFeedback({
+      type: "success",
+      message: "Copiado para a área de transferência!",
+    });
+    setTimeout(() => setFeedback(null), 4000);
+  }
+
+  // Disparar no WhatsApp Web / Mobile
+  function handleOpenWhatsApp() {
+    if (!generatedHook) return;
+    const fullText = `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n👉 ${generatedHook.call_to_action}`;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -120,7 +193,7 @@ export function SevenSinsCanvasPage() {
                 </span>
               </div>
               <h1 className="text-2xl font-semibold tracking-tight mt-1 text-foreground">
-                Canvas de Conversão
+                Canvas de Conversão & 7 Pecados
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
                 Crie anúncios e mensagens de WhatsApp ativando os 7 gatilhos subconscientes de compra e teste antes com personas sintéticas.
@@ -142,15 +215,24 @@ export function SevenSinsCanvasPage() {
         </div>
       </div>
 
-      {/* ── FEEDBACK TOAST ── */}
+      {/* ── FEEDBACK ALERT ── */}
       {feedback && (
         <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-4">
-          <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-medium text-primary flex items-center justify-between">
-            <span>{feedback}</span>
+          <div
+            className={`p-3.5 rounded-xl border text-xs font-medium flex items-center justify-between ${
+              feedback.type === "success"
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                : "bg-destructive/10 text-destructive border-destructive/20"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{feedback.message}</span>
+            </div>
             <button
               type="button"
               onClick={() => setFeedback(null)}
-              className="text-[11px] underline opacity-80 hover:opacity-100"
+              className="text-[11px] underline opacity-80 hover:opacity-100 ml-4"
             >
               Fechar
             </button>
@@ -205,17 +287,51 @@ export function SevenSinsCanvasPage() {
       {/* ── FORMULÁRIO DE PRODUTO & CANAL ── */}
       <div className="max-w-7xl mx-auto px-0 sm:px-0 mt-6">
         <div className="p-4 rounded-2xl bg-card border border-border/50 shadow-xs flex flex-col sm:flex-row items-center gap-4">
-          <div className="w-full sm:flex-1">
-            <label className="text-[11px] font-semibold text-muted-foreground block mb-1 uppercase tracking-wider">
-              Produto ou Serviço da Sua Loja
-            </label>
-            <input
-              type="text"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-              placeholder="Ex: Combo Smash Burger Duplo, Pacote Gramado 4 Dias"
-              className="w-full h-11 px-3.5 rounded-xl border border-border/60 bg-background text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
-            />
+          {/* Seletor ou Nome do Produto */}
+          <div className="w-full sm:flex-1 space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-semibold text-muted-foreground block uppercase tracking-wider">
+                Produto ou Serviço da Sua Loja
+              </label>
+              {productsList.length > 0 && (
+                <span className="text-[10px] text-muted-foreground">
+                  {productsList.length} itens no catálogo
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {productsList.length > 0 && (
+                <select
+                  value={selectedProductId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setSelectedProductId(id);
+                    const found = productsList.find((p) => p.id === id);
+                    if (found) setProductName(found.title);
+                  }}
+                  className="w-1/2 h-11 px-3 rounded-xl border border-border/60 bg-background text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
+                >
+                  <option value="">Digitar manualmente...</option>
+                  {productsList.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title} {p.price_cents ? `(R$ ${(p.price_cents / 100).toFixed(2).replace(".", ",")})` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <input
+                type="text"
+                value={productName}
+                onChange={(e) => {
+                  setProductName(e.target.value);
+                  setSelectedProductId("");
+                }}
+                placeholder="Ex: Combo Smash Burger Duplo, Pacote Gramado 4 Dias"
+                className="flex-1 h-11 px-3.5 rounded-xl border border-border/60 bg-background text-sm text-foreground focus:ring-1 focus:ring-primary outline-none"
+              />
+            </div>
           </div>
 
           <div className="w-full sm:w-64">
@@ -282,32 +398,51 @@ export function SevenSinsCanvasPage() {
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleCopy(
-                        `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n👉 ${generatedHook.call_to_action}`
-                      )
-                    }
-                    className="h-10 px-4 inline-flex items-center gap-2 rounded-xl text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    Copiar Peça Completa
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCopy(
+                          `*${generatedHook.copy_headline}*\n\n${generatedHook.copy_body}\n\n👉 ${generatedHook.call_to_action}`
+                        )
+                      }
+                      className="h-10 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      Copiar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleOpenWhatsApp}
+                      className="h-10 px-3.5 inline-flex items-center gap-1.5 rounded-xl text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      WhatsApp
+                    </button>
+                  </div>
                 </div>
 
-                {/* Botão de Disparo do SimLab V2 */}
-                <div className="pt-4 border-t border-border/30">
+                {/* Ações de Governança e SimLab V2 */}
+                <div className="pt-4 border-t border-border/30 flex flex-col sm:flex-row items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleSaveToBrandDna}
+                    disabled={savingDna}
+                    className="w-full sm:w-1/2 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-medium border border-border/60 hover:bg-muted/40 transition-colors"
+                  >
+                    <BookmarkCheck className={`w-4 h-4 ${savingDna ? "animate-spin text-primary" : "text-emerald-500"}`} />
+                    {savingDna ? "Salvando..." : "Salvar no Brand DNA"}
+                  </button>
+
                   <button
                     type="button"
                     onClick={handleRunSimLab}
                     disabled={simulating}
-                    className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold bg-foreground text-background hover:opacity-90 transition-opacity"
+                    className="w-full sm:w-1/2 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold bg-foreground text-background hover:opacity-90 transition-opacity"
                   >
                     <Users className="w-4 h-4" />
-                    {simulating
-                      ? "Consultando 5 Personas Sintéticas no SimLab V2..."
-                      : "Testar Impacto no SimLab V2 (Previsão de Conversão)"}
+                    {simulating ? "Simulando..." : "Testar no SimLab V2"}
                   </button>
                 </div>
               </div>
@@ -360,11 +495,9 @@ export function SevenSinsCanvasPage() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={p.avatar_url || undefined}
-                          alt={p.name}
-                          className="w-10 h-10 rounded-full object-cover border border-border/40"
-                        />
+                        <div className="w-10 h-10 rounded-full bg-primary/10 border border-border/40 flex items-center justify-center font-bold text-xs text-primary">
+                          {p.name.slice(0, 2).toUpperCase()}
+                        </div>
                         <div>
                           <h3 className="text-sm font-bold text-foreground">{p.name}</h3>
                           <span className="text-xs text-muted-foreground">{p.archetype_label}</span>
@@ -411,7 +544,7 @@ export function SevenSinsCanvasPage() {
                 <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
                 <p className="text-sm font-medium">Nenhum teste de persona executado</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Após redigir a copy, clique no botão &ldquo;Testar Impacto no SimLab V2&rdquo; para simular o comportamento de 5 perfis demográficos sintéticos.
+                  Após redigir a copy, clique no botão &ldquo;Testar no SimLab V2&rdquo; para simular o comportamento de 5 perfis demográficos sintéticos.
                 </p>
               </div>
             )}

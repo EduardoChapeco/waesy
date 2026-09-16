@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { uploadProposalMedia } from "@/services/proposal-storage";
 import { getCanonicalMapStyle, setupMapResizeObserver } from "@/lib/map-styles";
+import { useQuery } from "@tanstack/react-query";
+import { getPublicMapConfig } from "@/services/integrations.functions";
 
 export type Waypoint = {
   id: string;
@@ -34,6 +36,12 @@ export function StudioMapWidget({
   const [capturing, setCapturing] = useState(false);
   const [searching, setSearching] = useState(false);
 
+  const { data: mapConfig } = useQuery({
+    queryKey: ["public-map-config"],
+    queryFn: () => getPublicMapConfig(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -47,6 +55,8 @@ export function StudioMapWidget({
     let isMounted = true;
     let cleanupResize: (() => void) | undefined;
 
+    const effectiveProvider = mapConfig?.provider || "osm_standard";
+
     import("maplibre-gl").then((maplibreglModule) => {
       if (!isMounted || !mapContainer.current || mapRef.current) return;
       const maplibregl = (maplibreglModule as any).default || maplibreglModule;
@@ -57,7 +67,7 @@ export function StudioMapWidget({
 
       const map = new maplibregl.Map({
         container: mapContainer.current,
-        style: getCanonicalMapStyle(),
+        style: getCanonicalMapStyle(undefined, effectiveProvider),
         center: initialCenter,
         zoom: localWaypoints.length > 0 ? 5 : 2,
         preserveDrawingBuffer: true,

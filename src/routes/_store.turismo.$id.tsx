@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
  Compass,
@@ -54,6 +54,7 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
+import { InstagramTravelView } from "@/components/classifieds/instagram-travel-view";
 
 export const Route = createFileRoute("/_store/turismo/$id")({
  head: ({
@@ -148,6 +149,68 @@ function TourismDetailPage() {
  },
  });
 
+ const meta = useMemo(() => {
+ if (!experience?.description) return {};
+ try {
+ if (typeof experience.description === "string" && experience.description.trim().startsWith("{")) {
+ return JSON.parse(experience.description);
+ }
+ } catch {}
+ return {};
+ }, [experience?.description]);
+
+ const [viewMode, setViewMode] = useState<"standard" | "instagram_editorial">(
+ meta.view_template === "instagram_editorial" || experience?.category === "group_tour"
+ ? "instagram_editorial"
+ : "standard"
+ );
+
+ const editorialClassified = useMemo(() => {
+ if (!experience) return null;
+ const gallery = Array.isArray(experience.gallery_urls) && experience.gallery_urls.length > 0
+ ? experience.gallery_urls
+ : [experience.image_url, experience.cover_image_url].filter(Boolean);
+
+ const dest = experience.destination || experience.location || "Destino";
+ const depCity = experience.departure_city || "São Miguel do Oeste";
+
+ return {
+ id: experience.id,
+ title: experience.title,
+ category: "travel",
+ deal_type: "venda",
+ price_cents: experience.price_cents || 0,
+ content: meta.notes || experience.notes || experience.subtitle || experience.title,
+ images: gallery.length > 0 ? gallery : ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&auto=format&fit=crop&q=80"],
+ location_name: dest,
+ city: depCity,
+ contact_whatsapp: experience.contact_whatsapp,
+ author_profile_id: (experience as any).author_profile_id,
+ store_id: (experience as any).store_id,
+ store: (experience as any).store || null,
+ status: experience.status || "active",
+ attributes: {
+ niche: "viagem",
+ travel_type: experience.category === "group_tour" ? "pacote_rodoviario" : "experiencia",
+ view_template: "instagram_editorial",
+ departure_city: depCity,
+ destination_city: dest,
+ duration: experience.duration || "Excursão Completa",
+ included_items: experience.included_items || [],
+ excluded_items: experience.excluded_items || [],
+ total_seats: experience.total_seats || 46,
+ available_seats: experience.available_seats || experience.total_seats || 46,
+ boarding_points: meta.boarding_points || [],
+ itinerary: meta.itinerary || [],
+ hotel_details: meta.hotel_details || null,
+ promo_media: meta.promo_media || null,
+ bus_company_name: meta.bus_company_name || experience.bus_company_name,
+ payment_conditions: meta.payment_conditions || null,
+ ...(meta || {}),
+ },
+ };
+ }, [experience, meta]);
+
  if (!experience) {
  return (
  <div className="w-full max-w-3xl mx-auto py-24 text-center space-y-4">
@@ -179,6 +242,243 @@ function TourismDetailPage() {
  }
  };
 
+ const renderBookingDialog = () => (
+ <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+ <DialogContent className="sm:max-w-lg sm:rounded-2xl p-5 sm:p-8 bg-card border-border">
+ <DialogHeader className="space-y-2">
+ <DialogTitle className="text-lg font-black text-foreground">
+ Reservar {experience.title}
+ </DialogTitle>
+ <DialogDescription className="text-xs text-muted-foreground">
+ Informe os dados dos participantes e a data para confirmação e emissão do voucher digital.
+ </DialogDescription>
+ </DialogHeader>
+
+ {issuedVoucher ? (
+ <div className="py-6 text-center space-y-4">
+ <div className="size-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+ <CheckCircle size={32} weight="bold" />
+ </div>
+ <div className="space-y-1">
+ <h4 className="text-base font-bold text-foreground">Voucher Emitido com Sucesso!</h4>
+ <p className="text-xs text-muted-foreground">
+ Sua reserva está confirmada. Você pode consultar seu voucher em "Minhas Viagens".
+ </p>
+ <div className="pt-2 font-mono font-black text-sm text-foreground bg-muted p-2 rounded-xl">
+ Código: {issuedVoucher.voucherCode}
+ </div>
+ </div>
+
+ <div className="flex flex-col sm:flex-row gap-2 pt-2">
+ <Button
+ asChild
+ className="flex-1 rounded-xl font-bold text-xs bg-foreground text-background h-11"
+ >
+ <Link to="/conta/viagens">
+ <Compass size={16} weight="bold" className="mr-1.5" />
+ <span>Ver Minhas Viagens</span>
+ </Link>
+ </Button>
+
+ <Button
+ variant="outline"
+ onClick={() => {
+ setIsBookingOpen(false);
+ setIssuedVoucher(null);
+ }}
+ className="rounded-xl font-bold text-xs h-11"
+ >
+ Fechar
+ </Button>
+ </div>
+ </div>
+ ) : (
+ <form
+ onSubmit={(e) => {
+ e.preventDefault();
+ bookingMutation.mutate();
+ }}
+ className="space-y-4 pt-2"
+ >
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <CalendarDots size={14} weight="bold" />
+ <span>Data do Passeio *</span>
+ </label>
+ <Input
+ required
+ type="date"
+ value={desiredDate}
+ onChange={(e) => setDesiredDate(e.target.value)}
+ className="rounded-xl h-10 text-xs bg-background"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Users size={14} weight="bold" />
+ <span>Nº Passageiros *</span>
+ </label>
+ <Input
+ type="number"
+ min={1}
+ max={50}
+ value={guestsCount}
+ onChange={(e) => handleGuestsCountChange(parseInt(e.target.value) || 1)}
+ className="rounded-xl h-10 text-xs bg-background"
+ />
+ </div>
+ </div>
+
+ {/* Lista de Passageiros */}
+ <div className="space-y-2 pt-1 ">
+ <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <IdentificationCard size={14} weight="bold" />
+ <span>Dados dos Participantes</span>
+ </span>
+
+ <div className="space-y-2 max-h-44 overflow-y-auto no-scrollbar pr-1">
+ {passengers.map((p, idx) => (
+ <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-2xl bg-muted/40 ">
+ <Input
+ required
+ placeholder={`Nome do participante ${idx + 1}`}
+ value={p.name}
+ onChange={(e) => handlePassengerChange(idx, "name", e.target.value)}
+ className="rounded-lg h-8 text-xs bg-background"
+ />
+ <Input
+ placeholder="CPF / Doc (opcional)"
+ value={p.document || ""}
+ onChange={(e) => handlePassengerChange(idx, "document", e.target.value)}
+ className="rounded-lg h-8 text-xs bg-background"
+ />
+ </div>
+ ))}
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 ">
+ <div className="space-y-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <Phone size={14} weight="bold" />
+ <span>WhatsApp para contato *</span>
+ </label>
+ <Input
+ required
+ placeholder="(49) 99999-9999"
+ value={customerPhone}
+ onChange={(e) => setCustomerPhone(e.target.value)}
+ className="rounded-xl h-10 text-xs bg-background"
+ />
+ </div>
+
+ <div className="space-y-1.5">
+ <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+ <EnvelopeSimple size={14} weight="bold" />
+ <span>E-mail para o voucher *</span>
+ </label>
+ <Input
+ required
+ type="email"
+ placeholder="seu.email@exemplo.com"
+ value={customerEmail}
+ onChange={(e) => setCustomerEmail(e.target.value)}
+ className="rounded-xl h-10 text-xs bg-background"
+ />
+ </div>
+ </div>
+
+ {/* Resumo de Preço Total */}
+ {totalPriceCents > 0 && (
+ <div className="p-3.5 rounded-2xl bg-muted/50 flex items-center justify-between text-xs font-bold">
+ <span className="text-muted-foreground">
+ Total ({guestsCount}x {formatMoney(unitPriceCents)}):
+ </span>
+ <span className="text-sm font-black text-foreground">
+ {formatMoney(totalPriceCents)}
+ </span>
+ </div>
+ )}
+
+ <Button
+ type="submit"
+ disabled={bookingMutation.isPending}
+ className="w-full rounded-xl font-bold h-11 text-xs bg-foreground text-background mt-2 "
+ >
+ {bookingMutation.isPending ? (
+ <>
+ <CircleNotch size={16} className="animate-spin mr-2" />
+ Processando reserva e emitindo voucher...
+ </>
+ ) : (
+ "Confirmar Reserva & Gerar Voucher"
+ )}
+ </Button>
+ </form>
+ )}
+ </DialogContent>
+ </Dialog>
+ );
+
+ // Renderização Editorial Instagram Zine para Pacotes de Viagem / Excursões
+ if (viewMode === "instagram_editorial" && editorialClassified) {
+ return (
+ <div className="w-full min-h-screen bg-background">
+ <div className="max-w-6xl mx-auto px-4 pt-3 flex items-center justify-between">
+ <Link
+ to="/turismo"
+ className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground group"
+ >
+ <ArrowLeft size={14} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
+ <span>Voltar para Turismo</span>
+ </Link>
+
+ <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/50 border border-border/60">
+ <button
+ type="button"
+ onClick={() => setViewMode("instagram_editorial")}
+ className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+ viewMode === "instagram_editorial"
+ ? "bg-background text-foreground shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ }`}
+ >
+ Instagram Editorial
+ </button>
+ <button
+ type="button"
+ onClick={() => setViewMode("standard")}
+ className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
+ viewMode === "standard"
+ ? "bg-background text-foreground shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ }`}
+ >
+ Página Padrão
+ </button>
+ </div>
+ </div>
+
+ <InstagramTravelView
+ classified={editorialClassified}
+ isOwner={session?.user?.id === (experience as any).author_profile_id}
+ onOpenBookingModal={() => setIsBookingOpen(true)}
+ onOpenProposalModal={() => setIsTravelQuoteOpen(true)}
+ />
+
+ {renderBookingDialog()}
+ <TravelQuoteModal
+ open={isTravelQuoteOpen}
+ onOpenChange={setIsTravelQuoteOpen}
+ defaultDestination={experience.destination || experience.location || experience.title}
+ defaultTripType={experience.category === "hospedagens" ? "hotel_only" : "air_package"}
+ />
+ </div>
+ );
+ }
+
  return (
  <div className="w-full max-w-6xl mx-auto space-y-8 pb-6 px-0 sm:px-4 md:px-0">
  <ProductTelemetry
@@ -202,15 +502,34 @@ function TourismDetailPage() {
  <span>Voltar para Turismo & Lazer</span>
  </Link>
 
- <Button
- variant="outline"
- size="sm"
- onClick={handleShare}
- className="rounded-xl font-semibold text-xs gap-1.5 h-9"
- >
- <ShareNetwork size={16} weight="bold" />
- <span>Compartilhar</span>
- </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/50 border border-border/60">
+            <button
+              type="button"
+              onClick={() => setViewMode("instagram_editorial")}
+              className="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              Instagram Editorial
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("standard")}
+              className="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all bg-background text-foreground shadow-xs cursor-pointer"
+            >
+              Página Padrão
+            </button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            className="rounded-xl font-semibold text-xs gap-1.5 h-9"
+          >
+            <ShareNetwork size={16} weight="bold" />
+            <span>Compartilhar</span>
+          </Button>
+        </div>
  </div>
 
  {/* ── 2. Header & Title Block ── */}

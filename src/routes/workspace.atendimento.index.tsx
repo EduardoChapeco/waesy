@@ -36,6 +36,7 @@ import { formatDate } from "@/lib/datetime";
 import { OrderMessageCard } from "@/components/chat/order-message-card";
 import { RmaMessageCard } from "@/components/chat/rma-message-card";
 import { Customer360Sidebar } from "@/components/chat/customer-360-sidebar";
+import { playMessageChime } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/atendimento/")({
  head: () => ({ meta: [{ title: "Central de Atendimento Omnichannel | Waesy" }] }),
@@ -65,33 +66,6 @@ const DEPARTMENT_LABELS: Record<string, string> = {
  cozinha_estoque: "Cozinha / Estoque",
  logistica: "Logística / Motoboy",
 };
-
-function playNotificationChime() {
- try {
- if (typeof window === "undefined") return;
- const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
- if (!AudioCtx) return;
- const ctx = new AudioCtx();
- const osc = ctx.createOscillator();
- const gain = ctx.createGain();
-
- osc.type = "sine";
- osc.frequency.setValueAtTime(587.33, ctx.currentTime);
- osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
-
- gain.gain.setValueAtTime(0, ctx.currentTime);
- gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.04);
- gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-
- osc.connect(gain);
- gain.connect(ctx.destination);
-
- osc.start();
- osc.stop(ctx.currentTime + 0.3);
- } catch {
- // Silencioso
- }
-}
 
 function WorkspaceAtendimentoPage() {
  const { threads: initialThreads, metrics, isSupervisor, store } = ((Route.useLoaderData?.() as any) || {});
@@ -182,7 +156,7 @@ function WorkspaceAtendimentoPage() {
  };
 
  if (!payload.new.is_staff_reply) {
- playNotificationChime();
+ playMessageChime();
  }
 
  setMessages((prev) => {
