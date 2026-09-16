@@ -268,6 +268,21 @@ export default function WorkspaceContractsIndexPage() {
                       </a>
                     </Button>
 
+                    {isSigned && (
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                        title="Ver protocolo criptográfico e termo de quitação"
+                      >
+                        <Link to={`/verify/document/${c.public_token}`}>
+                          <CheckCircle2 className="size-3.5 sm:size-3" />
+                          <span>Validar</span>
+                        </Link>
+                      </Button>
+                    )}
+
                     <Button
                       type="button"
                       variant="ghost"

@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 
 import { getDealsByUser, respondToDealProposal } from "@/services/deals.functions";
+import { generateContractFromDeal } from "@/services/contracts.functions";
 import { DealDeliveryTrackingCard } from "@/components/commercial/deal-delivery-tracking-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ function NegociacoesPage() {
  const [counterPriceCents, setCounterPriceCents] = useState<number | undefined>(undefined);
  const [counterMessage, setCounterMessage] = useState("");
  const [activeTab, setActiveTab] = useState<"all" | "bookings" | "deals">("all");
+ const [generatingContractId, setGeneratingContractId] = useState<string | null>(null);
 
  const { data: deals, isLoading } = useQuery({
  queryKey: ["user-deals"],
@@ -94,6 +96,23 @@ function NegociacoesPage() {
  action,
  },
  });
+ }
+ };
+
+ const handleGenerateContract = async (dealId: string) => {
+ try {
+ setGeneratingContractId(dealId);
+ const res = await generateContractFromDeal({ data: { dealId } });
+ if (res.success) {
+ toast.success("Contrato gerado com sucesso!");
+ if (res.signUrl) {
+ window.open(res.signUrl, "_blank");
+ }
+ }
+ } catch (err: any) {
+ toast.error(err?.message || "Erro ao gerar contrato digital.");
+ } finally {
+ setGeneratingContractId(null);
  }
  };
 
@@ -409,6 +428,7 @@ function NegociacoesPage() {
  </div>
 
  {deal.classified && (
+ <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
  <Button
  asChild
  size="sm"
@@ -420,6 +440,28 @@ function NegociacoesPage() {
  <span>Ver Anúncio</span>
  </Link>
  </Button>
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ disabled={generatingContractId === deal.id}
+ onClick={() => handleGenerateContract(deal.id)}
+ className="rounded-xl text-xs font-bold shrink-0 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs gap-1.5"
+ >
+ {generatingContractId === deal.id ? (
+ <Loader2 className="size-3.5 animate-spin" />
+ ) : (
+ <FileSignature className="size-3.5" />
+ )}
+ <span>
+ {generatingContractId === deal.id
+ ? "Gerando..."
+ : isRental
+ ? "Gerar Contrato de Locação"
+ : "Gerar Contrato Digital"}
+ </span>
+ </Button>
+ </div>
  )}
  </div>
  )}

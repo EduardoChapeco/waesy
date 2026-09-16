@@ -35,7 +35,9 @@ import {
  ChefHat,
  Armchair,
  Users,
+	FileText,
 } from "lucide-react";
+import { generateContractFromOrder } from "@/services/contracts.functions";
 import { printThermalReceipt, type ThermalReceiptData } from "@/lib/thermal-printer";
 import {
  getActiveRegister,
@@ -291,6 +293,27 @@ function PdvTerminal() {
  const [checkoutOpen, setCheckoutOpen] = useState(false);
  const [modifiersModalOpen, setModifiersModalOpen] = useState(false);
  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [contractSigningInfo, setContractSigningInfo] = useState<{ contractId: string; title: string; signingUrl: string; whatsappLink: string | null } | null>(null);
+  const [isGeneratingContract, setIsGeneratingContract] = useState(false);
+
+  const handleGenerateContractFromPOS = async (orderId: string) => {
+    setIsGeneratingContract(true);
+    try {
+      toast.loading("Gerando contrato & posicionando assinaturas...", { id: "pos-contract" });
+      const res = await generateContractFromOrder({ data: { orderId } });
+      toast.success("Contrato gerado com sucesso!", { id: "pos-contract" });
+      setContractSigningInfo({
+        contractId: res.contract.id,
+        title: res.contract.title,
+        signingUrl: res.signingUrl,
+        whatsappLink: res.whatsappLink,
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao gerar contrato para venda do PDV.", { id: "pos-contract" });
+    } finally {
+      setIsGeneratingContract(false);
+    }
+  };
  const [shortcutsModalOpen, setShortcutsModalOpen] = useState(false);
  const [quickMovementModalOpen, setQuickMovementModalOpen] = useState(false);
  const [quickMovementType, setQuickMovementType] = useState<"sangria" | "suprimento">("sangria");
@@ -655,7 +678,8 @@ function PdvTerminal() {
  playCashRegisterSound();
 
  setLastSaleReceipt({
- saleId: res?.receiptId || res?.orderId || `PDV${Date.now().toString(36).toUpperCase().slice(-6)}`,
+ orderId: res?.orderId,
+		saleId: res?.receiptId || res?.orderId || `PDV${Date.now().toString(36).toUpperCase().slice(-6)}`,
  items: cart,
  subtotal: cartSubtotal,
  discount: discountCents,
@@ -1483,7 +1507,18 @@ function PdvTerminal() {
  </div>
  </div>
 
- <div className="space-y-2 pt-2">
+ <div className="space-y-2 pt-2">{lastSaleReceipt?.orderId && (
+						<Button
+							onClick={() => handleGenerateContractFromPOS(lastSaleReceipt.orderId)}
+							disabled={isGeneratingContract}
+							variant="outline"
+							className="w-full h-11 rounded-xl text-xs font-bold gap-2 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
+						>
+							<FileText className="size-4" />
+							<span>{isGeneratingContract ? "Gerando Contrato..." : "Gerar Contrato & Assinatura no Balcão"}</span>
+						</Button>
+					)}
+					
  <div className="grid grid-cols-2 gap-2">
  <Button
  onClick={() => handlePrintThermal("80mm")}

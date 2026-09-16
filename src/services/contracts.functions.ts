@@ -1088,6 +1088,177 @@ Data de emissão: {{data_extenso}}`;
     };
   });
 
+// ─── 7.2. GERAÇÃO AUTOMÁTICA DE CONTRATO A PARTIR DE NEGOCIAÇÃO / PROPOSTA ACEITA ─
+export const generateContractFromDeal = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      dealId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado.");
+
+    const { data: deal, error: dErr } = await supabase
+      .from("deals")
+      .select(`
+        id, classified_id, buyer_id, seller_id, proposed_price_cents, installments_count,
+        deal_type, terms, start_date, end_date, nights_count,
+        classified:classified_id (id, title, category, location_name, attributes),
+        buyer:buyer_id (id, full_name, phone, email, document),
+        seller:seller_id (id, full_name, phone, email, document)
+      `)
+      .eq("id", input.dealId)
+      .single();
+
+    if (dErr || !deal) throw new Error("Negociação não encontrada.");
+
+    if (deal.buyer_id !== identity.id && deal.seller_id !== identity.id) {
+      throw new Error("Acesso negado a esta negociação.");
+    }
+
+    const buyer = (deal.buyer as any) || {};
+    const seller = (deal.seller as any) || {};
+    const classified = (deal.classified as any) || {};
+
+    const isRental = deal.deal_type === "rental";
+    const category = isRental ? "real_estate_rental" : "general_deal";
+    const title = isRental
+      ? `Contrato de Locação — ${classified.title || "Imóvel"}`
+      : `Contrato de Compra e Venda — ${classified.title || "Acordo"}`;
+
+    const valorFormatado = `R$ ${(Number(deal.proposed_price_cents || 0) / 100).toFixed(2)}`;
+    const dataExtenso = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
+
+    let contentMarkdown = "";
+    if (isRental) {
+      contentMarkdown = `INSTRUMENTO PARTICULAR DE LOCAÇÃO E RESERVA
+
+1. PARTES CONTRATANTES
+LOCADOR (Proprietário): ${seller.full_name || "Proprietário"} — CPF/Doc: ${seller.document || "Não informado"}
+LOCATÁRIO (Hóspede/Inquilino): ${buyer.full_name || "Inquilino"} — CPF/Doc: ${buyer.document || "Não informado"}
+
+2. OBJETO DO CONTRATO
+Imóvel / Acomodação: ${classified.title || "Imóvel"}
+Localização: ${classified.location_name || "Conforme cadastro no anúncio"}
+Período: ${deal.start_date ? new Date(deal.start_date).toLocaleDateString("pt-BR") : "A definir"} a ${deal.end_date ? new Date(deal.end_date).toLocaleDateString("pt-BR") : "A definir"} (${deal.nights_count || 1} diária(s)/período)
+
+3. VALOR E FORMA DE PAGAMENTO
+Valor Total Ajustado: ${valorFormatado}
+Condições: ${deal.terms || "Pagamento acordado entre as partes na plataforma Waesy."}
+
+4. DISPOSIÇÕES GERAIS
+O Locatário declara que vistoriou o imóvel e se compromete a conservá-lo, respondendo por quaisquer danos.
+
+Data: ${dataExtenso}
+
+____________________________________
+Assinatura do Locatário: ${buyer.full_name || "Locatário"}
+
+____________________________________
+Assinatura do Locador: ${seller.full_name || "Locador"}`;
+    } else {
+      contentMarkdown = `INSTRUMENTO PARTICULAR DE COMPRA, VENDA E TRANSAÇÃO
+
+1. PARTES CONTRATANTES
+VENDEDOR: ${seller.full_name || "Vendedor"} — CPF/Doc: ${seller.document || "Não informado"}
+COMPRADOR: ${buyer.full_name || "Comprador"} — CPF/Doc: ${buyer.document || "Não informado"}
+
+2. OBJETO DO NEGÓCIO
+Item / Negócio: ${classified.title || "Produto / Serviço"}
+Localização: ${classified.location_name || "Local acordado"}
+
+3. PREÇO E CONDIÇÕES
+Valor Total: ${valorFormatado} em ${deal.installments_count || 1}x parcela(s).
+Termos Específicos: ${deal.terms || "Negociação formalizada e aceita através do ecossistema Waesy."}
+
+4. DECLARAÇÃO DE VONTADE
+As partes firmam o presente contrato de comum acordo, com plena eficácia legal nos termos do Art. 10 da MP 2.200-2/2001 e Lei 14.063/2020.
+
+Data: ${dataExtenso}
+
+____________________________________
+Assinatura do Comprador: ${buyer.full_name || "Comprador"}
+
+____________________________________
+Assinatura do Vendedor: ${seller.full_name || "Vendedor"}`;
+    }
+
+    const { data: contract, error: cErr } = await supabase
+      .from("contracts")
+      .insert({
+        creator_id: identity.id,
+        deal_id: deal.id,
+        title,
+        category,
+        status: "signing",
+        current_version: 1,
+      })
+      .select()
+      .single();
+
+    if (cErr) {
+      console.error("[contracts] Erro ao criar contrato para negociação:", cErr);
+      throw new Error("Erro ao criar contrato para a negociação.");
+    }
+
+    const textBuffer = new TextEncoder().encode(contentMarkdown);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", textBuffer);
+    const hashHex = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    const autoFields = autoPositionSignatureFieldsFromContent(contentMarkdown, 1, 2);
+
+    const { data: version } = await supabase
+      .from("contract_versions")
+      .insert({
+        contract_id: contract.id,
+        version_number: 1,
+        title,
+        content_markdown: contentMarkdown,
+        hash_sha256: hashHex,
+        signature_fields: autoFields,
+        page_count: 1,
+        is_sealed: true,
+        sealed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    const otherParty = identity.id === deal.buyer_id ? seller : buyer;
+    const { data: envelope } = await supabase
+      .from("signature_envelopes")
+      .insert({
+        contract_version_id: version.id,
+        signer_name: otherParty.full_name || "Contraparte",
+        signer_email: otherParty.email || "contato@waesy.com",
+        signer_phone: otherParty.phone || null,
+        signer_cpf: otherParty.document || null,
+        signer_profile_id: otherParty.id || null,
+        dispatch_channel: otherParty.phone ? "whatsapp" : "email",
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    const cleanPhone = (otherParty.phone || "").replace(/\D/g, "");
+    const signingUrl = `/assinar/${envelope.signing_token}`;
+    const fullUrl = `https://waesy.com${signingUrl}`;
+    const waMsg = encodeURIComponent(
+      `Olá ${otherParty.full_name || ""}, o contrato da nossa negociação está pronto para assinatura digital segura:\n\n${fullUrl}`,
+    );
+    const whatsappLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${waMsg}` : null;
+
+    return {
+      contract,
+      envelope,
+      signingUrl,
+      whatsappLink,
+    };
+  });
+
 // ─── 8. QUITAÇÃO DE CONTRATO E EMISSÃO DE TERMO DE QUITAÇÃO (SHA-256) ────────
 export const settleContractAndIssueDischarge = createServerFn({ method: "POST" })
   .validator(
