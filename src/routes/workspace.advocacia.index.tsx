@@ -3,7 +3,7 @@
  * Consulta CNJ, Monitoramento Contínuo, Compliance, Estatísticas e Mural de Demandas.
  */
 
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState, useTransition, useMemo } from "react";
 import { Scale, Search, Plus, Radio, SlidersHorizontal, Building2, Calendar, DollarSign, Users, ShieldCheck, ShieldAlert, Clock, Layers, Paperclip, CheckCircle2, FileText, Trash2, Share2, Star, RefreshCw, Eye, Send, Filter, AlertTriangle, FileCheck } from 'lucide-react';
 import {
@@ -360,6 +360,16 @@ function WorkspaceAdvocaciaPage() {
  <Plus className="size-4" />
  <span>Novo Prazo Fatal</span>
  </Button>
+          <Button
+            asChild
+            variant="outline"
+            className="h-10 px-4 rounded-xl font-bold text-xs gap-1.5"
+          >
+            <Link to="/workspace/contratos/novo">
+              <FileText className="size-3.5 text-primary" />
+              <span>Procuração & Honorários</span>
+            </Link>
+          </Button>
  <Button
  variant="outline"
  onClick={() => setIsMonitorSheetOpen(true)}

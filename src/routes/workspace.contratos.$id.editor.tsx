@@ -51,6 +51,7 @@ import {
   type SignerVisualInfo,
 } from "@/components/contracts/signature-positioner-canvas";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
+import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
 
 export const Route = createFileRoute("/workspace/contratos/$id/editor")({
   head: () => ({ meta: [{ title: "Editor de Contrato & Assinatura | Workspace Waesy" }] }),
@@ -146,6 +147,24 @@ function ContractEditorPage() {
   // Estado de Selagem
   const [isSealing, setIsSealing] = useState(false);
   const [sealedData, setSealedData] = useState<any>(null);
+
+  // Inserção inteligente de variáveis na minuta
+  const handleInsertVariable = (token: string) => {
+    const textarea = document.getElementById("contract-minuta-textarea") as HTMLTextAreaElement | null;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const current = contentMarkdown;
+      const updated = current.substring(0, start) + token + current.substring(end);
+      setContentMarkdown(updated);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + token.length, start + token.length);
+      }, 50);
+    } else {
+      setContentMarkdown((prev) => prev + " " + token);
+    }
+  };
 
   // Salvar Rascunho
   const handleSaveDraft = async () => {
@@ -421,13 +440,26 @@ function ContractEditorPage() {
                   />
                 </div>
 
+                {/* Seletor de Variáveis Semânticas Dinâmicas por Nicho */}
+                <ContractVariablePicker
+                  onInsertVariable={handleInsertVariable}
+                  className="mb-2"
+                />
+
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Cláusulas do Contrato (Markdown)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold">Cláusulas do Contrato (Markdown)</Label>
+                    <span className="text-[11px] text-muted-foreground">
+                      Dica: Variáveis como <code className="font-mono text-primary text-[10px]">&#123;&#123;cliente_nome&#125;&#125;</code> são preenchidas automaticamente.
+                    </span>
+                  </div>
                   <Textarea
+                    id="contract-minuta-textarea"
                     rows={16}
                     value={contentMarkdown}
                     onChange={(e) => setContentMarkdown(e.target.value)}
                     className="font-mono text-xs rounded-xl p-3.5 leading-relaxed resize-y"
+                    placeholder="Digite ou cole as cláusulas do contrato..."
                   />
                 </div>
 

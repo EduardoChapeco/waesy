@@ -218,9 +218,16 @@ function ContractsDashboard() {
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <Badge variant="outline" className="text-[10px] font-medium bg-muted/40">
-                      {categoryLabel}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="outline" className="text-[10px] font-medium bg-muted/40">
+                        {categoryLabel}
+                      </Badge>
+                      {contract.is_settled && (
+                        <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600 bg-emerald-500/5">
+                          Quitado ✓
+                        </Badge>
+                      )}
+                    </div>
 
                     {isSigned ? (
                       <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] font-semibold gap-1">
@@ -258,20 +265,37 @@ function ContractsDashboard() {
                 </div>
 
                 <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer gap-1.5"
-                    onClick={(e) => handleCopyLink(e, contract.id)}
-                    title="Copiar link direto do contrato"
-                  >
-                    {isCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
-                    <span>{isCopied ? "Copiado!" : "Copiar Link"}</span>
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer gap-1"
+                      onClick={(e) => handleCopyLink(e, contract.id)}
+                      title="Copiar link do contrato"
+                    >
+                      {isCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                      <span className="hidden sm:inline">{isCopied ? "Copiado!" : "Copiar"}</span>
+                    </Button>
+
+                    {contract.verification_code && (
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer gap-1"
+                        title="Ver Certificado Público"
+                      >
+                        <Link to="/verify/document/$code" params={{ code: contract.verification_code }}>
+                          <ExternalLink className="size-3.5" />
+                          <span className="hidden sm:inline">Certificado</span>
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
 
                   <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer gap-1">
                     <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
-                      <span>Abrir Editor</span>
+                      <span>Abrir</span>
                       <ArrowRight className="size-3 ml-0.5" />
                     </Link>
                   </Button>

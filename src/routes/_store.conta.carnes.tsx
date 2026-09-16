@@ -25,6 +25,8 @@ import {
   Info,
   Check,
   Percent,
+  ExternalLink,
+  FileCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
@@ -340,12 +342,33 @@ function ClientCarnesPage() {
                           </Badge>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-2">
-                        <Building2 className="h-3.5 w-3.5" /> {storeName}
-                        {carne.contract && (
-                          <span className="inline-flex items-center gap-1 text-primary">
-                            • Contrato Assinado
-                          </span>
+                      <div className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-0.5">
+                        <span className="flex items-center gap-1">
+                          <Building2 className="h-3.5 w-3.5" /> {storeName}
+                        </span>
+
+                        {carne.contract?.verification_code && (
+                          <Link
+                            to="/verify/document/$code"
+                            params={{ code: carne.contract.verification_code }}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+                            title="Ver Contrato & Confissão de Dívida Digital"
+                          >
+                            <FileCheck className="size-3" />
+                            <span>Contrato Assinado</span>
+                            <ExternalLink className="size-2.5" />
+                          </Link>
+                        )}
+
+                        {isSettled && (
+                          <Link
+                            to="/_store/conta/contratos"
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                            title="Ver Certificado de Quitação no Cofre"
+                          >
+                            <CheckCircle2 className="size-3" />
+                            <span>Termo de Quitação ✓</span>
+                          </Link>
                         )}
                       </div>
                     </div>

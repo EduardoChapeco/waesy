@@ -41,6 +41,7 @@ import {
   extractContractDataFromOcr,
   type ContractCategoryEnum,
 } from "@/services/contracts.functions";
+import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
 
 export const Route = createFileRoute("/workspace/contratos/novo")({
   head: () => ({ meta: [{ title: "Criar Novo Contrato | Workspace Waesy" }] }),
@@ -152,6 +153,24 @@ function NovoContratoPage() {
 
   // Estado de OCR
   const [isProcessingOcr, setIsProcessingOcr] = useState(false);
+
+  // Inserção inteligente de variáveis na minuta
+  const handleInsertVariable = (token: string) => {
+    const textarea = document.getElementById("novo-contrato-textarea") as HTMLTextAreaElement | null;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const current = contentMarkdown;
+      const updated = current.substring(0, start) + token + current.substring(end);
+      setContentMarkdown(updated);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + token.length, start + token.length);
+      }, 50);
+    } else {
+      setContentMarkdown((prev) => prev + " " + token);
+    }
+  };
 
   const addSigner = () => {
     const nextIndex = signers.length;
@@ -601,15 +620,23 @@ function NovoContratoPage() {
                 />
               </div>
 
+              {/* Seletor de Variáveis Semânticas Dinâmicas por Nicho */}
+              <ContractVariablePicker
+                onInsertVariable={handleInsertVariable}
+                defaultNiche="turismo"
+                className="mb-2"
+              />
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-bold">Texto Principal do Contrato</Label>
                   <p className="text-[11px] text-muted-foreground">
-                    Formatação limpa adaptada para telas de smartphones
+                    Variáveis como <code className="font-mono text-primary text-[10px]">&#123;&#123;cliente_nome&#125;&#125;</code> são preenchidas automaticamente.
                   </p>
                 </div>
 
                 <Textarea
+                  id="novo-contrato-textarea"
                   rows={12}
                   value={contentMarkdown}
                   onChange={(e) => setContentMarkdown(e.target.value)}

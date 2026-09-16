@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { getNextActiveKey, markKeyError } from "@/services/api-orchestrator.functions";
+import { interpolateContractVariables } from "@/lib/contracts/contract-semantic-dictionary";
 
 export const ContractCategoryEnum = z.enum([
   "real_estate_rental",
@@ -950,23 +951,56 @@ export const generateContractFromOrder = createServerFn({ method: "POST" })
     const clientPhone = customer.phone || "";
     const clientEmail = customer.email || "";
 
-    const title = input.templateTitle || `Contrato de Fornecimento · Pedido #${order.id.slice(0, 8)}`;
-    const contentMarkdown = `# ${title}
+    // Formata tabela de itens a partir de items_snapshot
+    const items = Array.isArray(order.items_snapshot) ? order.items_snapshot : [];
+    const itemsTable = items.length > 0
+      ? items.map((it: any) => `• ${it.quantity || 1}x ${it.title || it.name || "Item"} — R$ ${(Number(it.price_cents || it.total_cents || 0) / 100).toFixed(2)}`).join("\n")
+      : "• Produtos e serviços descritos no pedido de venda.";
 
-**CONTRATADA:** ${(order.store as any)?.name || "Estabelecimento Parceiro Waesy"}.
-**CONTRATANTE:** ${clientName}, CPF ${clientCpf || "Informado no ato"}.
+    const valorTotalFormatado = `R$ ${(Number(order.total_cents || 0) / 100).toFixed(2)}`;
+    const dataExtenso = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date());
+
+    // Template com Variáveis Inteligentes (DocuSign / Pipefy style)
+    const baseTemplate = `# {{titulo}}
+
+**CONTRATADA:** {{empresa_nome}}
+**CONTRATANTE:** {{cliente_nome}}, CPF/Documento: {{cpf}}
+**CONTATO:** {{telefone}} | {{email}}
+
+---
 
 ### CLÁUSULA 1ª — DO PEDIDO E OBJETO
-O presente instrumento formaliza a aquisição e o fornecimento dos produtos e serviços discriminados no pedido nº ${order.id}.
+O presente instrumento formaliza a aquisição e o fornecimento dos seguintes itens discriminados no pedido nº ${order.id}:
+
+{{tabela_itens}}
 
 ### CLÁUSULA 2ª — DO VALOR TOTAL E CONDIÇÕES DE PAGAMENTO
-O valor total ajustado é de R$ ${(Number(order.total_cents || 0) / 100).toFixed(2)}, liquidado conforme modalidade selecionada no ato da compra.
+O valor total ajustado entre as partes é de **{{valor_total}}**, liquidado e ajustado conforme as condições pactuadas na transação comercial.
 
-### CLÁUSULA 3ª — DA PRIVACIDADE E PROTEÇÃO DE DADOS (LGPD)
+### CLÁUSULA 3ª — DA CONFISSÃO DE DÍVIDA E CONFORMIDADE LEGAL
+O presente instrumento constitui título executivo extrajudicial (Art. 784, III do Código de Processo Civil), respaldado pela Medida Provisória nº 2.200-2/2001 e Lei Federal nº 14.063/2020 para assinaturas eletrônicas avançadas.
+
+### CLÁUSULA 4ª — DA PRIVACIDADE E PROTEÇÃO DE DADOS (LGPD)
 As partes comprometem-se a proteger mutuamente os dados cadastrais trocados em estrita observância à Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
 
 ### ELEIÇÃO DE FORO
-As partes elegem o foro de domicílio do consumidor para dirimir eventuais controvérsias decorrentes deste contrato.`;
+As partes elegem o foro de domicílio do consumidor para dirimir eventuais controvérsias decorrentes deste instrumento.
+
+Data de emissão: {{data_extenso}}`;
+
+    const title = input.templateTitle || `Contrato Comercial · Pedido #${order.id.slice(0, 8)}`;
+
+    const contentMarkdown = interpolateContractVariables(baseTemplate, {
+      titulo: title,
+      empresa_nome: (order.store as any)?.name || "Estabelecimento Parceiro Waesy",
+      cliente_nome: clientName,
+      cpf: clientCpf || "Identificado na assinatura",
+      telefone: clientPhone || "Não informado",
+      email: clientEmail || "Não informado",
+      tabela_itens: itemsTable,
+      valor_total: valorTotalFormatado,
+      data_extenso: dataExtenso,
+    });
 
     // Cria o contrato no banco
     const { data: contract, error: cErr } = await supabase
@@ -1040,4 +1074,63 @@ As partes elegem o foro de domicílio do consumidor para dirimir eventuais contr
       whatsappLink,
     };
   });
+
+// ─── 8. QUITAÇÃO DE CONTRATO E EMISSÃO DE TERMO DE QUITAÇÃO (SHA-256) ────────
+export const settleContractAndIssueDischarge = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      contractId: z.string().uuid(),
+      notes: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado.");
+
+    // Busca o contrato
+    const { data: contract, error: cErr } = await supabase
+      .from("contracts")
+      .select("*, store:store_id (name, slug, id)")
+      .eq("id", input.contractId)
+      .single();
+
+    if (cErr || !contract) throw new Error("Contrato não encontrado.");
+
+    const nowIso = new Date().toISOString();
+    const dischargePayload = `DISCHARGE|CONTRACT:${contract.id}|STORE:${contract.store_id}|AT:${nowIso}|NOTES:${input.notes || "NONE"}`;
+    const buffer = new TextEncoder().encode(dischargePayload);
+    const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
+    const dischargeHash = Array.from(new Uint8Array(hashBuf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    // Atualiza status do contrato para quitado com selo criptográfico
+    const { data: updated, error: uErr } = await supabase
+      .from("contracts")
+      .update({
+        is_settled: true,
+        discharge_hash_sha256: dischargeHash,
+        discharge_issued_at: nowIso,
+        updated_at: nowIso,
+      })
+      .eq("id", input.contractId)
+      .select()
+      .single();
+
+    if (uErr) {
+      console.error("[contracts] Erro ao registrar quitação de contrato:", uErr);
+      throw new Error("Falha ao registrar quitação no ledger.");
+    }
+
+    return {
+      contractId: contract.id,
+      title: contract.title,
+      isSettled: true,
+      dischargeHash,
+      dischargeIssuedAt: nowIso,
+      verificationCode: contract.verification_code,
+    };
+  });
+
 
