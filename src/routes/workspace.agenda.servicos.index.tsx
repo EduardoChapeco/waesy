@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench } from "lucide-react";
+import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Sparkles } from "lucide-react";
+import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
+import type { OnDemandMarketplaceService } from "@/lib/data/services-catalog";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -66,6 +68,7 @@ const INITIAL_FORM: ServiceFormState = {
 function ServicesIndexPage() {
  const queryClient = useQueryClient();
  const [isSheetOpen, setIsSheetOpen] = useState(false);
+ const [isSearchCatalogOpen, setIsSearchCatalogOpen] = useState(false);
  const [form, setForm] = useState<ServiceFormState>(INITIAL_FORM);
 
  const { data: res, isLoading } = useQuery({
@@ -138,17 +141,49 @@ function ServicesIndexPage() {
  setIsSheetOpen(true);
  };
 
+ const handleSelectOnDemandService = (srv: OnDemandMarketplaceService) => {
+   setForm({
+     title: srv.name,
+     description: srv.description,
+     duration_minutes: srv.estimated_delivery_days === 1 ? 60 : 120,
+     price_reais: (srv.estimated_avg_price_cents / 100).toFixed(2).replace(".", ","),
+     category: srv.category.toLowerCase().includes("ti") || srv.category.toLowerCase().includes("tec") ? "tecnologia" : "geral",
+     gender_target: "todos",
+     image_url: null,
+     status: "active",
+   });
+   setIsSheetOpen(true);
+   toast.success(`Serviço "${srv.name}" importado. Todos os campos estão disponíveis para edição.`);
+ };
+
  return (
  <div className="space-y-6 max-w-6xl animate-in fade-in duration-200">
  <PageHeader
  eyebrow="Agenda"
  title="Serviços"
  actions={
- <Button onClick={handleOpenCreate} size="sm" className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground">
- <Plus className="size-3.5" />
- <span>Novo Serviço</span>
- </Button>
+ <div className="flex items-center gap-2">
+   <Button
+     onClick={() => setIsSearchCatalogOpen(true)}
+     variant="outline"
+     size="sm"
+     className="rounded-xl font-bold text-xs gap-1.5 border-border/60 hover:bg-muted/30 text-foreground shadow-sm"
+   >
+     <Sparkles className="size-3.5 text-amber-500" />
+     <span>Importar do Catálogo</span>
+   </Button>
+   <Button onClick={handleOpenCreate} size="sm" className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground">
+     <Plus className="size-3.5" />
+     <span>Novo Serviço</span>
+   </Button>
+ </div>
  }
+ />
+
+ <ServiceSearchDialog
+   open={isSearchCatalogOpen}
+   onOpenChange={setIsSearchCatalogOpen}
+   onSelectService={handleSelectOnDemandService}
  />
 
  {isLoading ? (

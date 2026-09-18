@@ -23,7 +23,18 @@ import {
   X,
   Star,
   Download,
+  Smartphone,
+  Sparkles,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { DigitalCompanionCard } from '@/components/documents/digital-companion-card';
+import { MultimodalOcrUploader } from '@/components/documents/multimodal-ocr-uploader';
+import type { UniversalOcrResult } from '@/services/multimodal-ocr.functions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -187,6 +198,11 @@ function WorkspaceBoardingPage() {
   // Document upload
   const [docUrl, setDocUrl] = useState('');
   const [docType, setDocType] = useState<DocumentType>('contract');
+
+  // Companion Card 9:16 & Multimodal OCR states
+  const [companionCardOpen, setCompanionCardOpen] = useState(false);
+  const [companionCardData, setCompanionCardData] = useState<any>(null);
+  const [ocrModalOpen, setOcrModalOpen] = useState(false);
 
   // ── Queries ──
   const { data: cards = [], isLoading } = useQuery({
@@ -387,6 +403,104 @@ function WorkspaceBoardingPage() {
     }
   }
 
+  const handleOcrExtractedForDeparture = (extracted: UniversalOcrResult) => {
+    if (extracted.clientName) setClientName(extracted.clientName);
+    if (extracted.clientPhone) setClientPhone(extracted.clientPhone);
+    if (extracted.destinationCity) setDestination(extracted.destinationCity);
+    if (extracted.dates?.departure) setDepartureDate(extracted.dates.departure.slice(0, 10));
+    if (extracted.dates?.return) setReturnDate(extracted.dates.return.slice(0, 10));
+    if (extracted.flightSegments?.[0]) {
+      setAirlineCode(extracted.flightSegments[0].airline || '');
+      setFlightNumber(extracted.flightSegments[0].flightNumber || '');
+      setAirlineLocator(extracted.flightSegments[0].locator || '');
+    }
+    if (extracted.hotel?.name) setHotelName(extracted.hotel.name);
+    setOcrModalOpen(false);
+    setNewOpen(true);
+    toast.success("Dados de voo, hotel e passageiro extraídos com IA! Revise e crie o embarque.");
+  };
+
+  const handleOpenCompanionForDeparture = (dep: any) => {
+    if (!dep) return;
+    const depDate = dep.departure_date ? new Date(dep.departure_date).toLocaleDateString('pt-BR') : 'A confirmar';
+    const sections: any[] = [];
+
+    if (dep.airline_code || dep.flight_number || dep.airline_locator) {
+      sections.push({
+        type: 'flight' as const,
+        title: `Voo ${dep.airline_code || ''} ${dep.flight_number || ''}`.trim(),
+        subtitle: `Companhia Aérea: ${dep.airline_code || 'Confirmada'}`,
+        details: [
+          { label: 'Localizador (PNR)', value: dep.airline_locator || 'A consultar', highlight: true },
+          { label: 'Data de Embarque', value: depDate },
+          { label: 'Passageiros', value: `${dep.passengers_count || 1} pax` },
+        ],
+      });
+    }
+
+    if (dep.hotel_name) {
+      sections.push({
+        type: 'hotel' as const,
+        title: dep.hotel_name,
+        details: [
+          { label: 'Check-in', value: dep.hotel_checkin_at ? new Date(dep.hotel_checkin_at).toLocaleDateString('pt-BR') : 'A consultar' },
+          { label: 'Check-out', value: dep.hotel_checkout_at ? new Date(dep.hotel_checkout_at).toLocaleDateString('pt-BR') : 'A consultar' },
+        ],
+      });
+    }
+
+    const rules = [
+      {
+        title: 'Documentação Obrigatória',
+        description: 'Apresente RG ou CNH original com foto em bom estado no balcão e no portão de embarque. Para viagens internacionais, passaporte válido.',
+        highlight: true,
+      },
+      {
+        title: 'Horário no Aeroporto',
+        description: 'Chegue com antecedência mínima de 2 horas para voos nacionais e 3 horas para internacionais.',
+      },
+      ...(dep.hotel_rules ? [{ title: 'Regras de Hospedagem', description: dep.hotel_rules }] : []),
+    ];
+
+    const emergencyContacts = [
+      {
+        name: currentStore?.name || 'Plantão da Agência',
+        category: 'Agência de Viagens',
+        phone: currentStore?.phone || '(49) 99999-9999',
+        whatsapp: true,
+        is24h: true,
+      },
+      {
+        name: 'Suporte Aeroportuário',
+        category: 'Infraero / Balcão',
+        phone: '0800 707 4477',
+        is24h: true,
+      },
+    ];
+
+    let customWhatsAppText = `Olá, *${dep.client_name}*! Seguem os dados essenciais do seu embarque para *${dep.destination}*:\n\n`;
+    if (dep.airline_locator) customWhatsAppText += `✈️ *Localizador (PNR):* ${dep.airline_locator}\n`;
+    if (dep.airline_code || dep.flight_number) customWhatsAppText += `🛫 *Voo:* ${dep.airline_code || ''} ${dep.flight_number || ''}\n`;
+    customWhatsAppText += `📅 *Data de Embarque:* ${depDate}\n`;
+    if (dep.hotel_name) customWhatsAppText += `🏨 *Hospedagem:* ${dep.hotel_name}\n`;
+    customWhatsAppText += `\nLembrando de levar documento original com foto (RG/CNH ou Passaporte). Desejamos uma excelente viagem! ✨`;
+
+    setCompanionCardData({
+      niche: 'tourism',
+      title: dep.destination || 'Embarque de Viagem',
+      subtitle: `Passageiro(a): ${dep.client_name}`,
+      code: dep.airline_locator || dep.flight_number || `EMB-${(dep.id || '').slice(0, 6).toUpperCase()}`,
+      companyName: currentStore?.name || 'Excelência Tour',
+      companyLogoUrl: currentStore?.logo_url,
+      participants: [dep.client_name],
+      sections,
+      rules,
+      emergencyContacts,
+      customWhatsAppText,
+    });
+    setCompanionCardOpen(true);
+  };
+
   // ── Computed ──
   const daysInMonth = getDaysInMonth(calYear, calMonth);
   const firstDay = getFirstDayOfMonth(calYear, calMonth);
@@ -468,8 +582,10 @@ function WorkspaceBoardingPage() {
           onClick: () => setNewOpen(true),
         }}
         secondaryAction={{
-          label: activeTab === 'all' ? `${cards.length} viagens` : '',
+          label: 'Scanner 9:16 (IA)',
+          icon: Sparkles,
           variant: 'outline',
+          onClick: () => setOcrModalOpen(true),
         }}
         filterSlot={
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full">
@@ -801,6 +917,19 @@ function WorkspaceBoardingPage() {
                   >
                     <Download className="size-3.5 sm:size-3" />
                     <span>Guia PDF</span>
+                  </Button>
+
+                  {/* Cartão Digital de Embarque 9:16 */}
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleOpenCompanionForDeparture(detail)}
+                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] font-bold gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shrink-0 shadow-xs"
+                    title="Cartão Digital de Embarque 9:16 (WhatsApp)"
+                  >
+                    <Smartphone className="size-3.5 sm:size-3" />
+                    <span>Cartão 9:16</span>
                   </Button>
                 </div>
 
@@ -1248,6 +1377,42 @@ function WorkspaceBoardingPage() {
           </form>
         </SheetContent>
       </Sheet>
+
+      {/* Modal do Cartão Digital 9:16 */}
+      <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-2xl sm:max-w-lg">
+          <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Smartphone className="size-4 text-emerald-600" />
+              Cartão Digital de Embarque 9:16 (WhatsApp)
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 max-h-[85vh] overflow-y-auto no-scrollbar flex justify-center">
+            {companionCardData && (
+              <DigitalCompanionCard {...companionCardData} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Scanner Multimodal OCR */}
+      <Dialog open={ocrModalOpen} onOpenChange={setOcrModalOpen}>
+        <DialogContent className="max-w-lg p-0 overflow-hidden border-border bg-card rounded-2xl">
+          <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <Sparkles className="size-4 text-primary" />
+              Scanner Inteligente de Embarque & Bilhetes
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 max-h-[80vh] overflow-y-auto no-scrollbar">
+            <MultimodalOcrUploader
+              nicheHint="tourism"
+              showPreviewModal={false}
+              onExtracted={handleOcrExtractedForDeparture}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

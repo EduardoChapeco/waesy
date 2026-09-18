@@ -62,7 +62,9 @@ export type ClassifiedNicheId =
   | "food" // Alimentação, Marmitas, Doces Caseiros & Gastronomia Artesanal
   | "digital" // Produtos Digitais, E-books, Cursos, Modelos, Softwares
   | "subscription" // Clubes, Assinaturas, Mensalidades Recorrentes
-  | "job"; // Empregos, Vagas & Recrutamento
+  | "job" // Empregos, Vagas & Recrutamento
+  | "pharmacy" // Farmácia, Beleza & Saúde
+  | "market"; // Mercado, Hortifruti & Açougue
 
 export interface ClassifiedNicheDefinition {
   id: ClassifiedNicheId;
@@ -248,16 +250,49 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     dealType: "venda",
     title: "Alimentação & Gastronomia Artesanal",
     shortLabel: "Gastronomia",
-    subtitle: "Marmitas Fitness, Doces Caseiros, Bolos, Salgados & Pratos do Dia",
+    subtitle: "Pratos, Doces, Bebidas & Kits",
     icon: Utensils,
-    badge: "Gastronomia & Pronta Entrega",
+    badge: "Pronto para Consumo",
     priceSuffix: "",
-    primaryActionLabel: "Pedir no WhatsApp",
-    secondaryActionLabel: "Consultar Ingredientes & Entrega",
+    primaryActionLabel: "Comprar / Fazer Pedido",
+    secondaryActionLabel: "Tirar Dúvida do Cardápio",
     showDeliveryBadges: true,
-    showTechnicalSpecs: true,
+    showTechnicalSpecs: false,
     allowEscrowGuarantee: true,
   },
+  pharmacy: {
+    id: "pharmacy",
+    canonicalCategory: "sale",
+    dealType: "venda",
+    title: "Farmácia, Saúde & Beleza",
+    shortLabel: "Farmácia",
+    subtitle: "Medicamentos, Suplementos & Cosméticos",
+    icon: Package,
+    badge: "Saúde & Bem-Estar",
+    priceSuffix: "",
+    primaryActionLabel: "Comprar Item de Farmácia",
+    secondaryActionLabel: "Dúvida com Farmacêutico/Lojista",
+    showDeliveryBadges: true,
+    showTechnicalSpecs: false,
+    allowEscrowGuarantee: true,
+  },
+  market: {
+    id: "market",
+    canonicalCategory: "sale",
+    dealType: "venda",
+    title: "Mercado, Padaria & Essenciais",
+    shortLabel: "Mercado",
+    subtitle: "Alimentos Frescos, Bebidas & Limpeza",
+    icon: Package,
+    badge: "Itens de Conveniência",
+    priceSuffix: "",
+    primaryActionLabel: "Adicionar à Cesta de Mercado",
+    secondaryActionLabel: "Consultar Disponibilidade",
+    showDeliveryBadges: true,
+    showTechnicalSpecs: false,
+    allowEscrowGuarantee: true,
+  },
+
   digital: {
     id: "digital",
     canonicalCategory: "sale",
@@ -374,6 +409,26 @@ export function resolveClassifiedNiche(classified: any): ClassifiedNicheDefiniti
     rawNiche === "gastronomia"
   ) {
     return NICHE_DEFINITIONS.food;
+  }
+
+  // 5.1 Farmácia, Saúde & Beleza
+  if (
+    category === "pharmacy" ||
+    category === "farmacia" ||
+    rawNiche === "pharmacy" ||
+    rawNiche === "farmacia"
+  ) {
+    return NICHE_DEFINITIONS.pharmacy;
+  }
+
+  // 5.2 Mercado, Padaria & Essenciais
+  if (
+    category === "market" ||
+    category === "mercado" ||
+    rawNiche === "market" ||
+    rawNiche === "mercado"
+  ) {
+    return NICHE_DEFINITIONS.market;
   }
 
   // 6. Turismo / Viagens / Pacotes

@@ -32,7 +32,11 @@ import {
  Boxes,
  Plane,
  Layers,
+ Sparkles,
 } from "lucide-react";
+
+import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
+import type { MasterProductRecord } from "@/lib/data/master-products-catalog";
 
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
@@ -210,6 +214,43 @@ function EditProductPage() {
 
  const [foodSpecs, setFoodSpecs] = useState<FoodSpecsData>(initialFoodSpecs);
 
+ // ── Catálogo Mestre Central & Inteligência Fiscal (Reforma Tributária 2026) ──
+ const [isMasterCatalogOpen, setIsMasterCatalogOpen] = useState(false);
+
+ const handleSelectMasterProduct = async (p: MasterProductRecord) => {
+ if (!product) return;
+ setLiveTitle(p.name);
+ setLiveDescription(p.description);
+ setLiveBrand(p.brand_name);
+ setLivePriceCents(p.suggested_price_cents);
+ try {
+ await updateProduct({
+ data: {
+ id: product.id,
+ title: p.name,
+ description: p.description,
+ brand: p.brand_name,
+ price_cents: p.suggested_price_cents,
+ ean: p.barcode_ean || product.ean,
+ attributes: {
+ ...(product.attributes || {}),
+ ncm_code: p.ncm_code,
+ cest_code: p.cest_code,
+ ibs_rate: p.ibs_rate,
+ cbs_rate: p.cbs_rate,
+ cfop_default: p.cfop_default,
+ tax_regime: p.tax_regime,
+ master_catalog_id: p.id,
+ },
+ },
+ });
+ toast.success(`"${p.name}" sincronizado com sucesso do Catálogo Central (NCM ${p.ncm_code})!`);
+ router.invalidate();
+ } catch (err: any) {
+ toast.error("Erro ao sincronizar com catálogo central: " + (err?.message || "Tente novamente."));
+ }
+ };
+
  const handleFoodSpecsChange = async (newSpecs: FoodSpecsData) => {
  setFoodSpecs(newSpecs);
  try {
@@ -338,7 +379,7 @@ function EditProductPage() {
  <p className="text-xs text-muted-foreground mt-1">
  O {nicheCtx.entityName.toLowerCase()} solicitado não existe ou foi removido do catálogo.
  </p>
- <Button asChild className="mt-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground" size="sm">
+ <Button asChild className="mt-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground w-full" size="sm">
  <Link to="/workspace/catalogo/produtos">Ir para Lista de {nicheCtx.entityNamePlural}</Link>
  </Button>
  </div>
@@ -347,12 +388,23 @@ function EditProductPage() {
  }
 
  return (
- <div className="space-y-6">
+ <div className="space-y-0 sm:space-y-6">
+ <div className="px-3 sm:px-0 pt-4 sm:pt-0">
  <PageHeader
  eyebrow={`Catálogo / ${nicheCtx.entityName}`}
  title={liveTitle || `Editar ${nicheCtx.entityName}`}
  actions={
  <div className="flex items-center gap-2">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setIsMasterCatalogOpen(true)}
+ className="rounded-xl text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+ >
+ <Sparkles className="size-3.5" />
+ <span>Sincronizar Catálogo Central</span>
+ </Button>
  <Button variant="outline" asChild size="sm">
  <Link to="/workspace/catalogo/produtos">
  <ArrowLeft className="mr-1.5 size-4" />
@@ -616,7 +668,14 @@ function EditProductPage() {
  />
  </div>
  )}
- </ProductEditorLayout>
+        </ProductEditorLayout>
+
+        <MasterCatalogSearchDialog
+          open={isMasterCatalogOpen}
+          onOpenChange={setIsMasterCatalogOpen}
+          onSelectProduct={handleSelectMasterProduct}
+        />
+      </div>
  </div>
  );
 }
@@ -1254,10 +1313,26 @@ function GeneralForm({
  </div>
  </div>
 
- <div className="flex justify-end pt-4">
- <Button type="submit" disabled={isSubmitting} size="lg" className="font-bold gap-2">
+ <div className="pt-6 border-t hidden md:flex justify-end">
+ <Button
+ type="submit"
+ disabled={isSubmitting}
+ className="rounded-xl px-8 h-12 text-sm font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
+ >
  {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
- {isSubmitting ? "Salvando..." : "Salvar Informações do Produto"}
+ Salvar Alterações
+ </Button>
+ </div>
+
+ {/* Sticky Bottom Bar (Mobile Only) */}
+ <div className="fixed bottom-[60px] sm:bottom-0 inset-x-0 p-3 bg-background/90 backdrop-blur border-t z-50 md:hidden flex shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+ <Button
+ type="submit"
+ disabled={isSubmitting}
+ className="w-full rounded-2xl h-14 text-sm font-bold bg-primary text-primary-foreground gap-2 shadow-lg"
+ >
+ {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : <CheckCircle2 className="size-5" />}
+ Salvar {nicheCtx.entityName}
  </Button>
  </div>
  </form>

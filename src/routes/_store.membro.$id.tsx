@@ -14,7 +14,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAffiliateShowcaseProducts, getAvailablePartnerStores, upsertCreatorProfile } from "@/services/affiliates.functions";
-import { Package, Settings, User, MessageSquare, Tag, MapPin, Briefcase, Globe, Instagram, Store, Check, Plus, Edit3, Share2, Layers, ExternalLink, MessageCircle, GraduationCap, Grid, List, ArrowLeft, Building2, Clock, ShieldCheck, Award, Calendar, Send, ShoppingBag, Trash2, FileText, Upload, HeartHandshake, Languages, X, UserPlus, Eye, ChevronRight, Heart, Activity, Camera, Copy, ArrowRight } from 'lucide-react';
+import { Package, Settings, User, MessageSquare, Tag, MapPin, Briefcase, Globe, Instagram, Store, Check, Plus, Edit3, Share2, Layers, ExternalLink, MessageCircle, GraduationCap, Grid, List, ArrowLeft, Building2, Clock, ShieldCheck, Award, Calendar, Send, ShoppingBag, Trash2, FileText, Upload, HeartHandshake, Languages, X, UserPlus, Eye, ChevronRight, Heart, Activity, Camera, Copy, ArrowRight, Star, Sparkles } from 'lucide-react';
 import { ImageUpload } from "@/components/ui/image-upload";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -136,6 +136,69 @@ export function MemberPublicProfileView({
    ? data.pinnedProducts.map((p: any) => p.product || p)
    : [];
  const creatorEvents = (data?.creatorEvents || []) as any[];
+
+  // Banners com scroll interno horizontal contínuo ao lado da foto de perfil
+  const bannerList = useMemo(() => {
+    const list: { imageUrl: string; title?: string; link?: string }[] = [];
+    if (profile?.cover_url || profile?.coverUrl) {
+      list.push({ imageUrl: profile.cover_url || profile.coverUrl, title: "Capa do Perfil" });
+    }
+    if (profile?.featured_banner_url && profile.featured_banner_url !== (profile.cover_url || profile.coverUrl)) {
+      list.push({
+        imageUrl: profile.featured_banner_url,
+        title: "Destaque",
+        link: profile.featured_banner_link || undefined,
+      });
+    }
+    if (creatorProfile?.banner_url && !list.some((b) => b.imageUrl === creatorProfile.banner_url)) {
+      list.push({ imageUrl: creatorProfile.banner_url, title: "Banner Criador", link: creatorProfile.banner_link });
+    }
+    if (creatorProfile?.cover_url && !list.some((b) => b.imageUrl === creatorProfile.cover_url)) {
+      list.push({ imageUrl: creatorProfile.cover_url, title: "Capa Criador" });
+    }
+    if (Array.isArray(creatorProfile?.banners)) {
+      creatorProfile.banners.forEach((b: any) => {
+        if (b.imageUrl && !list.some((x) => x.imageUrl === b.imageUrl)) {
+          list.push({ imageUrl: b.imageUrl, title: b.title, link: b.link });
+        }
+      });
+    }
+    if (Array.isArray(stores) && stores.length > 0) {
+      stores.forEach((st: any) => {
+        if (st.banner_url && !list.some((b) => b.imageUrl === st.banner_url)) {
+          list.push({ imageUrl: st.banner_url, title: st.name, link: `/loja/${st.slug || st.id}` });
+        }
+      });
+    }
+    if (profile?.banner_url && !list.some((b) => b.imageUrl === profile.banner_url)) {
+      list.push({ imageUrl: profile.banner_url, title: "Banner" });
+    }
+    return list;
+  }, [profile, creatorProfile, stores]);
+
+  // Identificação e Avaliação Real de Empresas / Marcas (ZERO MOCKS)
+  const primaryStore = Array.isArray(stores) && stores.length > 0 ? stores[0] : null;
+  const isEnterpriseOrBrand = Boolean(
+    primaryStore ||
+    profile?.role === "store" ||
+    profile?.profile_type === "store" ||
+    profile?.profile_type === "business" ||
+    profile?.profile_type === "company"
+  );
+  const realStoreRating = primaryStore?.rating_average != null ? Number(primaryStore.rating_average) : null;
+  const realStoreReviewsCount = primaryStore?.reviews_count ? Number(primaryStore.reviews_count) : 0;
+
+  const avatarSrc = profile?.avatar_url || profile?.avatarUrl || profile?.photo_url || profile?.image_url || null;
+  const avatarInitials = profile?.full_name
+    ? profile.full_name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w: string) => w[0]?.toUpperCase())
+        .join("") || "W"
+    : profile?.username
+    ? profile.username.slice(0, 2).toUpperCase()
+    : "WD";
 
  const [isFollowing, setIsFollowing] = useState(Boolean(data?.isFollowing));
  const [followersCount, setFollowersCount] = useState(stats.followersCount || 0);
@@ -535,100 +598,146 @@ export function MemberPublicProfileView({
         )}
       </div>
 
-      {/* ── Bloco 1: Header do Perfil (Faixa Panorâmica Alinhada 1:1 com Avatar + Capa 1090px + Card de Stats) ── */}
-      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-6 shadow-xs">
-        {/* Faixa Superior Panorâmica: Foto + Capa Panorâmica 3:1 + Card de Stats */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-          {/* Linha de Foto + Capa Panorâmica */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+      {/* ── Bloco 1: Header do Perfil (Foto de Perfil + Banner ao lado com Scroll Interno + Stats no final) ── */}
+      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-5 shadow-xs">
+        {/* Linha Superior Panorâmica: Foto + Banner ao lado com Scroll Interno + Stats no Final */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4">
+          
+          {/* Lado Esquerdo: Foto de Perfil 1:1 + Banner ao Lado com Scroll Interno */}
+          <div className="flex flex-row items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
             {/* Foto de Perfil em Squircle 1:1 */}
-            <div className="flex-shrink-0 relative group">
-              <Avatar className="size-20 sm:size-36 rounded-2xl ring-2 ring-border/60 bg-muted flex-shrink-0 shadow-xs">
-                <AvatarImage src={profile.avatar_url || ""} alt={profile.full_name} className="object-cover" />
-                <AvatarFallback className="text-xl sm:text-3xl font-extrabold bg-muted text-foreground rounded-2xl">
-                  {profile.full_name?.slice(0, 2)?.toUpperCase() || "WD"}
+            <div className="relative group shrink-0">
+              <Avatar className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-2xl ring-2 ring-border/60 bg-muted shrink-0 overflow-hidden shadow-xs flex items-center justify-center">
+                {avatarSrc ? (
+                  <AvatarImage
+                    src={avatarSrc}
+                    alt={profile.full_name || "Membro"}
+                    className="object-cover size-full"
+                  />
+                ) : null}
+                <AvatarFallback className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-br from-primary/15 via-muted to-muted/80 text-foreground rounded-2xl flex items-center justify-center select-none">
+                  {avatarInitials}
                 </AvatarFallback>
               </Avatar>
-              {isOwner && isCreator && (
+              {isOwner && (
                 <Link
                   to="/conta/perfil"
-                  search={{ tab: "criador" }}
+                  search={{ tab: isCreator ? "criador" : "dados" }}
                   className="absolute inset-0 bg-black/40 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
-                  title="Alterar Logo/Foto da Marca"
+                  title="Alterar Foto"
                 >
                   <Camera className="size-4 sm:size-5" />
-                  <span className="text-[9px] sm:text-[10px]">Alterar</span>
+                  <span className="text-[10px]">Alterar</span>
                 </Link>
               )}
             </div>
 
-            {/* Container da Capa Panorâmica Responsiva (Proporção 3:1 Canônica) */}
-            <div className="flex-1 h-20 sm:h-36 rounded-2xl bg-muted/30 overflow-hidden flex items-center border border-border/40 relative">
-              {(profile.cover_url || profile.coverUrl || profile.banner_url) ? (
-                <img
-                  src={profile.cover_url || profile.coverUrl || profile.banner_url}
-                  alt="Capa do perfil"
-                  className="size-full object-cover select-none rounded-2xl"
-                />
-              ) : (
-                <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-2xl">
-                  <Layers className="size-6 sm:size-8 text-primary/30" />
-                </div>
-              )}
-              {isOwner && isCreator && (
+            {/* Banner AO LADO da Foto de Perfil com Scroll Interno */}
+            <div className="flex-1 min-w-0 h-20 sm:h-24 md:h-28 lg:h-32 rounded-2xl border border-border/40 bg-muted/20 relative overflow-hidden flex items-center">
+              <div 
+                tabIndex={0}
+                aria-label="Galeria de banners do perfil"
+                className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 p-1 snap-x snap-mandatory"
+              >
+                {bannerList.length > 0 ? (
+                  bannerList.map((banner, idx) => (
+                    <div
+                      key={idx}
+                      className="h-full min-w-full sm:min-w-[280px] md:min-w-[360px] lg:min-w-[420px] rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/40 group"
+                    >
+                      <img
+                        src={banner.imageUrl}
+                        alt={banner.title || "Banner do perfil"}
+                        className="size-full object-cover select-none rounded-xl"
+                      />
+                      {banner.link && (
+                        <a
+                          href={banner.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute inset-0 z-10"
+                          aria-label="Abrir link do banner"
+                        />
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-xl text-muted-foreground/60 gap-2 text-xs font-medium">
+                    <Layers className="size-5 text-primary/30" />
+                    <span>Espaço para banner promocional</span>
+                  </div>
+                )}
+              </div>
+
+              {isOwner && (
                 <Link
                   to="/conta/perfil"
-                  search={{ tab: "criador" }}
-                  className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  search={{ tab: isCreator ? "criador" : "dados" }}
+                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer transition-colors z-20"
                 >
-                  <Camera className="size-3 sm:size-3.5" />
+                  <Camera className="size-3" />
                   <span>Alterar Capa</span>
                 </Link>
               )}
             </div>
           </div>
 
-          {/* Card de Stats (Linha inferior no mobile, bloco lateral no desktop) */}
-          <div className="h-14 sm:h-36 sm:min-w-[220px] flex-shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/60 p-2 sm:p-4 flex flex-col justify-center shadow-xs">
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center max-w-sm mx-auto w-full">
+          {/* Stats no Final (Seguidores, Seguindo, Curtidas) */}
+          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-[240px] shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 p-2 sm:p-4 flex flex-col justify-center shadow-xs">
+            <div className="grid grid-cols-3 gap-2 text-center w-full">
               <div>
-                <p className="text-xs sm:text-base font-extrabold text-foreground">{followersCount}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Seguidores</p>
+                <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{followersCount}</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">Seguidores</p>
               </div>
               <div>
-                <p className="text-xs sm:text-base font-extrabold text-foreground">{stats.followingCount || 0}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Seguindo</p>
+                <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{stats.followingCount || 0}</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">Seguindo</p>
               </div>
               <div>
-                <p className="text-xs sm:text-base font-extrabold text-foreground">{stats.totalLikes || stats.postsCount || 0}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Curtidas</p>
+                <p className="text-sm sm:text-base md:text-lg font-black text-foreground font-mono">{stats.totalLikes || stats.postsCount || 0}</p>
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">Curtidas</p>
               </div>
             </div>
           </div>
         </div>
 
- {/* Linha de Identidade e Ações Minimalistas */}
- <div className="pt-2 border-t border-border/30 space-y-3">
- {/* Nome, Username, Verificação e Menu */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
- <div className="space-y-0.5">
- <div className="flex items-center gap-2">
- <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
- {profile.full_name}
- </h1>
- {profile.is_verified && (
- <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
- )}
- {profile.username && (
- <span className="text-xs sm:text-sm font-medium text-muted-foreground">
- @{profile.username}
- </span>
- )}
- </div>
+  {/* Linha de Identidade e Ações Minimalistas */}
+  <div className="pt-2 border-t border-border/30 space-y-3">
+  {/* Nome, Username, Avaliação Real de Empresas e Menu */}
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  <div className="space-y-0.5">
+  <div className="flex items-center gap-2 flex-wrap">
+  <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+  {profile.full_name}
+  </h1>
+  {profile.is_verified && (
+  <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+  )}
+  {profile.username && (
+  <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+  @{profile.username}
+  </span>
+  )}
+
+  {/* AVALIAÇÃO REAL AO LADO DO NOME (PARA EMPRESAS / MARCAS / LOJAS — ZERO MOCKS) */}
+  {isEnterpriseOrBrand && (
+    realStoreReviewsCount > 0 && realStoreRating !== null ? (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
+        <Star className="size-3.5 fill-amber-500 text-amber-500" />
+        <span>{realStoreRating.toFixed(1)}</span>
+        <span className="text-[10px] font-medium text-muted-foreground">({realStoreReviewsCount})</span>
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground text-[11px] font-medium border border-border/50">
+        Sem avaliações ainda
+      </span>
+    )
+  )}
+  </div>
 
  {profile.occupation && (
  <div className="pt-0.5">
- <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground">
+ <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
  {profile.occupation}
  </span>
  </div>
@@ -643,16 +752,17 @@ export function MemberPublicProfileView({
  asChild
  size="sm"
  variant="outline"
- className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 cursor-pointer"
+ className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
  >
  <Link to="/conta/metricas">
- <Activity className="size-3.5 text-primary" />
+ <Activity className="size-3.5 text-muted-foreground" />
  <span>Painel de Insights</span>
  </Link>
  </Button>
  <Button
  size="sm"
- className="h-9 px-4 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5 shadow-xs cursor-pointer"
+ variant="outline"
+ className="h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
  onClick={() => setEditingSection("availability")}
  >
  <span>Disponibilidade</span>
@@ -689,7 +799,7 @@ export function MemberPublicProfileView({
  size="sm"
  className={cn(
  "h-9 px-5 rounded-xl font-bold text-xs gap-1.5 cursor-pointer transition-all",
- isFollowing ? "bg-muted text-foreground hover:bg-muted/80" : "bg-primary text-primary-foreground"
+ isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground shadow-xs"
  )}
  onClick={handleToggleFollow}
  disabled={isFollowLoading}
@@ -711,7 +821,7 @@ export function MemberPublicProfileView({
  asChild
  size="sm"
  variant="outline"
- className="h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 cursor-pointer"
+ className="h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
  >
  <a
  href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
@@ -725,8 +835,8 @@ export function MemberPublicProfileView({
  )}
  <Button
  size="sm"
- variant="ghost"
- className="h-9 size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ variant="outline"
+ className="h-9 size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40"
  onClick={handleShare}
  aria-label="Compartilhar Perfil"
  >
@@ -834,7 +944,7 @@ export function MemberPublicProfileView({
  href={link.url}
  target="_blank"
  rel="noopener noreferrer"
- className="inline-flex items-center gap-2 h-9 px-4 rounded-xl text-xs font-semibold bg-muted/40 hover:bg-muted text-foreground border border-border/50 transition-all hover:border-border cursor-pointer shadow-2xs"
+ className="inline-flex items-center gap-2 h-9 px-4 rounded-xl text-xs font-semibold bg-transparent hover:bg-muted/40 text-foreground border border-border/50 transition-all hover:border-border cursor-pointer"
  >
  <span>{link.label || link.title || link.url}</span>
  <ExternalLink className="size-3 text-muted-foreground" />
@@ -869,44 +979,24 @@ export function MemberPublicProfileView({
  </div>
  )}
 
- {/* Carrossel de Destaques (Highlights Stories em Mini-Círculos Estilo Instagram) */}
- {((stores && stores.length > 0) || (classifieds && classifieds.length > 0) || (profile.resume_data?.projects && profile.resume_data.projects.length > 0)) && (
+ {/* Destaques de Stories Reais (Apenas se o perfil possuir story_highlights reais cadastrados) */}
+ {Array.isArray(profile.story_highlights) && profile.story_highlights.length > 0 && (
  <div className="pt-3 pb-1 border-t border-border/20 overflow-x-auto no-scrollbar flex items-center gap-4 sm:gap-6">
- {stores.slice(0, 3).map((st: any) => (
- <Link
- key={st.id}
- to="/perfil-da-loja"
- search={{ storeId: st.id }}
+ {profile.story_highlights.map((hl: any, idx: number) => (
+ <div
+ key={hl.id || idx}
+ onClick={() => hl.cover_url && setPreviewMediaUrl(hl.cover_url)}
  className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer"
  >
  <div className="size-14 sm:size-16 rounded-full p-0.5 ring-2 ring-primary/40 group-hover:ring-primary group-hover:scale-105 transition-all bg-background overflow-hidden flex items-center justify-center">
- {st.logo_url ? (
- <img src={st.logo_url} alt={st.name} className="size-full object-cover rounded-full" />
+ {hl.cover_url ? (
+ <img src={hl.cover_url} alt={hl.title} className="size-full object-cover rounded-full" />
  ) : (
- <Store className="size-6 text-primary" />
+ <Sparkles className="size-6 text-primary" />
  )}
  </div>
  <span className="text-[11px] font-bold text-foreground/90 max-w-[64px] truncate text-center">
- {st.name}
- </span>
- </Link>
- ))}
-
- {classifieds.slice(0, 3).map((c: any) => (
- <div
- key={c.id}
- onClick={() => c.images?.[0] && setPreviewMediaUrl(c.images[0])}
- className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer"
- >
- <div className="size-14 sm:size-16 rounded-full p-0.5 ring-2 ring-emerald-500/40 group-hover:ring-emerald-500 group-hover:scale-105 transition-all bg-background overflow-hidden flex items-center justify-center">
- {c.images?.[0] ? (
- <img src={c.images[0]} alt={c.title} className="size-full object-cover rounded-full" />
- ) : (
- <Tag className="size-6 text-emerald-500" />
- )}
- </div>
- <span className="text-[11px] font-bold text-foreground/90 max-w-[64px] truncate text-center">
- {c.title}
+ {hl.title}
  </span>
  </div>
  ))}
@@ -1513,17 +1603,17 @@ export function MemberPublicProfileView({
  {/* ── Bloco 3: Perfil Social & Gestão de Atividades Estilo Instagram ── */}
  {activeMode === "social" && (
  <div className="space-y-6">
- {/* Navegação de Abas do Perfil Social */}
- <div className="flex items-center justify-between border-b border-border/40 pb-2">
- <div className="flex items-center gap-1.5 sm:gap-2">
+ {/* Navegação de Abas do Perfil Social — Tabs Sublinhadas Minimalistas (Apple HIG) */}
+ <div className="flex items-center justify-between border-b border-border/60">
+ <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar">
  <button
  type="button"
  onClick={() => setSocialTab("posts")}
  className={cn(
- "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
+ "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
  socialTab === "posts"
- ? "bg-foreground text-background shadow-xs"
- : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+ ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ : "text-muted-foreground hover:text-foreground"
  )}
  >
  Publicações ({posts.length})
@@ -1533,10 +1623,10 @@ export function MemberPublicProfileView({
  type="button"
  onClick={() => setSocialTab("media")}
  className={cn(
- "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
+ "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
  socialTab === "media"
- ? "bg-foreground text-background shadow-xs"
- : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+ ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ : "text-muted-foreground hover:text-foreground"
  )}
  >
  Fotos & Mídias
@@ -1548,10 +1638,10 @@ export function MemberPublicProfileView({
  type="button"
  onClick={() => setSocialTab("saved")}
  className={cn(
- "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
+ "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
  socialTab === "saved"
- ? "bg-foreground text-background shadow-xs"
- : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+ ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ : "text-muted-foreground hover:text-foreground"
  )}
  >
  Salvos
@@ -1561,10 +1651,10 @@ export function MemberPublicProfileView({
  type="button"
  onClick={() => setSocialTab("liked")}
  className={cn(
- "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
+ "pb-3 text-xs sm:text-sm font-bold transition-all relative cursor-pointer whitespace-nowrap",
  socialTab === "liked"
- ? "bg-foreground text-background shadow-xs"
- : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+ ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
+ : "text-muted-foreground hover:text-foreground"
  )}
  >
  Curtidos
@@ -1575,11 +1665,11 @@ export function MemberPublicProfileView({
 
  {/* Alternador de Visualização (Grade 3x3 vs Feed Linear) */}
  {socialTab === "posts" && posts.length > 0 && (
- <div className="hidden sm:flex items-center gap-1 bg-muted/50 p-1 rounded-xl">
+ <div className="hidden sm:flex items-center gap-1 bg-muted/40 p-1 rounded-xl mb-1.5 border border-border/40">
  <Button
  size="sm"
  variant="ghost"
- className={cn("size-7 p-0 rounded-lg", postViewMode === "feed" && "bg-background shadow-xs")}
+ className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "feed" && "bg-background shadow-xs")}
  onClick={() => setPostViewMode("feed")}
  aria-label="Modo Feed"
  >
@@ -1588,7 +1678,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className={cn("size-7 p-0 rounded-lg", postViewMode === "grid" && "bg-background shadow-xs")}
+ className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "grid" && "bg-background shadow-xs")}
  onClick={() => setPostViewMode("grid")}
  aria-label="Modo Grade"
  >
@@ -1607,13 +1697,13 @@ export function MemberPublicProfileView({
  <p className="text-sm font-medium">Nenhuma publicação compartilhada ainda.</p>
  </div>
  ) : postViewMode === "grid" ? (
- <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+ <div className="grid grid-cols-3 gap-2 sm:gap-3">
  {posts.map((p: any) => {
  const media = p.media_urls?.[0] || p.media_url;
  return (
  <div
  key={p.id}
- className="aspect-square rounded-xl sm:rounded-2xl bg-muted/40 overflow-hidden relative cursor-pointer group select-none border border-border/20"
+ className="aspect-square rounded-xl sm:rounded-2xl bg-muted/30 overflow-hidden relative cursor-pointer group select-none border border-border/40 hover:border-border transition-colors"
  onClick={() => {
  if (media) {
  setSelectedLightboxPost(p);
@@ -1625,14 +1715,17 @@ export function MemberPublicProfileView({
  <img
  src={media}
  alt="Mídia"
- className="size-full object-cover group-hover:scale-104 transition-transform duration-300"
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
  />
  ) : (
- <div className="size-full p-2.5 sm:p-4 flex flex-col justify-between text-xs bg-muted/20">
+ <div className="size-full p-2.5 sm:p-4 flex flex-col justify-between bg-gradient-to-br from-muted/40 via-muted/20 to-background">
  <p className="line-clamp-3 sm:line-clamp-4 font-medium leading-relaxed text-[10px] sm:text-xs text-foreground/90">
  {p.content || p.content_text}
  </p>
- <span className="text-[9px] text-muted-foreground">{formatDate(p.created_at)}</span>
+ <div className="flex items-center justify-between text-[9px] text-muted-foreground pt-1 border-t border-border/30">
+ <span>{formatDate(p.created_at)}</span>
+ <MessageSquare className="size-2.5 text-muted-foreground/50" />
+ </div>
  </div>
  )}
 
@@ -1652,9 +1745,10 @@ export function MemberPublicProfileView({
  })}
  </div>
  ) : (
+ /* Modo Feed Linear Flat — Zero Grid-in-Grid */
  <div className="space-y-4">
  {posts.map((p: any) => (
- <div key={p.id} className="p-3 sm:p-5 rounded-2xl bg-card border border-border/40 shadow-2xs">
+ <div key={p.id} className="rounded-2xl bg-card border border-border/60 p-4 sm:p-5">
  <CommunityFeedCard
  post={{
  id: p.id,
@@ -1662,7 +1756,7 @@ export function MemberPublicProfileView({
  id: profile.id,
  full_name: profile.full_name,
  username: profile.username,
- avatar_url: profile.avatar_url,
+ avatar_url: avatarSrc,
  is_verified: profile.is_verified,
  },
  content_text: p.content,

@@ -775,7 +775,8 @@ Diferenciais Competitivos: ${briefing.differentials}`;
 
 // ── SERVER FUNCTIONS (BFF TANSTACK START RPC) ──────────────────────────────
 export const listCompetitors = createServerFn({ method: "GET" })
-  .validator((d: { storeId?: string } | string | undefined) => {
+  .validator((d: any) => {
+    if (d?.data && typeof d.data === "object") return d.data;
     if (typeof d === "string") return { storeId: d };
     return d || {};
   })
@@ -786,7 +787,7 @@ export const listCompetitors = createServerFn({ method: "GET" })
 export const createCompetitor = createServerFn({ method: "POST" })
   .validator((input: any) => {
     if (input?.data && typeof input.data === "object") {
-      return { storeId: input.storeId, ...input.data };
+      return { storeId: input.storeId || input.data.storeId, ...input.data };
     }
     return input;
   })
@@ -795,17 +796,19 @@ export const createCompetitor = createServerFn({ method: "POST" })
   });
 
 export const captureAndAnalyzeCompetitor = createServerFn({ method: "POST" })
-  .validator((input: {
-    competitorId: string;
-    storeId?: string;
-    sourceUrl?: string;
-  }) => input)
+  .validator((input: any) => {
+    if (input?.data && typeof input.data === "object") {
+      return { storeId: input.storeId || input.data.storeId, ...input.data };
+    }
+    return input;
+  })
   .handler(async ({ data }) => {
     return captureAndAnalyzeCompetitorLogic(data);
   });
 
 export const getStoreBrandDna = createServerFn({ method: "GET" })
-  .validator((d: { storeId?: string } | string | undefined) => {
+  .validator((d: any) => {
+    if (d?.data && typeof d.data === "object") return d.data;
     if (typeof d === "string") return { storeId: d };
     return d || {};
   })
@@ -816,7 +819,7 @@ export const getStoreBrandDna = createServerFn({ method: "GET" })
 export const updateStoreBrandDna = createServerFn({ method: "POST" })
   .validator((input: any) => {
     if (input?.data && typeof input.data === "object") {
-      return { storeId: input.storeId, profile: input.data };
+      return { storeId: input.storeId || input.data.storeId, profile: input.data.profile || input.data };
     }
     return input;
   })
@@ -825,16 +828,12 @@ export const updateStoreBrandDna = createServerFn({ method: "POST" })
   });
 
 export const extractBrandDnaWithAi = createServerFn({ method: "POST" })
-  .validator((input: {
-    storeId?: string;
-    briefing: {
-      name: string;
-      segment: string;
-      targetAudience: string;
-      tone: string;
-      differentials: string;
-    };
-  }) => input)
+  .validator((input: any) => {
+    if (input?.data && typeof input.data === "object") {
+      return input.data;
+    }
+    return input;
+  })
   .handler(async ({ data }) => {
     return extractBrandDnaWithAiLogic(data);
   });

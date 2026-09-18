@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
  ChevronLeft,
@@ -11,7 +11,15 @@ import {
  Info,
  AlertTriangle,
  QrCode,
+ Smartphone,
 } from "lucide-react";
+import {
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
+} from "@/components/ui/dialog";
+import { DigitalCompanionCard } from "@/components/documents/digital-companion-card";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +94,7 @@ function CustomerOrderDetailPage() {
  const router = useRouter();
  const [uploading, setUploading] = useState(false);
  const [rmaWizardOpen, setRmaWizardOpen] = useState(false);
+ const [companionOpen, setCompanionOpen] = useState(false);
 
  if (!order) {
  return (
@@ -111,6 +120,94 @@ function CustomerOrderDetailPage() {
  navigator.clipboard.writeText(paymentInstructions.pix_key);
  toast.success("Chave PIX copiada com sucesso!");
  };
+
+ const companionData = useMemo(() => {
+ if (!order) return null;
+ const storeName = order.store?.name || "Loja Oficial Waesy";
+ const publicToken = order.public_token || order.id.slice(0, 8).toUpperCase();
+ const formattedDate = order.created_at ? formatDate(order.created_at) : "Recente";
+
+ const sections: any[] = [
+ {
+ type: "service_item" as const,
+ title: "Resumo do Pedido",
+ badge: translateStatus(order.status),
+ details: [
+ { label: "Data do Pedido", value: formattedDate },
+ { label: "Total Pago/A Pagar", value: formatMoney(order.total_cents || 0), highlight: true },
+ { label: "Qtd. de Itens", value: `${items.length} ${items.length === 1 ? "item" : "itens"}` },
+ { label: "Forma de Pagamento", value: order.payment_method ? order.payment_method.toUpperCase() : "PIX / Cartão" },
+ ],
+ },
+ {
+ type: "custom" as const,
+ title: "Itens Adquiridos",
+ details: items.slice(0, 5).map((item: any) => ({
+ label: `${item.qty || 1}x ${item.product_title}`,
+ value: formatMoney(item.total_cents || 0),
+ })),
+ },
+ ];
+
+ if (address?.street) {
+ sections.push({
+ type: "custom" as const,
+ title: "Destino da Entrega",
+ details: [
+ { label: "Endereço", value: `${address.street}, ${address.number || "S/N"}` },
+ { label: "Bairro / Cidade", value: `${address.neighborhood || ""}, ${address.city || ""} - ${address.state || ""}` },
+ { label: "CEP", value: address.postal_code || "" },
+ ],
+ });
+ }
+
+ const rules = [
+ {
+ title: "Acompanhamento da Entrega",
+ description: "Você pode conferir as atualizações e fotos do comprovante de entrega na sua área de cliente Waesy.",
+ highlight: true,
+ },
+ {
+ title: "Trocas e Devoluções",
+ description: "Prazo de 7 dias após o recebimento para solicitar garantia ou devolução caso haja avaria.",
+ },
+ ];
+
+ const emergencyContacts = [
+ {
+ name: storeName,
+ category: "Suporte do Pedido",
+ phone: order.store?.phone || "(49) 99999-9999",
+ whatsapp: true,
+ is24h: false,
+ },
+ ];
+
+ let customWhatsAppText = `Olá! Segue o comprovante do pedido *#${publicToken}* realizado em *${storeName}*:\n\n`;
+ customWhatsAppText += `📦 *Status:* ${translateStatus(order.status)}\n`;
+ customWhatsAppText += `💰 *Valor Total:* ${formatMoney(order.total_cents || 0)}\n`;
+ customWhatsAppText += `📅 *Data:* ${formattedDate}\n\n`;
+ customWhatsAppText += `Itens:\n` + items.map((i: any) => `- ${i.qty || 1}x ${i.product_title}`).join("\n") + `\n\n`;
+ if (address?.street) {
+ customWhatsAppText += `📍 *Entrega:* ${address.street}, ${address.number || ""} - ${address.city || ""}\n\n`;
+ }
+ customWhatsAppText += `Obrigado pela preferência! ✨`;
+
+ return {
+ niche: "retail" as const,
+ title: `Pedido #${publicToken}`,
+ subtitle: storeName,
+ code: publicToken,
+ companyName: storeName,
+ companyLogoUrl: order.store?.logo_url,
+ participantsLabel: "Comprador",
+ participants: [order.customer_name || address?.name || "Cliente"],
+ sections,
+ rules,
+ emergencyContacts,
+ customWhatsAppText,
+ };
+ }, [order, items, address]);
 
  const handleUploadReceipt = (e: React.ChangeEvent<HTMLInputElement>) => {
  const file = e.target.files?.[0];
@@ -156,9 +253,20 @@ function CustomerOrderDetailPage() {
  >
  <ChevronLeft className="h-4 w-4" /> Voltar para pedidos
  </Link>
- <span className="px-3 py-1 font-mono text-xs font-black uppercase bg-secondary ">
+ <div className="flex items-center gap-2">
+ <Button
+ variant="outline"
+ size="sm"
+ onClick={() => setCompanionOpen(true)}
+ className="rounded-xl text-xs font-bold gap-1.5 h-9 px-3.5 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 shadow-xs"
+ >
+ <Smartphone className="size-3.5" />
+ <span>Resumo 9:16 (WhatsApp)</span>
+ </Button>
+ <span className="px-3 py-1 font-mono text-xs font-black uppercase bg-secondary rounded-lg">
  {translateStatus(order.status)}
  </span>
+ </div>
  </div>
 
  <div>
@@ -467,6 +575,23 @@ function CustomerOrderDetailPage() {
  )}
  </div>
  </div>
+
+ {/* Modal do Cartão Digital 9:16 */}
+ <Dialog open={companionOpen} onOpenChange={setCompanionOpen}>
+ <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-2xl sm:max-w-lg">
+ <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
+ <DialogTitle className="text-sm font-bold flex items-center gap-2">
+ <Smartphone className="size-4 text-emerald-600" />
+ Resumo do Pedido 9:16 (WhatsApp)
+ </DialogTitle>
+ </DialogHeader>
+ <div className="p-4 max-h-[85vh] overflow-y-auto no-scrollbar flex justify-center">
+ {companionData && (
+ <DigitalCompanionCard {...companionData} />
+ )}
+ </div>
+ </DialogContent>
+ </Dialog>
  </div>
  );
 }

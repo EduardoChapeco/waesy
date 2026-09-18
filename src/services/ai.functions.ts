@@ -8,6 +8,7 @@ import {
  buildSandboxedPromptPayload,
  sanitizeAiOutput,
 } from "@/lib/prompt-shield";
+import { getNextActiveKey } from "./api-orchestrator.functions";
 
 // AI Router Function
 export const generateText = createServerFn({ method: "POST" })
@@ -53,16 +54,22 @@ export const generateText = createServerFn({ method: "POST" })
 
  if (vaultError) {
  console.error("[ai-router] Erro ao acessar secret vault:", vaultError);
- throw new Error("Erro de infraestrutura ao acessar credenciais de IA.");
  }
 
- if (!secrets || secrets.length === 0) {
- throw new Error(`Nenhuma chave ativa encontrada para o provedor ${input.provider}. Adicione sua chave (BYOK) em Configurações > Integrações.`);
+ let rawKey: string | null = null;
+ if (secrets && secrets.length > 0 && secrets[0].encrypted_secret) {
+   rawKey = Buffer.from(secrets[0].encrypted_secret, "base64").toString("utf-8");
+ } else {
+   // Fallback resiliente: buscar chave ativa configurada no pool da plataforma
+   const poolKey = await getNextActiveKey(input.provider as any).catch(() => null);
+   if (poolKey?.rawKey) {
+     rawKey = poolKey.rawKey;
+   }
  }
 
- const secretRecord = secrets[0];
- // Decrypt (in our simplified simulation it's base64 encoded)
- const rawKey = Buffer.from(secretRecord.encrypted_secret, "base64").toString("utf-8");
+ if (!rawKey) {
+   throw new Error(`Nenhuma chave ativa encontrada para o provedor ${input.provider}. Adicione sua chave (BYOK) em Configurações > Integrações ou configure o pool de APIs.`);
+ }
 
  // 2. Routing Logic
  let generatedText = "";
@@ -168,6 +175,7 @@ async function invokeGemini(
  method: "POST",
  headers: { "Content-Type": "application/json" },
  body: JSON.stringify(payload),
+ signal: AbortSignal.timeout(25000),
  });
 
  if (!res.ok) {
@@ -208,6 +216,7 @@ async function invokeOpenAI(
  Authorization: `Bearer ${apiKey}`,
  },
  body: JSON.stringify(payload),
+ signal: AbortSignal.timeout(25000),
  });
 
  if (!res.ok) {
@@ -247,6 +256,7 @@ async function invokeAnthropic(
  "anthropic-version": "2023-06-01",
  },
  body: JSON.stringify(payload),
+ signal: AbortSignal.timeout(25000),
  });
 
  if (!res.ok) {
@@ -289,6 +299,7 @@ async function invokeOpenRouter(
  "X-Title": "Waesy AI Assistant",
  },
  body: JSON.stringify(payload),
+ signal: AbortSignal.timeout(25000),
  });
 
  if (!res.ok) {

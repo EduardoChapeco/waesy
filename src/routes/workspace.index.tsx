@@ -47,6 +47,7 @@ import { toggleStoreOpenStatus } from "@/services/store.functions";
 import { StoreShareQrModal } from "@/components/workspace/store-share-qr-modal";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { formatMoney } from "@/lib/money";
+import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/seasonal-marketing-calendar-widget";
 
 export const Route = createFileRoute("/workspace/")({
  head: () => ({ meta: [{ title: "Painel de Controle & Visão Geral | Workspace Waesy" }] }),
@@ -474,6 +475,13 @@ export default function WorkspaceDashboardPage() {
  </div>
  </Link>
  </div>
+
+ {/* ── 3.5. Calendário Editorial & Vendas Sazonais (Inteligência de Varejo) ── */}
+ <SeasonalMarketingCalendarWidget
+ cityName={activeStore?.city}
+ stateCode={activeStore?.state}
+ sector={semantics.nicheId}
+ />
 
  {/* ── 4. Matriz Bilateral: Atividades Reais & Vitrine / Canais Contextuais ── */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

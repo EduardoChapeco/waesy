@@ -2,6 +2,7 @@ import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-rout
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Smartphone } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,12 @@ import {
  listCustomerAppointments,
  cancelCustomerAppointment,
 } from "@/services/booking.functions";
+import {
+  DigitalCompanionCard,
+  type CompanionCardSectionItem,
+  type CompanionRuleItem,
+  type CompanionContactItem,
+} from "@/components/documents/digital-companion-card";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/conta/agendamentos")({
@@ -77,11 +84,12 @@ function getStatusBadge(status: string) {
 }
 
 function CustomerAgendaPage() {
- const { initialAppointments } = ((Route.useLoaderData?.() as any) || {});
- const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
- const [cancellingAppt, setCancellingAppt] = useState<any | null>(null);
- const [cancelReason, setCancelReason] = useState("");
- const router = useRouter();
+  const { initialAppointments, session } = ((Route.useLoaderData?.() as any) || {});
+  const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+  const [cancellingAppt, setCancellingAppt] = useState<any | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [selectedCompanionAppt, setSelectedCompanionAppt] = useState<any | null>(null);
+  const router = useRouter();
 
  const { data: appointments, refetch } = useQuery({
  queryKey: ["customer-appointments", activeTab],
@@ -252,6 +260,18 @@ function CustomerAgendaPage() {
  </div>
 
  <div className="flex items-center gap-2">
+ <Button
+   type="button"
+   variant="outline"
+   size="sm"
+   onClick={() => setSelectedCompanionAppt(appt)}
+   className="rounded-xl text-xs font-semibold h-8 text-primary border-primary/30 hover:bg-primary/5 cursor-pointer gap-1"
+   title="Visualizar Cartão Digital de Atendimento 9:16 e WhatsApp"
+ >
+   <Smartphone className="size-3.5" />
+   <span>Cartão 9:16</span>
+ </Button>
+
  {isUpcoming && (
  <Button
  type="button"
@@ -324,6 +344,116 @@ function CustomerAgendaPage() {
  </DialogFooter>
  </DialogContent>
  </Dialog>
+
+    {/* ── Modal Digital Companion Card 9:16 (Guia do Atendimento / WhatsApp) ── */}
+    <Dialog
+      open={Boolean(selectedCompanionAppt)}
+      onOpenChange={(open) => {
+        if (!open) setSelectedCompanionAppt(null);
+      }}
+    >
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Guia Digital do Atendimento</DialogTitle>
+        </DialogHeader>
+        {selectedCompanionAppt && (
+          <div className="w-full">
+            <DigitalCompanionCard {...getApptCompanionData(selectedCompanionAppt, session)} />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
  </div>
  );
+}
+
+function getApptCompanionData(appt: any, session: any) {
+  const dateObj = new Date(appt.scheduled_at);
+  const serviceTitle = appt.booking_services?.title || "Atendimento Agendado";
+  const storeName = appt.stores?.name || "Estabelecimento";
+  const duration = appt.booking_services?.duration_minutes || 30;
+  const price = appt.booking_services?.price_cents || 0;
+
+  const sections: CompanionCardSectionItem[] = [
+    {
+      type: "service_item",
+      badge: appt.status === "confirmed" ? "Horário Confirmado" : "Agendado",
+      title: serviceTitle,
+      subtitle: `${storeName} · ${duration} minutos`,
+      details: [
+        {
+          label: "Data & Horário",
+          value: `${dateObj.toLocaleDateString("pt-BR")} às ${dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+          highlight: true,
+        },
+        {
+          label: "Duração Estimada",
+          value: `${duration} minutos`,
+        },
+        {
+          label: "Investimento",
+          value: appt.pass_id ? "Crédito de Pacote Utilizado" : formatMoney(price),
+        },
+        ...(appt.notes ? [{ label: "Observações", value: appt.notes }] : []),
+      ],
+    },
+  ];
+
+  const rules: CompanionRuleItem[] = [
+    {
+      title: "Tolerância de Comparecimento",
+      description: "Tolerância máxima de 10 minutos após o horário agendado para início da sessão.",
+      badge: "Pontualidade",
+      highlight: true,
+    },
+    {
+      title: "Cancelamento ou Remarcação",
+      description: "Avisos de cancelamento devem ser solicitados com antecedência mínima de 2 horas diretamente pelo portal.",
+      badge: "Aviso Prévio",
+    },
+    {
+      title: "Instruções de Pré-Atendimento",
+      description: "Venha com roupas confortáveis caso seja serviço estético ou esportivo. Apresente este cartão digital na recepção.",
+      badge: "Recepção",
+    },
+  ];
+
+  const settings = appt.stores?.settings || {};
+  const storePhone = settings.whatsapp_phone || settings.phone || appt.stores?.whatsapp_phone;
+
+  const emergencyContacts: CompanionContactItem[] = [
+    ...(storePhone
+      ? [
+          {
+            name: storeName,
+            category: "Atendimento & Recepção",
+            phone: storePhone,
+            whatsapp: true,
+            is24h: false,
+          },
+        ]
+      : []),
+    {
+      name: "Suporte de Agendamentos Waesy",
+      category: "Central de Ajuda",
+      phone: "0800 000 0000",
+      whatsapp: true,
+      is24h: true,
+    },
+  ];
+
+  return {
+    niche: "service" as const,
+    title: serviceTitle,
+    subtitle: `${dateObj.toLocaleDateString("pt-BR")} às ${dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+    code: `AG-${appt.id.slice(0, 8).toUpperCase()}`,
+    companyName: storeName,
+    companyLogoUrl: appt.stores?.logo_url,
+    participantsLabel: "Cliente",
+    participants: [session?.user?.name || "Cliente"].filter(Boolean),
+    sections,
+    rules,
+    emergencyContacts,
+    observations: appt.notes || undefined,
+  };
 }

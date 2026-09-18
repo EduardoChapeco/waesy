@@ -1,10 +1,25 @@
 import React from "react";
-import type { EscamasSlide, StudioBrandProfile } from "@/types/studio-machine";
+import type { EscamasSlide, StudioBrandProfile, EscamasAspectRatio } from "@/types/studio-machine";
 import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+
+export function getSlideDimensions(aspectRatio: EscamasAspectRatio = "portrait_4_5"): { width: number; height: number } {
+  switch (aspectRatio) {
+    case "story_9_16":
+      return { width: 1080, height: 1920 };
+    case "square_1_1":
+      return { width: 1080, height: 1080 };
+    case "landscape_16_9":
+      return { width: 1920, height: 1080 };
+    case "portrait_4_5":
+    default:
+      return { width: 1080, height: 1350 };
+  }
+}
 
 interface SlideRendererEscamasProps {
   slide: EscamasSlide;
   brand: StudioBrandProfile;
+  aspectRatio?: EscamasAspectRatio;
   scale?: number;
   onLayerSelect?: (layerId: string) => void;
   selectedLayerId?: string | null;
@@ -14,6 +29,7 @@ interface SlideRendererEscamasProps {
 export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
   slide,
   brand,
+  aspectRatio = "portrait_4_5",
   scale = 1,
   onLayerSelect,
   selectedLayerId,
@@ -21,12 +37,13 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
 }) => {
   if (!slide || !brand) return null;
 
+  const dims = getSlideDimensions(aspectRatio);
   const bgOpacity = slide.background_opacity ?? 1;
 
-  // Dimensão canônica de carrossel de alto padrão (Instagram 4:5 1080x1350)
+  // Dimensão canônica responsiva conforme aspect ratio configurado
   const artboardStyle: React.CSSProperties = {
-    width: 1080,
-    height: 1350,
+    width: dims.width,
+    height: dims.height,
     transform: `scale(${scale})`,
     transformOrigin: "top left",
     backgroundColor: brand.primaryColor || "#090d16",

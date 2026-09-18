@@ -43,9 +43,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
  location.pathname.startsWith("/mapa") ||
  location.pathname.startsWith("/mobilidade");
 
- const isProfilePage =
- location.pathname.startsWith("/membro/") ||
- location.pathname.startsWith("/conta/perfil");
+  const isProfilePage =
+    location.pathname.startsWith("/membro/") ||
+    location.pathname.startsWith("/conta/perfil") ||
+    location.pathname.startsWith("/loja") ||
+    location.pathname.startsWith("/perfil-da-loja") ||
+    location.pathname.startsWith("/diretorio/");
 
  const isFormPage =
  location.pathname.includes("/classificados/novo") ||
@@ -138,12 +141,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           ref={mainRef}
           className={`flex-1 flex flex-col min-w-0 h-full w-full max-w-full overflow-y-auto no-scrollbar overflow-x-hidden ${
             isFeedPage || isCleanMobileAppPage
-              ? "px-[1px] sm:px-4 py-1.5 sm:py-6 pb-24 md:pb-8"
+              ? "px-[1px] sm:px-4 py-1 sm:py-2.5 pb-24 md:pb-8"
               : isFormPage
-              ? "px-[1px] sm:px-6 py-2 sm:py-6 pb-20 md:pb-8"
+              ? "px-[1px] sm:px-6 py-1 sm:py-3 pb-20 md:pb-8"
               : isDetailPage
-              ? "px-[1px] sm:px-6 py-1.5 sm:py-4 pb-24 md:pb-8"
-              : "px-[1px] sm:px-6 py-2 sm:py-6 pb-24 md:pb-8"
+              ? "px-[1px] sm:px-6 py-1 sm:py-2 pb-24 md:pb-8"
+              : "px-[1px] sm:px-6 py-1 sm:py-2.5 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${

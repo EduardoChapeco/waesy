@@ -42,6 +42,13 @@ import {
   type ContractCategoryEnum,
 } from "@/services/contracts.functions";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
+import { MultimodalOcrUploader } from "@/components/documents/multimodal-ocr-uploader";
+import type { UniversalOcrResult } from "@/services/multimodal-ocr.functions";
+import {
+  ADVANCED_CONTRACT_TEMPLATES,
+  type ContractTemplateDefinition,
+} from "@/lib/data/advanced-contract-templates";
+import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/contratos/novo")({
   head: () => ({ meta: [{ title: "Criar Novo Contrato | Workspace Waesy" }] }),
@@ -245,6 +252,35 @@ O(A) PACIENTE declara haver solicitado e expressamente autorizado a realização
 O(A) PACIENTE declara estar plenamente ciente das recomendações e condutas indispensáveis para a recuperação e eficácia do procedimento realizado.`,
   },
 };
+function compileAdvancedTemplateMarkdown(t: ContractTemplateDefinition): string {
+  let md = `# ${t.title.toUpperCase()}\n\n`;
+  md += `> **Fundamentação Legal:** ${t.legal_framework}\n\n`;
+  md += `**CONTRATANTE:** {{contratante_nome}}, portador(a) do CPF/CNPJ {{contratante_documento}}, residente/sediado(a) em {{contratante_endereco}}.\n`;
+  md += `**CONTRATADO(A):** {{contratado_nome}}, portador(a) do CPF/CNPJ {{contratado_documento}}, residente/sediado(a) em {{contratado_endereco}}.\n\n`;
+  md += `As partes acima qualificadas têm, entre si, justo e contratado o presente instrumento mediante as seguintes cláusulas e condições:\n\n`;
+
+  t.clauses.forEach((c) => {
+    md += `### ${c.title}\n${c.content}\n\n`;
+  });
+
+  return md;
+}
+
+const ADVANCED_TEMPLATES_MAP: Record<string, { title: string; category: string; description: string; content: string }> = {};
+
+ADVANCED_CONTRACT_TEMPLATES.forEach((item) => {
+  ADVANCED_TEMPLATES_MAP[item.id] = {
+    title: item.title,
+    category: item.category,
+    description: `${item.summary} (${item.legal_framework})`,
+    content: compileAdvancedTemplateMarkdown(item),
+  };
+});
+
+const ALL_TEMPLATES: Record<string, { title: string; category: string; description: string; content: string }> = {
+  ...ADVANCED_TEMPLATES_MAP,
+  ...NICHE_TEMPLATES,
+};
 
 function NovoContratoPage() {
   const navigate = useNavigate();
@@ -253,10 +289,11 @@ function NovoContratoPage() {
 
   // Configuração do Contrato
   const [title, setTitle] = useState("Contrato Comercial de Serviços");
-  const [category, setCategory] = useState<string>("tourism_package");
-  const [contentMarkdown, setContentMarkdown] = useState(NICHE_TEMPLATES.tourism_package.content);
+  const [category, setCategory] = useState<string>("service_agreement");
+  const [contentMarkdown, setContentMarkdown] = useState(ALL_TEMPLATES["template-prestacao-servicos"]?.content || NICHE_TEMPLATES.tourism_package.content);
   const [signingOrder, setSigningOrder] = useState<"parallel" | "sequential">("parallel");
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [templateSearchQuery, setTemplateSearchQuery] = useState("");
 
   // Signatários
   const [signers, setSigners] = useState<SignerDraft[]>([
@@ -388,13 +425,101 @@ function NovoContratoPage() {
     }
   };
 
+  const handleContractOcrExtracted = (extracted: UniversalOcrResult) => {
+    if (extracted.title) {
+      setTitle(extracted.title);
+    }
+    if (extracted.niche === "tourism") {
+      setCategory("tourism_package");
+    } else if (extracted.niche === "real_estate") {
+      setCategory("real_estate_rental");
+    } else if (extracted.niche === "auto") {
+      setCategory("vehicle_sale");
+    } else if (extracted.niche === "service") {
+      setCategory("service_agreement");
+    }
+
+    // Atualiza signatários com base nos dados do cliente extraídos
+    if (extracted.clientName || extracted.clientDocument) {
+      const updated = [...signers];
+      if (updated[0] && (!updated[0].name || updated[0].name === "")) {
+        updated[0].name = extracted.clientName || "";
+        updated[0].cpf = extracted.clientDocument || "";
+        if (extracted.clientPhone) updated[0].contact = extracted.clientPhone;
+      } else {
+        updated.push({
+          name: extracted.clientName || "Signatário Extraído",
+          contact: extracted.clientPhone || "",
+          dispatchChannel: "whatsapp",
+          role: "party",
+          cpf: extracted.clientDocument || "",
+          requireFacialBiometrics: false,
+          colorCode: SIGNER_COLORS[updated.length % SIGNER_COLORS.length],
+        });
+      }
+      setSigners(updated);
+    }
+
+    // Sintetiza minuta markdown inteligente e rica com base na leitura visual
+    let synthesizedMarkdown = `## ${extracted.title || "CONTRATO DIGITAL DE PRESTAÇÃO DE SERVIÇOS"}\n\n`;
+    synthesizedMarkdown += `**Código de Autenticação / Referência:** ${extracted.code || "WAESY-" + Date.now().toString(36).toUpperCase()}\n\n`;
+
+    synthesizedMarkdown += `### CLÁUSULA 1ª — DAS PARTES\n\n`;
+    synthesizedMarkdown += `**CONTRATANTE:** ${extracted.clientName || "{{cliente_nome}}"}`;
+    if (extracted.clientDocument) synthesizedMarkdown += `, inscrito sob o CPF/CNPJ nº ${extracted.clientDocument}`;
+    if (extracted.clientPhone) synthesizedMarkdown += `, WhatsApp: ${extracted.clientPhone}`;
+    synthesizedMarkdown += `.\n\n`;
+
+    if (extracted.providerName) {
+      synthesizedMarkdown += `**CONTRATADA:** ${extracted.providerName}`;
+      if (extracted.providerDocument) synthesizedMarkdown += `, CNPJ/CPF nº ${extracted.providerDocument}`;
+      synthesizedMarkdown += `.\n\n`;
+    }
+
+    synthesizedMarkdown += `### CLÁUSULA 2ª — DO OBJETO\n`;
+    synthesizedMarkdown += `O presente instrumento tem por objeto ${extracted.subtitle || extracted.title || "a prestação dos serviços e fornecimento discriminados"}`;
+    if (extracted.destinationCity) {
+      synthesizedMarkdown += ` com destino a **${extracted.destinationCity}**`;
+    }
+    synthesizedMarkdown += `.\n\n`;
+
+    if (extracted.financial && (extracted.financial.totalAmountCents || extracted.financial.paymentMethod)) {
+      synthesizedMarkdown += `### CLÁUSULA 3ª — DO VALOR E FORMA DE PAGAMENTO\n`;
+      synthesizedMarkdown += `Pela execução dos serviços, o(a) CONTRATANTE pagará o valor total de **${formatMoney(extracted.financial.totalAmountCents || 0)}**`;
+      if (extracted.financial.installments) {
+        synthesizedMarkdown += ` dividido em **${extracted.financial.installments} parcelas**`;
+        if (extracted.financial.installmentAmountCents) {
+          synthesizedMarkdown += ` de **${formatMoney(extracted.financial.installmentAmountCents)}**`;
+        }
+      }
+      if (extracted.financial.paymentMethod) {
+        synthesizedMarkdown += ` através da modalidade **${extracted.financial.paymentMethod}**`;
+      }
+      synthesizedMarkdown += `.\n\n`;
+    }
+
+    if (extracted.rulesAndNotes && extracted.rulesAndNotes.length > 0) {
+      synthesizedMarkdown += `### CLÁUSULA 4ª — DAS CONDIÇÕES GERAIS E OBRIGAÇÕES\n`;
+      synthesizedMarkdown += extracted.rulesAndNotes.map((r, i) => `${i + 1}. ${r}`).join("\n\n") + `\n\n`;
+    }
+
+    if (extracted.emergencyContacts && extracted.emergencyContacts.length > 0) {
+      synthesizedMarkdown += `### CONTATOS DE EMERGÊNCIA E SUPORTE\n`;
+      synthesizedMarkdown += extracted.emergencyContacts.map((c) => `- **${c.label}:** ${c.contact} (${c.type})`).join("\n") + `\n\n`;
+    }
+
+    setContentMarkdown(synthesizedMarkdown);
+    setActiveTab("whatsapp");
+    toast.success("Documento processado com OCR Multimodal! Revise os dados e signatários.");
+  };
+
   const handleSelectTemplate = (key: string) => {
-    const template = NICHE_TEMPLATES[key];
+    const template = ALL_TEMPLATES[key];
     if (!template) return;
     setTitle(template.title);
     setCategory(template.category);
     setContentMarkdown(template.content);
-    toast.success(`Minuta de ${template.title} carregada!`);
+    toast.success(`Minuta de "${template.title}" carregada com sucesso!`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -672,71 +797,61 @@ function NovoContratoPage() {
                 />
               </div>
 
-              <div className="border-2 border-dashed border-border/80 rounded-2xl p-8 text-center space-y-3 hover:border-primary/50 transition-all bg-muted/20">
-                <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                  <Upload className="size-6" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-foreground">
-                    {uploadedFileName || "Arraste o documento aqui ou clique em Selecionar arquivo"}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Suporta PDF, DOCX e imagens digitalizadas de contratos
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl text-xs h-9 px-4"
-                  onClick={() => {
-                    const input = document.createElement("input");
-                    input.type = "file";
-                    input.accept = ".pdf,.docx,image/*";
-                    input.onchange = (e: any) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setUploadedFileName(file.name);
-                        setTitle(file.name.replace(/\.[^/.]+$/, ""));
-                        toast.success(`Arquivo ${file.name} carregado com sucesso!`);
-                      }
-                    };
-                    input.click();
-                  }}
-                >
-                  Selecionar arquivo
-                </Button>
-              </div>
+              <MultimodalOcrUploader
+                nicheHint="contract"
+                showPreviewModal={false}
+                onExtracted={handleContractOcrExtracted}
+              />
             </TabsContent>
 
             {/* ABA 2: Modelos Canônicos por Nicho */}
             <TabsContent value="templates" className="pt-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {Object.entries(NICHE_TEMPLATES).map(([key, t]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => {
-                      handleSelectTemplate(key);
-                      setActiveTab("whatsapp");
-                    }}
-                    className={`p-4 rounded-xl border text-left space-y-2 transition-all cursor-pointer ${
-                      category === t.category
-                        ? "bg-primary/5 border-primary/60 ring-2 ring-primary/20 shadow-xs"
-                        : "bg-card border-border/70 hover:border-border hover:bg-muted/30"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-foreground truncate">{t.title}</p>
-                      <Badge variant="secondary" className="text-[10px] shrink-0 font-medium">
-                        Usar Modelo
-                      </Badge>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                      {t.description}
-                    </p>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between gap-3">
+                <div className="relative flex-1">
+                  <Input
+                    value={templateSearchQuery}
+                    onChange={(e) => setTemplateSearchQuery(e.target.value)}
+                    placeholder="Pesquisar modelo (ex: serviços, marketing, locação, permuta, pj, turismo, veículo)..."
+                    className="h-10 text-xs rounded-xl"
+                  />
+                </div>
+                <Badge variant="outline" className="text-[11px] font-mono shrink-0">
+                  {Object.keys(ALL_TEMPLATES).length} Modelos Oficiais
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-1">
+                {Object.entries(ALL_TEMPLATES)
+                  .filter(([_, t]) => {
+                    if (!templateSearchQuery.trim()) return true;
+                    const q = templateSearchQuery.toLowerCase();
+                    return t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q);
+                  })
+                  .map(([key, t]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => {
+                        handleSelectTemplate(key);
+                        setActiveTab("whatsapp");
+                      }}
+                      className={`p-4 rounded-xl border text-left space-y-2 transition-all cursor-pointer ${
+                        category === t.category
+                          ? "bg-primary/5 border-primary/60 ring-2 ring-primary/20 shadow-xs"
+                          : "bg-card border-border/70 hover:border-border hover:bg-muted/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs font-bold text-foreground line-clamp-1">{t.title}</p>
+                        <Badge variant="secondary" className="text-[10px] shrink-0 font-medium">
+                          Usar Modelo
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                        {t.description}
+                      </p>
+                    </button>
+                  ))}
               </div>
             </TabsContent>
 

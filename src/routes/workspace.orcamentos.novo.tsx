@@ -68,6 +68,8 @@ import { getNicheSemantics } from "@/lib/niche-semantics";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
+import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
 import {
  CANONICAL_DESTINATIONS,
  type CanonicalDestination,
@@ -1383,6 +1385,10 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  const [catalogCategory, setCatalogCategory] = useState("all");
  const [targetLineItemId, setTargetLineItemId] = useState<string | null>(null);
 
+ // Modais de Catálogo Mestre Central & Serviços Sob Demanda
+ const [isMasterCatalogOpen, setIsMasterCatalogOpen] = useState(false);
+ const [isServiceCatalogOpen, setIsServiceCatalogOpen] = useState(false);
+
  // Condições & Termos
  const [conditions, setConditions] = useState("");
  const [internalNotes, setInternalNotes] = useState("");
@@ -1502,6 +1508,53 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  setTargetLineItemId(null);
  toast.success(`"${product.title}" adicionado aos itens!`);
  };
+
+  const handleSelectMasterProduct = (p: any) => {
+    const price = p.suggested_price_cents || p.price_cents || 0;
+    const sku = p.gtin_ean || p.ncm || "";
+    const img = p.image_url || "";
+    setItems((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        item_type: "product_variant",
+        name: p.name || p.title,
+        description: p.description || (p.brand ? `Marca: ${p.brand}` : ""),
+        sku: sku,
+        unit_price_cents: price,
+        quantity: 1,
+        discount_cents: 0,
+        image_url: img,
+      },
+    ]);
+    setIsMasterCatalogOpen(false);
+    toast.success(`"${p.name || p.title}" adicionado ao orçamento!`);
+  };
+
+  const handleSelectOnDemandService = (s: any) => {
+    const price =
+      s.price_range_reference_cents?.typical ||
+      s.price_range_reference_cents?.min ||
+      s.hourly_rate_benchmark_cents ||
+      0;
+    const desc =
+      s.description || (s.scope_checklist?.length ? `Escopo: ${s.scope_checklist.join(", ")}` : "");
+    setItems((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        item_type: "service",
+        name: s.name || s.title,
+        description: desc,
+        sku: s.billing_unit ? `Unidade: ${s.billing_unit}` : "",
+        unit_price_cents: price,
+        quantity: 1,
+        discount_cents: 0,
+      },
+    ]);
+    setIsServiceCatalogOpen(false);
+    toast.success(`Serviço "${s.name || s.title}" adicionado ao orçamento!`);
+  };
 
  const handleAddItem = () => {
  setItems((prev) => [
@@ -1784,27 +1837,47 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <Package className="size-4 text-primary" />
  <span>Itens, Produtos & Serviços ({items.length})</span>
  </div>
- <div className="flex items-center gap-2">
- <Button
- type="button"
- size="sm"
- onClick={handleOpenCatalogForNewItem}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer"
- >
- <Package className="size-3.5" />
- <span>+ Produto do Catálogo</span>
- </Button>
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={handleAddItem}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span>Item Avulso</span>
- </Button>
- </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleOpenCatalogForNewItem}
+              className="rounded-xl text-xs font-bold gap-1.5 h-8 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 cursor-pointer"
+            >
+              <Package className="size-3.5" />
+              <span>+ Produto da Loja</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setIsMasterCatalogOpen(true)}
+              className="rounded-xl text-xs font-bold gap-1.5 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
+            >
+              <Boxes className="size-3.5 text-primary" />
+              <span>+ Catálogo Mestre</span>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setIsServiceCatalogOpen(true)}
+              className="rounded-xl text-xs font-bold gap-1.5 h-8 border-primary/30 text-foreground hover:bg-primary/10 cursor-pointer"
+            >
+              <Wrench className="size-3.5 text-primary" />
+              <span>+ Serviços</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddItem}
+              className="rounded-xl text-xs font-bold gap-1.5 h-8 cursor-pointer"
+            >
+              <Plus className="size-3.5" />
+              <span>Item Avulso</span>
+            </Button>
+          </div>
  </div>
 
  <div className="space-y-3">
@@ -2187,8 +2260,20 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  </div>
  )}
  </ScrollArea>
- </DialogContent>
- </Dialog>
- </div>
- );
+      </DialogContent>
+    </Dialog>
+
+    <MasterCatalogSearchDialog
+      open={isMasterCatalogOpen}
+      onOpenChange={setIsMasterCatalogOpen}
+      onSelectProduct={handleSelectMasterProduct}
+    />
+
+    <ServiceSearchDialog
+      open={isServiceCatalogOpen}
+      onOpenChange={setIsServiceCatalogOpen}
+      onSelectService={handleSelectOnDemandService}
+    />
+  </div>
+  );
 }

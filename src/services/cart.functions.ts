@@ -12,7 +12,7 @@ import { logSystemError } from "@/lib/logger";
 import { z } from "zod";
 
 import { getGuestSession, getSellerRefCookie } from "@/lib/session";
-import { getCurrentIdentity, mergeGuestCartLogic } from "./cart-helpers";
+import { getCurrentIdentity, mergeGuestCartLogic, withDataPayload } from "./cart-helpers";
 import type { CartDTO } from "@/types/orders";
 import { formatMoney } from "@/lib/money";
 
@@ -363,7 +363,7 @@ export async function mapCartToDTO(cart: any): Promise<CartDTO> {
 }
 
 export const getCart = createServerFn({ method: "GET" })
-  .validator(z.object({ storeId: z.string().uuid().optional() }).optional())
+  .validator(withDataPayload(z.object({ storeId: z.string().optional() })).optional())
   .handler(async ({ data }): Promise<CartDTO | null> => {
     const identity = await getCurrentIdentity();
     let storeId = data?.storeId;
@@ -448,7 +448,7 @@ const CancelCartSchema = z.object({
 });
 
 export const cancelCart = createServerFn({ method: "POST" })
- .validator(CancelCartSchema)
+  .validator(withDataPayload(CancelCartSchema))
  .handler(async ({ data: { cartId } }) => {
  const supabase = getServerClient();
  const identity = await getCurrentIdentity();
@@ -477,7 +477,7 @@ const AddToCartSchema = z.object({
 });
 
 export const addToCart = createServerFn({ method: "POST" })
- .validator(AddToCartSchema)
+  .validator(withDataPayload(AddToCartSchema))
  .handler(
  async ({ data: { variantId: inputVariantId, productId, quantity, sellerId, options } }) => {
  const supabase = getServerClient();
@@ -638,7 +638,7 @@ export const addToCart = createServerFn({ method: "POST" })
  );
 
 export const removeFromCart = createServerFn({ method: "POST" })
- .validator(z.object({ itemId: z.string().uuid() }))
+  .validator(withDataPayload(z.object({ itemId: z.string().uuid() })))
  .handler(async ({ data: { itemId } }) => {
  const supabase = getServerClient();
 
@@ -665,13 +665,15 @@ export const removeFromCart = createServerFn({ method: "POST" })
 // mergeGuestCartLogic lives in ./cart-helpers (see import above).
 
 export const mergeGuestCart = createServerFn({ method: "POST" })
- .validator(
- z.object({
- customerId: z.string(),
- accessToken: z.string().optional(),
- guestSessionToken: z.string().nullable().optional(),
- }),
- )
+  .validator(
+    withDataPayload(
+      z.object({
+        customerId: z.string(),
+        accessToken: z.string().optional(),
+        guestSessionToken: z.string().nullable().optional(),
+      }),
+    ),
+  )
  .handler(async ({ data: { customerId, accessToken, guestSessionToken } }) => {
  // If not explicitly passed, try to read it (safe if synchronous, but might fail if after async)
  const token = guestSessionToken !== undefined ? guestSessionToken : getGuestSession();
@@ -679,7 +681,7 @@ export const mergeGuestCart = createServerFn({ method: "POST" })
  });
 
 export const updateCartItemQty = createServerFn({ method: "POST" })
- .validator(z.object({ variantId: z.string().uuid(), delta: z.number().int() }))
+  .validator(withDataPayload(z.object({ variantId: z.string().uuid(), delta: z.number().int() })))
  .handler(async ({ data: { variantId, delta } }) => {
  const supabase = getServerClient();
  const identity = await getCurrentIdentity();
@@ -725,7 +727,7 @@ const UpdateCartItemOptionsSchema = z.object({
 });
 
 export const updateCartItemOptions = createServerFn({ method: "POST" })
- .validator(UpdateCartItemOptionsSchema)
+  .validator(withDataPayload(UpdateCartItemOptionsSchema))
  .handler(async (params) => {
  const { itemId, variantId, options, quantity } = params.data;
  const supabase = getServerClient();
@@ -785,7 +787,7 @@ export const updateCartItemOptions = createServerFn({ method: "POST" })
  });
 
 export const applyCouponToCart = createServerFn({ method: "POST" })
- .validator(z.object({ code: z.string().toUpperCase() }))
+  .validator(withDataPayload(z.object({ code: z.string().toUpperCase() })))
  .handler(async ({ data: { code } }) => {
  const supabase = getServerClient();
  const identity = await getCurrentIdentity();
@@ -862,13 +864,15 @@ export const applyCouponToCart = createServerFn({ method: "POST" })
  });
 
 export const updateCartShipping = createServerFn({ method: "POST" })
- .validator(
- z.object({
- zipcode: z.string().min(8),
- method: z.string().min(2),
- cents: z.number().min(0),
- }),
- )
+  .validator(
+    withDataPayload(
+      z.object({
+        zipcode: z.string().min(5),
+        method: z.string().min(2),
+        cents: z.number().min(0),
+      }),
+    ),
+  )
  .handler(async ({ data: { zipcode, method, cents } }) => {
  const supabase = getServerClient();
  const identity = await getCurrentIdentity();
@@ -896,12 +900,14 @@ export const updateCartShipping = createServerFn({ method: "POST" })
  });
 
 export const updateCartContact = createServerFn({ method: "POST" })
- .validator(
- z.object({
- guestEmail: z.string().email().optional(),
- guestPhone: z.string().optional(),
- }),
- )
+  .validator(
+    withDataPayload(
+      z.object({
+        guestEmail: z.string().email().optional(),
+        guestPhone: z.string().optional(),
+      }),
+    ),
+  )
  .handler(async ({ data: { guestEmail, guestPhone } }) => {
  try {
  const identity = await getCurrentIdentity();

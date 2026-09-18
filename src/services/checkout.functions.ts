@@ -14,7 +14,7 @@ import crypto from "node:crypto";
 import { getServerIdentity, getSSRClient } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
-import { getCurrentIdentity } from "./cart-helpers";
+import { getCurrentIdentity, withDataPayload } from "./cart-helpers";
 import { getRequest } from "@tanstack/react-start/server";
 import { readCookieFromRequest } from "@/lib/http-cookies";
 import { generateTransactionCertificate } from "@/services/security.functions";
@@ -58,7 +58,7 @@ const CheckoutSchema = z
  });
 
 export const getOrderByToken = createServerFn({ method: "GET" })
- .validator(z.object({ token: z.string() }))
+ .validator(withDataPayload(z.object({ token: z.string() })))
  .handler(async ({ data: { token } }) => {
  const db = await getServerClient();
  const { data } = await db
@@ -74,7 +74,7 @@ export const getOrderByToken = createServerFn({ method: "GET" })
 import { enforceRateLimit, extractClientIp } from "@/lib/rate-limiter";
 
 export const processCheckout = createServerFn({ method: "POST" })
- .validator(CheckoutSchema)
+ .validator(withDataPayload(CheckoutSchema))
  .handler(async ({ data: params }) => {
  try {
  const req = getRequest();

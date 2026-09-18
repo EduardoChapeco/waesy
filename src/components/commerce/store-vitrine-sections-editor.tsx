@@ -76,7 +76,7 @@ export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [
   { id: "sec_product_rail", type: "product_rail", title: "Produtos Mais Pedidos", enabled: true },
   { id: "sec_hotpages", type: "hotpages", title: "Acesso Rápido & Botões", enabled: true },
   { id: "sec_brand_story", type: "brand_story", title: "Sobre a Marca & Valores", enabled: true },
-  { id: "sec_infinite_feed", type: "infinite_feed", title: "Scroll Infinito de Descoberta", enabled: true },
+  { id: "sec_infinite_feed", type: "infinite_feed", title: "Mais Produtos", enabled: true },
 ];
 
 interface StoreVitrineSectionsEditorProps {
@@ -104,7 +104,7 @@ export function StoreVitrineSectionsEditor({
 
   const handleToggleEnabled = (sectionId: string) => {
     if (sectionId === "sec_infinite_feed") {
-      toast.info("A seção de scroll infinito final é obrigatória para manter a navegação contínua.");
+      toast.info("Esta seção é obrigatória para exibir todos os produtos da loja.");
       return;
     }
     setSections((prev) =>
@@ -168,7 +168,7 @@ export function StoreVitrineSectionsEditor({
     const infiniteSection = sections.find((s) => s.type === "infinite_feed") || {
       id: "sec_infinite_feed",
       type: "infinite_feed",
-      title: "Scroll Infinito de Descoberta",
+      title: "Mais Produtos",
       enabled: true,
     };
     const finalSections = [...withoutInfinite, infiniteSection];

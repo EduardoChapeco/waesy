@@ -13,9 +13,16 @@ import {
   Shield,
   MapPin,
   CheckCircle2,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import {
   WorkspaceDashboardSheet,
@@ -27,11 +34,19 @@ import { toast } from "sonner";
 import { getStoreSettings } from "@/services/store.functions";
 import {
   listTravelVouchers,
+  createTravelVoucher,
   deleteTravelVoucher,
 } from "@/services/travel-vouchers.functions";
 import { VOUCHER_TYPE_LABELS, type VoucherType } from "@/types/travel-vouchers";
 import { TemplateVoucherA4 } from "@/components/tourism/vouchers/templates/template-voucher-a4";
 import { exportElementAsPdf } from "@/lib/pdf-export";
+import {
+  DigitalCompanionCard,
+  type CompanionCardSectionItem,
+  type CompanionRuleItem,
+  type CompanionContactItem,
+} from "@/components/documents/digital-companion-card";
+import { MultimodalOcrUploader } from "@/components/documents/multimodal-ocr-uploader";
 
 export const Route = createFileRoute("/workspace/turismo/vouchers/")({
   head: () => ({
@@ -39,8 +54,8 @@ export const Route = createFileRoute("/workspace/turismo/vouchers/")({
   }),
   loader: async () => {
     try {
-    const store = await getStoreSettings().catch(() => null);
-    return { store };
+      const store = await getStoreSettings().catch(() => null);
+      return { store };
     } catch (err) {
       console.error("[loader:workspace.turismo.vouchers.index] Unhandled loader error:", err);
       return { store: null };
@@ -58,8 +73,10 @@ export default function WorkspaceVouchersPage() {
   const [isMetricsOpen, setIsMetricsOpen] = useState(false);
   const [isCreationSheetOpen, setIsCreationSheetOpen] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
+  const [isUniversalOcrOpen, setIsUniversalOcrOpen] = useState(false);
   const [creationType, setCreationType] = useState<VoucherType>("flight");
   const [previewVoucher, setPreviewVoucher] = useState<any | null>(null);
+  const [companionModalVoucher, setCompanionModalVoucher] = useState<any | null>(null);
 
   const {
     data: vouchers = [],
@@ -136,6 +153,61 @@ export default function WorkspaceVouchersPage() {
     }, 300);
   };
 
+  const handleSaveExtractedVoucherToDb = async (extracted: any) => {
+    try {
+      const flights = (extracted.sections || []).filter((s: any) => s.type === "flight");
+      const hotels = (extracted.sections || []).filter((s: any) => s.type === "hotel");
+      const transfers = (extracted.sections || []).filter((s: any) => s.type === "transport");
+
+      const voucherType =
+        flights.length > 0
+          ? "flight"
+          : hotels.length > 0
+            ? "hotel"
+            : transfers.length > 0
+              ? "transfer"
+              : "other";
+
+      await createTravelVoucher({
+        data: {
+          store_id: storeId,
+          voucher_type: voucherType as any,
+          title: extracted.title || "Voucher Importado via OCR",
+          passenger_name: extracted.participants?.[0] || "Passageiro Principal",
+          flight_data: flights[0]
+            ? {
+                airline: flights[0].title?.split("·")[0]?.trim() || "Cia Aérea",
+                flightNumber: flights[0].title?.split("·")[1]?.trim() || "",
+                origin: flights[0].subtitle?.split("➔")[0]?.trim() || "",
+                destination: flights[0].subtitle?.split("➔")[1]?.trim() || "",
+                locator: extracted.code || "",
+              }
+            : {},
+          hotel_data: hotels[0]
+            ? {
+                hotelName: hotels[0].title,
+                address: hotels[0].subtitle,
+                confirmationCode: extracted.code || "",
+              }
+            : {},
+          transfer_data: transfers[0]
+            ? {
+                pickupLocation: transfers[0].title?.split("➔")[0]?.trim() || "",
+                dropoffLocation: transfers[0].title?.split("➔")[1]?.trim() || "",
+              }
+            : {},
+        },
+      });
+
+      toast.success("Voucher registrado no banco de dados com sucesso!");
+      refetch();
+      setIsUniversalOcrOpen(false);
+    } catch (err: any) {
+      toast.error("Erro ao registrar voucher: " + err?.message);
+      throw err;
+    }
+  };
+
   const TABS = [
     { id: "all", label: "Todos os Vouchers", icon: Ticket, count: vouchers.length },
     { id: "flight", label: "Aéreos & Voos", icon: Plane, count: flightVouchersCount },
@@ -161,14 +233,21 @@ export default function WorkspaceVouchersPage() {
           icon: FileText,
           onClick: () => setIsImportVoucherOpen(true),
         }}
-        secondaryAction={{
-          label: "Emitir Manual",
-          icon: Plus,
-          onClick: () => {
-            setCreationType("flight");
-            setIsCreationSheetOpen(true);
+        secondaryActions={[
+          {
+            label: "Scanner 9:16 (IA)",
+            icon: Smartphone,
+            onClick: () => setIsUniversalOcrOpen(true),
           },
-        }}
+          {
+            label: "Emitir Manual",
+            icon: Plus,
+            onClick: () => {
+              setCreationType("flight");
+              setIsCreationSheetOpen(true);
+            },
+          },
+        ]}
       />
 
       {/* ── 2. GRID OPERACIONAL DE VOUCHERS ── */}
@@ -260,15 +339,29 @@ export default function WorkspaceVouchersPage() {
               </div>
 
               <div className="border-t border-border/50 pt-3 flex items-center gap-2 justify-between text-xs">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleDownloadPdf(v)}
-                  className="h-11 sm:h-8 px-4 sm:px-3 rounded-xl text-xs font-bold gap-1.5 border-border/70 flex-1 sm:flex-initial cursor-pointer"
-                >
-                  <Download className="size-4 sm:size-3.5" />
-                  <span>Baixar PDF</span>
-                </Button>
+                <div className="flex items-center gap-1.5 flex-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCompanionModalVoucher(v)}
+                    className="h-11 sm:h-8 px-3 rounded-xl text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                    title="Visualizar Cartão 9:16 para WhatsApp e Stories"
+                  >
+                    <Smartphone className="size-4 sm:size-3.5" />
+                    <span>Cartão 9:16</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleDownloadPdf(v)}
+                    className="h-11 sm:h-8 px-3 rounded-xl text-xs font-bold gap-1.5 border-border/70 cursor-pointer"
+                    title="Baixar em formato A4 tradicional"
+                  >
+                    <Download className="size-4 sm:size-3.5" />
+                    <span>A4</span>
+                  </Button>
+                </div>
 
                 <Button
                   type="button"
@@ -302,6 +395,28 @@ export default function WorkspaceVouchersPage() {
         onSuccess={() => refetch()}
       />
 
+      {/* ── 3.2 MODAL DE SCANNER MULTIMODAL OCR (GERADOR 9:16 & WHATSAPP) ── */}
+      <Dialog open={isUniversalOcrOpen} onOpenChange={setIsUniversalOcrOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Smartphone className="size-4 text-primary" />
+              <span>Scanner Multimodal de Documentos & Vouchers 9:16 (IA)</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="pt-2">
+            <MultimodalOcrUploader
+              nicheHint="tourism"
+              showPreviewModal={true}
+              onSaveToDatabase={handleSaveExtractedVoucherToDb}
+              onExtracted={() => {
+                refetch();
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* ── 4. DASHBOARD SHEET DE MÉTRICAS ── */}
       <WorkspaceDashboardSheet
         isOpen={isMetricsOpen}
@@ -311,6 +426,42 @@ export default function WorkspaceVouchersPage() {
         metrics={metricsItems}
       />
 
+      {/* ── 4.1 MODAL DE VISUALIZAÇÃO E EXPORTAÇÃO 9:16 (WHATSAPP & STORIES) ── */}
+      <Dialog
+        open={Boolean(companionModalVoucher)}
+        onOpenChange={(open) => {
+          if (!open) setCompanionModalVoucher(null);
+        }}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Cartão Digital 9:16 de Acompanhamento</DialogTitle>
+          </DialogHeader>
+          {companionModalVoucher && (
+            <div className="w-full">
+              <DigitalCompanionCard
+                niche="tourism"
+                title={
+                  companionModalVoucher.title ||
+                  (companionModalVoucher.voucher_type === "flight"
+                    ? `${companionModalVoucher.flight_data?.origin || "Origem"} ➔ ${companionModalVoucher.flight_data?.destination || "Destino"}`
+                    : companionModalVoucher.hotel_data?.hotelName || "Voucher de Viagem")
+                }
+                subtitle={companionModalVoucher.title}
+                code={companionModalVoucher.voucher_number}
+                companyName={store?.name || "Agência de Viagens"}
+                companyLogoUrl={store?.logo_url}
+                participantsLabel="Passageiro"
+                participants={[companionModalVoucher.passenger_name].filter(Boolean)}
+                sections={buildCompanionSections(companionModalVoucher)}
+                rules={buildCompanionRules(companionModalVoucher)}
+                emergencyContacts={buildCompanionContacts(companionModalVoucher, store)}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* ── 5. CONTAINER OCULTO PARA GERAR PDF A4 ── */}
       {previewVoucher && (
         <div className="fixed left-[-9999px] top-0 pointer-events-none">
@@ -319,4 +470,148 @@ export default function WorkspaceVouchersPage() {
       )}
     </div>
   );
+}
+
+function buildCompanionSections(v: any): CompanionCardSectionItem[] {
+  const sections: CompanionCardSectionItem[] = [];
+
+  if (v.voucher_type === "flight" && v.flight_data) {
+    sections.push({
+      type: "flight",
+      badge: v.flight_data.seat ? `Assento: ${v.flight_data.seat}` : "Voo Confirmado",
+      title: `${v.flight_data.airline || "Cia Aérea"} · ${v.flight_data.flightNumber || "Voo"}`,
+      subtitle: `${v.flight_data.origin || "Origem"} ➔ ${v.flight_data.destination || "Destino"}`,
+      details: [
+        { label: "Embarque", value: v.flight_data.departureTime || "-", highlight: true },
+        { label: "Chegada", value: v.flight_data.arrivalTime || "-" },
+        {
+          label: "Terminal / Portão",
+          value: [
+            v.flight_data.terminal ? `T${v.flight_data.terminal}` : "",
+            v.flight_data.gate ? `Portão ${v.flight_data.gate}` : "",
+          ]
+            .filter(Boolean)
+            .join(" · ") || "-",
+        },
+        { label: "Bagagem", value: v.flight_data.baggage || "1x 10kg mão inclusa" },
+      ].filter((d) => Boolean(d.value && d.value !== "-")),
+    });
+  } else if (v.voucher_type === "hotel" && v.hotel_data) {
+    sections.push({
+      type: "hotel",
+      badge: v.hotel_data.confirmationCode ? `Reserva: ${v.hotel_data.confirmationCode}` : "Hospedagem",
+      title: v.hotel_data.hotelName || "Hotel / Resort",
+      subtitle: v.hotel_data.address || "Endereço da Hospedagem",
+      details: [
+        { label: "Check-in", value: v.hotel_data.checkInDate || "-", highlight: true },
+        { label: "Check-out", value: v.hotel_data.checkOutDate || "-" },
+        { label: "Acomodação", value: v.hotel_data.roomType || "Quarto Standard" },
+        { label: "Regime", value: v.hotel_data.boardBasis || "Café da Manhã" },
+      ].filter((d) => Boolean(d.value && d.value !== "-")),
+    });
+  } else if (v.voucher_type === "transfer" && v.transfer_data) {
+    sections.push({
+      type: "transport",
+      badge: "Transfer Executivo",
+      title: `${v.transfer_data.pickupLocation || "Origem"} ➔ ${v.transfer_data.dropoffLocation || "Destino"}`,
+      subtitle: v.transfer_data.vehicleType || "Veículo Executivo",
+      details: [
+        { label: "Horário de Coleta", value: v.transfer_data.pickupTime || "A combinar", highlight: true },
+        { label: "Motorista", value: v.transfer_data.driverName || "Informado no local" },
+        { label: "Contato", value: v.transfer_data.driverPhone || "-" },
+      ].filter((d) => Boolean(d.value && d.value !== "-")),
+    });
+  } else {
+    sections.push({
+      type: "custom",
+      badge: "Voucher de Serviço",
+      title: v.title || "Serviço Confirmado",
+      subtitle: `Código: ${v.voucher_number}`,
+      details: [
+        { label: "Beneficiário", value: v.passenger_name || "-", highlight: true },
+        {
+          label: "Emissão",
+          value: v.created_at ? new Date(v.created_at).toLocaleDateString("pt-BR") : "-",
+        },
+      ].filter((d) => Boolean(d.value && d.value !== "-")),
+    });
+  }
+
+  return sections;
+}
+
+function buildCompanionRules(v: any): CompanionRuleItem[] {
+  if (v.voucher_type === "flight") {
+    return [
+      {
+        title: "Horário no Aeroporto",
+        description: "Compareça com 2h de antecedência em voos nacionais e 3h em internacionais.",
+        badge: "Embarque",
+        highlight: true,
+      },
+      {
+        title: "Documentação de Identificação",
+        description: "RG original ou CNH dentro da validade para embarque.",
+        badge: "Documentos",
+      },
+      {
+        title: "Franquia de Bagagem",
+        description: "1 mala de mão de até 10kg inclusa respeitando as dimensões padrão.",
+        badge: "Bagagem",
+      },
+    ];
+  }
+
+  if (v.voucher_type === "hotel") {
+    return [
+      {
+        title: "Horário de Check-in",
+        description: "Entrada a partir das 14h00. Diárias encerram às 11h00/12h00.",
+        badge: "Hotel",
+        highlight: true,
+      },
+      {
+        title: "Apresentação de Voucher",
+        description: "Apresente este voucher digital no balcão da recepção acompanhado de documento com foto.",
+        badge: "Recepção",
+      },
+    ];
+  }
+
+  return [
+    {
+      title: "Orientações Gerais",
+      description: "Mantenha o voucher salvo no celular e apresente ao prestador no momento do atendimento.",
+      badge: "Atendimento",
+      highlight: true,
+    },
+  ];
+}
+
+function buildCompanionContacts(v: any, store: any): CompanionContactItem[] {
+  const contacts: CompanionContactItem[] = [];
+  const settings = store?.settings || {};
+  const agencyPhone = settings.whatsapp_phone || settings.phone || store?.whatsapp_phone;
+
+  if (agencyPhone) {
+    contacts.push({
+      name: store?.name || "Agência de Viagens",
+      category: "Plantão da Agência",
+      phone: agencyPhone,
+      whatsapp: true,
+      is24h: false,
+    });
+  }
+
+  if (v.voucher_type === "transfer" && v.transfer_data?.driverPhone) {
+    contacts.push({
+      name: v.transfer_data.driverName || "Motorista Transfer",
+      category: "Receptivo / Motorista",
+      phone: v.transfer_data.driverPhone,
+      whatsapp: true,
+      is24h: true,
+    });
+  }
+
+  return contacts;
 }

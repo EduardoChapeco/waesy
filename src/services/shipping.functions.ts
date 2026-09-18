@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { withDataPayload } from "@/services/cart-helpers";
 
 /**
  * Calculates shipping — pure handler for testability.
@@ -249,16 +250,18 @@ export async function _calculateShipping({
 }
 
 export const calculateShipping = createServerFn({ method: "POST" })
- .validator(
- z.object({
- cartId: z.string().uuid().optional(),
- productId: z.string().uuid().optional(),
- storeId: z.string().uuid().optional(),
- zipcode: z.string().min(8),
- weightGrams: z.number().optional(),
- }),
- )
- .handler(async ({ data }) => _calculateShipping(data));
+  .validator(
+    withDataPayload(
+      z.object({
+        cartId: z.string().optional(),
+        productId: z.string().optional(),
+        storeId: z.string().optional(),
+        zipcode: z.string().min(1),
+        weightGrams: z.number().optional(),
+      }),
+    ),
+  )
+  .handler(async ({ data }) => _calculateShipping(data));
 
 // ---------------------------------------------------------------------------
 
@@ -303,98 +306,102 @@ export async function _upsertShippingZone(data: {
 }
 
 export const upsertShippingZone = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid().optional(),
- name: z.string(),
- regions: z.array(z.string()),
- is_active: z.boolean(),
- }),
- )
- .handler(async ({ data }) => _upsertShippingZone(data));
+  .validator(
+    withDataPayload(
+      z.object({
+        id: z.string().optional(),
+        name: z.string(),
+        regions: z.array(z.string()),
+        is_active: z.boolean(),
+      }),
+    ),
+  )
+  .handler(async ({ data }) => _upsertShippingZone(data));
 
 // ---------------------------------------------------------------------------
 
 export async function _deleteShippingZone(id: string) {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager"]);
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
- const { error } = await supabase
- .from("shipping_zones")
- .delete()
- .eq("id", id)
- .eq("store_id", identity.store_id);
+  const { error } = await supabase
+    .from("shipping_zones")
+    .delete()
+    .eq("id", id)
+    .eq("store_id", identity.store_id);
 
- if (error) throw new Error(error.message);
- return true;
+  if (error) throw new Error(error.message);
+  return true;
 }
 
 export const deleteShippingZone = createServerFn({ method: "POST" })
- .validator(z.object({ id: z.string().uuid() }))
- .handler(async ({ data: { id } }) => _deleteShippingZone(id));
+  .validator(withDataPayload(z.object({ id: z.string().min(1) })))
+  .handler(async ({ data: { id } }) => _deleteShippingZone(id));
 
 // ---------------------------------------------------------------------------
 
 export async function _upsertShippingRate(data: {
- id?: string;
- zone_id: string;
- name: string;
- price_cents: number;
- min_order_cents?: number | null;
- estimated_days?: number | null;
- is_active?: boolean;
+  id?: string;
+  zone_id: string;
+  name: string;
+  price_cents: number;
+  min_order_cents?: number | null;
+  estimated_days?: number | null;
+  is_active?: boolean;
 }) {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager"]);
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
- const payload = { ...data, store_id: identity.store_id };
+  const payload = { ...data, store_id: identity.store_id };
 
- const { data: rate, error } = await supabase
- .from("shipping_rates")
- .upsert(payload)
- .select()
- .single();
+  const { data: rate, error } = await supabase
+    .from("shipping_rates")
+    .upsert(payload)
+    .select()
+    .single();
 
- if (error) throw new Error(error.message);
- return rate;
+  if (error) throw new Error(error.message);
+  return rate;
 }
 
 export const upsertShippingRate = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid().optional(),
- zone_id: z.string().uuid(),
- name: z.string(),
- price_cents: z.number().int(),
- min_order_cents: z.number().int().nullish(),
- estimated_days: z.number().int().nullish(),
- is_active: z.boolean().optional(),
- }),
- )
- .handler(async ({ data }) => _upsertShippingRate(data));
+  .validator(
+    withDataPayload(
+      z.object({
+        id: z.string().optional(),
+        zone_id: z.string().min(1),
+        name: z.string(),
+        price_cents: z.number().int(),
+        min_order_cents: z.number().int().nullish(),
+        estimated_days: z.number().int().nullish(),
+        is_active: z.boolean().optional(),
+      }),
+    ),
+  )
+  .handler(async ({ data }) => _upsertShippingRate(data));
 
 // ---------------------------------------------------------------------------
 
 export async function _deleteShippingRate(id: string) {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager"]);
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
- const { error } = await supabase
- .from("shipping_rates")
- .delete()
- .eq("id", id)
- .eq("store_id", identity.store_id);
+  const { error } = await supabase
+    .from("shipping_rates")
+    .delete()
+    .eq("id", id)
+    .eq("store_id", identity.store_id);
 
- if (error) throw new Error(error.message);
- return true;
+  if (error) throw new Error(error.message);
+  return true;
 }
 
 export const deleteShippingRate = createServerFn({ method: "POST" })
- .validator(z.object({ id: z.string().uuid() }))
- .handler(async ({ data: { id } }) => _deleteShippingRate(id));
+  .validator(withDataPayload(z.object({ id: z.string().min(1) })))
+  .handler(async ({ data: { id } }) => _deleteShippingRate(id));
 
 export async function _listDrivers() {
  const supabase = getServerClient();
@@ -415,34 +422,36 @@ export async function _listDrivers() {
 export const listDrivers = createServerFn({ method: "GET" }).handler(_listDrivers);
 
 export const upsertDriver = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid().optional(),
- name: z.string().min(2),
- phone: z.string().optional(),
- vehicle_type: z.enum(["motorcycle", "bicycle", "car", "van"]).default("motorcycle"),
- status: z.enum(["available", "busy", "offline"]).default("available"),
- }),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin", "manager", "logistics"]);
+  .validator(
+    withDataPayload(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().min(2),
+        phone: z.string().optional(),
+        vehicle_type: z.enum(["motorcycle", "bicycle", "car", "van"]).default("motorcycle"),
+        status: z.enum(["available", "busy", "offline"]).default("available"),
+      }),
+    ),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "logistics"]);
 
- const payload = { ...data, store_id: identity.store_id };
- const { data: driver, error } = await supabase
- .from("delivery_drivers")
- .upsert(payload)
- .select()
- .single();
+    const payload = { ...data, store_id: identity.store_id };
+    const { data: driver, error } = await supabase
+      .from("delivery_drivers")
+      .upsert(payload)
+      .select()
+      .single();
 
- if (error) throw new Error(error.message);
- return driver;
- });
+    if (error) throw new Error(error.message);
+    return driver;
+  });
 
 export const getOrderDispatches = createServerFn({ method: "GET" })
- .validator(z.object({ orderId: z.string().uuid() }))
- .handler(async ({ data: { orderId } }) => {
+  .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))
+  .handler(async ({ data: { orderId } }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "logistics"]);
@@ -510,7 +519,7 @@ export interface ShippingLabelPayload {
 }
 
 export const getOrderShippingLabelData = createServerFn({ method: "GET" })
-  .validator(z.object({ orderId: z.string().uuid() }))
+  .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))
   .handler(async ({ data: { orderId } }): Promise<ShippingLabelPayload> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
@@ -607,7 +616,7 @@ export const getOrderShippingLabelData = createServerFn({ method: "GET" })
   });
 
 export const generateZplShippingLabel = createServerFn({ method: "POST" })
-  .validator(z.object({ orderId: z.string().uuid() }))
+  .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))
   .handler(async ({ data: { orderId } }) => {
     const payload = await getOrderShippingLabelData({ data: { orderId } });
 
@@ -664,13 +673,15 @@ export const generateZplShippingLabel = createServerFn({ method: "POST" })
 
 export const updateOrderShippingDispatch = createServerFn({ method: "POST" })
   .validator(
-    z.object({
-      orderId: z.string().uuid(),
-      carrier: z.string().min(1, "Informe a transportadora"),
-      trackingCode: z.string().min(3, "Informe o código de rastreamento"),
-      serviceName: z.string().optional(),
-      notifyCustomer: z.boolean().default(true),
-    }),
+    withDataPayload(
+      z.object({
+        orderId: z.string().min(1),
+        carrier: z.string().min(1, "Informe a transportadora"),
+        trackingCode: z.string().min(3, "Informe o código de rastreamento"),
+        serviceName: z.string().optional(),
+        notifyCustomer: z.boolean().default(true),
+      }),
+    ),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
@@ -776,28 +787,30 @@ export const getStoreShippingSettings = createServerFn({ method: "GET" }).handle
 
 export const saveStoreShippingSettings = createServerFn({ method: "POST" })
   .validator(
-    z.object({
-      sender_origin_type: z.enum(["store_profile", "custom_distribution_center"]),
-      sender_name: z.string().optional(),
-      sender_document: z.string().optional(),
-      sender_phone: z.string().optional(),
-      sender_zip_code: z.string().optional(),
-      sender_street: z.string().optional(),
-      sender_number: z.string().optional(),
-      sender_complement: z.string().optional(),
-      sender_neighborhood: z.string().optional(),
-      sender_city: z.string().optional(),
-      sender_state: z.string().optional(),
-      enabled_formats: z.object({
-        pdf: z.boolean(),
-        zpl: z.boolean(),
-        melhor_envio: z.boolean(),
+    withDataPayload(
+      z.object({
+        sender_origin_type: z.enum(["store_profile", "custom_distribution_center"]),
+        sender_name: z.string().optional(),
+        sender_document: z.string().optional(),
+        sender_phone: z.string().optional(),
+        sender_zip_code: z.string().optional(),
+        sender_street: z.string().optional(),
+        sender_number: z.string().optional(),
+        sender_complement: z.string().optional(),
+        sender_neighborhood: z.string().optional(),
+        sender_city: z.string().optional(),
+        sender_state: z.string().optional(),
+        enabled_formats: z.object({
+          pdf: z.boolean(),
+          zpl: z.boolean(),
+          melhor_envio: z.boolean(),
+        }),
+        default_format: z.enum(["melhor_envio", "pdf_100x150", "zpl"]),
+        auto_content_declaration: z.boolean(),
+        melhor_envio_token: z.string().optional(),
+        melhor_envio_environment: z.enum(["sandbox", "production"]).optional(),
       }),
-      default_format: z.enum(["melhor_envio", "pdf_100x150", "zpl"]),
-      auto_content_declaration: z.boolean(),
-      melhor_envio_token: z.string().optional(),
-      melhor_envio_environment: z.enum(["sandbox", "production"]).optional(),
-    }),
+    ),
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();

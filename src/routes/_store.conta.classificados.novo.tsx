@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -34,6 +34,7 @@ import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
 import { upsertClassified, getPublicClassifiedById } from "@/services/classifieds.functions";
+import { createListingWithAI } from "@/services/ai-sdr.functions";
 import {
  CANONICAL_VEHICLE_BRANDS,
  CANONICAL_TRANSMISSIONS,
@@ -98,7 +99,10 @@ export type ClassifiedNicheType =
   | "veiculo"
   | "servico"
   | "vaga"
-  | "assinatura";
+  | "assinatura"
+  | "gastronomia"
+  | "farmacia"
+  | "mercado";
 
 interface NicheDefinition {
   id: ClassifiedNicheType;
@@ -113,45 +117,24 @@ interface NicheDefinition {
 
 const NICHE_CARDS: NicheDefinition[] = [
   {
-    id: "viagem",
-    canonicalCategory: "travel",
-    title: "Viagens, Turismo & Resorts",
-    subtitle: "Pacotes, Roteiros & Destinos",
-    description: "Pacotes turísticos, resorts, passeios guiados e roteiros com fotos e programação completa.",
-    icon: Key,
-    badge: "Vitrine Imersiva",
-    gradient: "from-amber-500/15 via-rose-500/10 to-purple-600/10",
-  },
-  {
-    id: "equipamento",
-    canonicalCategory: "equipment",
-    title: "Aluguel de Equipamentos",
-    subtitle: "Eventos, Som, Luz & Máquinas",
-    description: "Locação de caixas de som, iluminação, tendas, mesas, ferramentas e equipamentos para festas e obras.",
-    icon: Wrench,
-    badge: "Locação / Diária",
-    gradient: "from-blue-500/10 via-cyan-500/5 to-transparent",
-  },
-  {
-    id: "doacao",
-    canonicalCategory: "donation",
-    title: "Doação / Gratuito (R$ 0)",
-    subtitle: "Solidariedade & Desapego Livre",
-    description: "Doe móveis, roupas, livros, eletrônicos ou alimentos gratuitamente para a comunidade local.",
+    id: "desapego",
+    canonicalCategory: "sale",
+    title: "Desapego & Bens Físicos",
+    subtitle: "Eletrônicos, Móveis & Usados",
+    description: "Eletrônicos, celulares, computadores, instrumentos musicais, moda, móveis e itens com envio.",
     icon: Tag,
-    badge: "Gratuito R$ 0",
+    badge: "Envio & Retirada",
     gradient: "from-emerald-500/10 via-teal-500/5 to-transparent",
   },
   {
-    id: "hospedagem",
-    canonicalCategory: "real_estate",
-    title: "Hospedagem & Temporada",
-    subtitle: "Chalés, Cabanas, Pousadas & Temporada",
-    description:
-      "Aluguel por diária, chalés com hidro, cabanas na serra, casas de campo, pousadas e suítes com check-in.",
-    icon: Key,
-    badge: "Diárias / Temporada",
-    gradient: "from-amber-500/10 via-rose-500/5 to-transparent",
+    id: "veiculo",
+    canonicalCategory: "vehicle",
+    title: "Veículo",
+    subtitle: "Automotivo & Náutico",
+    description: "Carros de passeio, motocicletas, caminhões, utilitários e veículos comerciais.",
+    icon: Car,
+    badge: "Especificações",
+    gradient: "from-amber-500/10 via-orange-500/5 to-transparent",
   },
   {
     id: "imovel",
@@ -165,56 +148,57 @@ const NICHE_CARDS: NicheDefinition[] = [
     gradient: "from-blue-500/10 via-indigo-500/5 to-transparent",
   },
   {
-    id: "desapego",
-    canonicalCategory: "sale",
-    title: "Desapego & Bens Físicos",
-    subtitle: "Eletrônicos, Móveis & Usados",
-    description: "Eletrônicos, celulares, computadores, instrumentos musicais, moda, móveis e itens com envio.",
-    icon: Tag,
-    badge: "Envio & Retirada",
-    gradient: "from-emerald-500/10 via-teal-500/5 to-transparent",
+    id: "servico",
+    canonicalCategory: "service",
+    title: "Serviço Profissional",
+    subtitle: "Autônomos & Especialistas",
+    description: "Trabalhos técnicos, consultorias, serviços domésticos, manutenção e freelancers.",
+    icon: Wrench,
+    badge: "Agendável",
+    gradient: "from-purple-500/10 via-pink-500/5 to-transparent",
   },
- {
- id: "digital",
- canonicalCategory: "sale",
- title: "Produto Digital & Downloads",
- subtitle: "E-books, Planilhas, Cursos & Presets",
- description: "Infoprodutos, arquivos para download imediato, templates, artes digitais e materiais educativos.",
- icon: FileArchive,
- badge: "Download Imediato",
- gradient: "from-indigo-500/10 via-purple-500/5 to-transparent",
- },
- {
- id: "veiculo",
- canonicalCategory: "vehicle",
- title: "Veículo",
- subtitle: "Automotivo & Náutico",
- description: "Carros de passeio, motocicletas, caminhões, utilitários e veículos comerciais.",
- icon: Car,
- badge: "Especificações",
- gradient: "from-amber-500/10 via-orange-500/5 to-transparent",
- },
- {
- id: "servico",
- canonicalCategory: "service",
- title: "Serviço Profissional",
- subtitle: "Autônomos & Especialistas",
- description: "Trabalhos técnicos, consultorias, serviços domésticos, manutenção e freelancers.",
- icon: Wrench,
- badge: "Agendável",
- gradient: "from-purple-500/10 via-pink-500/5 to-transparent",
- },
- {
- id: "vaga",
- canonicalCategory: "job",
- title: "Oportunidade / Vaga",
- subtitle: "Contratação & Carreiras",
- description:
- "Vagas de emprego, parcerias, estágios e oportunidades profissionais para a comunidade.",
- icon: Briefcase,
- badge: "Talentos",
- gradient: "from-rose-500/10 via-red-500/5 to-transparent",
- },
+  {
+    id: "vaga",
+    canonicalCategory: "job",
+    title: "Oportunidade / Vaga",
+    subtitle: "Contratação & Carreiras",
+    description:
+      "Vagas de emprego, parcerias, estágios e oportunidades profissionais para a comunidade.",
+    icon: Briefcase,
+    badge: "Talentos",
+    gradient: "from-rose-500/10 via-red-500/5 to-transparent",
+  },
+  {
+    id: "digital",
+    canonicalCategory: "sale",
+    title: "Produto Digital & Downloads",
+    subtitle: "E-books, Planilhas, Cursos & Presets",
+    description: "Infoprodutos, arquivos para download imediato, templates, artes digitais e materiais educativos.",
+    icon: FileArchive,
+    badge: "Download Imediato",
+    gradient: "from-indigo-500/10 via-purple-500/5 to-transparent",
+  },
+  {
+    id: "hospedagem",
+    canonicalCategory: "real_estate",
+    title: "Hospedagem & Temporada",
+    subtitle: "Chalés, Cabanas, Pousadas & Temporada",
+    description:
+      "Aluguel por diária, chalés com hidro, cabanas na serra, casas de campo, pousadas e suítes com check-in.",
+    icon: Key,
+    badge: "Diárias / Temporada",
+    gradient: "from-amber-500/10 via-rose-500/5 to-transparent",
+  },
+  {
+    id: "equipamento",
+    canonicalCategory: "equipment",
+    title: "Aluguel de Equipamentos",
+    subtitle: "Eventos, Som, Luz & Máquinas",
+    description: "Locação de caixas de som, iluminação, tendas, mesas, ferramentas e equipamentos para festas e obras.",
+    icon: Wrench,
+    badge: "Locação / Diária",
+    gradient: "from-blue-500/10 via-cyan-500/5 to-transparent",
+  },
   {
     id: "assinatura",
     canonicalCategory: "service",
@@ -224,6 +208,56 @@ const NICHE_CARDS: NicheDefinition[] = [
     icon: Sparkles,
     badge: "Recorrente",
     gradient: "from-cyan-500/15 via-blue-500/10 to-transparent",
+  },
+  {
+    id: "doacao",
+    canonicalCategory: "donation",
+    title: "Doação / Gratuito (R$ 0)",
+    subtitle: "Solidariedade & Desapego Livre",
+    description: "Doe móveis, roupas, livros, eletrônicos ou alimentos gratuitamente para a comunidade local.",
+    icon: Tag,
+    badge: "Gratuito R$ 0",
+    gradient: "from-emerald-500/10 via-teal-500/5 to-transparent",
+  },
+  {
+    id: "viagem",
+    canonicalCategory: "travel",
+    title: "Viagens, Turismo & Resorts",
+    subtitle: "Pacotes, Roteiros & Destinos",
+    description: "Pacotes turísticos, resorts, passeios guiados e roteiros com fotos e programação completa.",
+    icon: Key,
+    badge: "Vitrine Imersiva",
+    gradient: "from-amber-500/15 via-rose-500/10 to-purple-600/10",
+  },
+  {
+    id: "gastronomia",
+    canonicalCategory: "food",
+    title: "Gastronomia & Restaurantes",
+    subtitle: "Pratos, Delivery & Bebidas",
+    description: "Lanches, pratos prontos, bebidas, sobremesas e serviços de alimentação em geral.",
+    icon: Utensils,
+    badge: "Delivery / Retirada",
+    gradient: "from-red-500/15 via-orange-500/10 to-transparent",
+  },
+  {
+    id: "farmacia",
+    canonicalCategory: "sale",
+    title: "Farmácia & Saúde",
+    subtitle: "Medicamentos, Cosméticos & Cuidados",
+    description: "Produtos de saúde, beleza, higiene pessoal e itens de farmácia.",
+    icon: StoreIcon,
+    badge: "Bem-estar",
+    gradient: "from-teal-500/15 via-emerald-500/10 to-transparent",
+  },
+  {
+    id: "mercado",
+    canonicalCategory: "sale",
+    title: "Mercado & Conveniência",
+    subtitle: "Padaria, Açougue & Hortifruti",
+    description: "Itens de mercado, mantimentos, carnes, pães, frutas e conveniência diária.",
+    icon: StoreIcon,
+    badge: "Essenciais",
+    gradient: "from-lime-500/15 via-green-500/10 to-transparent",
   },
 ];
 
@@ -350,6 +384,27 @@ function NovoClassificadoPage() {
             search: { tipo: typeId, sub: sub || undefined, editId: editId || undefined, storeId: storeId || undefined },
           })
         }
+        onAiPrefill={(listing) => {
+          setInitialData({
+            category: listing.category || "sale",
+            title: listing.title || "",
+            content: listing.content || "",
+            price_cents: listing.price_cents ?? undefined,
+            negotiable: true,
+            attributes: {
+              ...(listing.attributes || {}),
+              niche: listing.niche || "desapego",
+              pricing_type: listing.price_cents ? "fixed" : "free",
+            },
+          });
+          navigate({
+            to: "/conta/classificados/novo",
+            search: {
+              tipo: (listing.niche as ClassifiedNicheType) || "desapego",
+              storeId: storeId || undefined,
+            },
+          });
+        }}
       />
     );
   }
@@ -373,11 +428,43 @@ function NovoClassificadoPage() {
 // ─────────────────────────────────────────────────────────────────────────────
 function CreateTypePicker({
   onSelect,
+  onAiPrefill,
 }: {
   onSelect: (typeId: ClassifiedNicheType, sub?: string) => void;
+  onAiPrefill?: (listing: any) => void;
 }) {
   const [searchFilter, setSearchFilter] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleGenerateWithAi = async () => {
+    const trimmed = aiPrompt.trim();
+    if (!trimmed) {
+      toast.error("Descreva o que você quer anunciar primeiro.");
+      return;
+    }
+    setIsAiGenerating(true);
+    toast.loading("A Inteligência Artificial está montando seu anúncio...", { id: "ai-ad" });
+    try {
+      const res = await createListingWithAI({ data: { prompt: trimmed } });
+      if (res?.success && res.listing) {
+        toast.success("Anúncio estruturado com IA! Revise os dados.", { id: "ai-ad" });
+        if (onAiPrefill) {
+          onAiPrefill(res.listing);
+        } else {
+          onSelect((res.listing.niche as ClassifiedNicheType) || "desapego");
+        }
+      } else {
+        toast.error("Não foi possível gerar os dados. Escolha a categoria abaixo.", { id: "ai-ad" });
+      }
+    } catch (e: any) {
+      console.warn("Erro ao gerar anúncio com IA:", e);
+      toast.error(e?.message || "Erro ao conectar com a IA. Escolha a categoria manualmente.", { id: "ai-ad" });
+    } finally {
+      setIsAiGenerating(false);
+    }
+  };
 
   const handleScroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
@@ -388,15 +475,18 @@ function CreateTypePicker({
     }
   };
 
-  const filteredNiches = useMemo(() => {
-    if (!searchFilter.trim()) return NICHE_CARDS;
+  const personalNiches = useMemo(() => {
+    const ids = ["desapego", "veiculo", "imovel", "servico", "vaga", "digital", "hospedagem", "equipamento", "doacao", "viagem"];
+    if (!searchFilter.trim()) return NICHE_CARDS.filter(n => ids.includes(n.id));
     const q = searchFilter.toLowerCase();
-    return NICHE_CARDS.filter(
-      (n) =>
-        n.title.toLowerCase().includes(q) ||
-        n.subtitle.toLowerCase().includes(q) ||
-        n.description.toLowerCase().includes(q)
-    );
+    return NICHE_CARDS.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
+  }, [searchFilter]);
+
+  const businessNiches = useMemo(() => {
+    const ids = ["assinatura", "gastronomia", "farmacia", "mercado"];
+    if (!searchFilter.trim()) return NICHE_CARDS.filter(n => ids.includes(n.id));
+    const q = searchFilter.toLowerCase();
+    return NICHE_CARDS.filter(n => ids.includes(n.id) && (n.title.toLowerCase().includes(q) || n.subtitle.toLowerCase().includes(q) || n.description.toLowerCase().includes(q)));
   }, [searchFilter]);
 
   const filteredDesapegoItems = useMemo(() => {
@@ -426,30 +516,66 @@ function CreateTypePicker({
         </Button>
       </div>
 
-      <div className="relative">
+      {/* ── 1.5 Motor de Intenção com IA (Design Apple HIG / Zine) ── */}
+      <div className="relative group overflow-hidden rounded-2xl border-2 border-transparent bg-clip-border bg-gradient-to-r from-blue-600 via-sky-400 to-indigo-500 hover:from-sky-400 hover:via-indigo-500 hover:to-blue-600 transition-all duration-700 animate-gradient-x p-[2px]">
+        <div className="relative bg-background rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
+          <div className="flex-1 w-full relative">
+            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-blue-500 animate-pulse" />
+            <Input 
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleGenerateWithAi();
+                }
+              }}
+              placeholder="Ex: Quero vender meu iPhone 13 Pro 128GB usado por R$ 3.500" 
+              className="pl-10 h-12 rounded-lg text-sm sm:text-base border-none bg-muted/50 focus-visible:ring-1 focus-visible:ring-blue-500 shadow-inner"
+              id="ai-intent-input"
+            />
+          </div>
+          <Button 
+            type="button" 
+            disabled={isAiGenerating}
+            onClick={handleGenerateWithAi}
+            className="w-full sm:w-auto h-12 rounded-lg font-bold bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-lg transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
+          >
+            {isAiGenerating ? (
+              <Loader2 className="size-4 mr-2 animate-spin" />
+            ) : (
+              <Sparkles className="size-4 mr-2" />
+            )}
+            {isAiGenerating ? "Gerando..." : "Criar com IA"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="relative mt-6">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           value={searchFilter}
           onChange={(e) => setSearchFilter(e.target.value)}
-          placeholder="Buscar nicho ou categoria (ex: Casa, iPhone, Carro, Viagem, Móveis, Tênis, Assinatura)..."
+          placeholder="Ou busque categorias manualmente (ex: Casa, Celular, Serviços)..."
           className="pl-10 h-11 rounded-2xl text-xs sm:text-sm bg-card border-border/60 shadow-sm"
         />
         {searchFilter && (
           <button
             type="button"
             onClick={() => setSearchFilter("")}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
           >
             Limpar
           </button>
         )}
       </div>
 
-      {/* ── 2. Trilho de Cards Verticais com Scroll Horizontal ── */}
+      {/* ── 2. Trilho de Cards Verticais (Para Você / C2C) ── */}
+      {personalNiches.length > 0 && (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-            Escolha o Tipo de Classificado
+            Para Você (Comunidade)
           </span>
           <div className="hidden md:flex items-center gap-1.5">
             <button
@@ -479,7 +605,7 @@ function CreateTypePicker({
             ref={scrollContainerRef}
             className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-2 px-0.5 scroll-smooth"
           >
-            {filteredNiches.map((niche) => {
+            {personalNiches.map((niche) => {
               const Icon = niche.icon;
               return (
                 <button
@@ -531,6 +657,68 @@ function CreateTypePicker({
           </div>
         </div>
       </div>
+      )}
+
+      {/* ── 2.5 Trilho de Cards Verticais (Para Negócios / B2C) ── */}
+      {businessNiches.length > 0 && (
+      <div className="space-y-3 pt-6 mt-6 border-t border-border/40">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+            Para o Seu Negócio (Varejo & Serviços)
+          </span>
+        </div>
+
+        <div className="relative group/rail2">
+          {/* Trilho de Scroll Horizontal com Snap */}
+          <div
+            className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-2 px-0.5 scroll-smooth"
+          >
+            {businessNiches.map((niche) => {
+              const Icon = niche.icon;
+              return (
+                <button
+                  key={niche.id}
+                  onClick={() => onSelect(niche.id)}
+                  className="w-[260px] sm:w-[280px] min-w-[260px] sm:min-w-[280px] h-[370px] sm:h-[390px] shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-primary/50 hover:shadow-lg transition-all duration-300 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                >
+                  <div
+                    className={`absolute top-0 inset-x-0 h-36 bg-gradient-to-b ${niche.gradient} opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`}
+                  />
+                  <div className="relative z-10 flex items-start justify-between gap-2">
+                    <div className="size-13 rounded-2xl bg-background/90 backdrop-blur-md border border-border/70 shadow-xs flex items-center justify-center text-primary group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
+                      <Icon className="size-6" />
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-background/80 backdrop-blur-md border border-border/60 text-foreground shrink-0"
+                    >
+                      {niche.badge}
+                    </Badge>
+                  </div>
+                  <div className="relative z-10 space-y-1.5 flex-1 flex flex-col justify-center mt-3">
+                    <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                      {niche.title}
+                    </h3>
+                    <p className="text-xs font-semibold text-primary/90">
+                      {niche.subtitle}
+                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                      {niche.description}
+                    </p>
+                  </div>
+                  <div className="relative z-10 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                    <span>Criar Anúncio</span>
+                    <div className="size-7 rounded-full bg-muted/80 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:translate-x-1 transition-all">
+                      <ChevronRight className="size-4" />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      )}
 
       {/* ── 3. Categorias Rápidas para Desapego ── */}
       <div className="space-y-2 pt-2 border-t border-border/40">
@@ -617,6 +805,7 @@ function SpecializedClassifiedEditor({
  // Common Form States
  const [title, setTitle] = useState("");
  const [description, setDescription] = useState("");
+ const [aiInstructions, setAiInstructions] = useState("");
  const [priceCents, setPriceCents] = useState<number | undefined>(undefined);
  const [negotiable, setNegotiable] = useState(true);
  const [locationName, setLocationName] = useState("");
@@ -1037,6 +1226,11 @@ function SpecializedClassifiedEditor({
   const [digitalFileSize, setDigitalFileSize] = useState<number | null>(null);
   const [digitalDownloadLimit, setDigitalDownloadLimit] = useState("5");
   const [digitalPreviewUrl, setDigitalPreviewUrl] = useState("");
+
+  // Privacidade de Localização
+  const [hideLocation, setHideLocation] = useState<boolean>(
+    initialData?.attributes?.hide_location ?? initialData?.hide_location ?? false
+  );
 
   // Hydration effect for editing existing classified
   useEffect(() => {
@@ -1487,6 +1681,8 @@ function SpecializedClassifiedEditor({
           store_id: storeId || initialData?.store_id || undefined,
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
           content: description.trim(),
+          ai_instructions: aiInstructions.trim() || undefined,
+          ai_agent_enabled: true, // Auto-enable if created here
           price_cents:
             pricingType === "free" || niche.id === "doacao"
               ? 0
@@ -2046,6 +2242,21 @@ function SpecializedClassifiedEditor({
  }
  className="rounded-xl text-xs bg-background resize-none leading-relaxed"
  />
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-xs text-foreground font-medium flex items-center justify-between">
+    <span>Instruções Ocultas para a IA (SDR)</span>
+    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">Beta</Badge>
+ </Label>
+ <Textarea
+ value={aiInstructions}
+ onChange={(e) => setAiInstructions(e.target.value)}
+ rows={3}
+ placeholder="Ex: Não dê desconto maior que 10%. Se o cliente quiser parcelar, avise que as taxas da maquininha são por conta dele. Diga que o produto já está no menor valor."
+ className="rounded-xl text-xs bg-muted/40 border-dashed resize-none leading-relaxed focus-visible:ring-primary/50"
+ />
+ <p className="text-[10px] text-muted-foreground">Essas regras não aparecem no anúncio, mas a Inteligência Artificial as usará ao negociar com clientes no chat.</p>
  </div>
             {/* Motor de Precificação Dinâmica & Avisos */}
             <div className="space-y-3 pt-1 border-t border-border/40">

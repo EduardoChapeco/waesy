@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { Briefcase, Star, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck } from 'lucide-react';
+import { Briefcase, Star, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck, Sparkles } from 'lucide-react';
+import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
+import type { ProfessionDefinition } from "@/lib/data/professions-catalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -178,6 +180,22 @@ export function ProfessionalResumeEditor({
 
  // Estado para tag rápida de habilidades
  const [newSkillInput, setNewSkillInput] = useState("");
+ const [isProfessionSearchOpen, setIsProfessionSearchOpen] = useState(false);
+
+ const handleSelectProfession = (prof: ProfessionDefinition) => {
+ onChange({
+ ...resumeData,
+ headline: prof.title,
+ summary: resumeData.summary || prof.description,
+ skills: Array.from(new Set([...(resumeData.skills || []), ...prof.essential_skills])),
+ availability: {
+ ...resumeData.availability,
+ jobTitle: prof.title,
+ salaryExpectationCents: resumeData.availability?.salaryExpectationCents || prof.average_salary_mid_cents,
+ },
+ });
+ toast.success(`Cargo "${prof.title}" (CBO ${prof.cbo_code}) autopreenchido com competências e benchmark salarial.`);
+ };
 
  // Normalização de arrays (suporte a educations vs education legado)
  const normalizedEducations = useMemo(() => {
@@ -414,7 +432,23 @@ export function ProfessionalResumeEditor({
  <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
  <h3 className="text-sm font-bold text-foreground">Título & Resumo de Apresentação</h3>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setIsProfessionSearchOpen(true)}
+ className="h-8 rounded-xl text-xs gap-1.5 font-bold border-border/60 hover:bg-muted/30 text-foreground"
+ >
+ <Sparkles className="size-3.5 text-amber-500" />
+ <span>Buscar Cargo CBO</span>
+ </Button>
  </div>
+
+ <ProfessionSearchDialog
+ open={isProfessionSearchOpen}
+ onOpenChange={setIsProfessionSearchOpen}
+ onSelectProfession={handleSelectProfession}
+ />
 
  <div className="space-y-3">
  <div className="space-y-1">

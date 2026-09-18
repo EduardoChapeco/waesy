@@ -13,6 +13,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, getSSRClient } from "@/lib/server-access";
 import { getEnvVar } from "@/lib/env";
 import { requireAdmin } from "@/lib/server-access";
+import { withDataPayload } from "./cart-helpers";
 
 // Schema for initiating a payment
 const InitiatePaymentSchema = z.object({
@@ -27,7 +28,7 @@ const InitiatePaymentSchema = z.object({
  * and records it atomically in the `payment_transactions` table.
  */
 export const initiatePaymentTransaction = createServerFn({ method: "POST" })
- .validator(InitiatePaymentSchema)
+ .validator(withDataPayload(InitiatePaymentSchema))
  .handler(async ({ data: { orderId, method, amountCents, publicToken } }) => {
  const supabase = getServerClient();
  const ssrClient = await getSSRClient();
@@ -281,7 +282,7 @@ export const confirmPayment = createServerFn({ method: "POST" })
  });
 
 export const approvePayment = createServerFn({ method: "POST" })
- .validator(z.object({ orderId: z.string().uuid(), receivedMethod: z.string().optional() }))
+ .validator(withDataPayload(z.object({ orderId: z.string().uuid(), receivedMethod: z.string().optional() })))
  .handler(async ({ data: { orderId, receivedMethod } }) => {
  try {
  // SECURITY FIX: Enforce administrative authorization
@@ -303,7 +304,7 @@ export const approvePayment = createServerFn({ method: "POST" })
  });
 
 export const rejectPayment = createServerFn({ method: "POST" })
- .validator(z.object({ orderId: z.string().uuid(), reason: z.string().optional() }))
+ .validator(withDataPayload(z.object({ orderId: z.string().uuid(), reason: z.string().optional() })))
  .handler(async ({ data: { orderId, reason } }) => {
  try {
  // SECURITY FIX: Enforce administrative authorization
@@ -602,7 +603,7 @@ export const deleteManualPaymentMethod = createServerFn({ method: "POST" })
  });
 
 export const getPublicPaymentMethods = createServerFn({ method: "GET" })
- .validator(z.object({ storeId: z.string().optional() }).optional())
+ .validator(withDataPayload(z.object({ storeId: z.string().optional() })).optional())
  .handler(async ({ data: inputData }) => {
  try {
  const db = getServerClient();
@@ -626,7 +627,7 @@ export const getPublicPaymentMethods = createServerFn({ method: "GET" })
  });
 
 export const getGatewayStatus = createServerFn({ method: "GET" })
- .validator(z.object({ storeId: z.string().optional() }).optional())
+ .validator(withDataPayload(z.object({ storeId: z.string().optional() })).optional())
  .handler(async ({ data: inputData }) => {
  try {
  const db = getServerClient();

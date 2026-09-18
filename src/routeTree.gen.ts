@@ -86,6 +86,7 @@ import { Route as AdminMasterLojasRouteImport } from './routes/admin-master.loja
 import { Route as AdminMasterMarcaRouteImport } from './routes/admin-master.marca'
 import { Route as AdminMasterMiningRouteImport } from './routes/admin-master.mining'
 import { Route as AdminMasterModulosRouteImport } from './routes/admin-master.modulos'
+import { Route as AdminMasterOnboardingRouteImport } from './routes/admin-master.onboarding'
 import { Route as AdminMasterPortalCompletoRouteImport } from './routes/admin-master.portal-completo'
 import { Route as AdminMasterSimlabsRouteImport } from './routes/admin-master.simlabs'
 import { Route as AdminMasterTermosRouteImport } from './routes/admin-master.termos'
@@ -738,6 +739,11 @@ const AdminMasterMiningRoute = AdminMasterMiningRouteImport.update({
 const AdminMasterModulosRoute = AdminMasterModulosRouteImport.update({
   id: '/modulos',
   path: '/modulos',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
+const AdminMasterOnboardingRoute = AdminMasterOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AdminMasterRoute,
 } as any)
 const AdminMasterPortalCompletoRoute =
@@ -2267,6 +2273,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/marca': typeof AdminMasterMarcaRoute
   '/admin-master/mining': typeof AdminMasterMiningRoute
   '/admin-master/modulos': typeof AdminMasterModulosRoute
+  '/admin-master/onboarding': typeof AdminMasterOnboardingRoute
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
@@ -2605,6 +2612,7 @@ export interface FileRoutesByTo {
   '/admin-master/marca': typeof AdminMasterMarcaRoute
   '/admin-master/mining': typeof AdminMasterMiningRoute
   '/admin-master/modulos': typeof AdminMasterModulosRoute
+  '/admin-master/onboarding': typeof AdminMasterOnboardingRoute
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
@@ -2953,6 +2961,7 @@ export interface FileRoutesById {
   '/admin-master/marca': typeof AdminMasterMarcaRoute
   '/admin-master/mining': typeof AdminMasterMiningRoute
   '/admin-master/modulos': typeof AdminMasterModulosRoute
+  '/admin-master/onboarding': typeof AdminMasterOnboardingRoute
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
@@ -3302,6 +3311,7 @@ export interface FileRouteTypes {
     | '/admin-master/marca'
     | '/admin-master/mining'
     | '/admin-master/modulos'
+    | '/admin-master/onboarding'
     | '/admin-master/portal-completo'
     | '/admin-master/simlabs'
     | '/admin-master/termos'
@@ -3640,6 +3650,7 @@ export interface FileRouteTypes {
     | '/admin-master/marca'
     | '/admin-master/mining'
     | '/admin-master/modulos'
+    | '/admin-master/onboarding'
     | '/admin-master/portal-completo'
     | '/admin-master/simlabs'
     | '/admin-master/termos'
@@ -3987,6 +3998,7 @@ export interface FileRouteTypes {
     | '/admin-master/marca'
     | '/admin-master/mining'
     | '/admin-master/modulos'
+    | '/admin-master/onboarding'
     | '/admin-master/portal-completo'
     | '/admin-master/simlabs'
     | '/admin-master/termos'
@@ -4836,6 +4848,13 @@ declare module '@tanstack/react-router' {
       path: '/modulos'
       fullPath: '/admin-master/modulos'
       preLoaderRoute: typeof AdminMasterModulosRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
+    '/admin-master/onboarding': {
+      id: '/admin-master/onboarding'
+      path: '/onboarding'
+      fullPath: '/admin-master/onboarding'
+      preLoaderRoute: typeof AdminMasterOnboardingRouteImport
       parentRoute: typeof AdminMasterRoute
     }
     '/admin-master/portal-completo': {
@@ -7081,6 +7100,7 @@ interface AdminMasterRouteChildren {
   AdminMasterMarcaRoute: typeof AdminMasterMarcaRoute
   AdminMasterMiningRoute: typeof AdminMasterMiningRoute
   AdminMasterModulosRoute: typeof AdminMasterModulosRoute
+  AdminMasterOnboardingRoute: typeof AdminMasterOnboardingRoute
   AdminMasterPortalCompletoRoute: typeof AdminMasterPortalCompletoRoute
   AdminMasterSimlabsRoute: typeof AdminMasterSimlabsRoute
   AdminMasterTermosRoute: typeof AdminMasterTermosRoute
@@ -7115,6 +7135,7 @@ const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterMarcaRoute: AdminMasterMarcaRoute,
   AdminMasterMiningRoute: AdminMasterMiningRoute,
   AdminMasterModulosRoute: AdminMasterModulosRoute,
+  AdminMasterOnboardingRoute: AdminMasterOnboardingRoute,
   AdminMasterPortalCompletoRoute: AdminMasterPortalCompletoRoute,
   AdminMasterSimlabsRoute: AdminMasterSimlabsRoute,
   AdminMasterTermosRoute: AdminMasterTermosRoute,

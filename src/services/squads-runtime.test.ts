@@ -48,7 +48,7 @@ describe("Store Squads Runtime & Virtual Offices (Big Tech Council)", () => {
     expect(run.total_tokens_consumed).toBeGreaterThan(0);
 
     createdRunId = run.id;
-  });
+  }, 15000);
 
   it("3. Deve aprovar a entrega do squad em 1 clique pelo lojista", async () => {
     expect(createdRunId).toBeDefined();

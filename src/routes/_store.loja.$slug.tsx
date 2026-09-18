@@ -214,7 +214,14 @@ function StoreSlugCanonicalPage() {
       sponsors={data.sponsors}
       employerStats={data.employerStats}
       builderTree={data.experienceDoc?.nodes || null}
-      isOwner={data.identity?.store_id === profile.id}
+      isOwner={Boolean(
+        data.identity?.id &&
+        (data.identity?.store_id === profile.id ||
+         data.identity?.id === profile.owner_id ||
+         data.identity?.id === profile.user_id ||
+         data.identity?.role === "admin" ||
+         data.identity?.role === "platform_admin")
+      )}
       source="storefront"
     />
   );

@@ -480,3 +480,39 @@ export const CANONICAL_GAME_CONSOLES = [
  "Acessórios / Controles / Volantes",
  "Jogos em Mídia Física",
 ];
+
+// ─── 3. IMÓVEIS & MERCADO IMOBILIÁRIO (CRECI / COFECI) ───────────────────────
+import { GLOBAL_REAL_ESTATE_TYPES_CATALOG, RealEstateTypeDefinition } from "@/lib/data/real-estate-types-catalog";
+
+export const CANONICAL_REAL_ESTATE_TYPES: RealEstateTypeDefinition[] = GLOBAL_REAL_ESTATE_TYPES_CATALOG;
+
+export const CANONICAL_REAL_ESTATE_CATEGORIES = [
+  { id: "residencial", label: "Residencial (Apartamentos, Casas, Sobrados)" },
+  { id: "comercial", label: "Comercial (Salas, Lojas, Pontos Comerciais)" },
+  { id: "industrial", label: "Industrial & Logístico (Galpões, Docas)" },
+  { id: "terreno_incorporacao", label: "Terrenos & Lotes Urbanos/Condomínio" },
+  { id: "rural", label: "Rural (Chácaras, Sítios, Fazendas)" },
+];
+
+export const CANONICAL_REAL_ESTATE_FEATURES = [
+  "Elevador",
+  "Sacada com Churrasqueira",
+  "Piscina Privativa",
+  "Piscina no Condomínio",
+  "Portaria 24h & Câmeras",
+  "Salão de Festas & Espaço Gourmet",
+  "Academia Equipada",
+  "Quadra Poliesportiva / Beach Tennis",
+  "Playground & Brinquedoteca",
+  "Bicicletário & Coworking",
+  "Vaga de Garagem Coberta",
+  "Energia Solar Fotovoltaica",
+  "Pé-direito Duplo",
+  "Docas de Carga / Pátio de Manobra",
+  "Mobiliado / Semi-mobiliado",
+  "Ar-condicionado Split Instalado",
+  "Vista Panorâmica / Andar Alto",
+  "Gás Central & Medidores Individuais",
+  "Acesso Biométrico / Fechadura Digital",
+];
+

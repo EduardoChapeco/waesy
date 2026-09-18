@@ -6,6 +6,7 @@ import { Layers, Bot, Key, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
  Dialog,
@@ -15,7 +16,7 @@ import {
  DialogFooter,
 } from "@/components/ui/dialog";
 
-import { getStoreSettings } from "@/services/store.functions";
+import { getStoreSettings, saveStoreSettings } from "@/services/store.functions";
 import {
  listTenantAiProviders,
  saveTenantAiProvider,
@@ -60,6 +61,10 @@ function WorkspaceAiSettingsPage() {
 
  const [providers, setProviders] = useState<TenantAiProviderItem[]>(initialProviders || []);
  const [testingProvider, setTestingProvider] = useState<string | null>(null);
+
+ // Knowledge Base State
+ const [aiKnowledgeBase, setAiKnowledgeBase] = useState(store?.ai_knowledge_base || "");
+ const [savingKb, setSavingKb] = useState(false);
 
  // Modal
  const [modalOpen, setModalOpen] = useState(false);
@@ -138,6 +143,24 @@ function WorkspaceAiSettingsPage() {
  reload();
  } catch (err: any) {
  toast.error(err?.message || "Erro ao remover chave");
+ }
+ };
+
+ const handleSaveKnowledgeBase = async () => {
+ if (!store?.name) return;
+ try {
+ setSavingKb(true);
+ await saveStoreSettings({
+ data: {
+ name: store.name,
+ ai_knowledge_base: aiKnowledgeBase.trim(),
+ },
+ });
+ toast.success("Base de conhecimento salva com sucesso!");
+ } catch (err: any) {
+ toast.error(err.message || "Erro ao salvar base de conhecimento.");
+ } finally {
+ setSavingKb(false);
  }
  };
 
@@ -283,9 +306,38 @@ function WorkspaceAiSettingsPage() {
  </div>
  );
  })}
- </div>
+      </div>
 
- {/* ── 3. Modal de Configuração ── */}
+      {/* ── 3. Base de Conhecimento e DNA da IA ── */}
+      <div className="bg-card border border-border/60 rounded-2xl p-5 space-y-4 shadow-xs mt-8">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Bot className="size-4 text-primary" />
+            DNA & Base de Conhecimento da Loja
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Instruções globais que todos os agentes de IA (SDRs) da sua loja devem seguir. Defina o tom de voz, regras de negociação, políticas de devolução e garantias.
+          </p>
+        </div>
+        <Textarea
+          value={aiKnowledgeBase}
+          onChange={(e) => setAiKnowledgeBase(e.target.value)}
+          placeholder="Ex: O tom de voz deve ser amigável e focado em fechar vendas. Nunca ofereça descontos maiores que 15%. Informe que o frete grátis é apenas para compras acima de R$ 200..."
+          rows={6}
+          className="text-xs rounded-xl bg-muted/40 border-dashed focus-visible:ring-primary/50 resize-none"
+        />
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSaveKnowledgeBase}
+            disabled={savingKb}
+            className="h-9 rounded-xl text-xs font-bold gap-2 px-6 cursor-pointer"
+          >
+            {savingKb ? "Salvando..." : "Salvar DNA da IA"}
+          </Button>
+        </div>
+      </div>
+
+      {/* ── 4. Modal de Configuração ── */}
  <Dialog open={modalOpen} onOpenChange={setModalOpen}>
  <DialogContent className="sm:max-w-md rounded-2xl border-border/70 bg-card p-5 space-y-4">
  <DialogHeader>

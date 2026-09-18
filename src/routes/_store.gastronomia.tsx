@@ -102,7 +102,6 @@ export const Route = createFileRoute("/_store/gastronomia")({
  component: GastronomiaVerticalPage,
  pendingComponent: PageSkeleton,
 });
-
 function GastronomiaVerticalPage() {
  const { banners, hotpages, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
  const search = Route.useSearch();
@@ -178,94 +177,94 @@ function GastronomiaVerticalPage() {
  {/* ── 1.5. Stories de Gastronomia & Delivery ── */}
  <ContextualStoriesRail niche="gastronomia" className="py-1" />
 
- {/* ── 2. Hotpages por Turno / Almoço / Jantar ── */}
- {hotpages && hotpages.length > 0 && (
- <section aria-label="Coleções de Gastronomia">
- <HotpagesRail hotpages={hotpages} />
- </section>
- )}
+      {/* ── 2. Hotpages por Turno / Almoço / Jantar ── */}
+      {hotpages && hotpages.length > 0 && (
+        <section aria-label="Coleções de Gastronomia">
+          <HotpagesRail hotpages={hotpages} />
+        </section>
+      )}
 
- {/* ── 3. Discovery Control Bar ── */}
- <DiscoveryControlBar
- search={search.q || ""}
- onSearchChange={(q) => navigate({ search: (prev) => ({ ...prev, q }) })}
- searchPlaceholder="Buscar pratos, pizzas, burgers, sobremesas..."
- categories={GASTRONOMIA_DEPARTMENTS}
- activeCategory={activeDepartment}
- onSelectCategory={handleDepartmentChange}
- viewMode={viewMode}
- onViewModeChange={handleViewModeChange}
- />
+      {/* ── 3. Discovery Control Bar ── */}
+      <DiscoveryControlBar
+        search={search.q || ""}
+        onSearchChange={(q) => navigate({ search: (prev) => ({ ...prev, q }) })}
+        searchPlaceholder="Buscar pratos, pizzas, burgers, sobremesas..."
+        categories={GASTRONOMIA_DEPARTMENTS}
+        activeCategory={activeDepartment}
+        onSelectCategory={handleDepartmentChange}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+      />
 
- {/* ── 4. Renderização do Feed Modular ou Grade Filtrada ── */}
- {viewMode === "feed" ? (
- <div className="space-y-8">
- {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 ? (
- <ModularSurfaceFeed sections={marketplaceFeed.sections} />
- ) : allProducts.length > 0 ? (
- <section aria-label="Pratos & Lanches da Gastronomia" className="w-full">
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5">
- {allProducts.map((product: any) => (
- <GroceryProductCard key={product.id} product={product} viewMode="grid" />
- ))}
- </div>
- </section>
- ) : (
- <div className="py-12 text-center text-xs text-muted-foreground">
- Nenhum restaurante ou prato disponível no momento.
- </div>
- )}
- </div>
- ) : (
- <section aria-label="Pratos & Lanches em Destaque" className="w-full">
- {allProducts.length === 0 ? (
- <EmptyState
- title="Nenhum prato encontrado"
- description="Tente escolher outro tipo de culinária ou busque por restaurantes específicos."
- />
- ) : viewMode === "list" ? (
- <div className="flex flex-col gap-3">
- {allProducts.map((product: any) => (
- <GroceryProductCard key={product.id} product={product} viewMode="list" />
- ))}
- </div>
- ) : (
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5">
- {allProducts.map((product: any) => (
- <GroceryProductCard key={product.id} product={product} viewMode="grid" />
- ))}
- </div>
- )}
- </section>
- )}
+      {/* ── 4. Renderização do Feed Modular ou Grade Filtrada ── */}
+      {viewMode === "feed" ? (
+        <div className="space-y-6 sm:space-y-8">
+          {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 ? (
+            <ModularSurfaceFeed sections={marketplaceFeed.sections} />
+          ) : allProducts.length > 0 ? (
+            <section aria-label="Pratos & Lanches da Gastronomia" className="w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                {allProducts.map((product: any) => (
+                  <GroceryProductCard key={product.id} product={product} viewMode="grid" />
+                ))}
+              </div>
+            </section>
+          ) : (
+            <div className="py-12 text-center text-xs text-muted-foreground">
+              Nenhum restaurante ou prato disponível no momento.
+            </div>
+          )}
+        </div>
+      ) : (
+        <section aria-label="Pratos & Lanches em Destaque" className="w-full">
+          {allProducts.length === 0 ? (
+            <EmptyState
+              title="Nenhum prato encontrado"
+              description="Tente escolher outro tipo de culinária ou busque por restaurantes específicos."
+            />
+          ) : viewMode === "list" ? (
+            <div className="flex flex-col gap-3">
+              {allProducts.map((product: any) => (
+                <GroceryProductCard key={product.id} product={product} viewMode="list" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+              {allProducts.map((product: any) => (
+                <GroceryProductCard key={product.id} product={product} viewMode="grid" />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
- {/* ── BARRA FLUTUANTE DA SACOLA (3 TOQUES - APPLE HIG THUMB ZONE) ── */}
- {cartItemsCount > 0 && (
- <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 p-3 rounded-2xl bg-foreground text-background shadow-2xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
- <div className="flex items-center gap-2.5">
- <div className="size-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
- <ShoppingBag className="size-5" />
- </div>
- <div className="flex flex-col">
- <span className="text-[10px] text-background/70 font-mono uppercase tracking-wider">
- {cartItemsCount} {cartItemsCount === 1 ? "item adicionado" : "itens adicionados"}
- </span>
- <span className="text-sm font-black font-mono">
- {formatMoney(cartTotalCents / 100)}
- </span>
- </div>
- </div>
+      {/* ── BARRA FLUTUANTE DA SACOLA (3 TOQUES - APPLE HIG THUMB ZONE) ── */}
+      {cartItemsCount > 0 && (
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 p-3 rounded-2xl bg-foreground text-background shadow-2xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
+          <div className="flex items-center gap-2.5">
+            <div className="size-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
+              <ShoppingBag className="size-5" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-background/70 font-mono uppercase tracking-wider">
+                {cartItemsCount} {cartItemsCount === 1 ? "item adicionado" : "itens adicionados"}
+              </span>
+              <span className="text-sm font-black font-mono">
+                {formatMoney(cartTotalCents / 100)}
+              </span>
+            </div>
+          </div>
 
- <Button
- size="sm"
- onClick={() => setIsCartOpen(true)}
- className="h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 shadow-md cursor-pointer shrink-0"
- >
- <span>Ver Sacola</span>
- <ArrowRight className="size-3.5" />
- </Button>
- </div>
- )}
- </div>
- );
+          <Button
+            size="sm"
+            onClick={() => setIsCartOpen(true)}
+            className="h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 shadow-md cursor-pointer shrink-0"
+          >
+            <span>Ver Sacola</span>
+            <ArrowRight className="size-3.5" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 }

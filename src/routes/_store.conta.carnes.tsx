@@ -24,11 +24,17 @@ import {
   TrendingDown,
   Info,
   Check,
-  Percent,
   ExternalLink,
   FileCheck,
   MessageSquare,
+  Smartphone,
 } from "lucide-react";
+import {
+  DigitalCompanionCard,
+  type CompanionCardSectionItem,
+  type CompanionRuleItem,
+  type CompanionContactItem,
+} from "@/components/documents/digital-companion-card";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -90,6 +96,7 @@ function ClientCarnesPage() {
   const [proofUrl, setProofUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [copiedPix, setCopiedPix] = useState(false);
+  const [selectedCompanionCarne, setSelectedCompanionCarne] = useState<any | null>(null);
 
   const { mutate: submitProof, isPending: isSubmitting } = useMutation({
     mutationFn: submitInstallmentProof,
@@ -374,14 +381,28 @@ function ClientCarnesPage() {
                       </div>
                     </div>
 
-                    <div className="text-left sm:text-right">
-                      <div className="text-sm font-semibold text-foreground">
-                        {formatMoney(carne.total_cents)}
+                    <div className="flex items-center gap-2">
+                      <div className="text-left sm:text-right">
+                        <div className="text-sm font-semibold text-foreground">
+                          {formatMoney(carne.total_cents)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {carne.summary.paidCount} de {carne.summary.totalCount} pagas (
+                          {carne.summary.progressPercent}%)
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {carne.summary.paidCount} de {carne.summary.totalCount} pagas (
-                        {carne.summary.progressPercent}%)
-                      </div>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedCompanionCarne(carne)}
+                        className="h-8 px-2.5 rounded-xl text-xs font-bold gap-1 text-primary border-primary/25 hover:bg-primary/5 cursor-pointer shrink-0"
+                        title="Visualizar Carnê Digital 9:16 para WhatsApp"
+                      >
+                        <Smartphone className="size-3.5" />
+                        <span>Carnê 9:16</span>
+                      </Button>
                     </div>
                   </div>
 
@@ -695,6 +716,106 @@ function ClientCarnesPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* ── MODAL DIGITAL COMPANION CARD 9:16 (CARNÊ DIGITAL / WHATSAPP) ── */}
+      <Dialog
+        open={Boolean(selectedCompanionCarne)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCompanionCarne(null);
+        }}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Carnê Digital 9:16 de Pagamento</DialogTitle>
+          </DialogHeader>
+          {selectedCompanionCarne && (
+            <div className="w-full">
+              <DigitalCompanionCard {...getCarneCompanionData(selectedCompanionCarne)} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+function getCarneCompanionData(carne: any) {
+  const storeName = carne.store?.name || carne.creditor?.full_name || "Loja Parceira";
+  const installments = carne.installments || [];
+
+  const sections: CompanionCardSectionItem[] = installments.map((inst: any) => {
+    const isPaid = inst.status === "paid";
+    const dueDate = new Date(inst.due_date);
+    const isLate = !isPaid && dueDate < new Date();
+    const amountCents = Number(inst.final_amount_cents || inst.original_amount_cents || inst.amount_cents || 0);
+
+    return {
+      id: `inst-${inst.installment_number}`,
+      type: "custom" as const,
+      badge: isPaid ? "PAGA ✓" : isLate ? "EM ATRASO" : "A VENCER",
+      title: `Parcela ${inst.installment_number}/${carne.installments_count}`,
+      subtitle: `Vencimento: ${formatDate(inst.due_date).split(" ")[0]}`,
+      details: [
+        { label: "Valor", value: formatMoney(amountCents), highlight: true },
+        { label: "Situação", value: isPaid ? "Liquidada" : isLate ? "Vencida com juros" : "Aguardando pagamento" },
+        ...(inst.pix_code ? [{ label: "Chave Pix", value: inst.pix_code }] : []),
+      ],
+    };
+  });
+
+  const rules: CompanionRuleItem[] = [
+    {
+      title: "Desconto por Pontualidade",
+      description: "Pagamentos realizados até a data de vencimento garantem a taxa contratada sem encargos adicionais.",
+      badge: "Pontualidade",
+      highlight: true,
+    },
+    {
+      title: "Juros e Multa por Atraso",
+      description: "Após o vencimento, incidirá multa de 2% e juros moratórios calculados ao dia conforme o contrato de confissão de dívida.",
+      badge: "Encargos",
+    },
+    {
+      title: "Envio de Comprovantes",
+      description: "Ao pagar via Pix, anexe o comprovante pelo portal da sua conta ou envie diretamente no WhatsApp da loja para baixa rápida.",
+      badge: "Comprovante",
+    },
+  ];
+
+  const storePhone = carne.store?.settings?.whatsapp_phone || carne.store?.phone || carne.creditor?.phone;
+
+  const emergencyContacts: CompanionContactItem[] = [
+    ...(storePhone
+      ? [
+          {
+            name: storeName,
+            category: "Setor Financeiro / Loja",
+            phone: storePhone,
+            whatsapp: true,
+            is24h: false,
+          },
+        ]
+      : []),
+    {
+      name: "Central de Apoio Waesy",
+      category: "Suporte ao Consumidor",
+      phone: "0800 000 0000",
+      whatsapp: true,
+      is24h: true,
+    },
+  ];
+
+  return {
+    niche: "retail" as const,
+    title: carne.title || "Carnê de Pagamento",
+    subtitle: `${storeName} · ${carne.summary?.paidCount || 0} de ${carne.summary?.totalCount || 0} pagas (${carne.summary?.progressPercent || 0}%)`,
+    code: `CARNE-${carne.id.slice(0, 8).toUpperCase()}`,
+    companyName: storeName,
+    companyLogoUrl: carne.store?.logo_url,
+    participantsLabel: "Titular",
+    participants: [carne.debtor?.full_name || "Cliente"].filter(Boolean),
+    sections,
+    rules,
+    emergencyContacts,
+  };
 }

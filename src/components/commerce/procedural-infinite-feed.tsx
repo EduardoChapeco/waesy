@@ -93,8 +93,12 @@ export function ProceduralInfiniteFeed({
     return () => observer.disconnect();
   }, [loadNextPage, hasMore, isLoading]);
 
+  if (sections.length === 0 && !hasMore && !isLoading) {
+    return null;
+  }
+
   return (
-    <div className={`space-y-10 ${className}`}>
+    <div className={`space-y-6 ${className || ""}`}>
       {sections.map((section) => {
         if (!section.items || section.items.length === 0) return null;
 
@@ -220,10 +224,10 @@ export function ProceduralInfiniteFeed({
       })}
 
       {/* ── Sentinela de Scroll Infinito ── */}
-      <div ref={sentinelRef} className="py-4 flex items-center justify-center min-h-[40px]">
+      <div ref={sentinelRef} className={hasMore || isLoading ? "py-3 flex items-center justify-center min-h-[36px]" : "h-0 w-full"}>
         {isLoading && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-            <CircleNotch size={18} className="animate-spin text-primary" />
+            <CircleNotch size={16} className="animate-spin text-primary" />
             <span>Descobrindo mais recomendações...</span>
           </div>
         )}

@@ -40,6 +40,7 @@ import {
   List,
   Camera,
   Edit3,
+  Package,
 } from "lucide-react";
 import {
   WhatsappLogo,
@@ -251,6 +252,44 @@ export function CanonicalStoreProfileView({
     ? formatWeeklyScheduleSummary(weeklySchedule)
     : "Horários sob consulta";
 
+  // Lista de banners da loja para scroll interno contínuo
+  const storeBannersList = useMemo(() => {
+    const list: { imageUrl: string; title?: string; link?: string }[] = [];
+    if (coverUrl) {
+      list.push({ imageUrl: coverUrl, title: "Capa Oficial" });
+    }
+    if (Array.isArray(banners)) {
+      banners.forEach((b: any) => {
+        const url = b.image_url || b.imageUrl;
+        if (url && !list.some((item) => item.imageUrl === url)) {
+          list.push({ imageUrl: url, title: b.title, link: b.link_url || b.link });
+        }
+      });
+    }
+    if (Array.isArray(flyers)) {
+      flyers.forEach((f: any) => {
+        const url = f.flyer_url || f.image_url;
+        if (url && !list.some((item) => item.imageUrl === url)) {
+          list.push({ imageUrl: url, title: f.title });
+        }
+      });
+    }
+    return list;
+  }, [coverUrl, banners, flyers]);
+
+  // Avaliação Real (ZERO MOCKS — Conforme Diretriz Estrita do Usuário)
+  const realReviewsCount = Array.isArray(reviews) && reviews.length > 0
+    ? reviews.length
+    : (typeof store?.reviews_count === "number" ? store.reviews_count : (typeof store?.total_reviews === "number" ? store.total_reviews : 0));
+
+  const realRatingAverage = realReviewsCount > 0
+    ? (Array.isArray(reviews) && reviews.length > 0
+        ? Number((reviews.reduce((acc: number, r: any) => acc + (Number(r.rating) || 5), 0) / reviews.length).toFixed(1))
+        : (typeof store?.rating_average === "number" && !isNaN(store.rating_average)
+            ? store.rating_average
+            : (typeof store?.rating === "number" && !isNaN(store.rating) ? store.rating : null)))
+    : null;
+
   const orderTypes = settings.order_types || {
     delivery: true,
     takeout: true,
@@ -419,9 +458,9 @@ export function CanonicalStoreProfileView({
   const hasSponsors = sponsors && sponsors.length > 0;
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 pb-24 md:pb-16 animate-in fade-in duration-200">
-      {/* ── 1. TOP BAR CANÔNICA (PADRÃO PERFIL DE MEMBRO) ── */}
-      <div className="-mx-4 -mt-4 sm:mx-0 sm:mt-0 px-4 py-2.5 bg-background/95 backdrop-blur-md sticky top-0 z-40 border-b border-border/40 flex items-center justify-between">
+    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 md:pb-12 animate-in fade-in duration-200">
+      {/* ── 1. TOP BAR CANÔNICA (PADRÃO PERFIL DE MEMBRO) — Renderizada apenas no Mobile onde a TopBar global é ocultada ── */}
+      <div className="-mx-4 -mt-4 sm:mx-0 sm:mt-0 px-4 py-2.5 bg-background/95 backdrop-blur-md sticky top-0 z-40 border-b border-border/40 flex items-center justify-between sm:hidden">
         {/* Esquerda: Botão Voltar */}
         <Link
           to={backUrl}
@@ -437,32 +476,8 @@ export function CanonicalStoreProfileView({
           <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
         </div>
 
-        {/* Direita: Portal, Gestão Pro & Compartilhar */}
+        {/* Direita: Compartilhar */}
         <div className="flex items-center gap-1.5">
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-border/70 cursor-pointer"
-          >
-            <Link to="/workspace" search={{ storeId: store.id }}>
-              <Store className="size-3.5 text-primary" />
-              <span>Portal</span>
-            </Link>
-          </Button>
-
-          <Button
-            asChild
-            size="sm"
-            variant="ghost"
-            className="h-8 px-2.5 rounded-xl font-semibold text-xs gap-1 text-muted-foreground hover:text-foreground cursor-pointer hidden sm:inline-flex"
-          >
-            <Link to="/portal-completo">
-              <Award className="size-3.5 text-amber-500" />
-              <span>Gestão Pro</span>
-            </Link>
-          </Button>
-
           <Button
             size="sm"
             variant="ghost"
@@ -474,6 +489,76 @@ export function CanonicalStoreProfileView({
           </Button>
         </div>
       </div>
+
+      {/* ── BARRA DO PROPRIETÁRIO (ADMIN BAR SECUNDÁRIA — REGRA 23 & MASTER PROMPT V5) ── */}
+      {isOwner && (
+        <div className="rounded-2xl bg-amber-500/10 border border-amber-500/25 p-3.5 sm:px-5 sm:py-3 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Store className="size-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <span>Painel do Proprietário</span>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0 px-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                  Gestão Ativa
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Visível exclusivamente para você e sua equipe.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              asChild
+              size="sm"
+              variant="default"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 bg-amber-600 hover:bg-amber-700 text-white cursor-pointer shadow-xs"
+            >
+              <Link to="/workspace" search={{ storeId: store.id }}>
+                <Store className="size-3.5" />
+                <span>Abrir Workspace</span>
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+            >
+              <Link to="/workspace/marketing/brand-kit" search={{ storeId: store.id }}>
+                <Camera className="size-3.5" />
+                <span>Editar Marca & Fotos</span>
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+            >
+              <Link to="/portal-completo">
+                <Award className="size-3.5 text-amber-500" />
+                <span>Gestão Pro</span>
+              </Link>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsSocialStudioOpen(true)}
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+            >
+              <Sparkles className="size-3.5 text-amber-500" />
+              <span>Social Studio</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* ── 2. BLOCO PANORÂMICO: AVATAR SQUIRCLE 1:1 + CAPA 1090PX + CARD DE STATS ── */}
       <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-6 shadow-xs">
@@ -509,24 +594,46 @@ export function CanonicalStoreProfileView({
               )}
             </div>
 
-            {/* Container da Capa Panorâmica (Proporção 3:1 Canônica, Sem Scroll Quebrado) */}
-            <div className="flex-1 h-20 sm:h-36 rounded-2xl bg-muted/30 overflow-hidden flex items-center border border-border/40 relative">
-              {coverUrl ? (
-                <img
-                  src={coverUrl}
-                  alt="Capa da empresa"
-                  className="size-full object-cover select-none rounded-2xl"
-                />
-              ) : (
-                <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-2xl">
-                  <Store className="size-6 sm:size-8 text-primary/30" />
-                </div>
-              )}
+            {/* Container da Capa Panorâmica com Scroll Interno */}
+            <div className="flex-1 h-20 sm:h-36 rounded-2xl bg-muted/30 border border-border/40 relative overflow-hidden flex items-center">
+              <div 
+                tabIndex={0}
+                aria-label="Galeria de banners da empresa"
+                className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 p-1 snap-x snap-mandatory"
+              >
+                {storeBannersList.length > 0 ? (
+                  storeBannersList.map((banner, idx) => (
+                    <div
+                      key={idx}
+                      className="h-full min-w-full sm:min-w-[320px] md:min-w-[420px] rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/40"
+                    >
+                      <img
+                        src={banner.imageUrl}
+                        alt={banner.title || "Capa da empresa"}
+                        className="size-full object-cover select-none rounded-xl"
+                      />
+                      {banner.link && (
+                        <a
+                          href={banner.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute inset-0 z-10"
+                          aria-label="Abrir link do banner"
+                        />
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-xl">
+                    <Store className="size-6 sm:size-8 text-primary/30" />
+                  </div>
+                )}
+              </div>
               {isOwner && (
                 <Link
                   to="/workspace/marketing/brand-kit"
                   search={{ storeId: store.id }}
-                  className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 shadow-xs cursor-pointer transition-colors z-20"
                 >
                   <Camera className="size-3 sm:size-3.5" />
                   <span>Alterar Capa</span>
@@ -535,24 +642,26 @@ export function CanonicalStoreProfileView({
             </div>
           </div>
 
-          {/* Card de Stats (Linha inferior no mobile, bloco lateral no desktop) */}
+          {/* Card de Stats no Final com Dados 100% Reais (Seguidores, Seguindo, Curtidas) */}
           <div className="h-14 sm:h-36 sm:min-w-[220px] flex-shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/60 p-2 sm:p-4 flex flex-col justify-center shadow-xs">
             <div className="grid grid-cols-3 gap-2 sm:gap-2 text-center max-w-sm mx-auto w-full">
               <div>
-                <p className="text-xs sm:text-base font-extrabold text-foreground">{catalog.length}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Itens</p>
+                <p className="text-xs sm:text-base font-extrabold text-foreground">
+                  {store.followers_count || store.followersCount || 0}
+                </p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Seguidores</p>
               </div>
               <div>
                 <p className="text-xs sm:text-base font-extrabold text-foreground">
-                  {reviews.length > 0 ? reviews.length : store.reviews_count || 12}
+                  {store.following_count || store.followingCount || 0}
                 </p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Avaliações</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Seguindo</p>
               </div>
               <div>
                 <p className="text-xs sm:text-base font-extrabold text-foreground font-mono">
-                  {Number(store.rating || 5.0).toFixed(1)}★
+                  {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc: number, p: any) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
                 </p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Nota</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Curtidas</p>
               </div>
             </div>
           </div>
@@ -572,35 +681,48 @@ export function CanonicalStoreProfileView({
                     @{store.slug}
                   </span>
                 )}
+
+                {/* AVALIAÇÃO REAL AO LADO DO NOME (ZERO MOCKS) */}
+                {realReviewsCount > 0 && realRatingAverage !== null ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
+                    <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                    <span>{realRatingAverage.toFixed(1)}</span>
+                    <span className="text-[10px] font-medium text-muted-foreground">({realReviewsCount})</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground text-[11px] font-medium border border-border/50">
+                    Sem avaliações ainda
+                  </span>
+                )}
               </div>
 
-              {/* Badges não-pill padronizadas */}
+              {/* Badges sutis e limpos padrão Instagram / Apple */}
               <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground">
+                <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
                   {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa Local")}
                 </span>
                 <span
                   className={cn(
-                    "px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider",
+                    "px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border",
                     openStatus?.isOpenNow
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "bg-muted text-muted-foreground"
+                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : "border-border/50 bg-transparent text-muted-foreground"
                   )}
                 >
                   {openStatus ? openStatus.text : "Horários sob consulta"}
                 </span>
                 {orderTypes.delivery && (
-                  <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground">
+                  <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
                     Delivery
                   </span>
                 )}
                 {orderTypes.takeout && (
-                  <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground">
+                  <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
                     Retirada
                   </span>
                 )}
                 {orderTypes.dine_in && (
-                  <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-muted text-muted-foreground">
+                  <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
                     No Local
                   </span>
                 )}
@@ -633,9 +755,9 @@ export function CanonicalStoreProfileView({
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/70 cursor-pointer"
+                    className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                   >
-                    <PaperPlaneTilt size={14} weight="bold" className="text-primary" />
+                    <PaperPlaneTilt size={14} weight="bold" className="text-muted-foreground" />
                     <span>Orçamento</span>
                   </Button>
                 </DialogTrigger>
@@ -734,34 +856,12 @@ export function CanonicalStoreProfileView({
               </Dialog>
 
               <Button
-                asChild
                 variant="outline"
-                className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/70 cursor-pointer"
+                onClick={handleShare}
+                className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer text-muted-foreground hover:text-foreground"
               >
-                <Link to="/workspace" search={{ storeId: store.id }}>
-                  <Store className="size-3.5 text-primary" />
-                  <span>Portal</span>
-                </Link>
-              </Button>
-
-              <Button
-                asChild
-                variant="outline"
-                className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/70 cursor-pointer"
-              >
-                <Link to="/portal-completo">
-                  <Award className="size-3.5 text-amber-500" />
-                  <span>Gestão Pro</span>
-                </Link>
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => setIsSocialStudioOpen(true)}
-                className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/70 cursor-pointer"
-              >
-                <Sparkles className="size-3.5 text-amber-500" />
-                <span>Social Studio</span>
+                <Share2 className="size-3.5" />
+                <span>Compartilhar</span>
               </Button>
             </div>
           </div>
@@ -1237,22 +1337,29 @@ export function CanonicalStoreProfileView({
                             const imageUrl = p.images?.[0] || p.image_url || null;
 
                             return (
-                              <div
+                              <Link
                                 key={p.id}
-                                className="w-56 shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs flex flex-col justify-between group"
+                                to="/classificados/$id"
+                                params={{ id: p.slug || p.id }}
+                                className="w-56 shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs flex flex-col justify-between group cursor-pointer"
                               >
-                                {imageUrl && (
-                                  <div className="aspect-square w-full overflow-hidden bg-muted/30">
+                                {/* PLACEHOLDER OBRIGATÓRIO — nunca exibe card sem imagem */}
+                                <div className="aspect-square w-full overflow-hidden bg-muted/20 relative">
+                                  {imageUrl ? (
                                     <img
                                       src={imageUrl}
                                       alt={p.title}
                                       className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                                       loading="lazy"
                                     />
-                                  </div>
-                                )}
-                                <div className="p-3.5 space-y-1 min-w-0">
-                                  <h4 className="text-xs font-bold text-foreground truncate">{p.title}</h4>
+                                  ) : (
+                                    <div className="size-full flex items-center justify-center">
+                                      <Package className="size-10 text-muted-foreground/30" strokeWidth={1.5} />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="p-3.5 space-y-1 min-w-0 flex-1">
+                                  <h4 className="text-xs font-bold text-foreground line-clamp-2 leading-snug">{p.title}</h4>
                                   <p className="text-sm font-black text-foreground font-mono">
                                     {formatMoney(priceCents)}
                                   </p>
@@ -1260,14 +1367,14 @@ export function CanonicalStoreProfileView({
                                 <div className="p-3.5 pt-0">
                                   <Button
                                     size="sm"
-                                    onClick={() => handleAddToCart(p)}
-                                    className="w-full h-8 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(p); }}
+                                    className="w-full h-9 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
                                   >
                                     <Plus className="size-3" />
                                     <span>Adicionar</span>
                                   </Button>
                                 </div>
-                              </div>
+                              </Link>
                             );
                           })}
                         </div>

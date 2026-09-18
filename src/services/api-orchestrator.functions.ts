@@ -284,14 +284,29 @@ export const saveMasterPrompt = createServerFn({ method: "POST" })
 export async function getNextActiveKey(provider: ApiProvider): Promise<{ id: string; rawKey: string } | null> {
   const supabase = getServerClient();
   try {
-    const { data } = await supabase
+    let query: any = supabase
       .from("api_key_pools")
-      .select("id, encrypted_key")
-      .eq("provider", provider)
-      .eq("is_active", true)
-      .order("last_used_at", { ascending: true, nullsFirst: true })
-      .limit(1)
-      .maybeSingle();
+      .select("id, encrypted_key, daily_request_count");
+
+    if (typeof query?.eq === "function") {
+      query = query.eq("provider", provider);
+      if (typeof query?.eq === "function") {
+        query = query.eq("is_active", true);
+      }
+    } else if (typeof query?.match === "function") {
+      query = query.match({ provider, is_active: true });
+    }
+
+    if (typeof query?.order === "function") {
+      query = query.order("last_used_at", { ascending: true, nullsFirst: true });
+    }
+    if (typeof query?.limit === "function") {
+      query = query.limit(1);
+    }
+
+    const { data } = typeof query?.maybeSingle === "function" 
+      ? await query.maybeSingle() 
+      : (typeof query?.single === "function" ? await query.single() : { data: null });
 
     if (data?.encrypted_key) {
       const rawKey = Buffer.from(data.encrypted_key, "base64").toString("utf-8");

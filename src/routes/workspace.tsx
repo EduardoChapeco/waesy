@@ -5,6 +5,8 @@ import { logSystemError } from "@/services/telemetry.functions";
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { Store, AlertTriangle, ArrowLeft, RefreshCw, LogIn } from "lucide-react";
+import { getSystemOnboardingSteps } from "@/services/system-onboarding.functions";
+import { WelcomeOnboardingModal } from "@/components/workspace/welcome-onboarding-modal";
 
 export const Route = createFileRoute("/workspace")({
  beforeLoad: async () => {
@@ -63,10 +65,12 @@ export const Route = createFileRoute("/workspace")({
  throw redirect({ to: "/criar-negocio" });
  }
 
- return { session };
+ const onboardingData = await getSystemOnboardingSteps().catch(() => ({ show: false, steps: [] }));
+
+ return { session, onboardingData };
    } catch (err) {
      console.error("[loader:workspace] Unhandled loader error:", err);
-     return { session: null };
+     return { session: null, onboardingData: { show: false, steps: [] } };
    }
  },
  component: WorkspaceLayout,
@@ -138,6 +142,7 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
 function WorkspaceLayout() {
  const loaderData = Route.useLoaderData() as any;
  const session = loaderData?.session;
+ const onboardingData = loaderData?.onboardingData;
  const routerState = useRouterState();
  const pathname = routerState.location.pathname;
  const isBuilder = pathname.startsWith("/workspace/builder/");
@@ -164,8 +169,14 @@ function WorkspaceLayout() {
  }
 
  return (
+ <>
  <WorkspaceShell session={session}>
  <Outlet />
  </WorkspaceShell>
+ 
+ {onboardingData?.show && onboardingData.steps && onboardingData.steps.length > 0 && (
+ <WelcomeOnboardingModal initialSteps={onboardingData.steps} />
+ )}
+ </>
  );
 }

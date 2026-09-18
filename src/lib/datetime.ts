@@ -4,6 +4,7 @@
  */
 
 import { normalizeWorkingHours, type WeeklySchedule, type Weekday, WEEKDAYS_ORDER } from "./business-hours";
+import { getHolidayOnDate } from "./data/holidays-calendar-catalog";
 
 const TZ = "America/Sao_Paulo";
 
@@ -63,6 +64,11 @@ export type OpenStatusResult = {
  text: string;
  nextEvent?: string;
  isOpenNow: boolean;
+ holiday?: {
+   name: string;
+   type: string;
+   is_official_holiday: boolean;
+ };
 };
 
 /**
@@ -75,10 +81,6 @@ export function getOpenStatus(
  emergencyPauseUntil?: string | null | undefined,
 ): OpenStatusResult {
  try {
- if (!rawHours) {
- return { status: "unknown", text: "Horários não informados", isOpenNow: false };
- }
-
  const now = new Date();
  const spTime = new Date(now.toLocaleString("en-US", { timeZone: TZ }));
  const currentHour = spTime.getHours();
@@ -86,21 +88,39 @@ export function getOpenStatus(
  const currentTimeMinutes = currentHour * 60 + currentMinute;
  const currentIsoDate = spTime.toISOString().split("T")[0]; // YYYY-MM-DD
 
+ const nationalHoliday = getHolidayOnDate(currentIsoDate);
+ const holidayInfo = nationalHoliday
+   ? {
+       name: nationalHoliday.name,
+       type: nationalHoliday.type,
+       is_official_holiday: nationalHoliday.is_official_holiday,
+     }
+   : undefined;
+
+ const withHoliday = (res: { status: "open" | "closed" | "paused" | "unknown"; text: string; isOpenNow: boolean }): OpenStatusResult => ({
+   ...res,
+   holiday: holidayInfo,
+ });
+
+ if (!rawHours) {
+   return withHoliday({ status: "unknown", text: "Horários não informados", isOpenNow: false });
+ }
+
  // 1. Pausa de emergência ativa
  if (emergencyPauseUntil) {
- const pauseDate = new Date(emergencyPauseUntil);
- if (pauseDate.getTime() > now.getTime()) {
- const pauseTimeStr = pauseDate.toLocaleTimeString("pt-BR", {
- timeZone: TZ,
- hour: "2-digit",
- minute: "2-digit",
- });
- return {
- status: "paused",
- text: `Pausa temporária de pedidos até ${pauseTimeStr}`,
- isOpenNow: false,
- };
- }
+   const pauseDate = new Date(emergencyPauseUntil);
+   if (pauseDate.getTime() > now.getTime()) {
+     const pauseTimeStr = pauseDate.toLocaleTimeString("pt-BR", {
+       timeZone: TZ,
+       hour: "2-digit",
+       minute: "2-digit",
+     });
+     return withHoliday({
+       status: "paused",
+       text: `Pausa temporária de pedidos até ${pauseTimeStr}`,
+       isOpenNow: false,
+     });
+   }
  }
 
  // 2. Exceção de Feriado no dia de hoje
@@ -108,11 +128,11 @@ export function getOpenStatus(
  const exception = holidayExceptions.find((e) => e.date === currentIsoDate);
  if (exception) {
  if (!exception.open || !exception.intervals || exception.intervals.length === 0) {
- return {
+ return withHoliday({
  status: "closed",
  text: `Fechado hoje (${exception.label || "Feriado"})`,
  isOpenNow: false,
- };
+ });
  }
 
  // Verifica intervalos da exceção
@@ -123,11 +143,11 @@ export function getOpenStatus(
  const closeMins = closeH * 60 + closeM;
 
  if (currentTimeMinutes >= openMins && currentTimeMinutes <= closeMins) {
- return {
+ return withHoliday({
  status: "open",
  text: `Aberto até às ${inv.to} (${exception.label || "Feriado"})`,
  isOpenNow: true,
- };
+ });
  }
  }
  }
@@ -154,11 +174,11 @@ export function getOpenStatus(
 
  // Se fechamento for menor que abertura, passou da meia-noite
  if (closeMins < openMins && currentTimeMinutes < closeMins) {
- return {
+ return withHoliday({
  status: "open",
  text: `Aberto agora • Fecha às ${inv.to} (Madrugada)`,
  isOpenNow: true,
- };
+ });
  }
  }
  }
@@ -175,20 +195,20 @@ export function getOpenStatus(
  if (closeMins > openMins) {
  if (currentTimeMinutes >= openMins && currentTimeMinutes <= closeMins) {
  const shiftLabel = inv.label ? ` (${inv.label})` : "";
- return {
+ return withHoliday({
  status: "open",
  text: `Aberto agora • Fecha às ${inv.to}${shiftLabel}`,
  isOpenNow: true,
- };
+ });
  }
  } else {
  // Turno passa da meia-noite
  if (currentTimeMinutes >= openMins) {
- return {
+ return withHoliday({
  status: "open",
  text: `Aberto agora • Fecha às ${inv.to} (Madrugada)`,
  isOpenNow: true,
- };
+ });
  }
  }
  }
@@ -201,11 +221,11 @@ export function getOpenStatus(
 
  if (upcomingShift) {
  const shiftLabel = upcomingShift.label ? ` para ${upcomingShift.label}` : "";
- return {
+ return withHoliday({
  status: "closed",
  text: `Fechado • Abre hoje às ${upcomingShift.from}${shiftLabel}`,
  isOpenNow: false,
- };
+ });
  }
  }
 
@@ -219,15 +239,15 @@ export function getOpenStatus(
  const firstInterval = nextDaySchedule.intervals[0];
  const nextDayName = WEEKDAYS_ORDER.find((w) => w.key === nextDayKey)?.label || "em breve";
  const dayLabel = offset === 1 ? "amanhã" : `na ${nextDayName.toLowerCase()}`;
- return {
+ return withHoliday({
  status: "closed",
  text: `Fechado • Abre ${dayLabel} às ${firstInterval.from}`,
  isOpenNow: false,
- };
+ });
  }
  }
 
- return { status: "closed", text: "Fechado temporariamente", isOpenNow: false };
+ return withHoliday({ status: "closed", text: "Fechado temporariamente", isOpenNow: false });
  } catch (e) {
  return { status: "unknown", text: "Horários sob consulta", isOpenNow: false };
  }

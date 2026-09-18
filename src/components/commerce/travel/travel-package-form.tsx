@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plane, Bus, Ship, Anchor, Hotel, Calendar, Check, Plus, Trash2, Sliders, MapPin, Clock, ShieldCheck, ShieldAlert, Sun, Camera, Layers, Utensils, Coffee, ChevronDown, ChevronUp, Star, X, Compass, ArrowUp, ArrowDown, Loader2, CreditCard, Car, Sparkles } from 'lucide-react';
+import { Plane, Bus, Ship, Anchor, Hotel, Calendar, Check, Plus, Trash2, Sliders, MapPin, Clock, ShieldCheck, ShieldAlert, Sun, Camera, Layers, Utensils, Coffee, ChevronDown, ChevronUp, Star, X, Compass, ArrowUp, ArrowDown, Loader2, CreditCard, Car, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,6 +47,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  const [newInclusionText, setNewInclusionText] = useState("");
  const [newExclusionText, setNewExclusionText] = useState("");
  const [newBadgeText, setNewBadgeText] = useState("");
+ const [newBioBulletText, setNewBioBulletText] = useState("");
 
  // Modal / Formulário Rápido de Destino
  const [showNewDestModal, setShowNewDestModal] = useState(false);
@@ -322,6 +323,24 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  current.filter((_, i) => i !== idx)
  );
  };
+
+  // Destaques da Hospedagem (Bio Bullets — Regra 19)
+  const addBioBullet = () => {
+    if (!newBioBulletText.trim()) return;
+    const current = resort.bio_bullets || [];
+    if (!current.includes(newBioBulletText.trim())) {
+      updateResort("bio_bullets", [...current, newBioBulletText.trim()]);
+    }
+    setNewBioBulletText("");
+  };
+
+  const removeBioBullet = (idx: number) => {
+    const current = resort.bio_bullets || [];
+    updateResort(
+      "bio_bullets",
+      current.filter((_, i) => i !== idx)
+    );
+  };
 
  // Itinerário
  const addItineraryDay = () => {
@@ -837,6 +856,61 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  />
  <Button type="button" size="sm" variant="ghost" onClick={addBadge} className="h-8 px-2 text-xs">
  +
+ </Button>
+ </div>
+ </div>
+ </div>
+
+ {/* Destaques da Hospedagem & Especificações (Bio Bullets — Regra 19 Paridade CMS ↔ Vitrine) */}
+ <div className="space-y-2 pt-3 border-t border-border/30">
+ <div className="flex items-center justify-between">
+ <Label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+ <CheckCircle2 className="size-3.5 text-primary" />
+ <span>Destaques da Hospedagem (Bio Bullets na Vitrine)</span>
+ </Label>
+ <span className="text-[10px] text-muted-foreground font-mono">
+ {(resort.bio_bullets || []).length} destaques
+ </span>
+ </div>
+
+ <div className="space-y-2">
+ {(resort.bio_bullets || []).map((bullet, idx) => (
+ <div
+ key={idx}
+ className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/30 border border-border/50 text-xs"
+ >
+ <div className="flex items-center gap-2 min-w-0">
+ <CheckCircle2 className="size-3.5 text-primary shrink-0" />
+ <span className="text-foreground truncate">{bullet}</span>
+ </div>
+ <button
+ type="button"
+ onClick={() => removeBioBullet(idx)}
+ className="size-5 flex items-center justify-center text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
+ title="Remover destaque"
+ >
+ <Trash2 className="size-3" />
+ </button>
+ </div>
+ ))}
+
+ <div className="flex items-center gap-2 pt-1">
+ <Input
+ value={newBioBulletText}
+ onChange={(e) => setNewBioBulletText(e.target.value)}
+ onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addBioBullet())}
+ placeholder="Ex: Piscina térmica com bar molhado, Spa completo..."
+ className="h-9 rounded-xl text-xs bg-background flex-1"
+ />
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ onClick={addBioBullet}
+ className="rounded-xl text-xs font-semibold gap-1 h-9 cursor-pointer"
+ >
+ <Plus className="size-3.5" />
+ <span>Adicionar</span>
  </Button>
  </div>
  </div>

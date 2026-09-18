@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Heart, MessageSquare, Share2, Bookmark, MapPin, MoreHorizontal, Calendar, ShoppingBag, ExternalLink, ChevronLeft, ChevronRight, Layers, Utensils, Navigation, Tag, Newspaper, ArrowRight, Phone, Volume2, Compass, Radio, Eye, ShieldCheck } from 'lucide-react';
+import { Heart, MessageSquare, Share2, Bookmark, MapPin, MoreHorizontal, Calendar, ShoppingBag, ExternalLink, ChevronLeft, ChevronRight, Layers, Utensils, Navigation, Tag, Newspaper, ArrowRight, Phone, Volume2, Compass, Radio, Eye, ShieldCheck, Plane, CheckCircle2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -422,89 +422,94 @@ export function PostCard(props: PostCardProps) {
  </div>
  </div>
  ) : (item.post_type === "travel" || (item.post_type === "destination" && item.metadata?.is_triptych)) ? (
- /* TEMPLATE 2: VIAGENS & TURISMO TRÍPTICO (Imagem 2) */
- <div className="mb-3 space-y-4 rounded-2xl bg-gradient-to-b from-sky-100/70 via-teal-50/40 to-background dark:from-sky-950/30 dark:via-slate-900 dark:to-card p-4 sm:p-6 border border-sky-200/50 dark:border-sky-800/30 select-none">
- {/* Impact Title */}
- <div className="text-center space-y-1">
- <h3 className="font-editorial text-2xl sm:text-3xl font-black text-foreground tracking-tight">
- {item.metadata?.travel_headline || "Some moments shouldn't wait"}
- </h3>
- <p className="text-xs text-muted-foreground max-w-md mx-auto">
- {item.metadata?.destination_name || item.location_name || "Roteiro Especial de Viagem & Lazer"}
- </p>
- </div>
-
- {/* Tríptico de 3 Cards Verticais */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
- {/* Card 1: Mapa do Destino */}
- <div className="flex flex-col items-center bg-card rounded-2xl p-3 border border-border text-center space-y-2">
- <div className="w-full aspect-[4/5] rounded-xl bg-amber-50 dark:bg-amber-950/20 overflow-hidden flex flex-col items-center justify-center p-3 relative border border-amber-200/50 dark:border-amber-900/30">
- <div className="flex items-center justify-between w-full text-[10px] font-bold text-amber-800 dark:text-amber-300">
- <span>{item.metadata?.origin_city || "Chapecó"}</span>
- <span>➔</span>
- <span>{item.metadata?.dest_city || item.location_name || "Destino"}</span>
- </div>
- <div className="my-auto size-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
- <Compass className="size-7 animate-spin" style={{ animationDuration: "20s" }} />
- </div>
- <Badge className="bg-amber-600 text-white text-[9px] font-bold px-2 py-0.5">
- Rota & Destino
+ /* TEMPLATE 2: VIAGENS & TURISMO EDITORIAL (UI Flat — Zero Grid-in-Grid) */
+ <div className="mb-3 select-none">
+ {/* Tríptico Limpo: Rota Infográfica + Imagem Central de Destaque + Status de Chegada */}
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+ {/* Elemento 1: Rota Infográfica Limpa (Origem -> Destino) */}
+ <div className="flex flex-col justify-between rounded-2xl border border-border/60 bg-muted/20 p-3.5 sm:p-4 text-center min-h-[140px] sm:h-52">
+ <div className="flex items-center justify-between w-full">
+ <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Itinerário</span>
+ <Badge variant="outline" className="text-[9px] font-bold px-2 py-0 border-primary/30 text-primary bg-primary/5">
+ Direto
  </Badge>
  </div>
- <p className="text-xs font-black text-foreground leading-tight">
- The map that gets your Destination.
+ 
+ <div className="my-2 space-y-2">
+ <div className="flex items-center justify-center gap-2 text-xs font-black text-foreground">
+ <span className="truncate max-w-[80px] sm:max-w-[90px]">{item.metadata?.origin_city || item.metadata?.origin || "Origem"}</span>
+ <div className="flex items-center text-primary">
+ <span className="w-3 border-t border-dashed border-primary" />
+ <Plane className="size-3.5 mx-0.5" />
+ <span className="w-3 border-t border-dashed border-primary" />
+ </div>
+ <span className="truncate max-w-[80px] sm:max-w-[90px] text-primary">{item.metadata?.dest_city || item.location_name || "Destino"}</span>
+ </div>
+ <p className="text-[11px] text-muted-foreground font-medium">
+ {item.metadata?.duration || item.metadata?.niche_label || "Roteiro Especial"}
  </p>
  </div>
 
- {/* Card 2: Foto do Momento */}
+ <div className="flex items-center justify-center gap-1 text-[10px] font-semibold text-muted-foreground pt-1 border-t border-border/40">
+ <MapPin className="size-3 text-primary shrink-0" />
+ <span className="truncate">{item.location_name || item.city || "Embarque Confirmado"}</span>
+ </div>
+ </div>
+
+ {/* Elemento 2: Imagem Principal do Destino (Centro de Atenção) */}
  <div
- className="flex flex-col items-center bg-card rounded-2xl p-3 border border-border text-center space-y-2 cursor-pointer hover:scale-102 transition-transform"
+ className="rounded-2xl overflow-hidden relative cursor-pointer group border border-border/60 shadow-2xs min-h-[180px] sm:h-52 bg-muted"
  onClick={() => setSelectedMediaLightboxIndex(0)}
  >
- <div className="w-full aspect-[4/5] rounded-xl overflow-hidden bg-muted relative">
  {item.media_urls[0] ? (
  <img
  src={item.media_urls[0]}
- alt="Foto da viagem"
- className="size-full object-cover"
+ alt={item.metadata?.dest_city || item.location_name || "Destino"}
+ className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
  />
  ) : (
- <div className="size-full flex items-center justify-center bg-sky-500/10 text-sky-600 font-bold text-xs">
- Foto do Momento
+ <div className="size-full flex flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-primary/10 via-muted/30 to-background p-4 text-center">
+ <Compass className="size-8 text-primary/60 animate-spin" style={{ animationDuration: "30s" }} />
+ <span className="text-xs font-bold text-foreground">Destino em Destaque</span>
  </div>
  )}
- </div>
- <p className="text-xs font-black text-foreground leading-tight">
- The photo you send.
- </p>
- </div>
-
- {/* Card 3: Voucher / Mensagem de Chegada */}
- <div className="flex flex-col items-center bg-card rounded-2xl p-3 border border-border text-center space-y-2">
- <div className="w-full aspect-[4/5] rounded-xl bg-muted/30 overflow-hidden flex flex-col items-center justify-center p-3 relative border border-border/80">
- <Badge className="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 mb-2">
- ✓ Welcome to {item.location_name || "Destination"}
- </Badge>
- <div className="my-auto text-center space-y-1">
- <span className="text-[11px] font-black text-primary dark:text-primary">
- {item.metadata?.voucher_title || "Chegada Confirmada"}
+ {/* Tag Minimalista de Destino sobre a Foto */}
+ <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+ <span className="bg-black/60 backdrop-blur-md text-white font-bold text-[11px] px-2.5 py-1 rounded-xl truncate shadow-xs">
+ {item.metadata?.dest_city || item.location_name || "Experiência"}
  </span>
- <p className="text-[10px] text-muted-foreground">
- {item.metadata?.voucher_desc || "Check-in realizado com sucesso"}
- </p>
- </div>
- </div>
- <p className="text-xs font-black text-foreground leading-tight">
- The message that says You arrived.
- </p>
+ <span className="bg-black/40 backdrop-blur-md text-white/90 text-[10px] font-medium px-2 py-0.5 rounded-lg flex items-center gap-1">
+ <Eye className="size-2.5" /> Ver
+ </span>
  </div>
  </div>
 
- {/* Frase Inspiracional */}
- <div className="pt-2 border-t border-border/40 text-center">
- <p className="text-xs sm:text-sm font-medium text-muted-foreground italic">
- "Travel is built from <strong className="text-foreground font-black not-italic">small moments</strong> and connection makes them possible at the right time."
+ {/* Elemento 3: Card Minimalista com Status de Chegada & Data */}
+ <div className="flex flex-col justify-between rounded-2xl border border-border/60 bg-muted/20 p-3.5 sm:p-4 text-center min-h-[140px] sm:h-52">
+ <div className="flex items-center justify-between w-full">
+ <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status</span>
+ <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] font-bold px-2 py-0">
+ Confirmado
+ </Badge>
+ </div>
+
+ <div className="my-2 space-y-1">
+ <div className="flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400">
+ <CheckCircle2 className="size-4" />
+ <span className="text-xs font-black text-foreground">
+ {item.metadata?.voucher_title || "Chegada ao Destino"}
+ </span>
+ </div>
+ <p className="text-[11px] text-muted-foreground font-medium">
+ {item.metadata?.travel_date || item.metadata?.dates || formatRelativeTime(item.created_at)}
  </p>
+ </div>
+
+ <div className="flex items-center justify-center gap-1.5 text-[10px] font-semibold text-muted-foreground pt-1 border-t border-border/40">
+ <Calendar className="size-3 text-primary shrink-0" />
+ <span>{item.metadata?.departure_time || "Check-in disponível"}</span>
+ </div>
+ </div>
  </div>
  </div>
  ) : item.post_type === "grid" && item.media_urls.length > 1 ? (

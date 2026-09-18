@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
  Briefcase,
@@ -43,41 +43,42 @@ import {
 import { getPublicJobById, applyToJob, getEmployerProfileInsights, type JobItemDTO, type EmployerProfileInsightsDTO } from "@/services/jobs.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { formatDate } from "@/lib/datetime";
+import { findProfessionByTitle } from "@/lib/data/professions-catalog";
+import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
-import { ProtectedContactButton } from "@/components/common/protected-contact-button";
 
 export const Route = createFileRoute("/_store/empregos/$id")({
- head: ({ loaderData }: any) => ({
- meta: [
- {
- title: loaderData?.job
- ? `${loaderData.job.title} na ${loaderData.job.company_name} — Vagas Waesy`
- : "Vaga de Emprego | Waesy",
- },
- {
- name: "description",
- content: loaderData?.job
- ? `${loaderData.job.description.slice(0, 160)}...`
- : "Confira todos os detalhes desta vaga de emprego e envie seu currículo.",
- },
- ],
- }),
- loader: async ({ params }) => {
-   try {
- const [job, session] = await Promise.all([
- getPublicJobById({ data: { jobId: params.id } }).catch(() => null),
- getUserSession().catch(() => null),
- ]);
+  head: ({ loaderData }: any) => ({
+    meta: [
+      {
+        title: loaderData?.job
+          ? `${loaderData.job.title} na ${loaderData.job.company_name} — Vagas Waesy`
+          : "Vaga de Emprego | Waesy",
+      },
+      {
+        name: "description",
+        content: loaderData?.job
+          ? `${loaderData.job.description.slice(0, 160)}...`
+          : "Confira todos os detalhes desta vaga de emprego e envie seu currículo.",
+      },
+    ],
+  }),
+  loader: async ({ params }) => {
+    try {
+      const [job, session] = await Promise.all([
+        getPublicJobById({ data: { jobId: params.id } }).catch(() => null),
+        getUserSession().catch(() => null),
+      ]);
 
- let employerInsights: EmployerProfileInsightsDTO | null = null;
- if (job?.company_name) {
- employerInsights = await getEmployerProfileInsights({
- data: { companyName: job.company_name },
- }).catch(() => null);
- }
+      let employerInsights: EmployerProfileInsightsDTO | null = null;
+      if (job?.company_name) {
+        employerInsights = await getEmployerProfileInsights({
+          data: { companyName: job.company_name },
+        }).catch(() => null);
+      }
 
- return { job, session, employerInsights };
+      return { job, session, employerInsights };
    } catch (err) {
      console.error("[loader:_store.empregos.$id] Unhandled error:", err);
      return { job: null, session: null, employerInsights: null };
@@ -85,10 +86,10 @@ export const Route = createFileRoute("/_store/empregos/$id")({
  },
  component: JobDetailPage,
 });
-
 function JobDetailPage() {
- const { job, session, employerInsights } = ((Route.useLoaderData?.() as any) || {});
- const [isApplyOpen, setIsApplyOpen] = useState(false);
+  const { job, session, employerInsights } = ((Route.useLoaderData?.() as any) || {});
+  const matchedProfession = useMemo(() => (job?.title ? findProfessionByTitle(job.title) : null), [job?.title]);
+  const [isApplyOpen, setIsApplyOpen] = useState(false);
  const [candidateName, setCandidateName] = useState(session?.user_metadata?.full_name || "");
  const [candidateEmail, setCandidateEmail] = useState(session?.email || "");
  const [candidatePhone, setCandidatePhone] = useState("");
@@ -157,7 +158,7 @@ function JobDetailPage() {
  };
 
  return (
- <div className="w-full max-w-4xl mx-auto space-y-8 pb-6">
+  <div className="w-full max-w-4xl mx-auto space-y-8 pb-28 lg:pb-6">
  {/* ── 1. Top Navigation & Breadcrumb ── */}
  <div className="flex items-center justify-between pt-2">
  <Link
@@ -179,8 +180,8 @@ function JobDetailPage() {
  </Button>
  </div>
 
- {/* ── 2. Hero Header da Vaga ── */}
- <header className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 space-y-6">
+  {/* ── 2. Hero Header da Vaga ── */}
+  <header className="rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-6 sm:p-8 space-y-6">
  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
  <div className="flex items-start gap-4">
  <div className="size-16 sm:size-20 rounded-2xl bg-muted flex items-center justify-center text-foreground font-black text-xl shrink-0 overflow-hidden">
@@ -230,8 +231,8 @@ function JobDetailPage() {
  </div>
  </div>
 
- {/* Salário em Destaque */}
- <div className="sm:text-right bg-muted/40 sm:bg-transparent p-3 sm:p-0 rounded-2xl border sm:border-0 border-border">
+  {/* Salário em Destaque */}
+  <div className="sm:text-right bg-muted/40 sm:bg-transparent p-4 sm:p-0 rounded-none sm:rounded-2xl border-y sm:border-0 border-border">
  <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
  Remuneração Prevista
  </span>
@@ -241,27 +242,32 @@ function JobDetailPage() {
  </div>
  </div>
 
- {/* Tags Rápidas de Contratação */}
- <div className="flex flex-wrap items-center gap-2 pt-4">
- <Badge variant="secondary" className="rounded-xl px-3 py-1 text-xs font-bold gap-1.5">
- <Briefcase size={14} weight="bold" />
- {job.contract_type}
- </Badge>
- <Badge variant="secondary" className="rounded-xl px-3 py-1 text-xs font-bold gap-1.5">
- <Buildings size={14} weight="bold" />
- Regime {job.workplace_type}
- </Badge>
- <Badge variant="outline" className="rounded-xl px-3 py-1 text-xs font-semibold text-muted-foreground">
- Área: {job.category.toUpperCase()}
- </Badge>
- </div>
+        {/* Tags Rápidas de Contratação */}
+        <div className="flex flex-wrap items-center gap-2 pt-4">
+          <Badge variant="secondary" className="rounded-xl px-3 py-1 text-xs font-bold gap-1.5">
+            <Briefcase size={14} weight="bold" />
+            {job.contract_type}
+          </Badge>
+          <Badge variant="secondary" className="rounded-xl px-3 py-1 text-xs font-bold gap-1.5">
+            <Buildings size={14} weight="bold" />
+            Regime {job.workplace_type}
+          </Badge>
+          {matchedProfession && (
+            <Badge variant="outline" className="rounded-xl px-3 py-1 text-xs font-mono font-bold text-foreground">
+              CBO {matchedProfession.cbo_code}
+            </Badge>
+          )}
+          <Badge variant="outline" className="rounded-xl px-3 py-1 text-xs font-semibold text-muted-foreground">
+            Área: {job.category.toUpperCase()}
+          </Badge>
+        </div>
  </header>
 
  {/* ── 3. Conteúdo Principal & Descrição Completa ── */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
  <main className="lg:col-span-2 space-y-8">
- {/* Descrição das Atividades */}
- <section className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 space-y-4">
+  {/* Descrição das Atividades */}
+  <section className="rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-6 sm:p-8 space-y-4">
  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
  <Briefcase size={18} weight="bold" />
  <span>Sobre a Vaga e Atribuições</span>
@@ -272,8 +278,8 @@ function JobDetailPage() {
  </section>
 
  {/* Requisitos & Qualificações */}
- {job.requirements && job.requirements.length > 0 && (
- <section className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 space-y-4">
+  {job.requirements && job.requirements.length > 0 && (
+  <section className="rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-6 sm:p-8 space-y-4">
  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
  <CheckCircle size={18} weight="bold" />
  <span>Requisitos & Conhecimentos</span>
@@ -292,8 +298,8 @@ function JobDetailPage() {
  )}
 
  {/* Benefícios & Vantagens */}
- {job.benefits && job.benefits.length > 0 && (
- <section className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 space-y-4">
+  {job.benefits && job.benefits.length > 0 && (
+  <section className="rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-6 sm:p-8 space-y-4">
  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
  <CheckCircle size={18} weight="bold" className="text-primary" />
  <span>Benefícios & Vantagens</span>
@@ -315,9 +321,64 @@ function JobDetailPage() {
 
  {/* ── 4. Coluna Lateral de Ação / Candidatura ── */}
  <aside className="space-y-5">
- {/* Card de Avaliações do Empregador (Avaliação Corporativa e Cultura) */}
- {employerInsights && employerInsights.total_reviews > 0 && (
- <div className="rounded-2xl border border-border/60 bg-card p-5 space-y-3">
+        {/* Termômetro Salarial & Benchmark CBO */}
+        {matchedProfession && (
+          <div className="rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-5 space-y-3 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="font-mono text-[10px] font-bold">
+                  CBO {matchedProfession.cbo_code}
+                </Badge>
+                <span className="text-xs font-bold text-foreground">Termômetro Salarial</span>
+              </div>
+              <Badge variant="secondary" className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-500/10">
+                {matchedProfession.market_demand_level} Demanda
+              </Badge>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Média salarial nacional para <strong>{matchedProfession.title}</strong> conforme Classificação Brasileira de Ocupações (MTE).
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-center">
+                <span className="text-[10px] text-muted-foreground block font-medium">Júnior</span>
+                <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.junior_salary_cents)}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-center">
+                <span className="text-[10px] text-primary block font-medium">Pleno</span>
+                <span className="text-xs font-bold font-mono text-primary">{formatMoney(matchedProfession.mid_salary_cents)}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-center">
+                <span className="text-[10px] text-muted-foreground block font-medium">Sênior</span>
+                <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.senior_salary_cents)}</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-center">
+                <span className="text-[10px] text-muted-foreground block font-medium">Lead / Especialista</span>
+                <span className="text-xs font-bold font-mono text-foreground">{formatMoney(matchedProfession.lead_salary_cents)}</span>
+              </div>
+            </div>
+
+            {matchedProfession.essential_skills && matchedProfession.essential_skills.length > 0 && (
+              <div className="pt-2">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block mb-1.5">
+                  Competências Chave
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {matchedProfession.essential_skills.slice(0, 5).map((skill, i) => (
+                    <span key={i} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+  {/* Card de Avaliações do Empregador (Avaliação Corporativa e Cultura) */}
+  {employerInsights && employerInsights.total_reviews > 0 && (
+  <div className="rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-5 space-y-3">
  <div className="flex items-center justify-between">
  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
  Perfil do Empregador
@@ -352,7 +413,7 @@ function JobDetailPage() {
  </div>
  )}
 
- <div className="sticky top-20 rounded-2xl border border-border/60 bg-card p-6 space-y-5">
+  <div className="sticky top-20 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-6 space-y-5">
  <div className="space-y-1">
  <h3 className="text-sm font-bold text-foreground">Candidate-se a esta vaga</h3>
  <p className="text-xs text-muted-foreground">
@@ -587,6 +648,18 @@ function JobDetailPage() {
  </div>
  </aside>
  </div>
+
+  {/* ── Mobile Sticky Action Bar (Thumb Zone) ── */}
+  <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border/60 shadow-lg px-4 py-3 flex flex-col gap-2 select-none pb-safe">
+    <Button 
+      size="lg" 
+      onClick={() => setIsApplyOpen(true)}
+      className="w-full font-bold h-12 text-sm bg-foreground text-background gap-2 cursor-pointer shadow-sm"
+    >
+      <PaperPlaneTilt size={18} weight="bold" />
+      Enviar Candidatura
+    </Button>
+  </div>
  </div>
  );
 }

@@ -38,6 +38,9 @@ import {
   type ViewModeType,
   type FilterChipOption,
 } from "@/components/commerce/discovery-control-bar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { X, Calendar as CalendarIcon, ChevronDown } from "lucide-react";
 
 const WEEKDAY_NAMES = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
 const MONTH_NAMES = [
@@ -418,74 +421,147 @@ function AgendaPadronizadaPage() {
         </div>
       </div>
 
-      {/* ── 3. Seletor de Datas (Slider Apple Calendar) ── */}
-      <section aria-label="Seletor de Datas" className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-foreground font-mono uppercase tracking-wider">
-            Próximos Dias
-          </span>
-          {selectedDate !== "all" && (
+      {/* ── 3. Seletor de Datas Consolidado (Estilo Airbnb / Sympla — Zero Poluição) ── */}
+      <section aria-label="Filtro por Data" className="py-1">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Botão de Calendário Consolidado */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "h-10 px-4 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer shadow-xs",
+                  selectedDate !== "all"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card border-border/80 text-foreground hover:bg-muted/50"
+                )}
+              >
+                <CalendarIcon className="size-4" />
+                <span>
+                  {selectedDate === "all"
+                    ? "Selecionar Data"
+                    : formatDate(selectedDate)}
+                </span>
+                <ChevronDown className="size-3.5 opacity-70" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3 rounded-2xl bg-card border-border/60 shadow-xl" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate !== "all" ? new Date(selectedDate + "T12:00:00") : undefined}
+                onSelect={(d) => {
+                  if (d) {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, "0");
+                    const day = String(d.getDate()).padStart(2, "0");
+                    setSelectedDate(`${year}-${month}-${day}`);
+                  }
+                }}
+                className="rounded-xl"
+              />
+              {selectedDate !== "all" && (
+                <div className="pt-2 border-t border-border/40 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDate("all")}
+                    className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    Limpar data
+                  </button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {/* Atalhos Rápidos Inteligentes em Pílulas Flat */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {/* Todos */}
             <button
               type="button"
               onClick={() => setSelectedDate("all")}
-              className="text-xs text-primary font-semibold hover:underline cursor-pointer"
+              className={cn(
+                "h-9 px-3.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+                selectedDate === "all"
+                  ? "bg-foreground text-background font-bold shadow-2xs"
+                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              )}
             >
-              Ver todos os dias
+              Todos os dias
             </button>
-          )}
-        </div>
 
-        <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-2">
-          {/* Botão Todos */}
-          <button
-            type="button"
-            onClick={() => setSelectedDate("all")}
-            className={`min-w-[76px] h-20 p-2.5 rounded-2xl flex flex-col items-center justify-between border cursor-pointer shrink-0 transition-all select-none ${
-              selectedDate === "all"
-                ? "bg-foreground text-background font-bold border-foreground"
-                : "bg-card border-border text-foreground hover:bg-muted/50"
-            }`}
-          >
-            <span className="text-[10px] font-mono uppercase tracking-wider opacity-80">Geral</span>
-            <CalendarDots size={18} weight="bold" />
-            <span className="text-xs">Todos</span>
-          </button>
-
-          {/* Dias Próximos */}
-          {nextDays.map((day) => {
-            const isSelected = selectedDate === day.dateKey;
-            const itemsCount = unifiedItems.filter((i) => i.date === day.dateKey).length;
-
-            return (
+            {/* Hoje */}
+            {nextDays[0] && (
               <button
-                key={day.dateKey}
                 type="button"
-                onClick={() => setSelectedDate(day.dateKey)}
-                className={`min-w-[76px] h-20 p-2.5 rounded-2xl flex flex-col items-center justify-between border cursor-pointer shrink-0 transition-all select-none ${
-                  isSelected
-                    ? "bg-foreground text-background font-bold border-foreground scale-102"
-                    : "bg-card border-border text-foreground hover:bg-muted/50"
-                }`}
+                onClick={() => setSelectedDate(nextDays[0].dateKey)}
+                className={cn(
+                  "h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                  selectedDate === nextDays[0].dateKey
+                    ? "bg-foreground text-background font-bold shadow-2xs"
+                    : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                )}
               >
-                <span className="text-[10px] font-mono uppercase tracking-wider opacity-80">
-                  {day.isToday ? "HOJE" : day.isTomorrow ? "AMANHÃ" : day.weekday}
-                </span>
-
-                <span className="text-xl font-black leading-none">{day.dayNumber}</span>
-
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] font-mono">{day.monthName}</span>
-                  {itemsCount > 0 && (
-                    <span
-                      className={`size-1.5 rounded-full ${
-                        isSelected ? "bg-background" : "bg-primary"
-                      }`}
-                    />
-                  )}
-                </div>
+                <span>Hoje</span>
+                {unifiedItems.some((i) => i.date === nextDays[0].dateKey) && (
+                  <span className={cn("size-1.5 rounded-full", selectedDate === nextDays[0].dateKey ? "bg-background" : "bg-primary")} />
+                )}
               </button>
-            );
-          })}
+            )}
+
+            {/* Amanhã */}
+            {nextDays[1] && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate(nextDays[1].dateKey)}
+                className={cn(
+                  "h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                  selectedDate === nextDays[1].dateKey
+                    ? "bg-foreground text-background font-bold shadow-2xs"
+                    : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                )}
+              >
+                <span>Amanhã</span>
+                {unifiedItems.some((i) => i.date === nextDays[1].dateKey) && (
+                  <span className={cn("size-1.5 rounded-full", selectedDate === nextDays[1].dateKey ? "bg-background" : "bg-primary")} />
+                )}
+              </button>
+            )}
+
+            {/* Fim de Semana */}
+            {nextDays.find((d) => d.weekday === "SÁB" || d.weekday === "DOM") && (() => {
+              const weekendDay = nextDays.find((d) => d.weekday === "SÁB") || nextDays.find((d) => d.weekday === "DOM");
+              if (!weekendDay) return null;
+              return (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(weekendDay.dateKey)}
+                  className={cn(
+                    "h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5",
+                    selectedDate === weekendDay.dateKey
+                      ? "bg-foreground text-background font-bold shadow-2xs"
+                      : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  )}
+                >
+                  <span>Fim de Semana</span>
+                  {unifiedItems.some((i) => i.date === weekendDay.dateKey) && (
+                    <span className={cn("size-1.5 rounded-full", selectedDate === weekendDay.dateKey ? "bg-background" : "bg-primary")} />
+                  )}
+                </button>
+              );
+            })()}
+
+            {/* Botão de Limpar Data se estiver filtrado */}
+            {selectedDate !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate("all")}
+                className="h-9 size-9 rounded-xl text-muted-foreground hover:text-foreground bg-muted/30 flex items-center justify-center cursor-pointer transition-colors"
+                title="Limpar data selecionada"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </section>
 

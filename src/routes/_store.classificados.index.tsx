@@ -867,7 +867,7 @@ function ClassifiedsMasterPage() {
                         {itemNiche.shortLabel}
                       </Badge>
                       {(item.is_boosted || item.attributes?.is_boosted) && (
-                        <Badge className="bg-amber-500 text-black font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                        <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-sm">
                           Destaque
                         </Badge>
                       )}
@@ -1004,7 +1004,7 @@ function ClassifiedsMasterPage() {
                                 {item.deal_type && (
                                   <Badge
                                     variant="secondary"
-                                    className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 bg-black/70 text-white backdrop-blur-md border-none rounded-md"
+                                    className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 bg-background/90 text-foreground backdrop-blur-md border border-border/40 rounded-md shadow-2xs"
                                   >
                                     {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                                   </Badge>
@@ -1116,13 +1116,13 @@ function ClassifiedsMasterPage() {
                         {item.deal_type && (
                           <Badge
                             variant="secondary"
-                            className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 bg-black/70 text-white backdrop-blur-md border-none rounded-md"
+                            className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 bg-background/90 text-foreground backdrop-blur-md border border-border/40 rounded-md shadow-2xs"
                           >
                             {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                           </Badge>
                         )}
                         {(item.is_boosted || item.attributes?.is_boosted) && (
-                          <Badge className="bg-amber-500 text-black font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                          <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-sm">
                             Destaque
                           </Badge>
                         )}

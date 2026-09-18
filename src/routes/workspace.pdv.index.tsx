@@ -36,7 +36,14 @@ import {
  Armchair,
  Users,
 	FileText,
+	Smartphone,
 } from "lucide-react";
+import {
+  DigitalCompanionCard,
+  type CompanionCardSectionItem,
+  type CompanionRuleItem,
+  type CompanionContactItem,
+} from "@/components/documents/digital-companion-card";
 import { generateContractFromOrder } from "@/services/contracts.functions";
 import { printThermalReceipt, type ThermalReceiptData } from "@/lib/thermal-printer";
 import {
@@ -111,9 +118,9 @@ function QuickOpenRegisterInlineCard() {
  }
  };
 
- return (
- <div className="flex min-h-[80vh] items-center justify-center p-4 bg-muted/20 animate-in fade-in duration-200">
- <div className="w-full max-w-md p-6 bg-card rounded-2xl border border-border/80 shadow-xs space-y-5 text-center">
+  return (
+  <div className="flex min-h-[70vh] items-center justify-center w-full sm:px-0 animate-in fade-in duration-200">
+  <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-3xl sm:border border-border/60 sm:shadow-sm space-y-6 text-center">
  <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Banknote className="size-7" />
  </div>
@@ -219,9 +226,9 @@ export const Route = createFileRoute("/workspace/pdv/")({
  (error instanceof Error ? error.message : String(error)) === "CAIXA_EXPIRADO" ||
  (error instanceof Error ? error.message : String(error)).includes("CAIXA_EXPIRADO")
  ) {
- return (
- <div className="flex h-[80vh] items-center justify-center p-4 bg-muted/20">
- <div className="w-full max-w-md text-center bg-card border border-destructive/40 p-8 rounded-2xl space-y-4">
+  return (
+  <div className="flex min-h-[70vh] items-center justify-center w-full sm:px-0">
+  <div className="w-full max-w-md text-center bg-card sm:border border-destructive/30 p-8 sm:p-10 sm:rounded-3xl space-y-5 sm:shadow-sm">
  <div className="size-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
  <MonitorPause className="size-8" />
  </div>
@@ -295,6 +302,7 @@ function PdvTerminal() {
  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [contractSigningInfo, setContractSigningInfo] = useState<{ contractId: string; title: string; signingUrl: string; whatsappLink: string | null } | null>(null);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
+  const [companionCardOpen, setCompanionCardOpen] = useState(false);
 
   const handleGenerateContractFromPOS = async (orderId: string) => {
     setIsGeneratingContract(true);
@@ -1518,6 +1526,16 @@ function PdvTerminal() {
 							<span>{isGeneratingContract ? "Gerando Contrato..." : "Gerar Contrato & Assinatura no Balcão"}</span>
 						</Button>
 					)}
+
+            <Button
+              type="button"
+              onClick={() => setCompanionCardOpen(true)}
+              variant="outline"
+              className="w-full h-11 rounded-xl text-xs font-bold gap-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer shadow-2xs"
+            >
+              <Smartphone className="size-4" />
+              <span>Enviar Comprovante / Carnê 9:16 (WhatsApp)</span>
+            </Button>
 					
  <div className="grid grid-cols-2 gap-2">
  <Button
@@ -1668,6 +1686,100 @@ function PdvTerminal() {
  }}
  />
  )}
- </div>
- );
+
+      {/* ── MODAL DIGITAL COMPANION CARD 9:16 (COMPROVANTE DE BALCÃO / CARNÊ WHATSAPP) ── */}
+      <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Comprovante Digital 9:16 de Venda</DialogTitle>
+          </DialogHeader>
+          {lastSaleReceipt && (
+            <div className="w-full">
+              <DigitalCompanionCard {...getPosCompanionData(lastSaleReceipt, store)} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function getPosCompanionData(receipt: any, store: any) {
+  const storeName = store?.name || "Loja Parceira";
+  const items = receipt?.items || [];
+  const total = receipt?.total || 0;
+
+  const sections: CompanionCardSectionItem[] = [
+    {
+      id: "sale-summary",
+      type: "custom" as const,
+      badge: "Venda Concluída",
+      title: "Resumo dos Itens",
+      subtitle: `${items.length} produto(s) adquirido(s)`,
+      details: [
+        { label: "Total Pago", value: formatMoney(total), highlight: true },
+        ...items.map((item: any) => ({
+          label: `${item.qty}x ${item.product?.title || item.title}`,
+          value: formatMoney(item.unitPriceCents * item.qty),
+        })),
+        ...(receipt?.change > 0 ? [{ label: "Troco", value: formatMoney(receipt.change) }] : []),
+      ],
+    },
+  ];
+
+  const rules: CompanionRuleItem[] = [
+    {
+      title: "Garantia e Troca",
+      description: "Prazo legal de até 30 dias para troca de mercadorias não perecíveis acompanhadas deste comprovante.",
+      badge: "Garantia",
+      highlight: true,
+    },
+    {
+      title: "Acompanhamento de Crediário",
+      description: "Em vendas parceladas no carnê, o titular pode consultar e liquidar parcelas via Pix pelo painel da conta.",
+      badge: "Carnê",
+    },
+    {
+      title: "Atendimento no Balcão",
+      description: "Apresente o código deste cupom no balcão caso necessite de suporte pós-venda.",
+      badge: "Balcão",
+    },
+  ];
+
+  const storePhone = store?.settings?.whatsapp_phone || store?.phone || store?.whatsapp_phone;
+
+  const emergencyContacts: CompanionContactItem[] = [
+    ...(storePhone
+      ? [
+          {
+            name: storeName,
+            category: "Atendimento ao Cliente",
+            phone: storePhone,
+            whatsapp: true,
+            is24h: false,
+          },
+        ]
+      : []),
+    {
+      name: "Central Waesy",
+      category: "Suporte da Plataforma",
+      phone: "0800 000 0000",
+      whatsapp: true,
+      is24h: true,
+    },
+  ];
+
+  return {
+    niche: "retail" as const,
+    title: "Comprovante de Compra",
+    subtitle: `${storeName} · Pedido #${receipt?.saleId || "PDV"}`,
+    code: `PDV-${receipt?.saleId || "BALCAO"}`,
+    companyName: storeName,
+    companyLogoUrl: store?.logo_url,
+    participantsLabel: "Cliente",
+    participants: [receipt?.customerName || "Cliente do Balcão"].filter(Boolean),
+    sections,
+    rules,
+    emergencyContacts,
+  };
 }

@@ -296,8 +296,14 @@ export function CheckoutPage() {
  }
  }
 
- const shipRes = await calculateShipping({ data: { zipcode: cep } });
- if (shipRes && Array.isArray(shipRes) && shipRes.length > 0) {
+    const shipRes = await calculateShipping({
+      data: {
+        zipcode: cep,
+        cartId: cart?.id || undefined,
+        storeId: (cart as any)?.storeId || storeProfile?.id || undefined,
+      },
+    });
+    if (shipRes && Array.isArray(shipRes) && shipRes.length > 0) {
  setShippingRates(shipRes);
  setNoShippingRatesFound(false);
  // Auto select first rate
@@ -658,9 +664,9 @@ export function CheckoutPage() {
  );
  }
 
- return (
- <div className="w-full max-w-5xl mx-auto pb-16 space-y-6">
- {/* ── Sub-Header Clean (Silêncio Operacional) ── */}
+  return (
+  <div className="w-full max-w-5xl mx-auto pb-32 sm:pb-16 space-y-6 px-3 sm:px-0 pt-4 sm:pt-0">
+  {/* ── Sub-Header Clean (Silêncio Operacional) ── */}
  <div className="flex items-center justify-between gap-4 pb-2 ">
  <div className="flex items-center gap-2.5">
  <Link
@@ -1606,7 +1612,7 @@ export function CheckoutPage() {
  </div>
  </div>
 
- <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+ <div className="pt-3 hidden sm:flex flex-col sm:flex-row items-center justify-between gap-3">
                 <Button
                   variant="outline"
                   onClick={() => setActiveStep(3)}

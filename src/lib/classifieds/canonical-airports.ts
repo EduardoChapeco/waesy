@@ -3,78 +3,35 @@
 // Fonte: ANAC + Infraero. Usado em: criação de classificados de viagem.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { GLOBAL_AIRPORTS_CATALOG } from "@/lib/data/airports-catalog";
+import { GLOBAL_AIRLINES_CATALOG, GLOBAL_CRUISES_CATALOG } from "@/lib/data/airlines-cruises-catalog";
+
 export interface Airport {
   iata: string;
   name: string;
   city: string;
   state: string;
-  region: "Norte" | "Nordeste" | "Centro-Oeste" | "Sudeste" | "Sul";
+  region: "Norte" | "Nordeste" | "Centro-Oeste" | "Sudeste" | "Sul" | "Internacional";
 }
 
-export const CANONICAL_AIRPORTS: Airport[] = [
-  // ── SUL ───────────────────────────────────────────────────────────────────
-  { iata: "XAP", name: "Aeroporto Regional de Chapecó", city: "Chapecó", state: "SC", region: "Sul" },
-  { iata: "FLN", name: "Aeroporto Internacional Hercílio Luz", city: "Florianópolis", state: "SC", region: "Sul" },
-  { iata: "NVT", name: "Aeroporto de Navegantes", city: "Navegantes", state: "SC", region: "Sul" },
-  { iata: "JOI", name: "Aeroporto de Joinville", city: "Joinville", state: "SC", region: "Sul" },
-  { iata: "CXJ", name: "Aeroporto de Caxias do Sul", city: "Caxias do Sul", state: "RS", region: "Sul" },
-  { iata: "POA", name: "Aeroporto Internacional Salgado Filho", city: "Porto Alegre", state: "RS", region: "Sul" },
-  { iata: "UDI", name: "Aeroporto Internacional de Uberlândia", city: "Uberlândia", state: "MG", region: "Sudeste" },
-  { iata: "PFB", name: "Aeroporto de Passo Fundo", city: "Passo Fundo", state: "RS", region: "Sul" },
-  { iata: "IGU", name: "Aeroporto Internacional de Foz do Iguaçu", city: "Foz do Iguaçu", state: "PR", region: "Sul" },
-  { iata: "CWB", name: "Aeroporto Internacional Afonso Pena", city: "Curitiba", state: "PR", region: "Sul" },
-  { iata: "LDB", name: "Aeroporto de Londrina", city: "Londrina", state: "PR", region: "Sul" },
-  { iata: "MGF", name: "Aeroporto de Maringá", city: "Maringá", state: "PR", region: "Sul" },
-  { iata: "BFH", name: "Aeroporto Bacacheri", city: "Curitiba", state: "PR", region: "Sul" },
-  { iata: "CNF", name: "Aeroporto Internacional de Confins", city: "Belo Horizonte", state: "MG", region: "Sudeste" },
+function deriveRegion(state?: string, countryCode?: string): Airport["region"] {
+  if (countryCode && countryCode !== "BR") return "Internacional";
+  if (!state) return "Sudeste";
+  const st = state.toUpperCase().trim();
+  if (["PR", "SC", "RS"].includes(st)) return "Sul";
+  if (["SP", "RJ", "MG", "ES"].includes(st)) return "Sudeste";
+  if (["MS", "MT", "GO", "DF"].includes(st)) return "Centro-Oeste";
+  if (["BA", "SE", "AL", "PE", "PB", "RN", "CE", "PI", "MA"].includes(st)) return "Nordeste";
+  return "Norte";
+}
 
-  // ── SUDESTE ───────────────────────────────────────────────────────────────
-  { iata: "GRU", name: "Aeroporto Internacional de Guarulhos", city: "São Paulo", state: "SP", region: "Sudeste" },
-  { iata: "CGH", name: "Aeroporto de Congonhas", city: "São Paulo", state: "SP", region: "Sudeste" },
-  { iata: "VCP", name: "Aeroporto Internacional de Viracopos", city: "Campinas", state: "SP", region: "Sudeste" },
-  { iata: "GIG", name: "Aeroporto Internacional do Galeão", city: "Rio de Janeiro", state: "RJ", region: "Sudeste" },
-  { iata: "SDU", name: "Aeroporto Santos Dumont", city: "Rio de Janeiro", state: "RJ", region: "Sudeste" },
-  { iata: "PLU", name: "Aeroporto da Pampulha", city: "Belo Horizonte", state: "MG", region: "Sudeste" },
-  { iata: "VIX", name: "Aeroporto Eurico de Aguiar Salles", city: "Vitória", state: "ES", region: "Sudeste" },
-  { iata: "BAU", name: "Aeroporto de Bauru", city: "Bauru", state: "SP", region: "Sudeste" },
-  { iata: "RAO", name: "Aeroporto de Ribeirão Preto", city: "Ribeirão Preto", state: "SP", region: "Sudeste" },
-  { iata: "SJK", name: "Aeroporto de São José dos Campos", city: "São José dos Campos", state: "SP", region: "Sudeste" },
-  { iata: "JDO", name: "Aeroporto Regional de Juazeiro do Norte", city: "Juazeiro do Norte", state: "CE", region: "Nordeste" },
-
-  // ── NORDESTE ──────────────────────────────────────────────────────────────
-  { iata: "SSA", name: "Aeroporto Internacional de Salvador", city: "Salvador", state: "BA", region: "Nordeste" },
-  { iata: "FOR", name: "Aeroporto Internacional Pinto Martins", city: "Fortaleza", state: "CE", region: "Nordeste" },
-  { iata: "REC", name: "Aeroporto Internacional dos Guararapes", city: "Recife", state: "PE", region: "Nordeste" },
-  { iata: "NAT", name: "Aeroporto Internacional de Natal", city: "Natal", state: "RN", region: "Nordeste" },
-  { iata: "MCZ", name: "Aeroporto Internacional Zumbi dos Palmares", city: "Maceió", state: "AL", region: "Nordeste" },
-  { iata: "THE", name: "Aeroporto Internacional de Teresina", city: "Teresina", state: "PI", region: "Nordeste" },
-  { iata: "SLZ", name: "Aeroporto Internacional de São Luís", city: "São Luís", state: "MA", region: "Nordeste" },
-  { iata: "JPA", name: "Aeroporto Internacional de João Pessoa", city: "João Pessoa", state: "PB", region: "Nordeste" },
-  { iata: "AJU", name: "Aeroporto Internacional de Aracaju", city: "Aracaju", state: "SE", region: "Nordeste" },
-  { iata: "PMW", name: "Aeroporto de Palmas", city: "Palmas", state: "TO", region: "Norte" },
-  { iata: "QNV", name: "Aeroporto de Jericoacoara / Cruz", city: "Jericoacoara", state: "CE", region: "Nordeste" },
-  { iata: "IMP", name: "Aeroporto de Imperatriz", city: "Imperatriz", state: "MA", region: "Nordeste" },
-  { iata: "BPS", name: "Aeroporto de Porto Seguro", city: "Porto Seguro", state: "BA", region: "Nordeste" },
-  { iata: "LEC", name: "Aeroporto de Chapada Diamantina / Lençóis", city: "Lençóis", state: "BA", region: "Nordeste" },
-  { iata: "IOS", name: "Aeroporto de Ilhéus", city: "Ilhéus", state: "BA", region: "Nordeste" },
-  { iata: "MCP", name: "Aeroporto Internacional de Macapá", city: "Macapá", state: "AP", region: "Norte" },
-
-  // ── CENTRO-OESTE ──────────────────────────────────────────────────────────
-  { iata: "BSB", name: "Aeroporto Internacional de Brasília", city: "Brasília", state: "DF", region: "Centro-Oeste" },
-  { iata: "CGR", name: "Aeroporto Internacional de Campo Grande", city: "Campo Grande", state: "MS", region: "Centro-Oeste" },
-  { iata: "CGB", name: "Aeroporto Internacional de Cuiabá", city: "Cuiabá", state: "MT", region: "Centro-Oeste" },
-  { iata: "GYN", name: "Aeroporto Internacional de Goiânia", city: "Goiânia", state: "GO", region: "Centro-Oeste" },
-  { iata: "COR", name: "Aeroporto de Corumbá", city: "Corumbá", state: "MS", region: "Centro-Oeste" },
-
-  // ── NORTE ─────────────────────────────────────────────────────────────────
-  { iata: "MAO", name: "Aeroporto Internacional Eduardo Gomes", city: "Manaus", state: "AM", region: "Norte" },
-  { iata: "BEL", name: "Aeroporto Internacional de Belém", city: "Belém", state: "PA", region: "Norte" },
-  { iata: "PVH", name: "Aeroporto Internacional Governador Jorge Teixeira", city: "Porto Velho", state: "RO", region: "Norte" },
-  { iata: "RBR", name: "Aeroporto Internacional de Rio Branco", city: "Rio Branco", state: "AC", region: "Norte" },
-  { iata: "BOA", name: "Aeroporto de Boa Vista", city: "Boa Vista", state: "RR", region: "Norte" },
-  { iata: "STM", name: "Aeroporto de Santarém", city: "Santarém", state: "PA", region: "Norte" },
-  { iata: "MNX", name: "Aeroporto de Manicoré", city: "Manicoré", state: "AM", region: "Norte" },
-];
+export const CANONICAL_AIRPORTS: Airport[] = GLOBAL_AIRPORTS_CATALOG.map((a) => ({
+  iata: a.iata_code,
+  name: a.name,
+  city: a.city,
+  state: a.state || a.country_code,
+  region: deriveRegion(a.state, a.country_code),
+}));
 
 /** Retorna o airport ou undefined */
 export function findAirportByIATA(iata: string): Airport | undefined {
@@ -96,21 +53,22 @@ export const AIRPORTS_BY_REGION = CANONICAL_AIRPORTS.reduce(
   {} as Record<string, Airport[]>,
 );
 
-/** Airlines Canônicas */
+/** Airlines Canônicas (24 companhias aéreas) */
 export const CANONICAL_AIRLINES = [
-  { id: "LATAM", label: "LATAM Airlines" },
-  { id: "GOL", label: "GOL Linhas Aéreas" },
-  { id: "AZUL", label: "Azul Linhas Aéreas" },
-  { id: "AVIANCA", label: "Avianca Brasil" },
-  { id: "MAP", label: "MAP Linhas Aéreas" },
-  { id: "TWO", label: "Two Flex" },
-  { id: "FLYBONDI", label: "Flybondi" },
-  { id: "AMERICAN", label: "American Airlines" },
-  { id: "UNITED", label: "United Airlines" },
-  { id: "TAP", label: "TAP Air Portugal" },
-  { id: "EMIRATES", label: "Emirates" },
+  ...GLOBAL_AIRLINES_CATALOG.map((al) => ({
+    id: al.iata_code,
+    label: `${al.name} (${al.iata_code})`,
+  })),
   { id: "OTHER", label: "Outra Companhia" },
 ];
+
+/** Companhias de Cruzeiro Canônicas */
+export const CANONICAL_CRUISE_LINES = GLOBAL_CRUISES_CATALOG.map((c) => ({
+  id: c.cruise_id,
+  label: `${c.name} (${c.style})`,
+  featured_ships: c.featured_ships_brazil,
+  ports: c.departure_ports_brazil,
+}));
 
 /** Tipos de transporte */
 export const CANONICAL_TRANSPORT_TYPES = [

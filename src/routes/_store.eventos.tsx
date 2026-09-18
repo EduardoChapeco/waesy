@@ -1,4 +1,6 @@
-import { Tag as LucideTag } from "lucide-react";
+import { Tag as LucideTag, X as LucideX, Calendar as CalendarIcon, ChevronDown as LucideChevronDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -621,105 +623,87 @@ function EventosPage() {
         </div>
       </section>
 
-      {/* ── 4. Filtro Proeminente de Data & Calendário ── */}
-      <section aria-label="Programação por Data" className="space-y-3 pt-1">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-          {PRESET_DATE_FILTERS.map((preset) => {
-            const isSelected = selectedDateFilter === preset.id;
+      {/* ── 4. Filtro de Data & Calendário Canônico (Apple / Airbnb HIG) ── */}
+      <section aria-label="Programação por Data" className="space-y-2 pt-1">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Popover com Calendário Interativo */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={`h-9 px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer select-none ${
+                  selectedDateFilter !== "all" && selectedDateFilter.includes("-")
+                    ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                    : "bg-card border-border/80 text-foreground hover:bg-muted/60"
+                }`}
+              >
+                <CalendarIcon className="size-3.5 shrink-0" />
+                <span>
+                  {selectedDateFilter !== "all" && selectedDateFilter.includes("-")
+                    ? activeDateLabel
+                    : "Escolher Data"}
+                </span>
+                <LucideChevronDown className="size-3 opacity-60 ml-0.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 rounded-2xl border border-border shadow-xl bg-card" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDateFilter.includes("-") && selectedDateFilter.length === 10 ? new Date(selectedDateFilter + "T12:00:00") : undefined}
+                onSelect={(d) => {
+                  if (d) {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, "0");
+                    const day = String(d.getDate()).padStart(2, "0");
+                    setSelectedDateFilter(`${y}-${m}-${day}`);
+                  }
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Quick Filter Pills */}
+          {[
+            { id: "all", label: "Todos os Dias" },
+            { id: "today", label: "Hoje" },
+            { id: "tomorrow", label: "Amanhã" },
+            { id: "weekend", label: "Fim de Semana" },
+            { id: "month", label: "Este Mês" },
+          ].map((pill) => {
+            const isSelected = selectedDateFilter === pill.id;
             return (
               <button
-                key={preset.id}
+                key={pill.id}
                 type="button"
-                onClick={() => setSelectedDateFilter(preset.id)}
-                className={`h-8 px-3.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                onClick={() => setSelectedDateFilter(pill.id)}
+                className={`h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-xs"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
-                {preset.label}
+                {pill.label}
               </button>
             );
           })}
-        </div>
 
-        {/* Trilho Panorâmico de Cards de Dias Grandes */}
-        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2 pt-1">
-          {/* Card 'Todos os Dias' */}
-          <button
-            type="button"
-            onClick={() => setSelectedDateFilter("all")}
-            className={`min-w-[96px] sm:min-w-[104px] h-[100px] sm:h-[108px] p-3 rounded-2xl flex flex-col items-center justify-between border cursor-pointer select-none shrink-0 transition-all ${
-              selectedDateFilter === "all"
-                ? "bg-foreground text-background border-foreground scale-102 font-bold shadow-sm"
-                : "bg-card border-border text-foreground hover:bg-muted/60 hover:border-foreground/30"
-            }`}
-          >
-            <span className="text-[11px] font-mono uppercase tracking-wider opacity-80">
-              Geral
-            </span>
-            <CalendarDots size={20} weight="bold" className="my-0.5" />
-            <span className="text-xs font-semibold">Todos</span>
-          </button>
+          {/* Botão de Limpar Data quando selecionada */}
+          {selectedDateFilter !== "all" && (
+            <button
+              type="button"
+              onClick={() => setSelectedDateFilter("all")}
+              className="h-9 px-2.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <LucideX className="size-3.5" />
+              <span>Limpar</span>
+            </button>
+          )}
 
-          {/* Cards dos Próximos Dias */}
-          {nextDays.map((day) => {
-            const isSelected = selectedDateFilter === day.dateKey;
-            const count = eventsCountByDateKey[day.dateKey] || 0;
-
-            return (
-              <button
-                key={day.dateKey}
-                type="button"
-                onClick={() => setSelectedDateFilter(day.dateKey)}
-                className={`min-w-[92px] sm:min-w-[100px] h-[100px] sm:h-[108px] p-3 rounded-2xl flex flex-col items-center justify-between border cursor-pointer select-none shrink-0 transition-all ${
-                  isSelected
-                    ? "bg-foreground text-background border-foreground scale-102 font-bold shadow-sm"
-                    : "bg-card border-border text-foreground hover:bg-muted/60 hover:border-foreground/30"
-                }`}
-              >
-                <span className="text-[11px] font-mono font-bold tracking-wider uppercase opacity-80">
-                  {day.isToday ? "HOJE" : day.isTomorrow ? "AMANHÃ" : day.weekday}
-                </span>
-
-                <span className="text-2xl sm:text-3xl font-black leading-none my-0.5">
-                  {day.dayNumber}
-                </span>
-
-                <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium">
-                  <span>{day.monthName}</span>
-                  {count > 0 && (
-                    <span
-                      className={`size-2 rounded-full ${
-                        isSelected ? "bg-background" : "bg-primary"
-                      }`}
-                    />
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Navegador de Meses para Eventos Futuros */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-          {availableMonths.map((m) => {
-            const isSelected = selectedDateFilter === m.key;
-            return (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => setSelectedDateFilter(m.key)}
-                className={`h-7 px-3 rounded-lg text-[11px] font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                  isSelected
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {m.label}
-              </button>
-            );
-          })}
+          {/* Badge sutil com total de eventos filtrados */}
+          <span className="text-[11px] font-mono text-muted-foreground ml-auto pr-1">
+            {filteredEvents.length} {filteredEvents.length === 1 ? "evento" : "eventos"}
+          </span>
         </div>
       </section>
 

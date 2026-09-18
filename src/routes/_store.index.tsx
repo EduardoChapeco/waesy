@@ -505,7 +505,7 @@ function CommunityHomePage() {
   ]);
 
   return (
-    <div className="w-full space-y-8 pb-20">
+    <div className="w-full space-y-3.5 sm:space-y-4 pb-14">
       {/* ── 1. CARDS COM IMAGENS DO TOPO (Carrossel Horizontal de Categorias Master) ── */}
       <section aria-label="Categorias Principais">
         <HorizontalRail title="Categorias Principais" hideHeader={true}>
@@ -513,7 +513,7 @@ function CommunityHomePage() {
             <Link
               key={card.slug}
               to={card.to as any}
-              className="min-w-[145px] sm:min-w-[170px] md:min-w-[190px] max-w-[200px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[16/10] border border-border/60 hover:border-foreground/30 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-[0.98]"
+              className="min-w-[160px] sm:min-w-[185px] md:min-w-[205px] max-w-[215px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[16/9] border border-border/60 hover:border-foreground/30 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-[0.98]"
             >
               {card.coverUrl ? (
                 <img
@@ -570,10 +570,10 @@ function CommunityHomePage() {
           MODO 1: FEED (TRILHOS HORIZONTAIS COM SNAP SCROLL POR PILAR)
           ───────────────────────────────────────────────────────────────────────────── */}
       {viewMode === "feed" && (
-        <div className="space-y-10">
+        <div className="space-y-4 sm:space-y-5 mt-2">
           {/* PLACES (LISTA TELEFÔNICA) */}
           {(activeCategory === "todos" || activeCategory === "places") && filteredPlaces.length > 0 && (
-            <section aria-label="Places" className="space-y-3">
+            <section aria-label="Places" className="space-y-2">
               <HorizontalRail
                 title="Places (Lista Telefônica)"
                 actionLabel="Ver todas"
@@ -585,7 +585,7 @@ function CommunityHomePage() {
                   return (
                     <div
                       key={item.id}
-                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs"
+                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs h-[285px]"
                     >
                       <Link to="/diretorio/$id" params={{ id: item.id }} className="block">
                         <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40">
@@ -608,7 +608,7 @@ function CommunityHomePage() {
                           </div>
                         </div>
 
-                        <div className="p-3.5 space-y-1.5">
+                        <div className="p-3.5 space-y-1 h-[68px] flex flex-col justify-start">
                           <div className="flex items-center justify-between gap-1.5">
                             <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                               {item.business_name}
@@ -623,7 +623,7 @@ function CommunityHomePage() {
                         </div>
                       </Link>
 
-                      <div className="px-3.5 pb-3.5 pt-0 flex items-center justify-between gap-2 border-t border-border/30 mt-2">
+                      <div className="px-3.5 pb-3 pt-0 flex items-center justify-between gap-2 border-t border-border/30 mt-auto h-10">
                         <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
                           <Star size={13} weight="fill" />
                           <span>{item.rating ? Number(item.rating).toFixed(1) : "5.0"}</span>
@@ -659,7 +659,7 @@ function CommunityHomePage() {
 
           {/* CLASSIFICADOS */}
           {(activeCategory === "todos" || activeCategory === "classificados") && filteredClassifieds.length > 0 && (
-            <section aria-label="Classificados" className="space-y-3">
+            <section aria-label="Classificados" className="space-y-2">
               <HorizontalRail
                 title="Classificados"
                 actionLabel="Ver todos"
@@ -680,7 +680,7 @@ function CommunityHomePage() {
                       key={item.id}
                       to="/classificados/$id"
                       params={{ id: item.id }}
-                      className="min-w-[240px] sm:min-w-[270px] max-w-[280px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs"
+                      className="min-w-[240px] sm:min-w-[270px] max-w-[280px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs h-[330px]"
                     >
                       <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
                         {coverImage ? (
@@ -702,7 +702,7 @@ function CommunityHomePage() {
                         </div>
                       </div>
 
-                      <div className="p-3 space-y-1">
+                      <div className="p-3 space-y-1 flex-1 flex flex-col justify-between">
                         <p className="font-bold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                           {item.title}
                         </p>
@@ -722,7 +722,7 @@ function CommunityHomePage() {
 
           {/* 3. FEED SOCIAL */}
           {(activeCategory === "todos" || activeCategory === "feed") && filteredFeed.length > 0 && (
-            <section aria-label="Feed da Comunidade" className="space-y-3">
+            <section aria-label="Feed da Comunidade" className="space-y-2">
               <HorizontalRail
                 title="Feed"
                 actionLabel="Ver feed"
@@ -790,7 +790,7 @@ function CommunityHomePage() {
 
           {/* 4. NOTÍCIAS */}
           {(activeCategory === "todos" || activeCategory === "noticias") && filteredNews.length > 0 && (
-            <section aria-label="Notícias" className="space-y-3">
+            <section aria-label="Notícias" className="space-y-2">
               <HorizontalRail
                 title="Notícias"
                 actionLabel="Ver todas"
@@ -808,7 +808,7 @@ function CommunityHomePage() {
 
           {/* 5. EMPREGOS */}
           {(activeCategory === "todos" || activeCategory === "empregos") && filteredJobs.length > 0 && (
-            <section aria-label="Empregos" className="space-y-3">
+            <section aria-label="Empregos" className="space-y-2">
               <HorizontalRail
                 title="Empregos"
                 actionLabel="Ver todas"
@@ -867,7 +867,7 @@ function CommunityHomePage() {
 
           {/* 6. EVENTOS */}
           {(activeCategory === "todos" || activeCategory === "eventos") && filteredEvents.length > 0 && (
-            <section aria-label="Eventos" className="space-y-3">
+            <section aria-label="Eventos" className="space-y-2">
               <HorizontalRail
                 title="Eventos"
                 actionLabel="Ver todos"
@@ -927,7 +927,7 @@ function CommunityHomePage() {
 
           {/* 7. AGENDA CULTURAL COM CARDS PADRONIZADOS E FOTOS */}
           {(activeCategory === "todos" || activeCategory === "agenda") && filteredEvents.length > 0 && (
-            <section aria-label="Agenda Cultural" className="space-y-3">
+            <section aria-label="Agenda Cultural" className="space-y-2">
               <HorizontalRail
                 title="Agenda"
                 badge="Programação cultural"
@@ -985,8 +985,8 @@ function CommunityHomePage() {
             </section>
           )}
 
-          {/* 8. BANNER INTERMEDIÁRIO DINÂMICO (CMS / ADMIN MASTER COM FALLBACK LIMPO) */}
-          {(activeCategory === "todos" || activeCategory === "afiliados") && (
+          {/* 8. BANNER INTERMEDIÁRIO DINÂMICO (CMS / ADMIN MASTER COM CONTROLE ERGONÔMICO) */}
+          {((middleBanners.length > 0 && !!middleBanners[0].image_url) || activeCategory === "afiliados") && (
             <section aria-label="Destaque Promocional" className="space-y-3">
               {middleBanners.length > 0 && middleBanners[0].image_url ? (
                 <AdTelemetryBeacon
@@ -1031,8 +1031,8 @@ function CommunityHomePage() {
                     </div>
                   </Link>
                 </AdTelemetryBeacon>
-              ) : (
-                /* Fallback Clean Editorial Apple HIG (Sem AI-Smell) */
+              ) : activeCategory === "afiliados" ? (
+                /* Card Editorial de Afiliados exibido exclusivamente na categoria Afiliados */
                 <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1 max-w-xl">
                     <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider font-bold">
@@ -1052,7 +1052,7 @@ function CommunityHomePage() {
                     </Link>
                   </Button>
                 </div>
-              )}
+              ) : null}
             </section>
           )}
 

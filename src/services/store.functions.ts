@@ -20,7 +20,7 @@ export async function _getStoreSettings() {
  const { data: store } = await db
  .from("stores")
  .select(
- "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings",
+ "id, name, slug, email, phone, cnpj, address, city, state, zip_code, description, pix_key, payment_instructions, settings, ai_knowledge_base",
  )
  .eq("id", targetStoreId)
  .maybeSingle();
@@ -75,6 +75,7 @@ export const saveStoreSettingsSchema = z.object({
  dine_in: z.boolean().default(true),
  })
  .optional(),
+ ai_knowledge_base: z.string().optional().or(z.literal("")),
 });
 
 export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsSchema>) {

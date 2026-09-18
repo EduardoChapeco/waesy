@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
-import type { EscamasCarouselProject, EscamasSlide, StudioBrandProfile } from "@/types/studio-machine";
-import { SlideRendererEscamas } from "./slide-renderer-escamas";
+import type { EscamasCarouselProject, EscamasSlide, StudioBrandProfile, EscamasAspectRatio } from "@/types/studio-machine";
+import { SlideRendererEscamas, getSlideDimensions } from "./slide-renderer-escamas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,7 @@ import {
   X
 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
-import { saveStudioProject } from "@/services/studio.functions";
+import { saveStudioProject, publishStudioCarouselToSocial } from "@/services/studio.functions";
 
 interface CarouselStudioEditorProps {
   project: EscamasCarouselProject;
@@ -48,11 +48,14 @@ export function CarouselStudioEditor({
   const [isExporting, setIsExporting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<EscamasAspectRatio>(initialProject.aspectRatio || "portrait_4_5");
 
   // Canvas zoom/scale factor para exibição ergonômica
   const [canvasScale, setCanvasScale] = useState(0.42);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const activeDimensions = getSlideDimensions(aspectRatio);
 
   const slides = project.slides || [];
   const currentSlide = slides[currentSlideIndex] || slides[0];
@@ -207,6 +210,36 @@ export function CarouselStudioEditor({
     window.open(url, "_blank");
   };
 
+  // Publicar diretamente no Feed ou Stories da Loja
+  const handlePublish = async (dest: "feed" | "story" | "both") => {
+    setIsPublishing(true);
+    try {
+      const coverImg = project.slides[0]?.media?.url || null;
+      const allMedia = project.slides
+        .map((s) => s.media?.url)
+        .filter((u): u is string => Boolean(u));
+
+      const res = await publishStudioCarouselToSocial({
+        data: {
+          projectId: project.id,
+          title: project.title,
+          destination: dest,
+          aspectRatio,
+          coverImageUrl: coverImg,
+          slideImages: allMedia,
+          caption: `${project.title}\n\n${currentSlide?.text_content?.headline || ""}\n${currentSlide?.text_content?.body || ""}`,
+          hashtags: ["Waesy", "StudioEscamas", project.brand.name.replace(/\s+/g, "")],
+        },
+      });
+
+      toast.success(res.message);
+    } catch (err: any) {
+      toast.error("Erro ao publicar: " + (err.message || "Tente novamente."));
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   if (!currentSlide) return null;
 
   return (
@@ -244,9 +277,47 @@ export function CarouselStudioEditor({
               </button>
             ))}
           </div>
+          {/* SELETOR DE PROPORÇÃO DE TELA (MULTI-ASPECT RATIO) */}
+          <div className="hidden sm:flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/50 text-xs">
+            {[
+              { id: "portrait_4_5" as const, label: "4:5 Post" },
+              { id: "story_9_16" as const, label: "9:16 Story" },
+              { id: "square_1_1" as const, label: "1:1 Feed" },
+              { id: "landscape_16_9" as const, label: "16:9 Deck" },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  setAspectRatio(opt.id);
+                  const updated = { ...project, aspectRatio: opt.id };
+                  setProject(updated);
+                  onProjectUpdated?.(updated);
+                }}
+                className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                  aspectRatio === opt.id
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
 
           {/* ACTIONS */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePublish("feed")}
+              disabled={isPublishing}
+              className="gap-1.5 h-9 rounded-xl text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+            >
+              <Sparkles className="size-3.5" />
+              {isPublishing ? "Publicando..." : "Publicar Feed"}
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -300,13 +371,14 @@ export function CarouselStudioEditor({
               ref={containerRef}
               className="relative shadow-2xl rounded-xl overflow-hidden border border-border/60 transition-transform duration-200"
               style={{
-                width: 1080 * canvasScale,
-                height: 1350 * canvasScale,
+                width: activeDimensions.width * canvasScale,
+                height: activeDimensions.height * canvasScale,
               }}
             >
               <SlideRendererEscamas
                 slide={currentSlide}
                 brand={project.brand}
+                aspectRatio={aspectRatio}
                 scale={canvasScale}
                 onLayerSelect={setSelectedLayerId}
                 selectedLayerId={selectedLayerId}

@@ -671,25 +671,97 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
   )
   .handler(async ({ data: { pageIndex, city, excludedStoreIds = [], excludedProductIds = [], excludedClassifiedIds = [] } }) => {
     const supabase = getServerClient();
-    const mode = pageIndex % 4;
 
-    // ── MODO 0: Spotlight de Loja Única (Mostra apenas produtos daquela empresa) ──
-    if (mode === 0) {
-      let storeQuery = supabase
-        .from("stores")
-        .select("id, name, slug, settings, created_at")
-        .order("created_at", { ascending: false })
-        .limit(20);
+    // Tenta até 4 modos consecutivos a partir do pageIndex solicitado para garantir continuidade
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const currentAttemptIndex = pageIndex + attempt;
+      const mode = currentAttemptIndex % 4;
 
-      if (excludedStoreIds.length > 0) {
-        storeQuery = storeQuery.not("id", "in", `(${excludedStoreIds.slice(0, 30).join(",")})`);
+      // ── MODO 0: Spotlight de Loja Única (Mostra apenas produtos daquela empresa) ──
+      if (mode === 0) {
+        let storeQuery = supabase
+          .from("stores")
+          .select("id, name, slug, settings, created_at")
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        if (excludedStoreIds.length > 0) {
+          storeQuery = storeQuery.not("id", "in", `(${excludedStoreIds.slice(0, 30).join(",")})`);
+        }
+
+        const { data: candidateStores } = await storeQuery;
+        const targetStore = candidateStores?.[0];
+
+        if (targetStore) {
+          const { data: storeProducts } = await supabase
+            .from("products")
+            .select(`
+              id,
+              title,
+              slug,
+              store_id,
+              price_cents,
+              compare_at_cents,
+              media:product_media(url, alt, sort_order)
+            `)
+            .eq("store_id", targetStore.id)
+            .in("status", ["published", "active"])
+            .limit(8);
+
+          if (storeProducts && storeProducts.length >= 2) {
+            const settings = (targetStore.settings as Record<string, any>) || {};
+            const items = storeProducts.map((p: any) => {
+              const sortedMedia = Array.isArray(p.media)
+                ? [...p.media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                : [];
+              const cover = sortedMedia[0]?.url || "";
+              const originalPrice = p.compare_at_cents || p.price_cents;
+              const discount = originalPrice > p.price_cents
+                ? Math.round(((originalPrice - p.price_cents) / originalPrice) * 100)
+                : 0;
+
+              return {
+                id: p.id,
+                title: p.title,
+                slug: p.slug,
+                store_id: p.store_id,
+                store_name: targetStore.name,
+                price_cents: p.price_cents,
+                original_price_cents: originalPrice,
+                discount_percent: discount,
+                mechanic_label: discount > 0 ? `${discount}% OFF` : "CATÁLOGO",
+                ends_at: "",
+                cover_image: cover,
+                selling_unit: "un",
+                in_stock: true,
+                has_flash_offer: discount > 0,
+              };
+            });
+
+            return {
+              section: {
+                id: `proc-store-${targetStore.id}-${currentAttemptIndex}`,
+                type: "single_store_spotlight" as const,
+                title: `Cardápio & Ofertas de ${targetStore.name}`,
+                subtitle: settings.segment || settings.niche || "Produtos oficiais da loja",
+                badge_tag: "PARCEIRO",
+                action_to: `/loja/${targetStore.slug || targetStore.id}`,
+                action_label: "Ver Loja Completa",
+                items,
+                store_id: targetStore.id,
+                store_slug: targetStore.slug,
+              },
+              hasMore: true,
+              nextPageIndex: currentAttemptIndex + 1,
+              addedStoreId: targetStore.id,
+            };
+          }
+        }
       }
 
-      const { data: candidateStores } = await storeQuery;
-      const targetStore = candidateStores?.[0];
-
-      if (targetStore) {
-        const { data: storeProducts } = await supabase
+      // ── MODO 1: Achados com Maiores Descontos ──
+      if (mode === 1) {
+        let discountQuery: any = supabase
           .from("products")
           .select(`
             id,
@@ -698,15 +770,21 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
             store_id,
             price_cents,
             compare_at_cents,
-            media:product_media(url, alt, sort_order)
+            media:product_media(url, alt, sort_order),
+            store:stores(id, name, slug)
           `)
-          .eq("store_id", targetStore.id)
           .in("status", ["published", "active"])
-          .limit(8);
+          .not("compare_at_cents", "is", null)
+          .order("compare_at_cents", { ascending: false })
+          .limit(12);
 
-        if (storeProducts && storeProducts.length >= 2) {
-          const settings = (targetStore.settings as Record<string, any>) || {};
-          const items = storeProducts.map((p: any) => {
+        if (excludedProductIds.length > 0) {
+          discountQuery = discountQuery.not("id", "in", `(${excludedProductIds.slice(0, 40).join(",")})`);
+        }
+
+        const { data: deals } = await discountQuery;
+        const validDeals = (deals || [])
+          .map((p: any) => {
             const sortedMedia = Array.isArray(p.media)
               ? [...p.media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
               : [];
@@ -721,204 +799,133 @@ export const getProceduralInfiniteFeedPage = createServerFn({ method: "GET" })
               title: p.title,
               slug: p.slug,
               store_id: p.store_id,
-              store_name: targetStore.name,
+              store_name: p.store?.name || "Loja Parceira",
               price_cents: p.price_cents,
               original_price_cents: originalPrice,
               discount_percent: discount,
-              mechanic_label: discount > 0 ? `${discount}% OFF` : "CATÁLOGO",
+              mechanic_label: discount > 0 ? `${discount}% OFF` : "OFERTA",
               ends_at: "",
               cover_image: cover,
               selling_unit: "un",
               in_stock: true,
-              has_flash_offer: discount > 0,
+              has_flash_offer: true,
             };
-          });
+          })
+          .filter((p: any) => p.discount_percent > 0);
 
+        if (validDeals.length >= 2) {
           return {
             section: {
-              id: `proc-store-${targetStore.id}-${pageIndex}`,
-              type: "single_store_spotlight" as const,
-              title: `Cardápio & Ofertas de ${targetStore.name}`,
-              subtitle: settings.segment || settings.niche || "Produtos oficiais da loja",
-              badge_tag: "PARCEIRO",
-              action_to: `/loja/${targetStore.slug || targetStore.id}`,
-              action_label: "Ver Loja Completa",
-              items,
-              store_id: targetStore.id,
-              store_slug: targetStore.slug,
+              id: `proc-deals-${currentAttemptIndex}`,
+              type: "flash_deal_rail" as const,
+              title: "Achados com Maiores Descontos",
+              subtitle: "Descontos imperdíveis nos catálogos da região",
+              badge_tag: "LIQUIDAÇÃO",
+              action_to: "/ofertas",
+              action_label: "Ver todas",
+              items: validDeals,
             },
             hasMore: true,
-            nextPageIndex: pageIndex + 1,
-            addedStoreId: targetStore.id,
+            nextPageIndex: currentAttemptIndex + 1,
+          };
+        }
+      }
+
+      // ── MODO 2: Lojas Novas & Estabelecimentos em Destaque ──
+      if (mode === 2) {
+        let storesQuery: any = supabase
+          .from("stores")
+          .select("id, name, slug, description, settings, created_at")
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        if (excludedStoreIds.length > 0) {
+          storesQuery = storesQuery.not("id", "in", `(${excludedStoreIds.slice(0, 30).join(",")})`);
+        }
+
+        const { data: rawStores } = await storesQuery;
+        const storeItems = (rawStores || []).map((s: any) => {
+          const settings = (s.settings as Record<string, any>) || {};
+          return {
+            id: s.id,
+            name: s.name,
+            slug: s.slug || `loja-${s.id.slice(0, 6)}`,
+            avatar_url: settings.logoUrl || settings.logo_url || undefined,
+            banner_url: settings.bannerUrl || settings.banner_url || undefined,
+            category: settings.segment || settings.niche || "Comércio Local",
+            rating: 5.0,
+            review_count: 24,
+            distance_km: 1.1,
+            is_open: true,
+            delivery_time_min: "Disponível",
+          };
+        });
+
+        if (storeItems.length >= 2) {
+          return {
+            section: {
+              id: `proc-stores-${currentAttemptIndex}`,
+              type: "store_rail" as const,
+              title: "Novos Estabelecimentos & Negócios",
+              subtitle: "Empresas e serviços que acabaram de chegar na plataforma",
+              badge_tag: "NOVIDADE",
+              action_to: "/diretorio",
+              action_label: "Ver todos",
+              items: storeItems,
+            },
+            hasMore: true,
+            nextPageIndex: currentAttemptIndex + 1,
+          };
+        }
+      }
+
+      // ── MODO 3: Classificados & Oportunidades em Alta ──
+      if (mode === 3) {
+        let classQuery: any = supabase
+          .from("classifieds")
+          .select("id, title, price_cents, images, location_name, deal_type, is_boosted, created_at")
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        if (excludedClassifiedIds.length > 0) {
+          classQuery = classQuery.not("id", "in", `(${excludedClassifiedIds.slice(0, 30).join(",")})`);
+        }
+
+        const { data: rawClassifieds } = await classQuery;
+        const classifiedItems = (rawClassifieds || []).map((c: any) => {
+          const cover = (c.images && c.images[0]) || null;
+          return {
+            id: c.id,
+            title: c.title,
+            price_cents: c.price_cents,
+            cover_image: cover,
+            location_name: c.location_name || "Na cidade",
+            deal_type: c.deal_type || "Venda",
+            is_boosted: c.is_boosted || false,
+          };
+        });
+
+        if (classifiedItems.length >= 1) {
+          return {
+            section: {
+              id: `proc-classifieds-${currentAttemptIndex}`,
+              type: "classifieds_spotlight" as const,
+              title: "Oportunidades em Classificados",
+              subtitle: "Imóveis, veículos e produtos selecionados",
+              badge_tag: "CLASSIFICADOS",
+              action_to: "/classificados",
+              action_label: "Ver classificados",
+              items: classifiedItems,
+            },
+            hasMore: true,
+            nextPageIndex: currentAttemptIndex + 1,
           };
         }
       }
     }
 
-    // ── MODO 1: Achados com Maiores Descontos ──
-    if (mode === 1) {
-      let discountQuery: any = supabase
-        .from("products")
-        .select(`
-          id,
-          title,
-          slug,
-          store_id,
-          price_cents,
-          compare_at_cents,
-          media:product_media(url, alt, sort_order),
-          store:stores(id, name, slug)
-        `)
-        .in("status", ["published", "active"])
-        .not("compare_at_cents", "is", null)
-        .order("compare_at_cents", { ascending: false })
-        .limit(12);
-
-      if (excludedProductIds.length > 0) {
-        discountQuery = discountQuery.not("id", "in", `(${excludedProductIds.slice(0, 40).join(",")})`);
-      }
-
-      const { data: deals } = await discountQuery;
-      const validDeals = (deals || [])
-        .map((p: any) => {
-          const sortedMedia = Array.isArray(p.media)
-            ? [...p.media].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-            : [];
-          const cover = sortedMedia[0]?.url || "";
-          const originalPrice = p.compare_at_cents || p.price_cents;
-          const discount = originalPrice > p.price_cents
-            ? Math.round(((originalPrice - p.price_cents) / originalPrice) * 100)
-            : 0;
-
-          return {
-            id: p.id,
-            title: p.title,
-            slug: p.slug,
-            store_id: p.store_id,
-            store_name: p.store?.name || "Loja Parceira",
-            price_cents: p.price_cents,
-            original_price_cents: originalPrice,
-            discount_percent: discount,
-            mechanic_label: discount > 0 ? `${discount}% OFF` : "OFERTA",
-            ends_at: "",
-            cover_image: cover,
-            selling_unit: "un",
-            in_stock: true,
-            has_flash_offer: true,
-          };
-        })
-        .filter((p: any) => p.discount_percent > 0);
-
-      if (validDeals.length >= 2) {
-        return {
-          section: {
-            id: `proc-deals-${pageIndex}`,
-            type: "flash_deal_rail" as const,
-            title: "Achados com Maiores Descontos",
-            subtitle: "Descontos imperdíveis nos catálogos da região",
-            badge_tag: "LIQUIDAÇÃO",
-            action_to: "/ofertas",
-            action_label: "Ver todas",
-            items: validDeals,
-          },
-          hasMore: true,
-          nextPageIndex: pageIndex + 1,
-        };
-      }
-    }
-
-    // ── MODO 2: Lojas Novas & Estabelecimentos em Destaque ──
-    if (mode === 2) {
-      let storesQuery: any = supabase
-        .from("stores")
-        .select("id, name, slug, description, settings, created_at")
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (excludedStoreIds.length > 0) {
-        storesQuery = storesQuery.not("id", "in", `(${excludedStoreIds.slice(0, 30).join(",")})`);
-      }
-
-      const { data: rawStores } = await storesQuery;
-      const storeItems = (rawStores || []).map((s: any) => {
-        const settings = (s.settings as Record<string, any>) || {};
-        return {
-          id: s.id,
-          name: s.name,
-          slug: s.slug || `loja-${s.id.slice(0, 6)}`,
-          avatar_url: settings.logoUrl || settings.logo_url || undefined,
-          banner_url: settings.bannerUrl || settings.banner_url || undefined,
-          category: settings.segment || settings.niche || "Comércio Local",
-          rating: 5.0,
-          review_count: 24,
-          distance_km: 1.1,
-          is_open: true,
-          delivery_time_min: "Disponível",
-        };
-      });
-
-      if (storeItems.length >= 2) {
-        return {
-          section: {
-            id: `proc-stores-${pageIndex}`,
-            type: "store_rail" as const,
-            title: "Novos Estabelecimentos & Negócios",
-            subtitle: "Empresas e serviços que acabaram de chegar na plataforma",
-            badge_tag: "NOVIDADE",
-            action_to: "/diretorio",
-            action_label: "Ver todos",
-            items: storeItems,
-          },
-          hasMore: true,
-          nextPageIndex: pageIndex + 1,
-        };
-      }
-    }
-
-    // ── MODO 3: Classificados & Oportunidades em Alta ──
-    let classQuery: any = supabase
-      .from("classifieds")
-      .select("id, title, price_cents, images, location_name, deal_type, is_boosted, created_at")
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    if (excludedClassifiedIds.length > 0) {
-      classQuery = classQuery.not("id", "in", `(${excludedClassifiedIds.slice(0, 30).join(",")})`);
-    }
-
-    const { data: rawClassifieds } = await classQuery;
-    const classifiedItems = (rawClassifieds || []).map((c: any) => {
-      const cover = (c.images && c.images[0]) || null;
-      return {
-        id: c.id,
-        title: c.title,
-        price_cents: c.price_cents,
-        cover_image: cover,
-        location_name: c.location_name || "Na cidade",
-        deal_type: c.deal_type || "Venda",
-        is_boosted: c.is_boosted || false,
-      };
-    });
-
-    if (classifiedItems.length >= 2) {
-      return {
-        section: {
-          id: `proc-classifieds-${pageIndex}`,
-          type: "classifieds_spotlight" as const,
-          title: "Oportunidades em Classificados",
-          subtitle: "Imóveis, veículos e produtos selecionados",
-          badge_tag: "CLASSIFICADOS",
-          action_to: "/classificados",
-          action_label: "Ver classificados",
-          items: classifiedItems,
-        },
-        hasMore: true,
-        nextPageIndex: pageIndex + 1,
-      };
-    }
-
-    // Fallback gracioso: encerra a rolagem se não houver mais dados inéditos
+    // Fallback gracioso: encerra a rolagem se nenhum modo tiver mais dados
     return {
       section: null,
       hasMore: false,

@@ -15,6 +15,7 @@ import { z } from "zod";
 
 import { getAnonServerClient, getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
+import { withDataPayload } from "./cart-helpers";
 import type {
  ProductListResult,
  ProductCardDTO,
@@ -610,7 +611,7 @@ export const searchProducts = createServerFn({ method: "GET" })
  });
 
 export const getProductsByCollection = createServerFn({ method: "GET" })
- .validator(z.object({ slug: z.string().min(1) }))
+  .validator(withDataPayload(z.object({ slug: z.string().min(1) })))
  .handler(async ({ data: { slug } }) => {
  try {
  const db = await getAnonServerClient();
@@ -725,7 +726,7 @@ export const getPromotionalProducts = createServerFn({ method: "GET" }).handler(
 // ---------------------------------------------------------------------------
 
 export const getProductDetail = createServerFn({ method: "GET" })
-  .validator(z.object({ slug: z.string().min(1) }))
+  .validator(withDataPayload(z.object({ slug: z.string().min(1) })))
   .handler(async ({ data: { slug } }) => {
     try {
       const db = getAnonServerClient();
@@ -877,7 +878,7 @@ export interface PublicStoreProfileDTO {
 export type PublicStoreProfileResult = CatalogResult<PublicStoreProfileDTO>;
 
 export const getPublicStoreProfile = createServerFn({ method: "GET" })
- .validator(z.object({ storeId: z.string().optional() }).optional())
+  .validator(withDataPayload(z.object({ storeId: z.string().optional() })).optional())
  .handler(async ({ data }): Promise<PublicStoreProfileDTO | null> => {
  try {
  const { resolveTenantStoreId } = await import("@/lib/tenant.server");
@@ -1013,7 +1014,7 @@ export const getPublicFaqs = createServerFn({ method: "GET" }).handler(async () 
 // ---------------------------------------------------------------------------
 
 export const getStorePublicCatalog = createServerFn({ method: "GET" })
- .validator(z.object({ storeId: z.string().optional() }).optional())
+  .validator(withDataPayload(z.object({ storeId: z.string().optional() })).optional())
  .handler(async ({ data }) => {
  try {
  const db = getAnonServerClient();
@@ -1087,7 +1088,7 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  });
 
 export const getCollectionBySlug = createServerFn({ method: "GET" })
- .validator(z.object({ slug: z.string() }))
+  .validator(withDataPayload(z.object({ slug: z.string() })))
  .handler(async ({ data }) => {
  try {
  const db = await getAnonServerClient();

@@ -3,6 +3,15 @@
 -- Waesy Platform — Contratos Inteligentes, Posicionamento Visual & Despacho Multi-Canal
 -- ==============================================================================
 
+CREATE TABLE IF NOT EXISTS public.folders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  store_id UUID NOT NULL,
+  parent_id UUID REFERENCES public.folders(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- 1. Extensão da tabela public.contracts
 ALTER TABLE public.contracts
   ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES public.folders(id) ON DELETE SET NULL,

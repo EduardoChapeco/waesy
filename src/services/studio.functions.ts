@@ -1477,3 +1477,98 @@ export const generateCarouselFromMinedContent = createServerFn({ method: "POST" 
     };
   });
 
+// ============================================================
+// PUBLICAÇÃO SOCIAL & STORIES DIRETO DO STUDIO ESCAMAS
+// ============================================================
+
+export const publishStudioCarouselToSocial = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      projectId: z.string().optional().nullable(),
+      title: z.string().min(1).max(300),
+      destination: z.enum(["feed", "story", "both"]).default("feed"),
+      aspectRatio: z.string().default("portrait_4_5"),
+      coverImageUrl: z.string().url().optional().nullable(),
+      slideImages: z.array(z.string().url()).optional().default([]),
+      caption: z.string().optional().nullable(),
+      hashtags: z.array(z.string()).default([]),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const storeId = identity.store_id;
+
+    let createdPostId: string | null = null;
+    let createdStoryId: string | null = null;
+
+    const mediaList =
+      data.slideImages && data.slideImages.length > 0
+        ? data.slideImages
+        : data.coverImageUrl
+        ? [data.coverImageUrl]
+        : [];
+
+    // 1. Publicação no Feed Social da Comunidade
+    if (data.destination === "feed" || data.destination === "both") {
+      const { data: postData, error: postErr } = await supabase
+        .from("posts")
+        .insert({
+          store_id: storeId || null,
+          author_id: identity.id,
+          content_text: data.caption || data.title,
+          media_urls: mediaList,
+          layout_style: "carousel",
+          post_type: "instagram_carousel",
+          status: "published",
+        })
+        .select("id")
+        .single();
+
+      if (postErr) {
+        console.warn("[studio.functions] Aviso ao criar post no feed:", postErr.message);
+      } else {
+        createdPostId = postData?.id || null;
+      }
+    }
+
+    // 2. Publicação como Story de Vitrine
+    if ((data.destination === "story" || data.destination === "both") && mediaList.length > 0) {
+      const { data: storyData, error: storyErr } = await supabase
+        .from("stories")
+        .insert({
+          store_id: storeId || null,
+          author_profile_id: identity.id,
+          media_url: mediaList[0],
+          link_cta: "Ver no Studio",
+          duration_seconds: 15,
+          niche: "geral",
+          hashtags: data.hashtags,
+          status: "active",
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        })
+        .select("id")
+        .single();
+
+      if (storyErr) {
+        console.warn("[studio.functions] Aviso ao criar story:", storyErr.message);
+      } else {
+        createdStoryId = storyData?.id || null;
+      }
+    }
+
+    return {
+      success: true,
+      postId: createdPostId,
+      storyId: createdStoryId,
+      destination: data.destination,
+      message:
+        data.destination === "both"
+          ? "Carrossel publicado com sucesso no Feed Social e nos Stories!"
+          : data.destination === "story"
+          ? "Story publicado na vitrine da loja com validade de 24 horas!"
+          : "Carrossel publicado no feed da comunidade com layout imersivo!",
+    };
+  });
+
+

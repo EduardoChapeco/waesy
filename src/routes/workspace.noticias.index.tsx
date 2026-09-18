@@ -49,26 +49,33 @@ import { EmptyState } from "@/components/state/states";
 
 export const Route = createFileRoute("/workspace/noticias/")({
  head: () => ({ meta: [{ title: "Redação & Gestão de Notícias | Workspace Waesy" }] }),
- loader: async () => {
-   try {
- const [articles, tips, mined] = await Promise.all([
- listWorkspaceArticles().catch(() => []),
- listCommunityNewsTips().catch(() => []),
- listMinedArticles({ data: { limit: 20, status: "pending_review" } }).catch(() => ({ items: [], total: 0 })),
- ]);
- return { articles: articles || [], tips: tips || [], mined: mined.items || [] };
-   } catch (err) {
-     console.error("[loader:workspace.noticias.index] Unhandled loader error:", err);
-     return { articles: null, tips: null, mined: null };
-   }
- },
- component: WorkspaceNoticiasIndexPage,
+  loader: async () => {
+    try {
+      const [articles, tips, mined] = await Promise.all([
+        listWorkspaceArticles().catch(() => []),
+        listCommunityNewsTips().catch(() => []),
+        listMinedArticles({ data: { limit: 20, status: "pending_review" } }).catch(() => ({ items: [], total: 0 })),
+      ]);
+      return {
+        articles: Array.isArray(articles) ? articles : [],
+        tips: Array.isArray(tips) ? tips : [],
+        mined: Array.isArray(mined?.items) ? mined.items : [],
+      };
+    } catch (err) {
+      console.error("[loader:workspace.noticias.index] Unhandled loader error:", err);
+      return { articles: [], tips: [], mined: [] };
+    }
+  },
+  component: WorkspaceNoticiasIndexPage,
 });
 
 function WorkspaceNoticiasIndexPage() {
- const { articles: initialArticles, tips, mined: initialMined } = ((Route.useLoaderData?.() as any) || {});
- const [articles, setArticles] = useState<NewsArticleDTO[]>(initialArticles || []);
- const [minedArticles, setMinedArticles] = useState<MinedArticleDTO[]>(initialMined || []);
+  const rawLoaderData = (Route.useLoaderData?.() as any) || {};
+  const initialArticles = Array.isArray(rawLoaderData.articles) ? rawLoaderData.articles : [];
+  const initialMined = Array.isArray(rawLoaderData.mined) ? rawLoaderData.mined : [];
+  const tips = Array.isArray(rawLoaderData.tips) ? rawLoaderData.tips : [];
+  const [articles, setArticles] = useState<NewsArticleDTO[]>(initialArticles);
+  const [minedArticles, setMinedArticles] = useState<MinedArticleDTO[]>(initialMined);
  const [activeTab, setActiveTab] = useState("materias");
  const [isPending, startTransition] = useTransition();
  const [curatingId, setCuratingId] = useState<string | null>(null);

@@ -90,3 +90,9 @@ export function getEnvVar(key: string): string | undefined {
 
  return undefined;
 }
+
+export const env: Record<string, string | undefined> = new Proxy({} as Record<string, string | undefined>, {
+  get(_target, prop: string) {
+    return getEnvVar(prop);
+  },
+});

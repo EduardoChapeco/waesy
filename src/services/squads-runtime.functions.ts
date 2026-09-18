@@ -9,6 +9,7 @@ import {
   StoreSquadRunDTO,
 } from "../types/squads-and-onboarding";
 import { getNextActiveKey, markKeyError } from "./api-orchestrator.functions";
+import { getUpcomingMarketingCalendar } from "@/lib/data/holidays-calendar-catalog";
 
 // ── CONEXÃO RESILIENTE COM SUPABASE / POSTGRES ──────────────────────────────
 async function getDb() {
@@ -379,9 +380,23 @@ Analise e produza a entrega de trabalho para revisão humana.`;
           compliance_status: "conforme",
         };
       } else if (isMarketing) {
+        const upcomingHolidays = getUpcomingMarketingCalendar(45);
+        const nextHoliday = upcomingHolidays[0];
+        const seasonalApprovalItem = nextHoliday ? [
+          {
+            id: `mkt_seasonal_${nextHoliday.id}`,
+            title: `Campanha Sazonal: ${nextHoliday.name} (${nextHoliday.marketing_theme || 'Ação Antecipada'})`,
+            description: `Ação de marketing recomendada com ${nextHoliday.days_until} dias de antecedência para ${nextHoliday.name}. Práticas recomendadas: ${(nextHoliday.suggested_promotional_actions || []).join(", ") || "disparo VIP e cupom sazonal"}.`,
+            confidence_score: 96,
+            impact_level: "estrategico",
+            assigned_agent: leadAgent?.name || "Sofia Alencar",
+          }
+        ] : [];
+
         generatedArtifacts = {
-          executive_summary: `Planejamento tático de conversão e aquisição de clientes estruturado por ${leadAgent?.name || "Diretora de Growth"}. Foi inspecionado o funil de leads do canal WhatsApp e a taxa de fechamento de propostas visuais, identificando alavanca de expansão com disparo segmentado e cadência ativa.`,
+          executive_summary: `Planejamento tático de conversão e aquisição de clientes estruturado por ${leadAgent?.name || "Diretora de Growth"}. Foi inspecionado o funil de leads do canal WhatsApp, a taxa de fechamento de propostas visuais e o calendário sazonal comercial com antecedência estratégica.`,
           pending_approval_items: [
+            ...seasonalApprovalItem,
             {
               id: "mkt_01",
               title: "Campanha de Retargeting para Propostas Abertas sem Fechamento",
@@ -399,7 +414,11 @@ Analise e produza a entrega de trabalho para revisão humana.`;
               assigned_agent: agents[1]?.name || "Designer de Conversão",
             },
           ],
-          kpis_monitored: ["Taxa de Conversão: 24.6%", "CAC Projetado: R$ 42,00", "Volume de Oportunidades: 38"],
+          kpis_monitored: [
+            "Taxa de Conversão: 24.6%",
+            "CAC Projetado: R$ 42,00",
+            nextHoliday ? `Próxima Janela: ${nextHoliday.name} (${nextHoliday.days_until}d)` : "Volume de Oportunidades: 38",
+          ],
           compliance_status: "aderente",
         };
       } else if (isStrategy) {

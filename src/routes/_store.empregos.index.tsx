@@ -37,6 +37,9 @@ import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicJobs, type JobItemDTO } from "@/services/jobs.functions";
 import { EmptyState } from "@/components/state/states";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { findProfessionByTitle } from "@/lib/data/professions-catalog";
+import { formatMoney } from "@/lib/money";
+import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
 
 const JOB_CATEGORY_CHIPS: FilterChipOption[] = [
  { id: "todos", label: "Todas as Vagas", emoji: "💼", icon: Tag },
@@ -81,9 +84,10 @@ function JobsMasterPage() {
   const hotpages = loaderData.hotpages || [];
   const initialJobs = loaderData.jobs || [];
   const [selectedCategory, setSelectedCategory] = useState("todos");
- const [viewMode, setViewMode] = useState<ViewModeType>("feed");
- const [search, setSearch] = useState("");
- const isDefaultFilter = selectedCategory === "todos" && !search;
+  const [viewMode, setViewMode] = useState<ViewModeType>("feed");
+  const [search, setSearch] = useState("");
+  const isDefaultFilter = selectedCategory === "todos" && !search;
+  const [isProfessionGuideOpen, setIsProfessionGuideOpen] = useState(false);
 
  const { data: jobs, isLoading } = useQuery({
  queryKey: ["jobs-list", selectedCategory, search],
@@ -145,6 +149,21 @@ function JobsMasterPage() {
  </section>
  )}
 
+      {/* ── 2.5. Barra de Acesso ao Guia de Carreiras & CBO ── */}
+      <div className="flex items-center justify-between gap-3 px-1">
+        <p className="text-xs font-medium text-muted-foreground hidden sm:block">
+          Consulte faixas salariais oficiais (CBO) e médias de mercado em centavos BRL
+        </p>
+        <button
+          type="button"
+          onClick={() => setIsProfessionGuideOpen(true)}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all ml-auto cursor-pointer"
+        >
+          <Briefcase size={15} weight="bold" />
+          <span>Guia Salarial & CBOs</span>
+        </button>
+      </div>
+
  <DiscoveryControlBar
  search={search}
  onSearchChange={setSearch}
@@ -156,6 +175,17 @@ function JobsMasterPage() {
  onViewModeChange={setViewMode}
  allowedViewModes={["feed", "grid", "list"]}
  />
+
+      <ProfessionSearchDialog
+        open={isProfessionGuideOpen}
+        onOpenChange={setIsProfessionGuideOpen}
+        title="Guia de Carreiras & Salários (CBO / MTE)"
+        description="Pesquise profissões oficiais, médias salariais (Júnior a Lead) e competências demandadas."
+        onSelect={(prof) => {
+          setSearch(prof.title);
+          setIsProfessionGuideOpen(false);
+        }}
+      />
 
  {/* ── 4. Renderização Conforme o Modo de Visualização ── */}
 
@@ -278,6 +308,7 @@ function JobsMasterPage() {
 function JobPostCard({ job }: { job: JobItemDTO }) {
  const coverUrl = (job as any).cover_image_url || job.company_logo_url;
  const whatsappNumber = (job.contact_whatsapp || "").replace(/\D/g, "");
+ const matchedProfession = useMemo(() => findProfessionByTitle(job.title), [job.title]);
 
  return (
  <div className="group relative flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/25 transition-all duration-300">
@@ -353,11 +384,22 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
  </div>
  </div>
 
- {/* Faixa Salarial em Destaque */}
- <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 text-primary font-bold text-xs font-mono">
- <Money size={14} weight="bold" />
- <span>{job.salary_display || "Salário a combinar"}</span>
- </div>
+              {/* Faixa Salarial em Destaque */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 text-primary font-bold text-xs font-mono">
+                  <Money size={14} weight="bold" />
+                  <span>{job.salary_display || "Salário a combinar"}</span>
+                </div>
+                {matchedProfession && (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-mono border-primary/20 text-muted-foreground font-semibold px-2 py-0.5"
+                    title={`CBO ${matchedProfession.cbo_code} • Piso ${formatMoney(matchedProfession.junior_salary_cents)} até ${formatMoney(matchedProfession.senior_salary_cents)}`}
+                  >
+                    CBO {matchedProfession.cbo_code}
+                  </Badge>
+                )}
+              </div>
 
  {/* Localização / Cidade */}
  <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
@@ -440,6 +482,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
 function JobListItem({ job }: { job: JobItemDTO }) {
  const coverUrl = (job as any).cover_image_url || job.company_logo_url;
  const whatsappNumber = (job.contact_whatsapp || "").replace(/\D/g, "");
+ const matchedProfession = useMemo(() => findProfessionByTitle(job.title), [job.title]);
 
  return (
  <div className="flex items-center justify-between p-3 sm:p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all gap-3.5 group">
@@ -484,10 +527,21 @@ function JobListItem({ job }: { job: JobItemDTO }) {
  {job.title}
  </h3>
 
- <div className="flex items-center gap-2 text-xs text-muted-foreground">
+ <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
  <span className="font-bold font-mono text-primary">
  {job.salary_display || "A combinar"}
  </span>
+ {matchedProfession && (
+ <>
+ <span>•</span>
+ <span
+ className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold"
+ title={`CBO ${matchedProfession.cbo_code} • Piso ${formatMoney(matchedProfession.junior_salary_cents)}`}
+ >
+ CBO {matchedProfession.cbo_code}
+ </span>
+ </>
+ )}
  <span>•</span>
  <span className="truncate">{job.location || "Regional"}</span>
  </div>

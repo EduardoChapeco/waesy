@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { ImageOff, ShoppingBag, ChevronRight, Star, Truck, ShieldCheck, Check, HelpCircle, MapPin, RotateCcw, BadgePercent, Play, MessageCircle, Mail, User, Info, Loader2, Layers, ChevronRight as ChevronIcon, ShieldAlert, Users, Scale, Clock, BellRing, Package } from 'lucide-react';
+import { ImageOff, ShoppingBag, ChevronRight, Star, Truck, ShieldCheck, Check, HelpCircle, MapPin, RotateCcw, BadgePercent, Play, MessageCircle, Mail, User, Info, Loader2, Layers, ChevronRight as ChevronIcon, ShieldAlert, Users, Scale, Clock, BellRing, Package, Minus, Plus } from 'lucide-react';
 import { TagFraudDialog } from "@/components/commerce/tag-fraud-dialog";
 import { ProductWaitlistSheet } from "@/components/commerce/product-waitlist-sheet";
 
@@ -769,7 +769,7 @@ function ProductContent({
  }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full max-w-6xl mx-auto px-0 sm:px-4 md:px-6 py-0 sm:py-4 pb-28 lg:pb-12 space-y-6">
       {/* Omni-telemetria para Meta Pixel + CAPI + Google Ads + Schema.org */}
       <ProductTelemetry
         storeId={product.store_id || (product as any)?.storeId || (product as any)?.store?.id}
@@ -784,1062 +784,1138 @@ function ProductContent({
         sku={selectedVariant?.sku || (product as any).sku || product.id}
         inStock={!allOutOfStock}
       />
-      {/* Breadcrumb */}
- <nav
- aria-label="Navegação estrutural"
- className="mb-6 flex items-center gap-2 text-xs text-muted-foreground font-medium"
- >
- <Link to="/" className="hover:text-foreground">
- Início
- </Link>
- <ChevronRight className="size-3" aria-hidden />
- <Link to="/mercado" className="hover:text-foreground">
- Catálogo
- </Link>
- {product.categories && product.categories.length > 0 && (
- <>
- <ChevronRight className="size-3" aria-hidden />
- <Link
- to="/mercado"
- search={{ categoria: product.categories[0].slug }}
- className="hover:text-foreground truncate max-w-[150px]"
- >
- {product.categories[0].name}
- </Link>
- </>
- )}
- <ChevronRight className="size-3" aria-hidden />
- <span className="text-foreground font-bold truncate max-w-[200px]">{product.title}</span>
- </nav>
 
- {/* Product Workspace Split */}
- <div className="grid gap-8 md:grid-cols-12 lg:gap-14">
- {/* LADO ESQUERDO: Media Switcher com strip vertical sem scrollbar feia */}
- <div className="md:col-span-6 flex flex-col sm:flex-row gap-3.5 items-start">
- {/* Strip vertical esquerdo de thumbnails (apenas se houver mais de 1 mídia) */}
- {product.media.length > 1 && (
- <div className="hidden sm:flex flex-col gap-2 w-16 shrink-0 max-h-[480px] overflow-y-auto no-scrollbar pr-0.5">
- {product.media.map((m: ProductMediaDTO) => {
- const isVideo = m.mediaType === "video";
- const active = activeMedia?.id === m.id;
- return (
- <button
- key={m.id}
- onClick={() => setActiveMedia(m)}
- className={`relative aspect-square w-14 shrink-0 rounded-xl overflow-hidden border transition-all duration-200 ${
- active
- ? "border-primary ring-2 ring-primary/20 scale-[1.03]"
- : "border-border/60 hover:border-primary/50 bg-secondary"
- }`}
- >
- {isVideo ? (
- <div className="relative size-full bg-black/20 flex items-center justify-center">
- <Play className="size-4 text-white fill-white relative z-10" />
- {m.url.includes("youtube.com") || m.url.includes("youtu.be") ? (
- <img
- src={`https://img.youtube.com/vi/${parseYoutubeId(m.url)}/hqdefault.jpg`}
- alt="Video thumbnail"
- className="absolute size-full object-cover opacity-60"
- />
- ) : (
- <ImageOff className="size-4 text-white opacity-40" />
- )}
- </div>
- ) : (
- <img
- src={m.url}
- alt={m.alt ?? ""}
- loading="lazy"
- className="size-full object-cover"
- />
- )}
- </button>
- );
- })}
- </div>
- )}
+      {/* Breadcrumb — Alinhado com padding sutil no mobile */}
+      <nav
+        aria-label="Navegação estrutural"
+        className="px-4 sm:px-0 flex items-center gap-1.5 text-xs text-muted-foreground font-medium overflow-x-auto no-scrollbar py-2"
+      >
+        <Link to="/" className="hover:text-foreground shrink-0">
+          Início
+        </Link>
+        <ChevronRight className="size-3 shrink-0" aria-hidden />
+        <Link to="/mercado" className="hover:text-foreground shrink-0">
+          Catálogo
+        </Link>
+        {product.categories && product.categories.length > 0 && (
+          <>
+            <ChevronRight className="size-3 shrink-0" aria-hidden />
+            <Link
+              to="/mercado"
+              search={{ categoria: product.categories[0].slug }}
+              className="hover:text-foreground truncate max-w-[140px] shrink-0"
+            >
+              {product.categories[0].name}
+            </Link>
+          </>
+        )}
+        <ChevronRight className="size-3 shrink-0" aria-hidden />
+        <span className="text-foreground font-semibold truncate max-w-[180px] sm:max-w-xs">{product.title}</span>
+      </nav>
 
- {/* Main Screen Viewport */}
- <div className="flex-1 w-full space-y-4">
- <Surface
- variant="default"
- padding="none"
- className="w-full relative aspect-square overflow-hidden bg-secondary rounded-2xl "
- >
- {activeMedia ? (
- activeMedia.mediaType === "video" ? (
- parseYoutubeId(activeMedia.url) ? (
- <iframe
- src={`https://www.youtube.com/embed/${parseYoutubeId(activeMedia.url)}?autoplay=1`}
- width="100%"
- height="100%"
- style={{ border: 0 }}
- allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
- allowFullScreen
- className="absolute size-full"
- title="Product Video View"
- ></iframe>
- ) : (
- <video
- src={activeMedia.url}
- controls
- autoPlay
- className="absolute size-full object-contain"
- />
- )
- ) : (
- <img
- src={activeMedia.url}
- alt={activeMedia.alt ?? product.title}
- loading="eager"
- className="size-full object-cover hover:scale-105 transition-transform duration-500"
- />
- )
- ) : (
- <div className="grid size-full place-items-center text-muted-foreground">
- <ImageOff className="size-16 stroke-1" aria-hidden />
- </div>
- )}
- </Surface>
- </div>
- </div>
+      {/* Grid Principal Split 12 Colunas (7 cols conteúdo à esquerda / 5 cols sticky à direita) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+        
+        {/* ======================================================== */}
+        {/* COLUNA ESQUERDA (7 Colunas): Mídia, Specs, Sobre, Avaliações */}
+        {/* ======================================================== */}
+        <div className="lg:col-span-7 space-y-6">
+          
+          {/* Mídia & Galeria (Edge-to-Edge no Mobile, Galeria no Desktop) */}
+          <div className="w-full flex flex-col sm:flex-row gap-3 items-start">
+            {/* Strip vertical de miniaturas no desktop */}
+            {product.media.length > 1 && (
+              <div className="hidden sm:flex flex-col gap-2 w-16 shrink-0 max-h-[500px] overflow-y-auto no-scrollbar pr-0.5">
+                {product.media.map((m: ProductMediaDTO) => {
+                  const isVideo = m.mediaType === "video";
+                  const active = activeMedia?.id === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setActiveMedia(m)}
+                      className={cn(
+                        "relative aspect-square w-14 shrink-0 rounded-xl overflow-hidden border transition-all duration-200 cursor-pointer",
+                        active
+                          ? "border-primary ring-2 ring-primary/20 scale-[1.03]"
+                          : "border-border/60 hover:border-primary/50 bg-secondary"
+                      )}
+                    >
+                      {isVideo ? (
+                        <div className="relative size-full bg-black/20 flex items-center justify-center">
+                          <Play className="size-4 text-white fill-white relative z-10" />
+                          {m.url.includes("youtube.com") || m.url.includes("youtu.be") ? (
+                            <img
+                              src={`https://img.youtube.com/vi/${parseYoutubeId(m.url)}/hqdefault.jpg`}
+                              alt="Video thumbnail"
+                              className="absolute size-full object-cover opacity-60"
+                            />
+                          ) : (
+                            <ImageOff className="size-4 text-white opacity-40" />
+                          )}
+                        </div>
+                      ) : (
+                        <img
+                          src={m.url}
+                          alt={m.alt ?? ""}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
- {/* LADO DIREITO: Info & Atributos Customizados */}
- <div className="md:col-span-6 flex flex-col gap-6 text-left">
- <div className="space-y-2">
- {product.brand && (
- <span className="text-xs font-bold tracking-wider uppercase text-primary bg-primary/10 px-2 py-0.5 rounded">
- {product.brand}
- </span>
- )}
- <h1 className="font-zine text-4xl font-bold leading-none tracking-tighter uppercase text-foreground sm:text-6xl mb-2">
- {product.title}
- </h1>
+            {/* Viewport Principal */}
+            <div className="flex-1 w-full relative">
+              <div className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square overflow-hidden bg-secondary rounded-none sm:rounded-2xl border-y sm:border border-border/50">
+                {activeMedia ? (
+                  activeMedia.mediaType === "video" ? (
+                    parseYoutubeId(activeMedia.url) ? (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${parseYoutubeId(activeMedia.url)}?autoplay=1`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="absolute size-full"
+                        title="Product Video View"
+                      />
+                    ) : (
+                      <video
+                        src={activeMedia.url}
+                        controls
+                        autoPlay
+                        className="absolute size-full object-contain"
+                      />
+                    )
+                  ) : (
+                    <img
+                      src={activeMedia.url}
+                      alt={activeMedia.alt ?? product.title}
+                      loading="eager"
+                      className="size-full object-cover"
+                    />
+                  )
+                ) : (
+                  <div className="grid size-full place-items-center text-muted-foreground">
+                    <ImageOff className="size-16 stroke-1" aria-hidden />
+                  </div>
+                )}
 
- {/* Preços Autorizados pelo Servidor com Badges de Desconto */}
- <div className="flex items-baseline gap-3 pt-2">
- <PriceDisplay
- amountCents={currentPriceCents}
- compareAtCents={product.compareAtCents}
- size="lg"
- />
- {product.compareAtCents && product.compareAtCents > product.priceCents && (
- <Badge
- variant="outline"
- className="bg-destructive/10 text-destructive border-destructive/20 text-xs font-bold px-2 py-0.5"
- >
- Estimado -
- {Math.round(
- ((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100,
- )}
- %
- </Badge>
- )}
- </div>
+                {/* Pill contador de fotos no Mobile */}
+                {product.media.length > 1 && (
+                  <div className="sm:hidden absolute bottom-3 right-3 bg-background/90 backdrop-blur-md text-foreground text-[11px] font-mono font-bold px-2.5 py-1 rounded-full border border-border/40 shadow-xs">
+                    {product.media.findIndex((m: any) => m.id === activeMedia?.id) + 1 || 1} / {product.media.length}
+                  </div>
+                )}
+              </div>
 
- {/* Descrição Única e Canônica do Produto (Foto > Título > Preço > Descrição) */}
- {product.description && (
- <div className="p-4 rounded-2xl bg-card space-y-1.5 mt-3 border border-border/60">
- <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
- Sobre o Produto
- </h3>
- <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
- {product.description}
- </p>
- </div>
- )}
-
- {/* Especificações Gastronômicas & Padrão iFood */}
- {((product as any).attributes?.dietary_restrictions?.length > 0 ||
- (product as any).attributes?.serves_count ||
- (product as any).attributes?.portion_weight ||
- (product as any).preparationTimeDays ||
- (product as any).attributes?.preparation_time_minutes) && (
- <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 space-y-3 mt-3">
- <div className="flex items-center gap-2 text-xs font-bold text-foreground">
- <Layers className="size-3.5 text-primary" />
- <span>Especificações do Cardápio</span>
- </div>
-
- <div className="flex flex-wrap items-center gap-2">
- {/* Serve Até */}
- {(product as any).attributes?.serves_count && (
- <Badge variant="outline" className="text-xs font-medium bg-background gap-1 py-1 px-2.5">
- <Users className="size-3.5 text-muted-foreground" />
- <span>Serve {(product as any).attributes.serves_count}</span>
- </Badge>
- )}
-
- {/* Peso / Volume */}
- {(product as any).attributes?.portion_weight && (
- <Badge variant="outline" className="text-xs font-medium bg-background gap-1 py-1 px-2.5">
- <Scale className="size-3.5 text-muted-foreground" />
- <span>
- {(product as any).attributes.portion_weight}{" "}
- {(product as any).attributes?.portion_unit || "g"}
- </span>
- </Badge>
- )}
-
- {/* Tempo de Preparo */}
- {((product as any).preparationTimeDays ||
- (product as any).attributes?.preparation_time_minutes) && (
- <Badge variant="outline" className="text-xs font-medium bg-background gap-1 py-1 px-2.5">
- <Clock className="size-3.5 text-muted-foreground" />
- <span>
- {(product as any).preparationTimeDays ||
- (product as any).attributes?.preparation_time_minutes}{" "}
- minutos de preparo
- </span>
- </Badge>
- )}
-
- {/* Restrições Alimentares */}
- {((product as any).attributes?.dietary_restrictions || []).map((diet: string) => (
- <Badge
- key={diet}
- variant="secondary"
- className="text-xs font-bold bg-primary/10 text-primary border-primary/20 capitalize py-1 px-2.5"
- >
- {diet.replace("_", " ")}
- </Badge>
- ))}
- </div>
- </div>
- )}
-
-        {/* Especificações Físicas & Logísticas (Dimensões, Peso e Fabricante) */}
-        {((product as any).weightKg || (product as any).weight_kg ||
-          (product as any).widthCm || (product as any).width_cm ||
-          (product as any).heightCm || (product as any).height_cm ||
-          (product as any).lengthCm || (product as any).length_cm ||
-          (product as any).ean || (product as any).sku ||
-          (product as any).manufacturer) && (
-          <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 space-y-3 mt-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-              <Package className="size-3.5 text-primary" />
-              <span>Especificações Técnicas & Dimensões</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-              {((product as any).widthCm || (product as any).width_cm ||
-                (product as any).heightCm || (product as any).height_cm ||
-                (product as any).lengthCm || (product as any).length_cm) && (
-                <div className="p-2.5 rounded-xl bg-background border border-border/50">
-                  <span className="text-[10px] text-muted-foreground block">Dimensões (C x L x A)</span>
-                  <span className="font-bold text-foreground font-mono">
-                    {(product as any).lengthCm || (product as any).length_cm || 0} x {(product as any).widthCm || (product as any).width_cm || 0} x {(product as any).heightCm || (product as any).height_cm || 0} cm
-                  </span>
-                </div>
-              )}
-
-              {((product as any).weightKg || (product as any).weight_kg) && (
-                <div className="p-2.5 rounded-xl bg-background border border-border/50">
-                  <span className="text-[10px] text-muted-foreground block">Peso Líquido</span>
-                  <span className="font-bold text-foreground font-mono">
-                    {(product as any).weightKg || (product as any).weight_kg} kg
-                  </span>
-                </div>
-              )}
-
-              {(product as any).manufacturer && (
-                <div className="p-2.5 rounded-xl bg-background border border-border/50">
-                  <span className="text-[10px] text-muted-foreground block">Fabricante / Marca</span>
-                  <span className="font-bold text-foreground truncate block">
-                    {(product as any).manufacturer}
-                  </span>
-                </div>
-              )}
-
-              {((product as any).ean || (product as any).sku) && (
-                <div className="p-2.5 rounded-xl bg-background border border-border/50">
-                  <span className="text-[10px] text-muted-foreground block">
-                    {(product as any).ean ? "Código de Barras (EAN)" : "Código SKU"}
-                  </span>
-                  <span className="font-bold text-foreground font-mono truncate block">
-                    {(product as any).ean || (product as any).sku}
-                  </span>
+              {/* Miniaturas horizontais no Mobile (scroll suave sem quebra) */}
+              {product.media.length > 1 && (
+                <div className="sm:hidden flex items-center gap-2 overflow-x-auto no-scrollbar px-3 py-2">
+                  {product.media.map((m: ProductMediaDTO) => {
+                    const active = activeMedia?.id === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setActiveMedia(m)}
+                        className={cn(
+                          "relative size-12 shrink-0 rounded-lg overflow-hidden border transition-all cursor-pointer",
+                          active
+                            ? "border-primary ring-2 ring-primary/20 scale-105"
+                            : "border-border/60 opacity-70"
+                        )}
+                      >
+                        <img src={m.url} alt="" className="size-full object-cover" />
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
+
+          {/* ── BLOCO MOBILE-FIRST: Título, Preço e Seletores na leitura do fluxo ── */}
+          <div className="block lg:hidden px-4 sm:px-0 space-y-4">
+            <div className="space-y-1.5">
+              {product.brand && (
+                <span className="text-[11px] font-bold tracking-wider uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-md inline-block">
+                  {product.brand}
+                </span>
+              )}
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
+                {product.title}
+              </h1>
+
+              {/* Preço Autorizado com Desconto */}
+              <div className="flex items-baseline gap-3 pt-1">
+                <PriceDisplay
+                  amountCents={currentPriceCents}
+                  compareAtCents={product.compareAtCents}
+                  size="lg"
+                />
+                {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                  <Badge
+                    variant="outline"
+                    className="bg-destructive/10 text-destructive border-destructive/20 text-xs font-bold px-2 py-0.5 rounded-md"
+                  >
+                    Economize {Math.round(((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100)}%
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Disponibilidade / Esgotado */}
+            {product.showStockPublicly && allOutOfStock && (
+              <Badge variant="destructive" className="w-fit text-xs font-bold py-1 px-3 rounded-lg">
+                Sem estoque disponível
+              </Badge>
+            )}
+
+            {/* Seletores de Atributos (Cores e Tamanhos) no Mobile */}
+            {attributeKeys.length > 0 && (
+              <div className="space-y-4 pt-3 border-t border-border/50">
+                {attributeKeys.map((key: string) => {
+                  const values: string[] = Array.from(
+                    new Set(
+                      product.variants
+                        .map((v: VariantDTO) => v.attributes[key])
+                        .filter((val): val is string => typeof val === "string")
+                    )
+                  );
+                  const isColor = key.toLowerCase() === "cor" || key.toLowerCase() === "color";
+                  const isSize = key.toLowerCase() === "tamanho" || key.toLowerCase() === "size";
+
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex justify-between items-center text-xs font-medium text-foreground">
+                        <span className="capitalize">
+                          {key}: <strong className="text-foreground">{selectedAttributes[key]}</strong>
+                        </span>
+                        {isSize && !isFoodOrPerishable && (
+                          <button
+                            type="button"
+                            onClick={() => setSizeGuideOpen(true)}
+                            className="text-xs text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <Info className="size-3.5" />
+                            Guia de tamanhos
+                          </button>
+                        )}
+                      </div>
+
+                      {isColor ? (
+                        <div className="flex flex-wrap gap-2.5">
+                          {values.map((val: string) => {
+                            const isSelected = selectedAttributes[key] === val;
+                            const colorHex = getColorHex(val);
+                            return (
+                              <button
+                                key={val}
+                                type="button"
+                                title={val}
+                                onClick={() => setSelectedAttributes((prev) => ({ ...prev, [key]: val }))}
+                                className={cn(
+                                  "group relative size-8 rounded-full border transition-all cursor-pointer",
+                                  isSelected
+                                    ? "ring-2 ring-primary ring-offset-2 border-primary scale-110"
+                                    : "border-border/80 hover:scale-105"
+                                )}
+                                style={{ backgroundColor: colorHex }}
+                              >
+                                {val.toLowerCase() === "branco" && (
+                                  <span className="absolute inset-0 rounded-full border border-black/10" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {values.map((val: string) => {
+                            const isSelected = selectedAttributes[key] === val;
+                            const hypotheticVariant = product.variants.find((v: VariantDTO) => {
+                              const testAttrs = { ...selectedAttributes, [key]: val };
+                              return Object.entries(testAttrs).every(([tk, tv]) => v.attributes[tk] === tv);
+                            });
+                            const isOptionOutOfStock = hypotheticVariant && hypotheticVariant.availableQty <= 0;
+
+                            return (
+                              <button
+                                key={val}
+                                type="button"
+                                disabled={isOptionOutOfStock && !hypotheticVariant?.allowBackorder}
+                                onClick={() => setSelectedAttributes((prev) => ({ ...prev, [key]: val }))}
+                                className={cn(
+                                  "min-h-10 border px-3.5 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer",
+                                  isSelected
+                                    ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
+                                    : isOptionOutOfStock && !hypotheticVariant?.allowBackorder
+                                    ? "border-dashed border-border/40 text-muted-foreground/40 bg-muted/20 cursor-not-allowed line-through opacity-50"
+                                    : "border-border/80 bg-card text-foreground hover:border-primary/60"
+                                )}
+                              >
+                                {val}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Option Groups (Adicionais) no Mobile */}
+            {product.optionGroups && product.optionGroups.length > 0 && (
+              <div className="space-y-4 pt-3 border-t border-border/50">
+                {product.optionGroups.map((og: any) => {
+                  const isMultiple = og.selectionType === "multiple";
+                  const selection = selectedOptions[og.id] || (isMultiple ? [] : "");
+
+                  const handleOptionToggle = (valId: string) => {
+                    setSelectedOptions((prev) => {
+                      const current = prev[og.id];
+                      if (isMultiple) {
+                        const currentArray = Array.isArray(current) ? current : [];
+                        if (currentArray.includes(valId)) {
+                          return { ...prev, [og.id]: currentArray.filter((id) => id !== valId) };
+                        } else {
+                          if (og.maxSelections > 0 && currentArray.length >= og.maxSelections) return prev;
+                          return { ...prev, [og.id]: [...currentArray, valId] };
+                        }
+                      } else {
+                        if (current === valId && !og.isRequired) return { ...prev, [og.id]: "" };
+                        return { ...prev, [og.id]: valId };
+                      }
+                    });
+                  };
+
+                  return (
+                    <div key={og.id} className="space-y-2.5">
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <p className="text-xs font-bold text-foreground">{og.displayName}</p>
+                          {og.isRequired && (
+                            <p className="text-[10px] uppercase text-primary tracking-wider font-bold">Obrigatório</p>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          {isMultiple ? `Até ${og.maxSelections} opções` : "Escolha 1"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {og.values.map((val: any) => {
+                          const isSelected = isMultiple
+                            ? Array.isArray(selection) && selection.includes(val.id)
+                            : selection === val.id;
+
+                          return (
+                            <button
+                              key={val.id}
+                              type="button"
+                              onClick={() => handleOptionToggle(val.id)}
+                              className={cn(
+                                "flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer gap-3",
+                                isSelected
+                                  ? "border-primary bg-primary/5 ring-1 ring-primary/40"
+                                  : "border-border/70 bg-card hover:bg-muted/20"
+                              )}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div
+                                  className={cn(
+                                    "flex items-center justify-center border transition-all shrink-0",
+                                    isMultiple ? "size-4 rounded-md" : "size-4 rounded-full",
+                                    isSelected
+                                      ? "bg-primary border-primary text-primary-foreground"
+                                      : "border-muted-foreground/40 bg-background"
+                                  )}
+                                >
+                                  {isSelected && (
+                                    isMultiple ? <Check className="size-2.5 stroke-[3]" /> : <span className="size-1.5 bg-primary-foreground rounded-full" />
+                                  )}
+                                </div>
+                                <span className="text-xs font-semibold text-foreground truncate">{val.label}</span>
+                              </div>
+                              <span className="text-xs font-bold text-foreground font-mono shrink-0">
+                                {val.priceModifierCents > 0
+                                  ? `+ ${formatMoney(val.priceModifierCents)}`
+                                  : "Incluso"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ── Ficha Técnica Gastronômica (Cardápio / Padrão iFood) ── */}
+          {((product as any).attributes?.dietary_restrictions?.length > 0 ||
+            (product as any).attributes?.serves_count ||
+            (product as any).attributes?.portion_weight ||
+            (product as any).preparationTimeDays ||
+            (product as any).attributes?.preparation_time_minutes) && (
+            <div className="p-4 sm:p-5 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/60 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                <Layers className="size-4 text-primary" />
+                <span>Especificações do Cardápio</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {(product as any).attributes?.serves_count && (
+                  <Badge variant="outline" className="text-xs font-medium bg-muted/30 border-border/60 gap-1.5 py-1 px-3 rounded-lg">
+                    <Users className="size-3.5 text-muted-foreground" />
+                    <span>Serve {(product as any).attributes.serves_count}</span>
+                  </Badge>
+                )}
+                {(product as any).attributes?.portion_weight && (
+                  <Badge variant="outline" className="text-xs font-medium bg-muted/30 border-border/60 gap-1.5 py-1 px-3 rounded-lg">
+                    <Scale className="size-3.5 text-muted-foreground" />
+                    <span>{(product as any).attributes.portion_weight} {(product as any).attributes?.portion_unit || "g"}</span>
+                  </Badge>
+                )}
+                {((product as any).preparationTimeDays || (product as any).attributes?.preparation_time_minutes) && (
+                  <Badge variant="outline" className="text-xs font-medium bg-muted/30 border-border/60 gap-1.5 py-1 px-3 rounded-lg">
+                    <Clock className="size-3.5 text-muted-foreground" />
+                    <span>{(product as any).preparationTimeDays || (product as any).attributes?.preparation_time_minutes} minutos de preparo</span>
+                  </Badge>
+                )}
+                {((product as any).attributes?.dietary_restrictions || []).map((diet: string) => (
+                  <Badge
+                    key={diet}
+                    variant="secondary"
+                    className="text-xs font-bold bg-primary/10 text-primary border border-primary/20 capitalize py-1 px-3 rounded-lg"
+                  >
+                    {diet.replace("_", " ")}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Ficha Técnica Logística & Dimensões (Mobg Modular) ── */}
+          {((product as any).weightKg || (product as any).weight_kg ||
+            (product as any).widthCm || (product as any).width_cm ||
+            (product as any).heightCm || (product as any).height_cm ||
+            (product as any).lengthCm || (product as any).length_cm ||
+            (product as any).ean || (product as any).sku ||
+            (product as any).manufacturer) && (
+            <div className="p-4 sm:p-5 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/60 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                <Package className="size-4 text-primary" />
+                <span>Especificações Técnicas & Dimensões</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                {((product as any).widthCm || (product as any).width_cm ||
+                  (product as any).heightCm || (product as any).height_cm ||
+                  (product as any).lengthCm || (product as any).length_cm) && (
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground block font-medium">Dimensões (C x L x A)</span>
+                    <span className="font-bold text-foreground font-mono mt-0.5 block">
+                      {(product as any).lengthCm || (product as any).length_cm || 0} x {(product as any).widthCm || (product as any).width_cm || 0} x {(product as any).heightCm || (product as any).height_cm || 0} cm
+                    </span>
+                  </div>
+                )}
+                {((product as any).weightKg || (product as any).weight_kg) && (
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground block font-medium">Peso Líquido</span>
+                    <span className="font-bold text-foreground font-mono mt-0.5 block">
+                      {(product as any).weightKg || (product as any).weight_kg} kg
+                    </span>
+                  </div>
+                )}
+                {(product as any).manufacturer && (
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground block font-medium">Fabricante / Marca</span>
+                    <span className="font-bold text-foreground truncate mt-0.5 block">
+                      {(product as any).manufacturer}
+                    </span>
+                  </div>
+                )}
+                {((product as any).ean || (product as any).sku) && (
+                  <div className="p-3 rounded-xl bg-muted/30 border border-border/40">
+                    <span className="text-[10px] text-muted-foreground block font-medium">
+                      {(product as any).ean ? "Código de Barras (EAN)" : "Código SKU"}
+                    </span>
+                    <span className="font-bold text-foreground font-mono truncate mt-0.5 block">
+                      {(product as any).ean || (product as any).sku}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Descrição Canônica "Sobre o Produto" ── */}
+          {product.description && (
+            <div className="p-4 sm:p-5 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/60 space-y-2">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Sobre o Produto
+              </h2>
+              <p className="text-xs sm:text-sm text-foreground/85 leading-relaxed whitespace-pre-wrap">
+                {product.description}
+              </p>
+            </div>
+          )}
+
+          {/* ── Ficha Técnica Dinâmica (Atributos Customizados do CMS) ── */}
+          {product.attributes && Object.keys(product.attributes).length > 0 && (
+            <div className="p-4 sm:p-5 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/60 space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Características & Detalhes
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {Object.entries(product.attributes).map(([key, value]) => {
+                  if (value === null || value === "" || value === false) return null;
+                  return (
+                    <div key={key} className="p-2.5 rounded-xl bg-muted/20 border border-border/40 flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground capitalize font-medium">{key}</span>
+                      <span className="font-bold text-foreground">{value === true ? "Sim" : String(value)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── BLOCO MOBILE-ONLY: Frete e Loja no fluxo antes das avaliações ── */}
+          <div className="block lg:hidden space-y-4">
+            {/* Modalidades de Envio e Simulação */}
+            <div className="p-4 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/60 space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-foreground">
+                <div className="flex items-center gap-2">
+                  <Truck className="size-4 text-primary" />
+                  <span>Frete & Formas de Entrega</span>
+                </div>
+                {storeLocation && (
+                  <span className="text-[10px] text-muted-foreground font-mono">{storeLocation}</span>
+                )}
+              </div>
+              <form onSubmit={handleCalculateShipping} className="flex gap-2">
+                <Input
+                  placeholder="Digite seu CEP (Ex: 89801-000)"
+                  value={zipcode}
+                  onChange={(e) => setZipcode(e.target.value)}
+                  className="h-11 text-xs rounded-xl bg-muted/30"
+                />
+                <Button type="submit" className="h-11 font-bold px-4 rounded-xl shrink-0 cursor-pointer" disabled={loadingShipping}>
+                  {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
+                </Button>
+              </form>
+              {shippingRates !== null && (
+                <div className="space-y-1.5 pt-1">
+                  {shippingRates.length > 0 ? (
+                    shippingRates.map((rate, idx) => (
+                      <div key={rate.id || idx} className="flex justify-between items-center text-xs p-2.5 rounded-xl border border-border/50 bg-muted/20">
+                        <div>
+                          <p className="font-bold text-foreground">{rate.service_name || rate.name || rate.provider}</p>
+                          <p className="text-[10px] text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
+                        </div>
+                        <span className="font-bold text-foreground font-mono">
+                          {rate.price_cents === 0 ? <span className="text-emerald-600">Grátis</span> : formatMoney(rate.price_cents)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Frete sob cotação direta com o vendedor.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Card Loja Vendedora */}
+            <div className="p-4 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/60 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center font-black text-xs text-primary shrink-0">
+                  {(product as any).store?.name?.slice(0, 2).toUpperCase() || "LJ"}
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground font-mono">Vendido por</span>
+                  <Link
+                    to="/perfil-da-loja"
+                    search={{ storeId: product.store_id || (product as any).store?.id }}
+                    className="text-xs font-bold text-foreground hover:text-primary transition-colors truncate block"
+                  >
+                    {(product as any).store?.name || "Loja Parceira"}
+                  </Link>
+                </div>
+              </div>
+              <Button asChild variant="outline" size="sm" className="h-8 text-xs font-bold rounded-xl shrink-0">
+                <Link to="/perfil-da-loja" search={{ storeId: product.store_id || (product as any).store?.id }}>
+                  Ver Loja
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* ── Avaliações Reais dos Clientes (Design Limpo em Card Integrado) ── */}
+          <div className="p-5 sm:p-6 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/60 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <MessageCircle className="size-4 text-primary" />
+                  <span>Avaliações dos Clientes</span>
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Baseado em {reviewStats.total_reviews} {reviewStats.total_reviews === 1 ? "avaliação" : "avaliações"} de compradores reais.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground">
+                  {reviewStats.average_rating > 0 ? reviewStats.average_rating.toFixed(1) : "5.0"}
+                </div>
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={cn(
+                        "size-4",
+                        star <= Math.round(reviewStats.average_rating || 5)
+                          ? "fill-amber-400 text-amber-500"
+                          : "text-muted-foreground/30"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Lista de Avaliações */}
+            {reviewsList.length === 0 ? (
+              <div className="py-6 text-center text-xs text-muted-foreground">
+                Nenhuma avaliação publicada ainda. Seja o primeiro a avaliar após receber seu pedido!
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {reviewsList.map((review: any) => (
+                  <div key={review.id} className="p-3.5 rounded-xl bg-muted/20 border border-border/40 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="size-6 rounded-full bg-secondary flex items-center justify-center text-[10px] font-black uppercase text-foreground">
+                          {review.userName.slice(0, 2)}
+                        </span>
+                        <span className="text-xs font-bold text-foreground">{review.userName}</span>
+                        <Badge variant="outline" className="text-[9px] text-emerald-600 bg-emerald-500/10 border-emerald-500/20 py-0 px-1.5 rounded">
+                          Verificado
+                        </Badge>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-mono">{formatDate(review.createdAt)}</span>
+                    </div>
+                    {review.comment && (
+                      <p className="text-xs text-foreground/85 leading-relaxed">"{review.comment}"</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Builder Complementar (se houver) */}
+          {(() => {
+            const filteredNodes = (templateTree || []).filter((n: any) => {
+              const type = (n?.type || n?.component || n?.name || "").toLowerCase();
+              return !type.includes("description") && !type.includes("descrição") && !type.includes("product-info") && !type.includes("header");
+            });
+            if (!filteredNodes.length) return null;
+            return (
+              <div className="w-full bg-card sm:rounded-2xl overflow-hidden mt-6">
+                <ExperienceRenderer nodes={filteredNodes} transientData={{ product }} />
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* ======================================================== */}
+        {/* COLUNA DIREITA (5 Colunas - STICKY TOP-24): Compra & Loja */}
+        {/* ======================================================== */}
+        <div className="hidden lg:flex lg:col-span-5 lg:sticky lg:top-24 flex-col gap-4">
+          
+          {/* Card Principal de Compra Desktop */}
+          <div className="p-6 rounded-2xl border border-border/60 bg-card shadow-xs space-y-5">
+            <div className="space-y-1.5">
+              {product.brand && (
+                <span className="text-[11px] font-bold tracking-wider uppercase text-primary bg-primary/10 px-2.5 py-0.5 rounded-md inline-block">
+                  {product.brand}
+                </span>
+              )}
+              <h1 className="text-2xl font-bold tracking-tight text-foreground leading-snug">
+                {product.title}
+              </h1>
+
+              {/* Preço Desktop */}
+              <div className="flex items-baseline gap-3 pt-1">
+                <PriceDisplay
+                  amountCents={currentPriceCents}
+                  compareAtCents={product.compareAtCents}
+                  size="lg"
+                />
+                {product.compareAtCents && product.compareAtCents > product.priceCents && (
+                  <Badge
+                    variant="outline"
+                    className="bg-destructive/10 text-destructive border-destructive/20 text-xs font-bold px-2 py-0.5 rounded-md"
+                  >
+                    Economize {Math.round(((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100)}%
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Disponibilidade / Esgotado */}
+            {product.showStockPublicly && allOutOfStock && (
+              <Badge variant="destructive" className="w-fit text-xs font-bold py-1 px-3 rounded-lg">
+                Sem estoque disponível
+              </Badge>
+            )}
+
+            {/* Seletores de Atributos (Cores e Tamanhos) */}
+            {attributeKeys.length > 0 && (
+              <div className="space-y-4 pt-3 border-t border-border/50">
+                {attributeKeys.map((key: string) => {
+                  const values: string[] = Array.from(
+                    new Set(
+                      product.variants
+                        .map((v: VariantDTO) => v.attributes[key])
+                        .filter((val): val is string => typeof val === "string")
+                    )
+                  );
+                  const isColor = key.toLowerCase() === "cor" || key.toLowerCase() === "color";
+                  const isSize = key.toLowerCase() === "tamanho" || key.toLowerCase() === "size";
+
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex justify-between items-center text-xs font-medium text-foreground">
+                        <span className="capitalize">
+                          {key}: <strong className="text-foreground">{selectedAttributes[key]}</strong>
+                        </span>
+                        {isSize && !isFoodOrPerishable && (
+                          <button
+                            type="button"
+                            onClick={() => setSizeGuideOpen(true)}
+                            className="text-xs text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <Info className="size-3.5" />
+                            Guia de tamanhos
+                          </button>
+                        )}
+                      </div>
+
+                      {isColor ? (
+                        <div className="flex flex-wrap gap-2.5">
+                          {values.map((val: string) => {
+                            const isSelected = selectedAttributes[key] === val;
+                            const colorHex = getColorHex(val);
+                            return (
+                              <button
+                                key={val}
+                                type="button"
+                                title={val}
+                                onClick={() => setSelectedAttributes((prev) => ({ ...prev, [key]: val }))}
+                                className={cn(
+                                  "group relative size-8 rounded-full border transition-all cursor-pointer",
+                                  isSelected
+                                    ? "ring-2 ring-primary ring-offset-2 border-primary scale-110"
+                                    : "border-border/80 hover:scale-105"
+                                )}
+                                style={{ backgroundColor: colorHex }}
+                              >
+                                {val.toLowerCase() === "branco" && (
+                                  <span className="absolute inset-0 rounded-full border border-black/10" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {values.map((val: string) => {
+                            const isSelected = selectedAttributes[key] === val;
+                            const hypotheticVariant = product.variants.find((v: VariantDTO) => {
+                              const testAttrs = { ...selectedAttributes, [key]: val };
+                              return Object.entries(testAttrs).every(([tk, tv]) => v.attributes[tk] === tv);
+                            });
+                            const isOptionOutOfStock = hypotheticVariant && hypotheticVariant.availableQty <= 0;
+
+                            return (
+                              <button
+                                key={val}
+                                type="button"
+                                disabled={isOptionOutOfStock && !hypotheticVariant?.allowBackorder}
+                                onClick={() => setSelectedAttributes((prev) => ({ ...prev, [key]: val }))}
+                                className={cn(
+                                  "min-h-10 border px-3.5 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer",
+                                  isSelected
+                                    ? "border-primary bg-primary text-primary-foreground font-bold shadow-xs"
+                                    : isOptionOutOfStock && !hypotheticVariant?.allowBackorder
+                                    ? "border-dashed border-border/40 text-muted-foreground/40 bg-muted/20 cursor-not-allowed line-through opacity-50"
+                                    : "border-border/80 bg-card text-foreground hover:border-primary/60"
+                                )}
+                              >
+                                {val}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Option Groups (Adicionais) */}
+            {product.optionGroups && product.optionGroups.length > 0 && (
+              <div className="space-y-4 pt-3 border-t border-border/50">
+                {product.optionGroups.map((og: any) => {
+                  const isMultiple = og.selectionType === "multiple";
+                  const selection = selectedOptions[og.id] || (isMultiple ? [] : "");
+
+                  const handleOptionToggle = (valId: string) => {
+                    setSelectedOptions((prev) => {
+                      const current = prev[og.id];
+                      if (isMultiple) {
+                        const currentArray = Array.isArray(current) ? current : [];
+                        if (currentArray.includes(valId)) {
+                          return { ...prev, [og.id]: currentArray.filter((id) => id !== valId) };
+                        } else {
+                          if (og.maxSelections > 0 && currentArray.length >= og.maxSelections) return prev;
+                          return { ...prev, [og.id]: [...currentArray, valId] };
+                        }
+                      } else {
+                        if (current === valId && !og.isRequired) return { ...prev, [og.id]: "" };
+                        return { ...prev, [og.id]: valId };
+                      }
+                    });
+                  };
+
+                  return (
+                    <div key={og.id} className="space-y-2.5">
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <p className="text-xs font-bold text-foreground">{og.displayName}</p>
+                          {og.isRequired && (
+                            <p className="text-[10px] uppercase text-primary tracking-wider font-bold">Obrigatório</p>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-muted-foreground font-medium">
+                          {isMultiple ? `Até ${og.maxSelections} opções` : "Escolha 1"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {og.values.map((val: any) => {
+                          const isSelected = isMultiple
+                            ? Array.isArray(selection) && selection.includes(val.id)
+                            : selection === val.id;
+
+                          return (
+                            <button
+                              key={val.id}
+                              type="button"
+                              onClick={() => handleOptionToggle(val.id)}
+                              className={cn(
+                                "flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer gap-3",
+                                isSelected
+                                  ? "border-primary bg-primary/5 ring-1 ring-primary/40"
+                                  : "border-border/70 bg-card hover:bg-muted/20"
+                              )}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div
+                                  className={cn(
+                                    "flex items-center justify-center border transition-all shrink-0",
+                                    isMultiple ? "size-4 rounded-md" : "size-4 rounded-full",
+                                    isSelected
+                                      ? "bg-primary border-primary text-primary-foreground"
+                                      : "border-muted-foreground/40 bg-background"
+                                  )}
+                                >
+                                  {isSelected && (
+                                    isMultiple ? <Check className="size-2.5 stroke-[3]" /> : <span className="size-1.5 bg-primary-foreground rounded-full" />
+                                  )}
+                                </div>
+                                <span className="text-xs font-semibold text-foreground truncate">{val.label}</span>
+                              </div>
+                              <span className="text-xs font-bold text-foreground font-mono shrink-0">
+                                {val.priceModifierCents > 0
+                                  ? `+ ${formatMoney(val.priceModifierCents)}`
+                                  : "Incluso"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Ação de Compra Desktop (Quantidade + Botão Adicionar) */}
+            <div className="space-y-3 pt-3 border-t border-border/50">
+              {(() => {
+                const isBackorder = selectedVariant && selectedVariant.availableQty <= 0 && selectedVariant.allowBackorder;
+                const variantHardBlocked = selectedVariant && selectedVariant.availableQty <= 0 && !selectedVariant.allowBackorder;
+
+                if ((allOutOfStock || variantHardBlocked) && !isBackorder) {
+                  return (
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        size="lg"
+                        className="w-full font-bold text-xs uppercase rounded-xl h-12 bg-muted text-foreground border border-border/80 hover:bg-muted/80 gap-2 cursor-pointer"
+                        onClick={() => setIsWaitlistOpen(true)}
+                      >
+                        <BellRing className="size-4 text-primary" />
+                        <span>Avise-me quando chegar</span>
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        Este item está esgotado. Entre na lista de espera.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-3">
+                      {/* Seletor de Quantidade Desktop */}
+                      <div className="flex items-center rounded-xl border border-border/70 bg-secondary/50 h-12 px-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                          className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+                          aria-label="Diminuir"
+                        >
+                          <Minus className="size-4" />
+                        </button>
+                        <span className="w-8 text-center font-bold text-sm text-foreground font-mono">
+                          {quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setQuantity((prev) => prev + 1)}
+                          className="size-9 flex items-center justify-center font-bold text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+                          aria-label="Aumentar"
+                        >
+                          <Plus className="size-4" />
+                        </button>
+                      </div>
+
+                      {/* Botão Primário Adicionar */}
+                      <Button
+                        size="lg"
+                        className={cn(
+                          "flex-1 font-bold text-sm uppercase rounded-xl h-12 transition-all cursor-pointer gap-2",
+                          isBackorder ? "bg-foreground text-background" : "bg-primary text-primary-foreground hover:bg-primary/90"
+                        )}
+                        onClick={handleAddToCart}
+                        disabled={Boolean(isAdding)}
+                      >
+                        <ShoppingBag className="size-4" />
+                        {isAdding ? "Adicionando..." : isBackorder ? "Encomendar" : "Adicionar ao carrinho"}
+                      </Button>
+                    </div>
+
+                    {isBackorder && (
+                      <p className="text-[11px] text-muted-foreground bg-muted/30 p-2.5 rounded-xl border border-dashed text-center">
+                        🚚 Produto sob encomenda. Prazo adicional estimado:{""}
+                        <strong> {selectedVariant.backorderLeadTimeDays || 7} dias úteis</strong>.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Simulação de Frete Desktop */}
+            <div className="pt-3 border-t border-border/50 space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-foreground">
+                <div className="flex items-center gap-2">
+                  <Truck className="size-4 text-primary" />
+                  <span>Calcular Frete & Prazo</span>
+                </div>
+                {storeLocation && (
+                  <span className="text-[10px] text-muted-foreground font-mono">{storeLocation}</span>
+                )}
+              </div>
+              <form onSubmit={handleCalculateShipping} className="flex gap-2">
+                <Input
+                  placeholder="Digite seu CEP"
+                  value={zipcode}
+                  onChange={(e) => setZipcode(e.target.value)}
+                  className="h-10 text-xs rounded-xl bg-muted/30"
+                />
+                <Button type="submit" size="sm" className="h-10 font-bold px-4 rounded-xl shrink-0 cursor-pointer" disabled={loadingShipping}>
+                  {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
+                </Button>
+              </form>
+              {shippingRates !== null && (
+                <div className="space-y-1.5 pt-1">
+                  {shippingRates.length > 0 ? (
+                    shippingRates.map((rate, idx) => (
+                      <div key={rate.id || idx} className="flex justify-between items-center text-xs p-2.5 rounded-xl border border-border/50 bg-muted/20">
+                        <div>
+                          <p className="font-bold text-foreground">{rate.service_name || rate.name || rate.provider}</p>
+                          <p className="text-[10px] text-muted-foreground">Prazo: {rate.estimated_days} dias úteis</p>
+                        </div>
+                        <span className="font-bold text-foreground font-mono">
+                          {rate.price_cents === 0 ? <span className="text-emerald-600">Grátis</span> : formatMoney(rate.price_cents)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Frete sob cotação direta com o vendedor.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Selos de Confiança Desktop */}
+            <div className="pt-3 border-t border-border/50 flex items-center justify-between text-[11px] text-muted-foreground font-medium">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="size-3.5 text-emerald-500" />
+                  Pagamento Seguro
+                </span>
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="size-3.5 text-emerald-500" />
+                  Proteção Waesy
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsReportModalOpen(true)}
+                className="flex items-center gap-1 hover:text-destructive transition-colors text-[10px] cursor-pointer"
+              >
+                <ShieldAlert className="size-3 text-destructive" />
+                Reportar oferta
+              </button>
+            </div>
+          </div>
+
+          {/* Card Sobre a Loja Desktop */}
+          <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-11 rounded-xl bg-primary/10 flex items-center justify-center font-black text-sm text-primary shrink-0 border border-primary/20">
+                {(product as any).store?.name?.slice(0, 2).toUpperCase() || "LJ"}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-xs text-foreground truncate">
+                    {(product as any).store?.name || product.brand || "Loja Parceira"}
+                  </h3>
+                  <Badge variant="outline" className="text-[9px] bg-primary/10 text-primary border-primary/20 py-0 px-1.5 rounded">
+                    Oficial
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                  {(product as any).store?.city ? `${(product as any).store.city} - ${(product as any).store.state || "SC"}` : "Loja Verificada Waesy"}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              variant={isFollowingStore ? "secondary" : "outline"}
+              className="text-xs font-bold rounded-xl h-9 shrink-0 cursor-pointer"
+              onClick={handleToggleFollow}
+            >
+              {isFollowingStore ? "Seguindo" : "+ Seguir"}
+            </Button>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Mobile Sticky Buy Bar (Thumb Zone) ── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border/60 shadow-lg px-3.5 py-2.5 flex items-center justify-between gap-3 select-none pb-safe">
+        {/* Seletor de Quantidade Mobile */}
+        <div className="flex items-center rounded-xl bg-secondary/80 border border-border/60 h-11 px-1 shrink-0">
+          <button
+            type="button"
+            onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+            className="size-8 flex items-center justify-center font-black text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+            aria-label="Diminuir"
+          >
+            <Minus className="size-3.5" />
+          </button>
+          <span className="w-7 text-center font-bold text-xs text-foreground font-mono">
+            {quantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => setQuantity((prev) => prev + 1)}
+            className="size-8 flex items-center justify-center font-black text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
+            aria-label="Aumentar"
+          >
+            <Plus className="size-3.5" />
+          </button>
+        </div>
+
+        {/* Botão de Compra com Preço Total Multiplicado */}
+        {Boolean(allOutOfStock) || Boolean(selectedVariant && selectedVariant.availableQty <= 0 && !selectedVariant.allowBackorder) ? (
+          <Button
+            size="lg"
+            className="flex-1 rounded-xl font-bold text-xs h-11 px-3 bg-muted text-foreground border border-border/80 flex items-center justify-center gap-1.5 cursor-pointer"
+            onClick={() => setIsWaitlistOpen(true)}
+          >
+            <BellRing className="size-3.5 text-primary shrink-0" />
+            <span>Avise-me quando chegar</span>
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            className="flex-1 rounded-xl font-bold text-xs h-11 px-4 bg-primary text-primary-foreground flex items-center justify-between cursor-pointer active:scale-98 transition-all shadow-sm"
+            onClick={handleAddToCart}
+            disabled={Boolean(isAdding)}
+          >
+            <span>
+              {isAdding
+                ? "Adicionando..."
+                : selectedVariant && selectedVariant.availableQty <= 0 && selectedVariant.allowBackorder
+                ? "Encomendar"
+                : "Adicionar"}
+            </span>
+            <span className="font-mono font-black text-xs">
+              {formatMoney((currentPriceCents || 0) * (quantity || 1))}
+            </span>
+          </Button>
         )}
- </div>
+      </div>
 
+      {/* Sheets & Modais */}
+      <SizeGuideSheet open={sizeGuideOpen} onOpenChange={setSizeGuideOpen} />
 
- {/* Disponibilidade — visível somente quando a loja optar por exibir estoque */}
- {product.showStockPublicly && allOutOfStock && (
- <Badge variant="destructive" className="w-fit text-xs font-bold py-1 px-3">
- Sem estoque disponível
- </Badge>
- )}
+      <TagFraudDialog
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        productId={product.id}
+        storeId={product.storeId || product.store_id || "store-default"}
+        productTitle={product.title}
+      />
 
+      <ProductWaitlistSheet
+        open={isWaitlistOpen}
+        onOpenChange={setIsWaitlistOpen}
+        product={{
+          id: product.id,
+          title: product.title,
+          storeId: product.storeId || product.store_id || "",
+          coverImageUrl: coverImage?.url || product.media?.[0]?.url,
+        }}
+        variant={selectedVariant}
+      />
+    </div>
+  );
 
- {/* Selectores de Atributos Customizados */}
- {attributeKeys.length > 0 && (
- <div className="space-y-5 border-t py-5">
- {attributeKeys.map((key: string) => {
- const values: string[] = Array.from(
- new Set(
- product.variants
- .map((v: VariantDTO) => v.attributes[key])
- .filter((val): val is string => typeof val === "string"),
- ),
- );
-
- const isColor = key.toLowerCase() === "cor" || key.toLowerCase() === "color";
- const isSize = key.toLowerCase() === "tamanho" || key.toLowerCase() === "size";
-
- return (
- <div key={key} className="space-y-2.5">
- <div className="flex justify-between items-center text-sm font-medium text-foreground">
- <span className="capitalize">
- {key}:{""}
- <span className="text-muted-foreground font-normal">
- {selectedAttributes[key]}
- </span>
- </span>
-
- {/* Guia de tamanhos link (apenas para moda/calçados, nunca para comida) */}
- {isSize && !isFoodOrPerishable && (
- <button
- type="button"
- onClick={() => setSizeGuideOpen(true)}
- className="text-xs text-primary hover:underline font-bold flex items-center gap-1"
- >
- <Info className="size-3.5" />
- Guia de tamanhos
- </button>
- )}
- </div>
-
- {/* Renderizador de Cores (Color Swatches) */}
- {isColor ? (
- <div className="flex flex-wrap gap-2.5">
- {values.map((val: string) => {
- const isSelected = selectedAttributes[key] === val;
- const colorHex = getColorHex(val);
- return (
- <button
- key={val}
- type="button"
- title={val}
- onClick={() =>
- setSelectedAttributes((prev) => ({ ...prev, [key]: val }))
- }
- className={`group relative w-8 h-8 rounded-full border transition-all duration-200 ${isSelected ? "ring-2 ring-primary ring-offset-2 border-primary scale-110" : "border-border/80 hover:scale-105"}`}
- style={{ backgroundColor: colorHex }}
- >
- {val.toLowerCase() === "branco" && (
- <span className="absolute inset-0 rounded-full border border-black/10" />
- )}
- <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block bg-black text-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap z-20">
- {val}
- </span>
- </button>
- );
- })}
- </div>
- ) : (
- /* Renderizador de Tamanhos ou Outros Atributos */
- <div className="flex flex-wrap gap-2">
- {values.map((val: string) => {
- const isSelected = selectedAttributes[key] === val;
-
- // Check if this specific option is in stock by finding the variant matching selectedAttributes but with this value
- const hypotheticVariant = product.variants.find((v: VariantDTO) => {
- const testAttrs = { ...selectedAttributes, [key]: val };
- return Object.entries(testAttrs).every(
- ([tk, tv]) => v.attributes[tk] === tv,
- );
- });
- const isOptionOutOfStock =
- hypotheticVariant && hypotheticVariant.availableQty <= 0;
-
- return (
- <button
- key={val}
- type="button"
- disabled={isOptionOutOfStock && !hypotheticVariant?.allowBackorder}
- onClick={() =>
- setSelectedAttributes((prev) => ({ ...prev, [key]: val }))
- }
- className={`min-h-10 border px-4 py-2.5 text-xs font-semibold tracking-wide transition-all duration-150 ${isSelected ? "border-primary bg-primary text-primary-foreground font-bold scale-[1.02]" : isOptionOutOfStock && !hypotheticVariant?.allowBackorder ? "border-dashed border-border/40 text-muted-foreground/40 bg-muted/20 cursor-not-allowed line-through opacity-50" : "border-border bg-card text-foreground hover:border-primary hover:text-primary"}`}
- >
- {val}
- </button>
- );
- })}
- </div>
- )}
- </div>
- );
- })}
- </div>
- )}
-
- {/* Configuração de Adicionais / Opções (Option Groups) */}
- {product.optionGroups && product.optionGroups.length > 0 && (
- <div className="space-y-5 pb-5">
- {product.optionGroups.map((og: any) => {
- const isMultiple = og.selectionType === "multiple";
- const selection = selectedOptions[og.id] || (isMultiple ? [] : "");
-
- // Helper para atualizar as seleções
- const handleOptionToggle = (valId: string) => {
- setSelectedOptions((prev) => {
- const current = prev[og.id];
- if (isMultiple) {
- const currentArray = Array.isArray(current) ? current : [];
- if (currentArray.includes(valId)) {
- return { ...prev, [og.id]: currentArray.filter((id) => id !== valId) };
- } else {
- // Respeita maxSelections
- if (og.maxSelections > 0 && currentArray.length >= og.maxSelections) {
- return prev;
- }
- return { ...prev, [og.id]: [...currentArray, valId] };
- }
- } else {
- // Radio / Single behavior
- if (current === valId && !og.isRequired) {
- return { ...prev, [og.id]: "" }; // Permite desmarcar se não for obrigatório
- }
- return { ...prev, [og.id]: valId };
- }
- });
- };
-
- return (
- <div key={og.id} className="space-y-3">
- <div className="flex justify-between items-end">
- <div>
- <p className="text-sm font-semibold text-foreground">{og.displayName}</p>
- {og.isRequired && (
- <p className="text-[10px] uppercase text-primary tracking-wider font-bold">
- Obrigatório
- </p>
- )}
- </div>
- <span className="text-xs text-muted-foreground font-medium">
- {isMultiple ? `Até ${og.maxSelections} opções` : "Escolha 1 opção"}
- </span>
- </div>
- <div className="flex flex-col gap-2.5">
- {og.values.map((val: any) => {
- const isSelected = isMultiple
- ? Array.isArray(selection) && selection.includes(val.id)
- : selection === val.id;
-
- return (
- <button
- key={val.id}
- type="button"
- onClick={() => handleOptionToggle(val.id)}
- className={cn(
- "flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer gap-3",
- isSelected
- ? "border-primary bg-primary/5 ring-1 ring-primary/40"
- : "border-border/70 bg-card hover:border-border hover:bg-muted/20"
- )}
- >
- <div className="flex items-center gap-3 min-w-0">
- {/* Foto do Adicional (iFood / AmoOfertas) */}
- {val.imageUrl && (
- <div className="size-12 rounded-xl overflow-hidden shrink-0 border border-border/60 bg-muted">
- <img
- src={val.imageUrl}
- alt={val.label}
- className="size-full object-cover"
- />
- </div>
- )}
-
- <div className="flex items-center gap-2.5 min-w-0">
- <div
- className={cn(
- "flex items-center justify-center border transition-all shrink-0",
- isMultiple ? "size-4 rounded-md" : "size-4 rounded-full",
- isSelected
- ? "bg-primary border-primary text-primary-foreground"
- : "border-muted-foreground/40 bg-background"
- )}
- >
- {isSelected && (
- isMultiple ? (
- <Check className="size-2.5 stroke-[3]" />
- ) : (
- <span className="size-1.5 bg-primary-foreground rounded-full" />
- )
- )}
- </div>
- <div className="min-w-0">
- <span className="text-xs font-bold text-foreground block truncate">
- {val.label}
- </span>
- {val.description && (
- <span className="text-[11px] text-muted-foreground block truncate">
- {val.description}
- </span>
- )}
- </div>
- </div>
- </div>
-
- {/* Preço do Adicional */}
- <div className="shrink-0 text-right">
- {val.priceModifierCents > 0 ? (
- <span className="text-xs font-bold text-foreground font-mono">
- +
- {(val.priceModifierCents / 100).toLocaleString("pt-BR", {
- style: "currency",
- currency: "BRL",
- })}
- </span>
- ) : (
- <span className="text-[11px] font-semibold text-muted-foreground">
- Incluso
- </span>
- )}
- </div>
- </button>
- );
- })}
- </div>
- </div>
- );
- })}
- </div>
- )}
-
- {/* Modalidades Reais de Envio e Localização do Estoque */}
- {isInternational ? (
- <div className="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20 text-xs space-y-1">
- <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
- <Info className="size-4 shrink-0" />
- <span>Produto com Envio Internacional</span>
- </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
- Item importado sujeito à fiscalização aduaneira e eventuais tributos federais e estaduais conforme legislação vigente.
- </p>
- </div>
- ) : storeLocation ? (
- <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-muted/40 text-xs font-semibold text-foreground">
- <MapPin className="size-4 text-primary shrink-0" />
- <span>Envio a partir de <strong>{storeLocation}</strong></span>
- </div>
- ) : null}
-
- {/* Simulação de Frete e Prazos Reais */}
- <Surface variant="default" padding="sm" className="space-y-4 rounded-2xl border border-border/40">
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-2 text-xs font-bold text-foreground">
- <Truck className="size-4 text-primary" />
- <span>Frete & Formas de Entrega</span>
- </div>
- {storeLocation && (
- <span className="text-[10px] text-muted-foreground font-mono">
- {storeLocation}
- </span>
- )}
- </div>
-
- <form onSubmit={handleCalculateShipping} className="flex gap-2">
- <Input
- placeholder="Digite seu CEP (Ex: 89801-000)"
- value={zipcode}
- onChange={(e) => setZipcode(e.target.value)}
- className="h-11 text-sm bg-muted/40 rounded-xl"
- />
- <Button
- type="submit"
- className="h-11 font-bold px-5 rounded-xl cursor-pointer shrink-0"
- disabled={loadingShipping}
- >
- {loadingShipping ? <Loader2 className="size-4 animate-spin" /> : "Calcular"}
- </Button>
- </form>
-
- {shippingRates !== null ? (
- shippingRates.length > 0 ? (
- <div className="space-y-2 pt-1">
- {shippingRates.map((rate, idx) => (
- <div
- key={rate.id || idx}
- className="flex justify-between items-center text-xs p-3 rounded-2xl border border-border/60 bg-muted/20"
- >
- <div>
- <p className="font-bold text-foreground">{rate.service_name || rate.name || rate.provider}</p>
- <p className="text-[10px] text-muted-foreground">
- {rate.provider ? `${rate.provider} • ` : ""}Prazo estimado: {rate.estimated_days} {rate.estimated_days === 1 ? "dia útil" : "dias úteis"}
- </p>
- </div>
- <span className="font-extrabold text-foreground">
- {rate.price_cents === 0 ? (
- <span className="text-emerald-600 dark:text-emerald-400 font-bold">Grátis</span>
- ) : (
- formatMoney(rate.price_cents)
- )}
- </span>
- </div>
- ))}
- </div>
- ) : (
- /* Estado Transparente: Sem Tabela de CEP Automatizada */
- <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 space-y-2.5 text-xs">
- <div className="flex items-start gap-2 text-foreground font-semibold">
- <Info className="size-4 text-primary shrink-0 mt-0.5" />
- <span>Frete sob Cotação Direta / A Combinar</span>
- </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
- Esta loja não possui tabela automatizada para o CEP informado. Você pode combinar a entrega diretamente com o vendedor ou solicitar retirada no local.
- </p>
- {storePhone && (
- <Button
- asChild
- variant="outline"
- className="w-full h-10 sm:h-11 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-background hover:bg-muted/50 border-border/80"
- >
- <a
- href={`https://wa.me/${storePhone.replace(/\D/g, "")}?text=${encodeURIComponent(
- `Olá! Gostaria de cotar o valor do frete para o produto "${product.title}" para o CEP ${zipcode}.`
- )}`}
- target="_blank"
- rel="noopener noreferrer"
- >
- <MessageCircle className="size-4 text-emerald-500" />
- <span>Solicitar Cotação no WhatsApp</span>
- </a>
- </Button>
- )}
- </div>
- )
- ) : (
- /* Política Real e Transparente da Loja */
- <div className="space-y-3 pt-1 text-xs">
- <div className="flex items-start gap-2.5">
- <Check className="size-4 text-primary shrink-0 mt-0.5" />
- <div>
- <p className="font-bold text-foreground">
- Entrega Direta & Retirada em Balcão
- </p>
- <p className="text-[10px] text-muted-foreground leading-normal">
- Métodos de entrega, taxas locais e opções de retirada calculados oficialmente no checkout ou combinados diretamente com o vendedor.
- </p>
- </div>
- </div>
- <div className="flex items-start gap-2.5 pt-1">
- <RotateCcw className="size-4 text-primary shrink-0 mt-0.5" />
- <p className="text-muted-foreground leading-normal text-[11px]">
- {isFoodOrPerishable
- ? "Garantia de preparo fresco e seguro. Entrega com controle térmico e higiene rigorosa para consumo imediato."
- : "Garantia de conformidade Waesy. Trocas ou devoluções em até 7 dias úteis após o recebimento conforme o CDC."}
- </p>
- </div>
- </div>
- )}
-
- {/* ── Loja Vendedora & Link Institucional Real ── */}
- <div className="p-4 rounded-2xl bg-card flex items-center justify-between gap-3 ">
- <div className="flex items-center gap-3 min-w-0">
- <div className="size-11 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center">
- {(product as any).store?.logo_url ? (
- <img src={(product as any).store.logo_url} alt={(product as any).store.name} className="size-full object-cover" />
- ) : (
- <span className="font-black text-xs text-primary">{(product as any).store?.name?.slice(0, 2).toUpperCase() || "LJ"}</span>
- )}
- </div>
- <div className="min-w-0">
- <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground font-mono">Vendido e entregue por</p>
- <Link
- to="/perfil-da-loja"
- search={{ storeId: product.store_id || (product as any).store?.id }}
- className="text-sm font-bold text-foreground hover:text-primary transition-colors truncate block"
- >
- {(product as any).store?.name || "Loja Parceira Waesy"}
- </Link>
- {(product as any).store?.city && (
- <p className="text-[11px] text-muted-foreground truncate">
- {(product as any).store.city} - {(product as any).store.state || "SC"}
- </p>
- )}
- </div>
- </div>
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold shrink-0">
- <Link to="/perfil-da-loja" search={{ storeId: product.store_id || (product as any).store?.id }}>
- Ver Loja
- </Link>
- </Button>
- </div>
-
- {/* Selos de Confiança & Botão de Denúncia de Ofertas */}
- <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 pt-3 text-[10px] text-muted-foreground font-semibold">
- <div className="flex items-center gap-3">
- <span className="flex items-center gap-1.5">
- <ShieldCheck className="size-3.5 text-success fill-success/10" />
- Pagamento Seguro
- </span>
- <span className="flex items-center gap-1.5">
- <ShieldCheck className="size-3.5 text-success fill-success/10" />
- Proteção Waesy
- </span>
- </div>
-
- <button
- type="button"
- onClick={() => setIsReportModalOpen(true)}
- className="flex items-center gap-1 text-muted-foreground/80 hover:text-destructive transition-colors text-[10px] font-medium cursor-pointer"
- title="Reportar divergência de preços, frete indevido ou promoção não cumprida"
- >
- <ShieldAlert className="size-3 text-destructive" />
- <span>Reportar oferta</span>
- </button>
- </div>
- </Surface>
-
- {/* Modal de Auditoria e Denúncia Anti-Fraude */}
- <TagFraudDialog
- isOpen={isReportModalOpen}
- onClose={() => setIsReportModalOpen(false)}
- productId={product.id}
- storeId={product.storeId || "store-default"}
- productTitle={product.title}
- />
-
- {/* Add to cart / Encomendar */}
- <div className="space-y-3">
- {(() => {
- const isBackorder =
- selectedVariant &&
- selectedVariant.availableQty <= 0 &&
- selectedVariant.allowBackorder;
- const variantHardBlocked =
- selectedVariant &&
- selectedVariant.availableQty <= 0 &&
- !selectedVariant.allowBackorder;
-
- if ((allOutOfStock || variantHardBlocked) && !isBackorder) {
- return (
- <div className="space-y-2">
- <Button
- type="button"
- size="lg"
- className="w-full font-bold text-xs sm:text-sm uppercase rounded-xl h-13 bg-muted text-foreground border border-border/80 hover:bg-muted/80 gap-2 cursor-pointer shadow-xs"
- onClick={() => setIsWaitlistOpen(true)}
- >
- <BellRing className="size-4 text-primary" />
- <span>Avise-me quando chegar (Lista de Espera)</span>
- </Button>
- <p className="text-[11px] text-muted-foreground text-center">
- Este item está esgotado. Deixe seu contato para ser avisado primeiro assim que reposto.
- </p>
- </div>
- );
- }
-
- return (
- <>
- <Button
- size="lg"
- className={`w-full font-bold text-base uppercase rounded-xl h-13 transition-all duration-200 border border-transparent ${isBackorder ? "bg-foreground text-background" : "bg-primary text-primary-foreground"}`}
- onClick={handleAddToCart}
- disabled={Boolean(isAdding)}
- >
- <ShoppingBag className="size-5 mr-2" aria-hidden />
- {isAdding
- ? "Adicionando..."
- : isBackorder
- ? "Encomendar"
- : "Adicionar ao carrinho"}
- </Button>
-
- {isBackorder &&
- selectedVariant.backorderLeadTimeDays != null &&
- selectedVariant.backorderLeadTimeDays > 0 && (
- <p className="text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded border border-dashed text-center">
- 🚚 Produto sob encomenda. Prazo adicional estimado:{""}
- <strong>{selectedVariant.backorderLeadTimeDays} dias úteis</strong> além do
- frete normal.
- </p>
- )}
-
- {isBackorder && !selectedVariant?.backorderLeadTimeDays && (
- <p className="text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded border border-dashed text-center">
- 🚚 Produto sob encomenda. Consulte-nos para confirmar o prazo.
- </p>
- )}
- </>
- );
- })()}
- </div>
-
- {/* Card"Sobre a Loja" */}
- <Surface variant="default" padding="sm" className="flex items-center justify-between">
- <div className="flex items-center gap-3">
- <div className="size-11 rounded bg-primary/10 flex items-center justify-center font-bold text-primary text-lg overflow-hidden border border-primary/20">
- {product.brand ? product.brand.substring(0, 2).toUpperCase() : "J"}
- </div>
- <div>
- <div className="flex items-center gap-1.5">
- <h3 className="font-bold text-sm text-foreground">{product.brand || "Waesy"}</h3>
- <Badge className="bg-primary/15 text-primary hover:bg-primary/20 text-[9px] px-1.5 py-0">
- Marca Oficial
- </Badge>
- </div>
- <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium mt-1">
- {reviewStats.total_reviews > 0 ? (
- <span>
- ★ {reviewStats.average_rating.toFixed(1)} ({reviewStats.total_reviews}
- {""}
- avaliações)
- </span>
- ) : (
- <span>Sem avaliações ainda</span>
- )}
- </div>
- </div>
- </div>
-
- <Button
- size="sm"
- variant={isFollowingStore ? "secondary" : "outline"}
- className="text-xs font-bold cursor-pointer"
- onClick={handleToggleFollow}
- >
- {isFollowingStore ? "Seguindo" : "+ Seguir"}
- </Button>
- </Surface>
-
- {/* Ficha Técnica Dinâmica (Product Type Attributes) */}
- {product.attributes && Object.keys(product.attributes).length > 0 && (
- <div className=" pt-5 space-y-3">
- <h2 className="text-sm font-bold text-muted-foreground">Ficha Técnica</h2>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
- {Object.entries(product.attributes).map(([key, value]) => {
- // Ignora campos vazios ou booleanos falsos da renderização visual
- if (value === null || value === "" || value === false) return null;
- return (
- <div
- key={key}
- className="flex flex-col text-sm pb-1.5"
- >
- <span className="text-muted-foreground capitalize text-[11px] font-bold tracking-wide">
- {key}
- </span>
- <span className="font-medium text-foreground text-sm">
- {value === true ? "Sim" : String(value)}
- </span>
- </div>
- );
- })}
- </div>
- </div>
- )}
- </div>
- </div>
-
- {/* Seção de Comentários e Avaliações Reais dos Clientes */}
- <div className=" bg-secondary py-16 text-foreground">
- <div className="mx-auto max-w-screen-xl px-4 md:px-6">
- <div className="grid gap-10 md:grid-cols-12">
- {/* Esquerda: Média Geral das Notas & Selo de Integridade */}
- <div className="md:col-span-4 space-y-6 text-left">
- <h2 className="text-3xl sm:text-4xl font-zine font-bold uppercase tracking-tight flex items-center gap-2.5 text-foreground">
- <MessageCircle className="size-7 sm:size-8 text-primary" strokeWidth={2.5} />
- Avaliações
- </h2>
-
- <div className="flex items-baseline gap-2 bg-card rounded-2xl p-4 ">
- <span className="text-5xl font-zine font-bold text-foreground">
- {reviewStats.average_rating > 0 ? reviewStats.average_rating.toFixed(1) : "5.0"}
- </span>
- <span className="text-lg font-bold text-muted-foreground">/ 5.0</span>
- </div>
-
- <div className="flex items-center gap-1">
- {[1, 2, 3, 4, 5].map((star) => (
- <Star
- key={star}
- strokeWidth={star <= Math.round(reviewStats.average_rating || 5) ? 2 : 1.5}
- className={`size-5 ${
- star <= Math.round(reviewStats.average_rating || 5)
- ? "fill-amber-400 text-amber-500"
- : "text-border"
- }`}
- />
- ))}
- </div>
-
- <p className="text-xs text-muted-foreground font-medium max-w-xs leading-relaxed">
- Baseado em <strong className="text-foreground font-bold">{reviewStats.total_reviews}</strong>{" "}
- {reviewStats.total_reviews === 1 ? "avaliação" : "avaliações"} de compradores reais.
- </p>
-
- {/* Selo de Confiabilidade & Informação de Compra Verificada */}
- <div className=" p-4.5 rounded-2xl bg-card space-y-3 ">
- <div className="flex items-center gap-2 text-foreground">
- <ShieldCheck className="size-5 text-success shrink-0" />
- <h3 className="font-bold text-xs">
- Avaliações 100% Verificadas
- </h3>
- </div>
- <p className="text-[11px] text-muted-foreground leading-relaxed">
- Para garantir total integridade e evitar avaliações fraudulentas, somente clientes com compra entregue podem avaliar este produto diretamente pelo histórico de pedidos.
- </p>
- <div className="pt-2 ">
- <Button
- asChild
- variant="outline"
- size="sm"
- className="w-full text-xs font-bold rounded-xl h-8.5 border-border hover:bg-muted"
- >
- <Link to="/conta/pedidos">
- Ver Meus Pedidos
- </Link>
- </Button>
- </div>
- </div>
- </div>
-
- {/* Direita: Lista de Comentários */}
- <div className="md:col-span-8 flex flex-col gap-6 mt-8 md:mt-0">
- {reviewsList.length === 0 ? (
- <div className="p-10 border-0 bg-background flex flex-col items-center justify-center text-center gap-4">
- <MessageCircle className="size-12 text-foreground/40" />
- <div>
- <h4 className="font-semibold text-2xl font-black">Nenhuma avaliação ainda</h4>
- <p className="text-sm text-foreground/70 max-w-sm mt-2 font-medium">
- Seja o primeiro a compartilhar o que você achou deste produto.
- </p>
- </div>
- </div>
- ) : (
- reviewsList.map((review: any) => (
- <div key={review.id} className=" bg-background p-5 space-y-3">
- <div className="flex items-center justify-between pb-3 mb-2">
- <div className="flex items-center gap-3">
- <div className="size-10 rounded-xl bg-secondary flex items-center justify-center text-foreground font-black text-sm uppercase">
- {review.userName.substring(0, 2)}
- </div>
- <div>
- <p className="text-base font-bold text-foreground flex items-center gap-2">
- {review.userName}
- <span className="bg-success text-white text-[10px] uppercase font-black tracking-wider px-2 py-0.5 ">
- Verificado
- </span>
- </p>
- <p className="text-xs text-foreground/60 font-mono mt-0.5 font-bold">
- {formatDate(review.createdAt)}
- </p>
- </div>
- </div>
- <div className="flex items-center gap-1">
- {[1, 2, 3, 4, 5].map((star) => (
- <Star
- key={star}
- strokeWidth={star <= review.rating ? 2 : 1.5}
- className={`size-5 ${star <= review.rating ? "fill-poster-red text-primary" : "text-foreground/20"}`}
- />
- ))}
- </div>
- </div>
- {review.comment && (
- <p className="text-base font-medium text-foreground leading-relaxed">
- "{review.comment}"
- </p>
- )}
- </div>
- ))
- )}
- </div>
- </div>
- </div>
- </div>
-
- <SizeGuideSheet open={sizeGuideOpen} onOpenChange={setSizeGuideOpen} />
-
- {/* ZONA DO BUILDER: Seções Complementares (Sem duplicação de título/descrição já renderizados) */}
- {(() => {
- const filteredNodes = (templateTree || []).filter((n: any) => {
- const type = (n?.type || n?.component || n?.name || "").toLowerCase();
- return !type.includes("description") && !type.includes("descrição") && !type.includes("product-info") && !type.includes("header");
- });
- if (!filteredNodes.length) return null;
- return (
- <div className="w-full bg-card rounded-2xl overflow-hidden mt-8">
- <ExperienceRenderer nodes={filteredNodes} transientData={{ product }} />
- </div>
- );
- })()}
-
- {/* ── Mobile Sticky Buy Bar (Padrão iFood / E-commerce Fluido) ── */}
- <div className="md:hidden fixed bottom-16 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border/60 shadow-lg px-3 py-2.5 flex items-center justify-between gap-3 select-none">
- {/* Contador de Quantidade [- 1 +] */}
- <div className="flex items-center rounded-xl bg-secondary h-11 px-1 shrink-0">
- <button
- type="button"
- onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
- className="size-8 flex items-center justify-center font-black text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
- aria-label="Diminuir quantidade"
- >
- -
- </button>
- <span className="w-7 text-center font-bold text-xs text-foreground font-mono">
- {quantity}
- </span>
- <button
- type="button"
- onClick={() => setQuantity((prev) => prev + 1)}
- className="size-8 flex items-center justify-center font-black text-sm text-foreground hover:bg-muted rounded-lg active:scale-90 transition-all cursor-pointer"
- aria-label="Aumentar quantidade"
- >
- +
- </button>
- </div>
-
- {/* Botão de Ação com Preço Total Multiplicado */}
- {Boolean(allOutOfStock) || Boolean(selectedVariant && selectedVariant.availableQty <= 0 && !selectedVariant.allowBackorder) ? (
- <Button
- size="lg"
- className="flex-1 rounded-xl font-bold text-xs h-11 px-3 bg-muted text-foreground border border-border/80 flex items-center justify-center gap-1.5 cursor-pointer"
- onClick={() => setIsWaitlistOpen(true)}
- >
- <BellRing className="size-3.5 text-primary shrink-0" />
- <span>Avise-me quando chegar</span>
- </Button>
- ) : (
- <Button
- size="lg"
- className="flex-1 rounded-xl font-bold text-xs h-11 px-4 bg-primary text-primary-foreground flex items-center justify-between cursor-pointer active:scale-98 transition-all"
- onClick={handleAddToCart}
- disabled={Boolean(isAdding)}
- >
- <span>
- {isAdding
- ? "Adicionando..."
- : selectedVariant && selectedVariant.availableQty <= 0 && selectedVariant.allowBackorder
- ? "Encomendar"
- : "Adicionar"}
- </span>
- <span className="font-mono font-black text-xs">
- {formatMoney(currentPriceCents * (quantity || 1))}
- </span>
- </Button>
- )}
- </div>
-
- {/* Sheet de Entrada na Lista de Espera */}
- <ProductWaitlistSheet
- open={isWaitlistOpen}
- onOpenChange={setIsWaitlistOpen}
- product={{
- id: product.id,
- title: product.title,
- storeId: product.storeId || product.store_id || "",
- coverImageUrl: coverImage?.url || product.media?.[0]?.url,
- }}
- variant={selectedVariant}
- />
- </div>
- );
 }

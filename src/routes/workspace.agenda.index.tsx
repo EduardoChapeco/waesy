@@ -12,7 +12,15 @@ import {
  DollarSign,
  Users,
  MessageCircle,
+ Smartphone,
 } from "lucide-react";
+import {
+ Dialog,
+ DialogContent,
+ DialogHeader,
+ DialogTitle,
+} from "@/components/ui/dialog";
+import { DigitalCompanionCard } from "@/components/documents/digital-companion-card";
 import { format, addDays, subDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState, useMemo } from "react";
@@ -131,6 +139,65 @@ function AdminAppointmentsPage() {
  const queryClient = useQueryClient();
  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
  const [selectedAppt, setSelectedAppt] = useState<{ id: string; name: string } | null>(null);
+ const [companionCardOpen, setCompanionCardOpen] = useState(false);
+ const [companionData, setCompanionData] = useState<any>(null);
+
+ const handleOpenCompanion = (appt: any, resourceName: string) => {
+ const serviceTitle = appt.booking_services?.title || "Atendimento";
+ const dateFormatted = format(new Date(appt.scheduled_at), "dd/MM/yyyy 'às' HH:mm");
+ const duration = `${appt.duration_minutes || 60} minutos`;
+ const priceFormatted = appt.booking_services?.price_cents ? formatMoney(appt.booking_services.price_cents) : "Sob consulta";
+
+ setCompanionData({
+ niche: "service" as const,
+ title: serviceTitle,
+ subtitle: `Profissional / Especialista: ${resourceName}`,
+ code: `AGE-${(appt.id || "").slice(0, 6).toUpperCase()}`,
+ companyName: appt.store?.name || "Espaço de Atendimento",
+ companyLogoUrl: appt.store?.logo_url,
+ participantsLabel: "Cliente",
+ participants: [appt.guest_name || "Cliente"],
+ sections: [
+ {
+ type: "service_item" as const,
+ title: "Detalhes do Horário Confirmado",
+ badge: appt.status === "confirmed" ? "Confirmado" : "Pendente",
+ details: [
+ { label: "Data e Horário", value: dateFormatted, highlight: true },
+ { label: "Duração Estimada", value: duration },
+ { label: "Valor do Serviço", value: priceFormatted },
+ ...(appt.session_number ? [{ label: "Sessão do Pacote", value: `#${appt.session_number}` }] : []),
+ ],
+ },
+ ],
+ rules: [
+ {
+ title: "Tolerância & Chegada",
+ description: "Recomendamos chegar com 10 minutos de antecedência. A tolerância máxima para atrasos é de 15 minutos.",
+ highlight: true,
+ },
+ {
+ title: "Reagendamento ou Cancelamento",
+ description: "Caso precise remarcar, avise com no mínimo 24h de antecedência para liberar a vaga a outros clientes.",
+ },
+ ...(appt.booking_services?.preparation_notes ? [{
+ title: "Orientações Pré-Atendimento",
+ description: appt.booking_services.preparation_notes,
+ }] : []),
+ ],
+ emergencyContacts: [
+ {
+ name: appt.store?.name || "Recepção / Atendimento",
+ category: "Agendamentos & Recepção",
+ phone: appt.store?.phone || appt.guest_phone || "(49) 99999-9999",
+ whatsapp: true,
+ is24h: false,
+ },
+ ],
+ customWhatsAppText: `Olá, *${appt.guest_name || "Cliente"}*! Confirmamos seu agendamento de *${serviceTitle}* para *${dateFormatted}* com *${resourceName}*.\n\nLocal: ${appt.store?.name || "Nosso Espaço"}\nDuração: ${duration}\n\nQualquer dúvida ou necessidade de ajuste de horário, estamos à disposição! ✨`,
+ });
+ setCompanionCardOpen(true);
+ };
 
  const { data: appointmentsRes, isLoading } = useQuery({
  queryKey: ["admin-appointments"],
@@ -434,6 +501,15 @@ function AdminAppointmentsPage() {
  <Button
  variant="ghost"
  size="icon"
+ className="size-7 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+ title="Abrir Cartão Digital 9:16 (WhatsApp)"
+ onClick={() => handleOpenCompanion(appt, resourceName)}
+ >
+ <Smartphone className="size-3.5" />
+ </Button>
+ <Button
+ variant="ghost"
+ size="icon"
  className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
  title="Ver Prontuário / Evolução"
  onClick={() =>
@@ -513,6 +589,23 @@ function AdminAppointmentsPage() {
  onClose={() => setSelectedAppt(null)}
  guestName={selectedAppt?.name || "Cliente"}
  />
+
+ {/* Modal do Cartão Digital 9:16 */}
+ <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
+ <DialogContent className="max-w-md p-0 overflow-hidden border-border bg-card rounded-2xl sm:max-w-lg">
+ <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
+ <DialogTitle className="text-sm font-bold flex items-center gap-2">
+ <Smartphone className="size-4 text-emerald-600" />
+ Cartão Digital de Atendimento 9:16 (WhatsApp)
+ </DialogTitle>
+ </DialogHeader>
+ <div className="p-4 max-h-[85vh] overflow-y-auto no-scrollbar flex justify-center">
+ {companionData && (
+ <DigitalCompanionCard {...companionData} />
+ )}
+ </div>
+ </DialogContent>
+ </Dialog>
  </div>
  );
 }

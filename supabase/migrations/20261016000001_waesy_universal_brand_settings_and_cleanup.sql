@@ -126,7 +126,7 @@ BEGIN
 END $$;
 
 -- 3. UNIFICAR ORGANIZAÇÃO E LOJA MATRIZ NO BANCO DE DADOS
-DO $$
+/* DO $$
 BEGIN
   -- Reatribuir lojas vinculadas a waesy-org para a organização raiz oficial
   UPDATE public.stores
@@ -155,7 +155,7 @@ BEGIN
   UPDATE public.profiles
   SET full_name = 'Administrador Waesy'
   WHERE full_name IN ('Admin Waesy', 'Admin Waesy') OR id = '7b55d8f4-0992-4def-85ae-e79add99bc6b';
-END $$;
+END $$; */
 
 -- 4. ATUALIZAR TERMOS LEGAIS E POLÍTICAS PARA WAESY
 DO $$

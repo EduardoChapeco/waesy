@@ -73,6 +73,8 @@ export interface EscamasSlide {
   isLoading?: boolean;
 }
 
+export type EscamasAspectRatio = 'portrait_4_5' | 'story_9_16' | 'square_1_1' | 'landscape_16_9';
+
 export interface EscamasCarouselProject {
   id: string;
   topic: string;
@@ -84,6 +86,7 @@ export interface EscamasCarouselProject {
   createdAt: number;
   visualStyle: string;
   generationMode: 'ai_full' | 'manual_upload' | 'escamas';
+  aspectRatio?: EscamasAspectRatio;
   source_type?: 'mined_news' | 'pncp_bid' | 'job_post' | 'event' | 'catalog_product' | 'custom';
   source_id?: string;
 }

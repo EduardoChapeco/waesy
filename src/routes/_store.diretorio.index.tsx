@@ -107,9 +107,9 @@ function DirectoryPage() {
  .slice(0, 6);
  }, [filteredListings]);
 
- return (
- <div className="w-full space-y-6 pb-20">
- {/* ── 1. Banners Hero de Topo ── */}
+  return (
+    <div className="w-full space-y-3.5 sm:space-y-4 pb-14">
+      {/* ── 1. Banners Hero de Topo ── */}
  {banners && banners.length > 0 && (
  <BannerHeroCarousel banners={banners} className="w-full" />
  )}
@@ -139,9 +139,9 @@ function DirectoryPage() {
 
  {/* ── 4. Renderização Conforme o Modo de Visualização ── */}
 
- {/* MODE 1: FEED / TIMELINE DE EMPRESAS COM TRILHOS TEMÁTICOS CANÔNICOS */}
- {viewMode === "feed" && (
- <div className="space-y-8">
+  {/* MODE 1: FEED / TIMELINE DE EMPRESAS COM TRILHOS TEMÁTICOS CANÔNICOS */}
+  {viewMode === "feed" && (
+    <div className="space-y-4 sm:space-y-5">
  {/* Trilho de Empresas em Destaque (Mais Bem Avaliadas / Verificadas) */}
  {topRatedListings.length > 0 && (
  <HorizontalRail
@@ -178,8 +178,8 @@ function DirectoryPage() {
  </HorizontalRail>
  ))}
 
- {/* Seção Geral: Todas as Empresas da Região */}
- <div className="space-y-4 pt-4 border-t border-border/40">
+  {/* Seção Geral: Todas as Empresas da Região */}
+  <div className="space-y-3 pt-3 border-t border-border/40">
  <div className="flex items-center justify-between">
  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
  <Storefront size={18} weight="bold" className="text-primary" />

@@ -96,6 +96,7 @@ export interface EditorialShowcaseViewProps {
   onOpenBookingModal?: (selectedDeparture?: DepartureOption) => void;
   onOpenProposalModal?: () => void;
   onEditClassified?: () => void;
+  onOpenCompanionCard?: () => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,6 +116,7 @@ export function EditorialShowcaseView({
   onOpenBookingModal,
   onOpenProposalModal,
   onEditClassified,
+  onOpenCompanionCard,
 }: EditorialShowcaseViewProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"grid" | "resort" | "itinerary" | "explore">("grid");
@@ -230,7 +232,9 @@ export function EditorialShowcaseView({
     attrs.destination ||
     flightDetails?.arrival_city ||
     flightDetails?.destination ||
-    "";
+    classified?.city ||
+    (classified?.location_name ? classified.location_name.split("—")[0].trim().split("-")[0].trim() : "") ||
+    "Chapecó";
 
   // ── Estatísticas do Topo (Polimórficas por Nicho) ──────────────────────────
   const getHeaderStats = () => {
@@ -519,6 +523,18 @@ export function EditorialShowcaseView({
             </button>
           )}
 
+          {onOpenCompanionCard && (
+            <button
+              type="button"
+              onClick={onOpenCompanionCard}
+              className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              title="Guia Digital 9:16 (WhatsApp)"
+              aria-label="Guia Digital 9:16"
+            >
+              <Smartphone className="size-4.5" />
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleShare}
@@ -585,6 +601,19 @@ export function EditorialShowcaseView({
                 <span>Editar Anúncio</span>
               </Button>
             )}
+            {onOpenCompanionCard && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onOpenCompanionCard}
+                className="h-8 gap-1.5 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer shadow-2xs"
+                title="Guia Digital 9:16 e mensagem para WhatsApp"
+              >
+                <Smartphone className="size-3.5" />
+                <span>Guia 9:16</span>
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
@@ -605,6 +634,23 @@ export function EditorialShowcaseView({
             )}
           </div>
         </div>
+
+        {/* ── Banner de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
+        {isOwner && (
+          <div className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs shadow-2xs">
+            <span className="font-semibold flex items-center gap-2">
+              <span className="text-base">👑</span>
+              <span>Você é o anunciante desta publicação (Modo Proprietário ativo)</span>
+            </span>
+            <button
+              type="button"
+              onClick={handleEditClick}
+              className="font-bold underline hover:opacity-80 cursor-pointer text-xs shrink-0"
+            >
+              Editar Detalhes
+            </button>
+          </div>
+        )}
 
         {/* ── Grid Principal Responsiva (Desktop 2 Colunas Estilo Mercado Livre / Airbnb) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -893,6 +939,67 @@ export function EditorialShowcaseView({
               </div>
 
               {/* Especificações por Nicho */}
+
+              {/* Pacote de Viagem & Turismo (Paridade CMS ↔ Vitrine - Regra 19) */}
+              {(nicheId.includes("viag") || nicheId.includes("travel") || nicheId.includes("tour") || classified?.category === "travel") && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/30 space-y-3.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                      <Compass className="size-3.5 text-primary" />
+                      <span>Diferenciais & Inclusões do Pacote</span>
+                    </h4>
+                    {attrs.duration_text && (
+                      <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                        {attrs.duration_text}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 text-muted-foreground">
+                    <div>Regime: <strong className="text-foreground">{attrs.meal_plan || "Consulte"}</strong></div>
+                    <div>Transporte: <strong className="text-foreground">{transportType === "bus" ? "Ônibus Leito / Terrestre" : transportType === "cruise" ? "Cruzeiro Marítimo" : "Aéreo"}</strong></div>
+                    <div>Saída: <strong className="text-foreground">{attrs.departure_date ? formatDate(attrs.departure_date) : attrs.dates_text || "A combinar"}</strong></div>
+                    <div>Retorno: <strong className="text-foreground">{attrs.return_date ? formatDate(attrs.return_date) : "Conforme roteiro"}</strong></div>
+                    <div>Vagas / Grupo: <strong className="text-foreground">{attrs.guests_text || "Grupo Confirmado"}</strong></div>
+                    <div>Cancelamento: <strong className="text-foreground capitalize">{cancellationPolicy === "flexible" ? "Flexível" : cancellationPolicy === "moderate" ? "Moderado" : "Especial de Grupo"}</strong></div>
+                  </div>
+
+                  {/* Bullets / Itens Inclusos (bio_bullets ou inclusions) */}
+                  {(bioBullets.length > 0 || (Array.isArray(attrs.inclusions) && attrs.inclusions.length > 0)) && (
+                    <div className="pt-2.5 border-t border-border/30 space-y-2">
+                      <span className="font-bold text-foreground block text-xs">
+                        O que está incluso neste pacote:
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {(bioBullets.length > 0 ? bioBullets : attrs.inclusions).map((item: string, i: number) => (
+                          <div key={i} className="flex items-start gap-2 p-2 rounded-xl bg-background/60 border border-border/30">
+                            <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                            <span className="text-xs text-foreground/90 font-medium leading-tight">{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Exclusões (se cadastradas) */}
+                  {Array.isArray(attrs.exclusions) && attrs.exclusions.length > 0 && (
+                    <div className="pt-2 border-t border-border/30 space-y-1.5">
+                      <span className="font-bold text-muted-foreground block text-[11px] uppercase tracking-wider">
+                        Não incluso:
+                      </span>
+                      <ul className="space-y-1">
+                        {attrs.exclusions.map((item: string, i: number) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            <span className="text-destructive font-bold">✕</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {nicheId.includes("hosped") && (
                 <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between">
@@ -1194,19 +1301,19 @@ export function EditorialShowcaseView({
           {activeTab === "itinerary" && (
             <div className="pt-4 space-y-4">
               {itineraryDays.length > 0 ? (
-                <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-border">
+                <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-[2px] before:bg-border/80">
                     {itineraryDays.map((item: any, idx: number) => (
-                    <div key={idx} className="relative space-y-2.5">
-                      <div className="absolute -left-6 top-0.5 size-5 rounded-full bg-background border-2 border-foreground flex items-center justify-center text-[10px] font-bold text-foreground">
+                    <div key={idx} className="relative space-y-3">
+                      <div className="absolute -left-7 top-0.5 size-7 rounded-full bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground shadow-xs">
                         {item.day_number || idx + 1}
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         <div className="flex items-center justify-between gap-2">
-                          <h4 className="font-bold text-xs sm:text-sm text-foreground tracking-tight">
+                          <h4 className="font-bold text-sm sm:text-base text-foreground tracking-tight">
                             {item.title || `Dia ${item.day_number || idx + 1}`}
                           </h4>
                           {item.date && (
-                            <span className="text-[11px] font-medium text-muted-foreground shrink-0">
+                            <span className="text-xs font-mono font-medium text-muted-foreground shrink-0 bg-muted/60 px-2 py-0.5 rounded-md">
                               {item.date}
                             </span>
                           )}
@@ -1218,43 +1325,43 @@ export function EditorialShowcaseView({
                             : item.image ? [item.image] : [];
                           if (imgs.length === 0) return null;
                           return (
-                            <div className={cn("gap-1.5 pt-0.5", imgs.length === 1 ? "block" : "grid grid-cols-2")}>
+                            <div className={cn("gap-2 pt-0.5", imgs.length === 1 ? "block" : "grid grid-cols-2")}>
                               {imgs.map((src: string, imgIdx: number) => (
-                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-28 object-cover rounded-xl border border-border/30" loading="lazy" />
+                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-32 sm:h-36 object-cover rounded-xl border border-border/40 shadow-2xs" loading="lazy" />
                               ))}
                             </div>
                           );
                         })()}
                         {item.description && (
-                          <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                          <p className="text-sm sm:text-base text-foreground/90 leading-relaxed font-normal">{item.description}</p>
                         )}
                         {/* Refeições Incluídas */}
                         {Array.isArray(item.meals_included) && item.meals_included.length > 0 && (
-                          <div className="flex gap-1.5 flex-wrap">
+                          <div className="flex gap-1.5 flex-wrap pt-0.5">
                             {item.meals_included.map((m: string) => (
-                              <span key={m} className="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 text-amber-700 dark:text-amber-400 font-medium">
-                                {m === "breakfast" ? "☕ Café" : m === "lunch" ? "🍽️ Almoço" : "🌙 Jantar"}
+                              <span key={m} className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+                                {m === "breakfast" ? "☕ Café da Manhã" : m === "lunch" ? "🍽️ Almoço" : "🌙 Jantar"}
                               </span>
                             ))}
                           </div>
                         )}
                         {/* Hotel/Pousada */}
                         {item.hotel_name && (
-                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                            🛏️ <span className="font-medium text-foreground">{item.hotel_name}</span>
+                          <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
+                            🛏️ <span className="font-semibold text-foreground">{item.hotel_name}</span>
                           </p>
                         )}
                         {/* Transporte do Dia */}
                         {item.transport && (
-                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                            🚌 {item.transport}
+                          <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
+                            🚌 <span className="font-medium">{item.transport}</span>
                           </p>
                         )}
                         {/* Atividades / Tags */}
                         {Array.isArray(item.activities) && item.activities.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
                             {item.activities.map((act: string, ai: number) => (
-                              <span key={ai} className="text-[10px] px-2 py-0.5 rounded-full bg-muted border border-border/40 text-muted-foreground">
+                              <span key={ai} className="text-xs px-2.5 py-0.5 rounded-lg bg-muted border border-border/50 text-foreground/80 font-medium">
                                 {act}
                               </span>
                             ))}
@@ -1632,50 +1739,53 @@ export function EditorialShowcaseView({
                   {/* ── TERRESTRE / EXCURSÃO ── */}
                   {transportType === "bus" && (
                     <>
-                      <div className="flex items-center gap-2">
-                        <div className="size-8 rounded-xl bg-foreground text-background flex items-center justify-center">
-                          <Bus className="size-4" />
+                      <div className="flex items-center gap-3">
+                        <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0 shadow-xs">
+                          <Bus className="size-4.5" />
                         </div>
-                        <div>
-                          <h4 className="font-bold text-xs text-foreground">Excursão Terrestre</h4>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-bold text-sm text-foreground">Excursão Terrestre</h4>
                           {flightDetails.duration_text && (
-                            <p className="text-[11px] text-muted-foreground">{flightDetails.duration_text}</p>
+                            <p className="text-xs text-muted-foreground">{flightDetails.duration_text}</p>
                           )}
                         </div>
                         {(() => {
                           const cat = CANONICAL_BUS_CATEGORIES.find(b => b.id === flightDetails.bus_category);
                           return cat ? (
-                            <Badge variant="outline" className="ml-auto text-[10px] font-semibold">{cat.label}</Badge>
+                            <Badge variant="outline" className="ml-auto text-xs font-semibold px-2.5 py-0.5">{cat.label}</Badge>
                           ) : null;
                         })()}
                       </div>
                       {flightDetails.bus_company && (
-                        <p className="text-[11px] text-muted-foreground">{flightDetails.bus_company}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                          <span>Operador / Frota:</span>
+                          <span className="text-foreground font-semibold">{flightDetails.bus_company}</span>
+                        </p>
                       )}
                       {flightDetails.meeting_point && (
-                        <div className="flex items-start gap-2 p-2.5 rounded-xl bg-background border border-border/50">
-                          <MapPin className="size-3.5 text-primary mt-0.5 shrink-0" />
-                          <div>
-                            <p className="text-[11px] font-bold text-foreground">Ponto de Encontro</p>
-                            <p className="text-[11px] text-muted-foreground leading-relaxed">{flightDetails.meeting_point}</p>
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-background border border-border/70 shadow-2xs">
+                          <MapPin className="size-4 text-primary mt-0.5 shrink-0" />
+                          <div className="space-y-0.5">
+                            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ponto de Encontro</p>
+                            <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-medium">{flightDetails.meeting_point}</p>
                           </div>
                         </div>
                       )}
                       {flightDetails.departure_city && !flightDetails.meeting_point && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <MapPin className="size-3 shrink-0" /> Saída de: <span className="font-medium text-foreground">{flightDetails.departure_city}</span>
-                          {flightDetails.departure_time && <span className="font-mono">• {flightDetails.departure_time}</span>}
+                        <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
+                          <MapPin className="size-3.5 shrink-0 text-primary" /> Saída de: <span className="font-bold text-foreground">{flightDetails.departure_city}</span>
+                          {flightDetails.departure_time && <span className="font-mono font-bold text-primary">• {flightDetails.departure_time}</span>}
                         </p>
                       )}
                       {Array.isArray(flightDetails.boarding_gateways) && flightDetails.boarding_gateways.length > 0 && (
-                        <div>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                        <div className="space-y-1.5 pt-1">
+                          <p className="text-xs font-bold text-foreground uppercase tracking-wider">
                             Embarques na Rota
                           </p>
                           <div className="flex flex-wrap gap-1.5">
                             {flightDetails.boarding_gateways.map((gw: string, i: number) => (
-                              <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-medium text-primary">
-                                <Navigation className="size-2.5" />{gw}
+                              <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/25 text-xs font-semibold text-primary">
+                                <Navigation className="size-3 shrink-0" />{gw}
                               </span>
                             ))}
                           </div>
@@ -1684,13 +1794,14 @@ export function EditorialShowcaseView({
                       {flightDetails.guide_service && (() => {
                         const guide = CANONICAL_GUIDE_SERVICES.find(g => g.id === flightDetails.guide_service);
                         return guide ? (
-                          <div className="flex items-center gap-1.5 text-[11px]">
+                          <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/90 pt-0.5">
+                            <span className="text-muted-foreground">Acompanhamento:</span>
                             <span className="font-bold text-foreground">{guide.label}</span>
                           </div>
                         ) : null;
                       })()}
                       {flightDetails.return_departure_time && (
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground pt-0.5">
                           Retorno previsto: <span className="font-mono font-bold text-foreground">{flightDetails.return_departure_time}</span>
                         </p>
                       )}

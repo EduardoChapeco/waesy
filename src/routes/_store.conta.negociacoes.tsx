@@ -2,22 +2,23 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
- Handshake,
- MessageSquare,
- CheckCircle2,
- XCircle,
- Clock,
- ArrowRight,
- DollarSign,
- FileSignature,
- Loader2,
- Tag,
- User,
- ShieldAlert,
- Calendar,
- MapPin,
- ExternalLink,
- Users,
+  Handshake,
+  MessageSquare,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ArrowRight,
+  DollarSign,
+  FileSignature,
+  Loader2,
+  Tag,
+  User,
+  ShieldAlert,
+  Calendar,
+  MapPin,
+  ExternalLink,
+  Users,
+  Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +29,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DigitalCompanionCard,
+  type CompanionCardSectionItem,
+  type CompanionRuleItem,
+  type CompanionContactItem,
+  type CompanionCardNiche,
+} from "@/components/documents/digital-companion-card";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 
@@ -54,6 +68,7 @@ function NegociacoesPage() {
  const [counterMessage, setCounterMessage] = useState("");
  const [activeTab, setActiveTab] = useState<"all" | "bookings" | "deals">("all");
  const [generatingContractId, setGeneratingContractId] = useState<string | null>(null);
+ const [selectedCompanionDeal, setSelectedCompanionDeal] = useState<any | null>(null);
 
  const { data: deals, isLoading } = useQuery({
  queryKey: ["user-deals"],
@@ -461,6 +476,17 @@ function NegociacoesPage() {
  : "Gerar Contrato Digital"}
  </span>
  </Button>
+ <Button
+ type="button"
+ size="sm"
+ variant="outline"
+ onClick={() => setSelectedCompanionDeal(deal)}
+ className="rounded-xl text-xs font-bold shrink-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer shadow-2xs gap-1.5"
+ title="Visualizar Cartão Digital de Acompanhamento 9:16 e mensagem para WhatsApp"
+ >
+ <Smartphone className="size-3.5" />
+ <span>{isRental ? "Guia do Imóvel 9:16" : "Cartão 9:16"}</span>
+ </Button>
  </div>
  )}
  </div>
@@ -488,6 +514,149 @@ function NegociacoesPage() {
           </Button>
         </div>
       )}
+
+      {/* ── MODAL DIGITAL COMPANION CARD 9:16 (GUIA DO IMÓVEL / WHATSAPP) ── */}
+      <Dialog
+        open={Boolean(selectedCompanionDeal)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCompanionDeal(null);
+        }}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Guia Digital de Acompanhamento</DialogTitle>
+          </DialogHeader>
+          {selectedCompanionDeal && (
+            <div className="w-full">
+              <DigitalCompanionCard {...getDealCompanionData(selectedCompanionDeal)} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
  </div>
  );
+}
+
+function getDealCompanionData(deal: any) {
+  const isRental = deal.is_direct_booking || deal.deal_type === "rental" || deal.start_date;
+  const niche: CompanionCardNiche = isRental ? "real_estate" : "retail";
+
+  const title = deal.classified?.title || (isRental ? "Reserva de Imóvel" : "Comprovante de Negociação");
+  const subtitle = isRental
+    ? deal.start_date && deal.end_date
+      ? `${formatDate(deal.start_date).split(" ")[0]} até ${formatDate(deal.end_date).split(" ")[0]} (${deal.nights_count || 1} noites)`
+      : "Estadia / Temporada"
+    : `Total: ${formatMoney(deal.total_price_cents || deal.proposed_price_cents)}`;
+
+  const sections: CompanionCardSectionItem[] = [];
+
+  if (isRental) {
+    sections.push({
+      type: "hotel",
+      badge: "Hospedagem Confirmada",
+      title: deal.classified?.title || "Imóvel / Temporada",
+      subtitle: deal.classified?.location_name || "Endereço do Imóvel",
+      details: [
+        {
+          label: "Check-in",
+          value: deal.start_date ? formatDate(deal.start_date).split(" ")[0] : "A combinar",
+          highlight: true,
+        },
+        {
+          label: "Check-out",
+          value: deal.end_date ? formatDate(deal.end_date).split(" ")[0] : "A combinar",
+        },
+        {
+          label: "Hóspedes",
+          value: deal.guests_count ? `${deal.guests_count} pessoas` : "Conforme reserva",
+        },
+        {
+          label: "Valor Total",
+          value: formatMoney(deal.total_price_cents || deal.proposed_price_cents),
+        },
+      ],
+    });
+  } else {
+    sections.push({
+      type: "custom",
+      badge: "Acordo Comercial",
+      title: deal.classified?.title || "Item Negociado",
+      subtitle: `Valor: ${formatMoney(deal.total_price_cents || deal.proposed_price_cents)}`,
+      details: [
+        { label: "Comprador", value: deal.buyer?.full_name || "Comprador", highlight: true },
+        { label: "Vendedor", value: deal.seller?.full_name || "Vendedor" },
+        {
+          label: "Condições",
+          value: deal.installments_count > 1 ? `${deal.installments_count}x parcelas` : "Pagamento à vista",
+        },
+      ],
+    });
+  }
+
+  const rules: CompanionRuleItem[] = isRental
+    ? [
+        {
+          title: "Horários de Entrada & Saída",
+          description:
+            "Respeite o horário padrão de check-in (a partir das 14h) e check-out (até 11h) acordados com o anfitrião.",
+          badge: "Horários",
+          highlight: true,
+        },
+        {
+          title: "Normas de Convivência & Silêncio",
+          description:
+            "Respeite a lei do silêncio e o regulamento interno do condomínio/bairro a partir das 22h00.",
+          badge: "Condomínio",
+        },
+        {
+          title: "Chaves & Acesso",
+          description:
+            "Combine previamente com o anfitrião a entrega das chaves físicas ou senha da fechadura eletrônica.",
+          badge: "Chaves",
+        },
+      ]
+    : [
+        {
+          title: "Garantia e Conferência",
+          description:
+            "Confira o estado do produto ou prestação do serviço no momento da entrega ou retirada acordada.",
+          badge: "Conferência",
+          highlight: true,
+        },
+      ];
+
+  const emergencyContacts: CompanionContactItem[] = [
+    ...(deal.seller?.full_name
+      ? [
+          {
+            name: deal.seller.full_name,
+            category: isRental ? "Anfitrião do Imóvel" : "Vendedor / Anunciante",
+            phone: deal.seller.phone || "",
+            whatsapp: true,
+            is24h: false,
+          },
+        ]
+      : []),
+    {
+      name: "Central de Apoio Waesy",
+      category: "Suporte da Plataforma",
+      phone: "0800 000 0000",
+      whatsapp: true,
+      is24h: true,
+    },
+  ];
+
+  return {
+    niche,
+    title,
+    subtitle,
+    code: `NEG-${deal.id.slice(0, 8).toUpperCase()}`,
+    companyName: isRental ? deal.seller?.full_name || "Anfitrião" : "Waesy Negócios",
+    participantsLabel: isRental ? "Hóspedes" : "Partes",
+    participants: [deal.buyer?.full_name, deal.seller?.full_name].filter(Boolean),
+    sections,
+    rules,
+    emergencyContacts,
+    observations: deal.terms || undefined,
+  };
 }

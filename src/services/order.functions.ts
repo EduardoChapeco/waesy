@@ -4,6 +4,7 @@ import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getSSRClient, getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { requireAdmin } from "@/lib/server-access";
 import { emitOrderNFeAutomated } from "@/services/fiscal-nfe.functions";
+import { withDataPayload } from "@/services/cart-helpers";
 
 // ---------------------------------------------------------------------------
 // Order status enum (shared between validator and domain logic)
@@ -190,7 +191,7 @@ export const listOrders = createServerFn({ method: "GET" }).handler(async () => 
 });
 
 export const getOrderById = createServerFn({ method: "GET" })
- .validator(z.object({ orderId: z.string().uuid() }))
+ .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))
  .handler(async ({ data: { orderId } }) => {
  try {
  const identity = await getServerIdentity();
@@ -208,10 +209,12 @@ export const getOrderById = createServerFn({ method: "GET" })
 
 export const updateOrderStatus = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
- orderId: z.string().uuid(),
+ orderId: z.string().min(1),
  status: z.enum(ORDER_STATUS_VALUES),
  }),
+ ),
  )
  .handler(async ({ data: params }) => {
  try {
@@ -310,7 +313,7 @@ export const listCustomerOrders = createServerFn({ method: "GET" }).handler(asyn
 });
 
 export const getCustomerOrder = createServerFn({ method: "GET" })
- .validator(z.object({ orderId: z.string().uuid() }))
+ .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))
  .handler(async ({ data: { orderId } }) => {
  try {
  const ssrClient = await getSSRClient();
@@ -391,10 +394,12 @@ export const listOrdersAwaitingShippingQuote = createServerFn({ method: "GET" })
 
 export const updateOrderShippingQuote = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
- orderId: z.string().uuid(),
+ orderId: z.string().min(1),
  shippingCents: z.number().int().min(0),
  }),
+ ),
  )
  .handler(async ({ data: { orderId, shippingCents } }) => {
  try {
@@ -455,7 +460,7 @@ export const updateOrderShippingQuote = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 export const getOrderPaymentInstructions = createServerFn({ method: "GET" })
- .validator(z.object({ orderId: z.string().uuid() }))
+ .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))
  .handler(async ({ data: { orderId } }) => {
  try {
  const ssrClient = await getSSRClient();
@@ -499,7 +504,9 @@ export const getOrderPaymentInstructions = createServerFn({ method: "GET" })
  });
 export const requestOrderReturn = createServerFn({ method: "POST" })
  .validator(
- z.object({ orderId: z.string().uuid(), reason: z.string().min(5, "Motivo muito curto") }),
+ withDataPayload(
+ z.object({ orderId: z.string().min(1), reason: z.string().min(5, "Motivo muito curto") }),
+ ),
  )
  .handler(async ({ data: { orderId, reason } }) => {
  try {
@@ -550,13 +557,15 @@ export const requestOrderReturn = createServerFn({ method: "POST" })
 
 export const updateOrderShipment = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
- orderId: z.string().uuid(),
+ orderId: z.string().min(1),
  trackingCode: z.string().min(1, "Código de rastreamento é obrigatório"),
  carrierName: z.string().optional(),
  trackingUrl: z.string().optional(),
  newStatus: z.enum(["shipped", "delivered"]).optional(),
  }),
+ ),
  )
  .handler(async ({ data: { orderId, trackingCode, carrierName, trackingUrl, newStatus } }) => {
  try {
@@ -626,16 +635,18 @@ export const updateOrderShipment = createServerFn({ method: "POST" })
 
 export const editOrderItems = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
- orderId: z.string().uuid(),
+ orderId: z.string().min(1),
  newItems: z.array(
  z.object({
- variant_id: z.string().uuid(),
+ variant_id: z.string().min(1),
  product_title: z.string(),
  qty: z.number().int().min(1),
  }),
  ),
  }),
+ ),
  )
  .handler(async ({ data: { orderId, newItems } }) => {
  try {
@@ -673,7 +684,7 @@ export const editOrderItems = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 export const getOrderForReceipt = createServerFn({ method: "GET" })
- .validator(z.object({ id: z.string().uuid() }))
+ .validator(withDataPayload(z.object({ id: z.string().min(1) })))
  .handler(async ({ data: { id } }) => {
  try {
  const identity = await getServerIdentity();
@@ -704,7 +715,7 @@ export const getOrderForReceipt = createServerFn({ method: "GET" })
  });
 
 export const assignDriverToOrder = createServerFn({ method: "POST" })
- .validator(z.object({ orderId: z.string().uuid(), driverId: z.string().uuid() }))
+ .validator(withDataPayload(z.object({ orderId: z.string().min(1), driverId: z.string().min(1) })))
  .handler(async ({ data: { orderId, driverId } }) => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
@@ -735,11 +746,13 @@ export const assignDriverToOrder = createServerFn({ method: "POST" })
 
 export const respondToDispatch = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
- dispatchId: z.string().uuid(),
+ dispatchId: z.string().min(1),
  response: z.enum(["accepted", "rejected", "failed", "delivered"]),
  reason: z.string().optional(),
  }),
+ ),
  )
  .handler(async ({ data: { dispatchId, response, reason } }) => {
  const supabase = getServerClient();
@@ -772,10 +785,12 @@ export const respondToDispatch = createServerFn({ method: "POST" })
 
 export const closePdvComanda = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
- orderId: z.string().uuid(),
+ orderId: z.string().min(1),
  paymentMethod: z.enum(["cash", "pix", "card", "token"]),
  }),
+ ),
  )
  .handler(async ({ data: { orderId, paymentMethod } }) => {
  try {
@@ -971,10 +986,12 @@ export const getSalonTablesOverview = createServerFn({ method: "GET" })
 
 export const openTableComanda = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
  tableNumber: z.string().min(1),
  guestName: z.string().optional(),
  }),
+ ),
  )
  .handler(async ({ data: { tableNumber, guestName } }) => {
  const identity = await getServerIdentity();
@@ -1154,7 +1171,7 @@ export const getLiveOperationalDashboard = createServerFn({ method: "GET" }).han
 });
 
 export const requestTableBill = createServerFn({ method: "POST" })
- .validator(z.object({ tableNumber: z.string(), orderId: z.string().uuid().optional() }))
+ .validator(withDataPayload(z.object({ tableNumber: z.string(), orderId: z.string().optional() })))
  .handler(async ({ data }) => {
  const identity = await getServerIdentity().catch(() => null);
  const targetStoreId = identity?.store_id || null;
@@ -1182,13 +1199,14 @@ export const requestTableBill = createServerFn({ method: "POST" })
 
 export const addItemsToTableComanda = createServerFn({ method: "POST" })
  .validator(
+ withDataPayload(
  z.object({
  tableNumber: z.string().min(1),
- orderId: z.string().uuid().optional(),
+ orderId: z.string().optional(),
  items: z.array(
  z.object({
- productId: z.string().uuid(),
- variantId: z.string().uuid().optional().nullable(),
+ productId: z.string().min(1),
+ variantId: z.string().optional().nullable(),
  productTitle: z.string(),
  qty: z.number().int().positive().default(1),
  unitPriceCents: z.number().int().nonnegative(),
@@ -1198,6 +1216,7 @@ export const addItemsToTableComanda = createServerFn({ method: "POST" })
  }),
  ),
  }),
+ ),
  )
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();

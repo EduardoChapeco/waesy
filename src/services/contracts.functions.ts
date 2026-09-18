@@ -1414,4 +1414,104 @@ export const settleContractAndIssueDischarge = createServerFn({ method: "POST" }
     };
   });
 
+// ─── 9. BANCO CENTRALIZADO DE MODELOS DE CONTRATOS & MINUTAS JURÍDICAS ────────
+import {
+  ADVANCED_CONTRACT_TEMPLATES,
+  ContractTemplateDefinition,
+} from "@/lib/data/advanced-contract-templates";
+
+const listContractTemplatesSchema = z.object({
+  category: z.string().optional(),
+  query: z.string().optional().default(""),
+});
+
+export const listContractTemplates = createServerFn({ method: "GET" })
+  .validator((data: unknown) => listContractTemplatesSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { category, query } = data;
+    const cleanQuery = (query || "").trim().toLowerCase();
+
+    try {
+      const supabase = getServerClient();
+      let dbQuery = supabase.from("contract_templates").select("*");
+
+      if (category) {
+        dbQuery = dbQuery.eq("category", category);
+      }
+
+      if (cleanQuery) {
+        dbQuery = dbQuery.or(`title.ilike.%${cleanQuery}%,summary.ilike.%${cleanQuery}%`);
+      }
+
+      const { data: dbTemplates, error } = await dbQuery;
+
+      if (!error && dbTemplates && dbTemplates.length > 0) {
+        return {
+          templates: dbTemplates as ContractTemplateDefinition[],
+          source: "database" as const,
+        };
+      }
+    } catch {
+      // Fallback gracioso in-memory
+    }
+
+    let filtered = ADVANCED_CONTRACT_TEMPLATES;
+
+    if (category) {
+      filtered = filtered.filter((t) => t.category === category);
+    }
+
+    if (cleanQuery) {
+      filtered = filtered.filter(
+        (t) =>
+          t.title.toLowerCase().includes(cleanQuery) ||
+          t.summary.toLowerCase().includes(cleanQuery) ||
+          t.legal_framework.toLowerCase().includes(cleanQuery)
+      );
+    }
+
+    return {
+      templates: filtered,
+      source: "canonical_library" as const,
+    };
+  });
+
+const generateContractFromTemplateSchema = z.object({
+  templateId: z.string(),
+  variables: z.record(z.string()),
+});
+
+export const generateContractDocument = createServerFn({ method: "POST" })
+  .validator((data: unknown) => generateContractFromTemplateSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { templateId, variables } = data;
+
+    const template = ADVANCED_CONTRACT_TEMPLATES.find((t) => t.id === templateId);
+
+    if (!template) {
+      throw new Error(`Modelo de contrato ${templateId} não encontrado.`);
+    }
+
+    // Interpolação de variáveis em cada cláusula
+    const compiledClauses = template.clauses.map((clause) => {
+      let content = clause.content;
+      for (const [key, value] of Object.entries(variables)) {
+        const regex = new RegExp(`{{${key}}}`, "g");
+        content = content.replace(regex, value);
+      }
+      return {
+        ...clause,
+        content,
+      };
+    });
+
+    return {
+      title: template.title,
+      category: template.category,
+      legal_framework: template.legal_framework,
+      compiledClauses,
+      generatedAt: new Date().toISOString(),
+    };
+  });
+
 

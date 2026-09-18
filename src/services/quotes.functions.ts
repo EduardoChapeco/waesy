@@ -129,6 +129,13 @@ export interface QuoteMessageDTO {
  created_at: string;
 }
 
+function withDataPayload<T extends z.ZodTypeAny>(schema: T) {
+ return z.union([
+   schema,
+   z.object({ data: schema }).transform((val) => val.data as z.infer<T>),
+ ]);
+}
+
 // ============================================================
 // Server Functions
 // ============================================================
@@ -138,12 +145,14 @@ export interface QuoteMessageDTO {
  */
 export const listQuotes = createServerFn({ method: "GET" })
  .validator(
- z.object({
- status: quoteStatusEnum.optional(),
- search: z.string().optional(),
- limit: z.number().int().min(1).max(100).default(30),
- cursor: z.string().optional(),
- }),
+   withDataPayload(
+     z.object({
+      status: quoteStatusEnum.optional(),
+      search: z.string().optional(),
+      limit: z.number().int().min(1).max(100).default(30),
+      cursor: z.string().optional(),
+     }),
+   ),
  )
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
@@ -202,7 +211,7 @@ export const listQuotes = createServerFn({ method: "GET" })
  * Busca detalhe completo de um orçamento (com itens e mensagens).
  */
 export const getQuoteDetail = createServerFn({ method: "GET" })
- .validator(z.object({ quote_id: z.string().uuid() }))
+ .validator(withDataPayload(z.object({ quote_id: z.string().uuid() })))
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "finance"]);
@@ -239,7 +248,7 @@ export const getQuoteDetail = createServerFn({ method: "GET" })
  * Cria um orçamento com itens (transação atômica via RPC + inserts).
  */
 export const createQuote = createServerFn({ method: "POST" })
- .validator(createQuoteInputSchema)
+ .validator(withDataPayload(createQuoteInputSchema))
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
  assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
@@ -298,11 +307,13 @@ export const createQuote = createServerFn({ method: "POST" })
  */
 export const updateQuoteStatus = createServerFn({ method: "POST" })
  .validator(
- z.object({
- quote_id: z.string().uuid(),
- status: z.enum(["sent", "negotiating", "rejected"]),
- rejection_reason: z.string().optional(),
- }),
+   withDataPayload(
+     z.object({
+      quote_id: z.string().uuid(),
+      status: z.enum(["sent", "negotiating", "rejected"]),
+      rejection_reason: z.string().optional(),
+     }),
+   ),
  )
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
@@ -329,7 +340,7 @@ export const updateQuoteStatus = createServerFn({ method: "POST" })
  * Aprova o orçamento via RPC atômica (calcula snapshot financeiro).
  */
 export const approveQuote = createServerFn({ method: "POST" })
- .validator(z.object({ quote_id: z.string().uuid() }))
+ .validator(withDataPayload(z.object({ quote_id: z.string().uuid() })))
  .handler(async ({ data }) => {
  const db = getServerClient();
  const { data: result, error } = await db.rpc("approve_quote", {
@@ -344,11 +355,13 @@ export const approveQuote = createServerFn({ method: "POST" })
  */
 export const addQuoteMessage = createServerFn({ method: "POST" })
  .validator(
- z.object({
- quote_id: z.string().uuid(),
- body: z.string().min(1).max(2000),
- is_internal: z.boolean().default(false),
- }),
+   withDataPayload(
+     z.object({
+      quote_id: z.string().uuid(),
+      body: z.string().min(1).max(2000),
+      is_internal: z.boolean().default(false),
+     }),
+   ),
  )
  .handler(async ({ data }) => {
  const identity = await getServerIdentity();
@@ -387,7 +400,7 @@ export type PublicQuoteRequestInput = z.infer<typeof publicQuoteRequestSchema>;
  * Grava na tabela quotes com status 'sent' e cria o item descritivo em quote_items.
  */
 export const requestPublicQuote = createServerFn({ method: "POST" })
- .validator(publicQuoteRequestSchema)
+ .validator(withDataPayload(publicQuoteRequestSchema))
  .handler(async ({ data }) => {
  const db = getServerClient();
 

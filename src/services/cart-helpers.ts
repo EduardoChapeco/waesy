@@ -10,6 +10,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getSSRClient } from "@/lib/server-access";
 import { getOrCreateGuestSession, getGuestSession } from "@/lib/session";
 import { getEnvVar } from "@/lib/env";
+import { z } from "zod";
 
 export async function getCurrentIdentity() {
  const ssrClient = await getSSRClient();
@@ -73,4 +74,11 @@ export async function mergeGuestCartLogic(
  void getServerClient;
 
  return { status: "success" as const };
+}
+
+export function withDataPayload<T extends z.ZodTypeAny>(schema: T) {
+ return z.union([
+ schema,
+ z.object({ data: schema }).transform((val) => val.data as z.infer<T>),
+ ]);
 }

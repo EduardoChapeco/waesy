@@ -20,6 +20,8 @@ import {
  Loader2,
  Box,
  Plane,
+ Sparkles,
+ Search,
 } from "lucide-react";
 
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
@@ -77,6 +79,8 @@ import { importProductFromUrl } from "@/services/api-orchestrator.functions";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getStoreSettings } from "@/services/store.functions";
+import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
+import type { MasterProductRecord } from "@/lib/data/master-products-catalog";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -212,6 +216,40 @@ export function UnifiedNewProductPage() {
  const [importTone, setImportTone] = useState<"profissional" | "persuasivo" | "tecnico" | "minimalista">("profissional");
  const [isImporting, setIsImporting] = useState(false);
  const [variantsMatrix, setVariantsMatrix] = useState<RawVariant[]>([]);
+
+ // Catálogo Mestre Central & Inteligência Fiscal (Reforma Tributária 2026)
+ const [isMasterCatalogOpen, setIsMasterCatalogOpen] = useState(false);
+ const [fiscalData, setFiscalData] = useState({
+ ncm_code: "",
+ cest_code: "",
+ ibs_rate: 15.5,
+ cbs_rate: 8.8,
+ cfop_default: "5.102",
+ tax_regime: "padrao_bens_servicos",
+ });
+
+ const handleSelectMasterProduct = (p: MasterProductRecord) => {
+ setValue("title", p.name);
+ setValue("slug", slugify(p.name));
+ setValue("brand", p.brand_name);
+ setValue("short_description", p.description);
+ setValue("description", p.description);
+ setValue("price_cents", p.suggested_price_cents);
+ setValue("sku", p.barcode_ean);
+ setValue("selling_unit", p.selling_unit);
+ if (p.image_url) {
+ setImages([p.image_url]);
+ }
+ setFiscalData({
+ ncm_code: p.ncm_code,
+ cest_code: p.cest_code || "",
+ ibs_rate: p.ibs_rate,
+ cbs_rate: p.cbs_rate,
+ cfop_default: p.cfop_default,
+ tax_regime: p.tax_regime,
+ });
+ toast.success(`"${p.name}" importado do Catálogo Central com parâmetros fiscais!`);
+ };
 
  const [isAddDimensionOpen, setIsAddDimensionOpen] = useState(false);
  const [newDimensionName, setNewDimensionName] = useState("");
@@ -371,6 +409,7 @@ export function UnifiedNewProductPage() {
  preparation_time_minutes: foodSpecs.preparationTimeMinutes,
  pos_code: foodSpecs.posCode,
  },
+ fiscal: fiscalData,
  },
  },
  });
@@ -424,6 +463,16 @@ export function UnifiedNewProductPage() {
  title={`Criar Novo ${nicheCtx.entityName}`}
  actions={
  <div className="flex items-center gap-2">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setIsMasterCatalogOpen(true)}
+ className="rounded-xl text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+ >
+ <Sparkles className="size-3.5" />
+ <span>Catálogo Mestre</span>
+ </Button>
  <Button
  type="button"
  variant="outline"
@@ -509,6 +558,13 @@ export function UnifiedNewProductPage() {
  </DialogFooter>
  </DialogContent>
  </Dialog>
+
+ {/* ── Dialog: Catálogo Mestre de Produtos & Parâmetros Fiscais ── */}
+ <MasterCatalogSearchDialog
+ open={isMasterCatalogOpen}
+ onOpenChange={setIsMasterCatalogOpen}
+ onSelectProduct={handleSelectMasterProduct}
+ />
 
  {/* ── Sheet Lateral: Importador Inteligente por URL ── */}
  <Sheet open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
@@ -596,6 +652,9 @@ export function UnifiedNewProductPage() {
  </TabsTrigger>
  <TabsTrigger value="preco" className="rounded-xl text-xs font-bold whitespace-nowrap shrink-0 px-3">
  Preço
+ </TabsTrigger>
+ <TabsTrigger value="fiscal" className="rounded-xl text-xs font-bold whitespace-nowrap shrink-0 px-3">
+ Fiscal & Tributos
  </TabsTrigger>
  {nicheCtx.isFoodBusiness && (
  <TabsTrigger value="cardapio" className="rounded-xl text-xs font-bold whitespace-nowrap shrink-0 px-3">
@@ -1015,6 +1074,115 @@ export function UnifiedNewProductPage() {
  onSelectedGroupsChange={setSelectedOptionGroupIds}
  onGroupsListChange={setOptionGroups}
  />
+ </TabsContent>
+
+ {/* ── ABA: FISCAL & REFORMA TRIBUTÁRIA 2026 (IBS / CBS) ── */}
+ <TabsContent value="fiscal" className="space-y-4 m-0">
+ <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/60">
+ <div className="flex items-center justify-between">
+ <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+ <ShieldCheck className="size-4 text-primary" />
+ <span>Classificação Fiscal & Reforma Tributária 2026</span>
+ </div>
+ <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20 font-semibold">
+ IBS / CBS
+ </Badge>
+ </div>
+
+ <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 text-xs text-muted-foreground flex items-center justify-between gap-3">
+ <span>Importe produtos com NCM, CEST e alíquotas já cadastrados pela Receita Federal:</span>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setIsMasterCatalogOpen(true)}
+ className="h-7 text-[11px] font-bold gap-1 rounded-lg border-primary/30 text-primary cursor-pointer"
+ >
+ <Sparkles className="size-3" />
+ <span>Buscar no Catálogo Mestre</span>
+ </Button>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="space-y-1.5">
+ <Label className="text-xs font-medium text-foreground">Código NCM (8 Dígitos) *</Label>
+ <Input
+ value={fiscalData.ncm_code}
+ onChange={(e) => setFiscalData({ ...fiscalData, ncm_code: e.target.value })}
+ placeholder="Ex: 1006.30.21"
+ className="h-10 rounded-xl text-xs bg-background font-mono font-semibold"
+ />
+ <p className="text-[10px] text-muted-foreground">Nomenclatura Comum do Mercosul oficial</p>
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-xs font-medium text-foreground">Código CEST</Label>
+ <Input
+ value={fiscalData.cest_code}
+ onChange={(e) => setFiscalData({ ...fiscalData, cest_code: e.target.value })}
+ placeholder="Ex: 17.001.00"
+ className="h-10 rounded-xl text-xs bg-background font-mono"
+ />
+ <p className="text-[10px] text-muted-foreground">Código Especificador da Substituição Tributária</p>
+ </div>
+ </div>
+
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+ <div className="space-y-1.5">
+ <Label className="text-xs font-medium text-foreground">CFOP Padrão</Label>
+ <Input
+ value={fiscalData.cfop_default}
+ onChange={(e) => setFiscalData({ ...fiscalData, cfop_default: e.target.value })}
+ placeholder="5.102"
+ className="h-10 rounded-xl text-xs bg-background font-mono"
+ />
+ <p className="text-[10px] text-muted-foreground">5.102 (venda) ou 5.405 (substituição)</p>
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-xs font-medium text-foreground">Alíquota IBS Estimada (%)</Label>
+ <Input
+ type="number"
+ step="0.1"
+ value={fiscalData.ibs_rate}
+ onChange={(e) => setFiscalData({ ...fiscalData, ibs_rate: Number(e.target.value) })}
+ className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
+ />
+ <p className="text-[10px] text-muted-foreground">Imposto sobre Bens e Serviços (Estados/Municípios)</p>
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-xs font-medium text-foreground">Alíquota CBS Estimada (%)</Label>
+ <Input
+ type="number"
+ step="0.1"
+ value={fiscalData.cbs_rate}
+ onChange={(e) => setFiscalData({ ...fiscalData, cbs_rate: Number(e.target.value) })}
+ className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
+ />
+ <p className="text-[10px] text-muted-foreground">Contribuição sobre Bens e Serviços (Federal)</p>
+ </div>
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-xs font-medium text-foreground">Enquadramento Tributário / Isenção</Label>
+ <Select
+ value={fiscalData.tax_regime}
+ onValueChange={(val) => setFiscalData({ ...fiscalData, tax_regime: val })}
+ >
+ <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+ <SelectValue />
+ </SelectTrigger>
+ <SelectContent>
+ <SelectItem value="padrao_bens_servicos">Padrão — Bens e Serviços (Tributação Integral)</SelectItem>
+ <SelectItem value="isento_cesta_basica">Cesta Básica Nacional (Alíquota Zero IBS/CBS)</SelectItem>
+ <SelectItem value="reducao_60">Regime Diferenciado (Redução de 60% na Alíquota)</SelectItem>
+ <SelectItem value="imposto_seletivo">Sujeito a Imposto Seletivo (Bebidas Alcoólicas / Fumo)</SelectItem>
+ <SelectItem value="substituicao_tributaria">Substituição Tributária (ICMS-ST Retido)</SelectItem>
+ </SelectContent>
+ </Select>
+ </div>
+ </div>
  </TabsContent>
 
  {/* ── ABA: ESPECIFICAÇÕES GASTRONÔMICAS (EXCLUSIVO GASTRONOMIA) ── */}

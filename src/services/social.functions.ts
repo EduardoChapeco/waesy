@@ -1547,18 +1547,44 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
  .select("id, name, slug, description, city, state, settings")
  .in("id", storeIds);
 
- memberStores = (storesData || []).map((st: any) => {
- const settings = (st.settings as Record<string, any>) || {};
- return {
- id: st.id,
- name: st.name,
- slug: st.slug,
- description: st.description || "",
- city: st.city,
- state: st.state,
- logo_url: settings.logoUrl || settings.logo_url || null,
- };
+ // Buscar avaliações reais para calcular métricas verdadeiras (ZERO MOCKS)
+ const reviewsMap: Record<string, { total: number; sum: number }> = {};
+ try {
+ const { data: dealRevs } = await db
+ .from("deal_reviews")
+ .select("store_id, rating")
+ .in("store_id", storeIds);
+
+ (dealRevs || []).forEach((r: any) => {
+ if (r.store_id) {
+ if (!reviewsMap[r.store_id]) reviewsMap[r.store_id] = { total: 0, sum: 0 };
+ reviewsMap[r.store_id].total += 1;
+ reviewsMap[r.store_id].sum += Number(r.rating) || 5;
+ }
  });
+ } catch {
+ // deal_reviews fallback seguro
+ }
+
+          memberStores = (storesData || []).map((st: any) => {
+            const settings = (st.settings as Record<string, any>) || {};
+            const revStats = reviewsMap[st.id];
+            const realReviewsCount = revStats ? revStats.total : 0;
+            const realRatingAverage = realReviewsCount > 0 ? Number((revStats.sum / realReviewsCount).toFixed(1)) : null;
+
+            return {
+              id: st.id,
+              name: st.name,
+              slug: st.slug,
+              description: st.description || "",
+              city: st.city,
+              state: st.state,
+              logo_url: settings.logoUrl || settings.logo_url || null,
+              banner_url: settings.bannerUrl || settings.coverUrl || settings.cover_url || null,
+              rating_average: realRatingAverage,
+              reviews_count: realReviewsCount,
+            };
+          });
  }
  } catch (storeErr) {
  console.warn("[social.functions] Erro ao buscar lojas do membro:", storeErr);
@@ -1567,11 +1593,30 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
 
  const isOwner = !!(currentUserId && currentUserId === targetUserId);
 
+ let resolvedAvatarUrl = rawProfile?.avatar_url || rawProfile?.avatarUrl || null;
+ if (!resolvedAvatarUrl && rawProfile?._creatorMatch?.avatar_url) {
+ resolvedAvatarUrl = rawProfile._creatorMatch.avatar_url;
+ }
+ if (!resolvedAvatarUrl && targetUserId) {
+ try {
+ const { data: creatorRow } = await db
+ .from("creator_profiles")
+ .select("avatar_url")
+ .eq("user_id", targetUserId)
+ .maybeSingle();
+ if (creatorRow?.avatar_url) {
+ resolvedAvatarUrl = creatorRow.avatar_url;
+ }
+ } catch {
+ // ignore
+ }
+ }
+
  const profileData = {
  id: targetUserId,
  full_name: rawProfile?.full_name || null,
  username: rawProfile?.username || null,
- avatar_url: rawProfile?.avatar_url || null,
+ avatar_url: resolvedAvatarUrl,
  cover_url: rawProfile?.cover_url || null,
  bio: rawProfile?.bio || null,
  occupation: rawProfile?.occupation || null,

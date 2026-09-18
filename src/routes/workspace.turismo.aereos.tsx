@@ -43,6 +43,7 @@ import { listFlightItineraries, createFlightItinerary, deleteFlightItinerary } f
 import { listCustomers } from '@/services/crm.functions';
 import { listTravelSuppliers } from '@/services/travel-suppliers.functions';
 import type { TravelFlightItinerary, FlightCabin, FlightItineraryType } from '@/types/travel-flights';
+import { GLOBAL_AIRPORTS_CATALOG } from '@/lib/data/airports-catalog';
 import { formatMoney } from '@/lib/money';
 
 const CONSOLIDATOR_PRESETS = [
@@ -97,7 +98,7 @@ export default function FlightsPage() {
   const [airlineName, setAirlineName] = useState('LATAM Airlines');
   const [flightNumber, setFlightNumber] = useState('3214');
   const [originIata, setOriginIata] = useState('GRU');
-  const [originCity, setOriginCity] = useState('São Paulo');
+  const [originCity, setOriginCity] = useState('São Paulo / Guarulhos');
   const [destinationIata, setDestinationIata] = useState('MIA');
   const [destinationCity, setDestinationCity] = useState('Miami');
   const [departureAt, setDepartureAt] = useState('2026-10-15T23:30');
@@ -105,6 +106,24 @@ export default function FlightsPage() {
   const [cabin, setCabin] = useState<FlightCabin>('economy');
   const [baggage, setBaggage] = useState('1x 23kg Despachada');
   const [airportTerminal, setAirportTerminal] = useState('Terminal 3');
+
+  const handleSelectOrigin = (code: string) => {
+    const clean = code.trim().toUpperCase();
+    setOriginIata(clean);
+    const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
+    if (airport) {
+      setOriginCity(`${airport.city} (${airport.state_province})`);
+    }
+  };
+
+  const handleSelectDestination = (code: string) => {
+    const clean = code.trim().toUpperCase();
+    setDestinationIata(clean);
+    const airport = GLOBAL_AIRPORTS_CATALOG.find((a) => a.iata_code === clean);
+    if (airport) {
+      setDestinationCity(`${airport.city} (${airport.state_province})`);
+    }
+  };
 
   // Financeiro da Emissão (Custo, Fee, RAV e Comissão da Agência)
   const [fareAmount, setFareAmount] = useState('3500.00');
@@ -488,31 +507,53 @@ export default function FlightsPage() {
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label className="text-xs font-semibold">Origem (IATA + Cidade)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold">Origem (IATA + Cidade)</Label>
+                    <span className="text-[10px] text-muted-foreground font-mono">Malha Central</span>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
                       placeholder="GRU"
                       value={originIata}
-                      onChange={(e) => setOriginIata(e.target.value)}
+                      onChange={(e) => handleSelectOrigin(e.target.value)}
+                      list="airports-catalog-list"
                       className="h-11 uppercase font-bold text-center rounded-xl"
                       maxLength={3}
                     />
                     <Input
-                      placeholder="São Paulo"
+                      placeholder="São Paulo / Guarulhos"
                       value={originCity}
                       onChange={(e) => setOriginCity(e.target.value)}
                       className="h-11 col-span-2 rounded-xl"
                     />
                   </div>
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
+                    {["GRU", "CGH", "BSB", "SDU", "GIG", "CNF", "SSA", "REC", "XAP", "POA", "CWB", "FLN"].map((hub) => (
+                      <button
+                        key={hub}
+                        type="button"
+                        onClick={() => handleSelectOrigin(hub)}
+                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                          originIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
+                        }`}
+                      >
+                        {hub}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label className="text-xs font-semibold">Destino (IATA + Cidade)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold">Destino (IATA + Cidade)</Label>
+                    <span className="text-[10px] text-muted-foreground font-mono">Malha Central</span>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
                       placeholder="MIA"
                       value={destinationIata}
-                      onChange={(e) => setDestinationIata(e.target.value)}
+                      onChange={(e) => handleSelectDestination(e.target.value)}
+                      list="airports-catalog-list"
                       className="h-11 uppercase font-bold text-center rounded-xl"
                       maxLength={3}
                     />
@@ -523,6 +564,29 @@ export default function FlightsPage() {
                       className="h-11 col-span-2 rounded-xl"
                     />
                   </div>
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
+                    {["MIA", "MCO", "JFK", "LIS", "MAD", "CDG", "LHR", "DXB", "EZE", "SCL", "CUN", "PUJ"].map((hub) => (
+                      <button
+                        key={hub}
+                        type="button"
+                        onClick={() => handleSelectDestination(hub)}
+                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                          destinationIata === hub ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 text-muted-foreground hover:bg-muted border-border/60"
+                        }`}
+                      >
+                        {hub}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Datalist nativo para autocomplete de 100+ aeroportos comerciais */}
+                  <datalist id="airports-catalog-list">
+                    {GLOBAL_AIRPORTS_CATALOG.map((a) => (
+                      <option key={a.iata_code} value={a.iata_code}>
+                        {a.iata_code} - {a.city} ({a.name})
+                      </option>
+                    ))}
+                  </datalist>
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
