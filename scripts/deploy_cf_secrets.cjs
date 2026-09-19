@@ -18,8 +18,10 @@ sec.split("\n").forEach((l) => {
   }
 });
 
+const projectName = process.argv[2] || process.env.CF_PAGES_PROJECT || "usewaesy";
+
 console.log("==================================================");
-console.log(" Sincronizando Secrets com Cloudflare Pages (wider)");
+console.log(` Sincronizando Secrets com Cloudflare Pages (${projectName})`);
 console.log("==================================================");
 
 const secretsToPush = [
@@ -28,20 +30,31 @@ const secretsToPush = [
   "VITE_SUPABASE_ANON_KEY",
   "SUPABASE_URL",
   "SUPABASE_ANON_KEY",
-  "VITE_SITE_URL"
+  "VITE_SITE_URL",
+  "JWT_SECRET",
 ];
 
 // Assegura que SUPABASE_URL e SUPABASE_ANON_KEY existam no payload
 vars["SUPABASE_URL"] = vars["VITE_SUPABASE_URL"] || "https://jfuebqmltksyznovhlwa.supabase.co";
 vars["SUPABASE_ANON_KEY"] = vars["VITE_SUPABASE_ANON_KEY"];
-vars["VITE_SITE_URL"] = "https://wider.pages.dev";
+vars["VITE_SITE_URL"] = vars["VITE_SITE_URL"] || "https://usewaesy.pages.dev";
+
+if (!vars["JWT_SECRET"]) {
+  const secretsJsonPath = path.resolve(__dirname, "../.secrets.json");
+  if (fs.existsSync(secretsJsonPath)) {
+    try {
+      const secJson = JSON.parse(fs.readFileSync(secretsJsonPath, "utf8"));
+      vars["JWT_SECRET"] = secJson.JWT_SECRET || vars["JWT_SECRET"];
+    } catch (e) {}
+  }
+}
 
 for (const key of secretsToPush) {
   const val = vars[key];
   if (val) {
     console.log(`\n-> Injetando secret: ${key}...`);
     try {
-      execSync(`npx wrangler pages secret put ${key} --project-name wider`, {
+      execSync(`npx wrangler pages secret put ${key} --project-name ${projectName}`, {
         input: `${val}\n`,
         stdio: ["pipe", "inherit", "inherit"],
         shell: true,

@@ -202,7 +202,7 @@ function EventDetailPage() {
       {isOwner && (
         <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-amber-950 dark:text-amber-200">
           <div className="flex items-center gap-2">
-            <span className="inline-block size-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="inline-block size-2 rounded-full bg-amber-500" />
             <span className="font-semibold">Modo Organizador: Você é o responsável por este evento.</span>
           </div>
           <Button

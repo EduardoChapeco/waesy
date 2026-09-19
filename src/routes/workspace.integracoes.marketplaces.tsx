@@ -463,7 +463,7 @@ function MarketplaceHubPage() {
       setAutoAccept(existing.settings?.auto_accept_orders ?? false);
       setSyncStock(existing.settings?.sync_stock ?? true);
       // Preenche campos com credenciais salvas (sem expor tokens — valores são mascarados no type="password")
-      const savedCreds = (existing.settings?.credentials || {}) as Record<string, string>;
+      const savedCreds = ((existing.settings as any)?.credentials || {}) as Record<string, string>;
       const initialVals: Record<string, string> = {};
       p.credentialFields.forEach((f) => {
         initialVals[f.key] = savedCreds[f.key] ? "••••••••" : "";
@@ -744,7 +744,7 @@ function MarketplaceHubPage() {
                       </p>
                     ) : (
                       <p className="text-xs text-muted-foreground/70 mb-1 truncate">
-                        {item.description || "Canal disponível para conexão"}
+                        {(item as any).description || "Canal disponível para conexão"}
                       </p>
                     )}
 

@@ -1253,3 +1253,344 @@ export function getSemanticCondition(classified: any): { label: string; value: s
   const c = classified.condition || attrs.condition || "used";
   return { label: "Condição do Item", value: condMap[c] || "Seminovo" };
 }
+
+export interface ClassifiedHeroHighlight {
+  primaryLabel: string;
+  primaryValue: string;
+  secondaryLabel?: string;
+  secondaryValue?: string;
+}
+
+export interface ClassifiedEditorialSpec {
+  label: string;
+  value: string;
+}
+
+/**
+ * Retorna os 2 valores de destaque primordial (Hero Highlights) do anúncio em tipografia marcante.
+ * Ex: Viagens (Saída / Retorno), Hospedagem (Check-in / Check-out), Veículos (Ano / KM), etc.
+ */
+export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: any): ClassifiedHeroHighlight | null {
+  if (!classified) return null;
+  const niche = resolveClassifiedNiche(classified);
+  const attrs = classified.attributes || {};
+
+  // 1. Viagens & Pacotes Turísticos
+  if (niche.id === "travel" || classified.category === "travel" || classified.category === "viagem") {
+    const depDate = selectedDeparture?.departure_date || attrs.departure_date;
+    const retDate = selectedDeparture?.return_date || attrs.return_date;
+    const datesText = attrs.dates_text;
+
+    const fmt = (d: string) => {
+      try {
+        const parts = d.split("-");
+        if (parts.length === 3) {
+          const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
+        }
+        return d;
+      } catch {
+        return d;
+      }
+    };
+
+    if (depDate || retDate) {
+      return {
+        primaryLabel: "Saída",
+        primaryValue: depDate ? fmt(depDate) : "A Definir",
+        secondaryLabel: "Retorno",
+        secondaryValue: retDate ? fmt(retDate) : "A Definir",
+      };
+    }
+    if (datesText) {
+      return {
+        primaryLabel: "Datas",
+        primaryValue: datesText,
+      };
+    }
+    return null;
+  }
+
+  // 2. Hospedagem & Temporada
+  if (niche.id === "hospitality_stay") {
+    const checkin = attrs.checkin_time || "14:00";
+    const checkout = attrs.checkout_time || "11:00";
+    return {
+      primaryLabel: "Check-in",
+      primaryValue: checkin,
+      secondaryLabel: "Check-out",
+      secondaryValue: checkout,
+    };
+  }
+
+  // 3. Imóveis (Venda ou Locação)
+  if (niche.id === "real_estate_sale" || niche.id === "real_estate_rent") {
+    const area = classified.area_sqm || attrs.area_sqm;
+    const beds = classified.bedrooms || attrs.bedrooms;
+    if (area || beds) {
+      return {
+        primaryLabel: "Área Útil",
+        primaryValue: area ? `${area} m²` : "Sob Consulta",
+        secondaryLabel: "Dormitórios",
+        secondaryValue: beds ? `${beds} Quarto${Number(beds) > 1 ? "s" : ""}` : "Sob Consulta",
+      };
+    }
+  }
+
+  // 4. Veículos
+  if (niche.id === "vehicle") {
+    const year = attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : null;
+    const km = attrs.mileage_km !== undefined ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : null;
+    if (year || km) {
+      return {
+        primaryLabel: "Ano / Modelo",
+        primaryValue: year || "Não Informado",
+        secondaryLabel: "Quilometragem",
+        secondaryValue: km || "0 km (Novo)",
+      };
+    }
+  }
+
+  // 5. Vagas de Emprego
+  if (niche.id === "job") {
+    const reg = getRegimeLabel(attrs.regime);
+    const model = getWorkplaceModelLabel(attrs.work_model) || attrs.work_schedule;
+    if (reg || model) {
+      return {
+        primaryLabel: "Regime",
+        primaryValue: reg || "CLT",
+        secondaryLabel: "Modelo / Horário",
+        secondaryValue: model || "Integral",
+      };
+    }
+  }
+
+  // 6. Serviços
+  if (niche.id === "service") {
+    const duration = classified.service_duration_minutes ? `${classified.service_duration_minutes} min` : (attrs.estimated_days ? `${attrs.estimated_days} dias` : null);
+    const warranty = attrs.warranty_days ? `${attrs.warranty_days} dias` : null;
+    if (duration || warranty) {
+      return {
+        primaryLabel: "Prazo Médio",
+        primaryValue: duration || "A Combinar",
+        secondaryLabel: "Garantia",
+        secondaryValue: warranty || "Garantia Waesy",
+      };
+    }
+  }
+
+  // 7. Equipamentos
+  if (niche.id === "equipment") {
+    const period = attrs.equipment_period === "mensal" ? "Locação Mensal" : attrs.equipment_period === "evento" ? "Por Evento" : "Diária (24h)";
+    const deposit = attrs.deposit_cents ? formatMoney(attrs.deposit_cents) : "Sem Caução";
+    return {
+      primaryLabel: "Período Base",
+      primaryValue: period,
+      secondaryLabel: "Caução / Garantia",
+      secondaryValue: deposit,
+    };
+  }
+
+  // 8. Produtos Digitais
+  if (niche.id === "digital") {
+    const fmt = attrs.digital_file_type ? attrs.digital_file_type.toUpperCase() : "DOWNLOAD";
+    return {
+      primaryLabel: "Formato",
+      primaryValue: fmt,
+      secondaryLabel: "Acesso",
+      secondaryValue: "Download Imediato",
+    };
+  }
+
+  // 9. Assinaturas Recorrentes
+  if (niche.id === "subscription") {
+    const cycle = attrs.subscription_cycle === "anual" ? "Plano Anual" : "Mensalidade";
+    const policy = attrs.cancellation_policy || (attrs.no_commitment ? "Sem Fidelidade" : "Recorrente");
+    return {
+      primaryLabel: "Ciclo de Cobrança",
+      primaryValue: cycle,
+      secondaryLabel: "Fidelidade",
+      secondaryValue: policy,
+    };
+  }
+
+  // 10. Doações Solidárias
+  if (niche.id === "donation") {
+    return {
+      primaryLabel: "Ação Solidária",
+      primaryValue: "100% Gratuito",
+      secondaryLabel: "Retirada",
+      secondaryValue: attrs.delivery_mode === "pickup" ? "No Local" : "A Combinar",
+    };
+  }
+
+  // 11. Negócios & M&A
+  if (niche.id === "business") {
+    const revenue = attrs.monthly_revenue_cents ? formatMoney(attrs.monthly_revenue_cents) : null;
+    const type = attrs.business_type || "Ponto Ativo";
+    if (revenue) {
+      return {
+        primaryLabel: "Faturamento Mensal",
+        primaryValue: revenue,
+        secondaryLabel: "Modalidade",
+        secondaryValue: type,
+      };
+    }
+  }
+
+  // 12. Gastronomia
+  if (niche.id === "food") {
+    const prep = attrs.preparation_time_minutes ? `${attrs.preparation_time_minutes} min` : "Artesanal";
+    return {
+      primaryLabel: "Tempo de Preparo",
+      primaryValue: prep,
+      secondaryLabel: "Entrega / Retirada",
+      secondaryValue: attrs.delivery_type || "Pronta Entrega",
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Retorna as especificações essenciais no formato minimalista (sem pills/badges).
+ * Ex: Duração, Regime, Vagas para viagens; Banheiros, Condomínio, IPTU para imóveis, etc.
+ */
+export function getClassifiedEditorialSpecs(classified: any): ClassifiedEditorialSpec[] {
+  if (!classified) return [];
+  const niche = resolveClassifiedNiche(classified);
+  const attrs = classified.attributes || {};
+  const specs: ClassifiedEditorialSpec[] = [];
+
+  // 1. Viagens
+  if (niche.id === "travel" || classified.category === "travel" || classified.category === "viagem") {
+    if (attrs.duration_days) {
+      const nights = attrs.duration_nights ? ` / ${attrs.duration_nights}N` : "";
+      specs.push({ label: "Duração", value: `${attrs.duration_days} Dias${nights}` });
+    } else if (attrs.duration_text) {
+      specs.push({ label: "Duração", value: attrs.duration_text });
+    }
+
+    if (attrs.meal_regime_label || attrs.meal_regime) {
+      specs.push({ label: "Regime", value: attrs.meal_regime_label || attrs.meal_regime });
+    } else if (attrs.meals_included) {
+      specs.push({ label: "Regime", value: "Refeições Inclusas" });
+    }
+
+    if (attrs.available_slots) {
+      specs.push({ label: "Vagas", value: `${attrs.available_slots} disponível(is)` });
+    } else if (attrs.slots_text) {
+      specs.push({ label: "Vagas", value: attrs.slots_text });
+    }
+    return specs;
+  }
+
+  // 2. Hospedagem
+  if (niche.id === "hospitality_stay") {
+    const guests = classified.max_guests || attrs.max_guests;
+    if (guests) specs.push({ label: "Capacidade", value: `Até ${guests} Hóspedes` });
+    if (classified.bedrooms) specs.push({ label: "Quartos", value: `${classified.bedrooms} Quarto(s)` });
+    if (attrs.bathrooms) specs.push({ label: "Banheiros", value: `${attrs.bathrooms} Banheiro(s)` });
+    if (attrs.pet_friendly) specs.push({ label: "Animais", value: "Aceita Pets" });
+    return specs;
+  }
+
+  // 3. Imóveis
+  if (niche.id === "real_estate_sale" || niche.id === "real_estate_rent") {
+    if (attrs.bathrooms) specs.push({ label: "Banheiros", value: `${attrs.bathrooms} Banheiro(s)` });
+    if (attrs.parking_spaces) specs.push({ label: "Garagem", value: `${attrs.parking_spaces} Vaga(s)` });
+    if (attrs.condo_fee_cents) specs.push({ label: "Condomínio", value: `${formatMoney(attrs.condo_fee_cents)}/mês` });
+    if (attrs.iptu_cents) specs.push({ label: "IPTU", value: `${formatMoney(attrs.iptu_cents)}/ano` });
+    if (attrs.furnished) specs.push({ label: "Mobiliário", value: attrs.furnished === "sim" ? "100% Mobiliado" : "Semi-Mobiliado" });
+    return specs;
+  }
+
+  // 4. Veículos
+  if (niche.id === "vehicle") {
+    if (attrs.transmission) specs.push({ label: "Câmbio", value: attrs.transmission });
+    if (attrs.fuel) specs.push({ label: "Combustível", value: attrs.fuel });
+    if (attrs.color) specs.push({ label: "Cor", value: attrs.color });
+    if (attrs.plate_final) specs.push({ label: "Placa", value: `Final ${attrs.plate_final}` });
+    if (attrs.ipva_pago) specs.push({ label: "IPVA", value: "2026 Pago" });
+    return specs;
+  }
+
+  // 5. Vagas
+  if (niche.id === "job") {
+    if (attrs.salary_range) specs.push({ label: "Faixa Salarial", value: attrs.salary_range });
+    if (attrs.min_education) specs.push({ label: "Escolaridade", value: getEducationLabel(attrs.min_education) });
+    if (attrs.experience_level) specs.push({ label: "Experiência", value: getExperienceLabel(attrs.experience_level) });
+    return specs;
+  }
+
+  // 6. Serviços
+  if (niche.id === "service") {
+    if (attrs.modality) specs.push({ label: "Atendimento", value: attrs.modality === "domicilio" ? "A Domicílio" : (attrs.modality === "remoto" ? "Online / Remoto" : "Presencial") });
+    if (attrs.free_quote) specs.push({ label: "Orçamento", value: "Gratuito" });
+    if (attrs.business_hours) specs.push({ label: "Horário", value: attrs.business_hours });
+    return specs;
+  }
+
+  // 7. Equipamentos
+  if (niche.id === "equipment") {
+    if (attrs.operator_included !== undefined) specs.push({ label: "Operador", value: attrs.operator_included ? "Incluso" : "Por Conta do Cliente" });
+    if (attrs.delivery_available !== undefined) specs.push({ label: "Logística", value: attrs.delivery_available ? "Entrega no Local" : "Retirada no Balcão" });
+    return specs;
+  }
+
+  // 8. Assinaturas
+  if (niche.id === "subscription") {
+    if (attrs.trial_days && Number(attrs.trial_days) > 0) specs.push({ label: "Período Teste", value: `${attrs.trial_days} dias grátis` });
+    if (attrs.no_setup_fee) specs.push({ label: "Adesão", value: "Sem Taxa de Matrícula" });
+    return specs;
+  }
+
+  // 9. Digital
+  if (niche.id === "digital") {
+    if (attrs.file_size || attrs.digital_file_size_bytes) {
+      const sz = attrs.digital_file_size_bytes ? `${(attrs.digital_file_size_bytes / (1024 * 1024)).toFixed(1)} MB` : attrs.file_size;
+      specs.push({ label: "Tamanho", value: sz });
+    }
+    if (attrs.digital_download_limit) specs.push({ label: "Tentativas", value: `Até ${attrs.digital_download_limit} downloads` });
+    return specs;
+  }
+
+  return specs;
+}
+
+/**
+ * Retorna o rótulo semântico exato e específico para a Ação Primária (CTA) de conversão.
+ * No nicho de Turismo, inclui o modal específico: Terrestre, Aéreo, Cruzeiro, Multimodal, etc.
+ */
+export function getClassifiedPrimaryCtaLabel(classified: any): string {
+  if (!classified) return "Comprar Agora";
+  const niche = resolveClassifiedNiche(classified);
+  const attrs = classified.attributes || {};
+  const flightDetails = attrs.flight_details || {};
+  const transportType = (flightDetails.transport_type || attrs.transport_type || "").toLowerCase();
+
+  if (niche.id === "travel" || classified.category === "travel" || classified.category === "viagem") {
+    if (transportType === "bus" || transportType === "terrestre") return "Reservar Pacote Terrestre";
+    if (transportType === "airplane" || transportType === "aereo") return "Reservar Pacote Aéreo";
+    if (transportType === "cruise" || transportType === "cruzeiro") return "Reservar Cruzeiro";
+    if (transportType === "combo" || transportType === "misto") return "Reservar Pacote Multimodal";
+    if (transportType === "train") return "Reservar Roteiro Ferroviário";
+    if (transportType === "hotel_only") return "Reservar Pacote de Hospedagem";
+    return "Reservar Pacote";
+  }
+
+  if (niche.id === "hospitality_stay") return "Reservar Estadia";
+  if (niche.id === "real_estate_sale") return "Agendar Visita ao Imóvel";
+  if (niche.id === "real_estate_rent") return "Agendar Visita / Alugar";
+  if (niche.id === "vehicle") return "Agendar Test-Drive";
+  if (niche.id === "job") return "Candidatar-se à Vaga";
+  if (niche.id === "service") return "Solicitar Orçamento";
+  if (niche.id === "equipment") return "Solicitar Locação";
+  if (niche.id === "digital") return "Comprar & Baixar";
+  if (niche.id === "subscription") return "Assinar Plano";
+  if (niche.id === "donation" || attrs.is_donation) return "Solicitar Doação";
+  if (niche.id === "business") return "Solicitar Dossiê Executivo";
+  if (niche.id === "food") return "Fazer Pedido";
+
+  return Number(classified.price_cents || 0) > 0 ? "Comprar Agora" : "Fazer Proposta";
+}

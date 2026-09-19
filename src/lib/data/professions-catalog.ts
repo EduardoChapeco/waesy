@@ -410,6 +410,7 @@ export const GLOBAL_PROFESSIONS_CATALOG: ProfessionDefinition[] = RAW_PROFESSION
 
   return {
     ...p,
+    common_regimes: p.common_regimes as Array<"clt" | "pj" | "freela" | "diaria" | "estagio">,
     id: `prof-${p.cbo_code.replace("-", "")}`,
     category: p.sector,
     required_education: education,

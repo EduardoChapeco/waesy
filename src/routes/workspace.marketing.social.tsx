@@ -304,7 +304,6 @@ export default function WorkspaceMarketingSocialPage() {
                   value={defaultOgImageUrl}
                   onChange={(url) => setDefaultOgImageUrl(url || "")}
                   aspectPreset="banner"
-                  folder="marketing/social-og"
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">

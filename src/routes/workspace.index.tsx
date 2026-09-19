@@ -305,7 +305,7 @@ export default function WorkspaceDashboardPage() {
  {isTogglingStatus ? (
  <Loader2 className="size-3.5 animate-spin" />
  ) : (
- <span className={`size-2 rounded-full ${isOpenNow ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+ <span className={`size-2 rounded-full ${isOpenNow ? "bg-emerald-500" : "bg-rose-500"}`} />
  )}
  <span>{isOpenNow ? "Loja Aberta" : "Loja Pausada"}</span>
  </button>

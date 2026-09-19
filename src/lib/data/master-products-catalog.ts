@@ -432,6 +432,8 @@ export const GLOBAL_MASTER_PRODUCTS_CATALOG: MasterProductRecord[] = [
     cbs_rate: 8.8,
     tax_tribute_group: "tributado_integralmente",
     net_weight_kg: 3.9,
+    image_urls: ["https://images.unsplash.com/photo-1585670149967-b4f4da88cc9f?auto=format&fit=crop&w=600&q=80"],
+    tags: ["mondial", "air fryer", "fritadeira", "eletrodomésticos"],
   },
   {
     barcode_ean: "5601131000109",

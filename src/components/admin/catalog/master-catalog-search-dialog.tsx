@@ -185,19 +185,19 @@ export function MasterCatalogSearchDialog({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {products.map((p) => {
-                const isExempt = p.tax_regime === "isento_cesta_basica" || p.ibs_rate === 0;
+                const isExempt = p.tax_tribute_group === "isento_cesta_basica" || p.ibs_rate === 0;
 
                 return (
                   <div
-                    key={p.id}
+                    key={p.barcode_ean}
                     className="p-3.5 rounded-2xl bg-card border border-border/70 hover:border-primary/50 transition-all hover:shadow-sm flex flex-col justify-between gap-3 group"
                   >
                     <div className="flex items-start gap-3">
                       {/* Miniatura do Produto */}
                       <div className="size-16 rounded-xl bg-muted/30 border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
-                        {p.image_url ? (
+                        {p.image_urls?.[0] ? (
                           <img
-                            src={p.image_url}
+                            src={p.image_urls[0]}
                             alt={p.name}
                             className="size-full object-contain p-1"
                             loading="lazy"
@@ -228,7 +228,7 @@ export function MasterCatalogSearchDialog({
                             {formatMoney(p.suggested_price_cents)}
                           </span>
                           <span className="text-[10px] text-muted-foreground font-mono">
-                            /{p.selling_unit.toUpperCase()}
+                            /{(p.unit_of_measure || "UN").toUpperCase()}
                           </span>
                         </div>
                       </div>

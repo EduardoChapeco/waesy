@@ -1204,6 +1204,8 @@ export interface PlatformApiIntegrationsDTO {
  melhor_envio_token?: string;
  google_maps_api_key?: string;
  openai_api_key?: string;
+ abacatepay_api_key?: string;
+ mercadopago_access_token?: string;
  webhook_secret?: string;
  // Master Marketplaces & Fiscal
  mercadolivre_app_id?: string;

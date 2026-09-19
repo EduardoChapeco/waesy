@@ -805,7 +805,7 @@ function ContasPagarPage() {
         open={isCreateOpen}
         onOpenChange={(open) => !isSubmitting && setIsCreateOpen(open)}
         title="Nova Conta a Pagar"
-        size="md"
+        size="lg"
         footer={
           <>
             <Button
@@ -936,7 +936,7 @@ function ContasPagarPage() {
         open={payModal.isOpen}
         onOpenChange={(open) => !isPaying && setPayModal({ isOpen: open, obligation: null })}
         title={`Liquidar Conta • ${payModal.obligation?.title || ""}`}
-        size="md"
+        size="lg"
         footer={
           <>
             <Button

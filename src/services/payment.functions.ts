@@ -14,6 +14,7 @@ import { getServerIdentity, assertStoreAccess, getSSRClient } from "@/lib/server
 import { getEnvVar } from "@/lib/env";
 import { requireAdmin } from "@/lib/server-access";
 import { withDataPayload } from "./cart-helpers";
+import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 // Schema for initiating a payment
 const InitiatePaymentSchema = z.object({
@@ -278,7 +279,26 @@ export const confirmPayment = createServerFn({ method: "POST" })
  }
  }
 
- return { status: "success" as const };
+  // ── Ledger Criptográfico SHA-256 — Pagamento Confirmado ──
+  // Todo pagamento confirmado gera certificável imutável encadeado (Bacen/PCI-DSS)
+  try {
+  await recordLedgerEntryCore({
+    transactionType: "order_payment",
+    amountCents: order.total_cents ?? 0,
+    storeId: order.store_id,
+    referenceEntityType: "order",
+    referenceEntityId: orderId,
+    metadata: {
+      payment_method: actualMethod,
+      payment_id: existingTx?.id ?? null,
+      confirmation_type: "manual",
+    },
+  });
+  } catch (ledgerErr) {
+  console.error("[payment.functions] Falha no ledger de pagamento:", ledgerErr);
+  }
+
+  return { status: "success" as const };
  });
 
 export const approvePayment = createServerFn({ method: "POST" })

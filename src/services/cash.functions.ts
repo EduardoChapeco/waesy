@@ -12,6 +12,7 @@ import {
 } from "@/lib/cash";
 import { getServerClient } from "@/lib/supabase";
 import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
+import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 interface CashRegisterRow {
  id: string;
@@ -204,6 +205,29 @@ export async function _closeRegister(
  "Erro atômico ao fechar caixa: " + (rpcError?.message || "Sem resposta do banco"),
  );
  }
+
+  // ── Ledger Criptográfico SHA-256 — Fechamento de Caixa ──────────────────────
+  // Toda operação de fechamento de caixa gera entrada imutável encadeada (Bacen)
+  try {
+  await recordLedgerEntryCore({
+    transactionType: "wallet_withdraw",
+    amountCents: countedBalanceCents,
+    storeId: identity.store_id,
+    actorId: identity.id,
+    actorRole: identity.role ?? "manager",
+    referenceEntityType: "cash_register",
+    referenceEntityId: registerId,
+    metadata: {
+      action: "close_cash_register",
+      counted_balance_cents: countedBalanceCents,
+      notes: notes ?? null,
+      discrepancy: (result as any)?.discrepancy ?? false,
+      expected_cents: (result as any)?.expected ?? 0,
+    },
+  });
+  } catch (ledgerErr) {
+  console.error("[cash.functions] Falha no ledger de fechamento de caixa:", ledgerErr);
+  }
 
  return result as { status: string; expected: number; counted: number; discrepancy: boolean };
 }

@@ -458,7 +458,7 @@ function AdminPaymentsPage() {
         open={approveModal.isOpen}
         onOpenChange={(open) => !isApproving && setApproveModal({ isOpen: open, order: null })}
         title={`Aprovar Pagamento • Pedido #${approveModal.order?.public_token || ""}`}
-        size="md"
+        size="lg"
         footer={
           <>
             <Button
@@ -546,7 +546,7 @@ function AdminPaymentsPage() {
         open={rejectModal.isOpen}
         onOpenChange={(open) => !isRejecting && setRejectModal({ isOpen: open, order: null })}
         title={`Recusar Pagamento • Pedido #${rejectModal.order?.public_token || ""}`}
-        size="md"
+        size="lg"
         footer={
           <>
             <Button

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -63,6 +63,7 @@ import {
   Gauge,
   Sparkles,
   Scale,
+  Unlock,
 } from "lucide-react";
 import {
   analyzeCommercialPointPotential,
@@ -96,7 +97,7 @@ import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
-import { resolveClassifiedNiche, getClassifiedFeatureCards } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedFeatureCards, getClassifiedPrimaryCtaLabel } from "@/lib/classifieds/semantics";
 import {
   getEducationLabel,
   getExperienceLabel,
@@ -186,6 +187,7 @@ export function UniversalClassifiedShowcase({
   const niche = useMemo(() => resolveClassifiedNiche(classified), [classified]);
   const author = classified?.profiles || {};
   const attrs = classified?.attributes || {};
+  const priceCents = classified?.price_cents || 0;
 
   // 2.1 Identificação de Negócios / M&A & Sigilo (meuBIZ / Quero Um Negócio)
   const isBusiness =
@@ -200,7 +202,7 @@ export function UniversalClassifiedShowcase({
 
   const isDonation =
     classified?.category === "donation" ||
-    niche.id === "doacao" ||
+    niche.id === "donation" ||
     attrs?.niche === "donation" ||
     (priceCents === 0 && attrs?.niche === "donation");
 
@@ -279,7 +281,6 @@ export function UniversalClassifiedShowcase({
   };
 
   // 3. Preços e Custos
-  const priceCents = classified?.price_cents || 0;
   const maxInstallments = Math.max(1, Number(classified?.attributes?.max_installments) || 12);
   const cardInterestFree = attrs.card_interest_free !== undefined ? !!attrs.card_interest_free : true;
   const installmentCents = Math.round(priceCents / maxInstallments);
@@ -436,8 +437,9 @@ export function UniversalClassifiedShowcase({
     trackAndOpenWhatsApp({
       phone,
       message: customMessage,
-      source: "classified_detail",
-      metadata: { classifiedId: classified.id },
+      entityType: "classified",
+      entityId: classified.id,
+      entityTitle: classified.title,
     });
   };
 
@@ -732,13 +734,13 @@ export function UniversalClassifiedShowcase({
     }
     if (niche.id === "hospitality_stay" || niche.id === "travel") {
       return {
-        label: niche.id === "travel" ? "Reservar Pacote" : "Reservar Diárias",
+        label: getClassifiedPrimaryCtaLabel(classified),
         action: () => onOpenBookingModal?.(),
       };
     }
     if (classified?.category === "real_estate") {
       return {
-        label: "Agendar Visita",
+        label: getClassifiedPrimaryCtaLabel(classified),
         action: () => onOpenProposalModal?.(),
       };
     }
@@ -804,9 +806,9 @@ export function UniversalClassifiedShowcase({
           )}
 
           <FavoriteButton
-            targetId={classified.id}
-            targetType="classified"
-            variant="button"
+            entityId={classified.id}
+            entityType="classified"
+            title={classified.title}
             className="h-9 w-9 rounded-xl border border-border/50 bg-background hover:bg-muted/50 p-0 flex items-center justify-center text-muted-foreground"
           />
 
@@ -827,7 +829,7 @@ export function UniversalClassifiedShowcase({
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 mb-4">
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span className="size-2 rounded-full bg-amber-500 shrink-0" />
               <span className="font-medium">Modo Proprietário: Você está visualizando seu próprio anúncio público.</span>
             </div>
             {onOpenCompanion && (
@@ -1213,9 +1215,10 @@ export function UniversalClassifiedShowcase({
                           {useOfFunds.map((fund: string) => (
                             <span
                               key={fund}
-                              className="inline-flex items-center text-[11px] px-2.5 py-0.5 rounded-full bg-muted/40 text-foreground"
+                              className="inline-flex items-center text-[11px] px-2.5 py-0.5 rounded-full bg-muted/40 text-foreground gap-1"
                             >
-                              ✓ {fund}
+                              <Check className="size-3 text-primary shrink-0" />
+                              <span>{fund}</span>
                             </span>
                           ))}
                         </div>
@@ -1324,11 +1327,20 @@ export function UniversalClassifiedShowcase({
                   <div className="rounded-2xl border border-border/30 overflow-hidden bg-muted/15 relative aspect-[16/9] sm:h-64 w-full">
                     {classified?.location_lat && classified?.location_lng ? (
                       <MapLibreCanvas
-                        latitude={Number(classified.location_lat)}
-                        longitude={Number(classified.location_lng)}
+                        center={{
+                          lat: Number(classified.location_lat),
+                          lng: Number(classified.location_lng),
+                        }}
+                        markers={[
+                          {
+                            id: classified.id,
+                            lat: Number(classified.location_lat),
+                            lng: Number(classified.location_lng),
+                            title: classified.title,
+                          },
+                        ]}
                         zoom={14}
                         className="size-full"
-                        markerTitle={classified.title}
                       />
                     ) : (
                       <div className="size-full flex flex-col items-center justify-center p-6 text-center text-muted-foreground bg-muted/20">
@@ -1642,9 +1654,10 @@ export function UniversalClassifiedShowcase({
                         size="sm"
                         type="button"
                         onClick={() => setIsNdaDialogOpen(true)}
-                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shrink-0 cursor-pointer"
+                        className="h-8 px-3 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shrink-0 cursor-pointer gap-1.5"
                       >
-                        🔓 Desbloquear Números
+                        <Unlock className="size-3.5" />
+                        <span>Desbloquear Números</span>
                       </Button>
                     </div>
                   )}
@@ -1675,9 +1688,10 @@ export function UniversalClassifiedShowcase({
                           size="sm"
                           type="button"
                           onClick={() => setIsNdaDialogOpen(true)}
-                          className="h-8 px-3 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shrink-0 cursor-pointer"
+                          className="h-8 px-3 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shrink-0 cursor-pointer gap-1.5"
                         >
-                          🔓 Assinar NDA para Baixar
+                          <Unlock className="size-3.5" />
+                          <span>Assinar NDA para Baixar</span>
                         </Button>
                       </div>
                     ) : (
@@ -1827,7 +1841,7 @@ export function UniversalClassifiedShowcase({
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-2">
                                 <Calendar className="size-4 text-primary shrink-0" />
-                                <strong className="text-foreground text-sm font-semibold">{dep.date}</strong>
+                                <strong className="text-foreground text-sm font-semibold">{dep.label || dep.departure_date}</strong>
                                 <Badge variant="outline" className="text-[10px] font-medium border-none bg-muted/40 text-muted-foreground">
                                   {statusConfig.label}
                                 </Badge>
@@ -2132,9 +2146,10 @@ export function UniversalClassifiedShowcase({
                       type="button"
                       size="sm"
                       onClick={() => setIsNdaDialogOpen(true)}
-                      className="w-full h-8 text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                      className="w-full h-8 text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white cursor-pointer gap-1.5"
                     >
-                      🔓 Assinar Termo (NDA)
+                      <Unlock className="size-3.5" />
+                      <span>Assinar Termo (NDA)</span>
                     </Button>
                   )}
                 </div>
@@ -2603,7 +2618,7 @@ export function UniversalClassifiedShowcase({
               <div className="p-3.5 rounded-xl bg-muted/15 border border-border/40 space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <strong className="text-foreground font-semibold">{cnpjAuditData.companyName}</strong>
-                  <Badge variant="outline" className={`text-[10px] font-bold border-none ${cnpjAuditData.riskClassification === 'baixo' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-amber-500/15 text-amber-600'}`}>
+                  <Badge variant="outline" className={`text-[10px] font-bold border-none ${cnpjAuditData.riskClassification?.toLowerCase() === 'baixo' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-amber-500/15 text-amber-600'}`}>
                     Risco {cnpjAuditData.riskClassification?.toUpperCase()}
                   </Badge>
                 </div>
@@ -2681,9 +2696,10 @@ export function UniversalClassifiedShowcase({
                   setIsSimLabsDrawerOpen(false);
                   setIsNdaDialogOpen(true);
                 }}
-                className="w-full h-10 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                className="w-full h-10 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white cursor-pointer gap-1.5"
               >
-                🔓 Assinar Termo de Sigilo (NDA) para Liberar Dados
+                <Unlock className="size-4" />
+                <span>Assinar Termo de Sigilo (NDA) para Liberar Dados</span>
               </Button>
             ) : (
               (classified?.contact_whatsapp || classified?.whatsapp) && (

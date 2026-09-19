@@ -118,11 +118,12 @@ function NegociacoesPage() {
  const handleGenerateContract = async (dealId: string) => {
  try {
  setGeneratingContractId(dealId);
- const res = await generateContractFromDeal({ data: { dealId } });
- if (res.success) {
+ const res: any = await generateContractFromDeal({ data: { dealId } });
+ if (res?.signingUrl || res?.signUrl || res?.contract) {
  toast.success("Contrato gerado com sucesso!");
- if (res.signUrl) {
- window.open(res.signUrl, "_blank");
+ const targetUrl = res.signingUrl || res.signUrl;
+ if (targetUrl) {
+ window.open(targetUrl, "_blank");
  }
  }
  } catch (err: any) {

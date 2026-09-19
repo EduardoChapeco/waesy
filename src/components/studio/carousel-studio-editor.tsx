@@ -268,9 +268,9 @@ export function CarouselStudioEditor({
   const handlePublish = async (dest: "feed" | "story" | "both") => {
     setIsPublishing(true);
     try {
-      const coverImg = project.slides[0]?.media?.url || null;
+      const coverImg = project.slides[0]?.background_url || null;
       const allMedia = project.slides
-        .map((s) => s.media?.url)
+        .map((s) => s.background_url)
         .filter((u): u is string => Boolean(u));
 
       const res = await publishStudioCarouselToSocial({

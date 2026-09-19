@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { z } from "zod";
+import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 // ---------------------------------------------------------------------------
 // TYPES & SCHEMAS
@@ -1703,6 +1704,25 @@ export const requestAffiliatePayout = createServerFn({ method: "POST" })
       throw new Error("Falha ao registrar solicitação de saque: " + (insertErr?.message || "Erro desconhecido"));
     }
 
+    // ── Ledger Criptográfico SHA-256 — Solicitação de Saque de Afiliado ──
+    try {
+      await recordLedgerEntryCore({
+        transactionType: "pix_sent",
+        amountCents: amountCents,
+        senderId: effectiveUserId,
+        referenceEntityType: "affiliate_payout_request",
+        referenceEntityId: created.id,
+        metadata: {
+          affiliate_id: partner.id,
+          pix_key_type: pixKeyType,
+          status: "pending",
+          action: "payout_request_created",
+        },
+      });
+    } catch (ledgerErr) {
+      console.error("[affiliates.functions] Falha no ledger de saque (solicitação):", ledgerErr);
+    }
+
     return {
       success: true,
       payoutRequest: created,
@@ -1852,6 +1872,27 @@ export const adminProcessPayoutRequest = createServerFn({ method: "POST" })
         updated_at: new Date().toISOString(),
       })
       .eq("id", request.affiliate_id);
+
+    // ── Ledger Criptográfico SHA-256 — Pagamento de Saque de Afiliado Aprovado ──
+    try {
+      await recordLedgerEntryCore({
+        transactionType: "commission_payout",
+        amountCents: request.amount_cents,
+        receiverId: request.affiliate_id,
+        actorId: identity.id,
+        actorRole: identity.role ?? "admin",
+        referenceEntityType: "affiliate_payout_request",
+        referenceEntityId: requestId,
+        metadata: {
+          affiliate_id: request.affiliate_id,
+          receipt_url: receiptUrl ?? null,
+          action: "payout_approved_paid",
+          new_paid_cents: newPaidCents,
+        },
+      });
+    } catch (ledgerErr) {
+      console.error("[affiliates.functions] Falha no ledger de pagamento afiliado:", ledgerErr);
+    }
 
     return { success: true, status: "paid" };
   });

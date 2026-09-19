@@ -169,7 +169,7 @@ function ContractEditorPage() {
         textarea.setSelectionRange(start + token.length, start + token.length);
       }, 50);
     } else {
-      setContentMarkdown((prev) => prev + " " + token);
+      setContentMarkdown((prev: string) => prev + " " + token);
     }
   };
 

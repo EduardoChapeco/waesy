@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -1418,7 +1418,7 @@ function SpecializedClassifiedEditor({
           setCapitalSocialCents(Math.round(official.capitalSocial * 100));
         }
         if (official.mainCnae) {
-          setCnaePrincipal(official.mainCnae.code || "");
+          setCnaePrincipal(String(official.mainCnae.code || ""));
           setCnaeDescription(official.mainCnae.description || "");
         }
         if (official.address) {
@@ -1498,17 +1498,16 @@ function SpecializedClassifiedEditor({
           monthlyRentCents: businessMonthlyRentCents || 0,
           monthlyRevenueCents: businessMonthlyRevenueCents || 0,
           areaSqm: Number(businessAreaSqm) || 100,
-          pointType: businessPointType,
-          segment: businessSegment,
-          city: city || undefined,
-          state: state || undefined,
+          businessType: businessPointType || "ponto_comercial",
+          segment: businessSegment || "geral",
+          city: structuredLoc?.city || "Chapecó",
         },
       });
       setTelemetryResult({
-        paybackMonthsEstimate: res.paybackMonthsEstimate,
-        rentToRevenueRatio: res.rentToRevenueRatio,
-        viabilityScore: res.viabilityScore,
-        summary: res.summary,
+        paybackMonthsEstimate: res.paybackEstimatedMonths,
+        rentToRevenueRatio: res.occupancyCostRatio,
+        viabilityScore: res.feasibilityScore,
+        summary: res.recommendation,
       });
       toast.success("Telemetria e viabilidade calculadas com sucesso pelo SimLabs IA!");
     } catch (err: any) {
@@ -1573,7 +1572,12 @@ function SpecializedClassifiedEditor({
       if (initialData.attributes.accepts_trade !== undefined) setAcceptsTrade(!!initialData.attributes.accepts_trade);
       if (initialData.attributes.cancellation_policy) setCancellationPolicy(initialData.attributes.cancellation_policy);
       if (initialData.attributes.city && initialData.attributes.state) {
-        setStructuredLoc({ city: initialData.attributes.city, state: initialData.attributes.state, neighborhood: initialData.attributes.neighborhood });
+        setStructuredLoc({
+          city: initialData.attributes.city,
+          state: initialData.attributes.state,
+          neighborhood: initialData.attributes.neighborhood,
+          formatted: [initialData.attributes.neighborhood, initialData.attributes.city, initialData.attributes.state].filter(Boolean).join(", "),
+        });
       }
 
       // Viagem
@@ -6206,27 +6210,24 @@ function SpecializedClassifiedEditor({
                 </div>
               )}
 
-              {/* Formas de Pagamento Aceitas & Política de Cancelamento (Todas as Categorias) */}
+              {/* Formas de Pagamento (8 Cartões Táteis Apple HIG >= 48px com Títulos Simples e Diretos) */}
               <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <CreditCard className="size-4 text-primary shrink-0" />
-                    <span>3. Pagamento & Condições Comerciais</span>
+                    <span>Formas de Pagamento</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-bold">
-                    Negociação Transparente
-                  </Badge>
                 </div>
 
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-foreground tracking-tight">Meios de Pagamento Aceitos</Label>
-                    <span className="text-[10px] text-muted-foreground font-mono">Toque para ativar ou desativar</span>
+                    <Label className="text-xs font-semibold text-foreground tracking-tight">Formas aceitas</Label>
+                    <span className="text-[10px] text-muted-foreground font-mono">Toque para ativar</span>
                   </div>
 
-                  {/* 8 Cards Táteis Apple HIG — Ergonomia de Toque >= 54px e Zero Sobreposição */}
+                  {/* 8 Cartões Táteis Interativos — Ergonomia de Toque >= 58px */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                    {/* 1. PIX */}
+                    {/* 1. Pix */}
                     <div
                       role="button"
                       tabIndex={0}
@@ -6251,7 +6252,7 @@ function SpecializedClassifiedEditor({
                             "text-xs font-bold truncate",
                             acceptsPix ? "text-foreground" : "text-foreground/80"
                           )}>
-                            PIX
+                            Pix
                           </span>
                         </div>
                         <div className={cn(
@@ -6266,7 +6267,7 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsPix ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          {pixDiscountPercent > 0 ? `${pixDiscountPercent}% OFF à vista` : "À vista imediato"}
+                          {acceptsPix ? (pixDiscountPercent > 0 ? `${pixDiscountPercent}% off` : "À vista") : "Desativado"}
                         </span>
                       </div>
                     </div>
@@ -6296,7 +6297,7 @@ function SpecializedClassifiedEditor({
                             "text-xs font-bold truncate",
                             acceptsCard ? "text-foreground" : "text-foreground/80"
                           )}>
-                            Cartão
+                            Cartão de Crédito
                           </span>
                         </div>
                         <div className={cn(
@@ -6311,12 +6312,12 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsCard ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          {cardInterestFree ? `Até ${maxInstallments}x s/ juros` : `Até ${maxInstallments}x`}
+                          {acceptsCard ? (cardInterestFree ? `Até ${maxInstallments}x s/ juros` : `Até ${maxInstallments}x`) : "Desativado"}
                         </span>
                       </div>
                     </div>
 
-                    {/* 3. Boleto à Vista */}
+                    {/* 3. Boleto */}
                     <div
                       role="button"
                       tabIndex={0}
@@ -6356,7 +6357,7 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsBoleto ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          Venc. em {boletoDueDays}d
+                          {acceptsBoleto ? `Vence em ${boletoDueDays}d` : "Desativado"}
                         </span>
                       </div>
                     </div>
@@ -6401,12 +6402,12 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsBoletoInstallments ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          Até {maxBoletoInstallments}x direto
+                          {acceptsBoletoInstallments ? `Até ${maxBoletoInstallments}x` : "Desativado"}
                         </span>
                       </div>
                     </div>
 
-                    {/* 5. Carnê da Loja / Digital */}
+                    {/* 5. Carnê Digital */}
                     <div
                       role="button"
                       tabIndex={0}
@@ -6431,7 +6432,7 @@ function SpecializedClassifiedEditor({
                             "text-xs font-bold truncate",
                             acceptsCarne ? "text-foreground" : "text-foreground/80"
                           )}>
-                            Carnê da Loja
+                            Carnê Digital
                           </span>
                         </div>
                         <div className={cn(
@@ -6446,12 +6447,12 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsCarne ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          Até {maxCarneInstallments}x direto
+                          {acceptsCarne ? `Até ${maxCarneInstallments}x` : "Desativado"}
                         </span>
                       </div>
                     </div>
 
-                    {/* 6. Dinheiro em Espécie */}
+                    {/* 6. Dinheiro */}
                     <div
                       role="button"
                       tabIndex={0}
@@ -6491,12 +6492,12 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsCash ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          Presencial / Retirada
+                          {acceptsCash ? "Presencial" : "Desativado"}
                         </span>
                       </div>
                     </div>
 
-                    {/* 7. Trocas / Permuta */}
+                    {/* 7. Troca */}
                     <div
                       role="button"
                       tabIndex={0}
@@ -6521,7 +6522,7 @@ function SpecializedClassifiedEditor({
                             "text-xs font-bold truncate",
                             acceptsTrade ? "text-foreground" : "text-foreground/80"
                           )}>
-                            Trocas
+                            Troca
                           </span>
                         </div>
                         <div className={cn(
@@ -6536,12 +6537,12 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsTrade ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          Sob avaliação
+                          {acceptsTrade ? "Aceita proposta" : "Desativado"}
                         </span>
                       </div>
                     </div>
 
-                    {/* 8. Financiamento / Consórcio */}
+                    {/* 8. Financiamento */}
                     <div
                       role="button"
                       tabIndex={0}
@@ -6581,56 +6582,73 @@ function SpecializedClassifiedEditor({
                           "text-[10px] font-medium truncate",
                           acceptsFinancing ? "text-primary font-semibold" : "text-muted-foreground"
                         )}>
-                          Banco / Consórcio
+                          {acceptsFinancing ? "Banco ou consórcio" : "Desativado"}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* ── Sub-Painéis de Configuração Contextual para Cada Método Ativo ── */}
+                {/* ── Sub-Painéis de Configuração Contextual com Sliders e Títulos Diretos ── */}
 
-                {/* PIX Config */}
+                {/* 1. Pix Config com Slider de 0 a 30% e Cálculo Imediato */}
                 {acceptsPix && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-background border border-border/60">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                        <BadgePercent className="size-4" />
-                      </div>
-                      <div>
-                        <Label className="text-xs font-semibold text-foreground">Desconto à vista no PIX (%)</Label>
-                        <span className="text-[11px] text-muted-foreground block">
-                          {pixDiscountPercent > 0 && priceCents && priceCents > 0
-                            ? `Preço c/ desconto: ${formatMoney(Math.round(priceCents * (1 - pixDiscountPercent / 100)))} (Economia de ${formatMoney(Math.round(priceCents * (pixDiscountPercent / 100)))})`
-                            : "Destaca badge de desconto imediato na vitrine"}
+                  <div className="space-y-3 p-4 rounded-xl bg-background border border-border/60">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <BadgePercent className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span>Desconto no Pix</span>
+                      </Label>
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                        {pixDiscountPercent}% OFF
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={30}
+                      step={1}
+                      value={pixDiscountPercent}
+                      onChange={(e) => setPixDiscountPercent(Math.min(30, Math.max(0, Number(e.target.value) || 0)))}
+                      className="w-full h-2 rounded-full accent-emerald-600 cursor-pointer"
+                      aria-label="Desconto no Pix"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                      <span>0%</span>
+                      <span>5%</span>
+                      <span>10%</span>
+                      <span>15%</span>
+                      <span>20%</span>
+                      <span>25%</span>
+                      <span>30%</span>
+                    </div>
+                    {pixDiscountPercent > 0 && priceCents && priceCents > 0 ? (
+                      <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          Economia: <strong className="text-emerald-600 dark:text-emerald-400">{formatMoney(Math.round(priceCents * (pixDiscountPercent / 100)))}</strong>
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          Preço final: {formatMoney(Math.round(priceCents * (1 - pixDiscountPercent / 100)))}
                         </span>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                      <Input
-                        type="number"
-                        min={0}
-                        max={50}
-                        value={pixDiscountPercent || ""}
-                        onChange={(e) => setPixDiscountPercent(Math.min(50, Math.max(0, Number(e.target.value))))}
-                        placeholder="0"
-                        className="h-9 w-20 text-xs text-right font-mono"
-                      />
-                      <span className="text-xs font-bold text-muted-foreground">%</span>
-                    </div>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/40">
+                        {pixDiscountPercent > 0 ? `${pixDiscountPercent}% de desconto imediato à vista` : "Sem desconto (valor integral à vista)"}
+                      </p>
+                    )}
                   </div>
                 )}
 
-                {/* Cartão de Crédito Config */}
+                {/* 2. Cartão de Crédito Config */}
                 {acceptsCard && (
-                  <div className="space-y-3 p-3.5 rounded-xl bg-background border border-border/60">
+                  <div className="space-y-3 p-4 rounded-xl bg-background border border-border/60">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
                         <CreditCard className="size-3.5 text-primary" />
-                        <span>Parcelamento Máximo no Cartão</span>
+                        <span>Parcelas no Cartão</span>
                       </Label>
                       <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
-                        {maxInstallments}x
+                        Até {maxInstallments}x
                       </span>
                     </div>
                     <input
@@ -6641,7 +6659,7 @@ function SpecializedClassifiedEditor({
                       value={maxInstallments}
                       onChange={(e) => setMaxInstallments(Number(e.target.value) || 1)}
                       className="w-full h-2 rounded-full accent-primary cursor-pointer"
-                      aria-label="Parcelamento Máximo no Cartão"
+                      aria-label="Parcelas no Cartão"
                     />
                     <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
                       <span>1x</span>
@@ -6659,7 +6677,7 @@ function SpecializedClassifiedEditor({
                           id="card-interest-free"
                         />
                         <Label htmlFor="card-interest-free" className="text-xs font-medium cursor-pointer">
-                          Parcelamento Sem Juros para o comprador
+                          Sem juros
                         </Label>
                       </div>
                       {priceCents && priceCents > 0 && (
@@ -6671,19 +6689,19 @@ function SpecializedClassifiedEditor({
                   </div>
                 )}
 
-                {/* Boleto à Vista Config */}
+                {/* 3. Boleto Config com 1 a 7 dias úteis */}
                 {acceptsBoleto && (
-                  <div className="p-3.5 rounded-xl bg-background border border-border/60 space-y-2.5">
+                  <div className="p-4 rounded-xl bg-background border border-border/60 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Receipt className="size-4 text-primary" />
-                        <Label className="text-xs font-semibold text-foreground">Prazo de Vencimento do Boleto</Label>
-                      </div>
-                      <span className="text-[11px] text-muted-foreground font-mono font-medium">
-                        {boletoDueDays} dias úteis
+                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <Receipt className="size-3.5 text-primary" />
+                        <span>Vencimento do Boleto</span>
+                      </Label>
+                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
+                        {boletoDueDays} {boletoDueDays === 1 ? "dia útil" : "dias úteis"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-5 gap-2">
                       {[1, 2, 3, 5, 7].map((days) => (
                         <Button
                           key={days}
@@ -6691,28 +6709,25 @@ function SpecializedClassifiedEditor({
                           variant={boletoDueDays === days ? "default" : "outline"}
                           size="sm"
                           onClick={() => setBoletoDueDays(days)}
-                          className="h-8 px-3 text-xs font-semibold rounded-lg"
+                          className="h-10 text-xs font-semibold rounded-lg cursor-pointer"
                         >
                           {days} {days === 1 ? "dia" : "dias"}
                         </Button>
                       ))}
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      O boleto bancário é gerado com código de barras e linha digitável. A compensação ocorre em até 1 dia útil após o pagamento.
-                    </p>
                   </div>
                 )}
 
-                {/* Boleto Parcelado Direto Config */}
+                {/* 4. Boleto Parcelado Config */}
                 {acceptsBoletoInstallments && (
-                  <div className="space-y-3 p-3.5 rounded-xl bg-background border border-border/60">
+                  <div className="space-y-3 p-4 rounded-xl bg-background border border-border/60">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
                         <FileSpreadsheet className="size-3.5 text-primary" />
-                        <span>Parcelamento Máximo no Boleto Direto</span>
+                        <span>Parcelas no Boleto</span>
                       </Label>
                       <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
-                        {maxBoletoInstallments}x
+                        Até {maxBoletoInstallments}x
                       </span>
                     </div>
                     <input
@@ -6723,7 +6738,7 @@ function SpecializedClassifiedEditor({
                       value={maxBoletoInstallments}
                       onChange={(e) => setMaxBoletoInstallments(Number(e.target.value) || 1)}
                       className="w-full h-2 rounded-full accent-primary cursor-pointer"
-                      aria-label="Parcelamento Máximo no Boleto Direto"
+                      aria-label="Parcelas no Boleto"
                     />
                     <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
                       <span>1x</span>
@@ -6735,7 +6750,7 @@ function SpecializedClassifiedEditor({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                       <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Entrada Mínima Sugerida (R$)</Label>
+                        <Label className="text-xs font-medium text-foreground">Entrada Mínima (R$)</Label>
                         <CurrencyField
                           value={boletoMinDownPaymentCents}
                           onChange={setBoletoMinDownPaymentCents}
@@ -6744,11 +6759,11 @@ function SpecializedClassifiedEditor({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Requisitos / Análise de Crédito</Label>
+                        <Label className="text-xs font-medium text-foreground">Requisitos</Label>
                         <Input
                           value={boletoNotes}
                           onChange={(e) => setBoletoNotes(e.target.value)}
-                          placeholder="Ex: Sujeito a análise cadastral de CPF e contrato"
+                          placeholder="Ex: Análise cadastral de CPF"
                           className="h-9 text-xs"
                         />
                       </div>
@@ -6756,20 +6771,20 @@ function SpecializedClassifiedEditor({
 
                     {priceCents && priceCents > 0 && (
                       <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/30 font-mono">
-                        Estimativa: Entrada {formatMoney(boletoMinDownPaymentCents || 0)} + {maxBoletoInstallments}x de{" "}
-                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (boletoMinDownPaymentCents || 0)) / maxBoletoInstallments))}</strong> em boletos mensais
+                        Simulação: Entrada {formatMoney(boletoMinDownPaymentCents || 0)} + {maxBoletoInstallments}x de{" "}
+                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (boletoMinDownPaymentCents || 0)) / maxBoletoInstallments))}</strong>
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Carnê Digital da Loja Config */}
+                {/* 5. Carnê Digital Config */}
                 {acceptsCarne && (
-                  <div className="space-y-3.5 p-3.5 rounded-xl bg-background border border-primary/40 shadow-2xs">
+                  <div className="space-y-3.5 p-4 rounded-xl bg-background border border-primary/40 shadow-2xs">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
                         <BookOpenCheck className="size-4 text-primary" />
-                        <span>Parcelamento no Carnê da Loja / Crediário Próprio</span>
+                        <span>Parcelas no Carnê</span>
                       </Label>
                       <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
                         Até {maxCarneInstallments}x
@@ -6783,7 +6798,7 @@ function SpecializedClassifiedEditor({
                       value={maxCarneInstallments}
                       onChange={(e) => setMaxCarneInstallments(Number(e.target.value) || 1)}
                       className="w-full h-2 rounded-full accent-primary cursor-pointer"
-                      aria-label="Parcelamento Máximo no Carnê"
+                      aria-label="Parcelas no Carnê"
                     />
                     <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
                       <span>1x</span>
@@ -6795,17 +6810,21 @@ function SpecializedClassifiedEditor({
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                       <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Carência para 1º Vencimento</Label>
-                        <Select value={String(carneGraceDays)} onValueChange={(v) => setCarneGraceDays(Number(v) || 30)}>
-                          <SelectTrigger className="h-9 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="30">30 dias</SelectItem>
-                            <SelectItem value="45">45 dias</SelectItem>
-                            <SelectItem value="60">60 dias</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Label className="text-xs font-medium text-foreground">1º Vencimento</Label>
+                        <div className="grid grid-cols-3 gap-1">
+                          {[30, 45, 60].map((days) => (
+                            <Button
+                              key={days}
+                              type="button"
+                              variant={carneGraceDays === days ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCarneGraceDays(days)}
+                              className="h-9 px-1 text-xs font-semibold rounded-lg cursor-pointer"
+                            >
+                              {days}d
+                            </Button>
+                          ))}
+                        </div>
                       </div>
 
                       <div className="space-y-1">
@@ -6819,11 +6838,11 @@ function SpecializedClassifiedEditor({
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Condições do Crediário</Label>
+                        <Label className="text-xs font-medium text-foreground">Requisitos</Label>
                         <Input
                           value={carneNotes}
                           onChange={(e) => setCarneNotes(e.target.value)}
-                          placeholder="Ex: Crediário próprio rápido"
+                          placeholder="Ex: Análise rápida"
                           className="h-9 text-xs"
                         />
                       </div>
@@ -6832,67 +6851,72 @@ function SpecializedClassifiedEditor({
                     {priceCents && priceCents > 0 && (
                       <p className="text-[11px] text-muted-foreground font-mono pt-1 border-t border-border/30">
                         Simulação: Entrada {formatMoney(carneMinDownPaymentCents || 0)} + {maxCarneInstallments}x de{" "}
-                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (carneMinDownPaymentCents || 0)) / maxCarneInstallments))}</strong> (1ª parcela após {carneGraceDays} dias)
+                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (carneMinDownPaymentCents || 0)) / maxCarneInstallments))}</strong> (1ª parcela em {carneGraceDays} dias)
                       </p>
                     )}
 
-                    {/* Banner de Bilateralidade do Carnê Digital */}
-                    <div className="flex items-start gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
-                      <BookOpenCheck className="size-4 text-primary shrink-0 mt-0.5" />
-                      <div className="space-y-0.5 text-foreground/90">
-                        <strong className="text-primary block font-semibold">Bilateralidade Waesy Carnê Digital</strong>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          Ao concluir uma venda ou aceitar uma proposta parcelada no carnê, você emite o carnê oficial com 1 clique na área de Negociações. O comprador acompanha e quita as parcelas diretamente em <strong>Minha Conta &gt; Carnês</strong>.
-                        </p>
-                      </div>
+                    <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground/80 space-y-1">
+                      <span className="font-semibold text-primary block">Carnê Digital Waesy</span>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Ao fechar a venda, você gera o carnê em 1 toque. O comprador acompanha e paga as parcelas pelo aplicativo.
+                      </p>
                     </div>
                   </div>
                 )}
 
-                {/* Trocas Config */}
+                {/* 6. Dinheiro Config */}
+                {acceptsCash && (
+                  <div className="p-3.5 rounded-xl bg-background border border-border/60">
+                    <p className="text-xs text-muted-foreground">
+                      Pagamento presencial em dinheiro na entrega ou retirada.
+                    </p>
+                  </div>
+                )}
+
+                {/* 7. Troca Config */}
                 {acceptsTrade && (
-                  <div className="space-y-1.5 p-3.5 rounded-xl bg-background border border-border/60">
+                  <div className="space-y-1.5 p-4 rounded-xl bg-background border border-border/60">
                     <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <RefreshCw className="size-3.5 text-primary" />
-                      <span>Condições / O que você aceita na troca?</span>
+                      <span>O que você aceita na troca?</span>
                     </Label>
                     <Input
                       value={tradeNotes}
                       onChange={(e) => setTradeNotes(e.target.value)}
-                      placeholder="Ex: Aceito moto seminova, smartphone recente ou itens sob avaliação"
+                      placeholder="Ex: Veículo, moto, eletrônicos ou itens sob avaliação"
                       className="h-9 text-xs"
                     />
                   </div>
                 )}
 
-                {/* Financiamento Bancário / Consórcio Config */}
+                {/* 8. Financiamento Config */}
                 {acceptsFinancing && (
-                  <div className="p-3.5 rounded-xl bg-background border border-border/60 space-y-2">
+                  <div className="space-y-1.5 p-4 rounded-xl bg-background border border-border/60">
                     <div className="flex items-center gap-2">
                       <Landmark className="size-4 text-primary" />
-                      <Label className="text-xs font-semibold text-foreground">Instituições Financeiras / Carta de Crédito</Label>
+                      <Label className="text-xs font-semibold text-foreground">Bancos e cartas aceitas</Label>
                     </div>
                     <Input
                       value={financingNotes}
                       onChange={(e) => setFinancingNotes(e.target.value)}
-                      placeholder="Ex: Financiamento via BV, Santander, Itaú ou carta de consórcio contemplada"
+                      placeholder="Ex: Financiamento bancário ou carta de consórcio contemplada"
                       className="h-9 text-xs"
                     />
                   </div>
                 )}
 
-                {/* Política de Cancelamento */}
+                {/* Cancelamento */}
                 <div className="space-y-1.5 pt-1 border-t border-border/40">
-                  <Label className="text-xs text-foreground font-semibold">Política de Cancelamento / Devolução</Label>
+                  <Label className="text-xs text-foreground font-semibold">Cancelamento</Label>
                   <Select value={cancellationPolicy} onValueChange={(v: any) => setCancellationPolicy(v)}>
                     <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="flexible">Flexível: Cancelamento grátis até 24h antes</SelectItem>
-                      <SelectItem value="moderate">Moderado: Cancelamento com 50% de reembolso</SelectItem>
-                      <SelectItem value="strict">Rígido: Não reembolsável após confirmação</SelectItem>
-                      <SelectItem value="negotiable">A combinar diretamente com o anunciante</SelectItem>
+                      <SelectItem value="flexible">Flexível (até 24h antes)</SelectItem>
+                      <SelectItem value="moderate">Moderado (50% de reembolso)</SelectItem>
+                      <SelectItem value="strict">Rígido (não reembolsável)</SelectItem>
+                      <SelectItem value="negotiable">A combinar</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -7516,16 +7540,16 @@ function SpecializedClassifiedEditor({
  <Phone className="size-4" />
  <span>
  {niche.id === "hospedagem"
- ? "Consultar Datas & Reservar (WhatsApp)"
+ ? "Reservar Estadia"
  : niche.id === "imovel"
- ? "Agendar Visita ao Imóvel (WhatsApp)"
+ ? "Agendar Visita"
  : niche.id === "veiculo"
- ? "Agendar Test Drive & Proposta (WhatsApp)"
+ ? "Agendar Test Drive"
  : niche.id === "servico"
- ? "Solicitar Orçamento Técnico (WhatsApp)"
+ ? "Solicitar Orçamento"
  : niche.id === "vaga"
- ? "Enviar Currículo / Candidatar-se (WhatsApp)"
- : "Comprar / Falar com o Vendedor (WhatsApp)"}
+ ? "Candidatar-se"
+ : "Falar com Vendedor"}
  </span>
  </Button>
  </div>

@@ -38,40 +38,46 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
- if (isRedirect(error)) {
- throw error;
- }
+  if (isRedirect(error)) {
+    throw error;
+  }
 
- console.error(error);
- const router = useRouter();
+  console.error(error);
+  const router = useRouter();
 
- return (
- <div className="flex min-h-screen items-center justify-center bg-background px-4">
- <div className="max-w-md text-center">
- <h1 className="text-xl font-semibold tracking-tight text-foreground">Algo deu errado</h1>
- <p className="mt-2 text-sm text-muted-foreground">
- Não foi possível carregar esta página. Tente novamente ou volte ao início.
- </p>
- <div className="mt-6 flex flex-wrap justify-center gap-2">
- <button
- onClick={() => {
- router.invalidate();
- reset();
- }}
- className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
- >
- Tentar novamente
- </button>
- <a
- href="/"
- className="inline-flex items-center justify-center rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
- >
- Voltar ao início
- </a>
- </div>
- </div>
- </div>
- );
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <div className="max-w-md w-full text-center space-y-4">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">Algo deu errado</h1>
+        <p className="text-sm text-muted-foreground">
+          Não foi possível carregar esta página. Tente novamente ou volte ao início.
+        </p>
+        {error?.message && (
+          <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-left overflow-x-auto text-xs font-mono">
+            <span className="font-bold block mb-1">Diagnóstico do Erro:</span>
+            {error.message}
+          </div>
+        )}
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 cursor-pointer"
+          >
+            Tentar novamente
+          </button>
+          <a
+            href="/"
+            className="inline-flex items-center justify-center rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent cursor-pointer"
+          >
+            Voltar ao início
+          </a>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({

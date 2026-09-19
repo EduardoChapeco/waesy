@@ -236,9 +236,9 @@ export function UnifiedNewProductPage() {
  setValue("description", p.description);
  setValue("price_cents", p.suggested_price_cents);
  setValue("sku", p.barcode_ean);
- setValue("selling_unit", p.selling_unit);
- if (p.image_url) {
- setImages([p.image_url]);
+ setValue("selling_unit", p.unit_of_measure as any);
+ if (p.image_urls?.[0]) {
+ setImages([p.image_urls[0]]);
  }
  setFiscalData({
  ncm_code: p.ncm_code,
@@ -246,7 +246,7 @@ export function UnifiedNewProductPage() {
  ibs_rate: p.ibs_rate,
  cbs_rate: p.cbs_rate,
  cfop_default: p.cfop_default,
- tax_regime: p.tax_regime,
+ tax_regime: p.tax_tribute_group,
  });
  toast.success(`"${p.name}" importado do Catálogo Central com parâmetros fiscais!`);
  };

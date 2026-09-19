@@ -451,7 +451,7 @@ function TourismDetailPage() {
  type="button"
  onClick={() => setViewMode("standard")}
  className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer ${
- viewMode === "standard"
+  (viewMode as string) === "standard"
  ? "bg-background text-foreground shadow-xs"
  : "text-muted-foreground hover:text-foreground"
  }`}

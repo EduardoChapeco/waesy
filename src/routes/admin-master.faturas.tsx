@@ -387,7 +387,7 @@ function MasterFaturasPage() {
                 <ImageUpload
                   value={receiptUrl}
                   onChange={(url) => setReceiptUrl(url)}
-                  aspectPreset="landscape"
+                  aspectPreset="widescreen"
                 />
                 <div className="flex items-center gap-2">
                   <Input

@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/server-access";
 import { emitOrderNFeAutomated } from "@/services/fiscal-nfe.functions";
 import { sendWhatsAppNotification } from "@/services/integrations.functions";
 import { withDataPayload } from "@/services/cart-helpers";
+import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 // ---------------------------------------------------------------------------
 // Order status enum (shared between validator and domain logic)
@@ -139,6 +140,30 @@ export async function _updateOrderStatus(
 
  const { error } = await db.from("orders").update(updatePayload).eq("id", orderId);
  if (error) throw error;
+
+ // ── Ledger Criptográfico SHA-256 — registra transições financeiras críticas ──
+ // Qualquer transição financeira confirmável gera entrada imutável com hash encadeado
+ if (status === "paid") {
+  try {
+   await recordLedgerEntryCore({
+    transactionType: "order_payment",
+    amountCents: order.total_cents ?? 0,
+    receiverId: order.customer_id,
+    storeId: order.store_id,
+    referenceEntityType: "order",
+    referenceEntityId: orderId,
+    metadata: {
+     order_public_token: order.public_token,
+     previous_status: "processing",
+     new_status: status,
+     customer_id: order.customer_id,
+    },
+   });
+  } catch (ledgerErr) {
+   // Não bloqueia o fluxo — loga para investigação posterior
+   console.error("[order.functions] Falha ao registrar no ledger imutável:", ledgerErr);
+  }
+ }
 
  // Notificar cliente sobre envio ou entrega
  if (order.customer_id && (status === "shipped" || status === "delivered" || status === "paid")) {
@@ -851,6 +876,27 @@ export const closePdvComanda = createServerFn({ method: "POST" })
  });
  }
  }
+
+  // ── Ledger Criptográfico SHA-256 — PDV Comanda Liquidada ──────────────────────
+  // Toda comanda fechada no PDV gera entrada imutável encadeada (Bacen/PCI-DSS)
+  try {
+  await recordLedgerEntryCore({
+    transactionType: "order_payment",
+    amountCents: order.total_cents ?? 0,
+    storeId: order.store_id ?? identity.store_id,
+    referenceEntityType: "order",
+    referenceEntityId: orderId,
+    actorId: identity.id,
+    actorRole: identity.role ?? "seller",
+    metadata: {
+      payment_method: paymentMethod,
+      table_identifier: order.table_identifier,
+      pdv_close: true,
+    },
+  });
+  } catch (ledgerErr) {
+  console.error("[order.functions] Falha no ledger da comanda PDV:", ledgerErr);
+  }
 
  return { success: true };
  } catch (e: unknown) {

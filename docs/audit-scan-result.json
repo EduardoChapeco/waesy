@@ -1,0 +1,301 @@
+{
+  "generatedAt": "2026-09-19T14:44:53.422Z",
+  "eixo1_orphanedTables": [
+    "ad_properties",
+    "ad_vehicles",
+    "affiliate_commissions",
+    "agencies",
+    "agent_registry",
+    "ai_brain_settings",
+    "ai_squads",
+    "audit_log",
+    "boarding_cards",
+    "boarding_checklist_templates",
+    "boarding_rooming_list",
+    "boarding_tickets",
+    "booking_service_resources",
+    "brand_kit",
+    "bus_layouts",
+    "bus_seat_assignments",
+    "campaign_metrics",
+    "canonical_device_models",
+    "canonical_vehicle_models",
+    "clients",
+    "company_reputation_profiles",
+    "corporate_clients",
+    "corporate_rfps",
+    "courier_payouts",
+    "crawl_seeds",
+    "curation_squad_registry",
+    "customer_credit_transactions",
+    "customer_portal_configs",
+    "delivery_pins",
+    "demographic_profiles_ibge",
+    "domain_configs",
+    "event_assets_inventory",
+    "event_contractors",
+    "event_ticket_batches",
+    "experience_pages",
+    "folders",
+    "gift_card_usages",
+    "global_ncm_tributes",
+    "group_tour_enrollments",
+    "group_tours",
+    "holidays_calendar",
+    "hr_departments",
+    "hr_positions",
+    "inventory_adjustments_log",
+    "invite_telemetry",
+    "job_postings",
+    "jus_lawyer_teams",
+    "marketing_creatives",
+    "match_time_campaigns",
+    "mobility_offers_negotiations",
+    "mobility_stops",
+    "mystery_shopper_audits",
+    "office_documents",
+    "outbox_events",
+    "payment_transactions",
+    "pixel_dispatch_log",
+    "platform_subscriptions",
+    "pos_settings",
+    "proposal_items",
+    "proposals",
+    "rental_applications",
+    "reputation_complaints",
+    "reputation_interactions",
+    "rma_inspections",
+    "rma_items",
+    "shipment_webhooks_inbox",
+    "shipping_options",
+    "simlab_personas",
+    "simlab_research_sessions",
+    "sponsor_placements",
+    "squad_template_agents",
+    "squad_templates",
+    "stock_reservations",
+    "store_ad_accounts",
+    "store_delivery_surge_policies",
+    "store_growth_bounties",
+    "store_hr_delegations",
+    "store_moderation_suspensions",
+    "store_squad_runs",
+    "store_squads",
+    "support_tickets",
+    "synthetic_agent_memories",
+    "system_flags",
+    "system_wipe_logs",
+    "token_ledger_transactions",
+    "token_recharge_webhooks_inbox",
+    "transaction_certificates",
+    "travel_contract_certificates",
+    "travel_flight_alternatives",
+    "travel_group_tours",
+    "traveler_forms",
+    "trip_rooming_list",
+    "trips",
+    "user_behavior_events",
+    "user_category_affinity",
+    "user_token_transactions",
+    "visual_workflow_executions",
+    "visual_workflows",
+    "vouchers",
+    "webhook_events"
+  ],
+  "eixo2_orphanedServices": [
+    "ai.functions",
+    "audit.functions",
+    "billing.functions",
+    "canonical-catalog.functions",
+    "cash-safes.functions",
+    "central-knowledge.functions",
+    "claim.functions",
+    "classifieds-workspace-bridge.functions",
+    "company-delivery.functions",
+    "external-events.functions",
+    "finance.functions",
+    "fulfillment.functions",
+    "group-tour-cash.functions",
+    "machine.functions",
+    "marketing-engagement.functions",
+    "master-catalog.functions",
+    "match-time.functions",
+    "modifiers.functions",
+    "nexus-operations.functions",
+    "notifications-push.functions",
+    "portal-waitlist.functions",
+    "seller.functions",
+    "service-orders.functions",
+    "squad-content.functions",
+    "tag-audit.functions",
+    "timeline.functions",
+    "tourism-airports.functions",
+    "tourism-operations.functions",
+    "travel-installments.functions",
+    "upsell.functions"
+  ],
+  "eixo3_ledgerGaps": [
+    {
+      "service": "payment.functions.ts",
+      "mutations": 7
+    },
+    {
+      "service": "checkout.functions.ts",
+      "mutations": 3
+    },
+    {
+      "service": "order.functions.ts",
+      "mutations": 18
+    },
+    {
+      "service": "commission.functions.ts",
+      "mutations": 3
+    },
+    {
+      "service": "giftcard.functions.ts",
+      "mutations": 0
+    },
+    {
+      "service": "affiliates.functions.ts",
+      "mutations": 18
+    },
+    {
+      "service": "personal-finance.functions.ts",
+      "mutations": 6
+    },
+    {
+      "service": "client-wallet.functions.ts",
+      "mutations": 0
+    },
+    {
+      "service": "cash.functions.ts",
+      "mutations": 14
+    },
+    {
+      "service": "group-tour-cash.functions.ts",
+      "mutations": 8
+    },
+    {
+      "service": "financial-obligations.functions.ts",
+      "mutations": 5
+    },
+    {
+      "service": "marketplace-hub.functions.ts",
+      "mutations": 9
+    },
+    {
+      "service": "marketplace-webhooks.functions.ts",
+      "mutations": 16
+    },
+    {
+      "service": "travel-lifecycle.functions.ts",
+      "mutations": 10
+    }
+  ],
+  "eixo4_forensicGaps": [
+    {
+      "service": "auth.functions.ts",
+      "mutations": 9
+    },
+    {
+      "service": "payment.functions.ts",
+      "mutations": 14
+    },
+    {
+      "service": "checkout.functions.ts",
+      "mutations": 2
+    },
+    {
+      "service": "order.functions.ts",
+      "mutations": 21
+    },
+    {
+      "service": "commission.functions.ts",
+      "mutations": 5
+    },
+    {
+      "service": "giftcard.functions.ts",
+      "mutations": 3
+    },
+    {
+      "service": "affiliates.functions.ts",
+      "mutations": 22
+    },
+    {
+      "service": "store.functions.ts",
+      "mutations": 14
+    },
+    {
+      "service": "kyc.functions.ts",
+      "mutations": 1
+    },
+    {
+      "service": "security.functions.ts",
+      "mutations": 11
+    },
+    {
+      "service": "secret-vault.functions.ts",
+      "mutations": 1
+    },
+    {
+      "service": "api-orchestrator.functions.ts",
+      "mutations": 12
+    },
+    {
+      "service": "tokens.functions.ts",
+      "mutations": 16
+    },
+    {
+      "service": "receivables.functions.ts",
+      "mutations": 21
+    },
+    {
+      "service": "legal.functions.ts",
+      "mutations": 2
+    },
+    {
+      "service": "contracts.functions.ts",
+      "mutations": 21
+    },
+    {
+      "service": "marketplace-hub.functions.ts",
+      "mutations": 9
+    },
+    {
+      "service": "marketplace-webhooks.functions.ts",
+      "mutations": 11
+    },
+    {
+      "service": "crm.functions.ts",
+      "mutations": 29
+    },
+    {
+      "service": "mining.functions.ts",
+      "mutations": 32
+    },
+    {
+      "service": "classifieds.functions.ts",
+      "mutations": 23
+    }
+  ],
+  "eixo5_keySecurityIssues": [
+    "src\\lib\\session-audit.server.ts",
+    "src\\routes\\api.auth.govbr.callback.ts",
+    "src\\routes\\api.auth.marketplace.callback.ts",
+    "src\\services\\api-orchestrator.functions.ts",
+    "src\\services\\contracts.functions.ts",
+    "src\\services\\courier-verification.functions.ts",
+    "src\\services\\integrations.functions.ts",
+    "src\\services\\mining.functions.ts",
+    "src\\services\\personal-finance.functions.ts",
+    "src\\services\\private-store.functions.ts",
+    "src\\services\\secret-vault.functions.ts"
+  ],
+  "summary": {
+    "totalTables": 461,
+    "totalServices": 176,
+    "p0Critical": 15,
+    "p1High": 32,
+    "p2Medium": 80
+  }
+}

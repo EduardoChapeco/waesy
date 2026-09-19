@@ -329,6 +329,7 @@ function PdvTerminal() {
  const [quickMovementReason, setQuickMovementReason] = useState("");
 
  const [isFullscreen, setIsFullscreen] = useState(false);
+ const [paperWidth, setPaperWidth] = useState<"80mm" | "58mm">("80mm");
  const [lastSaleReceipt, setLastSaleReceipt] = useState<any | null>(null);
 
  const [selectedItemForModifiers, setSelectedItemForModifiers] = useState<{
@@ -807,27 +808,29 @@ function PdvTerminal() {
     }
     const receiptData: ThermalReceiptData = {
       storeName: store?.name || "Terminal PDV Waesy",
-      headerLines: [
-        "CONFERENCIA CEGA DE TURNO",
-        `Caixa #${activeRegister.id?.slice(0, 8) || "01"}`,
-        `Abertura: ${formatDateTime(activeRegister.opened_at || new Date().toISOString())}`,
-        `Impressao: ${formatDateTime(new Date().toISOString())}`,
-      ],
+      saleId: `TURNO-${activeRegister.id?.slice(0, 8) || "01"}`,
+      date: new Date().toISOString(),
+      serviceMode: "Conferência Cega de Turno",
       items: [
-        { name: "Total Vendas do Turno", quantity: 1, totalPriceCents: activeRegister.total_sales_cents || 0 },
+        {
+          title: "Total Vendas do Turno",
+          qty: 1,
+          unitPriceCents: activeRegister.total_sales_cents || 0,
+          totalCents: activeRegister.total_sales_cents || 0,
+        },
       ],
+      subtotalCents: activeRegister.total_sales_cents || 0,
       totalCents: activeRegister.total_sales_cents || 0,
-      paymentMethod: "Apuracao Cega (Dinheiro / Cartao / Pix)",
-      footerLines: [
-        "--------------------------------",
-        "Conferencia fisica obrigatoria",
-        "Assinatura do Operador:",
-        "",
-        "________________________________",
-        "Waesy PDV - Operacao Segura",
+      amountPaidCents: activeRegister.total_sales_cents || 0,
+      payments: [
+        {
+          method: "Apuracao Cega (Dinheiro / Cartao / Pix)",
+          amountCents: activeRegister.total_sales_cents || 0,
+        },
       ],
+      notes: `Abertura: ${formatDateTime(activeRegister.opened_at || new Date().toISOString())}\nImpressao: ${formatDateTime(new Date().toISOString())}\n--------------------------------\nConferencia fisica obrigatoria\nAssinatura do Operador:\n\n________________________________\nWaesy PDV - Operacao Segura`,
     };
-    printThermalReceipt(receiptData);
+    printThermalReceipt(receiptData, paperWidth);
     toast.success("Conferência cega enviada para impressão térmica!");
   };
 

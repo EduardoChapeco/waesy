@@ -23,6 +23,7 @@ import {
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { getUserSession } from "@/services/auth.functions";

@@ -142,7 +142,7 @@ function DoacoesPage() {
  </div>
  <Link
  to="/classificados"
- search={{ categoria: "doacoes" }}
+ search={{ category: "doacoes" }}
  className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline pt-2"
  >
  Ver Doações Disponíveis <ArrowRight size={12} />
@@ -161,7 +161,7 @@ function DoacoesPage() {
  </div>
  <Link
  to="/classificados"
- search={{ categoria: "doacoes" }}
+ search={{ category: "doacoes" }}
  className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline pt-2"
  >
  Ver Pontos de Coleta <ArrowRight size={12} />

@@ -65,6 +65,8 @@ import {
   Armchair,
   Shirt,
   GraduationCap,
+  Crown,
+  Bed,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -88,11 +90,25 @@ import {
 } from "@/lib/classifieds/canonical-hiring";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { FavoriteButton } from "@/components/common/favorite-button";
+import {
+  resolveClassifiedNiche,
+  getClassifiedFeatureCards,
+  getClassifiedPaymentMethods,
+  getClassifiedHeroHighlight,
+  getClassifiedEditorialSpecs,
+  getClassifiedPrimaryCtaLabel,
+} from "@/lib/classifieds/semantics";
+import { formatDate } from "@/lib/datetime";
+import { WeatherWidget } from "@/components/classifieds/weather-widget";
+import {
+  DepartureOption,
+  CANONICAL_BUS_CATEGORIES,
+  CANONICAL_GUIDE_SERVICES,
+  CANONICAL_TRANSFER_VEHICLES,
+  DEPARTURE_STATUS_CONFIG,
+} from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
 import { TravelBookingDossierModal } from "./travel-booking-dossier-modal";
-import { WeatherWidget } from "./weather-widget";
-import { resolveClassifiedNiche, getClassifiedFeatureCards, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
-import { CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 
 
 export interface EditorialShowcaseViewProps {
@@ -244,7 +260,7 @@ export function EditorialShowcaseView({
   const storyHighlights = Array.isArray(attrs.story_highlights) ? attrs.story_highlights : [];
   const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
   const flightDetails = attrs.flight_details || null;
-  const transportType: string = flightDetails?.transport_type || attrs.transport_type || "airplane";
+  const transportType: string = flightDetails?.transport_type || attrs.transport_type || "";
   const itineraryDays = Array.isArray(attrs.itinerary_days) ? attrs.itinerary_days : [];
   const departureOptions: DepartureOption[] = Array.isArray(attrs.departure_options) ? attrs.departure_options : [];
   const selectedDeparture = departureOptions.find(d => (d.id || "") === selectedDepartureId) || null;
@@ -256,7 +272,7 @@ export function EditorialShowcaseView({
     flightDetails?.destination ||
     classified?.city ||
     (classified?.location_name ? classified.location_name.split("—")[0].trim().split("-")[0].trim() : "") ||
-    "Chapecó";
+    "";
 
   // ── Estatísticas do Topo (Polimórficas por Nicho — Zero Fake Fallback) ──
   const getHeaderStats = () => {
@@ -387,19 +403,19 @@ export function EditorialShowcaseView({
 
   const tabLabels = getTabLabels();
 
-  // ── CTA Text do Botão Primário ─────────────────────────────────────────────
+  // ── CTA Text do Botão Primário Dinâmico ─────────────────────────────────────
   const getPrimaryCtaLabel = () => {
-    if (isTravel) return "Reservar Pacote";
-    if (nicheId.includes("alim") || nicheId.includes("gastro") || nicheId === "food") return "Fazer Pedido";
-    if (isHospitality) return "Consultar Datas & Reservar";
-    if (nicheId.includes("imov")) return "Agendar Visita ao Imóvel";
-    if (nicheId.includes("veic")) return "Agendar Test-Drive / Proposta";
-    if (nicheId.includes("serv")) return "Solicitar Orçamento";
-    if (nicheId.includes("equip")) return "Solicitar Locação";
-    if (nicheId.includes("digit")) return "Comprar & Baixar";
-    if (nicheId.includes("vaga") || nicheId.includes("job")) return "Candidatar-se à Vaga";
-    if (nicheId.includes("doacao") || attrs.is_donation) return "Quero Receber Doação";
-    return classified?.price_cents > 0 ? "Comprar Agora" : "Fazer Proposta";
+    if (isTravel) {
+      if (transportType === "bus" || transportType === "terrestre") return "Reservar Pacote Terrestre";
+      if (transportType === "airplane" || transportType === "aereo") return "Reservar Pacote Aéreo";
+      if (transportType === "cruise" || transportType === "cruzeiro") return "Reservar Cruzeiro";
+      if (transportType === "combo" || transportType === "misto") return "Reservar Pacote Multimodal";
+      if (transportType === "train" || transportType === "ferrovia") return "Reservar Roteiro Ferroviário";
+      if (transportType === "car" || transportType === "rodoviario") return "Reservar Pacote Rodoviário";
+      if (transportType === "hotel_only") return "Reservar Pacote de Hospedagem";
+      return "Reservar Pacote de Viagem";
+    }
+    return getClassifiedPrimaryCtaLabel(classified);
   };
 
   const handleShare = () => {
@@ -517,7 +533,7 @@ export function EditorialShowcaseView({
       <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 px-3 py-2.5 flex items-center justify-between">
         <button
           type="button"
-          onClick={() => navigate({ to: "/classificados" })}
+          onClick={() => navigate({ to: "/classificados", search: {} as any })}
           className="p-2 -ml-1 text-foreground hover:bg-muted rounded-full transition-colors active:scale-95"
           aria-label="Voltar"
         >
@@ -528,7 +544,7 @@ export function EditorialShowcaseView({
           <span className="font-extrabold text-xs tracking-tight text-foreground truncate">
             {classified.title || "Vitrine Imersiva"}
           </span>
-          <span className="size-2 rounded-full bg-emerald-500 shrink-0" title="Online" />
+          <span className="size-1.5 rounded-full bg-emerald-500/70 shrink-0" title="Ativo" />
         </div>
 
         <div className="flex items-center gap-1">
@@ -582,7 +598,7 @@ export function EditorialShowcaseView({
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in duration-200">
             <div className="flex items-center gap-2">
               <span className="font-bold flex items-center gap-1.5 shrink-0">
-                <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="size-1.5 rounded-full bg-amber-500/80 shrink-0" />
                 Modo Proprietário Ativo:
               </span>
               <span>Você está visualizando este anúncio como autor. Ajustes feitos no painel de edição refletem imediatamente aqui.</span>
@@ -594,7 +610,8 @@ export function EditorialShowcaseView({
               onClick={handleEditClick}
               className="h-7 text-xs rounded-lg border-amber-500/40 hover:bg-amber-500/20 shrink-0 font-medium cursor-pointer"
             >
-              ✏️ Editar Anúncio
+              <Edit3 className="size-3 mr-1" />
+              Editar Anúncio
             </Button>
           </div>
         )}
@@ -603,7 +620,7 @@ export function EditorialShowcaseView({
         <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">
           <button
             type="button"
-            onClick={() => navigate({ to: "/classificados" })}
+            onClick={() => navigate({ to: "/classificados", search: {} as any })}
             className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group cursor-pointer"
           >
             <ArrowLeft className="size-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -656,23 +673,6 @@ export function EditorialShowcaseView({
             )}
           </div>
         </div>
-
-        {/* ── Banner de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
-        {isOwner && (
-          <div className="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs shadow-2xs">
-            <span className="font-semibold flex items-center gap-2">
-              <span className="text-base">👑</span>
-              <span>Você é o anunciante desta publicação (Modo Proprietário ativo)</span>
-            </span>
-            <button
-              type="button"
-              onClick={handleEditClick}
-              className="font-bold underline hover:opacity-80 cursor-pointer text-xs shrink-0"
-            >
-              Editar Detalhes
-            </button>
-          </div>
-        )}
 
         {/* ── Grid Principal Responsiva (Desktop 2 Colunas Estilo Mercado Livre / Airbnb) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -731,17 +731,8 @@ export function EditorialShowcaseView({
               </div>
             )}
 
-            {/* Estatísticas Canônicas (Chips Semânticos) */}
-            {headerStats.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap pt-1">
-                {headerStats.map((stat, i) => (
-                  <div key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-muted/40 border border-border/40 text-xs">
-                    <span className="text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">{stat.label}:</span>
-                    <strong className="text-foreground font-bold">{stat.val}</strong>
-                  </div>
-                ))}
-              </div>
-            )}
+
+            {/* Stats movidos para a coluna direita — sem pills repetitivos aqui */}
 
         {/* ── Título, Subtítulo & Bullets ── */}
         <div className="space-y-1.5">
@@ -792,7 +783,9 @@ export function EditorialShowcaseView({
                 <span className="font-extrabold text-xs sm:text-sm text-foreground truncate">
                   {advertiserName}
                 </span>
-                <CheckCircle2 className="size-3.5 text-blue-500 shrink-0" title="Verificado Waesy" />
+                <span title="Verificado Waesy" className="inline-flex shrink-0">
+                  <CheckCircle2 className="size-3.5 text-blue-500" />
+                </span>
               </div>
               <span className="text-[11px] text-muted-foreground truncate">
                 {advertiserCity ? `${advertiserCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante Verificado"}
@@ -1041,7 +1034,7 @@ export function EditorialShowcaseView({
                       <ul className="space-y-1">
                         {attrs.exclusions.map((item: string, i: number) => (
                           <li key={i} className="text-xs text-muted-foreground flex items-center gap-1.5">
-                            <span className="text-destructive font-bold">✕</span>
+                            <X className="size-3 text-destructive shrink-0" />
                             <span>{item}</span>
                           </li>
                         ))}
@@ -1142,8 +1135,9 @@ export function EditorialShowcaseView({
                       <span className="font-bold text-foreground block mb-1 text-[11px]">Itens & Acessórios Inclusos:</span>
                       <div className="flex flex-wrap gap-1">
                         {attrs.accessories.map((acc: string, i: number) => (
-                          <Badge key={i} variant="secondary" className="text-[10px] font-medium px-2 py-0.5">
-                            ✓ {acc}
+                          <Badge key={i} variant="secondary" className="text-[10px] font-medium px-2 py-0.5 gap-1 flex items-center">
+                            <Check className="size-2.5 text-primary shrink-0" />
+                            <span>{acc}</span>
                           </Badge>
                         ))}
                       </div>
@@ -1391,7 +1385,7 @@ export function EditorialShowcaseView({
                           <div className="flex gap-1.5 flex-wrap pt-0.5">
                             {item.meals_included.map((m: string) => (
                               <span key={m} className="text-xs px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
-                                {m === "breakfast" ? "☕ Café da Manhã" : m === "lunch" ? "🍽️ Almoço" : "🌙 Jantar"}
+                                {m === "breakfast" ? "Café da Manhã" : m === "lunch" ? "Almoço" : "Jantar"}
                               </span>
                             ))}
                           </div>
@@ -1399,13 +1393,15 @@ export function EditorialShowcaseView({
                         {/* Hotel/Pousada */}
                         {item.hotel_name && (
                           <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
-                            🛏️ <span className="font-semibold text-foreground">{item.hotel_name}</span>
+                            <Bed className="size-3.5 text-muted-foreground shrink-0" />
+                            <span className="font-semibold text-foreground">{item.hotel_name}</span>
                           </p>
                         )}
                         {/* Transporte do Dia */}
                         {item.transport && (
                           <p className="text-xs sm:text-sm text-foreground/90 flex items-center gap-1.5">
-                            🚌 <span className="font-medium">{item.transport}</span>
+                            <Bus className="size-3.5 text-muted-foreground shrink-0" />
+                            <span className="font-medium">{item.transport}</span>
                           </p>
                         )}
                         {/* Atividades / Tags */}
@@ -1434,8 +1430,9 @@ export function EditorialShowcaseView({
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {attrs.benefits.map((b: string, i: number) => (
-                          <Badge key={i} variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-1.5 bg-primary/10 text-primary border-primary/20">
-                            ✓ {b}
+                          <Badge key={i} variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-lg gap-1.5 bg-primary/10 text-primary border-primary/20 flex items-center">
+                            <Check className="size-3 text-primary shrink-0" />
+                            <span>{b}</span>
                           </Badge>
                         ))}
                       </div>
@@ -1532,8 +1529,9 @@ export function EditorialShowcaseView({
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Procedência & Documentação</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {attrs.provenance.map((p: string, i: number) => (
-                          <Badge key={i} variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
-                            ✓ {p}
+                          <Badge key={i} variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20 gap-1 flex items-center">
+                            <Check className="size-3 text-primary shrink-0" />
+                            <span>{p}</span>
                           </Badge>
                         ))}
                       </div>
@@ -1546,8 +1544,9 @@ export function EditorialShowcaseView({
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Comodidades</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {attrs.amenities.map((a: string, i: number) => (
-                          <Badge key={i} variant="outline" className="text-xs font-medium bg-background">
-                            ✓ {a}
+                          <Badge key={i} variant="outline" className="text-xs font-medium bg-background gap-1 flex items-center">
+                            <Check className="size-3 text-primary shrink-0" />
+                            <span>{a}</span>
                           </Badge>
                         ))}
                       </div>
@@ -2034,7 +2033,7 @@ export function EditorialShowcaseView({
                                 {opt.label && <p className="text-[11px] font-bold text-foreground">{opt.label}</p>}
                                 {isSelected && (
                                   <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.2 rounded-full">
-                                    ✓ Selecionada
+                                    Selecionada
                                   </span>
                                 )}
                               </div>
@@ -2087,185 +2086,216 @@ export function EditorialShowcaseView({
         </div>
       </div>
 
-      {/* Coluna Direita: Box de Preço, Parcelas, Anunciante e CTAs (5 colunas no Desktop) */}
+      {/* Coluna Direita: Painel Sticky de Preço, Datas, Stats e CTAs (5 colunas no Desktop) */}
       <div className="hidden lg:block lg:col-span-5 lg:sticky lg:top-24 space-y-4">
-          <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-6 shadow-xs">
-            {/* ── 1. Topo & Identificação Editorial ── */}
-            <div className="space-y-3">
-              {!hideLocation && classified.location_name && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="secondary" className="px-3 py-1 rounded-xl bg-muted/60 text-foreground text-xs font-semibold gap-1.5">
-                    <MapPin className="size-3.5 text-primary" />
-                    <span>{classified.location_name}</span>
-                  </Badge>
+        <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-5 shadow-xs">
+
+          {/* ── 1. Localização + Título ── */}
+          <div className="space-y-1.5">
+            {!hideLocation && classified.location_name && (
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                <MapPin className="size-3 shrink-0" />
+                {classified.location_name}
+              </p>
+            )}
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-tight tracking-tight">
+              {classified.title}
+            </h1>
+          </div>
+
+          {/* ── 2. Destaque Primário Semântico (Datas de Viagem, Horários, Specs Chave em font-black) ── */}
+          {(() => {
+            const heroHighlight = getClassifiedHeroHighlight(classified, selectedDeparture);
+            if (!heroHighlight) return null;
+            return (
+              <div className="flex items-start gap-8 py-3.5 border-t border-b border-border/40">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                    {heroHighlight.primaryLabel}
+                  </p>
+                  <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
+                    {heroHighlight.primaryValue}
+                  </p>
                 </div>
-              )}
-
-              <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-snug tracking-tight">
-                {classified.title}
-              </h1>
-            </div>
-
-            {/* ── 2. Card Financeiro & Precificação Estruturada ── */}
-            <div className="p-5 rounded-2xl bg-muted/25 dark:bg-muted/15 border border-border/70 space-y-2.5">
-              {pricingType === "starting_at" && (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase font-extrabold text-muted-foreground tracking-wider block">
-                    A partir de
-                  </span>
-                  {pixDiscountPercent > 0 && (
-                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
-                      -{pixDiscountPercent}% via PIX
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <div className="flex flex-col">
-                {pricingType === "on_quote" ? (
-                  <span className="text-2xl sm:text-3xl font-black text-foreground">Sob Consulta</span>
-                ) : pricingType === "free" ? (
-                  <span className="text-2xl sm:text-3xl font-black text-emerald-600">Gratuito</span>
-                ) : pricingType === "exchange_only" ? (
-                  <span className="text-2xl sm:text-3xl font-black text-amber-600">Somente Troca</span>
-                ) : priceCents > 0 ? (
-                  <>
-                    {maxInstallments > 1 ? (
-                      <>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-bold text-muted-foreground">{maxInstallments}x</span>
-                          <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-display">
-                            {formatMoney(installmentCents)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1.5 border-t border-border/40 mt-1">
-                          <span>Total à vista: <strong className="text-foreground">{formatMoney(priceCents)}</strong></span>
-                          <span>•</span>
-                          <span className={installmentsInterestFree ? "text-emerald-600 font-bold" : "text-primary font-semibold"}>
-                            {installmentsInterestFree ? "sem juros" : "no cartão"}
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-display">
-                        {formatMoney(priceCents)}
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-xl font-bold text-foreground">Consulte Valores</span>
+                {heroHighlight.secondaryLabel && heroHighlight.secondaryValue && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                      {heroHighlight.secondaryLabel}
+                    </p>
+                    <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
+                      {heroHighlight.secondaryValue}
+                    </p>
+                  </div>
                 )}
               </div>
-            </div>
+            );
+          })()}
 
-            {/* ── 3. Feature Cards Estruturados (Lista Compacta sem Truncamento) ── */}
-            {(() => {
-              const fCards = getClassifiedFeatureCards(classified);
-              if (!fCards || fCards.length === 0) return null;
-              return (
-                <div className="space-y-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Destaques
-                  </span>
-                  <div className="grid grid-cols-1 gap-2">
-                    {fCards.map((card, idx) => {
-                      const Icon = card.icon;
-                      return (
-                        <div
-                          key={idx}
-                          className="p-2.5 rounded-xl bg-background border border-border/70 flex items-center gap-2.5 shadow-2xs min-w-0"
-                        >
-                          <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                            <Icon className="size-4" />
-                          </div>
-                          <div className="min-w-0 flex flex-col flex-1">
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                              {card.title}
-                            </span>
-                            <span className="text-xs font-bold text-foreground truncate" title={card.value}>
-                              {card.value}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* ── 4. Card do Anunciante Desktop (Isolamento Estrito Pessoa Física vs Empresa) ── */}
-            <div className="p-4 rounded-2xl bg-muted/25 border border-border/60 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="size-12 rounded-2xl bg-background border border-border/70 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
-                  {advertiserAvatar ? (
-                    <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
-                  ) : isCompany ? (
-                    <StoreIcon className="size-6 text-muted-foreground" />
+          {/* ── 3. Precificação ── */}
+          <div className="p-4 rounded-2xl bg-muted/25 dark:bg-muted/15 border border-border/60 space-y-2">
+            {pricingType === "starting_at" && (
+              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">A partir de</p>
+            )}
+            <div className="flex flex-col">
+              {pricingType === "on_quote" ? (
+                <span className="text-2xl sm:text-3xl font-black text-foreground">Sob Consulta</span>
+              ) : pricingType === "free" ? (
+                <span className="text-2xl sm:text-3xl font-black text-emerald-600">Gratuito</span>
+              ) : pricingType === "exchange_only" ? (
+                <span className="text-2xl sm:text-3xl font-black text-amber-600">Somente Troca</span>
+              ) : priceCents > 0 ? (
+                <>
+                  {maxInstallments > 1 ? (
+                    <>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-sm font-bold text-muted-foreground">{maxInstallments}x</span>
+                        <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-display">
+                          {formatMoney(installmentCents)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1.5 border-t border-border/40 mt-1">
+                        <span>Total à vista: <strong className="text-foreground">{formatMoney(priceCents)}</strong></span>
+                        <span>•</span>
+                        <span className={installmentsInterestFree ? "text-emerald-600 font-bold" : "text-primary font-semibold"}>
+                          {installmentsInterestFree ? "sem juros" : "no cartão"}
+                        </span>
+                      </div>
+                    </>
                   ) : (
-                    <User className="size-6 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="min-w-0 flex flex-col">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="font-black text-sm sm:text-base text-foreground truncate">
-                      {advertiserName}
+                    <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-display">
+                      {formatMoney(priceCents)}
                     </span>
-                    <CheckCircle2 className="size-4 text-blue-500 shrink-0" title="Verificado Waesy" />
-                  </div>
-                  <span className="text-xs text-muted-foreground truncate">
-                    {advertiserCity ? `${advertiserCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante"}
-                  </span>
-                </div>
-              </div>
-
-              {storeProfileUrl && (
-                <Button asChild size="sm" variant="outline" className="h-9 px-3 rounded-xl text-xs font-bold border-border/80 hover:bg-background shrink-0">
-                  <Link to={storeProfileUrl}>
-                    <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
-                    <ChevronRight className="size-3.5 ml-0.5" />
-                  </Link>
-                </Button>
+                  )}
+                  {pixDiscountPercent > 0 && (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1">
+                      -{pixDiscountPercent}% via PIX
+                    </p>
+                  )}
+                </>
+              ) : (
+                <span className="text-xl font-bold text-foreground">Consulte Valores</span>
               )}
             </div>
+          </div>
 
-            {/* ── 5. Botões de Conversão Primária Desktop ── */}
-            <div className="space-y-2.5 pt-1">
-              <Button
-                onClick={handleOpenAction}
-                className="w-full h-12 sm:h-13 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight shadow-md active:scale-98 transition-all cursor-pointer"
-              >
-                {getPrimaryCtaLabel()}
-              </Button>
+          {/* ── 4. Specs Minimalistas (Duração / Regime / Vagas e outros nichos — Sem Pills) ── */}
+          {(() => {
+            const editorialSpecs = getClassifiedEditorialSpecs(classified);
+            const combinedSpecs = editorialSpecs.length > 0
+              ? editorialSpecs
+              : headerStats.map(s => ({ label: s.label, value: s.val }));
+            if (combinedSpecs.length === 0) return null;
+            return (
+              <div className="border-t border-border/40 pt-4 grid grid-cols-2 gap-x-6 gap-y-3.5">
+                {combinedSpecs.map((spec, i) => (
+                  <div key={i}>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                      {spec.label}
+                    </p>
+                    <p className="text-sm font-bold text-foreground mt-0.5 leading-snug">
+                      {spec.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
-              <div className="grid grid-cols-2 gap-2">
-                {advertiserPhone && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleWhatsAppDirect}
-                    className="h-11 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs gap-1.5 cursor-pointer"
+          {/* ── 5. Feature Cards — lista textual limpa complementar ── */}
+          {(() => {
+            const fCards = getClassifiedFeatureCards(classified);
+            if (!fCards || fCards.length === 0) return null;
+            return (
+              <div className="border-t border-border/40 pt-2 space-y-0">
+                {fCards.map((card, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-baseline justify-between py-2 border-b border-border/30 last:border-0"
                   >
-                    <MessageCircle className="size-4" />
-                    <span>WhatsApp</span>
-                  </Button>
-                )}
+                    <span className="text-xs text-muted-foreground">{card.title}</span>
+                    <span className="text-xs font-bold text-foreground text-right">{card.value}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
+          {/* ── 6. Botões de Conversão Primária Desktop ── */}
+          <div className="space-y-2.5 pt-1 border-t border-border/40">
+            <Button
+              onClick={handleOpenAction}
+              className="w-full h-12 sm:h-13 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight shadow-md active:scale-98 transition-all cursor-pointer"
+            >
+              {getPrimaryCtaLabel()}
+            </Button>
+
+            <div className="grid grid-cols-2 gap-2">
+              {advertiserPhone && (
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsContactModalOpen(true)}
-                  className="h-11 rounded-xl border-border/80 text-foreground hover:bg-muted font-bold text-xs gap-1.5 cursor-pointer"
+                  onClick={handleWhatsAppDirect}
+                  className="h-11 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs gap-1.5 cursor-pointer"
                 >
-                  <MessageSquare className="size-4" />
-                  <span>Mais Opções</span>
+                  <MessageCircle className="size-4" />
+                  <span>WhatsApp</span>
                 </Button>
-              </div>
+              )}
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsContactModalOpen(true)}
+                className="h-11 rounded-xl border-border/80 text-foreground hover:bg-muted font-bold text-xs gap-1.5 cursor-pointer"
+              >
+                <MessageSquare className="size-4" />
+                <span>Mais Opções</span>
+              </Button>
             </div>
           </div>
+
+          {/* ── 7. Card do Anunciante Desktop (Integrado na Base) ── */}
+          <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="size-11 rounded-xl bg-background border border-border/70 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+                {advertiserAvatar ? (
+                  <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
+                ) : isCompany ? (
+                  <StoreIcon className="size-5 text-muted-foreground" />
+                ) : (
+                  <User className="size-5 text-muted-foreground" />
+                )}
+              </div>
+              <div className="min-w-0 flex flex-col">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-bold text-sm text-foreground truncate">
+                    {advertiserName}
+                  </span>
+                  <span title="Verificado Waesy" className="inline-flex shrink-0">
+                    <CheckCircle2 className="size-3.5 text-blue-500" />
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground truncate">
+                  {advertiserCity ? `${advertiserCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante"}
+                </span>
+              </div>
+            </div>
+
+            {storeProfileUrl && (
+              <Button asChild size="sm" variant="outline" className="h-8 px-2.5 rounded-lg text-xs font-bold border-border/80 hover:bg-background shrink-0">
+                <Link to={storeProfileUrl}>
+                  <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
+                  <ChevronRight className="size-3 ml-0.5" />
+                </Link>
+              </Button>
+            )}
+          </div>
+
         </div>
       </div>
-    </div>
+      </div>
+      {/* close lg:grid-cols-12 */}
+      </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 shadow-2xl pb-[max(0.75rem,env(safe-area-inset-bottom))]">

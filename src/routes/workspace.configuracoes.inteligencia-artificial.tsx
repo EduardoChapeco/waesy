@@ -52,6 +52,7 @@ const DEFAULT_MODELS: Record<AiProviderType, { defaultModel: string; label: stri
  gemini: { defaultModel: "gemini-1.5-pro", label: "Google Gemini (1.5 Pro / Flash)" },
  deepseek: { defaultModel: "deepseek-chat", label: "DeepSeek (V3 / R1)" },
  groq: { defaultModel: "llama-3.3-70b-versatile", label: "Groq (Llama 3.3 Ultra-rápido)" },
+ openrouter: { defaultModel: "meta-llama/llama-3.3-70b-instruct", label: "OpenRouter (Universal)" },
  custom: { defaultModel: "custom-model", label: "Provedor Compatível com OpenAI" },
 };
 

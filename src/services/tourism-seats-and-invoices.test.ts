@@ -105,7 +105,7 @@ describe("Tourism Seats, CSPRNG & Invoices System", () => {
     const remainingOverdueInvoices: any[] = []; // Nenhuma outra fatura em aberto
 
     let shouldUnblock = false;
-    let updatedSettings = { ...store.settings };
+    let updatedSettings: Record<string, any> = { ...store.settings };
 
     if (remainingOverdueInvoices.length === 0 && store.settings.blocked_due_to_debt) {
       shouldUnblock = true;

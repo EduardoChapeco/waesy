@@ -29,8 +29,8 @@ export const CANONICAL_AIRPORTS: Airport[] = GLOBAL_AIRPORTS_CATALOG.map((a) => 
   iata: a.iata_code,
   name: a.name,
   city: a.city,
-  state: a.state || a.country_code,
-  region: deriveRegion(a.state, a.country_code),
+  state: a.state_province || a.country_code,
+  region: deriveRegion(a.state_province, a.country_code),
 }));
 
 /** Retorna o airport ou undefined */
@@ -64,7 +64,7 @@ export const CANONICAL_AIRLINES = [
 
 /** Companhias de Cruzeiro Canônicas */
 export const CANONICAL_CRUISE_LINES = GLOBAL_CRUISES_CATALOG.map((c) => ({
-  id: c.cruise_id,
+  id: c.id,
   label: `${c.name} (${c.style})`,
   featured_ships: c.featured_ships_brazil,
   ports: c.departure_ports_brazil,
@@ -72,46 +72,46 @@ export const CANONICAL_CRUISE_LINES = GLOBAL_CRUISES_CATALOG.map((c) => ({
 
 /** Tipos de transporte */
 export const CANONICAL_TRANSPORT_TYPES = [
-  { id: "airplane", label: "✈️ Aéreo Comercial" },
-  { id: "bus", label: "🚌 Terrestre / Excursão" },
-  { id: "cruise", label: "🛳️ Cruzeiro Marítimo" },
-  { id: "train", label: "🚂 Trem / Metrô" },
-  { id: "car", label: "🚗 Carro Próprio / Alugado" },
-  { id: "combo", label: "🔄 Multimodal (Voo + Transfer)" },
-  { id: "hotel_only", label: "🏨 Hospedagem / Roteiro Local" },
+  { id: "airplane", label: "Aéreo Comercial" },
+  { id: "bus", label: "Terrestre / Excursão" },
+  { id: "cruise", label: "Cruzeiro Marítimo" },
+  { id: "train", label: "Trem / Ferrovia" },
+  { id: "car", label: "Carro Próprio / Alugado" },
+  { id: "combo", label: "Multimodal (Voo + Transfer)" },
+  { id: "hotel_only", label: "Hospedagem / Roteiro Local" },
 ];
 
 /** Categorias de ônibus / veículos rodoviários */
 export const CANONICAL_BUS_CATEGORIES = [
-  { id: "leito_total", label: "🛏️ Leito Total (180°)" },
-  { id: "leito_cama", label: "🛏️ Leito Cama DD (Semi-Cama Duplo)" },
-  { id: "semi_leito", label: "💺 Semi-Leito Executivo" },
-  { id: "convencional", label: "🪑 Convencional" },
-  { id: "microonibus", label: "🚐 Micro-ônibus / Van Executiva" },
-  { id: "van_luxo", label: "🚐 Van Luxo (Sprinter/Master)" },
-  { id: "suv_4x4", label: "🚙 SUV 4x4 / Hilux (Transfer Off-road)" },
-  { id: "barco", label: "⛵ Barco / Lancha / Catamarã" },
-  { id: "outro", label: "🔩 Outro Veículo" },
+  { id: "leito_total", label: "Leito Total (180°)" },
+  { id: "leito_cama", label: "Leito Cama DD (Semi-Cama Duplo)" },
+  { id: "semi_leito", label: "Semi-Leito Executivo" },
+  { id: "convencional", label: "Convencional" },
+  { id: "microonibus", label: "Micro-ônibus / Van Executiva" },
+  { id: "van_luxo", label: "Van Luxo (Sprinter/Master)" },
+  { id: "suv_4x4", label: "SUV 4x4 / Hilux (Transfer Off-road)" },
+  { id: "barco", label: "Barco / Lancha / Catamarã" },
+  { id: "outro", label: "Outro Veículo" },
 ];
 
 /** Serviços de guia turístico */
 export const CANONICAL_GUIDE_SERVICES = [
-  { id: "guide_cadastur", label: "🧭 Guia Acompanhante CADASTUR (Toda a viagem)" },
-  { id: "guide_local", label: "📍 Guia Local no Destino (Pontos específicos)" },
-  { id: "guide_bilingual", label: "🌐 Guia Bilíngue (PT / EN / ES)" },
-  { id: "guide_none", label: "🗺️ Roteiro Livre (Sem Guia)" },
-  { id: "guide_app", label: "📱 Guia Digital via App" },
+  { id: "guide_cadastur", label: "Guia Acompanhante CADASTUR (Toda a viagem)" },
+  { id: "guide_local", label: "Guia Local no Destino (Pontos específicos)" },
+  { id: "guide_bilingual", label: "Guia Bilíngue (PT / EN / ES)" },
+  { id: "guide_none", label: "Roteiro Livre (Sem Guia)" },
+  { id: "guide_app", label: "Guia Digital via App" },
 ];
 
 /** Status de saídas / datas de viagem */
 export type DepartureStatus = "confirmed" | "filling_fast" | "few_seats" | "sold_out" | "on_request";
 
 export const DEPARTURE_STATUS_CONFIG: Record<DepartureStatus, { label: string; color: string; icon: string }> = {
-  confirmed: { label: "Confirmada", color: "text-emerald-600 bg-emerald-50 border-emerald-200", icon: "✅" },
-  filling_fast: { label: "Quase Esgotando", color: "text-amber-600 bg-amber-50 border-amber-200", icon: "🔥" },
-  few_seats: { label: "Últimas Vagas", color: "text-orange-600 bg-orange-50 border-orange-200", icon: "⚠️" },
-  sold_out: { label: "Esgotada", color: "text-red-600 bg-red-50 border-red-200", icon: "❌" },
-  on_request: { label: "Sob Consulta", color: "text-blue-600 bg-blue-50 border-blue-200", icon: "💬" },
+  confirmed: { label: "Confirmada", color: "text-emerald-600 bg-emerald-50 border-emerald-200", icon: "check" },
+  filling_fast: { label: "Quase Esgotando", color: "text-amber-600 bg-amber-50 border-amber-200", icon: "flame" },
+  few_seats: { label: "Últimas Vagas", color: "text-orange-600 bg-orange-50 border-orange-200", icon: "alert" },
+  sold_out: { label: "Esgotada", color: "text-red-600 bg-red-50 border-red-200", icon: "x" },
+  on_request: { label: "Sob Consulta", color: "text-blue-600 bg-blue-50 border-blue-200", icon: "message" },
 };
 
 /** Departure Option — Saída de viagem com múltiplas datas */
@@ -129,15 +129,15 @@ export interface DepartureOption {
 
 /** Veículos de transfer terrestre para modo Combo */
 export const CANONICAL_TRANSFER_VEHICLES = [
-  { id: "4x4_hilux", label: "🚙 4x4 Hilux / SW4 (Off-road)" },
-  { id: "4x4_defender", label: "🚙 Land Rover Defender (Off-road)" },
-  { id: "van_sprinter", label: "🚐 Van Sprinter / Master" },
-  { id: "microonibus", label: "🚌 Micro-ônibus" },
-  { id: "barco_lancha", label: "⛵ Barco / Lancha" },
-  { id: "buggy", label: "🏎️ Buggy (Beach)" },
-  { id: "tuk_tuk", label: "🛺 Tuk-Tuk / Moto-táxi" },
-  { id: "quad_atv", label: "🏍️ Quad / ATV" },
-  { id: "outro", label: "🔩 Outro" },
+  { id: "4x4_hilux", label: "4x4 Hilux / SW4 (Off-road)" },
+  { id: "4x4_defender", label: "Land Rover Defender (Off-road)" },
+  { id: "van_sprinter", label: "Van Sprinter / Master" },
+  { id: "microonibus", label: "Micro-ônibus" },
+  { id: "barco_lancha", label: "Barco / Lancha" },
+  { id: "buggy", label: "Buggy (Beach)" },
+  { id: "tuk_tuk", label: "Tuk-Tuk / Moto-táxi" },
+  { id: "quad_atv", label: "Quad / ATV" },
+  { id: "outro", label: "Outro" },
 ];
 
 /** Estrutura canônica de detalhes de transporte para `flight_details` (legado) ou `transport_details` (novo) */

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase";
-import { Motorbike, Phone, WhatsappLogo, CheckCircle, Clock, MapPin, ShieldCheck, Sparkle } from "@phosphor-icons/react";
+import { Motorcycle, Phone, WhatsappLogo, CheckCircle, Clock, MapPin, ShieldCheck, Sparkle } from "@phosphor-icons/react";
 
 export interface MotoLinkTrackingWidgetProps {
   orderId: string;
@@ -56,7 +56,7 @@ export function MotoLinkTrackingWidget({
   const stages = [
     { key: "paid", label: "Pedido Confirmado", icon: CheckCircle, active: true },
     { key: "preparing", label: "Em Preparação", icon: Clock, active: ["preparing", "shipped", "delivered"].includes(status) },
-    { key: "shipped", label: "Saiu para Entrega", icon: Motorbike, active: ["shipped", "delivered"].includes(status) },
+    { key: "shipped", label: "Saiu para Entrega", icon: Motorcycle, active: ["shipped", "delivered"].includes(status) },
     { key: "delivered", label: "Entregue", icon: ShieldCheck, active: status === "delivered" },
   ];
 
@@ -68,7 +68,7 @@ export function MotoLinkTrackingWidget({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-            <Motorbike className="w-5 h-5" />
+            <Motorcycle className="w-5 h-5" />
           </div>
           <div>
             <h3 className="font-semibold text-sm sm:text-base text-foreground flex items-center gap-1.5">

@@ -173,7 +173,7 @@ function BiolinkPage() {
  {/* Badge de Horário de Funcionamento em Tempo Real */}
  <div className="pt-1 flex items-center justify-center">
  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
- <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+ <span className="size-2 rounded-full bg-emerald-500" />
  <span>Aberto agora · 08h às 18h</span>
  </div>
  </div>

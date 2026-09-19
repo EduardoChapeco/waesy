@@ -113,7 +113,7 @@ function WorkspacePromotionsPage() {
               : undefined,
           buy_qty: promoType === "buy_x_get_y" ? promoBuyQty : 1,
           get_qty: promoType === "buy_x_get_y" ? promoGetQty : 1,
-          duration_hours: promoDurationHours,
+          ends_at: promoDurationHours ? new Date(Date.now() + promoDurationHours * 3600000).toISOString() : undefined,
         },
       });
 
@@ -132,7 +132,7 @@ function WorkspacePromotionsPage() {
 
   const handleTogglePromo = async (id: string, currentStatus: boolean) => {
     try {
-      await togglePromotionStatus({ data: { promotionId: id, is_active: !currentStatus } });
+      await togglePromotionStatus({ data: { id, is_active: !currentStatus } });
       setPromos((prev) =>
         prev.map((p) => (p.id === id ? { ...p, is_active: !currentStatus } : p)),
       );

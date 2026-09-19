@@ -32,7 +32,10 @@ import { ContractAuditManifest } from "@/components/contracts/contract-audit-man
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/assinar/$token")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): {
+    signed?: string;
+    error?: string;
+  } => ({
     signed: typeof search.signed === "string" ? search.signed : undefined,
     error: typeof search.error === "string" ? search.error : undefined,
   }),

@@ -972,7 +972,7 @@ function WorkspaceAtendimentoPage() {
                   </div>
 
                   <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1 rounded-lg">
-                    <Link to="/_store/classificados/$id" params={{ id: selectedSdrSession.classified_id }}>
+                    <Link to="/classificados/$id" params={{ id: selectedSdrSession.classified_id }}>
                       Ver Anúncio
                       <ExternalLink className="size-3" />
                     </Link>

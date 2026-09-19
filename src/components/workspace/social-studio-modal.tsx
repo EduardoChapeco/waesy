@@ -17,7 +17,7 @@ import {
   Image as ImageIcon,
   ShareNetwork,
 } from "@phosphor-icons/react";
-import { formatBRL } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 
 export interface SocialStudioModalProps {
@@ -48,7 +48,7 @@ export function SocialStudioModal({
   const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1" | "16:9">("9:16");
   const [copiedCaption, setCopiedCaption] = useState(false);
 
-  const captionText = `🔥 ${product.title}\n\nPor apenas ${formatBRL(product.priceCents)}!\n\n📍 ${storeName}\n💬 Peça agora no WhatsApp ou compre pelo link da bio!\n\n#usewaesy #${storeName.toLowerCase().replace(/\s+/g, "")} #oferta`;
+  const captionText = `🔥 ${product.title}\n\nPor apenas ${formatMoney(product.priceCents)}!\n\n📍 ${storeName}\n💬 Peça agora no WhatsApp ou compre pelo link da bio!\n\n#usewaesy #${storeName.toLowerCase().replace(/\s+/g, "")} #oferta`;
 
   const handleCopyCaption = () => {
     navigator.clipboard.writeText(captionText);
@@ -132,7 +132,7 @@ export function SocialStudioModal({
                 </h4>
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-black text-amber-400">
-                    {formatBRL(product.priceCents)}
+                    {formatMoney(product.priceCents)}
                   </span>
                   <span className="text-[10px] text-zinc-300 uppercase tracking-wider">à vista</span>
                 </div>

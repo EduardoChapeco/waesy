@@ -213,7 +213,14 @@ export async function internalTestPoolKeyConnection(
   }
 
   const rawKey = Buffer.from(keyRow.encrypted_key, "base64").toString("utf-8").trim();
-  return internalTestSecretKeyConnection(keyRow.provider, rawKey);
+  const start = Date.now();
+  const res = await internalTestSecretKeyConnection(keyRow.provider, rawKey);
+  const latencyMs = Date.now() - start;
+  return {
+    success: res.success,
+    latencyMs,
+    error: res.success ? undefined : res.message,
+  };
 }
 
 export const testPoolKeyConnection = createServerFn({ method: "POST" })
@@ -567,10 +574,10 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
     }
 
     // 1. BYOK: Verifica se o lojista/usuário possui chave ativa configurada no secret_vault, tenant_ai_providers ou integration_credentials
-    const targetOwner = options.ownerId || (await getServerIdentity().then((id) => id?.id).catch(() => undefined));
-    const targetStore = options.storeId || (await getServerIdentity().then((id) => id?.store_id).catch(() => undefined));
+    const targetOwner = options.ownerId || (await getServerIdentity().then((id) => id?.id || undefined).catch(() => undefined));
+    const targetStore = options.storeId || (await getServerIdentity().then((id) => id?.store_id || undefined).catch(() => undefined));
     if (targetOwner || targetStore) {
-      const byokSecret = await getActiveSecretForProvider(provider, targetOwner, targetStore).catch(() => null);
+      const byokSecret = await getActiveSecretForProvider(provider, targetOwner || undefined, targetStore || undefined).catch(() => null);
       if (byokSecret && !keysToTry.some((k) => k.rawKey === byokSecret)) {
         keysToTry.push({ id: `byok-${provider}`, rawKey: byokSecret });
       }

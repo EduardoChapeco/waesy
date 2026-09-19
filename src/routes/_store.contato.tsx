@@ -148,7 +148,7 @@ function ContatoPage() {
  </p>
  </div>
  <div className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 pt-2">
- <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+ <span className="size-2 rounded-full bg-emerald-500" />
  <span>Plantão Digital 24/7</span>
  </div>
  </div>

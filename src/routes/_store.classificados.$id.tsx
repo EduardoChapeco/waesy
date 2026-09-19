@@ -105,6 +105,15 @@ import {
   DEPARTURE_STATUS_CONFIG,
   type DepartureOption,
 } from "@/lib/classifieds/canonical-airports";
+import { cn } from "@/lib/utils";
+import {
+  DigitalCompanionCard,
+  type DigitalCompanionCardProps,
+  type CompanionCardNiche,
+  type CompanionCardSectionItem,
+  type CompanionRuleItem,
+  type CompanionContactItem,
+} from "@/components/documents/digital-companion-card";
 
 export const Route = createFileRoute("/_store/classificados/$id")({
   head: ({

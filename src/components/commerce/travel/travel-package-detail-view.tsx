@@ -835,8 +835,8 @@ export function TravelPackageDetailView({
  )}
  </span>
  {flightDetails.flight_duration && (
- <span className="text-[10px] text-muted-foreground font-mono">
- ⏱ {flightDetails.flight_duration}
+ <span className="text-[10px] text-muted-foreground font-mono inline-flex items-center gap-1">
+ <Clock className="size-3" /> {flightDetails.flight_duration}
  </span>
  )}
  </div>

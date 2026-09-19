@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 export const listCommissions = createServerFn({ method: "GET" }).handler(async () => {
  const supabase = getServerClient();
@@ -58,6 +59,22 @@ export const payCommission = createServerFn({ method: "POST" })
  .eq("status", "pending");
 
  if (error) throw new Error("Erro ao pagar comissão");
+
+  // ── Ledger Criptográfico SHA-256 — Desembolso de Comissão ──
+  try {
+  await recordLedgerEntryCore({
+    transactionType: "commission_payout",
+    storeId: identity.store_id,
+    referenceEntityType: "commission",
+    referenceEntityId: commissionId,
+    actorId: identity.id,
+    actorRole: identity.role ?? "admin",
+    metadata: { commission_id: commissionId, action: "single_payout" },
+  });
+  } catch (ledgerErr) {
+  console.error("[commission.functions] Falha no ledger de comissão:", ledgerErr);
+  }
+
  return { status: "success" };
  });
 
@@ -86,6 +103,23 @@ export const payAllPendingCommissionsForSeller = createServerFn({ method: "POST"
     if (error) throw new Error("Erro ao quitar comissões do vendedor: " + error.message);
     const count = updated?.length || 0;
     const totalSettledCents = (updated || []).reduce((sum, item) => sum + (item.amount_cents || 0), 0);
+
+    // ── Ledger Criptográfico SHA-256 — Lote de Comissões Quitadas ──
+    if (totalSettledCents > 0) {
+      try {
+        await recordLedgerEntryCore({
+          transactionType: "commission_payout",
+          amountCents: totalSettledCents,
+          storeId: identity.store_id,
+          receiverId: sellerId,
+          actorId: identity.id,
+          actorRole: identity.role ?? "admin",
+          metadata: { seller_id: sellerId, commission_count: count, action: "bulk_payout" },
+        });
+      } catch (ledgerErr) {
+        console.error("[commission.functions] Falha no ledger em lote:", ledgerErr);
+      }
+    }
 
     return {
       status: "success",

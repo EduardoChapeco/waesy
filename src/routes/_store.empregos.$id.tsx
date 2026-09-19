@@ -21,6 +21,7 @@ import {
  ShieldCheck,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { ProtectedContactButton } from "@/components/common/protected-contact-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";

@@ -179,9 +179,7 @@ function JobsMasterPage() {
       <ProfessionSearchDialog
         open={isProfessionGuideOpen}
         onOpenChange={setIsProfessionGuideOpen}
-        title="Guia de Carreiras & Salários (CBO / MTE)"
-        description="Pesquise profissões oficiais, médias salariais (Júnior a Lead) e competências demandadas."
-        onSelect={(prof) => {
+        onSelectProfession={(prof) => {
           setSearch(prof.title);
           setIsProfessionGuideOpen(false);
         }}

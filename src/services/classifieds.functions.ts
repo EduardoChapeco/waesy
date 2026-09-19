@@ -365,6 +365,8 @@ const upsertClassifiedInput = z.object({
  status: z.enum(["draft", "active", "paused", "closed"]).default("active"),
  max_discount_pct: z.coerce.number().min(0).max(100).optional().default(0),
  delivery_type: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both"]).optional(),
+ ai_instructions: z.string().optional(),
+ ai_agent_enabled: z.boolean().optional(),
 });
 
 export const upsertClassified = createServerFn({ method: "POST" })
@@ -443,6 +445,8 @@ export const upsertClassified = createServerFn({ method: "POST" })
    ...(rest.available_weekdays ? { available_weekdays: rest.available_weekdays } : {}),
    ...(rest.working_hours_start ? { working_hours_start: rest.working_hours_start } : {}),
    ...(rest.working_hours_end ? { working_hours_end: rest.working_hours_end } : {}),
+   ...(rest.ai_instructions ? { ai_instructions: rest.ai_instructions } : {}),
+   ...(rest.ai_agent_enabled !== undefined ? { ai_agent_enabled: rest.ai_agent_enabled } : {}),
  },
  status: rest.status || "active",
  max_discount_pct: rest.max_discount_pct ?? 0,

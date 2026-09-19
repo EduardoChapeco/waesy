@@ -46,7 +46,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import { type ViewModeType } from "@/components/commerce/discovery-control-bar";
+import { type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { listActiveBanners } from "@/services/banner.functions";
@@ -58,14 +58,10 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 
 function getClassifiedCover(item: any): string | null {
   if (!item) return null;
-  return (
-    (item.images && item.images[0]) ||
-    (item.photos && item.photos[0]) ||
-    item.image_url ||
-    item.media?.[0] ||
-    item.cover_image ||
-    null
-  );
+  const imgs = item.images || item.media_urls || item.photos;
+  if (Array.isArray(imgs) && imgs.length > 0) return imgs[0];
+  if (typeof item.cover_image === "string" && item.cover_image) return item.cover_image;
+  return null;
 }
 
 function isVideoUrl(url?: string | null): boolean {
@@ -74,7 +70,13 @@ function isVideoUrl(url?: string | null): boolean {
 }
 
 export const Route = createFileRoute("/_store/classificados/")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): {
+    category?: string;
+    dealType?: string;
+    search?: string;
+    subniche?: string;
+    ponto?: string;
+  } => ({
     category: typeof search.category === "string" ? search.category : undefined,
     dealType: typeof search.dealType === "string" ? search.dealType : undefined,
     search: typeof search.search === "string" ? search.search : undefined,

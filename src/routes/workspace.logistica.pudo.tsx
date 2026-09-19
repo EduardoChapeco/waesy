@@ -171,7 +171,7 @@ function WorkspacePudoLogisticsPage() {
     try {
       const res = await checkInPudoPackage({
         data: {
-          pudoLocationId: defaultLocationId,
+          locationId: defaultLocationId,
           trackingCode: trackingCode.trim().toUpperCase(),
           senderName: senderName.trim() || "Loja Parceira",
           recipientName: recipientName.trim(),
@@ -179,7 +179,17 @@ function WorkspacePudoLogisticsPage() {
         },
       });
 
-      setPackages((prev) => [res.package, ...prev]);
+      const newPkg: any = {
+        id: res.packageId,
+        tracking_code: res.trackingCode,
+        security_pickup_code: res.securityPickupCode,
+        sender_name: senderName.trim() || "Loja Parceira",
+        recipient_name: recipientName.trim(),
+        recipient_phone: recipientPhone.trim(),
+        status: "available_for_pickup",
+        created_at: new Date().toISOString(),
+      };
+      setPackages((prev: any) => [newPkg, ...prev]);
       playMessageChime();
       toast.success("Pacote registrado com sucesso no ponto PUDO!");
       setIsCheckInModalOpen(false);
@@ -206,7 +216,7 @@ function WorkspacePudoLogisticsPage() {
       const res = await reportPackageDamageAndReturn({
         data: {
           packageId: damageModalPkg.id,
-          notes: damageNotes.trim(),
+          damageNotes: damageNotes.trim(),
         },
       });
 

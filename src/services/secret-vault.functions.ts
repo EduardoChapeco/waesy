@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
+import { encryptSecret, decryptSecret, maskSecret } from "@/lib/crypto-vault.server";
+import { getRequest } from "@tanstack/start-server-core";
+import { extractClientIp } from "@/lib/rate-limiter";
 
 export const saveSecretKey = createServerFn({ method: "POST" })
  .validator(
@@ -24,43 +27,71 @@ export const saveSecretKey = createServerFn({ method: "POST" })
  }),
  )
  .handler(async ({ data: input }) => {
- const supabase = getServerClient();
- const identity = await getIdentity();
- if (!identity?.id) throw new Error("Não autenticado");
+  const supabase = getServerClient();
+  const identity = await getIdentity();
+  if (!identity?.id) throw new Error("Não autenticado");
 
- // Mask the secret for safe client display (e.g. sk-...ab12)
- const rawKey = input.secretKey.trim();
- const masked =
- rawKey.length > 8 ? `${rawKey.slice(0, 3)}...${rawKey.slice(-4)}` : `***${rawKey.slice(-2)}`;
+  const rawKey = input.secretKey.trim();
 
- // Simple base64 encode for vault storage simulation (in production with KMS)
- const encrypted = Buffer.from(rawKey).toString("base64");
+  // AES-256-GCM real — usa VAULT_MASTER_KEY da env var (nunca base64)
+  const encrypted = encryptSecret(rawKey);
+  const masked = maskSecret(rawKey);
 
- const { data: entry, error } = await supabase
- .from("secret_vault")
- .insert({
- scope: input.scope,
- owner_id: identity.id,
- provider: input.provider,
- label: input.label,
- encrypted_secret: encrypted,
- masked_suffix: masked,
- is_active: true,
- daily_budget_cents: input.dailyBudgetCents,
- last_verified_at: new Date().toISOString(),
- })
- .select(
- "id, scope, provider, label, masked_suffix, is_active, daily_budget_cents, created_at",
- )
- .single();
+  const { data: entry, error } = await supabase
+  .from("secret_vault")
+  .insert({
+  scope: input.scope,
+  owner_id: identity.id,
+  provider: input.provider,
+  label: input.label,
+  encrypted_secret: encrypted,
+  masked_suffix: masked,
+  is_active: true,
+  daily_budget_cents: input.dailyBudgetCents,
+  last_verified_at: new Date().toISOString(),
+  })
+  .select(
+  "id, scope, provider, label, masked_suffix, is_active, daily_budget_cents, created_at",
+  )
+  .single();
 
- if (error) {
- console.error("[secret-vault] Error saving key:", error);
- throw new Error("Erro ao salvar credencial no cofre seguro.");
- }
+  if (error) {
+  console.error("[secret-vault] Error saving key:", error);
+  throw new Error("Erro ao salvar credencial no cofre seguro.");
+  }
 
- return entry;
- });
+  // Telemetria forense — registra toda operação de escrita no cofre
+  try {
+  let ip: string | null = null;
+  let ua: string | null = null;
+  try {
+    const req = getRequest();
+    if (req) {
+      ip = extractClientIp(req);
+      ua = req.headers.get("user-agent") || null;
+    }
+  } catch { /* fora de contexto HTTP */ }
+  await supabase.from("forensic_audit_events").insert({
+    actor_id: identity.id,
+    actor_role: "authenticated_user",
+    target_entity_type: "secret_vault",
+    target_entity_id: entry?.id ? String(entry.id) : null,
+    action: "VAULT_SECRET_SAVE",
+    ip_address: ip,
+    user_agent: ua,
+    payload_snapshot: {
+      provider: input.provider,
+      scope: input.scope,
+      label: input.label,
+      encrypted_format: "AES-256-GCM",
+    },
+  });
+  } catch (auditErr) {
+  console.warn("[secret-vault] Telemetria forense falhou (não bloqueia):", auditErr);
+  }
+
+  return entry;
+  });
 
 export const listConfiguredSecrets = createServerFn({ method: "GET" }).handler(async () => {
  const supabase = getServerClient();
@@ -138,7 +169,8 @@ export async function getActiveSecretForProvider(
         : { data: null, error: null };
 
       if (!error && data?.encrypted_secret) {
-        const decrypted = Buffer.from(data.encrypted_secret, "base64").toString("utf-8");
+        // AES-256-GCM real — suporta legado base64 automaticamente via decryptSecret()
+        const decrypted = decryptSecret(data.encrypted_secret);
         if (decrypted.trim().length > 0) return decrypted.trim();
       }
     } catch {

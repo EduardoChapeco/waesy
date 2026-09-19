@@ -239,8 +239,8 @@ function EditProductPage() {
  ibs_rate: p.ibs_rate,
  cbs_rate: p.cbs_rate,
  cfop_default: p.cfop_default,
- tax_regime: p.tax_regime,
- master_catalog_id: p.id,
+ tax_regime: p.tax_tribute_group,
+ master_catalog_id: p.barcode_ean,
  },
  },
  });

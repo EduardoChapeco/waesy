@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, isRedirect } from "@tanstack/react-router";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target, Lock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -33,6 +33,28 @@ export const Route = createFileRoute("/admin-master")({
       throw redirect({ to: "/entrar", search: { returnUrl: "/admin-master" } });
     }
   },
+  errorComponent: ({ error, reset }: { error: any; reset: () => void }) => (
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+      <div className="max-w-md w-full p-6 rounded-2xl bg-card border border-border space-y-4 shadow-sm">
+        <div className="size-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+          <ShieldAlert className="size-6" />
+        </div>
+        <h2 className="text-lg font-bold text-foreground">Diagnóstico do Painel Master</h2>
+        <p className="text-xs text-muted-foreground">Ocorreu uma instabilidade ao inicializar o módulo administrativo.</p>
+        <div className="p-3 rounded-xl bg-muted/60 text-destructive text-left overflow-x-auto text-[11px] font-mono border border-border/50">
+          {error?.message || String(error)}
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={reset} variant="default" className="flex-1 rounded-xl">
+            Tentar Novamente
+          </Button>
+          <Button asChild variant="outline" className="flex-1 rounded-xl">
+            <Link to="/">Início</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  ),
   component: AdminMasterLayout,
 });
 
