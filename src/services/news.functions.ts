@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 export interface NewsSectionDTO {
  type: "paragraph" | "heading" | "quote" | "gallery" | "video";
@@ -847,59 +848,20 @@ Retorne APENAS este JSON:
  let extracted: any = null;
  let aiProviderUsed = "fallback";
 
- const geminiKey = await getNextActiveKey("gemini");
- const groqKey = await getNextActiveKey("groq");
-
- if (geminiKey) {
- try {
- const gRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- systemInstruction: { parts: [{ text: systemPrompt }] },
- contents: [{ parts: [{ text: userPrompt }] }],
- generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
- }),
- signal: AbortSignal.timeout(20000),
- }
- );
- if (gRes.ok) {
- const gJson = await gRes.json();
- const txt = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (txt) { extracted = JSON.parse(txt); aiProviderUsed = "gemini"; }
- }
- } catch (e: any) {
- console.warn("[importArticle] Gemini error:", e.message);
- }
- }
-
- if (!extracted && groqKey) {
- try {
- const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
- method: "POST",
- headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey.rawKey}` },
- body: JSON.stringify({
- model: "llama-3.1-70b-versatile",
- messages: [
- { role: "system", content: `${systemPrompt}\nResponda APENAS com JSON válido.` },
- { role: "user", content: userPrompt },
- ],
- temperature: 0.2,
- response_format: { type: "json_object" },
- }),
- signal: AbortSignal.timeout(20000),
- });
- if (grRes.ok) {
- const grJson = await grRes.json();
- const content = grJson?.choices?.[0]?.message?.content;
- if (content) { extracted = JSON.parse(content); aiProviderUsed = "groq"; }
- }
- } catch (e: any) {
- console.warn("[importArticle] Groq error:", e.message);
- }
- }
+  try {
+    const aiRes = await executeUnifiedAiCall({
+      systemPrompt,
+      userPrompt,
+      responseFormat: "json_object",
+      temperature: 0.2,
+    });
+    if (aiRes.parsedJson) {
+      extracted = aiRes.parsedJson;
+      aiProviderUsed = aiRes.provider;
+    }
+  } catch (e: any) {
+    console.warn("[importArticle] Unified AI error:", e.message);
+  }
 
  // Fallback determinístico
  if (!extracted) {
@@ -985,48 +947,22 @@ export const aiSummarizeArticle = createServerFn({ method: "POST" })
 
  if (error || !article) throw new Error("Artigo não encontrado.");
 
- const { data: keyData } = await supabase
- .from("api_key_pools")
- .select("encrypted_key")
- .eq("provider", "gemini")
- .eq("is_active", true)
- .order("last_used_at", { ascending: true, nullsFirst: true })
- .limit(1)
- .maybeSingle();
+  const contentText = (article.content_sections as any[])
+    .filter((s) => s.type === "paragraph")
+    .map((s) => s.content)
+    .join("\n")
+    .slice(0, 5000);
 
- if (!keyData?.encrypted_key) throw new Error("Nenhuma chave de IA disponível.");
- const rawKey = Buffer.from(keyData.encrypted_key, "base64").toString("utf-8");
+  const prompt = `Título: ${article.title}\nSubtítulo: ${article.subtitle || ""}\nConteúdo: ${contentText}`;
 
- const contentText = (article.content_sections as any[])
- .filter((s) => s.type === "paragraph")
- .map((s) => s.content)
- .join("\n")
- .slice(0, 5000);
+  const aiRes = await executeUnifiedAiCall({
+    systemPrompt: "Você é um editor de notícias. Gere um resumo executivo de 2-3 frases do artigo fornecido, capturando o ponto principal, impacto e contexto. Seja direto, objetivo e retorne APENAS o texto do resumo.",
+    userPrompt: prompt,
+    temperature: 0.3,
+    maxTokens: 256,
+  });
 
- const prompt = `Você é um editor de notícias. Gere um resumo executivo de 2-3 frases do artigo abaixo, capturando o ponto principal, impacto e contexto. Seja direto e objetivo.
-
-Título: ${article.title}
-Subtítulo: ${article.subtitle || ""}
-Conteúdo: ${contentText}
-
-Retorne APENAS o texto do resumo, sem formatação ou prefixos.`;
-
- const gRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- contents: [{ parts: [{ text: prompt }] }],
- generationConfig: { temperature: 0.3, maxOutputTokens: 256 },
- }),
- signal: AbortSignal.timeout(15000),
- }
- );
-
- if (!gRes.ok) throw new Error(`Erro na IA: HTTP ${gRes.status}`);
- const gJson = await gRes.json();
- const summary = gJson?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const summary = aiRes.content.trim();
 
   // Persiste o resumo no artigo
   await supabase

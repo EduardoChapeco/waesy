@@ -8,13 +8,13 @@ import {
  buildSandboxedPromptPayload,
  sanitizeAiOutput,
 } from "@/lib/prompt-shield";
-import { getNextActiveKey } from "./api-orchestrator.functions";
+import { getNextActiveKey, executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // AI Router Function
 export const generateText = createServerFn({ method: "POST" })
  .validator(
  z.object({
- provider: z.enum(["gemini", "openrouter", "openai", "anthropic"]),
+ provider: z.enum(["gemini", "openrouter", "openai", "anthropic", "groq"]),
  prompt: z.string().min(1, "O prompt não pode estar vazio"),
  systemPrompt: z.string().optional(),
  maxTokens: z.number().int().min(1).max(8192).optional().default(1024),
@@ -41,8 +41,7 @@ export const generateText = createServerFn({ method: "POST" })
  input.systemPrompt
  );
 
- // 1. Resolve Credentials from Secret Vault
- // Prioritize personal scope, then organization, then global
+ // 1. Resolve Credentials from Secret Vault (BYOK se houver)
  const { data: secrets, error: vaultError } = await supabase
  .from("secret_vault")
  .select("id, encrypted_secret, daily_budget_cents, is_active")
@@ -58,37 +57,25 @@ export const generateText = createServerFn({ method: "POST" })
 
  let rawKey: string | null = null;
  if (secrets && secrets.length > 0 && secrets[0].encrypted_secret) {
-   rawKey = Buffer.from(secrets[0].encrypted_secret, "base64").toString("utf-8");
- } else {
-   // Fallback resiliente: buscar chave ativa configurada no pool da plataforma
-   const poolKey = await getNextActiveKey(input.provider as any).catch(() => null);
-   if (poolKey?.rawKey) {
-     rawKey = poolKey.rawKey;
-   }
+ rawKey = Buffer.from(secrets[0].encrypted_secret, "base64").toString("utf-8");
  }
 
- if (!rawKey) {
-   throw new Error(`Nenhuma chave ativa encontrada para o provedor ${input.provider}. Adicione sua chave (BYOK) em Configurações > Integrações ou configure o pool de APIs.`);
- }
-
- // 2. Routing Logic
+ // 2. Executa via Orquestrador Universal com cascade automático e fallback BYOK -> Pool
  let generatedText = "";
- 
  try {
- if (input.provider === "gemini") {
- generatedText = await invokeGemini(rawKey, sandboxedUserPrompt, hardenedSystemPrompt, input.temperature, input.maxTokens);
- } else if (input.provider === "openai") {
- generatedText = await invokeOpenAI(rawKey, sandboxedUserPrompt, hardenedSystemPrompt, input.temperature, input.maxTokens);
- } else if (input.provider === "anthropic") {
- generatedText = await invokeAnthropic(rawKey, sandboxedUserPrompt, hardenedSystemPrompt, input.temperature, input.maxTokens);
- } else if (input.provider === "openrouter") {
- generatedText = await invokeOpenRouter(rawKey, sandboxedUserPrompt, hardenedSystemPrompt, input.temperature, input.maxTokens);
- } else {
- throw new Error(`Provedor ${input.provider} ainda não implementado no roteador.`);
- }
+ const preferred = input.provider as any;
+ const aiRes = await executeUnifiedAiCall({
+ systemPrompt: hardenedSystemPrompt,
+ userPrompt: sandboxedUserPrompt,
+ preferredProvider: preferred,
+ overrideApiKey: rawKey || undefined,
+ temperature: input.temperature,
+ maxTokens: input.maxTokens,
+ });
+ generatedText = aiRes.content;
  } catch (err: any) {
  console.error(`[ai-router] Falha ao invocar provedor ${input.provider}:`, err);
- throw new Error(`Falha no provedor de IA: ${err.message || "Erro desconhecido"}`);
+ throw new Error(`Falha no orquestrador de IA: ${err.message || "Erro desconhecido"}`);
  }
 
  // 2.1 Output Leakage Guard (Redação de credenciais e chaves expostas)
@@ -145,169 +132,3 @@ export const generateText = createServerFn({ method: "POST" })
  tokensConsumed: estimatedTokens,
  };
  });
-
-// --- Provider Implementations ---
-
-async function invokeGemini(
- apiKey: string,
- prompt: string,
- systemPrompt?: string,
- temperature?: number,
- maxTokens?: number
-) {
- const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
- 
- const payload: any = {
- contents: [{ parts: [{ text: prompt }] }],
- generationConfig: {
- temperature: temperature || 0.7,
- maxOutputTokens: maxTokens || 1024,
- },
- };
-
- if (systemPrompt) {
- payload.systemInstruction = {
- parts: [{ text: systemPrompt }],
- };
- }
-
- const res = await fetch(url, {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify(payload),
- signal: AbortSignal.timeout(25000),
- });
-
- if (!res.ok) {
- const err = await res.json().catch(() => ({}));
- throw new Error(err?.error?.message || `HTTP ${res.status}`);
- }
-
- const data = await res.json();
- return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-}
-
-async function invokeOpenAI(
- apiKey: string,
- prompt: string,
- systemPrompt?: string,
- temperature?: number,
- maxTokens?: number
-) {
- const url = "https://api.openai.com/v1/chat/completions";
- 
- const messages = [];
- if (systemPrompt) {
- messages.push({ role: "system", content: systemPrompt });
- }
- messages.push({ role: "user", content: prompt });
-
- const payload = {
- model: "gpt-4o-mini",
- messages,
- temperature: temperature || 0.7,
- max_tokens: maxTokens || 1024,
- };
-
- const res = await fetch(url, {
- method: "POST",
- headers: {
- "Content-Type": "application/json",
- Authorization: `Bearer ${apiKey}`,
- },
- body: JSON.stringify(payload),
- signal: AbortSignal.timeout(25000),
- });
-
- if (!res.ok) {
- const err = await res.json().catch(() => ({}));
- throw new Error(err?.error?.message || `HTTP ${res.status}`);
- }
-
- const data = await res.json();
- return data?.choices?.[0]?.message?.content || "";
-}
-
-async function invokeAnthropic(
- apiKey: string,
- prompt: string,
- systemPrompt?: string,
- temperature?: number,
- maxTokens?: number
-) {
- const url = "https://api.anthropic.com/v1/messages";
-
- const payload: any = {
- model: "claude-3-5-sonnet-20241022",
- max_tokens: maxTokens || 1024,
- temperature: temperature || 0.7,
- messages: [{ role: "user", content: prompt }],
- };
-
- if (systemPrompt) {
- payload.system = systemPrompt;
- }
-
- const res = await fetch(url, {
- method: "POST",
- headers: {
- "Content-Type": "application/json",
- "x-api-key": apiKey,
- "anthropic-version": "2023-06-01",
- },
- body: JSON.stringify(payload),
- signal: AbortSignal.timeout(25000),
- });
-
- if (!res.ok) {
- const err = await res.json().catch(() => ({}));
- throw new Error(err?.error?.message || `HTTP ${res.status}`);
- }
-
- const data = await res.json();
- return data?.content?.[0]?.text || "";
-}
-
-async function invokeOpenRouter(
- apiKey: string,
- prompt: string,
- systemPrompt?: string,
- temperature?: number,
- maxTokens?: number
-) {
- const url = "https://openrouter.ai/api/v1/chat/completions";
-
- const messages = [];
- if (systemPrompt) {
- messages.push({ role: "system", content: systemPrompt });
- }
- messages.push({ role: "user", content: prompt });
-
- const payload = {
- model: "meta-llama/llama-3.3-70b-instruct",
- messages,
- temperature: temperature || 0.7,
- max_tokens: maxTokens || 1024,
- };
-
- const res = await fetch(url, {
- method: "POST",
- headers: {
- "Content-Type": "application/json",
- Authorization: `Bearer ${apiKey}`,
- "HTTP-Referer": "https://waesy.pages.dev",
- "X-Title": "Waesy AI Assistant",
- },
- body: JSON.stringify(payload),
- signal: AbortSignal.timeout(25000),
- });
-
- if (!res.ok) {
- const err = await res.json().catch(() => ({}));
- throw new Error(err?.error?.message || `HTTP ${res.status}`);
- }
-
- const data = await res.json();
- return data?.choices?.[0]?.message?.content || "";
-}
-

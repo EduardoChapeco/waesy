@@ -8,7 +8,7 @@ import {
   StoreSquadDTO,
   StoreSquadRunDTO,
 } from "../types/squads-and-onboarding";
-import { getNextActiveKey, markKeyError } from "./api-orchestrator.functions";
+import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from "./api-orchestrator.functions";
 import { getUpcomingMarketingCalendar } from "@/lib/data/holidays-calendar-catalog";
 
 // ── CONEXÃO RESILIENTE COM SUPABASE / POSTGRES ──────────────────────────────
@@ -264,13 +264,9 @@ export async function triggerSquadRun(
     let tokensUsed = 0;
     let costEstimateCents = 0;
 
-    // 2. Tentar execução real via LLM (Gemini Pool com Failover Groq)
+    // 2. Execução real via Orquestrador Universal de IA (OpenRouter, Groq, Gemini, OpenAI)
     try {
-      const geminiKey = await getNextActiveKey("gemini");
-      const groqKey = !geminiKey ? await getNextActiveKey("groq") : null;
-
-      if (geminiKey || groqKey) {
-        const systemPrompt = `Você é o agente líder ${leadAgent?.name || "Especialista Chefe"} (${leadAgent?.role_label || "Diretor Técnico"}), atuando no squad "${squadName}" do ecossistema Waesy.
+      const systemPrompt = `Você é o agente líder ${leadAgent?.name || "Especialista Chefe"} (${leadAgent?.role_label || "Diretor Técnico"}), atuando no squad "${squadName}" do ecossistema Waesy.
 Sua missão é emitir um parecer analítico executivo rigoroso sobre a rotina da loja (Store ID: ${storeId}).
 Retorne EXCLUSIVAMENTE um JSON válido com a seguinte estrutura:
 {
@@ -289,61 +285,21 @@ Retorne EXCLUSIVAMENTE um JSON válido com a seguinte estrutura:
   "compliance_status": "conforme"
 }`;
 
-        const userPrompt = `Objetivo da rotina: ${JSON.stringify(input.goal || "Otimização e conformidade contínua")}
+      const userPrompt = `Objetivo da rotina: ${JSON.stringify(input.goal || "Otimização e conformidade contínua")}
 Especialistas no squad: ${JSON.stringify(agents.map((a: any) => ({ name: a.name, role: a.role_label, deliverables: a.deliverables })))}
 Analise e produza a entrega de trabalho para revisão humana.`;
 
-        if (geminiKey) {
-          const gRes = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                contents: [{ parts: [{ text: userPrompt }] }],
-                generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
-              }),
-              signal: AbortSignal.timeout(15000),
-            }
-          );
-          if (gRes.ok) {
-            const gJson = await gRes.json();
-            const text = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              generatedArtifacts = JSON.parse(text);
-              tokensUsed = 1250;
-              costEstimateCents = 2;
-            }
-          }
-        } else if (groqKey) {
-          const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${groqKey.rawKey}`,
-            },
-            body: JSON.stringify({
-              model: "llama-3.1-70b-versatile",
-              messages: [
-                { role: "system", content: `${systemPrompt}\nResponda APENAS com JSON válido.` },
-                { role: "user", content: userPrompt },
-              ],
-              temperature: 0.2,
-              response_format: { type: "json_object" },
-            }),
-            signal: AbortSignal.timeout(15000),
-          });
-          if (grRes.ok) {
-            const grJson = await grRes.json();
-            const content = grJson?.choices?.[0]?.message?.content;
-            if (content) {
-              generatedArtifacts = JSON.parse(content);
-              tokensUsed = 1350;
-              costEstimateCents = 2;
-            }
-          }
-        }
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt,
+        userPrompt,
+        responseFormat: "json_object",
+        temperature: 0.2,
+      });
+
+      if (aiRes?.parsedJson) {
+        generatedArtifacts = aiRes.parsedJson;
+        tokensUsed = 1250;
+        costEstimateCents = 2;
       }
     } catch (llmErr) {
       console.warn("[squads-runtime] LLM pool fallback to domain synthesis:", llmErr);

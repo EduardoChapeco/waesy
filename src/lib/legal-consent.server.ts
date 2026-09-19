@@ -4,7 +4,7 @@
  * Executa estritamente no lado do servidor.
  */
 
-import { getRequestHeader, setCookie } from "@tanstack/react-start/server";
+import { getRequestHeader, setCookie } from "@tanstack/start-server-core";
 import { getServerClient } from "./supabase";
 import { getSSRClient } from "./supabase-ssr.server";
 import crypto from "node:crypto";

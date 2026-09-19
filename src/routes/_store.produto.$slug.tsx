@@ -727,7 +727,7 @@ function ProductContent({
         currency="BRL"
         imageUrl={currentThumbnailUrl || product.media?.[0]?.url}
         brandName={(product as any)?.store?.name || "Waesy"}
-        categoryName="Turismo & Viagens"
+        categoryName="Turismo"
         sku={(product as any).sku || product.id}
         inStock={true}
       />
@@ -741,7 +741,7 @@ function ProductContent({
  </Link>
  <ChevronRight className="size-3" aria-hidden />
  <Link to="/mercado" className="hover:text-foreground">
- Turismo & Viagens
+ Turismo
  </Link>
  <ChevronRight className="size-3" aria-hidden />
  <span className="text-foreground font-bold truncate max-w-[250px]">{product.title}</span>

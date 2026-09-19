@@ -2,12 +2,51 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
-import { getNextActiveKey, markKeyError } from "@/services/api-orchestrator.functions";
+import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import {
   MarketCompetitorDTO,
   CompetitorSnapshotDTO,
   BrandDnaProfileDTO,
 } from "../types/squads-and-onboarding";
+
+export const DEFAULT_BRAND_PALETTE = {
+  primary: "#0A84FF",
+  secondary: "#5E5CE6",
+  accent: "#30D158",
+  background: "#09090B",
+  text: "#FAFAFA",
+};
+
+export const DEFAULT_BRAND_SEVEN_SINS = {
+  orgulho: "Você merece o que há de melhor e mais exclusivo.",
+  ganancia: "Leve o dobro de valor e economize margem real.",
+  luxuria: "Uma experiência sensorial irresistível que ativa todos os sentidos.",
+  inveja: "Seja a referência que todos os outros tentam copiar.",
+  gula: "Porções generosas, sabor intenso e sem culpa.",
+  ira: "Chega de pagar caro por promessas que não entregam resultado.",
+  preguica: "Em apenas 1 clique no WhatsApp, tudo pronto na sua porta.",
+};
+
+export const DEFAULT_BRAND_SWOT = {
+  strengths: [
+    "Atendimento personalizado e humanizado de alto padrão",
+    "Produtos com procedência garantida e frescor rigoroso",
+    "Plataforma digital integrada e intuitiva com pedidos instantâneos",
+  ],
+  weaknesses: [
+    "Verba de mídia paga inferior a redes multinacionais",
+    "Volume de estoque inicial moderado para produtos de nicho",
+  ],
+  opportunities: [
+    "Dominar buscas orgânicas hiperlocais por meio do catálogo otimizado",
+    "Criar clube de fidelidade exclusivo para retenção de clientes recorrentes",
+    "Ativar campanhas de remarketing com ganchos dos 7 Pecados Capitais",
+  ],
+  threats: [
+    "Guerra predatória de cupons de plataformas intermediárias",
+    "Inflação de insumos e matérias-primas sazonais",
+  ],
+};
 
 function parseJsonField<T>(value: any, fallback: T): T {
   if (value === null || value === undefined) return fallback;
@@ -34,7 +73,7 @@ export async function listCompetitorsLogic(data?: {
   let storeId = data?.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
   if (!storeId) return [];
 
@@ -128,7 +167,7 @@ export async function createCompetitorLogic(data: {
   let storeId = data.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
   if (!storeId) {
     throw new Error("Loja não identificada para cadastrar concorrente.");
@@ -242,11 +281,6 @@ async function captureBrowserScreenshotAndContent(targetUrl: string): Promise<{ 
 }
 
 async function analyzeCompetitorDnaWithAI(competitorName: string, targetUrl: string, markdownContent?: string | null): Promise<any | null> {
-  const geminiKey = await getNextActiveKey("gemini");
-  const groqKey = !geminiKey ? await getNextActiveKey("groq") : null;
-
-  if (!geminiKey && !groqKey) return null;
-
   const systemInstruction = `Você é um consultor sênior de inteligência competitiva e branding.
 Analise o concorrente informado e extraia seu DNA de marca em JSON:
 {
@@ -271,59 +305,18 @@ ${(markdownContent || "").slice(0, 5000)}
 `;
 
   try {
-    if (geminiKey) {
-      const gRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.2,
-              responseMimeType: "application/json",
-            },
-          }),
-          signal: AbortSignal.timeout(18000),
-        }
-      );
+    const aiResult = await executeUnifiedAiCall({
+      systemPrompt: systemInstruction,
+      userPrompt: prompt,
+      responseFormat: "json_object",
+      temperature: 0.2,
+    });
 
-      if (gRes.ok) {
-        const data = await gRes.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return JSON.parse(text);
-      }
-    } else if (groqKey) {
-      const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${groqKey.rawKey}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-70b-versatile",
-          messages: [
-            { role: "system", content: systemInstruction },
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.2,
-        }),
-        signal: AbortSignal.timeout(18000),
-      });
-
-      if (grRes.ok) {
-        const grData = await grRes.json();
-        const text = grData?.choices?.[0]?.message?.content;
-        if (text) return JSON.parse(text);
-      }
-    }
+    return aiResult.parsedJson || (aiResult.content ? JSON.parse(aiResult.content) : null);
   } catch (e: any) {
-    console.warn("[market-radar] Falha na análise de IA, usando modelo calibrado:", e.message);
+    console.warn("[market-radar] Falha na análise de IA via pool:", e.message);
+    return null;
   }
-
-  return null;
 }
 
 export async function captureAndAnalyzeCompetitorLogic(data: {
@@ -335,7 +328,7 @@ export async function captureAndAnalyzeCompetitorLogic(data: {
   let storeId = data.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
 
   const { data: comp, error: compErr } = await supabase
@@ -458,50 +451,11 @@ export async function getStoreBrandDnaLogic(data?: {
   let storeId = data?.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
   if (!storeId) {
     throw new Error("Loja não especificada para buscar Brand DNA.");
   }
-
-  const defaultPalette = {
-    primary: "#0A84FF",
-    secondary: "#5E5CE6",
-    accent: "#30D158",
-    background: "#09090B",
-    text: "#FAFAFA",
-  };
-
-  const defaultSevenSins = {
-    orgulho: "Você merece o que há de melhor e mais exclusivo.",
-    ganancia: "Leve o dobro de valor e economize margem real.",
-    luxuria: "Uma experiência sensorial irresistível que ativa todos os sentidos.",
-    inveja: "Seja a referência que todos os outros tentam copiar.",
-    gula: "Porções generosas, sabor intenso e sem culpa.",
-    ira: "Chega de pagar caro por promessas que não entregam resultado.",
-    preguica: "Em apenas 1 clique no WhatsApp, tudo pronto na sua porta.",
-  };
-
-  const defaultSwot = {
-    strengths: [
-      "Atendimento personalizado e humanizado de alto padrão",
-      "Produtos com procedência garantida e frescor rigoroso",
-      "Plataforma digital integrada e intuitiva com pedidos instantâneos",
-    ],
-    weaknesses: [
-      "Verba de mídia paga inferior a redes multinacionais",
-      "Volume de estoque inicial moderado para produtos de nicho",
-    ],
-    opportunities: [
-      "Dominar buscas orgânicas hiperlocais por meio do catálogo otimizado",
-      "Criar clube de fidelidade exclusivo para retenção de clientes recorrentes",
-      "Ativar campanhas de remarketing com ganchos dos 7 Pecados Capitais",
-    ],
-    threats: [
-      "Guerra predatória de cupons de plataformas intermediárias",
-      "Inflação de insumos e matérias-primas sazonais",
-    ],
-  };
 
   const { data: existing } = await supabase
     .from("brand_dna_profiles")
@@ -519,9 +473,9 @@ export async function getStoreBrandDnaLogic(data?: {
       tone_rules: existing.tone_rules || [],
       content_pillars: existing.content_pillars || [],
       forbidden_words: existing.forbidden_words || [],
-      color_palette: parseJsonField(existing.color_palette, defaultPalette),
-      seven_sins_triggers: parseJsonField(existing.seven_sins_triggers, defaultSevenSins),
-      swot_analysis: parseJsonField(existing.swot_analysis, defaultSwot),
+      color_palette: parseJsonField(existing.color_palette, DEFAULT_BRAND_PALETTE),
+      seven_sins_triggers: parseJsonField(existing.seven_sins_triggers, DEFAULT_BRAND_SEVEN_SINS),
+      swot_analysis: parseJsonField(existing.swot_analysis, DEFAULT_BRAND_SWOT),
       created_at: existing.created_at,
       updated_at: existing.updated_at,
     };
@@ -537,16 +491,16 @@ export async function getStoreBrandDnaLogic(data?: {
       tone_rules: ["Nunca use jargões vazios", "Mantenha frases curtas de alto impacto", "Foque no benefício prático imediato"],
       content_pillars: ["Qualidade Impecável", "Velocidade & Respeito", "Exclusividade"],
       forbidden_words: ["Baratinho", "Garantimos o menor preço a qualquer custo", "Prometemos"],
-      color_palette: defaultPalette,
-      seven_sins_triggers: defaultSevenSins,
-      swot_analysis: defaultSwot,
+      color_palette: DEFAULT_BRAND_PALETTE,
+      seven_sins_triggers: DEFAULT_BRAND_SEVEN_SINS,
+      swot_analysis: DEFAULT_BRAND_SWOT,
     })
     .select()
     .single();
 
   if (createErr || !created) {
     return {
-      id: "mock-dna",
+      id: crypto.randomUUID(),
       store_id: storeId,
       archetype: "O Criador",
       archetype_justification: "Marca focada em originalidade e sofisticação.",
@@ -554,9 +508,9 @@ export async function getStoreBrandDnaLogic(data?: {
       tone_rules: ["Frases curtas", "Alto impacto"],
       content_pillars: ["Qualidade", "Exclusividade"],
       forbidden_words: ["Baratinho"],
-      color_palette: defaultPalette,
-      seven_sins_triggers: defaultSevenSins,
-      swot_analysis: defaultSwot,
+      color_palette: DEFAULT_BRAND_PALETTE,
+      seven_sins_triggers: DEFAULT_BRAND_SEVEN_SINS,
+      swot_analysis: DEFAULT_BRAND_SWOT,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -571,9 +525,9 @@ export async function getStoreBrandDnaLogic(data?: {
     tone_rules: created.tone_rules,
     content_pillars: created.content_pillars,
     forbidden_words: created.forbidden_words,
-    color_palette: parseJsonField(created.color_palette, defaultPalette),
-    seven_sins_triggers: parseJsonField(created.seven_sins_triggers, defaultSevenSins),
-    swot_analysis: parseJsonField(created.swot_analysis, defaultSwot),
+    color_palette: parseJsonField(created.color_palette, DEFAULT_BRAND_PALETTE),
+    seven_sins_triggers: parseJsonField(created.seven_sins_triggers, DEFAULT_BRAND_SEVEN_SINS),
+    swot_analysis: parseJsonField(created.swot_analysis, DEFAULT_BRAND_SWOT),
     created_at: created.created_at,
     updated_at: created.updated_at,
   };
@@ -630,9 +584,9 @@ export async function updateStoreBrandDnaLogic(data: {
     tone_rules: updated.tone_rules,
     content_pillars: updated.content_pillars,
     forbidden_words: updated.forbidden_words,
-    color_palette: parseJsonField(updated.color_palette, {}),
-    seven_sins_triggers: parseJsonField(updated.seven_sins_triggers, {}),
-    swot_analysis: parseJsonField(updated.swot_analysis, {}),
+    color_palette: parseJsonField(updated.color_palette, DEFAULT_BRAND_PALETTE),
+    seven_sins_triggers: parseJsonField(updated.seven_sins_triggers, DEFAULT_BRAND_SEVEN_SINS),
+    swot_analysis: parseJsonField(updated.swot_analysis, DEFAULT_BRAND_SWOT),
     created_at: updated.created_at,
     updated_at: updated.updated_at,
   };
@@ -652,15 +606,13 @@ export async function extractBrandDnaWithAiLogic(data: {
   let storeId = data.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
   if (!storeId) {
     throw new Error("Loja não identificada para geração de Brand DNA com IA.");
   }
 
   const { briefing } = data;
-  const geminiKey = await getNextActiveKey("gemini");
-  const groqKey = !geminiKey ? await getNextActiveKey("groq") : null;
 
   const systemInstruction = `Você é o "The Identity Engineer", especialista em arquétipos junguianos, estrategista de marca e posicionamento de mercado.
 Sua missão é transformar o briefing do cliente em um Brand DNA denso, acionável e psicológico.
@@ -674,59 +626,18 @@ Diferenciais Competitivos: ${briefing.differentials}`;
 
   let extractedData: any = null;
 
-  if (geminiKey) {
-    try {
-      const gRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.3,
-              responseMimeType: "application/json",
-            },
-          }),
-          signal: AbortSignal.timeout(20000),
-        }
-      );
-      if (gRes.ok) {
-        const d = await gRes.json();
-        const text = d?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) extractedData = JSON.parse(text);
-      }
-    } catch (e: any) {
-      console.warn("[market-radar] Gemini extractor error:", e.message);
+  try {
+    const aiRes = await executeUnifiedAiCall({
+      systemInstruction,
+      prompt,
+      temperature: 0.3,
+      expectJson: true,
+    });
+    if (aiRes.parsedJson) {
+      extractedData = aiRes.parsedJson;
     }
-  } else if (groqKey) {
-    try {
-      const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${groqKey.rawKey}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-70b-versatile",
-          messages: [
-            { role: "system", content: systemInstruction },
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.3,
-        }),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (grRes.ok) {
-        const grData = await grRes.json();
-        const text = grData?.choices?.[0]?.message?.content;
-        if (text) extractedData = JSON.parse(text);
-      }
-    } catch (e: any) {
-      console.warn("[market-radar] Groq extractor error:", e.message);
-    }
+  } catch (e: any) {
+    console.warn("[market-radar] AI extractor warning:", e.message);
   }
 
   if (!extractedData) {

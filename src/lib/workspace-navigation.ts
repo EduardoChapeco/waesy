@@ -69,6 +69,8 @@ import {
   LifeBuoy,
   Compass,
   UserCheck,
+  Lock,
+  HandHeart,
 } from "lucide-react";
 
 export type NavItem = {
@@ -605,6 +607,18 @@ const GROUP_TEAM_RH: NavGroup = {
   ],
 };
 
+const GROUP_DONATIONS_CAPTACAO: NavGroup = {
+  id: "donations-captacao",
+  label: "Doações & Captação",
+  icon: Coins,
+  section: "corporate",
+  items: [
+    { path: "/workspace/doacoes", label: "Doações & Solidariedade", icon: Gift },
+    { path: "/workspace/captacao", label: "Captação de Investimento & M&A", icon: Coins },
+    { path: "/workspace/captacao/ndas", label: "NDAs & Termos Assinados", icon: Lock },
+  ],
+};
+
 import { getNicheSemantics } from "./niche-semantics";
 
 const GROUP_SETTINGS: NavGroup = {
@@ -664,6 +678,7 @@ export function resolveWorkspaceNavigation(
       GROUP_FINANCE_CLEAN,
       GROUP_FISCAL_ACCOUNTING,
       GROUP_TEAM_RH,
+      GROUP_DONATIONS_CAPTACAO,
       GROUP_SETTINGS,
     ];
   }
@@ -929,6 +944,7 @@ export function resolveWorkspaceNavigation(
         GROUP_FINANCE_CLEAN,
         GROUP_FISCAL_ACCOUNTING,
         GROUP_TEAM_RH,
+        GROUP_DONATIONS_CAPTACAO,
         GROUP_SETTINGS,
       ];
       break;

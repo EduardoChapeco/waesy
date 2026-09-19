@@ -1,36 +1,19 @@
 import { useState, useEffect } from "react";
 import { Sun, CloudRain, Cloud, Wind, Thermometer, Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getCityWeather, type WeatherDayDTO } from "@/services/public-apis.functions";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// WeatherWidget — Clima Real via wttr.in (API pública, sem API key)
+// WeatherWidget — Clima Real via BFF Server Function com Fallback e Cache (Regra 1 & 21)
 // Uso: <WeatherWidget city="Jericoacoara, CE" className="..." />
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface WeatherDay {
-  day: string;
-  maxTempC: number;
-  minTempC: number;
-  condition: "sun" | "cloud" | "rain" | "wind";
-  conditionText: string;
-  iconCode: number;
-}
+type WeatherDay = WeatherDayDTO;
 
 interface WeatherWidgetProps {
   city?: string;
   className?: string;
   compact?: boolean;
-}
-
-function resolveCondition(weatherCode: number): "sun" | "cloud" | "rain" | "wind" {
-  if (weatherCode >= 200 && weatherCode <= 299) return "rain"; // thunderstorm
-  if (weatherCode >= 300 && weatherCode <= 399) return "rain"; // drizzle
-  if (weatherCode >= 500 && weatherCode <= 599) return "rain"; // rain
-  if (weatherCode >= 600 && weatherCode <= 699) return "cloud"; // snow
-  if (weatherCode >= 700 && weatherCode <= 799) return "wind"; // atmosphere
-  if (weatherCode === 800) return "sun";                        // clear sky
-  if (weatherCode >= 801) return "cloud";                       // clouds
-  return "sun";
 }
 
 const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -58,40 +41,17 @@ export function WeatherWidget({ city, className, compact = false }: WeatherWidge
     setLoading(true);
     setError(null);
 
-    // wttr.in: API pública gratuita, sem key. Formato JSON compacto.
-    // Docs: https://wttr.in/:help
-    const encoded = encodeURIComponent(city.trim());
-    fetch(`https://wttr.in/${encoded}?format=j1&lang=pt`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        const weather = data?.weather;
-        if (!Array.isArray(weather) || weather.length === 0) {
-          throw new Error("Dados de clima não encontrados.");
+    getCityWeather({ data: { city: city.trim() } })
+      .then((res) => {
+        if (Array.isArray(res.days) && res.days.length > 0) {
+          setDays(res.days);
+          setLastCity(city);
+        } else {
+          setError("Clima indisponível");
         }
-
-        const parsed: WeatherDay[] = weather.slice(0, 3).map((w: any, idx: number) => {
-          const date = w.date ? new Date(w.date) : new Date(Date.now() + idx * 86400000);
-          const dayName = idx === 0 ? "Hoje" : idx === 1 ? "Amanhã" : DAYS_PT[date.getDay()];
-          const hourly = w.hourly?.[4]; // meio-dia
-          const code = parseInt(hourly?.weatherCode || "800", 10);
-          return {
-            day: dayName,
-            maxTempC: parseInt(w.maxtempC || "28", 10),
-            minTempC: parseInt(w.mintempC || "22", 10),
-            condition: resolveCondition(code),
-            conditionText: hourly?.weatherDesc?.[0]?.value || "Parcialmente nublado",
-            iconCode: code,
-          };
-        });
-
-        setDays(parsed);
-        setLastCity(city);
       })
       .catch((err) => {
-        console.warn("[WeatherWidget] Falha ao buscar clima:", err);
+        console.warn("[WeatherWidget] Falha ao buscar clima via BFF:", err);
         setError("Clima indisponível");
       })
       .finally(() => setLoading(false));

@@ -359,7 +359,10 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  {mediaList.map((item, idx) => (
  <div
  key={item.id || idx}
- className="group relative aspect-video rounded-xl overflow-hidden border border-border bg-card shadow-xs transition-all hover:border-primary/50"
+ className={cn(
+ "group relative rounded-xl overflow-hidden border border-border bg-card shadow-xs transition-all hover:border-primary/50",
+ computedAspect === 1 ? "aspect-square" : computedAspect === 4 / 3 ? "aspect-[4/3]" : "aspect-video"
+ )}
  >
  {item.type === "video" ? (
  <div className="relative w-full h-full bg-black flex items-center justify-center">

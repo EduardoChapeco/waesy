@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Layers, Bot, Key, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, Plus, ShieldCheck, Zap } from 'lucide-react';
+import { Layers, Bot, Key, CheckCircle2, AlertCircle, Clock, Trash2, RefreshCw, Plus, ShieldCheck, Zap, Sliders, ExternalLink } from 'lucide-react';
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -185,6 +185,14 @@ function WorkspaceAiSettingsPage() {
  Conecte suas próprias chaves de API para alimentar assistentes de atendimento, cotações automáticas e resumos.
  </p>
  </div>
+
+ <Link to="/workspace/configuracoes/integracoes">
+ <Button variant="outline" size="sm" className="h-9 px-3.5 text-xs font-semibold rounded-xl gap-2 cursor-pointer border-border/70 hover:bg-muted/50">
+ <Sliders className="size-3.5 text-primary" />
+ Central de Integrações & APIs
+ <ExternalLink className="size-3 text-muted-foreground" />
+ </Button>
+ </Link>
  </div>
 
  {/* ── 2. Grid de Provedores Suportados ── */}

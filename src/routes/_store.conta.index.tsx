@@ -260,6 +260,27 @@ function AccountDashboardPage() {
  </div>
  )}
 
+  {/* ── 2.1 CONVERSÃO PARA CONTA PRO (Fase 5: Ponte de Conversão) ── */}
+  {stores.length === 0 && (
+    <div className="bg-card rounded-2xl border border-primary/20 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <Sparkles className="size-4 text-primary" />
+          <h2 className="text-sm font-bold text-foreground">Transforme sua Conta em Perfil Pro</h2>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed max-w-lg">
+          Crie sua loja oficial no Workspace para gerenciar catálogo, vendas, pedidos e telemetria SimLabs com 50.000 tokens de IA inclusos.
+        </p>
+      </div>
+      <Button asChild size="sm" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-4 shrink-0 shadow-xs cursor-pointer">
+        <Link to="/criar-negocio">
+          <Store className="size-3.5 mr-1.5" />
+          <span>Criar Empresa Pro</span>
+        </Link>
+      </Button>
+    </div>
+  )}
+
  {/* ── 3. SERVIÇOS & ATIVIDADES PESSOAIS (Hub do Cliente) ── */}
  <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-xs">
  <div className="px-5 py-4 border-b border-border/40">

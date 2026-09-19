@@ -4,6 +4,7 @@ import { getServerClient } from "@/lib/supabase";
 import { resolveTenantStoreId } from "@/lib/tenant.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { getWorkingIntervalsForDate } from "@/services/store.functions";
+import { sendWhatsAppNotification } from "./integrations.functions";
 
 // --- SCHEMAS ---
 
@@ -486,6 +487,23 @@ export const createAppointment = createServerFn({ method: "POST" })
  reason: `Agendamento confirmado para ${input.scheduled_at}`,
  });
  }
+
+    // Notificação ativa via WhatsApp Cloud API (se configurada e número disponível)
+    if (input.guest_phone && storeId) {
+      const formattedDate = new Date(input.scheduled_at).toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      sendWhatsAppNotification({
+        storeId,
+        recipientPhone: input.guest_phone,
+        messageText: `📅 Olá, ${input.guest_name}! Seu agendamento para "${service.title}" foi registrado com sucesso para ${formattedDate}. Status: ${apptStatus === "confirmed" ? "Confirmado" : "Pendente"}.`,
+      }).catch((wErr) => console.warn("[booking] WhatsApp notification falhou (não bloqueante):", wErr));
+    }
 
  return { status: "success" as const, data };
  } catch (error: unknown) {

@@ -8,7 +8,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
-import { getNextActiveKey } from "@/services/api-orchestrator.functions";
+import { getNextActiveKey, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 
 // ─── DTOs do Ciclo de Vida ───────────────────────────────────────────────────
 
@@ -959,8 +959,6 @@ export const parseOperatorVoucherAI = createServerFn({ method: "POST" })
       throw new Error("Nenhum arquivo ou texto de voucher foi enviado para análise.");
     }
 
-    const geminiKey = await getNextActiveKey("gemini");
-
     const systemInstruction = `Você é o Agente Especialista em OCR e Extração de Documentos de Turismo da Plataforma Waesy (Padrão BigTech).
 Sua missão é ler com precisão cirúrgica comprovantes, vouchers e confirmações de reserva emitidos por OPERADORAS DE TURISMO (CVC, FRT, Orinter, Azul Viagens, LATAM Travel, Schultz, Trend, Abreu, Viagens Promo, Booking, Decolar, etc.), bem como documentos de passageiros (Passaporte, RG, CNH) e faturas/boletos/recibos financeiros.
 
@@ -1101,59 +1099,36 @@ ${fileList
   .join("\n")}
 Extraia, consolide e estruture todas as informações no formato JSON especificado.`;
 
-    if (geminiKey) {
-      try {
-        const parts: any[] = [];
-        for (const fileItem of fileList) {
-          if (fileItem.fileBase64 && fileItem.fileMime) {
-            parts.push({
-              inlineData: {
-                mimeType: fileItem.fileMime,
-                data: fileItem.fileBase64,
-              },
-            });
-          }
-        }
-        parts.push({ text: promptText });
+    const imageFiles = fileList
+      .filter((f) => f.fileBase64 && f.fileMime)
+      .map((f) => ({ mimeType: f.fileMime!, base64: f.fileBase64! }));
 
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemInstruction }] },
-              contents: [{ parts }],
-              generationConfig: {
-                temperature: 0.1,
-                responseMimeType: "application/json",
-              },
-            }),
-          }
-        );
+    const allRawText = fileList.map((f) => f.rawText || "").filter(Boolean).join("\n") || "";
 
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json();
-          const rawResult = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawResult) {
-            const cleaned = rawResult.replace(/```json/gi, "").replace(/```/g, "").trim();
-            const parsed = JSON.parse(cleaned);
-            return {
-              success: true,
-              parsed: {
-                ...parsed,
-                raw_extracted_text: `Processado com sucesso via ${fileList.length} documento(s).`,
-              },
-            };
-          }
-        }
-      } catch (err) {
-        console.warn("[parseOperatorVoucherAI] Erro no Gemini, utilizando parser defensivo:", err);
+    try {
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt: systemInstruction,
+        userPrompt: promptText,
+        images: imageFiles,
+        preferredProvider: "gemini",
+        responseFormat: "json_object",
+        temperature: 0.1,
+      });
+
+      if (aiRes?.parsedJson) {
+        return {
+          success: true,
+          parsed: {
+            ...aiRes.parsedJson,
+            raw_extracted_text: `Processado com sucesso via IA (${aiRes.provider}).`,
+          },
+        };
       }
+    } catch (aiErr: any) {
+      console.warn("[parseOperatorVoucherAI] Falha na chamada unificada de IA, acionando parser defensivo:", aiErr?.message);
     }
 
-    // Heurística / Parser Defensivo caso IA esteja offline
-    const allRawText = fileList.map((f) => f.rawText || "").join("\n");
+    // 3. Heurística / Parser Defensivo estrito caso IA esteja offline
     const locMatch = allRawText.match(/(?:localizador|loc|pnr|reserva|c[oó]digo)[\s:]+([A-Z0-9]{5,10})/i);
     const dateMatch = allRawText.match(/(\d{2}\/\d{2}\/\d{4})/);
     const operatorMatch = allRawText.match(/(CVC|FRT|Orinter|Azul Viagens|LATAM|Schultz|Trend|Abreu|Decolar|Booking)/i);
@@ -1163,10 +1138,10 @@ Extraia, consolide e estruture todas as informações no formato JSON especifica
       operator_contacts: { commercial_phone: null, emergency_phone: null },
       destination_city: "Destino da Viagem",
       trip_title: "Pacote Turístico Integrado",
-      general_locator: locMatch ? locMatch[1].toUpperCase() : `LOC-${Math.floor(10000 + Math.random() * 90000)}`,
+      general_locator: locMatch ? locMatch[1].toUpperCase() : "VOUCHER-OPERADORA",
       travel_start_date: dateMatch ? dateMatch[1].split("/").reverse().join("-") : null,
       travel_end_date: null,
-      client_name: "Passageiro Confirmado",
+      client_name: "Passageiro a Confirmar",
       passengers: [
         {
           name: "Passageiro Confirmado",

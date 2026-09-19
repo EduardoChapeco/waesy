@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { sendWhatsAppNotification } from "./integrations.functions";
 
 // ─── CARTEIRA DE CLIENTES (BFF CANÔNICO) ──────────────────────────────────────
 
@@ -942,6 +943,15 @@ export const submitContactForm = createServerFn({ method: "POST" })
  status: "new",
  });
  if (error) throw error;
+
+  if (input.phone) {
+    sendWhatsAppNotification({
+      storeId: input.storeId,
+      recipientPhone: input.phone,
+      messageText: `Olá, ${input.fullName}! Recebemos sua mensagem no portal. Nossa equipe entrará em contato em breve!`,
+    }).catch((err) => console.warn("[crm] Aviso ao disparar WhatsApp de boas-vindas ao lead:", err));
+  }
+
  return { status: "success" as const };
  } catch (e: unknown) {
  console.error("[crm] submitContactForm error:", e);

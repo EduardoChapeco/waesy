@@ -2,12 +2,12 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Sparkles, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
-import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
+import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
 
@@ -33,8 +33,10 @@ import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropz
 import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
-import { upsertClassified, getPublicClassifiedById } from "@/services/classifieds.functions";
+import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
+import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/services/market-intelligence.functions";
+import { lookupCnpj } from "@/services/public-apis.functions";
 import {
  CANONICAL_VEHICLE_BRANDS,
  CANONICAL_TRANSMISSIONS,
@@ -56,6 +58,16 @@ import {
  CANONICAL_GAME_CONSOLES,
  CANONICAL_FASHION_CATEGORIES,
  CANONICAL_FASHION_SIZES,
+ CANONICAL_FOOD_SUBNICHES,
+ CANONICAL_SERVICE_SUBNICHES,
+ CANONICAL_BUSINESS_TYPES,
+ CANONICAL_BUSINESS_SEGMENTS,
+ CANONICAL_SALE_REASONS,
+ CANONICAL_EMPLOYEES_RANGES,
+ CANONICAL_COMMERCIAL_POINT_TYPES,
+ CANONICAL_INVESTMENT_MODELS,
+ CANONICAL_PROJECT_STAGES,
+ CANONICAL_USE_OF_FUNDS,
 } from "@/lib/classifieds/canonical-taxonomy";
 import {
  CANONICAL_EDUCATION_LEVELS,
@@ -102,11 +114,12 @@ export type ClassifiedNicheType =
   | "assinatura"
   | "gastronomia"
   | "farmacia"
-  | "mercado";
+  | "mercado"
+  | "negocio";
 
 interface NicheDefinition {
   id: ClassifiedNicheType;
-  canonicalCategory: "sale" | "vehicle" | "real_estate" | "service" | "job" | "travel" | "equipment" | "donation";
+  canonicalCategory: "sale" | "vehicle" | "real_estate" | "service" | "job" | "travel" | "equipment" | "donation" | "business" | "food";
   title: string;
   subtitle: string;
   description: string;
@@ -117,10 +130,20 @@ interface NicheDefinition {
 
 const NICHE_CARDS: NicheDefinition[] = [
   {
+    id: "negocio",
+    canonicalCategory: "business",
+    title: "Negócios",
+    subtitle: "Empresas, pontos comerciais e investimentos",
+    description: "Venda integral ou parcial de empresas ativas, repasse de ponto comercial, franquias e captação de sócios ou investimento.",
+    icon: Briefcase,
+    badge: "Negócios",
+    gradient: "from-amber-600/15 via-yellow-600/10 to-transparent",
+  },
+  {
     id: "desapego",
     canonicalCategory: "sale",
-    title: "Desapego & Bens Físicos",
-    subtitle: "Eletrônicos, Móveis & Usados",
+    title: "Desapego",
+    subtitle: "Usados, eletrônicos e móveis",
     description: "Eletrônicos, celulares, computadores, instrumentos musicais, moda, móveis e itens com envio.",
     icon: Tag,
     badge: "Envio & Retirada",
@@ -129,50 +152,50 @@ const NICHE_CARDS: NicheDefinition[] = [
   {
     id: "veiculo",
     canonicalCategory: "vehicle",
-    title: "Veículo",
-    subtitle: "Automotivo & Náutico",
+    title: "Veículos",
+    subtitle: "Carros, motos e utilitários",
     description: "Carros de passeio, motocicletas, caminhões, utilitários e veículos comerciais.",
     icon: Car,
-    badge: "Especificações",
+    badge: "Veículos",
     gradient: "from-amber-500/10 via-orange-500/5 to-transparent",
   },
   {
     id: "imovel",
     canonicalCategory: "real_estate",
-    title: "Imóvel (Venda & Aluguel)",
-    subtitle: "Habitação, Locação Mensal & Comercial",
+    title: "Imóveis",
+    subtitle: "Casas, apartamentos e terrenos",
     description:
       "Casas, apartamentos, salas comerciais, galpões, terrenos e locação residencial ou comercial.",
     icon: HomeIcon,
-    badge: "Alta Procura",
+    badge: "Imóveis",
     gradient: "from-blue-500/10 via-indigo-500/5 to-transparent",
   },
   {
     id: "servico",
     canonicalCategory: "service",
-    title: "Serviço Profissional",
-    subtitle: "Autônomos & Especialistas",
+    title: "Serviços",
+    subtitle: "Profissionais para pessoas e empresas (CNPJ)",
     description: "Trabalhos técnicos, consultorias, serviços domésticos, manutenção e freelancers.",
     icon: Wrench,
-    badge: "Agendável",
+    badge: "Serviços",
     gradient: "from-purple-500/10 via-pink-500/5 to-transparent",
   },
   {
     id: "vaga",
     canonicalCategory: "job",
-    title: "Oportunidade / Vaga",
-    subtitle: "Contratação & Carreiras",
+    title: "Vagas de Emprego",
+    subtitle: "Oportunidades de trabalho e contratação",
     description:
       "Vagas de emprego, parcerias, estágios e oportunidades profissionais para a comunidade.",
     icon: Briefcase,
-    badge: "Talentos",
+    badge: "Vagas",
     gradient: "from-rose-500/10 via-red-500/5 to-transparent",
   },
   {
     id: "digital",
     canonicalCategory: "sale",
-    title: "Produto Digital & Downloads",
-    subtitle: "E-books, Planilhas, Cursos & Presets",
+    title: "Produtos Digitais",
+    subtitle: "Downloads imediatos e infoprodutos",
     description: "Infoprodutos, arquivos para download imediato, templates, artes digitais e materiais educativos.",
     icon: FileArchive,
     badge: "Download Imediato",
@@ -181,39 +204,39 @@ const NICHE_CARDS: NicheDefinition[] = [
   {
     id: "hospedagem",
     canonicalCategory: "real_estate",
-    title: "Hospedagem & Temporada",
-    subtitle: "Chalés, Cabanas, Pousadas & Temporada",
+    title: "Hospedagem",
+    subtitle: "Diárias em chalés, pousadas e sítios",
     description:
       "Aluguel por diária, chalés com hidro, cabanas na serra, casas de campo, pousadas e suítes com check-in.",
     icon: Key,
-    badge: "Diárias / Temporada",
+    badge: "Temporada",
     gradient: "from-amber-500/10 via-rose-500/5 to-transparent",
   },
   {
     id: "equipamento",
     canonicalCategory: "equipment",
-    title: "Aluguel de Equipamentos",
-    subtitle: "Eventos, Som, Luz & Máquinas",
+    title: "Equipamentos",
+    subtitle: "Locação de ferramentas e máquinas",
     description: "Locação de caixas de som, iluminação, tendas, mesas, ferramentas e equipamentos para festas e obras.",
     icon: Wrench,
-    badge: "Locação / Diária",
+    badge: "Locação",
     gradient: "from-blue-500/10 via-cyan-500/5 to-transparent",
   },
   {
     id: "assinatura",
     canonicalCategory: "service",
-    title: "Planos & Assinaturas",
-    subtitle: "Mensalidades & Clubes",
+    title: "Assinaturas",
+    subtitle: "Serviços e pagamentos recorrentes",
     description: "Serviços recorrentes, mensalidades, planos de assinatura e clubes com renovação periódica.",
-    icon: Sparkles,
+    icon: RefreshCw,
     badge: "Recorrente",
     gradient: "from-cyan-500/15 via-blue-500/10 to-transparent",
   },
   {
     id: "doacao",
     canonicalCategory: "donation",
-    title: "Doação / Gratuito (R$ 0)",
-    subtitle: "Solidariedade & Desapego Livre",
+    title: "Doações",
+    subtitle: "Itens gratuitos para a comunidade",
     description: "Doe móveis, roupas, livros, eletrônicos ou alimentos gratuitamente para a comunidade local.",
     icon: Tag,
     badge: "Gratuito R$ 0",
@@ -222,41 +245,41 @@ const NICHE_CARDS: NicheDefinition[] = [
   {
     id: "viagem",
     canonicalCategory: "travel",
-    title: "Viagens, Turismo & Resorts",
-    subtitle: "Pacotes, Roteiros & Destinos",
+    title: "Viagens",
+    subtitle: "Pacotes e passeios turísticos",
     description: "Pacotes turísticos, resorts, passeios guiados e roteiros com fotos e programação completa.",
     icon: Key,
-    badge: "Vitrine Imersiva",
+    badge: "Turismo",
     gradient: "from-amber-500/15 via-rose-500/10 to-purple-600/10",
   },
   {
     id: "gastronomia",
     canonicalCategory: "food",
-    title: "Gastronomia & Restaurantes",
-    subtitle: "Pratos, Delivery & Bebidas",
+    title: "Gastronomia",
+    subtitle: "Pratos artesanais e delivery",
     description: "Lanches, pratos prontos, bebidas, sobremesas e serviços de alimentação em geral.",
     icon: Utensils,
-    badge: "Delivery / Retirada",
+    badge: "Cardápio",
     gradient: "from-red-500/15 via-orange-500/10 to-transparent",
   },
   {
     id: "farmacia",
     canonicalCategory: "sale",
-    title: "Farmácia & Saúde",
-    subtitle: "Medicamentos, Cosméticos & Cuidados",
+    title: "Farmácia",
+    subtitle: "Medicamentos e saúde",
     description: "Produtos de saúde, beleza, higiene pessoal e itens de farmácia.",
     icon: StoreIcon,
-    badge: "Bem-estar",
+    badge: "Saúde",
     gradient: "from-teal-500/15 via-emerald-500/10 to-transparent",
   },
   {
     id: "mercado",
     canonicalCategory: "sale",
-    title: "Mercado & Conveniência",
-    subtitle: "Padaria, Açougue & Hortifruti",
+    title: "Mercado",
+    subtitle: "Alimentos e conveniência",
     description: "Itens de mercado, mantimentos, carnes, pães, frutas e conveniência diária.",
     icon: StoreIcon,
-    badge: "Essenciais",
+    badge: "Mercado",
     gradient: "from-lime-500/15 via-green-500/10 to-transparent",
   },
 ];
@@ -516,14 +539,14 @@ function CreateTypePicker({
         </Button>
       </div>
 
-      {/* ── 1.5 Motor de Intenção com IA (Design Apple HIG / Zine) ── */}
-      <div className="relative group overflow-hidden rounded-2xl border-2 border-transparent bg-clip-border bg-gradient-to-r from-blue-600 via-sky-400 to-indigo-500 hover:from-sky-400 hover:via-indigo-500 hover:to-blue-600 transition-all duration-700 animate-gradient-x p-[2px]">
+      {/* ── Motor de Intenção com IA ── */}
+      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-[1px]">
         <div className="relative bg-background rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="flex-1 w-full relative">
-            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-blue-500 animate-pulse" />
+            <Wand2 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary/70" />
             <Input 
               value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
+              onChange={(e) => setAiPrompt(e.target.value.slice(0, 250))}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -531,20 +554,26 @@ function CreateTypePicker({
                 }
               }}
               placeholder="Ex: Quero vender meu iPhone 13 Pro 128GB usado por R$ 3.500" 
-              className="pl-10 h-12 rounded-lg text-sm sm:text-base border-none bg-muted/50 focus-visible:ring-1 focus-visible:ring-blue-500 shadow-inner"
+              className="pl-10 h-11 rounded-lg text-sm border-none bg-muted/50 focus-visible:ring-1 focus-visible:ring-primary/50"
               id="ai-intent-input"
+              maxLength={250}
             />
+            {aiPrompt.length > 0 && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground tabular-nums">
+                {aiPrompt.length}/250
+              </span>
+            )}
           </div>
           <Button 
             type="button" 
             disabled={isAiGenerating}
             onClick={handleGenerateWithAi}
-            className="w-full sm:w-auto h-12 rounded-lg font-bold bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white shadow-lg transition-transform active:scale-95 cursor-pointer disabled:opacity-60"
+            className="w-full sm:w-auto h-11 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-95 cursor-pointer disabled:opacity-60"
           >
             {isAiGenerating ? (
               <Loader2 className="size-4 mr-2 animate-spin" />
             ) : (
-              <Sparkles className="size-4 mr-2" />
+              <Wand2 className="size-4 mr-2" />
             )}
             {isAiGenerating ? "Gerando..." : "Criar com IA"}
           </Button>
@@ -786,7 +815,7 @@ function SpecializedClassifiedEditor({
   storeId?: string;
   initialSubcategory?: string;
 }) {
- const navigate = useNavigate();
+  const navigate = useNavigate();
  const queryClient = useQueryClient();
  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
  const [jobWorkSchedule, setJobWorkSchedule] = useState("integral_44h");
@@ -805,7 +834,44 @@ function SpecializedClassifiedEditor({
  // Common Form States
  const [title, setTitle] = useState("");
  const [description, setDescription] = useState("");
+ const [isRefiningDescription, setIsRefiningDescription] = useState(false);
+
+ const handleRefineDescriptionWithAI = async () => {
+   if (!title.trim() && !description.trim()) {
+     toast.error("Preencha ao menos o título ou um resumo da descrição para a IA refinar.");
+     return;
+   }
+   setIsRefiningDescription(true);
+   toast.loading("Refinando anúncio com IA...", { id: "ai-refine" });
+   try {
+     const res = await refineClassifiedWithAI({
+       data: {
+         title: title.trim(),
+         description: description.trim(),
+         niche: niche.id,
+       },
+     });
+     if (res.success) {
+       if (res.title) setTitle(res.title);
+       if (res.description) setDescription(res.description);
+       toast.success("Título e descrição aprimorados com sucesso!", { id: "ai-refine" });
+     } else {
+       toast.error(res.message || "Não foi possível aprimorar no momento.", { id: "ai-refine" });
+     }
+   } catch (err: any) {
+     toast.error(err?.message || "Erro ao conectar com a IA.", { id: "ai-refine" });
+   } finally {
+     setIsRefiningDescription(false);
+   }
+ };
+
  const [aiInstructions, setAiInstructions] = useState("");
+ const [aiAgentEnabled, setAiAgentEnabled] = useState<boolean>(
+   initialData?.ai_agent_enabled ?? false
+ );
+ const [maxDiscountPct, setMaxDiscountPct] = useState<number>(
+   initialData?.max_discount_pct ?? 0
+ );
  const [priceCents, setPriceCents] = useState<number | undefined>(undefined);
  const [negotiable, setNegotiable] = useState(true);
  const [locationName, setLocationName] = useState("");
@@ -844,7 +910,7 @@ function SpecializedClassifiedEditor({
 
   // ── Regras Avançadas de Pagamento ──
   const [pixDiscountPercent, setPixDiscountPercent] = useState<number>(
-    initialData?.attributes?.pix_discount_percent ?? (initialData?.attributes?.payment_rules?.pix_discount_percent ?? 5)
+    initialData?.attributes?.pix_discount_percent ?? (initialData?.attributes?.payment_rules?.pix_discount_percent ?? 0)
   );
   const [tradeNotes, setTradeNotes] = useState<string>(
     initialData?.attributes?.trade_notes ?? (initialData?.attributes?.payment_rules?.trade_notes ?? "")
@@ -1066,69 +1132,57 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.deposit_cents || undefined
   );
 
- // Specialized: Hospedagem & Temporada
- const [hospPropertyType, setHospPropertyType] = useState("Chalé / Cabana");
- const [hospGuests, setHospGuests] = useState("4");
- const [hospBedrooms, setHospBedrooms] = useState("1");
- const [hospBathrooms, setHospBathrooms] = useState("1");
- const [hospCleaningFeeCents, setHospCleaningFeeCents] = useState<number | undefined>(undefined);
- const [hospCheckinType, setHospCheckinType] = useState<"self_checkin" | "presential" | "front_desk">("self_checkin");
- const [hospCheckinTime, setHospCheckinTime] = useState("14:00");
- const [hospCheckoutTime, setHospCheckoutTime] = useState("11:00");
- const [hospAmenities, setHospAmenities] = useState<string[]>([
- "Wi-Fi Alta Velocidade",
- "Ar-condicionado",
- "Cozinha Equipada",
- "Estacionamento Gratuito",
- ]);
- const [hospRules, setHospRules] = useState<string[]>([
- "Proibido Fumar",
- "Silêncio após às 22h",
- ]);
+  // Specialized: Hospedagem & Temporada
+  const [hospPropertyType, setHospPropertyType] = useState("");
+  const [hospGuests, setHospGuests] = useState("");
+  const [hospBedrooms, setHospBedrooms] = useState("");
+  const [hospBathrooms, setHospBathrooms] = useState("");
+  const [hospCleaningFeeCents, setHospCleaningFeeCents] = useState<number | undefined>(undefined);
+  const [hospCheckinType, setHospCheckinType] = useState<"self_checkin" | "presential" | "front_desk">("self_checkin");
+  const [hospCheckinTime, setHospCheckinTime] = useState("14:00");
+  const [hospCheckoutTime, setHospCheckoutTime] = useState("11:00");
+  const [hospAmenities, setHospAmenities] = useState<string[]>([]);
+  const [hospRules, setHospRules] = useState<string[]>([]);
 
- // Specialized: Imóvel
- const [reDealType, setReDealType] = useState<"aluguel" | "venda" | "temporada">("aluguel");
- const [rePropertyType, setRePropertyType] = useState("Apartamento");
- const [reAreaSqm, setReAreaSqm] = useState("");
- const [reBedrooms, setReBedrooms] = useState("2");
- const [reSuites, setReSuites] = useState("1");
- const [reBathrooms, setReBathrooms] = useState("2");
- const [reParking, setReParking] = useState("1");
- const [reCondoCents, setReCondoCents] = useState<number | undefined>(undefined);
- const [reIptuCents, setReIptuCents] = useState<number | undefined>(undefined);
- const [reFurnished, setReFurnished] = useState("Semi-mobiliado");
- const [reAmenities, setReAmenities] = useState<string[]>([]);
+  // Specialized: Imóvel
+  const [reDealType, setReDealType] = useState<"aluguel" | "venda" | "temporada">("aluguel");
+  const [rePropertyType, setRePropertyType] = useState("");
+  const [reAreaSqm, setReAreaSqm] = useState("");
+  const [reBedrooms, setReBedrooms] = useState("");
+  const [reSuites, setReSuites] = useState("");
+  const [reBathrooms, setReBathrooms] = useState("");
+  const [reParking, setReParking] = useState("");
+  const [reCondoCents, setReCondoCents] = useState<number | undefined>(undefined);
+  const [reIptuCents, setReIptuCents] = useState<number | undefined>(undefined);
+  const [reFurnished, setReFurnished] = useState("");
+  const [reAmenities, setReAmenities] = useState<string[]>([]);
 
- // Specialized: Veículo
- const [vehicleBrand, setVehicleBrand] = useState("");
- const [vehicleModel, setVehicleModel] = useState("");
- const [vehicleVersion, setVehicleVersion] = useState("");
- const [vehicleYearFab, setVehicleYearFab] = useState("");
- const [vehicleYearModel, setVehicleYearModel] = useState("");
- const [vehicleKm, setVehicleKm] = useState("");
- const [vehicleFuel, setVehicleFuel] = useState("Flex");
- const [vehicleTransmission, setVehicleTransmission] = useState("Automático");
- const [vehicleColor, setVehicleColor] = useState("");
- const [vehicleFeatures, setVehicleFeatures] = useState<string[]>([]);
+  // Specialized: Veículo
+  const [vehicleBrand, setVehicleBrand] = useState("");
+  const [vehicleModel, setVehicleModel] = useState("");
+  const [vehicleVersion, setVehicleVersion] = useState("");
+  const [vehicleYearFab, setVehicleYearFab] = useState("");
+  const [vehicleYearModel, setVehicleYearModel] = useState("");
+  const [vehicleKm, setVehicleKm] = useState("");
+  const [vehicleFuel, setVehicleFuel] = useState("Flex");
+  const [vehicleTransmission, setVehicleTransmission] = useState("Automático");
+  const [vehicleColor, setVehicleColor] = useState("");
+  const [vehicleFeatures, setVehicleFeatures] = useState<string[]>([]);
 
- // Specialized: Desapego & Itens Gerais (Microfase 77B)
- const [desapegoCategory, setDesapegoCategory] = useState<
- "smartphones" | "computadores" | "eletronicos" | "moveis" | "eletrodomesticos" | "moda_brecho" | "garagem" | "outros"
- >("smartphones");
- const [itemCondition, setItemCondition] = useState<
- "novo" | "usado_excelente" | "usado_bom" | "com_marcas"
- >("usado_excelente");
- const [itemWarranty, setItemWarranty] = useState("");
- // Smartphones contextuais para mensuração
- const [phoneBrand, setPhoneBrand] = useState("Apple");
- const [phoneModel, setPhoneModel] = useState("iPhone 15 Pro");
- const [phoneStorage, setPhoneStorage] = useState("256GB");
- const [phoneBatteryHealth, setPhoneBatteryHealth] = useState("95");
- const [phoneAccessories, setPhoneAccessories] = useState<string[]>([
- "Carregador Original",
- "Caixa Original",
- "Nota Fiscal",
- ]);
+  // Specialized: Desapego & Itens Gerais
+  const [desapegoCategory, setDesapegoCategory] = useState<
+    "smartphones" | "computadores" | "eletronicos" | "moveis" | "eletrodomesticos" | "moda_brecho" | "garagem" | "outros"
+  >("smartphones");
+  const [itemCondition, setItemCondition] = useState<
+    "novo" | "usado_excelente" | "usado_bom" | "com_marcas"
+  >("usado_excelente");
+  const [itemWarranty, setItemWarranty] = useState("");
+  // Smartphones contextuais para mensuração
+  const [phoneBrand, setPhoneBrand] = useState("");
+  const [phoneModel, setPhoneModel] = useState("");
+  const [phoneStorage, setPhoneStorage] = useState("");
+  const [phoneBatteryHealth, setPhoneBatteryHealth] = useState("");
+  const [phoneAccessories, setPhoneAccessories] = useState<string[]>([]);
   // Specialized: Assinaturas & Recorrência
   const [pricingModel, setPricingModel] = useState<"one_time" | "recurring">(
     niche.id === "assinatura" ? "recurring" : "one_time"
@@ -1151,19 +1205,19 @@ function SpecializedClassifiedEditor({
   const [cancellationPolicy, setCancellationPolicy] = useState<"flexible" | "moderate" | "strict" | "negotiable">("flexible");
 
   // Computadores Canônicos
-  const [computerType, setComputerType] = useState("Notebook");
-  const [computerBrand, setComputerBrand] = useState("Dell");
-  const [computerProcessor, setComputerProcessor] = useState("Intel Core i5");
-  const [computerRam, setComputerRam] = useState("16 GB");
-  const [computerStorage, setComputerStorage] = useState("512 GB SSD");
+  const [computerType, setComputerType] = useState("");
+  const [computerBrand, setComputerBrand] = useState("");
+  const [computerProcessor, setComputerProcessor] = useState("");
+  const [computerRam, setComputerRam] = useState("");
+  const [computerStorage, setComputerStorage] = useState("");
 
   // Eletrodomésticos Canônicos
-  const [applianceType, setApplianceType] = useState("Geladeira / Refrigerador");
-  const [applianceBrand, setApplianceBrand] = useState("Brastemp");
-  const [applianceVoltage, setApplianceVoltage] = useState("220V");
+  const [applianceType, setApplianceType] = useState("");
+  const [applianceBrand, setApplianceBrand] = useState("");
+  const [applianceVoltage, setApplianceVoltage] = useState("");
 
   // Games Canônicos
-  const [gameConsole, setGameConsole] = useState("PlayStation 5");
+  const [gameConsole, setGameConsole] = useState("");
 
   // Moda / Brechó Canônico
   const [fashionCategory, setFashionCategory] = useState("Roupas em Geral");
@@ -1173,8 +1227,8 @@ function SpecializedClassifiedEditor({
   const [vehicleProvenance, setVehicleProvenance] = useState<string[]>([]);
 
   // Móveis & Brechó
-  const [furnitureRoom, setFurnitureRoom] = useState("Sala");
-  const [furnitureMaterial, setFurnitureMaterial] = useState("Madeira Maciça");
+  const [furnitureRoom, setFurnitureRoom] = useState("");
+  const [furnitureMaterial, setFurnitureMaterial] = useState("");
   const [fashionGender, setFashionGender] = useState("Unissex");
   const [fashionSize, setFashionSize] = useState("M");
 
@@ -1186,12 +1240,8 @@ function SpecializedClassifiedEditor({
   const [jobMinEducation, setJobMinEducation] = useState("Ensino Médio Completo");
   const [jobExperienceLevel, setJobExperienceLevel] = useState("Júnior (1 a 2 anos)");
   const [jobApplicationType, setJobApplicationType] = useState<"perfil_waesy" | "whatsapp" | "email_cv">("perfil_waesy");
-  const [jobBenefits, setJobBenefits] = useState<string[]>([
-    "Vale Refeição / Alimentação",
-    "Vale Transporte",
-    "Plano de Saúde",
-  ]);
-  const [jobSkills, setJobSkills] = useState<string[]>(["Atendimento", "Comunicação"]);
+  const [jobBenefits, setJobBenefits] = useState<string[]>([]);
+  const [jobSkills, setJobSkills] = useState<string[]>([]);
   const [newSkillInput, setNewSkillInput] = useState("");
 
   // Specialized: Logística Avançada & Formas de Pagamento
@@ -1218,6 +1268,243 @@ function SpecializedClassifiedEditor({
   const [serviceHoursStart, setServiceHoursStart] = useState("08:00");
   const [serviceHoursEnd, setServiceHoursEnd] = useState("18:00");
   const [serviceDailySlots, setServiceDailySlots] = useState("8");
+
+  // Specialized: Gastronomia & Sub-nichos
+  const [foodSubNiche, setFoodSubNiche] = useState<string>(
+    initialData?.attributes?.food_subniche || "hamburgueria"
+  );
+  const [foodPrepTime, setFoodPrepTime] = useState<string>(
+    initialData?.attributes?.food_prep_time_minutes || "20-35 min"
+  );
+  const [foodDeliveryModes, setFoodDeliveryModes] = useState<string[]>(
+    initialData?.attributes?.food_delivery_modes || ["delivery_proprio", "retirada_balcao"]
+  );
+
+  // Specialized: Serviços Especializados & Conselhos
+  const [serviceSubNiche, setServiceSubNiche] = useState<string>(
+    initialData?.attributes?.service_subniche || "advocacia"
+  );
+  const [serviceProfessionalCouncil, setServiceProfessionalCouncil] = useState<string>(
+    initialData?.attributes?.professional_council || ""
+  );
+  const [serviceSpecialty, setServiceSpecialty] = useState<string>(
+    initialData?.attributes?.specialty || ""
+  );
+
+  // Specialized: Negócios, Empresas & M&A (meuBIZ / Quero Um Negócio)
+  const [businessType, setBusinessType] = useState<string>(
+    initialData?.attributes?.business_type || "venda_total"
+  );
+  const [businessSegment, setBusinessSegment] = useState<string>(
+    initialData?.attributes?.business_segment || CANONICAL_BUSINESS_SEGMENTS[0]
+  );
+  const [businessMonthlyRevenueCents, setBusinessMonthlyRevenueCents] = useState<number | undefined>(
+    initialData?.attributes?.monthly_revenue_cents ?? undefined
+  );
+  const [businessNetProfitCents, setBusinessNetProfitCents] = useState<number | undefined>(
+    initialData?.attributes?.net_profit_cents ?? undefined
+  );
+  const [businessValuationCents, setBusinessValuationCents] = useState<number | undefined>(
+    initialData?.attributes?.valuation_cents ?? undefined
+  );
+  const [businessWorkingCapitalCents, setBusinessWorkingCapitalCents] = useState<number | undefined>(
+    initialData?.attributes?.working_capital_cents ?? undefined
+  );
+  const [businessFoundationYear, setBusinessFoundationYear] = useState<string>(
+    initialData?.attributes?.foundation_year ? String(initialData.attributes.foundation_year) : ""
+  );
+  const [businessEmployeesRange, setBusinessEmployeesRange] = useState<string>(
+    initialData?.attributes?.employees_range || CANONICAL_EMPLOYEES_RANGES[2]
+  );
+  const [businessSaleReason, setBusinessSaleReason] = useState<string>(
+    initialData?.attributes?.sale_reason || CANONICAL_SALE_REASONS[0]
+  );
+  const [businessPointType, setBusinessPointType] = useState<string>(
+    initialData?.attributes?.commercial_point_type || CANONICAL_COMMERCIAL_POINT_TYPES[0]
+  );
+  const [businessAreaSqm, setBusinessAreaSqm] = useState<string>(
+    initialData?.attributes?.area_sqm ? String(initialData.attributes.area_sqm) : ""
+  );
+  const [businessMonthlyRentCents, setBusinessMonthlyRentCents] = useState<number | undefined>(
+    initialData?.attributes?.monthly_rent_cents ?? undefined
+  );
+  const [businessMonthlyIptuCents, setBusinessMonthlyIptuCents] = useState<number | undefined>(
+    initialData?.attributes?.monthly_iptu_cents ?? undefined
+  );
+  const [businessMonthlyCondoCents, setBusinessMonthlyCondoCents] = useState<number | undefined>(
+    initialData?.attributes?.monthly_condo_cents ?? undefined
+  );
+  const [businessContractRemainingYears, setBusinessContractRemainingYears] = useState<string>(
+    initialData?.attributes?.contract_remaining_years || "3 anos"
+  );
+  const [businessRequiresNda, setBusinessRequiresNda] = useState<boolean>(
+    initialData?.attributes?.requires_nda ?? true
+  );
+  const [businessAdvisorSupported, setBusinessAdvisorSupported] = useState<boolean>(
+    initialData?.attributes?.advisor_supported ?? false
+  );
+
+  // Specialized: Dados Cadastrais & CNPJ (meuBIZ / Quero Um Negócio)
+  const [companyCnpj, setCompanyCnpj] = useState<string>(
+    initialData?.attributes?.company_cnpj || ""
+  );
+  const [companyLegalName, setCompanyLegalName] = useState<string>(
+    initialData?.attributes?.company_legal_name || ""
+  );
+  const [cnaePrincipal, setCnaePrincipal] = useState<string>(
+    initialData?.attributes?.cnae_principal || ""
+  );
+  const [cnaeDescription, setCnaeDescription] = useState<string>(
+    initialData?.attributes?.cnae_description || ""
+  );
+  const [taxRegime, setTaxRegime] = useState<string>(
+    initialData?.attributes?.tax_regime || "simples_nacional"
+  );
+  const [capitalSocialCents, setCapitalSocialCents] = useState<number | undefined>(
+    initialData?.attributes?.capital_social_cents ?? undefined
+  );
+  const [legalRiskScore, setLegalRiskScore] = useState<number | undefined>(
+    initialData?.attributes?.legal_risk_score ?? undefined
+  );
+  const [aiEvaluationSummary, setAiEvaluationSummary] = useState<string>(
+    initialData?.attributes?.ai_evaluation_summary || ""
+  );
+  const [isSearchingCnpj, setIsSearchingCnpj] = useState(false);
+  const [cnpjAuditData, setCnpjAuditData] = useState<any | null>(null);
+
+  const handleLookupAndAuditCnpj = async () => {
+    const clean = companyCnpj.replace(/\D/g, "");
+    if (clean.length !== 14) {
+      toast.error("Informe um CNPJ válido com 14 dígitos.");
+      return;
+    }
+    setIsSearchingCnpj(true);
+    toast.loading("Consultando dados oficiais na Receita Federal e auditando com IA...", { id: "cnpj-audit" });
+    try {
+      const [official, audit] = await Promise.all([
+        lookupCnpj({ data: { cnpj: clean } }).catch(() => null),
+        auditCnpjWithSimLabs({
+          data: {
+            cnpj: clean,
+            companyName: companyLegalName || title || undefined,
+            taxRegime: (taxRegime as any) || "simples_nacional",
+            capitalSocialCents: capitalSocialCents || 0,
+          },
+        }).catch(() => null),
+      ]);
+
+      if (official) {
+        if (!title.trim() && (official.tradeName || official.corporateName)) {
+          setTitle(official.tradeName || official.corporateName);
+        }
+        setCompanyLegalName(official.corporateName || "");
+        if (official.openingDate) {
+          const year = new Date(official.openingDate).getFullYear();
+          if (!isNaN(year)) setBusinessFoundationYear(String(year));
+        }
+        if (official.capitalSocial) {
+          setCapitalSocialCents(Math.round(official.capitalSocial * 100));
+        }
+        if (official.mainCnae) {
+          setCnaePrincipal(official.mainCnae.code || "");
+          setCnaeDescription(official.mainCnae.description || "");
+        }
+        if (official.address) {
+          const addr = official.address;
+          const formatted = [addr.street, addr.number, addr.neighborhood, addr.city, addr.state].filter(Boolean).join(", ");
+          setLocationName(formatted);
+        }
+      }
+
+      if (audit) {
+        setCnpjAuditData(audit);
+        setLegalRiskScore(audit.legalRiskScore);
+        setAiEvaluationSummary(audit.aiEvaluationSummary);
+        if (audit.companyName && !companyLegalName) {
+          setCompanyLegalName(audit.companyName);
+        }
+      }
+
+      toast.success("Dados cadastrais sincronizados e auditoria concluída!", { id: "cnpj-audit" });
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao consultar CNPJ.", { id: "cnpj-audit" });
+    } finally {
+      setIsSearchingCnpj(false);
+    }
+  };
+
+  // Captação de Investimento & Busca de Sócios
+  const [targetInvestmentCents, setTargetInvestmentCents] = useState<number | undefined>(
+    initialData?.attributes?.target_investment_cents ?? undefined
+  );
+  const [offeredEquityPercent, setOfferedEquityPercent] = useState<string>(
+    initialData?.attributes?.offered_equity_percent ? String(initialData.attributes.offered_equity_percent) : ""
+  );
+  const [investmentModel, setInvestmentModel] = useState<string>(
+    initialData?.attributes?.investment_model || CANONICAL_INVESTMENT_MODELS[0].id
+  );
+  const [projectStage, setProjectStage] = useState<string>(
+    initialData?.attributes?.project_stage || CANONICAL_PROJECT_STAGES[1].id
+  );
+  const [useOfFunds, setUseOfFunds] = useState<string[]>(
+    Array.isArray(initialData?.attributes?.use_of_funds) ? initialData.attributes.use_of_funds : []
+  );
+  const [pitchDeckUrl, setPitchDeckUrl] = useState<string>(
+    initialData?.attributes?.pitch_deck_url || ""
+  );
+
+  // Documentos Restritos & DRE sob NDA (Fase 3)
+  const [businessRestrictedDocuments, setBusinessRestrictedDocuments] = useState<
+    Array<{ name: string; url: string; size_bytes?: number }>
+  >(
+    Array.isArray(initialData?.attributes?.restricted_documents)
+      ? initialData.attributes.restricted_documents
+      : []
+  );
+  const [isUploadingRestrictedDoc, setIsUploadingRestrictedDoc] = useState(false);
+
+  // Telemetria e Inteligência Comercial SimLabs IA (Zero Mocks)
+  const [isAnalyzingTelemetry, setIsAnalyzingTelemetry] = useState(false);
+  const [telemetryResult, setTelemetryResult] = useState<{
+    paybackMonthsEstimate: number;
+    rentToRevenueRatio: number;
+    viabilityScore: number;
+    summary: string;
+  } | null>(
+    initialData?.attributes?.telemetry || null
+  );
+
+  const handleAnalyzeCommercialPoint = async () => {
+    if (!businessMonthlyRentCents && !businessMonthlyRevenueCents) {
+      toast.error("Preencha pelo menos o faturamento ou o aluguel mensal para calcular a telemetria.");
+      return;
+    }
+    setIsAnalyzingTelemetry(true);
+    try {
+      const res = await analyzeCommercialPointPotential({
+        data: {
+          monthlyRentCents: businessMonthlyRentCents || 0,
+          monthlyRevenueCents: businessMonthlyRevenueCents || 0,
+          areaSqm: Number(businessAreaSqm) || 100,
+          pointType: businessPointType,
+          segment: businessSegment,
+          city: city || undefined,
+          state: state || undefined,
+        },
+      });
+      setTelemetryResult({
+        paybackMonthsEstimate: res.paybackMonthsEstimate,
+        rentToRevenueRatio: res.rentToRevenueRatio,
+        viabilityScore: res.viabilityScore,
+        summary: res.summary,
+      });
+      toast.success("Telemetria e viabilidade calculadas com sucesso pelo SimLabs IA!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao calcular telemetria comercial.");
+    } finally {
+      setIsAnalyzingTelemetry(false);
+    }
+  };
 
   // Specialized: Produto Digital & Downloads
   const [digitalFileType, setDigitalFileType] = useState("ebook");
@@ -1357,6 +1644,44 @@ function SpecializedClassifiedEditor({
       if (initialData.attributes.size) setFashionSize(initialData.attributes.size);
       if (Array.isArray(initialData.attributes.provenance)) setVehicleProvenance(initialData.attributes.provenance);
 
+      // Gastronomia
+      if (initialData.attributes.food_subniche) setFoodSubNiche(initialData.attributes.food_subniche);
+      if (initialData.attributes.food_prep_time_minutes) setFoodPrepTime(initialData.attributes.food_prep_time_minutes);
+      if (Array.isArray(initialData.attributes.food_delivery_modes)) setFoodDeliveryModes(initialData.attributes.food_delivery_modes);
+
+      // Serviços Especializados
+      if (initialData.attributes.service_subniche) setServiceSubNiche(initialData.attributes.service_subniche);
+      if (initialData.attributes.professional_council) setServiceProfessionalCouncil(initialData.attributes.professional_council);
+      if (initialData.attributes.specialty) setServiceSpecialty(initialData.attributes.specialty);
+
+      // Negócios
+      if (initialData.attributes.business_type) setBusinessType(initialData.attributes.business_type);
+      if (initialData.attributes.business_segment) setBusinessSegment(initialData.attributes.business_segment);
+      if (initialData.attributes.monthly_revenue_cents !== undefined) setBusinessMonthlyRevenueCents(initialData.attributes.monthly_revenue_cents);
+      if (initialData.attributes.net_profit_cents !== undefined) setBusinessNetProfitCents(initialData.attributes.net_profit_cents);
+      if (initialData.attributes.valuation_cents !== undefined) setBusinessValuationCents(initialData.attributes.valuation_cents);
+      if (initialData.attributes.working_capital_cents !== undefined) setBusinessWorkingCapitalCents(initialData.attributes.working_capital_cents);
+      if (initialData.attributes.foundation_year) setBusinessFoundationYear(String(initialData.attributes.foundation_year));
+      if (initialData.attributes.employees_range) setBusinessEmployeesRange(initialData.attributes.employees_range);
+      if (initialData.attributes.sale_reason) setBusinessSaleReason(initialData.attributes.sale_reason);
+      if (initialData.attributes.commercial_point_type) setBusinessPointType(initialData.attributes.commercial_point_type);
+      if (initialData.attributes.area_sqm !== undefined) setBusinessAreaSqm(String(initialData.attributes.area_sqm));
+      if (initialData.attributes.monthly_rent_cents !== undefined) setBusinessMonthlyRentCents(initialData.attributes.monthly_rent_cents);
+      if (initialData.attributes.monthly_iptu_cents !== undefined) setBusinessMonthlyIptuCents(initialData.attributes.monthly_iptu_cents);
+      if (initialData.attributes.monthly_condo_cents !== undefined) setBusinessMonthlyCondoCents(initialData.attributes.monthly_condo_cents);
+      if (initialData.attributes.contract_remaining_years) setBusinessContractRemainingYears(initialData.attributes.contract_remaining_years);
+      if (initialData.attributes.requires_nda !== undefined) setBusinessRequiresNda(!!initialData.attributes.requires_nda);
+      if (initialData.attributes.advisor_supported !== undefined) setBusinessAdvisorSupported(!!initialData.attributes.advisor_supported);
+      if (initialData.attributes.target_investment_cents !== undefined) setTargetInvestmentCents(initialData.attributes.target_investment_cents);
+      if (initialData.attributes.offered_equity_percent) setOfferedEquityPercent(String(initialData.attributes.offered_equity_percent));
+      if (initialData.attributes.investment_model) setInvestmentModel(initialData.attributes.investment_model);
+      if (initialData.attributes.project_stage) setProjectStage(initialData.attributes.project_stage);
+      if (Array.isArray(initialData.attributes.use_of_funds)) setUseOfFunds(initialData.attributes.use_of_funds);
+      if (initialData.attributes.pitch_deck_url) setPitchDeckUrl(initialData.attributes.pitch_deck_url);
+      if (Array.isArray(initialData.attributes.restricted_documents)) {
+        setBusinessRestrictedDocuments(initialData.attributes.restricted_documents);
+      }
+
       // Logística
       if (initialData.attributes.delivery_mode) setDeliveryMode(initialData.attributes.delivery_mode);
       if (initialData.attributes.free_shipping_local !== undefined) setFreeShippingLocal(!!initialData.attributes.free_shipping_local);
@@ -1453,6 +1778,8 @@ function SpecializedClassifiedEditor({
       const attributes: Record<string, any> = {
         niche: niche.id,
         hide_location: hideLocation,
+        hide_address: hideLocation,
+        hide_exact_address: hideLocation,
         location_privacy: hideLocation ? "hidden" : "full",
         city: structuredLoc?.city || undefined,
         state: structuredLoc?.state || undefined,
@@ -1599,6 +1926,9 @@ function SpecializedClassifiedEditor({
         attributes.working_hours_end = serviceHoursEnd;
         attributes.service_duration_minutes = parseInt(serviceDuration) || 60;
         attributes.available_slots = parseInt(serviceDailySlots) || 8;
+        attributes.service_subniche = serviceSubNiche;
+        attributes.professional_council = serviceProfessionalCouncil;
+        attributes.specialty = serviceSpecialty;
       } else if (niche.id === "digital") {
         attributes.niche = "digital";
         attributes.is_digital = true;
@@ -1651,12 +1981,51 @@ function SpecializedClassifiedEditor({
         attributes.application_methods = jobAcceptedMethods;
         attributes.benefits = jobBenefits;
         attributes.skills = jobSkills;
+      } else if (niche.id === "gastronomia") {
+        attributes.niche = "gastronomia";
+        attributes.food_subniche = foodSubNiche;
+        attributes.food_prep_time_minutes = foodPrepTime;
+        attributes.food_delivery_modes = foodDeliveryModes;
+      } else if (niche.id === "negocio") {
+        attributes.niche = "business";
+        attributes.is_business_sale = true;
+        attributes.business_type = businessType;
+        attributes.business_segment = businessSegment;
+        attributes.monthly_revenue_cents = businessMonthlyRevenueCents;
+        attributes.net_profit_cents = businessNetProfitCents;
+        attributes.valuation_cents = businessValuationCents || priceCents;
+        attributes.working_capital_cents = businessWorkingCapitalCents;
+        attributes.foundation_year = businessFoundationYear;
+        attributes.employees_range = businessEmployeesRange;
+        attributes.sale_reason = businessSaleReason;
+        attributes.commercial_point_type = businessPointType;
+        attributes.area_sqm = businessAreaSqm ? parseInt(businessAreaSqm) : undefined;
+        attributes.monthly_rent_cents = businessMonthlyRentCents;
+        attributes.monthly_iptu_cents = businessMonthlyIptuCents;
+        attributes.monthly_condo_cents = businessMonthlyCondoCents;
+        attributes.contract_remaining_years = businessContractRemainingYears;
+        attributes.requires_nda = businessRequiresNda;
+        attributes.advisor_supported = businessAdvisorSupported;
+        attributes.restricted_documents = businessRestrictedDocuments;
+        attributes.company_cnpj = companyCnpj ? companyCnpj.replace(/\D/g, "") : undefined;
+        attributes.company_legal_name = companyLegalName || undefined;
+        attributes.cnae_principal = cnaePrincipal || undefined;
+        attributes.cnae_description = cnaeDescription || undefined;
+        attributes.tax_regime = taxRegime || undefined;
+        attributes.capital_social_cents = capitalSocialCents || undefined;
+        attributes.legal_risk_score = legalRiskScore || undefined;
+        attributes.ai_evaluation_summary = aiEvaluationSummary || undefined;
+        if (telemetryResult) {
+          attributes.telemetry = telemetryResult;
+        }
       }
 
       let resolvedCategory = niche.canonicalCategory;
       if (niche.id === "viagem") resolvedCategory = "travel";
       if (niche.id === "equipamento") resolvedCategory = "equipment";
       if (niche.id === "doacao") resolvedCategory = "donation";
+      if (niche.id === "negocio") resolvedCategory = "business";
+      if (niche.id === "gastronomia") resolvedCategory = "food";
 
       const res = await upsertClassified({
         data: {
@@ -1682,7 +2051,8 @@ function SpecializedClassifiedEditor({
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
           content: description.trim(),
           ai_instructions: aiInstructions.trim() || undefined,
-          ai_agent_enabled: true, // Auto-enable if created here
+          ai_agent_enabled: aiAgentEnabled,
+          max_discount_pct: maxDiscountPct,
           price_cents:
             pricingType === "free" || niche.id === "doacao"
               ? 0
@@ -1838,6 +2208,19 @@ function SpecializedClassifiedEditor({
               ? "Entrega Expressa"
               : "Retirada no Local",
           ].filter(Boolean)
+        : niche.id === "negocio"
+        ? [
+            CANONICAL_BUSINESS_TYPES.find((b) => b.id === businessType)?.label || "Venda de Empresa",
+            businessSegment,
+            businessAreaSqm ? `${businessAreaSqm} m²` : null,
+            businessRequiresNda ? "Sigilo NDA Ativo" : "Informações Abertas",
+          ].filter(Boolean)
+        : niche.id === "gastronomia"
+        ? [
+            CANONICAL_FOOD_SUBNICHES.find((f) => f.id === foodSubNiche)?.label || "Gastronomia",
+            foodPrepTime ? `Preparo: ${foodPrepTime}` : null,
+            foodDeliveryModes.length > 0 ? `${foodDeliveryModes.length} canais de entrega` : null,
+          ].filter(Boolean)
         : [
             niche.title,
             locationName || "Chapecó - SC",
@@ -1866,7 +2249,7 @@ function SpecializedClassifiedEditor({
       accepts_trade: acceptsTrade,
       category: niche.id,
       attributes: {
-        niche: niche.id,
+        niche: niche.id === "negocio" ? "business" : niche.id,
         template_style: templateStyle,
         pricing_type: pricingType,
         price_min_cents: pricingType === "price_range" || pricingType === "starting_at" ? priceMinCents : undefined,
@@ -1963,6 +2346,39 @@ function SpecializedClassifiedEditor({
         booking_enabled: serviceBookingEnabled,
         service_duration_minutes: parseInt(serviceDuration) || 60,
         available_slots: parseInt(serviceDailySlots) || 8,
+        service_subniche: serviceSubNiche,
+        professional_council: serviceProfessionalCouncil,
+        specialty: serviceSpecialty,
+        // Gastronomia
+        food_subniche: foodSubNiche,
+        food_prep_time_minutes: foodPrepTime,
+        food_delivery_modes: foodDeliveryModes,
+        // Negócios
+        is_business_sale: niche.id === "negocio",
+        business_type: businessType,
+        business_segment: businessSegment,
+        monthly_revenue_cents: businessMonthlyRevenueCents,
+        net_profit_cents: businessNetProfitCents,
+        valuation_cents: businessValuationCents || priceCents,
+        working_capital_cents: businessWorkingCapitalCents,
+        foundation_year: businessFoundationYear,
+        employees_range: businessEmployeesRange,
+        sale_reason: businessSaleReason,
+        commercial_point_type: businessPointType,
+        monthly_rent_cents: businessMonthlyRentCents,
+        monthly_iptu_cents: businessMonthlyIptuCents,
+        monthly_condo_cents: businessMonthlyCondoCents,
+        contract_remaining_years: businessContractRemainingYears,
+        requires_nda: businessRequiresNda,
+        advisor_supported: businessAdvisorSupported,
+        telemetry: telemetryResult,
+        // Captação de Investimento / Sócios
+        target_investment_cents: (businessType === "busca_socio" || businessType === "captacao_investimento") ? targetInvestmentCents : undefined,
+        offered_equity_percent: (businessType === "busca_socio" || businessType === "captacao_investimento") ? offeredEquityPercent : undefined,
+        investment_model: (businessType === "busca_socio" || businessType === "captacao_investimento") ? investmentModel : undefined,
+        project_stage: (businessType === "busca_socio" || businessType === "captacao_investimento") ? projectStage : undefined,
+        use_of_funds: (businessType === "busca_socio" || businessType === "captacao_investimento") ? useOfFunds : undefined,
+        pitch_deck_url: (businessType === "busca_socio" || businessType === "captacao_investimento") ? pitchDeckUrl : undefined,
         // Desapego
         condition: itemCondition,
         warranty: itemWarranty,
@@ -2073,6 +2489,12 @@ function SpecializedClassifiedEditor({
     digitalFileUrl,
     digitalFileName,
     digitalFileSize,
+    targetInvestmentCents,
+    offeredEquityPercent,
+    investmentModel,
+    projectStage,
+    useOfFunds,
+    pitchDeckUrl,
   ]);
 
  return (
@@ -2160,16 +2582,13 @@ function SpecializedClassifiedEditor({
           <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <FileText className="size-4 text-primary shrink-0" />
-              <span>1. Informações Básicas</span>
+              <span>Informações Básicas</span>
             </div>
 
             {/* Seletor de Template Visual (Padrão vs Vitrine Imersiva) */}
             <div className="space-y-1.5 pb-1">
-              <Label className="text-xs text-foreground font-semibold flex items-center justify-between">
-                <span>Estilo Visual da Página</span>
-                <span className="text-[11px] text-muted-foreground font-normal">
-                  {templateStyle === "editorial" || (templateStyle as string) === "instagram" ? "Vitrine Imersiva" : "Padrão"}
-                </span>
+              <Label className="text-xs text-foreground font-semibold">
+                Estilo Visual da Página
               </Label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -2208,74 +2627,60 @@ function SpecializedClassifiedEditor({
             </div>
 
             <div className="space-y-1.5">
- <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
- <Input
- value={title}
- onChange={(e) => setTitle(e.target.value)}
- placeholder={
- niche.id === "hospedagem"
- ? "Ex: Chalé na Serra com Hidro e Vista Panorâmica"
- : niche.id === "imovel"
- ? "Ex: Apartamento 2 Quartos no Centro com Garagem"
- : niche.id === "veiculo"
- ? "Ex: Honda Civic 2.0 EXL Automático 2021"
- : niche.id === "servico"
- ? "Ex: Manutenção Elétrica Residencial & Comercial"
- : niche.id === "vaga"
- ? "Ex: Analista Financeiro Sênior (Híbrido)"
- : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
- }
- className="h-11 rounded-xl text-xs bg-background font-medium"
- />
- </div>
+              <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={
+                  niche.id === "hospedagem"
+                    ? "Ex: Chalé na Serra com Hidro e Vista Panorâmica"
+                    : niche.id === "imovel"
+                    ? "Ex: Apartamento 2 Quartos no Centro com Garagem"
+                    : niche.id === "veiculo"
+                    ? "Ex: Honda Civic 2.0 EXL Automático 2021"
+                    : niche.id === "servico"
+                    ? "Ex: Manutenção Elétrica Residencial & Comercial"
+                    : niche.id === "vaga"
+                    ? "Ex: Analista Financeiro Sênior (Híbrido)"
+                    : "Ex: iPhone 15 Pro Max 256GB Impecável na Caixa"
+                }
+                className="h-11 rounded-xl text-xs bg-background font-medium"
+              />
+            </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
- <Textarea
- value={description}
- onChange={(e) => setDescription(e.target.value)}
- rows={4}
- placeholder={
- niche.id === "hospedagem"
- ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
- : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
- }
- className="rounded-xl text-xs bg-background resize-none leading-relaxed"
- />
- </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-foreground font-medium">Descrição Completa *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isRefiningDescription}
+                  onClick={handleRefineDescriptionWithAI}
+                  className="h-6 px-2 text-[11px] font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1 rounded-lg"
+                >
+                  <Sparkles className="size-3" />
+                  {isRefiningDescription ? "Aprimorando..." : "Refinar com IA"}
+                </Button>
+              </div>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                placeholder={
+                  niche.id === "hospedagem"
+                    ? "Descreva a atmosfera do espaço, comodidades, localização, distâncias de pontos turísticos e regras de convivência..."
+                    : "Descreva todos os detalhes, histórico, diferenciais e informações importantes..."
+                }
+                className="rounded-xl text-xs bg-background resize-none leading-relaxed"
+              />
+            </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs text-foreground font-medium flex items-center justify-between">
-    <span>Instruções Ocultas para a IA (SDR)</span>
-    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">Beta</Badge>
- </Label>
- <Textarea
- value={aiInstructions}
- onChange={(e) => setAiInstructions(e.target.value)}
- rows={3}
- placeholder="Ex: Não dê desconto maior que 10%. Se o cliente quiser parcelar, avise que as taxas da maquininha são por conta dele. Diga que o produto já está no menor valor."
- className="rounded-xl text-xs bg-muted/40 border-dashed resize-none leading-relaxed focus-visible:ring-primary/50"
- />
- <p className="text-[10px] text-muted-foreground">Essas regras não aparecem no anúncio, mas a Inteligência Artificial as usará ao negociar com clientes no chat.</p>
- </div>
             {/* Motor de Precificação Dinâmica & Avisos */}
             <div className="space-y-3 pt-1 border-t border-border/40">
               <div className="space-y-1.5">
-                <Label className="text-xs text-foreground font-semibold flex items-center justify-between">
-                  <span>Modalidade de Preço</span>
-                  <span className="text-[11px] text-muted-foreground font-mono">
-                    {pricingType === "fixed"
-                      ? "Valor Fixo"
-                      : pricingType === "starting_at"
-                      ? "A partir de"
-                      : pricingType === "price_range"
-                      ? "Faixa de Preço"
-                      : pricingType === "on_quote"
-                      ? "Sob Cotação"
-                      : pricingType === "exchange_only"
-                      ? "Troca"
-                      : "Gratuito"}
-                  </span>
+                <Label className="text-xs text-foreground font-semibold">
+                  Modalidade de Preço
                 </Label>
                 <Select value={pricingType} onValueChange={(v: any) => setPricingType(v)}>
                   <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
@@ -2429,9 +2834,8 @@ function SpecializedClassifiedEditor({
 
               {/* Aviso Legal / Disclaimer sobre o Valor */}
               <div className="space-y-1.5 pt-1">
-                <Label className="text-xs text-foreground font-medium flex items-center justify-between">
-                  <span>Aviso sobre Valores / Flutuação</span>
-                  <span className="text-[11px] text-muted-foreground">Transparência jurídica</span>
+                <Label className="text-xs text-foreground font-medium">
+                  Aviso sobre Valores / Flutuação
                 </Label>
                 <Select value={priceDisclaimer} onValueChange={setPriceDisclaimer}>
                   <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
@@ -3192,7 +3596,7 @@ function SpecializedClassifiedEditor({
                 {/* 2.6 — Story Highlights */}
                 <div className="space-y-2">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Sparkles className="size-3.5 text-primary" />
+                    <ImagePlus className="size-3.5 text-primary" />
                     <span>Destaques Visuais</span>
                   </p>
                   <StoryHighlightUploader
@@ -3220,7 +3624,7 @@ function SpecializedClassifiedEditor({
               <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                    <Sparkles className="size-4 text-primary shrink-0" />
+                    <ImagePlus className="size-4 text-primary shrink-0" />
                     <span>Destaques Visuais</span>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
@@ -3787,61 +4191,129 @@ function SpecializedClassifiedEditor({
  }
  }}
  placeholder="Adicionar outro opcional do veículo (ex: Engate, Vitrificação)..."
- className="h-9 rounded-xl text-xs bg-background flex-1"
- />
- <Button
- type="button"
- variant="outline"
- size="sm"
- onClick={() => {
- if (customVehicleOption.trim() && !vehicleFeatures.includes(customVehicleOption.trim())) {
- setVehicleFeatures([...vehicleFeatures, customVehicleOption.trim()]);
- setCustomVehicleOption("");
- }
- }}
- className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
- >
- + Adicionar
- </Button>
- </div>
- </div>
+                        className="h-9 rounded-xl text-xs bg-background flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (customVehicleOption.trim() && !vehicleFeatures.includes(customVehicleOption.trim())) {
+                            setVehicleFeatures([...vehicleFeatures, customVehicleOption.trim()]);
+                            setCustomVehicleOption("");
+                          }
+                        }}
+                        className="h-9 rounded-xl text-xs font-semibold cursor-pointer"
+                      >
+                        + Adicionar
+                      </Button>
+                    </div>
+                  </div>
 
- {/* Procedência & Histórico do Veículo */}
- <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
- <div className="flex items-center justify-between">
- <Label className="text-xs font-semibold text-foreground tracking-tight">Procedência & Histórico</Label>
- <span className="text-[10px] text-muted-foreground font-mono">{vehicleProvenance.length} selecionado(s)</span>
- </div>
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
- {CANONICAL_VEHICLE_PROVENANCE.map((prov) => {
- const active = vehicleProvenance.includes(prov);
- return (
- <div
- key={prov}
- onClick={() => toggleItem(vehicleProvenance, setVehicleProvenance, prov)}
- className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-[44px] ${
- active
- ? "border-primary bg-primary/10 text-primary font-medium"
- : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
- }`}
- >
- <Checkbox checked={active} />
- <span className="truncate">{prov}</span>
- </div>
- );
- })}
- </div>
- </div>
- </div>
- )}
+                  {/* Procedência & Histórico do Veículo */}
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-foreground tracking-tight">Procedência & Histórico</Label>
+                      <span className="text-[10px] text-muted-foreground font-mono">{vehicleProvenance.length} selecionado(s)</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {CANONICAL_VEHICLE_PROVENANCE.map((prov) => {
+                        const active = vehicleProvenance.includes(prov);
+                        return (
+                          <div
+                            key={prov}
+                            onClick={() => toggleItem(vehicleProvenance, setVehicleProvenance, prov)}
+                            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-[44px] ${
+                              active
+                                ? "border-primary bg-primary/10 text-primary font-medium"
+                                : "border-border/50 bg-background text-foreground/80 hover:text-foreground hover:bg-muted/30"
+                            }`}
+                          >
+                            <Checkbox checked={active} />
+                            <span className="truncate">{prov}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
 
- {/* Serviço Profissional */}
+              {/* Serviço Profissional */}
               {niche.id === "servico" && (
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary" />
-                    <span>2. Serviço</span>
+                    <span>2. Parâmetros do Serviço & Conselho</span>
                   </div>
+
+                  {/* Sub-nicho Canônico Especializado com Smart Cascade Pills */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">Segmento / Sub-nicho Profissional *</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {CANONICAL_SERVICE_SUBNICHES.map((sub) => {
+                        const isSelected = serviceSubNiche === sub.id;
+                        return (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => {
+                              setServiceSubNiche(sub.id);
+                              if (sub.specialties.length > 0) {
+                                setServiceSpecialty(sub.specialties[0]);
+                              }
+                            }}
+                            className={cn(
+                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border flex items-center gap-1.5",
+                              isSelected
+                                ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                                : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
+                            )}
+                          >
+                            <span>{sub.label}</span>
+                            <span className="text-[10px] opacity-75 font-mono">({sub.councilName})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Registro em Conselho & Especialidade */}
+                  {(() => {
+                    const matchedSub = CANONICAL_SERVICE_SUBNICHES.find((s) => s.id === serviceSubNiche);
+                    if (!matchedSub) return null;
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-muted/20 border border-border/60">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                            <ShieldCheck className="size-3.5 text-primary" />
+                            <span>{matchedSub.councilFieldLabel}</span>
+                          </Label>
+                          <Input
+                            value={serviceProfessionalCouncil}
+                            onChange={(e) => setServiceProfessionalCouncil(e.target.value)}
+                            placeholder={matchedSub.councilPlaceholder}
+                            className="h-11 rounded-xl text-xs bg-background font-mono"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-foreground font-medium">Especialidade Principal</Label>
+                          <Select value={serviceSpecialty} onValueChange={setServiceSpecialty}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                              <SelectValue placeholder="Selecione sua especialidade" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {matchedSub.specialties.map((spec) => (
+                                <SelectItem key={spec} value={spec}>
+                                  {spec}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1.5">
@@ -3961,6 +4433,702 @@ function SpecializedClassifiedEditor({
                         + Adicionar
                       </Button>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Gastronomia & Delivery Especializado */}
+              {niche.id === "gastronomia" && (
+                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <Utensils className="size-4 text-primary" />
+                      <span>2. Parâmetros Gastronômicos & Delivery</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-semibold text-primary">
+                      Culinária & Balcão
+                    </Badge>
+                  </div>
+
+                  {/* Smart Cascade Pills para Gastronomia */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">Sub-nicho Gastronômico *</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {CANONICAL_FOOD_SUBNICHES.map((food) => {
+                        const isSelected = foodSubNiche === food.id;
+                        return (
+                          <button
+                            key={food.id}
+                            type="button"
+                            onClick={() => {
+                              setFoodSubNiche(food.id);
+                              if (food.defaultPrepTime) {
+                                setFoodPrepTime(food.defaultPrepTime);
+                              }
+                            }}
+                            className={cn(
+                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border flex items-center gap-1.5",
+                              isSelected
+                                ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                                : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
+                            )}
+                          >
+                            <span>{food.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Tempo Médio de Preparo</Label>
+                      <Input
+                        value={foodPrepTime}
+                        onChange={(e) => setFoodPrepTime(e.target.value)}
+                        placeholder="Ex: 20-35 min"
+                        className="h-11 rounded-xl text-xs bg-background"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Canais de Atendimento & Entrega */}
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-foreground tracking-tight">Canais de Atendimento & Entrega</Label>
+                      <span className="text-[10px] text-muted-foreground font-mono">{foodDeliveryModes.length} ativo(s)</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {[
+                        { id: "delivery_proprio", label: "Delivery Próprio" },
+                        { id: "motolink", label: "MotoLink / Entrega Flash" },
+                        { id: "retirada_balcao", label: "Retirada no Balcão" },
+                        { id: "consumo_local", label: "Consumo no Local" },
+                      ].map((mode) => {
+                        const active = foodDeliveryModes.includes(mode.id);
+                        return (
+                          <div
+                            key={mode.id}
+                            onClick={() => {
+                              if (active) {
+                                setFoodDeliveryModes(foodDeliveryModes.filter((m) => m !== mode.id));
+                              } else {
+                                setFoodDeliveryModes([...foodDeliveryModes, mode.id]);
+                              }
+                            }}
+                            className={cn(
+                              "flex items-center gap-2.5 px-3 py-2.5 rounded-lg border text-xs cursor-pointer transition-all min-h-[44px]",
+                              active
+                                ? "border-primary bg-primary/10 text-primary font-medium"
+                                : "border-border/50 bg-background text-foreground/80 hover:bg-muted/30"
+                            )}
+                          >
+                            <Checkbox checked={active} />
+                            <span className="truncate">{mode.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Sugestões do Sub-nicho */}
+                  {(() => {
+                    const matched = CANONICAL_FOOD_SUBNICHES.find((f) => f.id === foodSubNiche);
+                    if (!matched) return null;
+                    return (
+                      <div className="p-3 bg-muted/30 border border-border/40 rounded-xl space-y-1.5">
+                        <span className="text-[11px] font-semibold text-muted-foreground block">Exemplos populares em {matched.label}:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {matched.suggestedItems.map((item) => (
+                            <span key={item} className="text-[10px] bg-background border border-border/60 px-2 py-0.5 rounded-md text-foreground">
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Negócios */}
+              {niche.id === "negocio" && (
+                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-5 border border-border/60 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <Briefcase className="size-4 text-primary" />
+                      <span>2. Parâmetros do Negócio</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
+                      Negócios
+                    </Badge>
+                  </div>
+
+                  {/* Sincronização e Auditoria Cadastral por CNPJ (Receita Federal & IA) */}
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-muted/20 border border-border/60 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Building className="size-3.5 text-primary" />
+                          <span>Buscar Dados Oficiais da Empresa por CNPJ (Opcional)</span>
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Preenche automaticamente razão social, data de fundação, CNAE e calcula auditoria cadastral com IA.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          value={companyCnpj}
+                          onChange={(e) => setCompanyCnpj(e.target.value)}
+                          placeholder="00.000.000/0000-00"
+                          className="h-10 sm:h-11 rounded-xl text-xs bg-background font-mono"
+                          maxLength={18}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleLookupAndAuditCnpj}
+                        disabled={isSearchingCnpj || !companyCnpj.trim()}
+                        className="h-10 sm:h-11 px-3.5 rounded-xl text-xs font-bold shrink-0 gap-1.5 cursor-pointer"
+                      >
+                        {isSearchingCnpj ? (
+                          <>
+                            <Loader2 className="size-3.5 animate-spin text-primary" />
+                            <span>Auditando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Search className="size-3.5 text-primary" />
+                            <span>Consultar CNPJ</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Feedback visual da Auditoria Cadastral */}
+                    {cnpjAuditData && (
+                      <div className="p-3 rounded-xl bg-background border border-border/70 space-y-2 animate-in fade-in-50 text-xs">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2">
+                            <ShieldCheck className="size-4 text-emerald-500" />
+                            <strong className="text-foreground">{cnpjAuditData.companyName}</strong>
+                          </div>
+                          <Badge
+                            className={cn(
+                              "text-[10px] font-bold px-2 py-0.5",
+                              cnpjAuditData.legalRiskScore < 30
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                                : cnpjAuditData.legalRiskScore < 65
+                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                : "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30"
+                            )}
+                          >
+                            Risco Cadastral: {cnpjAuditData.riskClassification} ({cnpjAuditData.legalRiskScore}/100)
+                          </Badge>
+                        </div>
+                        {cnpjAuditData.aiEvaluationSummary && (
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            {cnpjAuditData.aiEvaluationSummary}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Smart Cascade Pills para Negócios */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">Modelo da Transação *</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {CANONICAL_BUSINESS_TYPES.map((type) => {
+                        const isSelected = businessType === type.id;
+                        return (
+                          <button
+                            key={type.id}
+                            type="button"
+                            onClick={() => setBusinessType(type.id)}
+                            className={cn(
+                              "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border flex items-center gap-1.5",
+                              isSelected
+                                ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                                : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
+                            )}
+                          >
+                            <span>{type.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-medium">Segmento de Mercado *</Label>
+                      <Select value={businessSegment} onValueChange={setBusinessSegment}>
+                        <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CANONICAL_BUSINESS_SEGMENTS.map((seg) => (
+                            <SelectItem key={seg} value={seg}>
+                              {seg}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Bloco Dedicado: Captação de Investimento & Busca de Sócios */}
+                  {(businessType === "busca_socio" || businessType === "captacao_investimento") && (
+                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-4">
+                      <div className="flex items-center justify-between pb-1 border-b border-primary/20">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+                          <Coins className="size-4" />
+                          <span>Parâmetros da Captação de Investimento & Sócios</span>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] font-bold border-primary/40 text-primary bg-primary/10">
+                          Oportunidade de Parceria
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-foreground font-medium">Valor do Aporte Solicitado *</Label>
+                          <CurrencyField
+                            value={targetInvestmentCents}
+                            onChange={setTargetInvestmentCents}
+                            placeholder="R$ 100.000,00"
+                            className="h-11 rounded-xl text-xs bg-background font-mono font-bold"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-foreground font-medium">Participação / Cotas Ofertadas (%)</Label>
+                          <Input
+                            value={offeredEquityPercent}
+                            onChange={(e) => setOfferedEquityPercent(e.target.value)}
+                            placeholder="Ex: 15% ou A Combinar"
+                            className="h-11 rounded-xl text-xs bg-background font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-foreground font-medium">Modelo do Investimento / Parceria *</Label>
+                          <Select value={investmentModel} onValueChange={setInvestmentModel}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CANONICAL_INVESTMENT_MODELS.map((model) => (
+                                <SelectItem key={model.id} value={model.id}>
+                                  {model.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-foreground font-medium">Estágio Atual do Negócio *</Label>
+                          <Select value={projectStage} onValueChange={setProjectStage}>
+                            <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CANONICAL_PROJECT_STAGES.map((st) => (
+                                <SelectItem key={st.id} value={st.id}>
+                                  {st.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs text-foreground font-medium">Destino do Capital / Recursos (onde será investido?)</Label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {CANONICAL_USE_OF_FUNDS.map((fund) => {
+                            const isSelected = useOfFunds.includes(fund);
+                            return (
+                              <button
+                                key={fund}
+                                type="button"
+                                onClick={() => {
+                                  setUseOfFunds((prev) =>
+                                    isSelected ? prev.filter((f) => f !== fund) : [...prev, fund]
+                                  );
+                                }}
+                                className={cn(
+                                  "h-8 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all active:scale-95 border",
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                                    : "bg-background text-muted-foreground border-border hover:text-foreground"
+                                )}
+                              >
+                                {fund}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Link do Pitch Deck ou Apresentação do Negócio (PDF, Drive ou Notion)</Label>
+                        <Input
+                          value={pitchDeckUrl}
+                          onChange={(e) => setPitchDeckUrl(e.target.value)}
+                          placeholder="https://drive.google.com/... ou link público da apresentação"
+                          className="h-11 rounded-xl text-xs bg-background"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Grid de Métricas Financeiras Estratégicas */}
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <FileSpreadsheet className="size-4 text-primary" />
+                      <span>Demonstrativo Financeiro (DRE Estimado)</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Faturamento Médio Mensal</Label>
+                        <CurrencyField
+                          value={businessMonthlyRevenueCents}
+                          onChange={setBusinessMonthlyRevenueCents}
+                          placeholder="R$ 150.000,00"
+                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Lucro Líquido Mensal</Label>
+                        <CurrencyField
+                          value={businessNetProfitCents}
+                          onChange={setBusinessNetProfitCents}
+                          placeholder="R$ 35.000,00"
+                          className="h-11 rounded-xl text-xs bg-background font-mono text-emerald-600 dark:text-emerald-400 font-bold"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Capital de Giro Necessário</Label>
+                        <CurrencyField
+                          value={businessWorkingCapitalCents}
+                          onChange={setBusinessWorkingCapitalCents}
+                          placeholder="R$ 40.000,00"
+                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Ano de Fundação da Empresa</Label>
+                        <Input
+                          value={businessFoundationYear}
+                          onChange={(e) => setBusinessFoundationYear(e.target.value)}
+                          placeholder="Ex: 2018"
+                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Quadro de Colaboradores</Label>
+                        <Select value={businessEmployeesRange} onValueChange={setBusinessEmployeesRange}>
+                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CANONICAL_EMPLOYEES_RANGES.map((emp) => (
+                              <SelectItem key={emp} value={emp}>
+                                {emp}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Motivo da Venda</Label>
+                        <Select value={businessSaleReason} onValueChange={setBusinessSaleReason}>
+                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CANONICAL_SALE_REASONS.map((reason) => (
+                              <SelectItem key={reason} value={reason}>
+                                {reason}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Instalações Físicas & Ponto Comercial */}
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-4">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <Building className="size-4 text-primary" />
+                      <span>Instalações & Ponto Comercial</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Tipo de Ponto Comercial</Label>
+                        <Select value={businessPointType} onValueChange={setBusinessPointType}>
+                          <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CANONICAL_COMMERCIAL_POINT_TYPES.map((pt) => (
+                              <SelectItem key={pt} value={pt}>
+                                {pt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Área Útil do Imóvel (m²)</Label>
+                        <Input
+                          value={businessAreaSqm}
+                          onChange={(e) => setBusinessAreaSqm(e.target.value)}
+                          placeholder="Ex: 180"
+                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Tempo Restante de Contrato</Label>
+                        <Input
+                          value={businessContractRemainingYears}
+                          onChange={(e) => setBusinessContractRemainingYears(e.target.value)}
+                          placeholder="Ex: 3 anos renováveis"
+                          className="h-11 rounded-xl text-xs bg-background"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Valor do Aluguel Mensal</Label>
+                        <CurrencyField
+                          value={businessMonthlyRentCents}
+                          onChange={setBusinessMonthlyRentCents}
+                          placeholder="R$ 4.500,00"
+                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">IPTU Mensal</Label>
+                        <CurrencyField
+                          value={businessMonthlyIptuCents}
+                          onChange={setBusinessMonthlyIptuCents}
+                          placeholder="R$ 380,00"
+                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-medium">Condomínio Mensal</Label>
+                        <CurrencyField
+                          value={businessMonthlyCondoCents}
+                          onChange={setBusinessMonthlyCondoCents}
+                          placeholder="R$ 0,00"
+                          className="h-11 rounded-xl text-xs bg-background font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Governança de Sigilo & Assessoria M&A */}
+                  <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="nda-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-1.5">
+                          <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
+                          Exigir Assinatura de NDA Digital
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground leading-snug">
+                          Mascara faturamento e lucro na vitrine pública (`R$ 1***`). Apenas investidores que assinarem o termo terão acesso imediato.
+                        </p>
+                      </div>
+                      <Switch
+                        id="nda-switch"
+                        checked={businessRequiresNda}
+                        onCheckedChange={setBusinessRequiresNda}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 pt-2 border-t border-amber-500/15">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="advisor-switch" className="text-xs font-bold text-foreground cursor-pointer flex items-center gap-1.5">
+                          <ShieldCheck className="size-3.5 text-primary" />
+                          Operação Assessorada por Consultor M&A
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground leading-snug">
+                          Sinaliza aos compradores que a operação possui suporte contábil e jurídico profissional para a transição.
+                        </p>
+                      </div>
+                      <Switch
+                        id="advisor-switch"
+                        checked={businessAdvisorSupported}
+                        onCheckedChange={setBusinessAdvisorSupported}
+                      />
+                    </div>
+
+                    {/* Uploader de Documentos Restritos & DRE (Fase 3 Master Plan) */}
+                    <div className="pt-3 border-t border-amber-500/20 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                            <FileSpreadsheet className="size-3.5 text-amber-600 dark:text-amber-400" />
+                            Documentos Confidenciais & DRE (Acesso Restrito via NDA)
+                          </Label>
+                          <p className="text-[11px] text-muted-foreground leading-snug">
+                            Anexe DRE, balanços, inventário ou contratos em PDF, XLSX ou CSV. Os arquivos só poderão ser baixados por investidores após assinatura digital do termo de sigilo.
+                          </p>
+                        </div>
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept=".pdf,.xlsx,.xls,.csv,.doc,.docx"
+                            className="hidden"
+                            disabled={isUploadingRestrictedDoc}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setIsUploadingRestrictedDoc(true);
+                              try {
+                                const uploaded = await uploadClassifiedDocument(file, "documents");
+                                setBusinessRestrictedDocuments((prev) => [...prev, uploaded]);
+                                toast.success(`Documento "${file.name}" anexado com sucesso!`);
+                              } catch (err: any) {
+                                toast.error(err?.message || "Falha ao enviar documento.");
+                              } finally {
+                                setIsUploadingRestrictedDoc(false);
+                                e.target.value = "";
+                              }
+                            }}
+                          />
+                          <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 border border-amber-500/30 transition-all">
+                            {isUploadingRestrictedDoc ? (
+                              <>
+                                <Loader2 className="size-3.5 animate-spin" />
+                                Enviando...
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="size-3.5" />
+                                Anexar Documento
+                              </>
+                            )}
+                          </span>
+                        </label>
+                      </div>
+
+                      {businessRestrictedDocuments.length > 0 && (
+                        <div className="space-y-1.5 pt-1">
+                          {businessRestrictedDocuments.map((doc, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between p-2.5 rounded-lg bg-background border border-border/70 text-xs"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <FileText className="size-4 text-amber-600 shrink-0" />
+                                <span className="font-medium text-foreground truncate">{doc.name}</span>
+                                {doc.size_bytes && (
+                                  <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+                                    ({(doc.size_bytes / 1024).toFixed(0)} KB)
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBusinessRestrictedDocuments((prev) => prev.filter((_, i) => i !== idx));
+                                  toast.info("Documento removido.");
+                                }}
+                                className="text-muted-foreground hover:text-destructive p-1 rounded transition-colors cursor-pointer"
+                                aria-label="Remover documento"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Telemetria de Viabilidade & Payback (SimLabs IA) */}
+                  <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                        <Zap className="size-4 text-primary" />
+                        <span>Telemetria de Ponto & Viabilidade Comercial</span>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={handleAnalyzeCommercialPoint}
+                        disabled={isAnalyzingTelemetry}
+                        className="h-8 px-3 text-xs font-semibold rounded-xl border-primary/30 text-primary hover:bg-primary/10 cursor-pointer shrink-0"
+                      >
+                        {isAnalyzingTelemetry ? (
+                          <>
+                            <Loader2 className="size-3.5 mr-1.5 animate-spin" />
+                            Calculando com SimLabs...
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="size-3.5 mr-1.5" />
+                            Sugerir Telemetria com SimLabs IA
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      O motor SimLabs cruza área em m², custo de aluguel e faturamento estimado para projetar payback, ocupação e score de viabilidade para compradores.
+                    </p>
+
+                    {telemetryResult && (
+                      <div className="mt-3 p-3.5 rounded-xl bg-background border border-border/70 space-y-2.5 animate-in fade-in">
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div className="p-2 rounded-lg bg-muted/30">
+                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Score</span>
+                            <span className="text-sm font-bold text-primary font-mono">{telemetryResult.viabilityScore}/100</span>
+                          </div>
+                          <div className="p-2 rounded-lg bg-muted/30">
+                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Payback</span>
+                            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono">~{telemetryResult.paybackMonthsEstimate} meses</span>
+                          </div>
+                          <div className="p-2 rounded-lg bg-muted/30">
+                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Aluguel / Fat.</span>
+                            <span className="text-sm font-bold text-foreground font-mono">{telemetryResult.rentToRevenueRatio}%</span>
+                          </div>
+                        </div>
+                        {telemetryResult.summary && (
+                          <p className="text-xs text-muted-foreground italic border-t border-border/40 pt-2">
+                            "{telemetryResult.summary}"
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -4822,7 +5990,7 @@ function SpecializedClassifiedEditor({
                 <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                   <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
-                      <Sparkles className="size-4 text-primary shrink-0" />
+                      <Award className="size-4 text-primary shrink-0" />
                       <span>Destaques & Diferenciais</span>
                     </div>
                     <Badge variant="outline" className="text-[10px] font-bold">
@@ -5175,7 +6343,105 @@ function SpecializedClassifiedEditor({
 								/>
  </div>
  </div>
+
+              {/* ── Seção 6: Agente Vendedor (SDR) — Configuração ── */}
+              <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.03] p-4 sm:p-5 space-y-4">
+                <div className="flex items-center justify-between pb-2.5 border-b border-blue-500/15">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    <Bot className="size-4 text-blue-500 shrink-0" />
+                    <span>6. Agente Vendedor (SDR)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {/* info modal via toast */ toast.info("O Agente SDR é um assistente IA que atende compradores em tempo real, responde dúvidas sobre o produto e ajuda a negociar dentro dos limites que você definir.", { duration: 8000 })}}
+                      className="size-6 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
+                      aria-label="Saiba mais sobre o Agente SDR"
+                    >
+                      <Info className="size-3.5" />
+                    </button>
+                    <Switch
+                      id="ai-agent-enabled"
+                      checked={aiAgentEnabled}
+                      onCheckedChange={setAiAgentEnabled}
+                    />
+                  </div>
+                </div>
+
+                {!aiAgentEnabled && (
+                  <p className="text-[12px] text-muted-foreground">
+                    Ative o Agente SDR para que compradores possam tirar dúvidas com uma IA em tempo real.
+                  </p>
+                )}
+
+                {aiAgentEnabled && (
+                  <div className="space-y-4">
+                    {/* Instruções para a IA (confidencial) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium text-foreground">
+                          Instruções para o Agente (confidencial)
+                        </Label>
+                        <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
+                          {aiInstructions.length}/1000
+                        </span>
+                      </div>
+                      <textarea
+                        value={aiInstructions}
+                        onChange={(e) => setAiInstructions(e.target.value.slice(0, 1000))}
+                        placeholder="Ex: O produto é novo na caixa. Prioridade para quem pagar à vista. Não revelar que há estoque de outros."
+                        className="w-full min-h-[80px] resize-none rounded-xl border border-border/60 bg-background px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                        maxLength={1000}
+                        aria-label="Instruções para o agente SDR"
+                      />
+                      <p className="text-[11px] text-muted-foreground">
+                        Estas instruções são confidenciais — o agente nunca as revelará ao comprador.
+                      </p>
+                    </div>
+
+                    {/* Desconto Máximo */}
+                    <div className="space-y-2 p-3.5 bg-background rounded-xl border border-border/60">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                          <BadgePercent className="size-3.5 text-primary" />
+                          Desconto Máximo Permitido
+                        </Label>
+                        <span className="text-xs font-bold text-foreground tabular-nums font-mono">
+                          {maxDiscountPct === 0 ? "Sem desconto" : `${maxDiscountPct}%`}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={30}
+                        step={1}
+                        value={maxDiscountPct}
+                        onChange={(e) => setMaxDiscountPct(Number(e.target.value))}
+                        className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                        aria-label="Desconto máximo para o agente SDR"
+                      />
+                      <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                        <span>0%</span>
+                        <span>10%</span>
+                        <span>20%</span>
+                        <span>30%</span>
+                      </div>
+                      {maxDiscountPct === 0 ? (
+                        <p className="text-[11px] text-muted-foreground">
+                          O agente não poderá negociar desconto algum — defenderá o preço cheio.
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                          O agente pode conceder até {maxDiscountPct}% de desconto como último recurso. Ele negociará profissionalmente antes de ceder.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
  </aside>
+
 
  {/* Painel Direito: Live Truthful Preview (Visualização Padrão) */}
  <main
@@ -5183,14 +6449,11 @@ function SpecializedClassifiedEditor({
  >
         {templateStyle === "editorial" || (templateStyle as string) === "instagram" ? (
           <div className="bg-card rounded-2xl overflow-hidden border border-border/60 shadow-2xs">
-            <div className="bg-muted/50 px-4 py-2.5 flex items-center justify-between text-xs border-b border-border/40">
-              <span className="font-bold flex items-center gap-1.5 text-foreground">
+            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
+              <span className="font-semibold flex items-center gap-1.5 text-muted-foreground">
                 <Eye className="size-3.5 text-primary" />
-                Prévia — Vitrine Imersiva
+                Prévia ao vivo
               </span>
-              <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">
-                Vitrine Imersiva
-              </Badge>
             </div>
             <div className="max-h-[85vh] overflow-y-auto">
               <EditorialShowcaseView
@@ -5201,16 +6464,13 @@ function SpecializedClassifiedEditor({
           </div>
         ) : (
           <div className="bg-card rounded-2xl overflow-hidden border border-border/60 shadow-2xs">
- {/* Header da Prévia */}
- <div className="bg-muted/50 px-4 py-2.5 flex items-center justify-between text-xs border-b border-border/40">
- <span className="font-bold flex items-center gap-1.5 text-foreground">
- <Eye className="size-3.5 text-primary" />
- Prévia Fiel em Tempo Real
- </span>
- <Badge variant="secondary" className="text-[10px] font-mono">
- Visualização Padrão
- </Badge>
- </div>
+            {/* Header da Prévia */}
+            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
+              <span className="font-semibold flex items-center gap-1.5 text-muted-foreground">
+                <Eye className="size-3.5 text-primary" />
+                Prévia ao vivo
+              </span>
+            </div>
 
  <div className="p-4 md:p-6 space-y-6">
  {/* Galeria de Fotos da Prévia */}

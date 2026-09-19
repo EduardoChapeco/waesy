@@ -24,14 +24,14 @@ import { resolveNicheDepartments } from "@/lib/niche-helpers";
 
 const DIRECTORY_CATEGORIES: FilterChipOption[] = [
  { id: "todos", label: "Tudo", emoji: "🏢", icon: Tag },
- { id: "turismo", label: "Turismo & Viagens", emoji: "✈️", icon: AirplaneTilt },
- { id: "gastronomia", label: "Gastronomia & Bares", emoji: "🍽️", icon: ForkKnife },
- { id: "comercio", label: "Comércio & Lojas", emoji: "🛍️", icon: Storefront },
- { id: "saude", label: "Saúde & Bem-Estar", emoji: "🩺", icon: Heartbeat },
- { id: "reformas", label: "Reformas & Obras", emoji: "🔨", icon: Wrench },
- { id: "auto", label: "Auto & Mecânica", emoji: "🚗", icon: CarProfile },
- { id: "pet", label: "Pet & Veterinária", emoji: "🐾", icon: Tag },
- { id: "servicos", label: "Serviços & B2B", emoji: "💼", icon: Briefcase },
+ { id: "turismo", label: "Turismo", emoji: "✈️", icon: AirplaneTilt },
+ { id: "gastronomia", label: "Gastronomia", emoji: "🍽️", icon: ForkKnife },
+ { id: "comercio", label: "Comércio", emoji: "🛍️", icon: Storefront },
+ { id: "saude", label: "Saúde", emoji: "🩺", icon: Heartbeat },
+ { id: "reformas", label: "Reformas", emoji: "🔨", icon: Wrench },
+ { id: "auto", label: "Automotivo", emoji: "🚗", icon: CarProfile },
+ { id: "pet", label: "Pet", emoji: "🐾", icon: Tag },
+ { id: "servicos", label: "Serviços", emoji: "💼", icon: Briefcase },
 ];
 
 export const Route = createFileRoute("/_store/diretorio/")({

@@ -18,6 +18,7 @@ import {
   ShareNetwork,
 } from "@phosphor-icons/react";
 import { formatBRL } from "@/lib/money";
+import { toast } from "sonner";
 
 export interface SocialStudioModalProps {
   isOpen: boolean;
@@ -179,7 +180,7 @@ export function SocialStudioModal({
             <div className="space-y-2 pt-2 border-t border-border">
               <Button
                 onClick={() => {
-                  alert("Download da imagem em alta resolução gerado com sucesso!");
+                  toast.success("Download da imagem em alta resolução gerado com sucesso!");
                 }}
                 className="w-full h-10 text-xs font-bold gap-2"
               >

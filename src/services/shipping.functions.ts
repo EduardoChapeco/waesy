@@ -225,11 +225,48 @@ export async function _calculateShipping({
  } catch (err) {
  console.error("[shipping] Erro ao chamar MelhorEnvio:", err);
  // Fallback silencioso para frete manual (já populado no array)
- }
- }
- }
+    }
+  }
+}
 
- // 4. Save to Database to prevent tampering during checkout
+  // 3. Integração: MotoLink Express (Despacho Local Autônomo com Dynamic Surge Pricing)
+  // Se a loja tiver a integração MotoLink ativa no Hub Central de Integrações
+  try {
+    const { data: motolinkCreds } = await supabase
+      .from("integration_credentials")
+      .select("token_payload, is_active")
+      .eq("store_id", resolvedStoreId)
+      .eq("provider", "motolink")
+      .maybeSingle();
+
+    if (motolinkCreds?.is_active) {
+      const payload = (motolinkCreds.token_payload as Record<string, any>) || {};
+      const baseFee = Number(payload.base_dispatch_fee_cents) || 1200; // R$ 12,00 base
+
+      // Inteligência de Surge Pricing: Horários de pico comercial (almoço 11-14h / jantar 18-21h)
+      const currentHour = new Date().getHours();
+      const isPeakHour = (currentHour >= 11 && currentHour <= 14) || (currentHour >= 18 && currentHour <= 21);
+      const surgeMultiplier = isPeakHour ? 1.25 : 1.0;
+      const finalPriceCents = Math.round(baseFee * surgeMultiplier);
+
+      const alreadyHasMoto = finalQuotes.some((q) => (q.service_name || "").toLowerCase().includes("motolink"));
+      if (!alreadyHasMoto) {
+        finalQuotes.push({
+          provider: "MotoLink Express",
+          service_name: isPeakHour
+            ? "MotoLink Express (Alta Demanda +25%)"
+            : "MotoLink Express (Entrega Local em 45-60 min)",
+          price_cents: finalPriceCents,
+          estimated_days: 0,
+          surge_applied: isPeakHour,
+        });
+      }
+    }
+  } catch (motolinkErr) {
+    console.warn("[shipping] Falha defensiva ao verificar credenciais MotoLink:", motolinkErr);
+  }
+
+  // 4. Save to Database to prevent tampering during checkout
  if (finalQuotes.length > 0 && resolvedStoreId) {
  const identity = await getServerIdentity().catch(() => null);
  const quotesToInsert = finalQuotes.map((q) => ({

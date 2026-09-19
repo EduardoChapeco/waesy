@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -22,6 +22,8 @@ import {
   CheckCircle2,
   QrCode,
   RefreshCw,
+  Building2,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -30,6 +32,7 @@ import {
   getBoostPaymentStatus,
   initiateBoostPayment,
   getBoostPaymentById,
+  convertClassifiedToWorkspaceStore,
 } from "@/services/classifieds.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -131,6 +134,7 @@ interface ActiveBoostPayment {
 }
 
 function ClassificadosIndex() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [boostingAd, setBoostingAd] = useState<any | null>(null);
@@ -138,6 +142,30 @@ function ClassificadosIndex() {
   const [boostStep, setBoostStep] = useState<BoostStep>("plan_select");
   const [activeBoostPayment, setActiveBoostPayment] = useState<ActiveBoostPayment | null>(null);
   const [copiedPix, setCopiedPix] = useState(false);
+
+  // Estado de Migração para Loja no Workspace Pro (Fase 5)
+  const [migratingAd, setMigratingAd] = useState<any | null>(null);
+  const [isMigrating, setIsMigrating] = useState(false);
+
+  const handleMigrateToPro = async () => {
+    if (!migratingAd) return;
+    setIsMigrating(true);
+    try {
+      const res = await convertClassifiedToWorkspaceStore({
+        data: { classifiedId: migratingAd.id },
+      });
+      toast.success("Anúncio transformado em Loja Pro no Workspace!");
+      setMigratingAd(null);
+      if (typeof window !== "undefined") {
+        window.document.cookie = `waesy_active_tenant=${res.storeId}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+      navigate({ to: "/workspace" });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao migrar anúncio para Loja Pro.");
+    } finally {
+      setIsMigrating(false);
+    }
+  };
 
   // ── Consulta gateway de pagamento ANTES de abrir modal ──────────
   const { data: gatewayStatus, isLoading: gatewayLoading } = useQuery({
@@ -400,19 +428,45 @@ function ClassificadosIndex() {
                 </div>
 
                 {/* Ações */}
-                <div className="border-t border-border/40 bg-muted/10 px-3 py-2 flex gap-2">
-                  <div className="flex items-center gap-2 flex-1">
+                <div className="border-t border-border/40 bg-muted/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <Button
-                      type="button"
+                      asChild
                       variant="outline"
                       size="sm"
-                      className="rounded-xl text-xs h-9 sm:h-8 flex-1 border-border/70 cursor-pointer"
+                      className="rounded-xl text-xs h-9 sm:h-8 border-border/70 cursor-pointer"
                     >
                       <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
                         <Edit3 className="size-3.5 mr-1" />
                         <span>Editar</span>
                       </Link>
                     </Button>
+
+                    {ad.store_id ? (
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl text-xs h-9 sm:h-8 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer gap-1"
+                      >
+                        <Link to="/workspace">
+                          <Building2 className="size-3.5" />
+                          <span>Loja Pro</span>
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setMigratingAd(ad)}
+                        className="rounded-xl text-xs h-9 sm:h-8 border-border/70 hover:border-primary/50 text-foreground hover:text-primary cursor-pointer gap-1"
+                        title="Transformar este anúncio em uma empresa profissional no Workspace"
+                      >
+                        <Sparkles className="size-3.5 text-primary" />
+                        <span>Migrar Pro</span>
+                      </Button>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -755,6 +809,58 @@ function ClassificadosIndex() {
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Migração de Anúncio para Loja no Workspace Pro */}
+      <Dialog open={!!migratingAd} onOpenChange={(open) => !open && setMigratingAd(null)}>
+        <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
+          <DialogHeader>
+            <div className="size-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-1">
+              <Building2 className="size-6" />
+            </div>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Migrar para o Workspace Pro
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Transforme o anúncio <strong>"{migratingAd?.title}"</strong> em uma empresa oficial no ecossistema Waesy com painel de gestão completo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-foreground font-semibold">
+              <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+              <span>Painel de gestão, pedidos e catálogo</span>
+            </div>
+            <div className="flex items-center gap-2 text-foreground font-semibold">
+              <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+              <span>Telemetria do ponto físico e rotatividade mantidas</span>
+            </div>
+            <div className="flex items-center gap-2 text-foreground font-semibold">
+              <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+              <span>50.000 tokens de IA inclusos na carteira</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setMigratingAd(null)}
+              className="flex-1 h-10 rounded-xl text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleMigrateToPro}
+              disabled={isMigrating}
+              className="flex-1 h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs"
+            >
+              {isMigrating ? <Loader2 className="size-4 animate-spin mr-1" /> : <Sparkles className="size-4 mr-1" />}
+              <span>Confirmar Migração</span>
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

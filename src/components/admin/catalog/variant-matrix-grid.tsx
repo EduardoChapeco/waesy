@@ -7,6 +7,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { Settings } from "lucide-react";
 import { AdvancedVariantEditor } from "./advanced-variant-editor";
+import { toast } from "sonner";
 
 export type RawVariant = {
  id?: string;
@@ -66,7 +67,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
  if (!dimName || dimName.trim() === "") return;
  const newDim = dimName.trim();
  if (attributeKeys.includes(newDim)) {
- alert("Essa propriedade já existe!");
+ toast.error("Essa propriedade já existe!");
  return;
  }
  const newVariants = variants.map((v) => ({

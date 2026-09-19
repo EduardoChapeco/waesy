@@ -59,3 +59,46 @@ export async function uploadClassifiedMedia(
 
   return res.url;
 }
+
+/**
+ * uploadClassifiedDocument
+ * Envia documentos restritos e sigilosos (PDF, XLSX, DOCX, CSV) via Server Function
+ * para o Supabase Storage (bucket 'post-media', pasta 'classifieds/documents').
+ */
+export async function uploadClassifiedDocument(
+  file: File,
+  folder = "documents"
+): Promise<{ url: string; name: string; size_bytes: number }> {
+  if (!file) throw new Error("Nenhum documento fornecido para upload.");
+
+  const base64Data = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "pdf";
+  const cleanName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+
+  const res = await uploadMediaUniversal({
+    data: {
+      base64Data,
+      fileName: cleanName,
+      fileType: file.type || "application/pdf",
+      bucket: "post-media",
+      folder: `classifieds/${folder}`,
+    },
+  });
+
+  if (!res?.url) {
+    throw new Error("Falha ao obter URL pública do documento.");
+  }
+
+  return {
+    url: res.url,
+    name: file.name,
+    size_bytes: file.size,
+  };
+}
+

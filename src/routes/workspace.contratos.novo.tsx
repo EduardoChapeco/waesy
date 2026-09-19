@@ -505,7 +505,7 @@ function NovoContratoPage() {
 
     if (extracted.emergencyContacts && extracted.emergencyContacts.length > 0) {
       synthesizedMarkdown += `### CONTATOS DE EMERGÊNCIA E SUPORTE\n`;
-      synthesizedMarkdown += extracted.emergencyContacts.map((c) => `- **${c.label}:** ${c.contact} (${c.type})`).join("\n") + `\n\n`;
+      synthesizedMarkdown += extracted.emergencyContacts.map((c) => `- **${c.name}:** ${c.phone} (${c.category || "Suporte"})`).join("\n") + `\n\n`;
     }
 
     setContentMarkdown(synthesizedMarkdown);
@@ -798,7 +798,7 @@ function NovoContratoPage() {
               </div>
 
               <MultimodalOcrUploader
-                nicheHint="contract"
+                nicheHint="service"
                 showPreviewModal={false}
                 onExtracted={handleContractOcrExtracted}
               />

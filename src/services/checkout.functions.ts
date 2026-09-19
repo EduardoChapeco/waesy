@@ -15,7 +15,7 @@ import { getServerIdentity, getSSRClient } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { getCurrentIdentity, withDataPayload } from "./cart-helpers";
-import { getRequest } from "@tanstack/react-start/server";
+import { getRequest } from "@tanstack/start-server-core";
 import { readCookieFromRequest } from "@/lib/http-cookies";
 import { generateTransactionCertificate } from "@/services/security.functions";
 

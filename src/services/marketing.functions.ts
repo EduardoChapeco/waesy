@@ -135,23 +135,32 @@ export const generateMatchTimeOffers = createServerFn({ method: "GET" }).handler
  // Shuffle and pick 5
  const shuffled = variants.sort(() => 0.5 - Math.random()).slice(0, 5);
 
- return shuffled.map((v) => {
- const originalPrice = v.price_cents;
- // Create an artificial flash discount of 15% to 30% for the match
- const discountFactor = (Math.floor(Math.random() * (30 - 15 + 1)) + 15) / 100;
- const matchPrice = Math.floor(originalPrice * (1 - discountFactor));
+  // Buscar se há campanha de flash match ativa para aplicar desconto real configurado pelo lojista
+  const { data: activeCampaign } = await supabase
+    .from("eventos_campanhas")
+    .select("config")
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
 
- return {
- variantId: v.id,
- productId: (v.products as any)?.id,
- title: (v.products as any)?.title,
- variantName: v.canonical_name,
- image: v.product_media?.[0]?.url || null,
- originalPrice,
- matchPrice,
- discountPercentage: Math.floor(discountFactor * 100),
- };
- });
+  const campaignDiscountPct = Number(activeCampaign?.config?.discount_percentage || 0);
+  const discountFactor = campaignDiscountPct > 0 ? campaignDiscountPct / 100 : 0;
+
+  return shuffled.map((v) => {
+    const originalPrice = v.price_cents;
+    const matchPrice = discountFactor > 0 ? Math.floor(originalPrice * (1 - discountFactor)) : originalPrice;
+
+    return {
+      variantId: v.id,
+      productId: (v.products as any)?.id,
+      title: (v.products as any)?.title,
+      variantName: v.canonical_name,
+      image: v.product_media?.[0]?.url || null,
+      originalPrice,
+      matchPrice,
+      discountPercentage: campaignDiscountPct,
+    };
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

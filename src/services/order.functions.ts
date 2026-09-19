@@ -4,6 +4,7 @@ import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getSSRClient, getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { requireAdmin } from "@/lib/server-access";
 import { emitOrderNFeAutomated } from "@/services/fiscal-nfe.functions";
+import { sendWhatsAppNotification } from "@/services/integrations.functions";
 import { withDataPayload } from "@/services/cart-helpers";
 
 // ---------------------------------------------------------------------------
@@ -82,7 +83,7 @@ export async function _updateOrderStatus(
 
  const { data: order, error: orderError } = await db
  .from("orders")
- .select("id, customer_id, public_token, total_cents, store_id")
+ .select("id, customer_id, public_token, total_cents, store_id, customer_snapshot, shipping_address")
  .eq("id", orderId)
  .eq("store_id", store_id)
  .single();
@@ -107,7 +108,7 @@ export async function _updateOrderStatus(
  type: "order_cancelled",
  title: "Pedido Cancelado",
  message: `Seu pedido #${order.public_token.substring(0, 8)} foi cancelado e eventuais estornos foram processados.`,
- link_url: `/_store/conta/pedidos/${order.id}`,
+ link_url: `/conta/pedidos/${order.id}`,
  is_read: false,
  });
  } catch (err) {
@@ -159,9 +160,19 @@ export async function _updateOrderStatus(
  type: `order_${status}`,
  title: titlesMap[status],
  message: msgsMap[status],
- link_url: `/_store/conta/pedidos/${order.id}`,
+ link_url: `/conta/pedidos/${order.id}`,
  is_read: false,
  });
+
+ // Notificação transacional WhatsApp (se a loja tiver WhatsApp Cloud API ativa)
+ const recipientPhone = (order as any).customer_snapshot?.phone || ((order as any).shipping_address as any)?.phone;
+ if (recipientPhone && msgsMap[status]) {
+   sendWhatsAppNotification({
+     storeId: store_id,
+     recipientPhone,
+     messageText: msgsMap[status],
+   }).catch((waErr) => console.warn(`[order.functions] Falha ao enviar WhatsApp para ${recipientPhone}:`, waErr));
+ }
  } catch (err) {
  console.error("[order.functions] Falha ao notificar cliente:", err);
  }

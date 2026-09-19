@@ -55,7 +55,7 @@ export interface DashboardMetrics {
  setupProgressPercentage: number;
 }
 
-export async function _getDashboardData(): Promise<DashboardMetrics> {
+async function _getDashboardData(): Promise<DashboardMetrics> {
  const identity = await getServerIdentity();
  assertStoreAccess(identity, [
  "owner",

@@ -24,6 +24,7 @@ import {
 } from "./mining/integrity-gate";
 import { curateWithEditorialSquad } from "./mining/editorial-squad";
 import { fetchPncpContracts, convertPncpToExtractionResult } from "./mining/pncp-extractor";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ============================================================
 // Constantes: Token Burn Rates para Scraping
@@ -480,66 +481,26 @@ Retorne o JSON:
  baseSystemPrompt
  );
 
- // 6. Processamento por IA
- let extracted: any = null;
- let aiProviderUsed = "fallback";
- let tokensConsumed = 0;
+  // 6. Processamento por IA via Orquestrador Universal
+  let extracted: any = null;
+  let aiProviderUsed = "fallback";
+  let tokensConsumed = 0;
 
- const geminiKey = await getNextActiveKey("gemini");
- const groqKey = await getNextActiveKey("groq");
-
- if (geminiKey) {
- try {
- const gRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- systemInstruction: { parts: [{ text: hardenedSystemPrompt }] },
- contents: [{ parts: [{ text: sandboxedUserPrompt }] }],
- generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
- }),
- signal: AbortSignal.timeout(20000),
- }
- );
- if (gRes.ok) {
- const gJson = await gRes.json();
- const txt = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (txt) { extracted = JSON.parse(txt); aiProviderUsed = "gemini"; }
- } else {
- await supabase.from("api_key_pools").update({ last_error_at: new Date().toISOString(), last_error_message: `HTTP ${gRes.status}` }).eq("id", geminiKey.id);
- }
- } catch (e: any) {
- console.error("[mining] Gemini error:", e.message);
- }
- }
-
- if (!extracted && groqKey) {
- try {
- const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
- method: "POST",
- headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey.rawKey}` },
- body: JSON.stringify({
- model: "llama-3.1-70b-versatile",
- messages: [
- { role: "system", content: `${hardenedSystemPrompt}\nResponda APENAS com JSON válido.` },
- { role: "user", content: sandboxedUserPrompt },
- ],
- temperature: 0.2,
- response_format: { type: "json_object" },
- }),
- signal: AbortSignal.timeout(20000),
- });
- if (grRes.ok) {
- const grJson = await grRes.json();
- const content = grJson?.choices?.[0]?.message?.content;
- if (content) { extracted = JSON.parse(content); aiProviderUsed = "groq"; }
- }
- } catch (e: any) {
- console.error("[mining] Groq error:", e.message);
- }
- }
+  try {
+    const aiRes = await executeUnifiedAiCall({
+      systemPrompt: hardenedSystemPrompt,
+      userPrompt: sandboxedUserPrompt,
+      responseFormat: "json_object",
+      temperature: 0.2,
+    });
+    if (aiRes.parsedJson) {
+      extracted = aiRes.parsedJson;
+      aiProviderUsed = aiRes.provider;
+      tokensConsumed = 1500;
+    }
+  } catch (e: any) {
+    console.warn("[mining] Unified AI error:", e.message);
+  }
 
  // 7. Fallback determinístico se IA falhar
  if (!extracted) {
@@ -663,20 +624,20 @@ Retorne o JSON:
       .eq("id", crawlQueueId);
   }
 
- // 11. Debita tokens se B2B
- if (input.consume_tokens && input.store_id) {
- await supabase.rpc("consume_store_tokens", {
- p_store_id: input.store_id,
- p_tokens_to_consume: tokensConsumed,
- p_action_type: "burn_scrape_url",
- p_description: `Extração IA de URL: ${domain}`,
- p_time_saved_minutes: 45,
- p_metadata: { url: input.url, ai_provider: aiProviderUsed, quality_score: qualityScore },
- });
- }
+  // 11. Debita tokens se B2B
+  if (input.consume_tokens && input.store_id) {
+    await supabase.rpc("consume_store_tokens", {
+      p_store_id: input.store_id,
+      p_tokens_to_consume: tokensConsumed,
+      p_action_type: "burn_scrape_url",
+      p_description: `Extração IA de URL: ${domain}`,
+      p_time_saved_minutes: 45,
+      p_metadata: { url: input.url, ai_provider: aiProviderUsed, quality_score: qualityScore },
+    });
+  }
 
- return mined;
- });
+  return mined;
+});
 
 // ============================================================
 // 5. Lista artigos minerados pendentes de curadoria
@@ -782,24 +743,6 @@ export const aiRewriteMinedArticle = createServerFn({ method: "POST" })
 
  if (fetchErr || !mined) throw new Error("Artigo minerado não encontrado.");
 
- // Obtém chave ativa para reescrita
- async function getNextActiveKey(provider: string) {
- const { data } = await supabase
- .from("api_key_pools")
- .select("id, encrypted_key")
- .eq("provider", provider)
- .eq("is_active", true)
- .order("last_used_at", { ascending: true, nullsFirst: true })
- .limit(1)
- .maybeSingle();
- if (!data?.encrypted_key) return null;
- const rawKey = Buffer.from(data.encrypted_key, "base64").toString("utf-8");
- return { id: data.id, rawKey };
- }
-
- const geminiKey = await getNextActiveKey("gemini");
- const groqKey = await getNextActiveKey("groq");
-
  const originalContent = JSON.stringify(mined.ai_structured_sections || []);
  const systemPrompt = `Você é um editor-chefe de jornal digital premiado. Reescreva o conteúdo abaixo no tom solicitado, mantendo os fatos e a estrutura em blocos JSON. Retorne APENAS JSON válido.`;
  const userPrompt = `Reescreva este artigo no tom "${input.tone}"${input.focus ? `, enfatizando: ${input.focus}` : ""}.
@@ -822,57 +765,19 @@ Retorne o JSON:
 }`;
 
  let rewritten: any = null;
- const aiKey = geminiKey || groqKey;
- if (!aiKey) throw new Error("Nenhuma chave de IA ativa disponível para reescrita.");
-
- if (geminiKey) {
  try {
- const gRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- systemInstruction: { parts: [{ text: systemPrompt }] },
- contents: [{ parts: [{ text: userPrompt }] }],
- generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
- }),
- signal: AbortSignal.timeout(25000),
- }
- );
- if (gRes.ok) {
- const gJson = await gRes.json();
- const txt = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (txt) rewritten = JSON.parse(txt);
- }
- } catch (e: any) { console.error("[mining] Rewrite Gemini error:", e.message); }
- }
-
- if (!rewritten && groqKey) {
- try {
- const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
- method: "POST",
- headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey.rawKey}` },
- body: JSON.stringify({
- model: "llama-3.1-70b-versatile",
- messages: [
- { role: "system", content: `${systemPrompt}\nResponda APENAS com JSON válido.` },
- { role: "user", content: userPrompt },
- ],
+ const aiRes = await executeUnifiedAiCall({
+ systemPrompt,
+ userPrompt,
+ responseFormat: "json_object",
  temperature: 0.4,
- response_format: { type: "json_object" },
- }),
- signal: AbortSignal.timeout(25000),
  });
- if (grRes.ok) {
- const grJson = await grRes.json();
- const content = grJson?.choices?.[0]?.message?.content;
- if (content) rewritten = JSON.parse(content);
- }
- } catch (e: any) { console.error("[mining] Rewrite Groq error:", e.message); }
+ rewritten = aiRes.parsedJson;
+ } catch (e: any) {
+ console.error("[mining] Rewrite Unified AI error:", e.message);
  }
 
- if (!rewritten) throw new Error("IA não conseguiu realizar a reescrita. Tente novamente.");
+ if (!rewritten) throw new Error("IA não conseguiu realizar a reescrita. Verifique suas chaves de IA no painel.");
 
  // Atualiza mined_article com conteúdo reescrito
  const { data: updated, error: updateErr } = await supabase
@@ -1139,74 +1044,150 @@ export const triggerRssFeedFetch = createServerFn({ method: "POST" })
  });
 
 // ============================================================
-// 14. Worker: Processa lote da fila de crawling
+// 14. Worker Autônomo: Processa lote da fila de crawling em 4 Camadas
+// mechanical-extractor -> integrity-gate -> curateWithEditorialSquad -> mined_articles
 // ============================================================
 export const processCrawlQueueBatch = createServerFn({ method: "POST" })
- .validator(z.object({
- limit: z.number().int().min(1).max(20).default(5),
- }).optional())
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const limit = data?.limit || 5;
+  .validator(
+    z.object({
+      limit: z.number().int().min(1).max(20).optional(),
+      batchSize: z.number().int().min(1).max(20).optional(),
+      storeId: z.string().uuid().optional(),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const batchSize = data?.batchSize || data?.limit || 5;
 
- // Busca itens pendentes ordenados por prioridade (1 a 10) e data de criação
- const { data: pendingItems, error: fetchErr } = await supabase
- .from("crawl_queue")
- .select("*")
- .eq("status", "pending")
- .order("priority", { ascending: false })
- .order("created_at", { ascending: true })
- .limit(limit);
+    // 1. Busca itens pendentes ordenados por prioridade e idade
+    let query = supabase
+      .from("crawl_queue")
+      .select("*")
+      .eq("status", "pending")
+      .order("priority", { ascending: false })
+      .order("created_at", { ascending: true })
+      .limit(batchSize);
 
- if (fetchErr) throw new Error(`Falha ao buscar fila: ${fetchErr.message}`);
- if (!pendingItems || pendingItems.length === 0) {
- return { processed: 0, message: "Fila de crawling vazia no momento." };
- }
+    if (data?.storeId) {
+      query = query.eq("store_id", data.storeId);
+    }
 
- const results = [];
+    const { data: queueItems, error: fetchErr } = await query;
+    if (fetchErr || !queueItems || queueItems.length === 0) {
+      return { processed: 0, succeeded: 0, failed: 0, items: [], message: "Fila de crawling vazia no momento." };
+    }
 
- for (const item of pendingItems) {
- // Marca como processing
- await supabase
- .from("crawl_queue")
- .update({
- status: "processing",
- started_at: new Date().toISOString(),
- retry_count: (item.retry_count || 0) + 1,
- })
- .eq("id", item.id);
+    const results: Array<{ id: string; url: string; status: "completed" | "failed"; error?: string; articleId?: string }> = [];
 
- try {
- const mined = await processUrlWithAI({
- data: {
- url: item.url,
- store_id: item.store_id || undefined,
- content_type: (item.content_type || "news") as any,
- auto_enqueue: false,
- consume_tokens: !!item.store_id,
- },
- });
- results.push({ id: item.id, url: item.url, status: "completed", mined_article_id: mined.id });
- } catch (err: any) {
- console.error(`[mining-worker] Erro ao processar ${item.url}:`, err.message);
- const maxRetries = item.max_retries || 3;
- const willRetry = (item.retry_count || 0) + 1 < maxRetries;
+    for (const item of queueItems) {
+      // 2. Marca como processing
+      await supabase
+        .from("crawl_queue")
+        .update({
+          status: "processing",
+          processed_at: new Date().toISOString(),
+          retry_count: (item.retry_count || 0) + 1,
+        })
+        .eq("id", item.id);
 
- await supabase
- .from("crawl_queue")
- .update({
- status: willRetry ? "pending" : "failed",
- processing_error: err.message?.slice(0, 500),
- completed_at: willRetry ? null : new Date().toISOString(),
- })
- .eq("id", item.id);
+      try {
+        // 3. Extração Mecânica (Camadas 1-4)
+        const extraction = await extractContentMechanically(item.url);
 
- results.push({ id: item.id, url: item.url, status: willRetry ? "retrying" : "failed", error: err.message });
- }
- }
+        // 4. Validação de Integridade
+        const validation = validateMechanicalCompleteness(extraction);
+        if (!validation.isValid) {
+          throw new Error(validation.reason || "Conteúdo reprovado pelo Integrity Gate");
+        }
 
- return { processed: results.length, results };
- });
+        // 5. Curadoria Editorial com IA (Squad de 5 Agentes)
+        const editorial = await curateWithEditorialSquad({
+          rawTitle: extraction.title,
+          rawText: extraction.bodyMarkdown,
+          sourceName: new URL(item.url).hostname,
+          sourceUrl: item.url,
+          city: "Chapecó",
+        });
+
+        // 6. Imagem de Capa e Formatação
+        let coverUrl = extraction.coverImageUrl;
+        if (!coverUrl || !(await isHealthyImageUrl(coverUrl))) {
+          coverUrl = getFallbackThematicImage(editorial?.category || "cidade");
+        }
+
+        // 7. Grava em mined_articles
+        const { data: minedArticle, error: insertErr } = await supabase
+          .from("mined_articles")
+          .insert({
+            source_url: item.url,
+            source_domain: new URL(item.url).hostname,
+            source_type: "crawl",
+            store_id: item.store_id || null,
+            raw_title: extraction.title,
+            ai_structured_title: editorial?.title || extraction.title,
+            ai_structured_subtitle: editorial?.subtitle || extraction.lead || "",
+            ai_suggested_kicker: editorial?.kicker || "Atualidade",
+            ai_suggested_category: editorial?.category || "cidade",
+            ai_suggested_tags: editorial?.tags || ["notícias", "chapecó"],
+            ai_suggested_cover_url: coverUrl,
+            ai_summary: editorial?.key_takeaways?.join(" • ") || extraction.lead || "",
+            quality_score: validation.qualityScore,
+            quality_flags: validation.flags,
+            word_count: extraction.wordCount,
+            paragraph_count: extraction.paragraphCount,
+            has_cover_image: Boolean(coverUrl),
+            is_duplicate: false,
+            status: "pending_review",
+            extracted_markdown: extraction.bodyMarkdown,
+            ai_structured_sections: editorial?.mobile_sections || [],
+            metadata: {
+              crawl_queue_id: item.id,
+              reading_time_minutes: editorial?.reading_time_minutes || 3,
+              urgency_level: editorial?.urgency_level || "normal",
+              source_attribution: editorial?.source_attribution || "",
+            },
+          })
+          .select("id")
+          .single();
+
+        if (insertErr) {
+          throw new Error(`Erro ao salvar artigo minerado: ${insertErr.message}`);
+        }
+
+        // 8. Atualiza fila como concluído
+        await supabase
+          .from("crawl_queue")
+          .update({
+            status: "completed",
+            error_message: null,
+          })
+          .eq("id", item.id);
+
+        results.push({ id: item.id, url: item.url, status: "completed", articleId: minedArticle?.id });
+      } catch (itemErr: any) {
+        const errMsg = itemErr?.message || "Erro desconhecido";
+        await supabase
+          .from("crawl_queue")
+          .update({
+            status: "failed",
+            error_message: errMsg.slice(0, 300),
+          })
+          .eq("id", item.id);
+
+        results.push({ id: item.id, url: item.url, status: "failed", error: errMsg });
+      }
+    }
+
+    const succeeded = results.filter((r) => r.status === "completed").length;
+    const failed = results.filter((r) => r.status === "failed").length;
+
+    return {
+      processed: results.length,
+      succeeded,
+      failed,
+      items: results,
+    };
+  });
 
 // ============================================================
 // 15. Worker: Enfileira itens pendentes de RSS feeds na crawl_queue
@@ -1434,6 +1415,7 @@ export const convertPncpBidToNewsArticle = createServerFn({ method: "POST" })
       data_publicacao: z.string().optional(),
       city: z.string().default("Chapecó"),
       store_id: z.string().uuid().optional(),
+      enrichWithAi: z.boolean().default(false),
     })
   )
   .handler(async ({ data }) => {
@@ -1453,9 +1435,11 @@ export const convertPncpBidToNewsArticle = createServerFn({ method: "POST" })
       ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(data.valor_estimado)
       : "Valor sob consulta";
 
-    const title = `Edital Público: ${data.orgao} abre licitação para ${data.objeto.slice(0, 100)}`;
-    const subtitle = `Processo ${data.numero_edital || "PNCP"} na modalidade ${data.modalidade || "Licitação"}. Estimativa financeira de ${valorFormatado}.`;
-    const kicker = "Gestão Pública & Transparência";
+    let title = `Edital Público: ${data.orgao} abre licitação para ${data.objeto.slice(0, 100)}`;
+    let subtitle = `Processo ${data.numero_edital || "PNCP"} na modalidade ${data.modalidade || "Licitação"}. Estimativa financeira de ${valorFormatado}.`;
+    let kicker = "Gestão Pública & Transparência";
+    let category = "cidade";
+    let tags = ["licitação", "edital", data.city.toLowerCase(), "pncp", "gestão pública"];
     const coverUrl = getFallbackThematicImage("cidade");
 
     const markdownBody = `## Licitação Pública Municipal em ${data.city}
@@ -1473,7 +1457,7 @@ O órgão **${data.orgao}** publicou aviso oficial através do Portal Nacional d
 
 Os cidadãos, fornecedores e empresas interessadas podem consultar o edital na íntegra, prazos e anexos técnicos diretamente no Portal Nacional de Contratações Públicas através do link oficial.`;
 
-    const sections = [
+    let sections: any[] = [
       {
         heading: "Objeto da Contratação",
         content: `O órgão ${data.orgao} publicou processo licitatório visando: ${data.objeto}.`,
@@ -1483,6 +1467,36 @@ Os cidadãos, fornecedores e empresas interessadas podem consultar o edital na �
         content: `A contratação ocorrerá via modalidade ${data.modalidade || "licitatória"}, com investimento estimado em ${valorFormatado}. Detalhes e anexos estão acessíveis no portal oficial.`,
       },
     ];
+    let summary = `${data.orgao} abre licitação para ${data.objeto}. Valor estimado: ${valorFormatado}.`;
+
+    if (data.enrichWithAi) {
+      try {
+        const editorial = await curateWithEditorialSquad({
+          rawTitle: data.objeto,
+          rawText: markdownBody,
+          sourceName: "pncp.gov.br",
+          sourceUrl: data.url_portal,
+          city: data.city,
+        });
+
+        if (editorial) {
+          title = editorial.title;
+          subtitle = editorial.subtitle;
+          kicker = editorial.kicker || kicker;
+          category = editorial.category || "cidade";
+          tags = Array.from(new Set([...tags, ...(editorial.tags || [])]));
+          summary = editorial.key_takeaways?.join(" • ") || summary;
+          if (editorial.mobile_sections && editorial.mobile_sections.length > 0) {
+            sections = editorial.mobile_sections.map((s) => ({
+              heading: s.heading || "Detalhes",
+              content: s.content,
+            }));
+          }
+        }
+      } catch (curationErr: any) {
+        console.warn("[convertPncpBidToNewsArticle] Editorial squad fallback defensivo:", curationErr?.message);
+      }
+    }
 
     const { data: mined, error } = await supabase
       .from("mined_articles")
@@ -1495,10 +1509,10 @@ Os cidadãos, fornecedores e empresas interessadas podem consultar o edital na �
         ai_structured_title: title,
         ai_structured_subtitle: subtitle,
         ai_suggested_kicker: kicker,
-        ai_suggested_category: "cidade",
-        ai_suggested_tags: ["licitação", "edital", data.city.toLowerCase(), "pncp", "gestão pública"],
+        ai_suggested_category: category,
+        ai_suggested_tags: tags,
         ai_suggested_cover_url: coverUrl,
-        ai_summary: `${data.orgao} abre licitação para ${data.objeto}. Valor estimado: ${valorFormatado}.`,
+        ai_summary: summary,
         ai_sentiment: "neutral",
         quality_score: 95,
         quality_flags: ["edital_oficial", "pncp_verified", "transparencia_publica"],
@@ -1557,25 +1571,6 @@ export const crossVerifyAndEnrichArticle = createServerFn({ method: "POST" })
 
  if (fetchErr || !mined) throw new Error("Artigo minerado não encontrado.");
 
- // Chave de IA ativa (Gemini ou Groq)
- async function getNextActiveKey(provider: string) {
- const { data } = await supabase
- .from("api_key_pools")
- .select("id, encrypted_key")
- .eq("provider", provider)
- .eq("is_active", true)
- .order("last_used_at", { ascending: true, nullsFirst: true })
- .limit(1)
- .maybeSingle();
- if (!data?.encrypted_key) return null;
- return { id: data.id, rawKey: Buffer.from(data.encrypted_key, "base64").toString("utf-8") };
- }
-
- const geminiKey = await getNextActiveKey("gemini");
- const groqKey = await getNextActiveKey("groq");
- const aiKey = geminiKey || groqKey;
- if (!aiKey) throw new Error("Nenhuma chave de IA ativa para verificação.");
-
  const rawSectionsText = JSON.stringify(mined.ai_structured_sections || []);
  const systemPrompt = `Você é um auditor sênior de jornalismo e fact-checking. Analise a matéria fornecida quanto à completude, clareza, neutralidade e precisão dos fatos. Gere uma versão editorial aprimorada de alto padrão. Retorne APENAS JSON válido no formato solicitado.`;
  const userPrompt = `Analise este artigo:
@@ -1606,60 +1601,20 @@ Retorne o JSON estrito:
  "executive_bullet_points": ["Ponto 1", "Ponto 2", "Ponto 3"]
 }`;
 
- let report: FactCheckReportDTO | null = null;
+  let report: FactCheckReportDTO | null = null;
+  try {
+    const aiRes = await executeUnifiedAiCall({
+      systemPrompt,
+      userPrompt,
+      responseFormat: "json_object",
+      temperature: 0.3,
+    });
+    report = aiRes.parsedJson;
+  } catch (e: any) {
+    console.error("[mining-verify] Unified AI error:", e.message);
+  }
 
- if (geminiKey) {
- try {
- const gRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- systemInstruction: { parts: [{ text: systemPrompt }] },
- contents: [{ parts: [{ text: userPrompt }] }],
- generationConfig: { temperature: 0.3, responseMimeType: "application/json" },
- }),
- signal: AbortSignal.timeout(25000),
- }
- );
- if (gRes.ok) {
- const gJson = await gRes.json();
- const txt = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (txt) report = JSON.parse(txt);
- }
- } catch (e: any) {
- console.error("[mining-verify] Gemini error:", e.message);
- }
- }
-
- if (!report && groqKey) {
- try {
- const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
- method: "POST",
- headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey.rawKey}` },
- body: JSON.stringify({
- model: "llama-3.1-70b-versatile",
- messages: [
- { role: "system", content: `${systemPrompt}\nResponda APENAS com JSON válido.` },
- { role: "user", content: userPrompt },
- ],
- temperature: 0.3,
- response_format: { type: "json_object" },
- }),
- signal: AbortSignal.timeout(25000),
- });
- if (grRes.ok) {
- const grJson = await grRes.json();
- const content = grJson?.choices?.[0]?.message?.content;
- if (content) report = JSON.parse(content);
- }
- } catch (e: any) {
- console.error("[mining-verify] Groq error:", e.message);
- }
- }
-
- if (!report) throw new Error("Não foi possível gerar a verificação cruzada com IA.");
+  if (!report) throw new Error("Não foi possível gerar a verificação cruzada com IA. Verifique suas chaves de IA no painel.");
 
  // Atualiza mined_article com o relatório e versão editorial
  await supabase
@@ -1734,18 +1689,6 @@ export const extractStructuredRecipe = createServerFn({ method: "POST" })
  });
 
  const rawSections = JSON.stringify(mined.ai_structured_sections || []);
- 
- // Obtém chave de IA
- const { data: keyData } = await supabase
- .from("api_key_pools")
- .select("id, encrypted_key")
- .in("provider", ["gemini", "groq"])
- .eq("is_active", true)
- .limit(1)
- .maybeSingle();
-
- if (!keyData?.encrypted_key) throw new Error("Chave de IA não configurada.");
- const rawKey = Buffer.from(keyData.encrypted_key, "base64").toString("utf-8");
 
  const prompt = `Você é um Chef Executivo e Engenheiro de Alimentos. Extraia e estruture esta receita culinária em uma Ficha Técnica completa.
 Receita Bruta:
@@ -1774,25 +1717,15 @@ Retorne APENAS JSON:
  "allergens": ["Glúten", "Lactose"]
 }`;
 
- const gRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- contents: [{ parts: [{ text: prompt }] }],
- generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
- }),
- signal: AbortSignal.timeout(20000),
- }
- );
+ const aiRes = await executeUnifiedAiCall({
+ userPrompt: prompt,
+ responseFormat: "json_object",
+ temperature: 0.2,
+ });
 
- if (!gRes.ok) throw new Error(`Falha na IA ao estruturar receita: HTTP ${gRes.status}`);
- const gJson = await gRes.json();
- const txt = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (!txt) throw new Error("IA retornou resposta vazia para a receita.");
+ if (!aiRes.parsedJson) throw new Error("IA retornou resposta vazia para a receita.");
 
- return JSON.parse(txt) as StructuredRecipeDTO;
+ return aiRes.parsedJson as StructuredRecipeDTO;
  });
 
 // ============================================================
@@ -1835,17 +1768,6 @@ export const extractProductTechSpec = createServerFn({ method: "POST" })
  },
  });
 
- const { data: keyData } = await supabase
- .from("api_key_pools")
- .select("id, encrypted_key")
- .in("provider", ["gemini", "groq"])
- .eq("is_active", true)
- .limit(1)
- .maybeSingle();
-
- if (!keyData?.encrypted_key) throw new Error("Chave de IA não configurada.");
- const rawKey = Buffer.from(keyData.encrypted_key, "base64").toString("utf-8");
-
  const prompt = `Você é um Engenheiro de Produto. Extraia uma Ficha Técnica completa do produto abaixo:
 URL: ${input.url}
 Título: ${mined.ai_structured_title}
@@ -1881,25 +1803,15 @@ Retorne APENAS JSON:
  "warranty_months": 12
 }`;
 
- const gRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- contents: [{ parts: [{ text: prompt }] }],
- generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
- }),
- signal: AbortSignal.timeout(20000),
- }
- );
+ const aiRes = await executeUnifiedAiCall({
+ userPrompt: prompt,
+ responseFormat: "json_object",
+ temperature: 0.2,
+ });
 
- if (!gRes.ok) throw new Error(`Falha na IA ao estruturar ficha técnica: HTTP ${gRes.status}`);
- const gJson = await gRes.json();
- const txt = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (!txt) throw new Error("IA retornou resposta vazia para ficha técnica.");
+ if (!aiRes.parsedJson) throw new Error("IA retornou resposta vazia para ficha técnica.");
 
- return JSON.parse(txt) as ProductTechSpecDTO;
+ return aiRes.parsedJson as ProductTechSpecDTO;
  });
 
 // ============================================================

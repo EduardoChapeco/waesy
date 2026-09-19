@@ -6,6 +6,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getCurrentIdentity } from "@/services/cart-helpers";
+import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 
 export interface JobItemDTO {
  id: string;
@@ -788,4 +789,118 @@ export const listExternalJobs = createServerFn({ method: "GET" })
       application_mode: row.application_mode || "external_link",
     })) as JobItemDTO[];
   });
+
+/**
+ * Triagem e Extração de Vagas com IA (Orquestrador Universal)
+ * Permite minerar ou estruturar vagas coladas de murais ou links oficiais.
+ */
+export const extractJobWithAI = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      rawInput: z.string().min(15, "Texto da vaga ou link deve ter ao menos 15 caracteres"),
+      sourceUrl: z.string().url().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const input = data.rawInput.trim();
+    let textToAnalyze = input;
+
+    // Se for URL e não foi passado texto amplo, tenta extrair conteúdo textual
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      try {
+        const res = await fetch(input, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          },
+          signal: AbortSignal.timeout(10000),
+        });
+        if (res.ok) {
+          const html = await res.text();
+          textToAnalyze = html
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+            .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/\s+/g, " ")
+            .slice(0, 6000);
+        } else {
+          // Fallback para Jina Reader Proxy caso haja bloqueio anti-bot no portal de vagas
+          const jinaRes = await fetch(`https://r.jina.ai/${input}`, {
+            headers: { Accept: "text/plain", "X-Return-Format": "text" },
+            signal: AbortSignal.timeout(10000),
+          }).catch(() => null);
+          if (jinaRes?.ok) {
+            const jinaText = await jinaRes.text().catch(() => "");
+            if (jinaText && jinaText.length > 80) {
+              textToAnalyze = jinaText.slice(0, 6000);
+            }
+          }
+        }
+      } catch (err: any) {
+        console.warn("[extractJobWithAI] Falha no fetch direto da URL da vaga:", err.message);
+      }
+    }
+
+    const systemInstruction = `Você é o Especialista em Triagem e Estruturação de Vagas de Emprego da Waesy Platform.
+Sua missão é extrair com rigor cirúrgico os dados reais da vaga a partir do texto fornecido.
+Proibido inventar dados. Se algum dado não constar, retorne null ou valor padrão estrito.
+Retorne EXCLUSIVAMENTE um JSON estrito no formato:
+{
+  "title": "<Título da vaga>",
+  "company_name": "<Nome da empresa contratante ou 'Confidencial'>",
+  "category": "<uma das opções: 'clt', 'pj', 'estagio', 'tech', 'comercial', 'operacional', 'saude', 'outros'>",
+  "location": "<Cidade, Estado ou 'Remoto'>",
+  "workplace_type": "<'Presencial' | 'Híbrido' | 'Remoto'>",
+  "contract_type": "<'CLT' | 'PJ' | 'Estágio' | 'Freelancer' | 'Temporário'>",
+  "salary_display": "<Salário formatado ou 'A combinar'>",
+  "salary_min_cents": <número inteiro em centavos ou null>,
+  "salary_max_cents": <número inteiro em centavos ou null>,
+  "description": "<Descrição objetiva das atividades>",
+  "requirements": ["<requisito 1>", "<requisito 2>"],
+  "benefits": ["<benefício 1>", "<benefício 2>"],
+  "contact_whatsapp": "<telefone/whatsapp ou null>",
+  "contact_email": "<email para currículos ou null>",
+  "application_mode": "<'external_link' | 'whatsapp' | 'email' | 'internal'>"
+}`;
+
+    const aiRes = await executeUnifiedAiCall({
+      systemInstruction,
+      prompt: `Texto da vaga:\n${textToAnalyze.slice(0, 5000)}`,
+      temperature: 0.1,
+      expectJson: true,
+    });
+
+    const parsed = aiRes.parsedJson as any;
+    if (!parsed?.title) {
+      throw new Error("Não foi possível identificar o título ou dados mínimos da vaga.");
+    }
+
+    const validCategories = ["clt", "pj", "estagio", "tech", "comercial", "operacional", "saude", "outros"];
+    const validWorkplace = ["Presencial", "Híbrido", "Remoto"];
+    const validContract = ["CLT", "PJ", "Estágio", "Freelancer", "Temporário"];
+    const validModes = ["internal", "external_link", "whatsapp", "email"];
+
+    return {
+      success: true,
+      jobDraft: {
+        title: String(parsed.title || "").trim(),
+        company_name: String(parsed.company_name || "Empresa Confidencial").trim(),
+        category: (validCategories.includes(parsed.category) ? parsed.category : "clt") as any,
+        location: String(parsed.location || "Chapecó, SC").trim(),
+        workplace_type: (validWorkplace.includes(parsed.workplace_type) ? parsed.workplace_type : "Presencial") as any,
+        contract_type: (validContract.includes(parsed.contract_type) ? parsed.contract_type : "CLT") as any,
+        salary_display: String(parsed.salary_display || "A combinar").trim(),
+        salary_min_cents: parsed.salary_min_cents ? Math.round(Number(parsed.salary_min_cents)) : null,
+        salary_max_cents: parsed.salary_max_cents ? Math.round(Number(parsed.salary_max_cents)) : null,
+        description: String(parsed.description || "").trim(),
+        requirements: Array.isArray(parsed.requirements) ? parsed.requirements.map(String) : [],
+        benefits: Array.isArray(parsed.benefits) ? parsed.benefits.map(String) : [],
+        contact_whatsapp: parsed.contact_whatsapp ? String(parsed.contact_whatsapp) : null,
+        contact_email: parsed.contact_email ? String(parsed.contact_email) : null,
+        application_mode: (validModes.includes(parsed.application_mode) ? parsed.application_mode : "external_link") as any,
+        external_url: data.sourceUrl || (input.startsWith("http") ? input : null),
+      },
+    };
+  });
+
 

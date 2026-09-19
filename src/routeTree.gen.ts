@@ -195,6 +195,7 @@ import { Route as ApiPwaManifestDotjsonRouteImport } from './routes/api.pwa.mani
 import { Route as ApiWebhooksMarketplacesRouteImport } from './routes/api.webhooks.marketplaces'
 import { Route as ApiWebhooksPixRouteImport } from './routes/api.webhooks.pix'
 import { Route as ApiWebhooksShipmentRouteImport } from './routes/api.webhooks.shipment'
+import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api.webhooks.whatsapp'
 import { Route as ClaimReivindicarEntityIdRouteImport } from './routes/claim.reivindicar.$entityId'
 import { Route as ClaimReputacaoEntityIdRouteImport } from './routes/claim.reputacao.$entityId'
 import { Route as MExcursaoTokenRouteImport } from './routes/m.excursao.$token'
@@ -205,6 +206,8 @@ import { Route as WorkspaceAdvocaciaIndexRouteImport } from './routes/workspace.
 import { Route as WorkspaceAgendaIndexRouteImport } from './routes/workspace.agenda.index'
 import { Route as WorkspaceAgendaRecursosRouteImport } from './routes/workspace.agenda.recursos'
 import { Route as WorkspaceAtendimentoIndexRouteImport } from './routes/workspace.atendimento.index'
+import { Route as WorkspaceCaptacaoIndexRouteImport } from './routes/workspace.captacao.index'
+import { Route as WorkspaceCaptacaoNdasRouteImport } from './routes/workspace.captacao.ndas'
 import { Route as WorkspaceCatalogoIndexRouteImport } from './routes/workspace.catalogo.index'
 import { Route as WorkspaceCatalogoAtributosRouteImport } from './routes/workspace.catalogo.atributos'
 import { Route as WorkspaceCatalogoTabelasRouteImport } from './routes/workspace.catalogo.tabelas'
@@ -228,6 +231,7 @@ import { Route as WorkspaceConfiguracoesSessoesRouteImport } from './routes/work
 import { Route as WorkspaceContadorIndexRouteImport } from './routes/workspace.contador.index'
 import { Route as WorkspaceContratosIndexRouteImport } from './routes/workspace.contratos.index'
 import { Route as WorkspaceContratosNovoRouteImport } from './routes/workspace.contratos.novo'
+import { Route as WorkspaceDoacoesIndexRouteImport } from './routes/workspace.doacoes.index'
 import { Route as WorkspaceEmpregosCandidatosRouteImport } from './routes/workspace.empregos.candidatos'
 import { Route as WorkspaceEstoqueIndexRouteImport } from './routes/workspace.estoque.index'
 import { Route as WorkspaceEstoqueAlertasRouteImport } from './routes/workspace.estoque.alertas'
@@ -1292,6 +1296,11 @@ const ApiWebhooksShipmentRoute = ApiWebhooksShipmentRouteImport.update({
   path: '/api/webhooks/shipment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksWhatsappRoute = ApiWebhooksWhatsappRouteImport.update({
+  id: '/api/webhooks/whatsapp',
+  path: '/api/webhooks/whatsapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClaimReivindicarEntityIdRoute =
   ClaimReivindicarEntityIdRouteImport.update({
     id: '/claim/reivindicar/$entityId',
@@ -1344,6 +1353,16 @@ const WorkspaceAtendimentoIndexRoute =
     path: '/atendimento/',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceCaptacaoIndexRoute = WorkspaceCaptacaoIndexRouteImport.update({
+  id: '/captacao/',
+  path: '/captacao/',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceCaptacaoNdasRoute = WorkspaceCaptacaoNdasRouteImport.update({
+  id: '/captacao/ndas',
+  path: '/captacao/ndas',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceCatalogoIndexRoute = WorkspaceCatalogoIndexRouteImport.update({
   id: '/catalogo/',
   path: '/catalogo/',
@@ -1468,6 +1487,11 @@ const WorkspaceContratosIndexRoute = WorkspaceContratosIndexRouteImport.update({
 const WorkspaceContratosNovoRoute = WorkspaceContratosNovoRouteImport.update({
   id: '/contratos/novo',
   path: '/contratos/novo',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceDoacoesIndexRoute = WorkspaceDoacoesIndexRouteImport.update({
+  id: '/doacoes/',
+  path: '/doacoes/',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceEmpregosCandidatosRoute =
@@ -2375,6 +2399,7 @@ export interface FileRoutesByFullPath {
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
+  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
@@ -2382,6 +2407,7 @@ export interface FileRoutesByFullPath {
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
+  '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
   '/workspace/catalogo/tabelas': typeof WorkspaceCatalogoTabelasRoute
   '/workspace/catalogo/tipos': typeof WorkspaceCatalogoTiposRoute
@@ -2478,11 +2504,13 @@ export interface FileRoutesByFullPath {
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
   '/workspace/agenda/': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento/': typeof WorkspaceAtendimentoIndexRoute
+  '/workspace/captacao/': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo/': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes/': typeof WorkspaceClientesIndexRoute
   '/workspace/configuracoes/': typeof WorkspaceConfiguracoesIndexRoute
   '/workspace/contador/': typeof WorkspaceContadorIndexRoute
   '/workspace/contratos/': typeof WorkspaceContratosIndexRoute
+  '/workspace/doacoes/': typeof WorkspaceDoacoesIndexRoute
   '/workspace/estoque/': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio/': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos/': typeof WorkspaceEventosIndexRoute
@@ -2715,6 +2743,7 @@ export interface FileRoutesByTo {
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
+  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
@@ -2722,6 +2751,7 @@ export interface FileRoutesByTo {
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
+  '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
   '/workspace/catalogo/tabelas': typeof WorkspaceCatalogoTabelasRoute
   '/workspace/catalogo/tipos': typeof WorkspaceCatalogoTiposRoute
@@ -2818,11 +2848,13 @@ export interface FileRoutesByTo {
   '/workspace/advocacia': typeof WorkspaceAdvocaciaIndexRoute
   '/workspace/agenda': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento': typeof WorkspaceAtendimentoIndexRoute
+  '/workspace/captacao': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes': typeof WorkspaceClientesIndexRoute
   '/workspace/configuracoes': typeof WorkspaceConfiguracoesIndexRoute
   '/workspace/contador': typeof WorkspaceContadorIndexRoute
   '/workspace/contratos': typeof WorkspaceContratosIndexRoute
+  '/workspace/doacoes': typeof WorkspaceDoacoesIndexRoute
   '/workspace/estoque': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos': typeof WorkspaceEventosIndexRoute
@@ -3064,6 +3096,7 @@ export interface FileRoutesById {
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
+  '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
   '/claim/reivindicar/$entityId': typeof ClaimReivindicarEntityIdRoute
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
@@ -3071,6 +3104,7 @@ export interface FileRoutesById {
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
+  '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
   '/workspace/catalogo/tabelas': typeof WorkspaceCatalogoTabelasRoute
   '/workspace/catalogo/tipos': typeof WorkspaceCatalogoTiposRoute
@@ -3167,11 +3201,13 @@ export interface FileRoutesById {
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
   '/workspace/agenda/': typeof WorkspaceAgendaIndexRoute
   '/workspace/atendimento/': typeof WorkspaceAtendimentoIndexRoute
+  '/workspace/captacao/': typeof WorkspaceCaptacaoIndexRoute
   '/workspace/catalogo/': typeof WorkspaceCatalogoIndexRoute
   '/workspace/clientes/': typeof WorkspaceClientesIndexRoute
   '/workspace/configuracoes/': typeof WorkspaceConfiguracoesIndexRoute
   '/workspace/contador/': typeof WorkspaceContadorIndexRoute
   '/workspace/contratos/': typeof WorkspaceContratosIndexRoute
+  '/workspace/doacoes/': typeof WorkspaceDoacoesIndexRoute
   '/workspace/estoque/': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio/': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos/': typeof WorkspaceEventosIndexRoute
@@ -3413,6 +3449,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/marketplaces'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
+    | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
     | '/m/excursao/$token'
@@ -3420,6 +3457,7 @@ export interface FileRouteTypes {
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
     | '/workspace/agenda/recursos'
+    | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
     | '/workspace/catalogo/tabelas'
     | '/workspace/catalogo/tipos'
@@ -3516,11 +3554,13 @@ export interface FileRouteTypes {
     | '/workspace/advocacia/'
     | '/workspace/agenda/'
     | '/workspace/atendimento/'
+    | '/workspace/captacao/'
     | '/workspace/catalogo/'
     | '/workspace/clientes/'
     | '/workspace/configuracoes/'
     | '/workspace/contador/'
     | '/workspace/contratos/'
+    | '/workspace/doacoes/'
     | '/workspace/estoque/'
     | '/workspace/estudio/'
     | '/workspace/eventos/'
@@ -3753,6 +3793,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/marketplaces'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
+    | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
     | '/m/excursao/$token'
@@ -3760,6 +3801,7 @@ export interface FileRouteTypes {
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
     | '/workspace/agenda/recursos'
+    | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
     | '/workspace/catalogo/tabelas'
     | '/workspace/catalogo/tipos'
@@ -3856,11 +3898,13 @@ export interface FileRouteTypes {
     | '/workspace/advocacia'
     | '/workspace/agenda'
     | '/workspace/atendimento'
+    | '/workspace/captacao'
     | '/workspace/catalogo'
     | '/workspace/clientes'
     | '/workspace/configuracoes'
     | '/workspace/contador'
     | '/workspace/contratos'
+    | '/workspace/doacoes'
     | '/workspace/estoque'
     | '/workspace/estudio'
     | '/workspace/eventos'
@@ -4101,6 +4145,7 @@ export interface FileRouteTypes {
     | '/api/webhooks/marketplaces'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
+    | '/api/webhooks/whatsapp'
     | '/claim/reivindicar/$entityId'
     | '/claim/reputacao/$entityId'
     | '/m/excursao/$token'
@@ -4108,6 +4153,7 @@ export interface FileRouteTypes {
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
     | '/workspace/agenda/recursos'
+    | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
     | '/workspace/catalogo/tabelas'
     | '/workspace/catalogo/tipos'
@@ -4204,11 +4250,13 @@ export interface FileRouteTypes {
     | '/workspace/advocacia/'
     | '/workspace/agenda/'
     | '/workspace/atendimento/'
+    | '/workspace/captacao/'
     | '/workspace/catalogo/'
     | '/workspace/clientes/'
     | '/workspace/configuracoes/'
     | '/workspace/contador/'
     | '/workspace/contratos/'
+    | '/workspace/doacoes/'
     | '/workspace/estoque/'
     | '/workspace/estudio/'
     | '/workspace/eventos/'
@@ -4297,6 +4345,7 @@ export interface RootRouteChildren {
   ApiWebhooksMarketplacesRoute: typeof ApiWebhooksMarketplacesRoute
   ApiWebhooksPixRoute: typeof ApiWebhooksPixRoute
   ApiWebhooksShipmentRoute: typeof ApiWebhooksShipmentRoute
+  ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRoute
   ClaimReivindicarEntityIdRoute: typeof ClaimReivindicarEntityIdRoute
   ClaimReputacaoEntityIdRoute: typeof ClaimReputacaoEntityIdRoute
   MExcursaoTokenRoute: typeof MExcursaoTokenRoute
@@ -5613,6 +5662,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksShipmentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhooks/whatsapp': {
+      id: '/api/webhooks/whatsapp'
+      path: '/api/webhooks/whatsapp'
+      fullPath: '/api/webhooks/whatsapp'
+      preLoaderRoute: typeof ApiWebhooksWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/claim/reivindicar/$entityId': {
       id: '/claim/reivindicar/$entityId'
       path: '/claim/reivindicar/$entityId'
@@ -5681,6 +5737,20 @@ declare module '@tanstack/react-router' {
       path: '/atendimento'
       fullPath: '/workspace/atendimento/'
       preLoaderRoute: typeof WorkspaceAtendimentoIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/captacao/': {
+      id: '/workspace/captacao/'
+      path: '/captacao'
+      fullPath: '/workspace/captacao/'
+      preLoaderRoute: typeof WorkspaceCaptacaoIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/captacao/ndas': {
+      id: '/workspace/captacao/ndas'
+      path: '/captacao/ndas'
+      fullPath: '/workspace/captacao/ndas'
+      preLoaderRoute: typeof WorkspaceCaptacaoNdasRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/catalogo/': {
@@ -5842,6 +5912,13 @@ declare module '@tanstack/react-router' {
       path: '/contratos/novo'
       fullPath: '/workspace/contratos/novo'
       preLoaderRoute: typeof WorkspaceContratosNovoRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/doacoes/': {
+      id: '/workspace/doacoes/'
+      path: '/doacoes'
+      fullPath: '/workspace/doacoes/'
+      preLoaderRoute: typeof WorkspaceDoacoesIndexRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/empregos/candidatos': {
@@ -7223,6 +7300,7 @@ interface WorkspaceRouteChildren {
   WorkspaceTokensRoute: typeof WorkspaceTokensRoute
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   WorkspaceAgendaRecursosRoute: typeof WorkspaceAgendaRecursosRoute
+  WorkspaceCaptacaoNdasRoute: typeof WorkspaceCaptacaoNdasRoute
   WorkspaceCatalogoAtributosRoute: typeof WorkspaceCatalogoAtributosRoute
   WorkspaceCatalogoTabelasRoute: typeof WorkspaceCatalogoTabelasRoute
   WorkspaceCatalogoTiposRoute: typeof WorkspaceCatalogoTiposRoute
@@ -7309,11 +7387,13 @@ interface WorkspaceRouteChildren {
   WorkspaceAdvocaciaIndexRoute: typeof WorkspaceAdvocaciaIndexRoute
   WorkspaceAgendaIndexRoute: typeof WorkspaceAgendaIndexRoute
   WorkspaceAtendimentoIndexRoute: typeof WorkspaceAtendimentoIndexRoute
+  WorkspaceCaptacaoIndexRoute: typeof WorkspaceCaptacaoIndexRoute
   WorkspaceCatalogoIndexRoute: typeof WorkspaceCatalogoIndexRoute
   WorkspaceClientesIndexRoute: typeof WorkspaceClientesIndexRoute
   WorkspaceConfiguracoesIndexRoute: typeof WorkspaceConfiguracoesIndexRoute
   WorkspaceContadorIndexRoute: typeof WorkspaceContadorIndexRoute
   WorkspaceContratosIndexRoute: typeof WorkspaceContratosIndexRoute
+  WorkspaceDoacoesIndexRoute: typeof WorkspaceDoacoesIndexRoute
   WorkspaceEstoqueIndexRoute: typeof WorkspaceEstoqueIndexRoute
   WorkspaceEstudioIndexRoute: typeof WorkspaceEstudioIndexRoute
   WorkspaceEventosIndexRoute: typeof WorkspaceEventosIndexRoute
@@ -7373,6 +7453,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceTokensRoute: WorkspaceTokensRoute,
   WorkspaceIndexRoute: WorkspaceIndexRoute,
   WorkspaceAgendaRecursosRoute: WorkspaceAgendaRecursosRoute,
+  WorkspaceCaptacaoNdasRoute: WorkspaceCaptacaoNdasRoute,
   WorkspaceCatalogoAtributosRoute: WorkspaceCatalogoAtributosRoute,
   WorkspaceCatalogoTabelasRoute: WorkspaceCatalogoTabelasRoute,
   WorkspaceCatalogoTiposRoute: WorkspaceCatalogoTiposRoute,
@@ -7463,11 +7544,13 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAdvocaciaIndexRoute: WorkspaceAdvocaciaIndexRoute,
   WorkspaceAgendaIndexRoute: WorkspaceAgendaIndexRoute,
   WorkspaceAtendimentoIndexRoute: WorkspaceAtendimentoIndexRoute,
+  WorkspaceCaptacaoIndexRoute: WorkspaceCaptacaoIndexRoute,
   WorkspaceCatalogoIndexRoute: WorkspaceCatalogoIndexRoute,
   WorkspaceClientesIndexRoute: WorkspaceClientesIndexRoute,
   WorkspaceConfiguracoesIndexRoute: WorkspaceConfiguracoesIndexRoute,
   WorkspaceContadorIndexRoute: WorkspaceContadorIndexRoute,
   WorkspaceContratosIndexRoute: WorkspaceContratosIndexRoute,
+  WorkspaceDoacoesIndexRoute: WorkspaceDoacoesIndexRoute,
   WorkspaceEstoqueIndexRoute: WorkspaceEstoqueIndexRoute,
   WorkspaceEstudioIndexRoute: WorkspaceEstudioIndexRoute,
   WorkspaceEventosIndexRoute: WorkspaceEventosIndexRoute,
@@ -7546,6 +7629,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebhooksMarketplacesRoute: ApiWebhooksMarketplacesRoute,
   ApiWebhooksPixRoute: ApiWebhooksPixRoute,
   ApiWebhooksShipmentRoute: ApiWebhooksShipmentRoute,
+  ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRoute,
   ClaimReivindicarEntityIdRoute: ClaimReivindicarEntityIdRoute,
   ClaimReputacaoEntityIdRoute: ClaimReputacaoEntityIdRoute,
   MExcursaoTokenRoute: MExcursaoTokenRoute,

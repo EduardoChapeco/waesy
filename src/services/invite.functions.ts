@@ -635,8 +635,10 @@ export const storeDrawConcurso = createServerFn({ method: "POST" })
       throw new Error("Nenhum cupom foi gerado para este concurso. Não é possível realizar a apuração.");
     }
 
-    // 3. Sorteio criptográfico aleatório
-    const winnerIndex = Math.floor(Math.random() * tickets.length);
+    // 3. Sorteio criptográfico auditado com entropia CSPRNG (Micro-fase 5.2)
+    const randomArray = new Uint32Array(1);
+    crypto.getRandomValues(randomArray);
+    const winnerIndex = randomArray[0] % tickets.length;
     const winningTicket = tickets[winnerIndex];
 
     const { data: winnerProfile } = await supabase

@@ -11,9 +11,11 @@ import {
   Plane,
   Utensils,
   Gift,
+  Briefcase,
+  Lock,
 } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   MagnifyingGlass,
@@ -32,6 +34,7 @@ import {
   Flame,
   ArrowRight,
   WhatsappLogo,
+  X,
 } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -43,11 +46,8 @@ import { SlidersHorizontal } from "lucide-react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { type ViewModeType } from "@/components/commerce/discovery-control-bar";
+import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
@@ -74,6 +74,13 @@ function isVideoUrl(url?: string | null): boolean {
 }
 
 export const Route = createFileRoute("/_store/classificados/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: typeof search.category === "string" ? search.category : undefined,
+    dealType: typeof search.dealType === "string" ? search.dealType : undefined,
+    search: typeof search.search === "string" ? search.search : undefined,
+    subniche: typeof search.subniche === "string" ? search.subniche : undefined,
+    ponto: typeof search.ponto === "string" ? search.ponto : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Classificados, Imóveis & Desapegos | Waesy" },
@@ -108,16 +115,16 @@ export const Route = createFileRoute("/_store/classificados/")({
 const CLASSIFIEDS_HOTPAGES = [
   {
     id: "hp-class-1",
-    title: "Imóveis & Moradia",
+    title: "Imóveis",
     slug: "real_estate",
     cover_image_url: "",
-    badge_label: "Venda & Aluguel",
+    badge_label: "Imóveis",
     show_title: false,
     show_overlay: false,
   },
   {
     id: "hp-class-2",
-    title: "Hospedagem por Temporada",
+    title: "Hospedagem",
     slug: "real_estate_temporada",
     cover_image_url: "",
     badge_label: "Diária & Temporada",
@@ -126,19 +133,19 @@ const CLASSIFIEDS_HOTPAGES = [
   },
   {
     id: "hp-class-3",
-    title: "Veículos & Autos",
+    title: "Veículos",
     slug: "vehicle",
     cover_image_url: "",
-    badge_label: "Carros & Motos",
+    badge_label: "Veículos",
     show_title: false,
     show_overlay: false,
   },
   {
     id: "hp-class-4",
-    title: "Desapegos & Tech",
+    title: "Desapego",
     slug: "sale",
     cover_image_url: "",
-    badge_label: "Eletrônicos",
+    badge_label: "Usados",
     show_title: false,
     show_overlay: false,
   },
@@ -146,14 +153,15 @@ const CLASSIFIEDS_HOTPAGES = [
 
 const CLASSIFIED_CHIPS: FilterChipOption[] = [
   { id: "todos", label: "Todos", emoji: "🏷️", icon: Tag },
-  { id: "real_estate", label: "Imóveis & Moradia", emoji: "🏠", icon: Home },
-  { id: "vehicle", label: "Veículos & Autos", emoji: "🚗", icon: CarIcon },
-  { id: "travel", label: "Turismo & Viagens", emoji: "✈️", icon: Plane },
-  { id: "food", label: "Gastronomia Artesanal", emoji: "🍲", icon: Utensils },
-  { id: "sale", label: "Desapegos & Tech", emoji: "💻", icon: LaptopIcon },
-  { id: "digital", label: "Produtos Digitais", emoji: "📁", icon: FileText },
-  { id: "service", label: "Serviços & B2B", emoji: "🛠️", icon: WrenchIcon },
-  { id: "donation", label: "Doações Solidárias", emoji: "🎁", icon: Gift },
+  { id: "real_estate", label: "Imóveis", emoji: "🏠", icon: Home },
+  { id: "vehicle", label: "Veículos", emoji: "🚗", icon: CarIcon },
+  { id: "business", label: "Negócios", emoji: "💼", icon: Briefcase },
+  { id: "travel", label: "Viagens", emoji: "✈️", icon: Plane },
+  { id: "food", label: "Gastronomia", emoji: "🍲", icon: Utensils },
+  { id: "sale", label: "Desapego", emoji: "💻", icon: LaptopIcon },
+  { id: "digital", label: "Digitais", emoji: "📁", icon: FileText },
+  { id: "service", label: "Serviços", emoji: "🛠️", icon: WrenchIcon },
+  { id: "donation", label: "Doações", emoji: "🎁", icon: Gift },
 ];
 
 const REAL_ESTATE_DEAL_TYPES = [
@@ -210,15 +218,81 @@ const JOB_REGIME_OPTIONS = [
   { id: "remoto", label: "Home Office" },
 ];
 
+const BUSINESS_REVENUE_OPTIONS = [
+  { id: "todos", label: "Qualquer Faturamento" },
+  { id: "under_50k", label: "Até R$ 50k/mês" },
+  { id: "50k_150k", label: "R$ 50k - R$ 150k" },
+  { id: "150k_500k", label: "R$ 150k - R$ 500k" },
+  { id: "over_500k", label: "R$ 500k+/mês" },
+];
+
+const BUSINESS_POINT_OPTIONS = [
+  { id: "todos", label: "Todos os Pontos" },
+  { id: "rua", label: "Loja de Rua" },
+  { id: "shopping", label: "Shopping / Galeria" },
+  { id: "gastronomico", label: "Ponto Gastronômico" },
+  { id: "galpao", label: "Galpão / Indústria" },
+  { id: "quiosque", label: "Quiosque" },
+  { id: "sala", label: "Sala Comercial" },
+];
+
+const FOOD_SUBNICHE_OPTIONS = [
+  { id: "todos", label: "Toda Gastronomia" },
+  { id: "pizzaria", label: "🍕 Pizzaria" },
+  { id: "hamburgueria", label: "🍔 Hamburgueria" },
+  { id: "confeitaria", label: "🎂 Doces & Bolos" },
+  { id: "marmitaria", label: "🍱 Marmitaria" },
+  { id: "cafe", label: "☕ Cafeteria" },
+  { id: "padaria", label: "🥖 Panificação" },
+  { id: "artesanal", label: "🧀 Queijos & Vinhos" },
+];
+
+const BUSINESS_GOAL_OPTIONS = [
+  { id: "todos", label: "Todos os Negócios" },
+  { id: "venda", label: "Empresas à Venda" },
+  { id: "ponto", label: "Pontos Comerciais" },
+  { id: "investimento", label: "Investimento & Sócios" },
+];
+
+const SERVICE_AUDIENCE_OPTIONS = [
+  { id: "todos", label: "Todos os Serviços" },
+  { id: "pessoa", label: "Para Você (Pessoas)" },
+  { id: "empresa", label: "Para Empresas (CNPJ)" },
+];
+
+const SERVICE_SUBNICHE_OPTIONS = [
+  { id: "todos", label: "Todas Áreas" },
+  { id: "oab", label: "⚖️ Jurídico" },
+  { id: "crea", label: "📐 Engenharia" },
+  { id: "crm", label: "🩺 Saúde" },
+  { id: "crc", label: "📊 Contabilidade" },
+  { id: "tech", label: "💻 Tecnologia" },
+];
+
 function ClassifiedsMasterPage() {
   const { banners, hotpages, classifieds: initialClassifieds } = Route.useLoaderData();
-  const [selectedCategory, setSelectedCategory] = useState("todos");
-  const [selectedDealType, setSelectedDealType] = useState("todos");
+  const searchParams = Route.useSearch();
+
+  const initialCategory = (() => {
+    const raw = searchParams.category?.toLowerCase();
+    if (!raw) return "todos";
+    if (raw === "negocios" || raw === "negocio" || raw === "business" || raw === "m&a") return "business";
+    if (raw === "doacoes" || raw === "doacao" || raw === "donation") return "donation";
+    if (raw === "gastronomia" || raw === "food") return "food";
+    if (raw === "imoveis" || raw === "real_estate") return "real_estate";
+    if (raw === "veiculos" || raw === "vehicle") return "vehicle";
+    if (raw === "servicos" || raw === "service") return "service";
+    if (raw === "turismo" || raw === "travel") return "travel";
+    return raw;
+  })();
+
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedDealType, setSelectedDealType] = useState(searchParams.dealType || "todos");
   const [selectedCity, setSelectedCity] = useState("todos");
   const [selectedDelivery, setSelectedDelivery] = useState<"todos" | "local" | "shipping">("todos");
   const [onlyInstallments, setOnlyInstallments] = useState(false);
   const [onlyTrade, setOnlyTrade] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchParams.search || "");
   const [viewMode, setViewMode] = useState<ViewModeType>("feed");
 
   // Facetas Especializadas de Imóveis
@@ -229,6 +303,17 @@ function ClassifiedsMasterPage() {
   const [vehicleFuel, setVehicleFuel] = useState<string>("todos");
   const [onlySingleOwner, setOnlySingleOwner] = useState(false);
 
+  // Facetas Especializadas de Negócios
+  const [businessGoal, setBusinessGoal] = useState<string>("todos");
+  const [businessPointType, setBusinessPointType] = useState<string>(searchParams.ponto || "todos");
+  const [businessRevenueRange, setBusinessRevenueRange] = useState<string>("todos");
+  const [onlyBusinessWithNda, setOnlyBusinessWithNda] = useState<boolean>(false);
+
+  // Facetas Especializadas de Gastronomia & Serviços
+  const [serviceAudience, setServiceAudience] = useState<string>("todos");
+  const [foodSubniche, setFoodSubniche] = useState<string>(searchParams.subniche || "todos");
+  const [serviceSubniche, setServiceSubniche] = useState<string>("todos");
+
   // Faceta de Produtos Digitais
   const [onlyInstantDigital, setOnlyInstantDigital] = useState(false);
   // Facetas Especializadas de Desapego, Serviços e Vagas
@@ -238,11 +323,76 @@ function ClassifiedsMasterPage() {
   const [onlyBoosted, setOnlyBoosted] = useState<boolean>(false);
   const [mobileFilterSheetOpen, setMobileFilterSheetOpen] = useState<boolean>(false);
 
-
   const toggleAmenity = (id: string) => {
     setSelectedAmenities((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
+  };
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedCity !== "todos") count++;
+    if (onlyBoosted) count++;
+    if (onlyTrade) count++;
+    if (onlyInstallments) count++;
+    if (selectedDelivery !== "todos") count++;
+    if (selectedDealType !== "todos") count++;
+    if (selectedAmenities.length > 0) count += selectedAmenities.length;
+    if (vehicleGearbox !== "todos") count++;
+    if (vehicleFuel !== "todos") count++;
+    if (onlySingleOwner) count++;
+    if (selectedSubcategory !== "todos") count++;
+    if (selectedServiceModality !== "todos") count++;
+    if (selectedJobRegime !== "todos") count++;
+    if (businessGoal !== "todos") count++;
+    if (businessPointType !== "todos") count++;
+    if (foodSubniche !== "todos") count++;
+    if (serviceAudience !== "todos") count++;
+    if (serviceSubniche !== "todos") count++;
+    if (onlyInstantDigital) count++;
+    return count;
+  }, [
+    selectedCity,
+    onlyBoosted,
+    onlyTrade,
+    onlyInstallments,
+    selectedDelivery,
+    selectedDealType,
+    selectedAmenities,
+    vehicleGearbox,
+    vehicleFuel,
+    onlySingleOwner,
+    selectedSubcategory,
+    selectedServiceModality,
+    selectedJobRegime,
+    businessGoal,
+    businessPointType,
+    foodSubniche,
+    serviceAudience,
+    serviceSubniche,
+    onlyInstantDigital,
+  ]);
+
+  const handleClearAllFilters = () => {
+    setSelectedCity("todos");
+    setSelectedDealType("todos");
+    setSelectedAmenities([]);
+    setVehicleGearbox("todos");
+    setVehicleFuel("todos");
+    setOnlySingleOwner(false);
+    setSelectedSubcategory("todos");
+    setSelectedServiceModality("todos");
+    setSelectedJobRegime("todos");
+    setOnlyTrade(false);
+    setOnlyInstallments(false);
+    setOnlyBoosted(false);
+    setSelectedDelivery("todos");
+    setBusinessGoal("todos");
+    setBusinessPointType("todos");
+    setFoodSubniche("todos");
+    setServiceAudience("todos");
+    setServiceSubniche("todos");
+    setOnlyInstantDigital(false);
   };
 
   const { data: classifieds } = useQuery({
@@ -255,7 +405,8 @@ function ClassifiedsMasterPage() {
             selectedCategory !== "digital" &&
             selectedCategory !== "donation" &&
             selectedCategory !== "travel" &&
-            selectedCategory !== "food"
+            selectedCategory !== "food" &&
+            selectedCategory !== "business"
               ? selectedCategory
               : undefined,
           dealType: selectedCategory === "real_estate" && selectedDealType !== "todos" ? selectedDealType : undefined,
@@ -273,6 +424,44 @@ function ClassifiedsMasterPage() {
     } else if (selectedCategory === "donation") {
       const isDonation = item.is_free_donation || item.price_cents === 0 || item.attributes?.is_free_donation;
       if (!isDonation) return false;
+    } else if (selectedCategory === "business") {
+      const isBiz =
+        item.category === "business" ||
+        item.category === "negocios" ||
+        item.category === "negocio" ||
+        Boolean(item.attributes?.is_business_sale) ||
+        item.attributes?.niche === "business";
+      if (!isBiz) return false;
+
+      if (businessGoal !== "todos") {
+        const bType = String(item.attributes?.business_type || "").toLowerCase();
+        const hasInv = Boolean(item.attributes?.target_investment_cents || item.attributes?.investment_model);
+        if (businessGoal === "venda") {
+          if (bType !== "venda_total" && bType !== "cotas" && bType !== "franquia") return false;
+        } else if (businessGoal === "ponto") {
+          if (bType !== "repasse_ponto") return false;
+        } else if (businessGoal === "investimento") {
+          if (bType !== "busca_socio" && bType !== "captacao_investimento" && !hasInv) return false;
+        }
+      }
+
+      if (businessPointType !== "todos") {
+        const pt = (item.attributes?.commercial_point_type || "").toLowerCase();
+        if (!pt.includes(businessPointType.toLowerCase())) return false;
+      }
+
+      if (businessRevenueRange !== "todos") {
+        const rev = Number(item.attributes?.monthly_revenue_cents) || 0;
+        if (businessRevenueRange === "under_50k" && rev > 5000000) return false;
+        if (businessRevenueRange === "50k_150k" && (rev < 5000000 || rev > 15000000)) return false;
+        if (businessRevenueRange === "150k_500k" && (rev < 15000000 || rev > 50000000)) return false;
+        if (businessRevenueRange === "over_500k" && rev < 50000000) return false;
+      }
+
+      if (onlyBusinessWithNda) {
+        const reqNda = Boolean(item.attributes?.requires_nda || item.attributes?.is_confidential);
+        if (!reqNda) return false;
+      }
     } else if (selectedCategory === "travel") {
       const isTravel =
         item.category === "travel" ||
@@ -286,6 +475,29 @@ function ClassifiedsMasterPage() {
         item.category === "gastronomia" ||
         item.attributes?.niche_category === "food";
       if (!isFood) return false;
+
+      if (foodSubniche !== "todos") {
+        const sub = (item.attributes?.food_subniche || item.attributes?.subniche || "").toLowerCase();
+        if (!sub.includes(foodSubniche.toLowerCase())) return false;
+      }
+    } else if (selectedCategory === "service") {
+      const isService =
+        item.category === "service" ||
+        item.category === "servicos" ||
+        item.category === "servico";
+      if (!isService) return false;
+
+      if (serviceAudience !== "todos") {
+        const aud = (item.attributes?.audience || item.attributes?.target_audience || "").toLowerCase();
+        const isB2B = Boolean(item.attributes?.is_b2b || aud === "b2b" || aud === "empresa" || aud === "cnpj");
+        if (serviceAudience === "empresa" && !isB2B) return false;
+        if (serviceAudience === "pessoa" && isB2B) return false;
+      }
+
+      if (serviceSubniche !== "todos") {
+        const sub = (item.attributes?.service_subniche || item.attributes?.professional_council || "").toLowerCase();
+        if (!sub.includes(serviceSubniche.toLowerCase())) return false;
+      }
     } else if (selectedCategory !== "todos" && item.category !== selectedCategory) {
       return false;
     }
@@ -372,8 +584,122 @@ function ClassifiedsMasterPage() {
   });
 
   return (
-    <div className="w-full space-y-6 pb-20">
-        {/* 1. Banners Contextuais no Topo da Área de Conteúdo */}
+    <div className="w-full space-y-4 pb-20">
+        {/* ── NÍVEL 1 & NÍVEL 2: TOOLBAR CONSOLIDADA DE 2 NÍVEIS (APPLE & AIRBNB STANDARD) ── */}
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md -mx-1 px-1 sm:mx-0 sm:px-0 pt-1 pb-2 space-y-2 border-b border-border/40">
+          {/* NÍVEL 1: A Barra de Ação Principal (Tudo na mesma linha) */}
+          <div className="flex items-center gap-2 w-full">
+            {/* Search Input (Barra de busca ocupando a maior parte do espaço) */}
+            <div className="relative flex-1 min-w-0">
+              <MagnifyingGlass
+                size={16}
+                weight="bold"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar imóveis, carros, serviços, vagas, desapegos..."
+                className="h-10 sm:h-11 pl-9.5 pr-8 rounded-xl bg-card border-border/70 text-xs sm:text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary w-full shadow-2xs"
+                aria-label="Buscar nos classificados"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors cursor-pointer"
+                  aria-label="Limpar busca"
+                >
+                  <X size={14} weight="bold" />
+                </button>
+              )}
+            </div>
+
+            {/* Botão de Filtros Avançados */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setMobileFilterSheetOpen(true)}
+              className={cn(
+                "h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl border border-border/70 text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
+                activeFiltersCount > 0
+                  ? "bg-primary/10 border-primary/40 text-primary font-bold"
+                  : "bg-card hover:bg-muted/50 text-foreground"
+              )}
+              title="Filtros Avançados"
+              aria-label="Abrir filtros avançados"
+            >
+              <SlidersHorizontal className="size-4 shrink-0" />
+              <span className="hidden sm:inline">Filtros</span>
+              {activeFiltersCount > 0 && (
+                <span className="size-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shrink-0">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Toggles de Visualização (Grid vs. Lista) */}
+            <div className="flex items-center p-1 rounded-xl bg-muted/40 border border-border/50 shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "p-1.5 sm:p-2 rounded-lg text-xs transition-all cursor-pointer",
+                  viewMode === "grid"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Modo Grade"
+                aria-label="Grade"
+              >
+                <SquaresFour size={16} weight={viewMode === "grid" ? "fill" : "bold"} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "p-1.5 sm:p-2 rounded-lg text-xs transition-all cursor-pointer",
+                  viewMode === "list"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Modo Lista"
+                aria-label="Lista"
+              >
+                <ListDashes size={16} weight={viewMode === "list" ? "fill" : "bold"} />
+              </button>
+            </div>
+          </div>
+
+          {/* NÍVEL 2: Navegação de Categorias (Clean Tabs) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full focus:outline-none">
+            {CLASSIFIED_CHIPS.map((cat) => {
+              const isActive = selectedCategory === cat.id;
+              const Icon = cat.icon;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    if (cat.id !== "real_estate") setSelectedDealType("todos");
+                  }}
+                  className={cn(
+                    "h-8 sm:h-9 px-3 sm:px-3.5 rounded-full text-xs font-medium shrink-0 flex items-center gap-1.5 transition-all cursor-pointer select-none",
+                    isActive
+                      ? "bg-primary/10 text-primary border border-primary/30 font-bold shadow-2xs"
+                      : "bg-muted/40 hover:bg-muted/60 text-muted-foreground hover:text-foreground border border-border/40"
+                  )}
+                >
+                  {Icon && <Icon className={cn("size-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/70")} />}
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 1. Banners Contextuais */}
         {banners && banners.length > 0 && (
           <section aria-label="Banners de Classificados">
             <BannerHeroCarousel banners={banners} />
@@ -399,340 +725,35 @@ function ClassifiedsMasterPage() {
           </section>
         )}
 
-        {/* 3. Barra de Busca e Controle de Visualização */}
-        <DiscoveryControlBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Buscar carro, casa, chalé, notebook, serviço..."
-          categories={CLASSIFIED_CHIPS}
-          activeCategory={selectedCategory}
-          onSelectCategory={(id) => {
-            setSelectedCategory(id);
-            if (id !== "real_estate") setSelectedDealType("todos");
-          }}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          allowedViewModes={["grid", "list", "feed"]}
-          fastFilters={[
-            {
-              id: "boosted",
-              label: "Destaques",
-              icon: Flame,
-              active: onlyBoosted,
-              onToggle: () => setOnlyBoosted(!onlyBoosted),
-            },
-            {
-              id: "trade",
-              label: "Aceita Troca",
-              active: onlyTrade,
-              onToggle: () => setOnlyTrade(!onlyTrade),
-            },
-            {
-              id: "card",
-              label: "Cartão",
-              active: onlyInstallments,
-              onToggle: () => setOnlyInstallments(!onlyInstallments),
-            },
-          ]}
-        />
-
-        {/* ── BARRA DE FILTROS CONTEXTUAIS POR NICHO NO MOBILE (Apple HIG & 3 Toques) ── */}
-        <div className="space-y-2 pt-0.5">
-          {/* Linha de Ação Rápida + Pílulas Contextuais por Nicho */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-            {/* Botão Gatilho da Sheet de Filtros Completos */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setMobileFilterSheetOpen(true)}
-              className="rounded-full h-9 px-3.5 text-xs gap-1.5 font-bold shrink-0 border-border/70 bg-card hover:bg-muted/50 cursor-pointer shadow-2xs"
-            >
-              <SlidersHorizontal className="size-3.5" />
-              <span>Filtros</span>
-              {(selectedCity !== "todos" || onlyTrade || onlyInstallments || onlyBoosted || selectedAmenities.length > 0 || vehicleGearbox !== "todos" || selectedSubcategory !== "todos") && (
-                <span className="size-2 rounded-full bg-primary" />
-              )}
-            </Button>
-
-            {/* Pílula: Apenas Destaques */}
-            <button
-              type="button"
-              onClick={() => setOnlyBoosted(!onlyBoosted)}
-              className={`h-9 px-3 rounded-full text-xs font-bold shrink-0 cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 ${
-                onlyBoosted
-                  ? "bg-amber-500 text-black shadow-xs font-bold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-              }`}
-            >
-              <Flame size={13} weight={onlyBoosted ? "fill" : "bold"} />
-              <span>Destaques</span>
-            </button>
-
-            {/* Pílulas Contextuais: IMÓVEIS & HOSPEDAGEM */}
-            {selectedCategory === "real_estate" && (
-              <>
-                {REAL_ESTATE_DEAL_TYPES.map((dt) => {
-                  const isSelected = selectedDealType === dt.id;
-                  return (
-                    <button
-                      key={dt.id}
-                      type="button"
-                      onClick={() => setSelectedDealType(dt.id)}
-                      className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                        isSelected
-                          ? "bg-foreground text-background font-bold shadow-xs"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      {dt.label}
-                    </button>
-                  );
-                })}
-                {REAL_ESTATE_FACETS.map((facet) => {
-                  const isChecked = selectedAmenities.includes(facet.id);
-                  return (
-                    <button
-                      key={facet.id}
-                      type="button"
-                      onClick={() => toggleAmenity(facet.id)}
-                      className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 flex items-center gap-1 ${
-                        isChecked
-                          ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      <span>{facet.label}</span>
-                      {isChecked && <Check className="size-3" />}
-                    </button>
-                  );
-                })}
-              </>
-            )}
-
-            {/* Pílulas Contextuais: VEÍCULOS & AUTOS */}
-            {selectedCategory === "vehicle" && (
-              <>
-                {VEHICLE_GEARBOX_OPTIONS.map((opt) => {
-                  const isSelected = vehicleGearbox === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setVehicleGearbox(opt.id)}
-                      className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                        isSelected
-                          ? "bg-foreground text-background font-bold shadow-xs"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-                {VEHICLE_FUEL_OPTIONS.slice(1).map((opt) => {
-                  const isSelected = vehicleFuel === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setVehicleFuel(isSelected ? "todos" : opt.id)}
-                      className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                        isSelected
-                          ? "bg-foreground text-background font-bold shadow-xs"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => setOnlySingleOwner(!onlySingleOwner)}
-                  className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                    onlySingleOwner
-                      ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                      : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                  }`}
-                >
-                  Único Dono
-                </button>
-              </>
-            )}
-
-            {/* Pílulas Contextuais: DESAPEGOS & TECH */}
-            {selectedCategory === "sale" && (
-              <>
-                {DESAPEGO_SUB_OPTIONS.map((opt) => {
-                  const isSelected = selectedSubcategory === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setSelectedSubcategory(opt.id)}
-                      className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                        isSelected
-                          ? "bg-foreground text-background font-bold shadow-xs"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => setOnlyTrade(!onlyTrade)}
-                  className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                    onlyTrade
-                      ? "bg-foreground text-background font-bold shadow-xs"
-                      : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                  }`}
-                >
-                  Aceita Troca
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOnlyInstallments(!onlyInstallments)}
-                  className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                    onlyInstallments
-                      ? "bg-foreground text-background font-bold shadow-xs"
-                      : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                  }`}
-                >
-                  Parcela no Cartão
-                </button>
-              </>
-            )}
-
-            {/* Pílulas Contextuais: SERVIÇOS */}
-            {selectedCategory === "service" && (
-              <>
-                {SERVICE_MODALITY_OPTIONS.map((opt) => {
-                  const isSelected = selectedServiceModality === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setSelectedServiceModality(opt.id)}
-                      className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                        isSelected
-                          ? "bg-foreground text-background font-bold shadow-xs"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </>
-            )}
-
-            {/* Pílulas Contextuais: VAGAS */}
-            {(selectedCategory === "job" || selectedCategory === "job_offer") && (
-              <>
-                {JOB_REGIME_OPTIONS.map((opt) => {
-                  const isSelected = selectedJobRegime === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setSelectedJobRegime(opt.id)}
-                      className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                        isSelected
-                          ? "bg-foreground text-background font-bold shadow-xs"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </>
-            )}
-
-            {/* Pílulas Contextuais: DIGITAIS */}
-            {selectedCategory === "digital" && (
-              <button
-                type="button"
-                onClick={() => setOnlyInstantDigital(!onlyInstantDigital)}
-                className={`h-9 px-3 rounded-full text-xs font-medium shrink-0 cursor-pointer transition-all active:scale-95 ${
-                  onlyInstantDigital
-                    ? "bg-primary text-white font-bold shadow-xs"
-                    : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-                }`}
-              >
-                Download Imediato
-              </button>
-            )}
-          </div>
-
-          {/* Linha de Cidades Rápidas */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-            <button
-              type="button"
-              onClick={() => setSelectedCity("todos")}
-              className={`h-8 px-2.5 rounded-lg text-xs font-mono transition-all shrink-0 cursor-pointer ${
-                selectedCity === "todos"
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/30 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Todas Cidades
-            </button>
-            {CANONICAL_CITIES.slice(0, 6).map((city) => {
-              const isSelected = selectedCity === city.name;
-              return (
-                <button
-                  key={city.id}
-                  type="button"
-                  onClick={() => setSelectedCity(isSelected ? "todos" : city.name)}
-                  className={`h-8 px-2.5 rounded-lg text-xs font-mono transition-all shrink-0 cursor-pointer ${
-                    isSelected
-                      ? "bg-foreground text-background font-bold"
-                      : "bg-muted/30 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {city.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── MODAL FULL DE FILTROS AVANÇADOS (MOBILE) ── */}
+        {/* ── MODAL FULL DE FILTROS AVANÇADOS (PROGRESSIVE DISCLOSURE) ── */}
         <Dialog open={mobileFilterSheetOpen} onOpenChange={setMobileFilterSheetOpen}>
-          <DialogContent className="max-w-md rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-lg rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
             <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/40">
-              <DialogTitle className="text-base font-bold">Filtros</DialogTitle>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedCity("todos");
-                  setSelectedDealType("todos");
-                  setSelectedAmenities([]);
-                  setVehicleGearbox("todos");
-                  setVehicleFuel("todos");
-                  setOnlySingleOwner(false);
-                  setSelectedSubcategory("todos");
-                  setSelectedServiceModality("todos");
-                  setSelectedJobRegime("todos");
-                  setOnlyTrade(false);
-                  setOnlyInstallments(false);
-                  setOnlyBoosted(false);
-                }}
-                className="text-xs text-muted-foreground hover:text-foreground h-8 px-2"
-              >
-                Limpar Todos
-              </Button>
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="size-4 text-primary" />
+                <DialogTitle className="text-base font-bold">Filtros Avançados</DialogTitle>
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary" className="text-[10px] font-mono font-bold">
+                    {activeFiltersCount} ativo{activeFiltersCount > 1 ? "s" : ""}
+                  </Badge>
+                )}
+              </div>
+              {activeFiltersCount > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearAllFilters}
+                  className="text-xs text-muted-foreground hover:text-foreground h-8 px-2"
+                >
+                  Limpar Todos
+                </Button>
+              )}
             </DialogHeader>
 
             {/* Seções de Filtro em Cards Limpos */}
             <div className="space-y-4 text-xs">
-              {/* Cidades */}
+              {/* 1. Cidades */}
               <div className="space-y-2">
                 <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
                   Cidade / Região
@@ -741,11 +762,12 @@ function ClassifiedsMasterPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedCity("todos")}
-                    className={`px-3 py-1.5 rounded-xl font-mono text-xs cursor-pointer ${
+                    className={cn(
+                      "px-3 py-1.5 rounded-xl font-mono text-xs cursor-pointer transition-all",
                       selectedCity === "todos"
-                        ? "bg-foreground text-background font-bold"
-                        : "bg-muted/40 text-muted-foreground hover:text-foreground"
-                    }`}
+                        ? "bg-foreground text-background font-bold shadow-xs"
+                        : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                    )}
                   >
                     Todas
                   </button>
@@ -754,11 +776,12 @@ function ClassifiedsMasterPage() {
                       key={c.id}
                       type="button"
                       onClick={() => setSelectedCity(selectedCity === c.name ? "todos" : c.name)}
-                      className={`px-3 py-1.5 rounded-xl font-mono text-xs cursor-pointer ${
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl font-mono text-xs cursor-pointer transition-all",
                         selectedCity === c.name
-                          ? "bg-foreground text-background font-bold"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground"
-                      }`}
+                          ? "bg-foreground text-background font-bold shadow-xs"
+                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                      )}
                     >
                       {c.name}
                     </button>
@@ -766,15 +789,16 @@ function ClassifiedsMasterPage() {
                 </div>
               </div>
 
-              {/* Condições Comerciais */}
-              <div className="space-y-2 pt-2 border-t border-border/40">
+              {/* 2. Condições Comerciais */}
+              <div className="space-y-2.5 pt-2 border-t border-border/40">
                 <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
-                  Condições
+                  Condições Comerciais
                 </span>
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 bg-muted/20 p-3 rounded-xl border border-border/40">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="sheet-boosted" className="text-xs cursor-pointer">
-                      Apenas Destaques
+                    <Label htmlFor="sheet-boosted" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <Flame className="size-3.5 text-amber-500" />
+                      <span>Apenas Destaques</span>
                     </Label>
                     <Switch
                       id="sheet-boosted"
@@ -783,8 +807,9 @@ function ClassifiedsMasterPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="sheet-trade" className="text-xs cursor-pointer">
-                      Aceita Troca
+                    <Label htmlFor="sheet-trade" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <ArrowsLeftRight className="size-3.5 text-muted-foreground" />
+                      <span>Aceita Troca</span>
                     </Label>
                     <Switch
                       id="sheet-trade"
@@ -793,8 +818,9 @@ function ClassifiedsMasterPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="sheet-card" className="text-xs cursor-pointer">
-                      Parcela no Cartão
+                    <Label htmlFor="sheet-card" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <CreditCard className="size-3.5 text-muted-foreground" />
+                      <span>Parcelamento no Cartão</span>
                     </Label>
                     <Switch
                       id="sheet-card"
@@ -804,10 +830,375 @@ function ClassifiedsMasterPage() {
                   </div>
                 </div>
               </div>
+
+              {/* 3. Modalidade de Entrega */}
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                  Modalidade de Entrega
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: "todos", label: "Todas" },
+                    { id: "local", label: "Retirada Local / Balcão" },
+                    { id: "shipping", label: "Envio Nacional / Correios" },
+                  ].map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setSelectedDelivery(m.id as any)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                        selectedDelivery === m.id
+                          ? "bg-foreground text-background font-bold shadow-xs"
+                          : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                      )}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Filtros Específicos por Categoria */}
+              {/* IMÓVEIS */}
+              {selectedCategory === "real_estate" && (
+                <div className="space-y-3 pt-2 border-t border-border/40">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                    Opções de Imóveis & Hospedagem
+                  </span>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Finalidade</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {REAL_ESTATE_DEAL_TYPES.map((dt) => (
+                        <button
+                          key={dt.id}
+                          type="button"
+                          onClick={() => setSelectedDealType(dt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            selectedDealType === dt.id
+                              ? "bg-foreground text-background font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {dt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Comodidades</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {REAL_ESTATE_FACETS.map((facet) => {
+                        const isChecked = selectedAmenities.includes(facet.id);
+                        return (
+                          <button
+                            key={facet.id}
+                            type="button"
+                            onClick={() => toggleAmenity(facet.id)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all flex items-center gap-1",
+                              isChecked
+                                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                                : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                            )}
+                          >
+                            <span>{facet.label}</span>
+                            {isChecked && <Check className="size-3" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* VEÍCULOS */}
+              {selectedCategory === "vehicle" && (
+                <div className="space-y-3 pt-2 border-t border-border/40">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                    Opções de Veículos
+                  </span>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Câmbio</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {VEHICLE_GEARBOX_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setVehicleGearbox(opt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            vehicleGearbox === opt.id
+                              ? "bg-foreground text-background font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Combustível</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {VEHICLE_FUEL_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setVehicleFuel(opt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            vehicleFuel === opt.id
+                              ? "bg-foreground text-background font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between bg-muted/20 p-3 rounded-xl border border-border/40">
+                    <Label htmlFor="sheet-single-owner" className="text-xs cursor-pointer">
+                      Apenas Único Dono
+                    </Label>
+                    <Switch
+                      id="sheet-single-owner"
+                      checked={onlySingleOwner}
+                      onCheckedChange={setOnlySingleOwner}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* DESAPEGOS */}
+              {selectedCategory === "sale" && (
+                <div className="space-y-2 pt-2 border-t border-border/40">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                    Subcategorias de Desapego
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {DESAPEGO_SUB_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSelectedSubcategory(opt.id)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                          selectedSubcategory === opt.id
+                            ? "bg-foreground text-background font-bold shadow-xs"
+                            : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* GASTRONOMIA */}
+              {selectedCategory === "food" && (
+                <div className="space-y-2 pt-2 border-t border-border/40">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                    Especialidade Gastronômica
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {FOOD_SUBNICHE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setFoodSubniche(opt.id)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                          foodSubniche === opt.id
+                            ? "bg-foreground text-background font-bold shadow-xs"
+                            : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* SERVIÇOS */}
+              {selectedCategory === "service" && (
+                <div className="space-y-3 pt-2 border-t border-border/40">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                    Opções de Serviços
+                  </span>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Público-Alvo</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {SERVICE_AUDIENCE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setServiceAudience(opt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            serviceAudience === opt.id
+                              ? "bg-foreground text-background font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Área de Atuação</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {SERVICE_SUBNICHE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setServiceSubniche(opt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            serviceSubniche === opt.id
+                              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Modalidade</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {SERVICE_MODALITY_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setSelectedServiceModality(opt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            selectedServiceModality === opt.id
+                              ? "bg-foreground text-background font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NEGÓCIOS & M&A */}
+              {selectedCategory === "business" && (
+                <div className="space-y-3 pt-2 border-t border-border/40">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                    Opções de Negócios & M&A
+                  </span>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Objetivo</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {BUSINESS_GOAL_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setBusinessGoal(opt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            businessGoal === opt.id
+                              ? "bg-foreground text-background font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] text-muted-foreground">Tipo de Ponto Comercial</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {BUSINESS_POINT_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setBusinessPointType(opt.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                            businessPointType === opt.id
+                              ? "bg-foreground text-background font-bold shadow-xs"
+                              : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between bg-muted/20 p-3 rounded-xl border border-border/40">
+                    <Label htmlFor="sheet-nda" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <Lock className="size-3.5 text-muted-foreground" />
+                      <span>Apenas com Sigilo / NDA Assinado</span>
+                    </Label>
+                    <Switch
+                      id="sheet-nda"
+                      checked={onlyBusinessWithNda}
+                      onCheckedChange={setOnlyBusinessWithNda}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* VAGAS */}
+              {(selectedCategory === "job" || selectedCategory === "job_offer") && (
+                <div className="space-y-2 pt-2 border-t border-border/40">
+                  <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
+                    Regime de Contratação
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {JOB_REGIME_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSelectedJobRegime(opt.id)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
+                          selectedJobRegime === opt.id
+                            ? "bg-foreground text-background font-bold shadow-xs"
+                            : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* PRODUTOS DIGITAIS */}
+              {selectedCategory === "digital" && (
+                <div className="pt-2 border-t border-border/40">
+                  <div className="flex items-center justify-between bg-muted/20 p-3 rounded-xl border border-border/40">
+                    <Label htmlFor="sheet-instant-digital" className="text-xs cursor-pointer flex items-center gap-1.5">
+                      <FileText className="size-3.5 text-muted-foreground" />
+                      <span>Download Imediato</span>
+                    </Label>
+                    <Switch
+                      id="sheet-instant-digital"
+                      checked={onlyInstantDigital}
+                      onCheckedChange={setOnlyInstantDigital}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Botão Fixo de Aplicação */}
-            <div className="pt-2 border-t border-border/40">
+            {/* Rodapé Fixo da Modal */}
+            <div className="pt-3 border-t border-border/40">
               <Button
                 type="button"
                 onClick={() => setMobileFilterSheetOpen(false)}
@@ -949,18 +1340,22 @@ function ClassifiedsMasterPage() {
         ) : viewMode === "feed" ? (
           /* ── MODO FEED (Trilhos Horizontais de Categorias com Cards Amplos) ── */
           <section className="space-y-10">
-            {["real_estate", "vehicle", "sale", "service"].map((catKey) => {
+            {["real_estate", "vehicle", "business", "sale", "service", "donation"].map((catKey) => {
               const catItems = filtered.filter((i: any) => i.category === catKey);
               if (catItems.length === 0) return null;
 
               const catTitle =
                 catKey === "real_estate"
-                  ? "Imóveis & Moradia"
+                  ? "Imóveis"
                   : catKey === "vehicle"
-                  ? "Veículos & Autos"
+                  ? "Veículos"
+                  : catKey === "business"
+                  ? "Negócios"
                   : catKey === "sale"
-                  ? "Desapegos & Tech"
-                  : "Serviços & B2B";
+                  ? "Desapego"
+                  : catKey === "donation"
+                  ? "Doações"
+                  : "Serviços";
 
               return (
                 <HorizontalRail

@@ -45,15 +45,16 @@ import {
  type PlatformApiIntegrationsDTO,
 } from "@/services/master.functions";
 import {
- listApiKeyPools,
- saveApiKeyToPool,
- toggleApiKeyStatus,
- deleteApiKeyFromPool,
- listMasterPrompts,
- saveMasterPrompt,
- type ApiKeyPoolDTO,
- type MasterPromptDTO,
- type ApiProvider,
+  listApiKeyPools,
+  saveApiKeyToPool,
+  toggleApiKeyStatus,
+  deleteApiKeyFromPool,
+  testPoolKeyConnection,
+  listMasterPrompts,
+  saveMasterPrompt,
+  type ApiKeyPoolDTO,
+  type MasterPromptDTO,
+  type ApiProvider,
 } from "@/services/api-orchestrator.functions";
 
 export const Route = createFileRoute("/admin-master/integracoes")({
@@ -310,14 +311,40 @@ function AdminMasterIntegracoesPage() {
 
  const handleDeleteKey = async (id: string) => {
  if (!confirm("Deseja remover esta chave da pool?")) return;
- try {
- await deleteApiKeyFromPool({ data: { id } });
- setPools((prev) => prev.filter((k) => k.id !== id));
- toast.success("Chave removida da pool.");
- } catch (e: any) {
- toast.error(e.message || "Erro ao excluir chave.");
- }
- };
+    try {
+      await deleteApiKeyFromPool({ data: { id } });
+      setPools((prev) => prev.filter((k) => k.id !== id));
+      toast.success("Chave removida da pool.");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao excluir chave.");
+    }
+  };
+
+  const [testingKeyId, setTestingKeyId] = useState<string | null>(null);
+  const [testedKeyStatus, setTestedKeyStatus] = useState<
+    Record<string, { success: boolean; latencyMs?: number; error?: string }>
+  >({});
+
+  const handleTestPoolKey = async (id: string) => {
+    setTestingKeyId(id);
+    try {
+      const res = await testPoolKeyConnection({ data: { id } });
+      setTestedKeyStatus((prev) => ({ ...prev, [id]: res }));
+      if (res.success) {
+        toast.success(`Conexão confirmada com sucesso (${res.latencyMs}ms)!`);
+      } else {
+        toast.error(`Falha no teste: ${res.error || "Erro de conexão"}`);
+      }
+    } catch (e: any) {
+      setTestedKeyStatus((prev) => ({
+        ...prev,
+        [id]: { success: false, latencyMs: 0, error: e.message },
+      }));
+      toast.error(e.message || "Erro ao testar conexão da chave.");
+    } finally {
+      setTestingKeyId(null);
+    }
+  };
 
  // Ações de Prompts Master
  const handleOpenEditPrompt = (prompt?: MasterPromptDTO) => {
@@ -526,35 +553,72 @@ function AdminMasterIntegracoesPage() {
  </Badge>
  <span className="font-bold text-sm text-foreground">{key.label}</span>
  </div>
- <div className="flex items-center gap-2">
- <Switch
- checked={key.is_active}
- onCheckedChange={() => handleToggleKey(key.id, key.is_active)}
- />
- <Button
- variant="ghost"
- size="icon"
- className="size-7 text-destructive hover:bg-destructive/10"
- onClick={() => handleDeleteKey(key.id)}
- >
- <Trash2 className="size-3.5" />
- </Button>
- </div>
- </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={testingKeyId === key.id}
+                  onClick={() => handleTestPoolKey(key.id)}
+                  className="h-7 px-2 text-[11px] rounded-lg gap-1 border-border/80"
+                >
+                  {testingKeyId === key.id ? (
+                    <RefreshCw className="size-3 animate-spin" />
+                  ) : (
+                    <Zap className="size-3 text-amber-500" />
+                  )}
+                  <span>Testar</span>
+                </Button>
+                <Switch
+                  checked={key.is_active}
+                  onCheckedChange={() => handleToggleKey(key.id, key.is_active)}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 text-destructive hover:bg-destructive/10"
+                  onClick={() => handleDeleteKey(key.id)}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
+            </div>
 
- <div className="flex items-center justify-between text-xs font-mono bg-muted/40 p-2.5 rounded-xl">
- <span className="text-muted-foreground">{key.masked_key}</span>
- <span className="text-[11px] text-foreground font-bold">
- {key.daily_request_count} reqs hoje
- </span>
- </div>
+            <div className="flex items-center justify-between text-xs font-mono bg-muted/40 p-2.5 rounded-xl">
+              <span className="text-muted-foreground">{key.masked_key}</span>
+              <span className="text-[11px] text-foreground font-bold">
+                {key.daily_request_count} reqs hoje
+              </span>
+            </div>
 
- {key.last_error_message && (
- <div className="text-[11px] text-rose-500 bg-rose-500/10 p-2 rounded-lg flex items-center gap-1.5">
- <AlertCircle className="size-3 shrink-0" />
- <span className="truncate">{key.last_error_message}</span>
- </div>
- )}
+            {testedKeyStatus[key.id] && (
+              <div
+                className={`text-[11px] p-2 rounded-lg flex items-center justify-between ${
+                  testedKeyStatus[key.id].success
+                    ? "text-emerald-500 bg-emerald-500/10"
+                    : "text-rose-500 bg-rose-500/10"
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  {testedKeyStatus[key.id].success ? (
+                    <CheckCircle2 className="size-3 shrink-0" />
+                  ) : (
+                    <AlertCircle className="size-3 shrink-0" />
+                  )}
+                  <span>
+                    {testedKeyStatus[key.id].success
+                      ? `Conexão ativa (${testedKeyStatus[key.id].latencyMs}ms)`
+                      : testedKeyStatus[key.id].error || "Falha na conexão"}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {key.last_error_message && !testedKeyStatus[key.id] && (
+              <div className="text-[11px] text-rose-500 bg-rose-500/10 p-2 rounded-lg flex items-center gap-1.5">
+                <AlertCircle className="size-3 shrink-0" />
+                <span className="truncate">{key.last_error_message}</span>
+              </div>
+            )}
  </div>
  ))}
  </div>
@@ -838,6 +902,17 @@ function AdminMasterIntegracoesPage() {
                   checked: govSettings.isAiAddressParserActive,
                   onChange: (checked: boolean) =>
                     setGovSettings((prev) => ({ ...prev, isAiAddressParserActive: checked })),
+                },
+                {
+                  id: "isSimLabsClassifiedTelemetryActive",
+                  title: "Telemetria & SimLabs na Vitrine de Anúncios",
+                  desc: "Exibe score de atratividade comercial, viabilidade, payback e auditoria cadastral de CNPJ nos anúncios de negócios e pontos comerciais. (Desativado por padrão)",
+                  checked: govSettings.isSimLabsClassifiedTelemetryActive ?? false,
+                  onChange: (checked: boolean) =>
+                    setGovSettings((prev) => ({
+                      ...prev,
+                      isSimLabsClassifiedTelemetryActive: checked,
+                    })),
                 },
               ].map((item) => (
                 <div
@@ -1308,13 +1383,16 @@ function AdminMasterIntegracoesPage() {
  <SelectValue placeholder="Selecione o provedor" />
  </SelectTrigger>
  <SelectContent className="rounded-2xl">
- <SelectItem value="firecrawl">Firecrawl (Web Scraping)</SelectItem>
- <SelectItem value="steel">Steel.dev (Browser Automation)</SelectItem>
- <SelectItem value="gemini">Google Gemini Flash</SelectItem>
- <SelectItem value="groq">Groq (Llama 3 / Mixtral)</SelectItem>
+ <SelectItem value="openrouter">OpenRouter (Multi-Modelo: Llama 3.3, Claude, DeepSeek)</SelectItem>
+ <SelectItem value="groq">Groq LPU (Inferência Ultra-rápida Llama 3.3)</SelectItem>
+ <SelectItem value="gemini">Google Gemini (Flash & Pro)</SelectItem>
+ <SelectItem value="openai">OpenAI (GPT-4o & Embeddings)</SelectItem>
+ <SelectItem value="anthropic">Anthropic Claude (Sonnet & Opus)</SelectItem>
+ <SelectItem value="firecrawl">Firecrawl (Web Scraping & Markdown)</SelectItem>
+ <SelectItem value="steel">Steel.dev (Browser Automation Headless)</SelectItem>
  <SelectItem value="google_maps">Google Maps API</SelectItem>
- <SelectItem value="resend">Resend (E-mail)</SelectItem>
- <SelectItem value="asaas">Asaas Pagamentos</SelectItem>
+ <SelectItem value="resend">Resend (E-mail Transacional)</SelectItem>
+ <SelectItem value="asaas">Asaas Pagamentos (PIX & Boletos)</SelectItem>
  </SelectContent>
  </Select>
  </div>

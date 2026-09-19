@@ -516,3 +516,312 @@ export const CANONICAL_REAL_ESTATE_FEATURES = [
   "Acesso Biométrico / Fechadura Digital",
 ];
 
+// ─── 4. GASTRONOMIA & DELIVERY SUB-NICHOS ────────────────────────────────────
+export interface FoodSubNicheOption {
+  id: string;
+  label: string;
+  description: string;
+  defaultPrepTime: string;
+  suggestedItems: string[];
+}
+
+export const CANONICAL_FOOD_SUBNICHES: FoodSubNicheOption[] = [
+  {
+    id: "sushi",
+    label: "Sushi & Culinária Japonesa",
+    description: "Combinados, temakis, sashimis, hots e pratos orientais com opções de wasabi e shoyu.",
+    defaultPrepTime: "25-40 min",
+    suggestedItems: ["Combinado 20 peças", "Temaki Salmão Completo", "Hot Filadélfia 10 un", "Sashimi Salmão 8 un"],
+  },
+  {
+    id: "pizzaria",
+    label: "Pizzaria & Forneria",
+    description: "Pizzas artesanais, calzones, bordas recheadas e tamanhos broto a família.",
+    defaultPrepTime: "30-50 min",
+    suggestedItems: ["Pizza Grande Calabresa Especial", "Pizza 4 Queijos Artesanal", "Calzone Presunto e Queijo", "Pizza Doce Nutella"],
+  },
+  {
+    id: "hamburgueria",
+    label: "Hamburgueria & Smash Burgers",
+    description: "Burgers artesanais, smash, carnes nobres, blends especiais e combos com batatas.",
+    defaultPrepTime: "20-35 min",
+    suggestedItems: ["Smash Burger Duplo Cheddar Bacon", "Burger Costela Artesanal", "Combo Burger + Fritas + Refri", "Porção Batata Rústica"],
+  },
+  {
+    id: "marmitaria",
+    label: "Marmitaria & Prato Feito (PF)",
+    description: "Comida caseira, marmitas do dia, opções fit, low carb e pratos executivos.",
+    defaultPrepTime: "15-30 min",
+    suggestedItems: ["Marmita Executiva Bife a Cavalo", "Marmita Fit Frango com Batata Doce", "PF Filé de Peixe", "Feijoada Completa"],
+  },
+  {
+    id: "confeitaria",
+    label: "Confeitaria, Bolos & Doces",
+    description: "Bolos de festa por encomenda, doces finos, brigadeiros gourmet e sobremesas.",
+    defaultPrepTime: "Encomenda prévia",
+    suggestedItems: ["Bolo de Aniversário 2kg", "Cento de Brigadeiros Gourmet", "Torta Holandesa", "Bolo no Pote"],
+  },
+  {
+    id: "cafeteria",
+    label: "Cafeteria, Lanchonete & Salgados",
+    description: "Cafés especiais, cappuccinos, salgados assados/fritos, pão de queijo e lanches rápidos.",
+    defaultPrepTime: "10-20 min",
+    suggestedItems: ["Café Expresso Especial", "Cappuccino Italiano", "Coxinha de Frango com Catupiry", "Pão de Queijo Recheado"],
+  },
+  {
+    id: "churrascaria",
+    label: "Churrasco, Espetos & Assados",
+    description: "Cortes nobres assados, espetinhos, costela na brasa e guarnições tradicionais.",
+    defaultPrepTime: "30-45 min",
+    suggestedItems: ["Picanha Fatiada na Brasa (500g)", "Espeto de Alcatra Completo", "Costela Gaúcha Assada", "Farofa de Alho & Vinagrete"],
+  },
+];
+
+// ─── 5. SERVIÇOS ESPECIALIZADOS SUB-NICHOS ──────────────────────────────────
+export interface ServiceSubNicheOption {
+  id: string;
+  label: string;
+  councilName: string;
+  councilFieldLabel: string;
+  councilPlaceholder: string;
+  requiresLicense: boolean;
+  specialties: string[];
+}
+
+export const CANONICAL_SERVICE_SUBNICHES: ServiceSubNicheOption[] = [
+  {
+    id: "advocacia",
+    label: "Advocacia & Assessoria Jurídica",
+    councilName: "OAB",
+    councilFieldLabel: "Número de Registro na OAB",
+    councilPlaceholder: "Ex: 123456/SP",
+    requiresLicense: true,
+    specialties: [
+      "Direito Cível & Consumidor",
+      "Direito Trabalhista",
+      "Direito Previdenciário (INSS)",
+      "Direito Tributário & Fiscal",
+      "Direito de Família & Sucessões",
+      "Direito Imobiliário & Contratos",
+      "Direito Penal & Criminal",
+      "Direito Empresarial & Societário",
+    ],
+  },
+  {
+    id: "engenharia_arquitetura",
+    label: "Engenharia & Arquitetura",
+    councilName: "CREA / CAU",
+    councilFieldLabel: "Número do CREA ou CAU",
+    councilPlaceholder: "Ex: 5061234567-SP",
+    requiresLicense: true,
+    specialties: [
+      "Projetos Arquitetônicos Residenciais/Comerciais",
+      "Cálculo Estrutural & Fundações",
+      "Emissão de ART / RRT de Reforma",
+      "Laudos Técnicos e Perícias",
+      "Instalações Elétricas e Hidráulicas",
+      "Design de Interiores & Decoração",
+      "Regularização de Obras & Habite-se",
+    ],
+  },
+  {
+    id: "saude_estetica",
+    label: "Saúde, Estética & Bem-Estar",
+    councilName: "CRM / CRBM / CRO / COREN",
+    councilFieldLabel: "Conselho Profissional & Registro",
+    councilPlaceholder: "Ex: CRM 123456 ou CRBM 7890",
+    requiresLicense: true,
+    specialties: [
+      "Harmonização Facial & Botox",
+      "Dermatologia & Cuidados com a Pele",
+      "Odontologia & Clareamento Dental",
+      "Fisioterapia & Pilates",
+      "Nutrição Clínica & Esportiva",
+      "Massoterapia & Drenagem Linfática",
+      "Podologia & Cuidados Especializados",
+    ],
+  },
+  {
+    id: "construcao_reformas",
+    label: "Construção Civil & Reformas",
+    councilName: "Alvará / Registro Municipal",
+    councilFieldLabel: "CNPJ ou Alvará da Construtora",
+    councilPlaceholder: "Ex: 00.000.000/0001-00",
+    requiresLicense: false,
+    specialties: [
+      "Construção de Casas do Zero",
+      "Reformas Gerais & Acabamentos",
+      "Pintura Residencial & Comercial",
+      "Instalação de Porcelanato & Pisos",
+      "Gesso, Drywall & Iluminação",
+      "Telhados, Calhas & Impermeabilização",
+      "Elétrica e Hidráulica Predial",
+    ],
+  },
+  {
+    id: "contabilidade_bpo",
+    label: "Contabilidade & BPO Financeiro",
+    councilName: "CRC",
+    councilFieldLabel: "Número do Registro no CRC",
+    councilPlaceholder: "Ex: 1SP123456/O",
+    requiresLicense: true,
+    specialties: [
+      "Abertura e Encerramento de Empresas",
+      "Declaração de Imposto de Renda (IRPF / IRPJ)",
+      "BPO Financeiro & Gestão de Fluxo",
+      "Assessoria Fiscal e Tributária",
+      "Departamento Pessoal & Folha de Pagamento",
+      "Regularização de MEI e Simples Nacional",
+    ],
+  },
+  {
+    id: "tecnologia_design",
+    label: "Tecnologia, Software & Design",
+    councilName: "Portfólio / Registro",
+    councilFieldLabel: "GitHub, Portfólio ou CNPJ",
+    councilPlaceholder: "https://seusite.com.br",
+    requiresLicense: false,
+    specialties: [
+      "Desenvolvimento de Sites & E-commerces",
+      "Aplicativos Mobile (iOS / Android)",
+      "Design de Interface (UI/UX) & Marca",
+      "Tráfego Pago (Google Ads / Meta Ads)",
+      "Automação com IA & Chatbots",
+      "Segurança e Infraestrutura Cloud",
+    ],
+  },
+];
+
+// ─── 6. NEGÓCIOS, EMPRESAS & M&A (meuBIZ / Quero Um Negócio / invoop) ───────
+export interface BusinessTypeOption {
+  id: string;
+  label: string;
+  description: string;
+}
+
+export const CANONICAL_BUSINESS_TYPES: BusinessTypeOption[] = [
+  {
+    id: "venda_total",
+    label: "Venda de Empresa",
+    description: "Venda integral da operação, marca, clientes, equipamentos e contratos.",
+  },
+  {
+    id: "repasse_ponto",
+    label: "Repasse de Ponto Comercial",
+    description: "Ponto comercial montado, infraestrutura física, mobiliário e cessão de locação.",
+  },
+  {
+    id: "busca_socio",
+    label: "Procura de Sócio (Investidor ou Operador)",
+    description: "Busca de sócio que entre com capital e/ou trabalho para expansão do negócio.",
+  },
+  {
+    id: "captacao_investimento",
+    label: "Captação de Investimento / Aporte",
+    description: "Solicitação de aporte para expansão de unidade, compra de máquinas ou capital de giro.",
+  },
+  {
+    id: "franquia",
+    label: "Repasse de Franquia",
+    description: "Unidade franqueada em operação, com marca consolidada e suporte da franqueadora.",
+  },
+  {
+    id: "cotas",
+    label: "Venda de Cotas Societárias",
+    description: "Participação societária minoritária ou majoritária em empresa ativa.",
+  },
+];
+
+export interface InvestmentModelOption {
+  id: string;
+  label: string;
+  description: string;
+}
+
+export const CANONICAL_INVESTMENT_MODELS: InvestmentModelOption[] = [
+  {
+    id: "socio_investidor",
+    label: "Sócio Investidor (% de Cotas)",
+    description: "Entrada de capital em troca de percentual societário na empresa.",
+  },
+  {
+    id: "socio_operador",
+    label: "Sócio Operador (Capital + Gestão)",
+    description: "Entrada de capital e atuação ativa na administração do dia a dia.",
+  },
+  {
+    id: "mutuo_expansao",
+    label: "Mútuo / Empréstimo de Expansão",
+    description: "Aporte financeiro remunerado com retorno pré-fixado ou conversível em cotas.",
+  },
+  {
+    id: "anjo_seed",
+    label: "Investimento Anjo (Projeto / Startup)",
+    description: "Aporte financeiro para projeto inovador, produto validado ou startup em tração.",
+  },
+  {
+    id: "abertura_filial",
+    label: "Parceria para Nova Filial",
+    description: "Investimento para abrir nova unidade da marca em outra cidade ou bairro.",
+  },
+];
+
+export const CANONICAL_PROJECT_STAGES = [
+  { id: "ideia_validada", label: "Ideia Validada / Projeto Pré-operacional" },
+  { id: "em_operacao", label: "Em Operação (Ativa)" },
+  { id: "faturando", label: "Operando e Faturando" },
+  { id: "expansao", label: "Em Escala / Expansão Nacional" },
+] as const;
+
+export const CANONICAL_USE_OF_FUNDS = [
+  "Abertura de Nova Filial",
+  "Compra de Máquinas & Equipamentos",
+  "Capital de Giro & Estoque",
+  "Marketing & Expansão Comercial",
+  "Tecnologia, Software & App",
+  "Reforma & Instalações do Ponto",
+] as const;
+
+export const CANONICAL_BUSINESS_SEGMENTS = [
+  "Alimentação & Gastronomia (Restaurante, Bar, Cafeteria, Delivery)",
+  "Varejo & Comércio (Loja de Roupas, Mercado, Cosméticos, Calçados)",
+  "Serviços & Consultorias (Agência, Salão de Beleza, Academia, Coworking)",
+  "Construção Civil & Engenharia (Construtora, Loja de Materiais, Empreiteira)",
+  "Saúde, Odontologia & Farmácia (Clínica, Laboratório, Drogaria)",
+  "Tecnologia, Startups & E-commerce (SaaS, Loja Virtual, Aplicativos)",
+  "Indústria & Manufatura (Fábrica de Embalagens, Têxtil, Pré-moldados)",
+  "Educação & Cursos (Escola de Idiomas, Treinamentos, Creche)",
+  "Logística, Frotas & Transporte (Transportadora, Depósito, Centro de Distribuição)",
+  "Hotelaria & Pousadas (Pousada, Hostel, Chalés)",
+];
+
+export const CANONICAL_SALE_REASONS = [
+  "Mudança de prioridade profissional",
+  "Aposentadoria do proprietário",
+  "Mudança de cidade ou país",
+  "Motivo pessoal / saúde",
+  "Dissolução amigável de sociedade",
+  "Foco em outro negócio / expansão de grupo",
+  "Busca de capital para acelerar crescimento",
+];
+
+export const CANONICAL_EMPLOYEES_RANGES = [
+  "Apenas o proprietário (0 funcionários)",
+  "1 a 2 colaboradores",
+  "3 a 5 colaboradores",
+  "6 a 10 colaboradores",
+  "11 a 20 colaboradores",
+  "21 a 50 colaboradores",
+  "Mais de 50 colaboradores",
+];
+
+export const CANONICAL_COMMERCIAL_POINT_TYPES = [
+  "Loja de Rua / Ponto de Calçada",
+  "Shopping Center / Galeria Comercial",
+  "Galpão Industrial / Logístico",
+  "Sala / Conjunto Comercial em Prédio",
+  "Quiosque em Galeria / Supermercado",
+  "Casa Comercial / Sobrado Adaptado",
+  "Operação 100% Digital / Sem Ponto Físico",
+];
+

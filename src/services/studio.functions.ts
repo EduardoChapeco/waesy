@@ -9,6 +9,7 @@ import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import type { EscamasCarouselProject, EscamasSlide, StudioBrandProfile } from "@/types/studio-machine";
 import { DEFAULT_BRAND_PROFILE } from "@/lib/studio-machine-constants";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ============================================================
 // Schemas & Types
@@ -1570,5 +1571,153 @@ export const publishStudioCarouselToSocial = createServerFn({ method: "POST" })
           : "Carrossel publicado no feed da comunidade com layout imersivo!",
     };
   });
+
+// ============================================================
+// REFINAMENTO DE TEXTO DO SLIDE COM IA ORQUESTRADA (BYOK / POOL)
+// ============================================================
+
+export interface RefinedSlideOption {
+  tone: string;
+  badge: string;
+  kicker: string;
+  headline: string;
+  body: string;
+  cta_text?: string;
+  rationale: string;
+}
+
+export async function internalRefineSlideTextWithAI(input: {
+  headline: string;
+  body?: string;
+  badge?: string;
+  kicker?: string;
+  niche?: string;
+  brandName?: string;
+  targetTone?: "direct_punchy" | "journalistic_editorial" | "persuasive_cta" | "educational_authority";
+}): Promise<RefinedSlideOption[]> {
+  const targetTone = input.targetTone || "journalistic_editorial";
+
+  const systemPrompt = `Você é o Diretor Criativo e Redator Sênior do Waesy Studio (sistema de carrosséis editoriais no padrão Instagram/LinkedIn de alta conversão).
+Sua missão é refinar e elevar os textos de um slide de carrossel, tornando-o atraente, direto, sem prolixidade e com forte apelo visual.
+Regras Invioláveis:
+1. Badge: máximo 3 palavras (ex: OFICIAL, GUIA PRÁTICO, Giro Regional).
+2. Kicker: 1 a 3 palavras em caixa alta (ex: TRANSPARÊNCIA PÚBLICA, ECONOMIA LOCAL, OPORTUNIDADE).
+3. Headline (Manchete): título de alto impacto, claro e magnético (máximo 12 palavras).
+4. Body (Texto de apoio): direto, conciso, fluido, máximo 40 palavras, ideal para leitura rápida no feed.
+5. Rationale: uma frase explicando por que esta versão converte e engaja.
+6. Retorne estritamente um JSON com array de 3 opções (variants) com chaves: badge, kicker, headline, body, cta_text, tone, rationale.`;
+
+  const userPrompt = `Analise o texto atual do slide e gere 3 variações refinadas:
+- Nicho: ${input.niche || "geral"}
+- Marca: ${input.brandName || "Waesy"}
+- Tom solicitado: ${targetTone}
+- Badge Atual: ${input.badge || "Nenhum"}
+- Kicker Atual: ${input.kicker || "Nenhum"}
+- Headline Atual: ${input.headline}
+- Body Atual: ${input.body || "Nenhum"}
+
+Retorne APENAS um objeto JSON no seguinte formato:
+{
+  "variants": [
+    {
+      "tone": "Impacto & Curto",
+      "badge": "...",
+      "kicker": "...",
+      "headline": "...",
+      "body": "...",
+      "cta_text": "...",
+      "rationale": "..."
+    },
+    {
+      "tone": "Jornalístico & Editorial",
+      "badge": "...",
+      "kicker": "...",
+      "headline": "...",
+      "body": "...",
+      "cta_text": "...",
+      "rationale": "..."
+    },
+    {
+      "tone": "Persuasivo & CTA",
+      "badge": "...",
+      "kicker": "...",
+      "headline": "...",
+      "body": "...",
+      "cta_text": "...",
+      "rationale": "..."
+    }
+  ]
+}`;
+
+  try {
+    const aiResult = await executeUnifiedAiCall({
+      prompt: userPrompt,
+      systemInstruction: systemPrompt,
+      preferredProvider: "gemini",
+      jsonMode: true,
+      maxTokens: 1200,
+      temperature: 0.7,
+    });
+
+    if (aiResult.text) {
+      const parsed = JSON.parse(aiResult.text);
+      if (Array.isArray(parsed.variants) && parsed.variants.length > 0) {
+        return parsed.variants;
+      }
+    }
+  } catch (err) {
+    console.warn("[studio.functions] Erro no refinamento de texto via IA, acionando fallback heurístico:", err);
+  }
+
+  // Fallback inteligente garantido caso a IA externa esteja temporariamente inacessível
+  const baseTitle = input.headline.trim();
+  return [
+    {
+      tone: "Impacto & Curto",
+      badge: input.badge || "DESTAQUE",
+      kicker: input.kicker || "URBANO",
+      headline: baseTitle.length > 50 ? `${baseTitle.slice(0, 47)}...` : baseTitle,
+      body: input.body ? `${input.body.slice(0, 120)}...` : "Informações verificadas e atualizadas na rede Waesy.",
+      cta_text: "Saiba Mais",
+      rationale: "Versão condensada para retenção máxima em até 2 segundos de scroll.",
+    },
+    {
+      tone: "Jornalístico & Editorial",
+      badge: input.badge || "ANÁLISE EXCLUSIVA",
+      kicker: input.kicker || "PANORAMA",
+      headline: baseTitle,
+      body: input.body || "Contexto apurado pelos editores para manter você à frente dos acontecimentos.",
+      cta_text: "Ler Matéria Completa",
+      rationale: "Tom fidedigno e autoritário focado em clareza factual.",
+    },
+    {
+      tone: "Persuasivo & Engajamento",
+      badge: input.badge || "NÃO PERCA",
+      kicker: input.kicker || "OPORTUNIDADE",
+      headline: `${baseTitle} — O que você precisa saber agora`,
+      body: input.body || "Descubra todos os detalhes e compartilhe com sua equipe ou comunidade.",
+      cta_text: "Conferir no Waesy",
+      rationale: "Gatilho de urgência e relevância social para impulsionar compartilhamentos.",
+    },
+  ];
+}
+
+export const refineSlideTextWithAI = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      headline: z.string().min(1, "A manchete é obrigatória para refinamento"),
+      body: z.string().optional(),
+      badge: z.string().optional(),
+      kicker: z.string().optional(),
+      niche: z.string().optional(),
+      brandName: z.string().optional(),
+      targetTone: z.enum(["direct_punchy", "journalistic_editorial", "persuasive_cta", "educational_authority"]).optional(),
+    }),
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; variants: RefinedSlideOption[] }> => {
+    const variants = await internalRefineSlideTextWithAI(data);
+    return { success: true, variants };
+  });
+
 
 

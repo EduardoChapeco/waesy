@@ -1045,6 +1045,10 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  id, display_name, internal_name, description, selection_type, min_selections, max_selections, is_required,
  option_values(id, label, description, price_modifier_cents, image_url, is_active, is_default)
  )
+ ),
+ product_modifier_groups(
+ id, title, description, min_selections, max_selections, is_required, sort_order,
+ product_modifiers(id, title, price_delta_cents, is_default, is_available, sort_order)
  )
  `)
  .eq("store_id", storeId)
@@ -1065,6 +1069,9 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  const optionGroups = (p.product_option_groups || [])
  .map((pog: any) => pog.option_groups)
  .filter(Boolean);
+ const modifierGroups = (p.product_modifier_groups || [])
+ .filter(Boolean)
+ .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
  return {
  id: p.id,
  title: p.title,
@@ -1074,6 +1081,8 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  compareAtCents: p.compare_at_cents,
  coverUrl: media[0]?.url || null,
  optionGroups,
+ modifierGroups,
+ hasModifiers: optionGroups.length > 0 || modifierGroups.length > 0,
  };
  });
 

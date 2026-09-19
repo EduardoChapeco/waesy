@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getServerIdentity } from "@/services/identity.functions";
+import { getServerIdentity } from "@/lib/server-access";
 import { getServerClient } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 

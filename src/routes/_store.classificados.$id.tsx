@@ -40,7 +40,6 @@ import {
   Utensils,
   Store as StoreIcon,
   Hotel,
-  Sparkles,
   Building2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -203,6 +202,17 @@ function ClassifiedDetailError({ error }: { error: Error }) {
       <p className="text-xs text-muted-foreground max-w-md mx-auto">
         Não foi possível carregar os dados deste anúncio no momento. Tente novamente em instantes.
       </p>
+      {/* [REQ-18] Erro técnico transparente para diagnóstico - padrão BigTech / No-Blackbox Mandate */}
+      {error?.message && error.message !== "" && (
+        <details className="mx-auto max-w-md text-left">
+          <summary className="cursor-pointer text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+            Detalhes técnicos
+          </summary>
+          <pre className="mt-2 rounded-xl bg-muted/50 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 whitespace-pre-wrap break-all">
+            {error.message}
+          </pre>
+        </details>
+      )}
       <div className="pt-2 flex items-center justify-center gap-3">
         <Button asChild variant="outline" className="rounded-xl text-xs">
           <Link to="/classificados">
@@ -210,44 +220,48 @@ function ClassifiedDetailError({ error }: { error: Error }) {
             <span>Voltar aos Classificados</span>
           </Link>
         </Button>
+        <Button variant="ghost" className="rounded-xl text-xs" onClick={() => window.location.reload()}>
+          Tentar novamente
+        </Button>
       </div>
     </div>
   );
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  sale: "Desapego / Item Geral",
+  sale: "Desapego",
   vehicle: "Veículo",
   real_estate: "Imóvel",
-  service: "Serviço Profissional",
-  job: "Emprego / Vaga",
+  service: "Serviço",
+  job: "Vagas",
   trade: "Troca",
-  donation: "Doação Solidária",
-  subscription: "Clube & Assinatura",
-  digital: "Produto Digital",
-  equipment: "Locação de Equipamento",
-  travel: "Viagem & Turismo",
-  hospitality: "Hospedagem & Temporada",
-  food: "Gastronomia & Alimentação",
-  agri: "Agronegócio & Maquinário",
+  donation: "Doações",
+  subscription: "Assinatura",
+  digital: "Digital",
+  equipment: "Equipamentos",
+  travel: "Viagens",
+  hospitality: "Hospedagem",
+  food: "Gastronomia",
+  agri: "Agro",
+  business: "Negócios",
 };
 
 const CONDITION_LABELS: Record<string, string> = {
- new: "Novo / Na Caixa",
- used: "Usado - Bom Estado",
- refurbished: "Revisado / Reformado",
+  new: "Novo",
+  used: "Usado",
+  refurbished: "Revisado",
 };
 
 const STATUS_LABELS: Record<
- string,
- { label: string; variant: "default" | "secondary" | "outline" | "destructive" }
+  string,
+  { label: string; variant: "default" | "secondary" | "outline" | "destructive"; dotClass: string }
 > = {
- active: { label: "Publicado", variant: "default" },
- published: { label: "Publicado", variant: "default" },
- paused: { label: "Pausado", variant: "secondary" },
- reserved: { label: "Reservado", variant: "secondary" },
- completed: { label: "Concluído / Vendido", variant: "outline" },
- archived: { label: "Arquivado", variant: "destructive" },
+  active: { label: "Ativo", variant: "secondary", dotClass: "bg-emerald-500" },
+  published: { label: "Ativo", variant: "secondary", dotClass: "bg-emerald-500" },
+  paused: { label: "Pausado", variant: "secondary", dotClass: "bg-amber-500" },
+  reserved: { label: "Reservado", variant: "secondary", dotClass: "bg-blue-500" },
+  completed: { label: "Concluído", variant: "outline", dotClass: "bg-muted-foreground" },
+  archived: { label: "Arquivado", variant: "outline", dotClass: "bg-destructive" },
 };
 
 function isVideoUrl(url?: string | null): boolean {
@@ -1183,7 +1197,7 @@ const handleDownloadDigitalFile = async () => {
           currency="BRL"
           imageUrl={classified?.images?.[0]}
           brandName={classified?.store_name || "Comunidade Waesy"}
-          categoryName={classified?.category || "Turismo & Viagens"}
+          categoryName={classified?.category || "Turismo"}
           sku={classified?.id}
           inStock={classified?.status === "active"}
         />

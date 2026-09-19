@@ -8,6 +8,7 @@ import {
   cleanDocument,
   validateBirthDate,
 } from "@/lib/document-validator";
+import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 
 export interface ResolvedAddressDTO {
   cep: string;
@@ -61,6 +62,7 @@ export interface PublicApiGovernanceDTO {
   isAiAddressParserActive: boolean;
   primaryCepProvider: "brasilapi_v2" | "viacep";
   timeoutMs: number;
+  isSimLabsClassifiedTelemetryActive: boolean;
 }
 
 export const DEFAULT_PUBLIC_API_GOVERNANCE: PublicApiGovernanceDTO = {
@@ -74,6 +76,7 @@ export const DEFAULT_PUBLIC_API_GOVERNANCE: PublicApiGovernanceDTO = {
   isAiAddressParserActive: true,
   primaryCepProvider: "brasilapi_v2",
   timeoutMs: 4000,
+  isSimLabsClassifiedTelemetryActive: false,
 };
 
 const NOMINATIM_USER_AGENT = "WaesyPlatform/1.0 (contato@usewaesy.com)";
@@ -241,94 +244,160 @@ async function forwardGeocodeInternal(
 /**
  * Consulta de dados cadastrais oficiais de empresas (CNPJ) via BrasilAPI Receita Federal
  */
-export const lookupCnpj = createServerFn({ method: "POST" })
-  .validator(
-    z.object({
-      cnpj: z.string().min(14),
-    })
-  )
-  .handler(async ({ data: { cnpj } }): Promise<CnpjCompanyDTO> => {
-    const clean = cleanDocument(cnpj);
-    if (clean.length !== 14) {
-      throw new Error("CNPJ deve conter exatamente 14 dígitos.");
-    }
+export async function internalLookupCnpj(cnpj: string): Promise<CnpjCompanyDTO> {
+  const clean = cleanDocument(cnpj);
+  if (clean.length !== 14) {
+    throw new Error("CNPJ deve conter exatamente 14 dígitos.");
+  }
 
-    if (!validateCnpjMod11(clean)) {
-      throw new Error("CNPJ inválido (dígitos verificadores incorretos).");
-    }
+  if (!validateCnpjMod11(clean)) {
+    throw new Error("CNPJ inválido (dígitos verificadores incorretos).");
+  }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
 
+    let brasilApiError: Error | null = null;
+
+    // 1. Tentar BrasilAPI v1
     try {
       const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`, {
         signal: controller.signal,
         headers: { Accept: "application/json" },
       });
 
-      if (!res.ok) {
-        if (res.status === 404) {
-          throw new Error("CNPJ não localizado na base pública da Receita Federal.");
-        }
-        throw new Error(`Falha na consulta do CNPJ (código HTTP ${res.status}).`);
-      }
+      if (res.ok) {
+        clearTimeout(timeoutId);
+        const data = await res.json();
 
-      const data = await res.json();
+        const street = [data.descricao_tipo_de_logradouro, data.logradouro]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+        const number = String(data.numero || "S/N").trim();
+        const complement = data.complemento || "";
+        const neighborhood = data.bairro || "";
+        const city = data.municipio || "";
+        const state = (data.uf || "").toUpperCase();
+        const zipCode = data.cep || "";
 
-      const street = [data.descricao_tipo_de_logradouro, data.logradouro]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
-      const number = String(data.numero || "S/N").trim();
-      const complement = data.complemento || "";
-      const neighborhood = data.bairro || "";
-      const city = data.municipio || "";
-      const state = (data.uf || "").toUpperCase();
-      const zipCode = data.cep || "";
-
-      // Tenta geocodificar o endereço da empresa
-      const geo = await forwardGeocodeInternal(
-        `${street} ${number}`,
-        neighborhood,
-        city,
-        state
-      );
-
-      return {
-        cnpj: clean,
-        corporateName: data.razao_social || "",
-        tradeName: data.nome_fantasia || data.razao_social || "",
-        registrationStatus: data.descricao_situacao_cadastral || "ATIVA",
-        openingDate: data.data_inicio_atividade || "",
-        mainCnae: {
-          code: data.cnae_fiscal,
-          description: data.cnae_fiscal_descricao || "Atividade comercial",
-        },
-        legalNature: data.natureza_juridica,
-        capitalSocial: data.capital_social ? Number(data.capital_social) : undefined,
-        phone: data.ddd_telefone_1 ? `(${data.ddd_telefone_1.slice(0, 2)}) ${data.ddd_telefone_1.slice(2)}` : undefined,
-        email: data.email || undefined,
-        address: {
-          street,
-          number,
-          complement,
+        const geo = await forwardGeocodeInternal(
+          `${street} ${number}`,
           neighborhood,
           city,
-          state,
-          cep: zipCode,
-          latitude: geo?.lat || null,
-          longitude: geo?.lng || null,
-        },
-      };
-    } catch (err: any) {
-      if (err.name === "AbortError") {
-        throw new Error("Tempo limite esgotado ao consultar a Receita Federal via BrasilAPI.");
+          state
+        );
+
+        return {
+          cnpj: clean,
+          corporateName: data.razao_social || "",
+          tradeName: data.nome_fantasia || data.razao_social || "",
+          registrationStatus: data.descricao_situacao_cadastral || "ATIVA",
+          openingDate: data.data_inicio_atividade || "",
+          mainCnae: {
+            code: data.cnae_fiscal,
+            description: data.cnae_fiscal_descricao || "Atividade comercial",
+          },
+          legalNature: data.natureza_juridica,
+          capitalSocial: data.capital_social ? Number(data.capital_social) : undefined,
+          phone: data.ddd_telefone_1 ? `(${data.ddd_telefone_1.slice(0, 2)}) ${data.ddd_telefone_1.slice(2)}` : undefined,
+          email: data.email || undefined,
+          address: {
+            street,
+            number,
+            complement,
+            neighborhood,
+            city,
+            state,
+            cep: zipCode,
+            latitude: geo?.lat || null,
+            longitude: geo?.lng || null,
+          },
+        };
       }
-      throw err;
-    } finally {
-      clearTimeout(timeoutId);
+
+      if (res.status === 404) {
+        throw new Error("CNPJ não localizado na base pública da Receita Federal.");
+      }
+      brasilApiError = new Error(`BrasilAPI HTTP ${res.status}`);
+    } catch (err: any) {
+      if (err.message?.includes("não localizado")) throw err;
+      brasilApiError = err;
     }
-  });
+
+    // 2. Fallback Resiliente: ReceitaWS
+    try {
+      const fallbackRes = await fetch(`https://receitaws.com.br/v1/cnpj/${clean}`, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(6000),
+      });
+
+      if (fallbackRes.ok) {
+        const data = await fallbackRes.json();
+        if (data.status === "ERROR") {
+          throw new Error(data.message || "CNPJ não localizado na Receita Federal.");
+        }
+
+        const street = String(data.logradouro || "").trim();
+        const number = String(data.numero || "S/N").trim();
+        const complement = String(data.complemento || "").trim();
+        const neighborhood = String(data.bairro || "").trim();
+        const city = String(data.municipio || "").trim();
+        const state = String(data.uf || "").toUpperCase();
+        const zipCode = String(data.cep || "").replace(/\D/g, "");
+
+        const geo = await forwardGeocodeInternal(
+          `${street} ${number}`,
+          neighborhood,
+          city,
+          state
+        );
+
+        return {
+          cnpj: clean,
+          corporateName: data.nome || "",
+          tradeName: data.fantasia || data.nome || "",
+          registrationStatus: data.situacao || "ATIVA",
+          openingDate: data.abertura || "",
+          mainCnae: {
+            code: data.atividade_principal?.[0]?.code || "",
+            description: data.atividade_principal?.[0]?.text || "Atividade comercial",
+          },
+          legalNature: data.natureza_juridica,
+          capitalSocial: data.capital_social ? parseFloat(data.capital_social.replace(/[^\d.-]/g, "")) : undefined,
+          phone: data.telefone ? String(data.telefone).split("/")[0]?.trim() : undefined,
+          email: data.email || undefined,
+          address: {
+            street,
+            number,
+            complement,
+            neighborhood,
+            city,
+            state,
+            cep: zipCode,
+            latitude: geo?.lat || null,
+            longitude: geo?.lng || null,
+          },
+        };
+      }
+    } catch (fallbackErr: any) {
+      if (fallbackErr.message?.includes("não localizado")) throw fallbackErr;
+    }
+
+    clearTimeout(timeoutId);
+    throw (
+      brasilApiError ||
+      new Error("Não foi possível consultar o CNPJ no momento. Verifique sua conexão.")
+    );
+}
+
+export const lookupCnpj = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      cnpj: z.string().min(14),
+    })
+  )
+  .handler(async ({ data: { cnpj } }): Promise<CnpjCompanyDTO> => internalLookupCnpj(cnpj));
 
 /**
  * Reverse geocoding de alta precisão ao mover o pino no mapa real (OpenStreetMap Nominatim)
@@ -381,8 +450,8 @@ export const reverseGeocode = createServerFn({ method: "POST" })
   });
 
 /**
- * Autopreenchimento de Endereço Inteligente (IA / Heurística NLP)
- * Aceita qualquer texto livre de endereço colado e decompõe com precisão cirúrgica.
+ * Autopreenchimento de Endereço Inteligente (IA Unificada + Geocodificação Real)
+ * Decompõe qualquer texto livre/colado de endereço e valida com BrasilAPI v2 / ViaCEP e OpenStreetMap.
  */
 export const parseAddressWithAI = createServerFn({ method: "POST" })
   .validator(
@@ -393,15 +462,14 @@ export const parseAddressWithAI = createServerFn({ method: "POST" })
   .handler(async ({ data: { rawText } }): Promise<ResolvedAddressDTO> => {
     const text = rawText.trim();
 
-    // 1. Extração de CEP
+    // 1. Extração preliminar de CEP via regex para fast-path
     const cepMatch = text.match(/\b\d{5}-?\d{3}\b/);
     let extractedCep = cepMatch ? cleanDocument(cepMatch[0]) : "";
 
-    // Se temos CEP, já consultamos a BrasilAPI v2 para ancorar com extrema fidelidade
+    // Se temos CEP explícito de 8 dígitos, consultar diretamente a BrasilAPI v2 / ViaCEP
     if (extractedCep.length === 8) {
       try {
         const resolved = await lookupCep({ data: { cep: extractedCep } });
-        // Tenta extrair número do texto original se não estava no CEP
         const numMatch = text.match(/\b(?:n[º°.]?|número|num)\s*(\d+)\b/i) || text.match(/,\s*(\d{1,5})\b/);
         const number = numMatch ? numMatch[1] : undefined;
 
@@ -411,19 +479,100 @@ export const parseAddressWithAI = createServerFn({ method: "POST" })
           fullAddress: number ? `${resolved.street}, ${number} - ${resolved.neighborhood}, ${resolved.city} - ${resolved.state}` : resolved.fullAddress,
         };
       } catch {
-        // Prossegue com parse manual/NLP
+        // Prossegue com desconstrução inteligente
       }
     }
 
-    // 2. Extração de Estado / UF
+    // 2. Extração Estruturada via Orquestrador Universal de IA
+    try {
+      const aiRes = await executeUnifiedAiCall({
+        systemInstruction: `Você é o Especialista em Normalização de Endereços Brasileiros da Waesy Platform.
+Sua missão é decompor qualquer texto livre de endereço nas partes cadastrais canônicas do Brasil.
+Retorne EXCLUSIVAMENTE um JSON estrito no formato:
+{
+  "street": "Logradouro (Rua, Avenida, Travessa, etc.) sem número nem complemento, ou null",
+  "number": "Número predial ou null",
+  "complement": "Complemento (Apto, Bloco, Sala, etc.) ou null",
+  "neighborhood": "Bairro ou null",
+  "city": "Município/Cidade ou null",
+  "state": "Sigla da UF com 2 letras maiúsculas ou null",
+  "cep": "CEP limpo de 8 dígitos se puder ser inferido ou null"
+}`,
+        prompt: `Endereço para normalização:\n"${text}"`,
+        temperature: 0.1,
+        expectJson: true,
+      });
+
+      const parsed = aiRes.parsedJson as any;
+
+      if (parsed && (parsed.street || parsed.city)) {
+        const aiCep = parsed.cep ? cleanDocument(String(parsed.cep)) : "";
+        
+        // Se a IA identificou ou deduziu o CEP, valida na BrasilAPI v2
+        if (aiCep.length === 8) {
+          try {
+            const resolved = await lookupCep({ data: { cep: aiCep } });
+            const finalNumber = parsed.number || undefined;
+            return {
+              ...resolved,
+              number: finalNumber,
+              complement: parsed.complement || undefined,
+              fullAddress: finalNumber
+                ? `${resolved.street}, ${finalNumber} - ${resolved.neighborhood}, ${resolved.city} - ${resolved.state}`
+                : resolved.fullAddress,
+            };
+          } catch {
+            // Segue com as partes extraídas pela IA
+          }
+        }
+
+        const street = parsed.street || "";
+        const number = parsed.number || "";
+        const complement = parsed.complement || "";
+        const neighborhood = parsed.neighborhood || "";
+        const city = parsed.city || "";
+        const state = (parsed.state || "").toUpperCase();
+
+        // Tentar geocodificar com alta precisão via Nominatim
+        const geo = await forwardGeocodeInternal(
+          `${street} ${number}`.trim(),
+          neighborhood,
+          city,
+          state
+        );
+
+        const fullAddress = [
+          street ? `${street}${number ? `, ${number}` : ""}` : "",
+          complement ? `(${complement})` : "",
+          neighborhood,
+          city ? `${city} - ${state}` : state,
+        ].filter(Boolean).join(" - ");
+
+        return {
+          cep: aiCep || extractedCep,
+          street,
+          number: number || undefined,
+          complement: complement || undefined,
+          neighborhood,
+          city,
+          state,
+          latitude: geo?.lat || null,
+          longitude: geo?.lng || null,
+          fullAddress: fullAddress || text,
+          provider: geo ? "nominatim" : "manual",
+        };
+      }
+    } catch (e: any) {
+      console.warn("[parseAddressWithAI] IA indisponível, aplicando heurística de fallback:", e.message);
+    }
+
+    // 3. Heurística de Fallback com Regex + Nominatim
     const ufMatch = text.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i);
     const state = ufMatch ? ufMatch[1].toUpperCase() : "";
 
-    // 3. Extração de Número
     const numMatch = text.match(/\b(?:n[º°.]?|número|num)\s*(\d+)\b/i) || text.match(/,\s*(\d{1,5})\b/);
     const number = numMatch ? numMatch[1] : undefined;
 
-    // 4. Forward Geocoding da string completa no OpenStreetMap Nominatim
     let lat: number | null = null;
     let lng: number | null = null;
     let displayName = text;
@@ -463,7 +612,7 @@ export const parseAddressWithAI = createServerFn({ method: "POST" })
         }
       }
     } catch {
-      // Fallback
+      // Silencioso
     }
 
     return {
@@ -480,10 +629,104 @@ export const parseAddressWithAI = createServerFn({ method: "POST" })
     };
   });
 
+export interface ExchangeRateDTO {
+  pair: string;
+  code: string;
+  codein: string;
+  name: string;
+  bid: number;
+  ask: number;
+  high: number;
+  low: number;
+  pctChange: number;
+  updatedAt: string;
+}
+
+let exchangeRateCache: {
+  timestamp: number;
+  data: Record<string, ExchangeRateDTO>;
+} | null = null;
+
+const EXCHANGE_CACHE_TTL_MS = 60 * 1000; // 60 segundos de cache
+
+/**
+ * Consulta de Cotação de Câmbio Oficial em Tempo Real via AwesomeAPI (Regra 21)
+ * Suporte a pares de moedas para Turismo, E-commerce e Alertas Econômicos.
+ */
+export async function internalGetRealtimeExchangeRates(
+  customPairs?: string[]
+): Promise<Record<string, ExchangeRateDTO>> {
+  const pairs = customPairs || ["USD-BRL", "EUR-BRL", "GBP-BRL", "ARS-BRL", "CLP-BRL"];
+  const pairsKey = pairs.join(",");
+
+  // 1. Cache em memória para economia de rede
+  if (exchangeRateCache && Date.now() - exchangeRateCache.timestamp < EXCHANGE_CACHE_TTL_MS) {
+    return exchangeRateCache.data;
+  }
+
+    try {
+      const url = `https://economia.awesomeapi.com.br/last/${pairsKey}`;
+      const res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (!res.ok) {
+        throw new Error(`AwesomeAPI retornou status HTTP ${res.status}`);
+      }
+
+      const json = await res.json();
+      const result: Record<string, ExchangeRateDTO> = {};
+
+      for (const [, item] of Object.entries(json as Record<string, any>)) {
+        if (!item?.code || !item?.codein) continue;
+        const pairName = `${item.code}-${item.codein}`;
+        result[pairName] = {
+          pair: pairName,
+          code: item.code,
+          codein: item.codein,
+          name: item.name || pairName,
+          bid: Number(parseFloat(item.bid || "0").toFixed(4)),
+          ask: Number(parseFloat(item.ask || "0").toFixed(4)),
+          high: Number(parseFloat(item.high || "0").toFixed(4)),
+          low: Number(parseFloat(item.low || "0").toFixed(4)),
+          pctChange: Number(parseFloat(item.pctChange || "0").toFixed(2)),
+          updatedAt: item.create_date || new Date().toISOString(),
+        };
+      }
+
+      exchangeRateCache = {
+        timestamp: Date.now(),
+        data: result,
+      };
+
+      return result;
+    } catch (err: any) {
+      console.warn("[getRealtimeExchangeRates] Falha ao obter cotações:", err.message);
+      if (exchangeRateCache?.data) {
+        return exchangeRateCache.data;
+      }
+      return {};
+    }
+}
+
+export const getRealtimeExchangeRates = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        pairs: z
+          .array(z.string())
+          .default(["USD-BRL", "EUR-BRL", "GBP-BRL", "ARS-BRL", "CLP-BRL"])
+          .optional(),
+      })
+      .optional()
+  )
+  .handler(async ({ data }): Promise<Record<string, ExchangeRateDTO>> => internalGetRealtimeExchangeRates(data?.pairs));
+
 export interface ApiPingResult {
   id: string;
   name: string;
-  category: "maps" | "cep" | "cnpj" | "geocoding";
+  category: "maps" | "cep" | "cnpj" | "geocoding" | "currency" | "weather";
   url: string;
   status: "online" | "degraded" | "offline";
   latencyMs: number;
@@ -514,6 +757,18 @@ export const pingPublicApis = createServerFn({ method: "GET" }).handler(
         name: "BrasilAPI (Consulta Oficial CNPJ)",
         category: "cnpj" as const,
         url: "https://brasilapi.com.br/api/cnpj/v1/00000000000191",
+      },
+      {
+        id: "awesomeapi_fx",
+        name: "AwesomeAPI (Câmbio Comercial em Tempo Real)",
+        category: "currency" as const,
+        url: "https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL",
+      },
+      {
+        id: "wttr_weather",
+        name: "wttr.in (Meteorologia sem API Key)",
+        category: "weather" as const,
+        url: "https://wttr.in/Brasilia?format=j1&lang=pt",
       },
       {
         id: "carto_tiles",
@@ -656,6 +911,7 @@ export const savePublicApiGovernanceSettings = createServerFn({ method: "POST" }
         isAiAddressParserActive: z.boolean(),
         primaryCepProvider: z.enum(["brasilapi_v2", "viacep"]),
         timeoutMs: z.number().min(1000).max(15000),
+        isSimLabsClassifiedTelemetryActive: z.boolean().default(false),
       }),
     })
   )
@@ -726,3 +982,215 @@ export const savePublicApiGovernanceSettings = createServerFn({ method: "POST" }
 
     return { status: "success" };
   });
+
+// ============================================================
+// METEOROLOGIA & CLIMA REAL (BFF AUTHORITATIVE - REGRA 1 & 21)
+// ============================================================
+
+export interface WeatherDayDTO {
+  day: string;
+  date: string;
+  maxTempC: number;
+  minTempC: number;
+  condition: "sun" | "cloud" | "rain" | "wind";
+  conditionText: string;
+  iconCode: number;
+}
+
+export interface WeatherForecastDTO {
+  city: string;
+  source: "wttr_in" | "open_meteo";
+  updatedAt: string;
+  days: WeatherDayDTO[];
+}
+
+interface CachedWeather {
+  timestamp: number;
+  data: WeatherForecastDTO;
+}
+
+const weatherMemoryCache = new Map<string, CachedWeather>();
+const WEATHER_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutos
+
+const DAYS_PT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+function resolveWeatherCondition(weatherCode: number): "sun" | "cloud" | "rain" | "wind" {
+  if (weatherCode >= 200 && weatherCode <= 299) return "rain"; // thunderstorm
+  if (weatherCode >= 300 && weatherCode <= 399) return "rain"; // drizzle
+  if (weatherCode >= 500 && weatherCode <= 599) return "rain"; // rain
+  if (weatherCode >= 600 && weatherCode <= 699) return "cloud"; // snow
+  if (weatherCode >= 700 && weatherCode <= 799) return "wind"; // atmosphere
+  if (weatherCode === 800) return "sun"; // clear sky
+  if (weatherCode >= 801) return "cloud"; // clouds
+  return "sun";
+}
+
+function resolveOpenMeteoCondition(code: number): { condition: "sun" | "cloud" | "rain" | "wind"; text: string } {
+  if (code === 0) return { condition: "sun", text: "Céu limpo" };
+  if (code >= 1 && code <= 3) return { condition: "cloud", text: "Parcialmente nublado" };
+  if (code >= 45 && code <= 48) return { condition: "cloud", text: "Nevoeiro" };
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return { condition: "rain", text: "Chuva" };
+  if (code >= 71 && code <= 77) return { condition: "cloud", text: "Neve" };
+  if (code >= 95) return { condition: "rain", text: "Tempestade com raios" };
+  return { condition: "sun", text: "Ensolarado" };
+}
+
+/**
+ * Consulta de Previsão do Tempo Real com Cache Server-Side e Failover Automático.
+ * 1. Provedor Primário: wttr.in
+ * 2. Provedor Secundário (Failover): Open-Meteo API
+ */
+/**
+ * Consulta de Previsão do Tempo Real com Cache Server-Side e Failover Automático (Função Pura).
+ * 1. Provedor Primário: wttr.in
+ * 2. Provedor Secundário (Failover): Open-Meteo API
+ */
+export async function internalGetCityWeather(city: string): Promise<WeatherForecastDTO> {
+  const cleanCity = city.trim();
+  const cacheKey = cleanCity.toLowerCase();
+
+  // 1. Verificar cache em memória
+  const cached = weatherMemoryCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < WEATHER_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  // 2. Provedor Primário: wttr.in
+  try {
+    const encoded = encodeURIComponent(cleanCity);
+    const wttrRes = await fetch(`https://wttr.in/${encoded}?format=j1&lang=pt`, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(4500),
+    });
+
+    if (wttrRes.ok) {
+      const json = await wttrRes.json();
+      const weather = json?.weather;
+      if (Array.isArray(weather) && weather.length > 0) {
+        const days: WeatherDayDTO[] = weather.slice(0, 3).map((w: any, idx: number) => {
+          const date = w.date ? new Date(w.date) : new Date(Date.now() + idx * 86400000);
+          const dayName = idx === 0 ? "Hoje" : idx === 1 ? "Amanhã" : DAYS_PT[date.getDay()];
+          const hourly = w.hourly?.[4]; // meio-dia
+          const code = parseInt(hourly?.weatherCode || "800", 10);
+          return {
+            day: dayName,
+            date: w.date || date.toISOString().slice(0, 10),
+            maxTempC: parseInt(w.maxtempC || "28", 10),
+            minTempC: parseInt(w.mintempC || "22", 10),
+            condition: resolveWeatherCondition(code),
+            conditionText: hourly?.weatherDesc?.[0]?.value || "Parcialmente nublado",
+            iconCode: code,
+          };
+        });
+
+        const result: WeatherForecastDTO = {
+          city: cleanCity,
+          source: "wttr_in",
+          updatedAt: new Date().toISOString(),
+          days,
+        };
+
+        weatherMemoryCache.set(cacheKey, { timestamp: Date.now(), data: result });
+        return result;
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[getCityWeather] wttr.in falhou para "${cleanCity}":`, err?.message);
+  }
+
+  // 3. Provedor Secundário (Failover Resiliente): Open-Meteo
+  try {
+    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cleanCity)}&count=1&language=pt&format=json`;
+    const geoRes = await fetch(geoUrl, { signal: AbortSignal.timeout(4000) });
+    if (geoRes.ok) {
+      const geoData = await geoRes.json();
+      const first = geoData?.results?.[0];
+      if (first?.latitude && first?.longitude) {
+        const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${first.latitude}&longitude=${first.longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
+        const meteoRes = await fetch(meteoUrl, { signal: AbortSignal.timeout(4000) });
+        if (meteoRes.ok) {
+          const meteoJson = await meteoRes.json();
+          const daily = meteoJson?.daily;
+          if (Array.isArray(daily?.time) && daily.time.length > 0) {
+            const days: WeatherDayDTO[] = daily.time.slice(0, 3).map((dStr: string, idx: number) => {
+              const date = new Date(dStr);
+              const dayName = idx === 0 ? "Hoje" : idx === 1 ? "Amanhã" : DAYS_PT[date.getDay()];
+              const code = daily.weather_code?.[idx] ?? 0;
+              const info = resolveOpenMeteoCondition(code);
+              return {
+                day: dayName,
+                date: dStr,
+                maxTempC: Math.round(daily.temperature_2m_max?.[idx] ?? 26),
+                minTempC: Math.round(daily.temperature_2m_min?.[idx] ?? 20),
+                condition: info.condition,
+                conditionText: info.text,
+                iconCode: code,
+              };
+            });
+
+            const result: WeatherForecastDTO = {
+              city: cleanCity,
+              source: "open_meteo",
+              updatedAt: new Date().toISOString(),
+              days,
+            };
+
+            weatherMemoryCache.set(cacheKey, { timestamp: Date.now(), data: result });
+            return result;
+          }
+        }
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[getCityWeather] Open-Meteo fallback falhou para "${cleanCity}":`, err?.message);
+  }
+
+  // Se ambos falharem e houver cache antigo, retornar cache mesmo vencido
+  if (cached) {
+    return cached.data;
+  }
+
+  throw new Error(`Dados de previsão do tempo temporariamente indisponíveis para "${cleanCity}".`);
+}
+
+export const getCityWeather = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      city: z.string().min(2, "Nome da cidade é obrigatório"),
+    })
+  )
+  .handler(async ({ data: { city } }): Promise<WeatherForecastDTO> => internalGetCityWeather(city));
+
+/**
+ * Conversão de Câmbio em Tempo Real via AwesomeAPI com suporte a múltiplas moedas (Função Pura).
+ */
+export async function internalConvertCurrency(
+  amount: number,
+  from = "USD",
+  to = "BRL"
+): Promise<{ convertedAmount: number; rate: number; pair: string; updatedAt: string }> {
+  const pair = `${from.toUpperCase()}-${to.toUpperCase()}`;
+  const rates = await internalGetRealtimeExchangeRates([pair]);
+  const exchange = rates[pair];
+  if (!exchange || !exchange.bid) {
+    throw new Error(`Taxa de câmbio para o par ${pair} indisponível no momento.`);
+  }
+  const rate = exchange.bid;
+  const convertedAmount = Number((amount * rate).toFixed(2));
+  return {
+    convertedAmount,
+    rate,
+    pair,
+    updatedAt: exchange.updatedAt,
+  };
+}
+
+export const convertCurrency = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      amount: z.number().positive(),
+      from: z.string().default("USD"),
+      to: z.string().default("BRL"),
+    })
+  )
+  .handler(async ({ data }) => internalConvertCurrency(data.amount, data.from, data.to));

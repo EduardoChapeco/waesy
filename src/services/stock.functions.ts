@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 
 import { getServerIdentity, requireAdmin } from "@/lib/server-access";
+import { dispatchMarketplaceChannelSync } from "./marketplace-hub.functions";
 
 // ---------------------------------------------------------------------------
 // Handlers (decoupled for unit testing)
@@ -89,6 +90,34 @@ export async function _adjustStock(
  });
 
  if (error) throw error;
+
+  // Disparo assíncrono defensivo de sincronização de estoque com canais de marketplace
+  try {
+    const { data: connectors } = await db
+      .from("marketplace_connectors")
+      .select("id, platform, settings")
+      .eq("store_id", store_id)
+      .eq("status", "connected");
+
+    if (connectors && connectors.length > 0) {
+      for (const conn of connectors) {
+        const settings = (conn.settings as Record<string, any>) || {};
+        if (settings.sync_stock !== false) {
+          dispatchMarketplaceChannelSync({
+            storeId: store_id,
+            connectorId: conn.id,
+            platform: conn.platform,
+            syncType: "stock",
+            settings,
+            itemCount: 1,
+          }).catch((syncErr) => console.warn(`[stock] Falha no sync com ${conn.platform}:`, syncErr));
+        }
+      }
+    }
+  } catch (syncErr) {
+    console.warn("[stock] Falha não impeditiva ao consultar conectores de marketplace:", syncErr);
+  }
+
  return { status: "ok" as const, message: "Estoque ajustado com sucesso." };
 }
 

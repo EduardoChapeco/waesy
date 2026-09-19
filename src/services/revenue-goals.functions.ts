@@ -87,7 +87,7 @@ export const getRevenueGoalsAndForecast = createServerFn({ method: "GET" })
       .single();
 
     if (storeError) {
-      logSystemError("Falha ao buscar metas da loja", { storeId: targetStoreId, error: storeError });
+      logSystemError({ errorMessage: "Falha ao buscar metas da loja", error: storeError, payload: { storeId: targetStoreId } });
     }
 
     const settingsGoals = (store?.settings as any)?.revenue_goals || {};
@@ -106,7 +106,7 @@ export const getRevenueGoalsAndForecast = createServerFn({ method: "GET" })
       .lte("created_at", endOfMonth.toISOString());
 
     if (ordersError) {
-      logSystemError("Falha ao buscar pedidos para cálculo de forecast", { storeId: targetStoreId, error: ordersError });
+      logSystemError({ errorMessage: "Falha ao buscar pedidos para cálculo de forecast", error: ordersError, payload: { storeId: targetStoreId } });
     }
 
     const validOrders = orders || [];
@@ -232,7 +232,7 @@ export const saveRevenueGoals = createServerFn({ method: "POST" })
       .eq("id", targetStoreId);
 
     if (updateError) {
-      logSystemError("Falha ao salvar metas comerciais", { storeId: targetStoreId, error: updateError });
+      logSystemError({ errorMessage: "Falha ao salvar metas comerciais", error: updateError, payload: { storeId: targetStoreId } });
       throw new Error("Erro ao salvar metas comerciais no banco de dados.");
     }
 

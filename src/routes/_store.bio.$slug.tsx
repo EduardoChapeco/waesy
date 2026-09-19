@@ -9,16 +9,16 @@ import { getLinkInBio } from "@/services/cms.functions";
 import { recordWhatsAppLead } from "@/services/whatsapp-leads.functions";
 
 export const Route = createFileRoute("/_store/bio/$slug")({
- loader: async () => {
-   try {
- const res = await getLinkInBio().catch(() => null);
- if (!res || res.status === "unconfigured") throw notFound();
- return res;
-   } catch (err) {
-     console.error("[loader:_store.bio.$slug] Unhandled loader error:", err);
-     return {} as any;
+  loader: async ({ params }) => {
+    try {
+      const res = await getLinkInBio({ data: { slug: params.slug } }).catch(() => null);
+      if (!res || res.status === "unconfigured") throw notFound();
+      return res;
+    } catch (err) {
+      console.error("[loader:_store.bio.$slug] Unhandled loader error:", err);
+      return {} as any;
     }
- },
+  },
  head: ({ loaderData }) => {
  if (!loaderData || !loaderData.title) return { meta: [{ title: "Biolink não encontrado" }] };
  return {

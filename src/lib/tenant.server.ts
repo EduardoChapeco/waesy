@@ -1,4 +1,4 @@
-import { getRequestHeader, getCookie } from "@tanstack/react-start/server";
+import { getRequestHeader, getCookie } from "@tanstack/start-server-core";
 import { getAnonServerClient } from "@/lib/supabase";
 
 /**

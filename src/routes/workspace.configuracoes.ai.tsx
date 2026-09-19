@@ -44,6 +44,10 @@ const PROVIDER_ICONS: Record<string, { label: string; description: string }> = {
  label: "OpenRouter",
  description: "Roteador multi-modelo unificado (Claude, Llama, DeepSeek)",
  },
+ groq: {
+ label: "Groq LPU",
+ description: "Incrível velocidade de inferência ultra-rápida (Llama 3.3)",
+ },
  openai: { label: "OpenAI", description: "Modelos GPT-4o e embeddings" },
  anthropic: { label: "Anthropic Claude", description: "Modelos Claude Sonnet & Opus" },
  firecrawl: { label: "Firecrawl", description: "Web scraping e extração inteligente de dados" },

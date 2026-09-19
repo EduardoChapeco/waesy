@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { generateSyntheticCohort, BRAZILIAN_CITIES, CANONICAL_BRAZIL_ARCHETYPES } from '@/lib/simlab/brazil-demographics';
 import { decomposeOffer, evaluateMcFaddenDiscreteChoice } from '@/lib/simlab/econometric-engine';
-import { getNextActiveKey, markKeyError } from '@/services/api-orchestrator.functions';
+import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from '@/services/api-orchestrator.functions';
 import { createServerFn } from '@tanstack/react-start';
 import { getServerClient } from '@/lib/supabase';
 import { logSystemError } from '@/lib/logger';
@@ -140,14 +140,6 @@ async function evaluateBatchWithRealAI(
   personas: SyntheticArchetype[],
   stimulus: { title?: string; description?: string; test_price_brl?: number; niche?: string }
 ): Promise<SimLabPersonaResponse[] | null> {
-  const geminiKey = await getNextActiveKey("gemini");
-  const groqKey = !geminiKey ? await getNextActiveKey("groq") : null;
-  const openaiKey = !geminiKey && !groqKey ? await getNextActiveKey("openai") : null;
-
-  if (!geminiKey && !groqKey && !openaiKey) {
-    return null;
-  }
-
   const systemInstruction = `Você é o SimLab V2, simulador de populações sintéticas brasileiras calibrado pelo Censo IBGE 2022 e Critério ABEP.
 Sua missão é simular realisticamente a reação de cada persona consumidora a uma oferta de mercado.
 Para cada persona, gere:
@@ -192,60 +184,15 @@ ${JSON.stringify(personas.map(p => ({
 `;
 
   try {
-    let rawJson: any = null;
+    const aiRes = await executeUnifiedAiCall({
+      systemInstruction,
+      prompt: userPrompt,
+      temperature: 0.3,
+      expectJson: true,
+      preferProvider: "groq",
+    });
 
-    if (geminiKey) {
-      const gRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: {
-              temperature: 0.3,
-              responseMimeType: "application/json",
-            },
-          }),
-          signal: AbortSignal.timeout(18000),
-        }
-      );
-
-      if (gRes.ok) {
-        const data = await gRes.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) rawJson = JSON.parse(text);
-      } else {
-        await markKeyError(geminiKey.id, `Gemini status ${gRes.status}`);
-      }
-    } else if (groqKey) {
-      const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${groqKey.rawKey}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-70b-versatile",
-          messages: [
-            { role: "system", content: systemInstruction },
-            { role: "user", content: userPrompt },
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.3,
-        }),
-        signal: AbortSignal.timeout(18000),
-      });
-
-      if (grRes.ok) {
-        const grData = await grRes.json();
-        const text = grData?.choices?.[0]?.message?.content;
-        if (text) rawJson = JSON.parse(text);
-      } else {
-        await markKeyError(groqKey.id, `Groq status ${grRes.status}`);
-      }
-    }
+    const rawJson: any = aiRes.parsedJson;
 
     if (rawJson?.evaluations && Array.isArray(rawJson.evaluations)) {
       const evaluationsMap = new Map(rawJson.evaluations.map((e: any) => [e.persona_id, e]));
@@ -656,15 +603,10 @@ export async function executeSendFocusGroupMessage(data: {
     } as SyntheticArchetype;
   });
 
-  // 3. Tentar Geração Cognitiva com IA Real (Gemini / Groq / OpenAI) com Dossiê Curricular
+  // 3. Tentar Geração Cognitiva com IA Real (OpenRouter / Groq / Gemini / OpenAI) com Dossiê Curricular
   let aiReplies: Record<string, { reply: string; score: number }> = {};
   try {
-    const geminiKey = await getNextActiveKey("gemini");
-    const groqKey = !geminiKey ? await getNextActiveKey("groq") : null;
-    const openaiKey = !geminiKey && !groqKey ? await getNextActiveKey("openai") : null;
-
-    if (geminiKey || groqKey || openaiKey) {
-      const systemInstruction = `Você é o SimLab V2, simulador de grupos focais e populações sintéticas brasileiras calibrado pelo Censo IBGE 2022, Pesquisa de Orçamentos Familiares (POF) e Critério Brasil (ABEP).
+    const systemInstruction = `Você é o SimLab V2, simulador de grupos focais e populações sintéticas brasileiras calibrado pelo Censo IBGE 2022, Pesquisa de Orçamentos Familiares (POF) e Critério Brasil (ABEP).
 Sua missão é simular a reação visceral, hiper-realista, autêntica e em 1ª pessoa de cada persona consumidora brasileira diante da pergunta ou oferta do moderador.
 
 DIRETRIZES ECONÔMICAS E COGNITIVAS MANDATÓRIAS:
@@ -689,7 +631,7 @@ DIRETRIZES ECONÔMICAS E COGNITIVAS MANDATÓRIAS:
   ]
 }`;
 
-      const userPrompt = `Pergunta/Hipótese do Moderador: "${data.userMessage}"
+    const userPrompt = `Pergunta/Hipótese do Moderador: "${data.userMessage}"
 
 Personas participantes do Focus Group (com Dossiê Curricular e Financeiro):
 ${JSON.stringify(
@@ -714,65 +656,18 @@ ${JSON.stringify(
   }))
 )}`;
 
-      if (geminiKey) {
-        const gRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemInstruction }] },
-              contents: [{ parts: [{ text: userPrompt }] }],
-              generationConfig: { temperature: 0.35, responseMimeType: "application/json" },
-            }),
-            signal: AbortSignal.timeout(18000),
-          }
-        );
-        if (gRes.ok) {
-          const gJson = await gRes.json();
-          const text = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            const parsed = JSON.parse(text);
-            if (Array.isArray(parsed.replies)) {
-              for (const r of parsed.replies) {
-                if (r.persona_id) {
-                  aiReplies[r.persona_id] = { reply: r.reply, score: Number(r.score) || 0.7 };
-                }
-              }
-            }
-          }
-        }
-      } else if (groqKey) {
-        const grRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${groqKey.rawKey}`,
-          },
-          body: JSON.stringify({
-            model: "llama-3.1-70b-versatile",
-            messages: [
-              { role: "system", content: `${systemInstruction}\nResponda APENAS com JSON válido.` },
-              { role: "user", content: userPrompt },
-            ],
-            temperature: 0.35,
-            response_format: { type: "json_object" },
-          }),
-          signal: AbortSignal.timeout(18000),
-        });
-        if (grRes.ok) {
-          const grJson = await grRes.json();
-          const content = grJson?.choices?.[0]?.message?.content;
-          if (content) {
-            const parsed = JSON.parse(content);
-            if (Array.isArray(parsed.replies)) {
-              for (const r of parsed.replies) {
-                if (r.persona_id) {
-                  aiReplies[r.persona_id] = { reply: r.reply, score: Number(r.score) || 0.7 };
-                }
-              }
-            }
-          }
+    const aiResult = await executeUnifiedAiCall({
+      systemPrompt: systemInstruction,
+      userPrompt,
+      responseFormat: "json_object",
+      temperature: 0.35,
+    });
+
+    const parsed = aiResult.parsedJson || (aiResult.content ? JSON.parse(aiResult.content) : {});
+    if (Array.isArray(parsed.replies)) {
+      for (const r of parsed.replies) {
+        if (r.persona_id) {
+          aiReplies[r.persona_id] = { reply: r.reply, score: Number(r.score) || 0.7 };
         }
       }
     }

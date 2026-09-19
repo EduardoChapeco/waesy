@@ -7,20 +7,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
+import { getActiveSecretForProvider, internalTestSecretKeyConnection } from "./secret-vault.functions";
 
 // ============================================================
 // Schemas e Tipos
 // ============================================================
 
 export const apiProviderEnum = z.enum([
- "firecrawl",
- "steel",
- "gemini",
- "groq",
- "openai",
- "google_maps",
- "resend",
- "asaas",
+  "openrouter",
+  "groq",
+  "gemini",
+  "openai",
+  "anthropic",
+  "firecrawl",
+  "steel",
+  "google_maps",
+  "resend",
+  "asaas",
 ]);
 
 export type ApiProvider = z.infer<typeof apiProviderEnum>;
@@ -192,6 +195,34 @@ export const deleteApiKeyFromPool = createServerFn({ method: "POST" })
  return { success: true };
  });
 
+/**
+ * 4.1 Testa a conexão real de uma chave cadastrada na pool global do Admin Master.
+ */
+export async function internalTestPoolKeyConnection(
+  poolKeyId: string,
+): Promise<{ success: boolean; latencyMs: number; error?: string }> {
+  const supabase = getServerClient();
+  const { data: keyRow, error } = await supabase
+    .from("api_key_pools")
+    .select("provider, encrypted_key")
+    .eq("id", poolKeyId)
+    .single();
+
+  if (error || !keyRow || !keyRow.encrypted_key) {
+    throw new Error("Chave não encontrada na pool.");
+  }
+
+  const rawKey = Buffer.from(keyRow.encrypted_key, "base64").toString("utf-8").trim();
+  return internalTestSecretKeyConnection(keyRow.provider, rawKey);
+}
+
+export const testPoolKeyConnection = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data: { id } }) => {
+    await requireAdmin();
+    return internalTestPoolKeyConnection(id);
+  });
+
 // ============================================================
 // Funções de Gestão de Prompts Master (Platform Admin)
 // ============================================================
@@ -281,7 +312,20 @@ export const saveMasterPrompt = createServerFn({ method: "POST" })
 /**
  * Helper interno: Obtém a chave ativa prioritária do pool com rotação e fallback para ambiente local.
  */
-export async function getNextActiveKey(provider: ApiProvider): Promise<{ id: string; rawKey: string } | null> {
+export async function getNextActiveKey(provider: ApiProvider, ownerId?: string): Promise<{ id: string; rawKey: string } | null> {
+  // 1. BYOK: Verifica se o usuário ou loja ativo tem uma chave no secret_vault
+  try {
+    const targetOwner = ownerId || (await getServerIdentity().then((id) => id?.id).catch(() => undefined));
+    if (targetOwner) {
+      const byokSecret = await getActiveSecretForProvider(provider, targetOwner).catch(() => null);
+      if (byokSecret) {
+        return { id: `byok-${provider}`, rawKey: byokSecret };
+      }
+    }
+  } catch {
+    // Prossegue para a pool da plataforma
+  }
+
   const supabase = getServerClient();
   try {
     let query: any = supabase
@@ -335,6 +379,18 @@ export async function getNextActiveKey(provider: ApiProvider): Promise<{ id: str
   } else if (provider === "openai") {
     const envKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
     if (envKey && envKey.trim().length > 5) return { id: "env-openai", rawKey: envKey.trim() };
+  } else if (provider === "openrouter") {
+    const envKey = process.env.OPENROUTER_API_KEY || process.env.VITE_OPENROUTER_API_KEY;
+    if (envKey && envKey.trim().length > 5) return { id: "env-openrouter", rawKey: envKey.trim() };
+  } else if (provider === "anthropic") {
+    const envKey = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
+    if (envKey && envKey.trim().length > 5) return { id: "env-anthropic", rawKey: envKey.trim() };
+  } else if (provider === "firecrawl") {
+    const envKey = process.env.FIRECRAWL_API_KEY || process.env.VITE_FIRECRAWL_API_KEY;
+    if (envKey && envKey.trim().length > 5) return { id: "env-firecrawl", rawKey: envKey.trim() };
+  } else if (provider === "steel") {
+    const envKey = process.env.STEEL_API_KEY || process.env.VITE_STEEL_API_KEY;
+    if (envKey && envKey.trim().length > 5) return { id: "env-steel", rawKey: envKey.trim() };
   }
 
   return null;
@@ -346,7 +402,7 @@ export async function getNextActiveKey(provider: ApiProvider): Promise<{ id: str
 export const saveSimLabApiKey = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      provider: z.enum(["gemini", "groq", "openai"]),
+      provider: z.enum(["openrouter", "groq", "gemini", "openai"]),
       apiKey: z.string().min(5, "Chave de API inválida"),
       label: z.string().optional(),
     })
@@ -359,7 +415,7 @@ export const saveSimLabApiKey = createServerFn({ method: "POST" })
 
     const payload = {
       provider: data.provider,
-      label: data.label || `Chave ${data.provider.toUpperCase()} (SimLab)`,
+      label: data.label || `Chave ${data.provider.toUpperCase()} (SimLab / IA)`,
       encrypted_key: encrypted,
       masked_key: masked,
       priority: 1,
@@ -392,10 +448,10 @@ export const saveSimLabApiKey = createServerFn({ method: "POST" })
   });
 
 /**
- * Consulta o status de chaves de IA ativas para o SimLab (banco de dados ou ambiente).
+ * Consulta o status de chaves de IA ativas para o SimLab e orquestrador (banco de dados ou ambiente).
  */
 export const getSimLabKeyStatus = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ hasActiveKey: boolean; activeProvider: "gemini" | "groq" | "openai" | null; poolCount: number }> => {
+  async (): Promise<{ hasActiveKey: boolean; activeProvider: "openrouter" | "gemini" | "groq" | "openai" | null; poolCount: number }> => {
     const supabase = getServerClient();
     let poolCount = 0;
     try {
@@ -408,17 +464,25 @@ export const getSimLabKeyStatus = createServerFn({ method: "GET" }).handler(
       // ignore
     }
 
-    // Verificar se há gemini
-    const gemini = await getNextActiveKey("gemini");
-    if (gemini) return { hasActiveKey: true, activeProvider: "gemini", poolCount };
+    // Verificar se há openrouter
+    const openrouter = await getNextActiveKey("openrouter");
+    if (openrouter) return { hasActiveKey: true, activeProvider: "openrouter", poolCount };
 
     // Verificar se há groq
     const groq = await getNextActiveKey("groq");
     if (groq) return { hasActiveKey: true, activeProvider: "groq", poolCount };
 
+    // Verificar se há gemini
+    const gemini = await getNextActiveKey("gemini");
+    if (gemini) return { hasActiveKey: true, activeProvider: "gemini", poolCount };
+
     // Verificar se há openai
     const openai = await getNextActiveKey("openai");
     if (openai) return { hasActiveKey: true, activeProvider: "openai", poolCount };
+
+    // Verificar se há anthropic
+    const anthropic = await getNextActiveKey("anthropic");
+    if (anthropic) return { hasActiveKey: true, activeProvider: "anthropic" as any, poolCount };
 
     return { hasActiveKey: false, activeProvider: null, poolCount };
   }
@@ -428,7 +492,7 @@ export const getSimLabKeyStatus = createServerFn({ method: "GET" }).handler(
  * Helper interno: Registra erro em uma chave da pool para auditoria.
  */
 export async function markKeyError(keyId: string, errorMessage: string) {
-  if (keyId.startsWith("env-")) return;
+  if (keyId.startsWith("env-") || keyId === "override-key") return;
   const supabase = getServerClient();
   await supabase
     .from("api_key_pools")
@@ -437,6 +501,457 @@ export async function markKeyError(keyId: string, errorMessage: string) {
       last_error_message: errorMessage.slice(0, 200),
     })
     .eq("id", keyId);
+}
+
+export interface UnifiedAiCallOptions {
+  systemPrompt?: string;
+  systemInstruction?: string;
+  userPrompt?: string;
+  prompt?: string;
+  responseFormat?: "json_object" | "text";
+  expectJson?: boolean;
+  jsonMode?: boolean;
+  temperature?: number;
+  maxTokens?: number;
+  preferredProvider?: ApiProvider;
+  preferProvider?: ApiProvider;
+  modelOverride?: string;
+  images?: Array<{ mimeType: string; base64: string }>;
+  overrideApiKey?: string;
+  ownerId?: string;
+  storeId?: string;
+}
+
+export interface UnifiedAiResult {
+  content: string;
+  text: string;
+  provider: ApiProvider;
+  model: string;
+  parsedJson?: any;
+}
+
+/**
+ * Motor Unificado de Execução de IA da Plataforma Waesy.
+ * Orquestra chaves ativas do pool com failover transparente, suporte multimodal (visão/OCR) e registro de erros.
+ * Provedores suportados: OpenRouter, Groq, Gemini, OpenAI.
+ */
+export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promise<UnifiedAiResult> {
+  const systemPrompt = options.systemPrompt || options.systemInstruction;
+  const userPrompt = options.userPrompt || options.prompt || "";
+  const isJson = options.responseFormat === "json_object" || options.expectJson === true || options.jsonMode === true;
+  const preferred = options.preferredProvider || options.preferProvider;
+  const images = options.images || [];
+
+  const providersToTry: ApiProvider[] = [];
+  if (preferred) {
+    providersToTry.push(preferred);
+  }
+
+  // Se houver imagens (visão computacional / OCR), prioriza Gemini, OpenRouter, OpenAI e Anthropic (Groq é text-only no momento)
+  const defaultCascade: ApiProvider[] = images.length > 0
+    ? ["gemini", "openrouter", "openai", "anthropic"]
+    : ["openrouter", "groq", "gemini", "openai", "anthropic"];
+
+  for (const p of defaultCascade) {
+    if (!providersToTry.includes(p)) {
+      providersToTry.push(p);
+    }
+  }
+
+  const errors: string[] = [];
+
+  for (const provider of providersToTry) {
+    const keysToTry: Array<{ id: string; rawKey: string }> = [];
+    if (options.overrideApiKey && provider === preferred) {
+      keysToTry.push({ id: "override-key", rawKey: options.overrideApiKey });
+    }
+
+    // 1. BYOK: Verifica se o lojista/usuário possui chave ativa configurada no secret_vault, tenant_ai_providers ou integration_credentials
+    const targetOwner = options.ownerId || (await getServerIdentity().then((id) => id?.id).catch(() => undefined));
+    const targetStore = options.storeId || (await getServerIdentity().then((id) => id?.store_id).catch(() => undefined));
+    if (targetOwner || targetStore) {
+      const byokSecret = await getActiveSecretForProvider(provider, targetOwner, targetStore).catch(() => null);
+      if (byokSecret && !keysToTry.some((k) => k.rawKey === byokSecret)) {
+        keysToTry.push({ id: `byok-${provider}`, rawKey: byokSecret });
+      }
+    }
+
+    // 2. Pool de Chaves Gerenciadas da Plataforma (Admin Master)
+    const poolKey = await getNextActiveKey(provider).catch(() => null);
+    if (poolKey?.rawKey && !keysToTry.some((k) => k.rawKey === poolKey.rawKey)) {
+      keysToTry.push(poolKey);
+    }
+
+    // 3. Fallback de Variáveis de Ambiente do Servidor
+    const envKeyName = `${provider.toUpperCase()}_API_KEY`;
+    const envFallback = (typeof process !== "undefined" && process.env ? process.env[envKeyName] : undefined)?.trim();
+    if (envFallback && !keysToTry.some((k) => k.rawKey === envFallback)) {
+      keysToTry.push({ id: `env-${provider}`, rawKey: envFallback });
+    }
+
+    if (keysToTry.length === 0) continue;
+
+
+    for (const keyInfo of keysToTry) {
+      try {
+      if (provider === "openrouter") {
+        const defaultModel = images.length > 0 ? "google/gemini-flash-1.5" : "meta-llama/llama-3.3-70b-instruct";
+        const model = options.modelOverride || defaultModel;
+        const messages: any[] = [];
+        if (systemPrompt) {
+          messages.push({ role: "system", content: systemPrompt });
+        }
+
+        if (images.length > 0) {
+          const contentParts: any[] = [{ type: "text", text: userPrompt }];
+          for (const img of images) {
+            contentParts.push({
+              type: "image_url",
+              image_url: { url: `data:${img.mimeType || "image/jpeg"};base64,${img.base64}` },
+            });
+          }
+          messages.push({ role: "user", content: contentParts });
+        } else {
+          messages.push({ role: "user", content: userPrompt });
+        }
+
+        const bodyPayload: any = {
+          model,
+          messages,
+          temperature: options.temperature ?? 0.3,
+          max_tokens: options.maxTokens ?? 2048,
+        };
+        if (isJson) {
+          bodyPayload.response_format = { type: "json_object" };
+        }
+
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${keyInfo.rawKey}`,
+            "HTTP-Referer": "https://waesy.pages.dev",
+            "X-Title": "Waesy Platform",
+          },
+          body: JSON.stringify(bodyPayload),
+          signal: AbortSignal.timeout(22000),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          await markKeyError(keyInfo.id, `OpenRouter HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          errors.push(`OpenRouter (${res.status})`);
+          continue;
+        }
+
+        const data = await res.json();
+        const content = data?.choices?.[0]?.message?.content || "";
+        if (!content) {
+          errors.push("OpenRouter retornou resposta vazia");
+          continue;
+        }
+
+        let parsedJson: any = undefined;
+        if (isJson || content.trim().startsWith("{") || content.trim().startsWith("[")) {
+          const clean = content.replace(/```json\s*|\s*```/gi, "").trim();
+          try {
+            parsedJson = JSON.parse(clean);
+          } catch {
+            const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+            if (match) {
+              try { parsedJson = JSON.parse(match[0]); } catch {}
+            }
+          }
+        }
+
+        return { content, text: content, provider: "openrouter", model, parsedJson };
+      }
+
+      if (provider === "groq") {
+        if (images.length > 0) {
+          // Groq é text-only neste pool — segue para próximo provedor da cascata
+          continue;
+        }
+
+        const model = options.modelOverride || "llama-3.3-70b-versatile";
+        const messages: any[] = [];
+        if (systemPrompt) {
+          messages.push({ role: "system", content: systemPrompt });
+        }
+        messages.push({ role: "user", content: userPrompt });
+
+        const bodyPayload: any = {
+          model,
+          messages,
+          temperature: options.temperature ?? 0.3,
+          max_tokens: options.maxTokens ?? 2048,
+        };
+        if (isJson) {
+          bodyPayload.response_format = { type: "json_object" };
+        }
+
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${keyInfo.rawKey}`,
+          },
+          body: JSON.stringify(bodyPayload),
+          signal: AbortSignal.timeout(20000),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          await markKeyError(keyInfo.id, `Groq HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          errors.push(`Groq (${res.status})`);
+          continue;
+        }
+
+        const data = await res.json();
+        const content = data?.choices?.[0]?.message?.content || "";
+        if (!content) {
+          errors.push("Groq retornou resposta vazia");
+          continue;
+        }
+
+        let parsedJson: any = undefined;
+        if (isJson || content.trim().startsWith("{") || content.trim().startsWith("[")) {
+          const clean = content.replace(/```json\s*|\s*```/gi, "").trim();
+          try {
+            parsedJson = JSON.parse(clean);
+          } catch {
+            const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+            if (match) {
+              try { parsedJson = JSON.parse(match[0]); } catch {}
+            }
+          }
+        }
+
+        return { content, text: content, provider: "groq", model, parsedJson };
+      }
+
+      if (provider === "gemini") {
+        const model = options.modelOverride || "gemini-1.5-flash";
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyInfo.rawKey}`;
+
+        const parts: any[] = [{ text: userPrompt }];
+        for (const img of images) {
+          parts.push({
+            inlineData: {
+              mimeType: img.mimeType || "image/jpeg",
+              data: img.base64,
+            },
+          });
+        }
+
+        const payload: any = {
+          contents: [{ parts }],
+          generationConfig: {
+            temperature: options.temperature ?? 0.3,
+            maxOutputTokens: options.maxTokens ?? 2048,
+          },
+        };
+
+        if (systemPrompt) {
+          payload.systemInstruction = {
+            parts: [{ text: systemPrompt }],
+          };
+        }
+
+        if (isJson) {
+          payload.generationConfig.responseMimeType = "application/json";
+        }
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(20000),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          await markKeyError(keyInfo.id, `Gemini HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          errors.push(`Gemini (${res.status})`);
+          continue;
+        }
+
+        const data = await res.json();
+        const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        if (!content) {
+          errors.push("Gemini retornou resposta vazia");
+          continue;
+        }
+
+        let parsedJson: any = undefined;
+        if (isJson || content.trim().startsWith("{") || content.trim().startsWith("[")) {
+          const clean = content.replace(/```json\s*|\s*```/gi, "").trim();
+          try {
+            parsedJson = JSON.parse(clean);
+          } catch {
+            const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+            if (match) {
+              try { parsedJson = JSON.parse(match[0]); } catch {}
+            }
+          }
+        }
+
+        return { content, text: content, provider: "gemini", model, parsedJson };
+      }
+
+      if (provider === "openai") {
+        const model = options.modelOverride || "gpt-4o-mini";
+        const messages: any[] = [];
+        if (systemPrompt) {
+          messages.push({ role: "system", content: systemPrompt });
+        }
+
+        if (images.length > 0) {
+          const contentParts: any[] = [{ type: "text", text: userPrompt }];
+          for (const img of images) {
+            contentParts.push({
+              type: "image_url",
+              image_url: { url: `data:${img.mimeType || "image/jpeg"};base64,${img.base64}` },
+            });
+          }
+          messages.push({ role: "user", content: contentParts });
+        } else {
+          messages.push({ role: "user", content: userPrompt });
+        }
+
+        const bodyPayload: any = {
+          model,
+          messages,
+          temperature: options.temperature ?? 0.3,
+          max_tokens: options.maxTokens ?? 2048,
+        };
+        if (isJson) {
+          bodyPayload.response_format = { type: "json_object" };
+        }
+
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${keyInfo.rawKey}`,
+          },
+          body: JSON.stringify(bodyPayload),
+          signal: AbortSignal.timeout(20000),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          await markKeyError(keyInfo.id, `OpenAI HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          errors.push(`OpenAI (${res.status})`);
+          continue;
+        }
+
+        const data = await res.json();
+        const content = data?.choices?.[0]?.message?.content || "";
+        if (!content) {
+          errors.push("OpenAI retornou resposta vazia");
+          continue;
+        }
+
+        let parsedJson: any = undefined;
+        if (isJson || content.trim().startsWith("{") || content.trim().startsWith("[")) {
+          const clean = content.replace(/```json\s*|\s*```/gi, "").trim();
+          try {
+            parsedJson = JSON.parse(clean);
+          } catch {
+            const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+            if (match) {
+              try { parsedJson = JSON.parse(match[0]); } catch {}
+            }
+          }
+        }
+
+        return { content, text: content, provider: "openai", model, parsedJson };
+      }
+
+      if (provider === "anthropic") {
+        const model = options.modelOverride || (images.length > 0 ? "claude-3-5-sonnet-20241022" : "claude-3-5-haiku-20241022");
+        const messages: any[] = [];
+        if (images.length > 0) {
+          const contentParts: any[] = [];
+          for (const img of images) {
+            contentParts.push({
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: img.mimeType || "image/jpeg",
+                data: img.base64,
+              },
+            });
+          }
+          contentParts.push({ type: "text", text: userPrompt || "Analise a imagem enviada." });
+          messages.push({ role: "user", content: contentParts });
+        } else {
+          messages.push({ role: "user", content: userPrompt });
+        }
+
+        const bodyPayload: any = {
+          model,
+          messages,
+          max_tokens: options.maxTokens ?? 2048,
+          temperature: options.temperature ?? 0.3,
+        };
+        if (systemPrompt) {
+          bodyPayload.system = systemPrompt;
+        }
+
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": keyInfo.rawKey,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify(bodyPayload),
+          signal: AbortSignal.timeout(25000),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          await markKeyError(keyInfo.id, `Anthropic HTTP ${res.status}: ${errText.slice(0, 150)}`);
+          errors.push(`Anthropic (${res.status})`);
+          continue;
+        }
+
+        const data = await res.json();
+        const content = data?.content?.[0]?.text || "";
+        if (!content) {
+          errors.push("Anthropic retornou resposta vazia");
+          continue;
+        }
+
+        let parsedJson: any = undefined;
+        if (isJson || content.trim().startsWith("{") || content.trim().startsWith("[")) {
+          const clean = content.replace(/```json\s*|\s*```/gi, "").trim();
+          try {
+            parsedJson = JSON.parse(clean);
+          } catch {
+            const match = clean.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+            if (match) {
+              try { parsedJson = JSON.parse(match[0]); } catch {}
+            }
+          }
+        }
+
+        return { content, text: content, provider: "anthropic", model, parsedJson };
+      }
+    } catch (err: any) {
+      if (keyInfo?.id) {
+        await markKeyError(keyInfo.id, `Erro de conexão: ${err.message || "Network Error"}`);
+      }
+      errors.push(`${provider}: ${err.message}`);
+    }
+  }
+}
+
+  throw new Error(
+    `Nenhum provedor de IA ativo pôde processar a solicitação. Verifique suas chaves em Admin Master > Pools de APIs ou Workspace > Cofre de IA (OpenRouter, Groq, Gemini, OpenAI ou Anthropic). Detalhes: ${errors.join("; ") || "Sem chaves ativas configuradas"}`
+  );
 }
 
 /**
@@ -558,103 +1073,47 @@ export const importProductFromUrl = createServerFn({ method: "POST" })
  // 4. Barreira Anti-Prompt Injection
  const sanitizedContent = rawContent.replace(/\{\{|\}\}/g, "").slice(0, 10000);
 
- // 5. Processamento via LLM (Gemini Flash ou Groq)
- let extractedProduct: ImportedProductData | null = null;
+ // 5. Processamento via Motor Unificado de IA (OpenRouter -> Groq -> Gemini -> OpenAI)
+  let extractedProduct: ImportedProductData | null = null;
 
- // Tenta Gemini Pool
- const geminiKey = await getNextActiveKey("gemini");
- const groqKey = await getNextActiveKey("groq");
+  const systemPrompt =
+    masterPrompt?.system_instruction ||
+    "Você é um assistente de e-commerce sênior. Extraia as informações do produto a partir do conteúdo bruto da página e retorne estritamente um JSON válido.";
 
- const systemPrompt =
- masterPrompt?.system_instruction ||
- "Você é um assistente de e-commerce. Extraia as informações do produto e retorne estritamente um JSON válido.";
+  const userPrompt = `Analise o produto abaixo:\nURL: ${input.url}\nTom de escrita: ${input.tone}\n\nConteúdo da página:\n${sanitizedContent}\n\nRetorne o JSON estritamente no formato:\n{\n "title": "Nome do Produto",\n "subtitle": "Subtítulo atraente curto",\n "description": "Descrição estruturada e completa",\n "price_cents": 0,\n "compare_at_cents": 0,\n "brand": "Marca",\n "category_suggestion": "Categoria",\n "images": ["url1"],\n "attributes": {},\n "variants": []\n}`;
 
- const userPrompt = `Analise o produto abaixo:\nURL: ${input.url}\nTom de escrita: ${input.tone}\n\nConteúdo:\n${sanitizedContent}\n\nRetorne o JSON no formato:\n{\n "title": "Nome do Produto",\n "subtitle": "Subtítulo atraente curto",\n "description": "Descrição estruturada e completa",\n "price_cents": 0,\n "compare_at_cents": 0,\n "brand": "Marca",\n "category_suggestion": "Categoria",\n "images": ["url1"],\n "attributes": {},\n "variants": []\n}`;
+  try {
+    const aiResult = await executeUnifiedAiCall({
+      systemPrompt,
+      userPrompt,
+      responseFormat: "json_object",
+      temperature: Number(masterPrompt?.temperature || 0.2),
+      modelOverride: masterPrompt?.target_model,
+    });
 
- // Executa chamada à API
- if (geminiKey) {
- try {
- const geminiRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/${masterPrompt?.target_model || "gemini-1.5-flash"}:generateContent?key=${geminiKey.rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- systemInstruction: { parts: [{ text: systemPrompt }] },
- contents: [{ parts: [{ text: userPrompt }] }],
- generationConfig: {
- temperature: Number(masterPrompt?.temperature || 0.2),
- responseMimeType: "application/json",
- },
- }),
- signal: AbortSignal.timeout(15000),
- },
- );
+    if (aiResult.parsedJson && aiResult.parsedJson.title) {
+      extractedProduct = aiResult.parsedJson as ImportedProductData;
+    }
+  } catch (aiErr: any) {
+    console.warn("[importProductFromUrl] Falha no pool de IA, tentando extração heurística:", aiErr.message);
+  }
 
- if (geminiRes.ok) {
- const gJson = await geminiRes.json();
- const responseText = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (responseText) {
- extractedProduct = JSON.parse(responseText);
- }
- } else {
- const errText = await geminiRes.text();
- await markKeyError(geminiKey.id, `Gemini API Error: ${errText.slice(0, 100)}`);
- }
- } catch (e: any) {
- await markKeyError(geminiKey.id, `Gemini catch: ${e.message}`);
- }
- }
+  // Fallback inteligente caso nenhuma IA responda: Extrai dados estruturados básicos via regex
+  if (!extractedProduct) {
+    // Extração determinística de título
+    const titleMatch = rawContent.match(/<h1[^>]*>([^<]+)<\/h1>/i) || rawContent.match(/title:\s*([^\n]+)/i);
+    const title = titleMatch ? titleMatch[1].trim() : "Produto Importado via Link";
 
- // Fallback para Groq se Gemini não estiver disponível ou falhar
- if (!extractedProduct && groqKey) {
- try {
- const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
- method: "POST",
- headers: {
- "Content-Type": "application/json",
- Authorization: `Bearer ${groqKey.rawKey}`,
- },
- body: JSON.stringify({
- model: "llama-3.1-70b-versatile",
- messages: [
- { role: "system", content: `${systemPrompt}\nResponda APENAS com JSON válido.` },
- { role: "user", content: userPrompt },
- ],
- temperature: 0.2,
- response_format: { type: "json_object" },
- }),
- signal: AbortSignal.timeout(15000),
- });
-
- if (groqRes.ok) {
- const grJson = await groqRes.json();
- const content = grJson?.choices?.[0]?.message?.content;
- if (content) {
- extractedProduct = JSON.parse(content);
- }
- }
- } catch (e: any) {
- await markKeyError(groqKey.id, `Groq catch: ${e.message}`);
- }
- }
-
- // Fallback inteligente caso nenhuma IA responda: Extrai dados estruturados básicos via regex
- if (!extractedProduct) {
- // Extração determinística de título
- const titleMatch = rawContent.match(/<h1[^>]*>([^<]+)<\/h1>/i) || rawContent.match(/title:\s*([^\n]+)/i);
- const title = titleMatch ? titleMatch[1].trim() : "Produto Importado via Link";
-
- extractedProduct = {
- title: title.slice(0, 100),
- subtitle: `Importado de ${new URL(input.url).hostname}`,
- description: `Produto importado automaticamente a partir do link de origem:\n${input.url}\n\nRevise as informações, adicione fotos e personalize o preço antes de salvar.`,
- price_cents: 0,
- images: [],
- attributes: { origem: new URL(input.url).hostname },
- variants: [{ name: "Padrão", price_cents: 0 }],
- };
- }
+    extractedProduct = {
+      title: title.slice(0, 100),
+      subtitle: `Importado de ${new URL(input.url).hostname}`,
+      description: `Produto importado automaticamente a partir do link de origem:\n${input.url}\n\nRevise as informações, adicione fotos e personalize o preço antes de salvar.`,
+      price_cents: 0,
+      images: [],
+      attributes: { origem: new URL(input.url).hostname },
+      variants: [{ name: "Padrão", price_cents: 0 }],
+    };
+  }
 
  // 6. Atualiza contador de cota do usuário
  if (usage) {
@@ -747,9 +1206,6 @@ export const importFullCatalogMenu = createServerFn({ method: "POST" })
 
  const sanitizedContent = rawContent.replace(/\{\{|\}\}/g, "").slice(0, 14000);
 
- const geminiKey = await getNextActiveKey("gemini");
- const groqKey = await getNextActiveKey("groq");
-
  const systemPrompt = `Você é um especialista em estruturação de cardápios e catálogos omnichannel para restaurantes, mercados e comércios (iFood, Rappi, Delivery).
 Extraia as categorias e itens do conteúdo fornecido e retorne estritamente um JSON no seguinte formato:
 {
@@ -772,91 +1228,17 @@ Extraia as categorias e itens do conteúdo fornecido e retorne estritamente um J
 }
 Observação: O campo price_cents deve ser um número inteiro representando centavos em BRL (ex: R$ 34,90 = 3490). Se não encontrar o preço exato, use 0. Extraia o máximo de categorias e produtos válidos que encontrar.`;
 
- let extracted: ImportedCatalogDTO | null = null;
-
- if (geminiKey) {
- try {
- const geminiRes = await fetch(
- `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
- {
- method: "POST",
- headers: { "Content-Type": "application/json" },
- body: JSON.stringify({
- systemInstruction: { parts: [{ text: systemPrompt }] },
- contents: [{ parts: [{ text: `Analise o cardápio a seguir e extraia todas as categorias e itens:\n\n${sanitizedContent}` }] }],
- generationConfig: {
+ const aiRes = await executeUnifiedAiCall({
+ systemPrompt,
+ userPrompt: `Conteúdo a ser processado:\n${sanitizedContent}`,
+ responseFormat: "json_object",
  temperature: 0.2,
- responseMimeType: "application/json",
- },
- }),
- signal: AbortSignal.timeout(20000),
- },
- );
-
- if (geminiRes.ok) {
- const gJson = await geminiRes.json();
- const text = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
- if (text) {
- extracted = JSON.parse(text);
- }
- }
- } catch {
- // groq fallback
- }
- }
-
- if (!extracted && groqKey) {
- try {
- const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
- method: "POST",
- headers: {
- "Content-Type": "application/json",
- Authorization: `Bearer ${groqKey.rawKey}`,
- },
- body: JSON.stringify({
- model: "llama-3.1-70b-versatile",
- messages: [
- { role: "system", content: `${systemPrompt}\nResponda APENAS com JSON válido.` },
- { role: "user", content: `Analise o cardápio e extraia categorias e itens:\n\n${sanitizedContent}` },
- ],
- temperature: 0.2,
- response_format: { type: "json_object" },
- }),
- signal: AbortSignal.timeout(20000),
  });
 
- if (groqRes.ok) {
- const grJson = await groqRes.json();
- const content = grJson?.choices?.[0]?.message?.content;
- if (content) {
- extracted = JSON.parse(content);
- }
- }
- } catch {
- // fallback
- }
+ const extracted = aiRes.parsedJson;
+ if (!extracted || !Array.isArray(extracted.categories) || extracted.categories.length === 0) {
+ throw new Error("A IA não conseguiu identificar itens e categorias de cardápio no conteúdo informado.");
  }
 
- if (!extracted || !extracted.categories || extracted.categories.length === 0) {
- extracted = {
- store_name: input.url ? new URL(input.url).hostname : "Cardápio Importado",
- categories: [
- {
- name: "Geral",
- description: "Itens importados",
- products: [
- {
- title: "Item de Exemplo Importado",
- description: "Edite o título, fotos e preço conforme necessário",
- price_cents: 0,
- image_url: null,
- selling_unit: "un",
- },
- ],
- },
- ],
- };
- }
-
- return extracted;
+ return extracted as ImportedCatalogDTO;
  });

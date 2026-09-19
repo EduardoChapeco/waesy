@@ -7,7 +7,7 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest, setResponseHeader } from "@tanstack/react-start/server";
+import { getRequest, setResponseHeader } from "@tanstack/start-server-core";
 import { z } from "zod";
 
 import { getSSRClient, getServerIdentity } from "@/lib/server-access";

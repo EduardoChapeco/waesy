@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
-import { getNextActiveKey, markKeyError } from "@/services/api-orchestrator.functions";
+import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 
 export interface PersonalFinancialCategoryDTO {
   id: string;
@@ -568,12 +568,6 @@ export const analyzeReceiptWithAI = createServerFn({ method: "POST" })
       throw new Error(`Falha ao processar imagem do comprovante: ${err.message}`);
     }
 
-    // 2. Obtém chave Gemini do pool
-    const geminiKey = await getNextActiveKey("gemini");
-    if (!geminiKey) {
-      throw new Error("Nenhuma chave de IA disponível no momento. Configure uma chave Gemini nas integrações.");
-    }
-
     const systemPrompt = `Você é um especialista em OCR e análise de comprovantes fiscais brasileiros.
 Analise a imagem do comprovante e extraia as informações em formato JSON estrito.
 Sempre retorne um JSON com os campos especificados, usando null quando não encontrar a informação.
@@ -594,49 +588,20 @@ Seja preciso e não invente dados que não estejam claramente visíveis no compr
 }`;
 
     try {
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [
-              {
-                parts: [
-                  { text: userPrompt },
-                  {
-                    inlineData: {
-                      mimeType,
-                      data: imageBase64,
-                    },
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              responseMimeType: "application/json",
-            },
-          }),
-          signal: AbortSignal.timeout(20000),
-        }
-      );
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt,
+        userPrompt,
+        images: [{ mimeType, base64: imageBase64 }],
+        temperature: 0.1,
+        expectJson: true,
+        preferProvider: "gemini",
+      });
 
-      if (!geminiRes.ok) {
-        const errText = await geminiRes.text();
-        await markKeyError(geminiKey.id, `OCR Gemini Error: ${errText.slice(0, 150)}`);
-        throw new Error("Falha na análise de OCR. Tente novamente.");
+      const parsed = (aiRes.parsedJson || {}) as OcrReceiptResult;
+
+      if (!parsed || (!parsed.description && !parsed.amountCents)) {
+        throw new Error("A IA não retornou dados legíveis do comprovante.");
       }
-
-      const gJson = await geminiRes.json();
-      const responseText = gJson?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      if (!responseText) {
-        throw new Error("A IA não retornou dados do comprovante.");
-      }
-
-      const parsed = JSON.parse(responseText) as OcrReceiptResult;
 
       // Sanitiza: garante amountCents como inteiro
       if (parsed.amountCents !== null && !Number.isInteger(parsed.amountCents)) {
@@ -645,9 +610,8 @@ Seja preciso e não invente dados que não estejam claramente visíveis no compr
 
       return parsed;
     } catch (err: any) {
-      if (err.message.includes("Falha") || err.message.includes("IA")) throw err;
-      await markKeyError(geminiKey.id, `OCR catch: ${err.message}`);
-      throw new Error("Erro ao analisar comprovante com IA.");
+      console.warn("[personal-finance] Erro no OCR unificado:", err.message);
+      throw new Error(`Erro ao analisar comprovante com IA: ${err.message}`);
     }
   });
 

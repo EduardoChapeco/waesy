@@ -18,7 +18,10 @@ import {
   QrCode,
   Truck,
   ShieldCheck,
-  Sparkles,
+  Star,
+  Award,
+  HeartHandshake,
+  ImagePlus,
   Clock,
   Utensils,
   Car,
@@ -59,7 +62,6 @@ import {
   Armchair,
   Shirt,
   GraduationCap,
-  Award,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -86,7 +88,7 @@ import { FavoriteButton } from "@/components/common/favorite-button";
 import { cn } from "@/lib/utils";
 import { TravelBookingDossierModal } from "./travel-booking-dossier-modal";
 import { WeatherWidget } from "./weather-widget";
-import { getClassifiedFeatureCards, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedFeatureCards, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
 import { CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 
 
@@ -152,7 +154,11 @@ export function EditorialShowcaseView({
   };
 
   const attrs = classified?.attributes || {};
-  const nicheId = String(attrs.niche || classified?.category || "viagem").toLowerCase();
+  const nicheDef = resolveClassifiedNiche(classified);
+  const nicheId = String(attrs.niche || nicheDef.id || "goods").toLowerCase();
+  const isTravel = nicheId === "travel" || nicheId.includes("viag") || nicheId.includes("tour") || classified?.category === "travel";
+  const isHospitality = nicheId === "hospitality_stay" || nicheId.includes("hosped") || nicheId.includes("temporada");
+  const isGoods = nicheId === "goods" || nicheId.includes("goods") || nicheId.includes("desapego") || attrs.desapego_subcategory || (!isTravel && !isHospitality && !nicheId.includes("veic") && !nicheId.includes("imov") && !nicheId.includes("serv") && !nicheId.includes("vaga") && !nicheId.includes("food") && !nicheId.includes("doacao") && !nicheId.includes("digit") && !nicheId.includes("assinatura") && !nicheId.includes("equip"));
 
   const images: string[] =
     (Array.isArray(classified?.images) && classified.images.length > 0 ? classified.images : null) ||
@@ -236,90 +242,91 @@ export function EditorialShowcaseView({
     (classified?.location_name ? classified.location_name.split("—")[0].trim().split("-")[0].trim() : "") ||
     "Chapecó";
 
-  // ── Estatísticas do Topo (Polimórficas por Nicho) ──────────────────────────
+  // ── Estatísticas do Topo (Polimórficas por Nicho — Zero Fake Fallback) ──
   const getHeaderStats = () => {
-    if (nicheId.includes("viag") || nicheId.includes("travel") || nicheId.includes("tour")) {
-      return [
-        { label: "Duração", val: attrs.duration_text || "—" },
-        { label: "Regime", val: attrs.meal_plan || "—" },
-        { label: "Viajantes / Vagas", val: attrs.guests_text || attrs.vacancies_text || "Sob Consulta" },
-      ];
+    const list: { label: string; val: string }[] = [];
+
+    if (isTravel) {
+      if (attrs.duration_text) list.push({ label: "Duração", val: attrs.duration_text });
+      if (attrs.meal_plan) list.push({ label: "Regime", val: attrs.meal_plan });
+      if (attrs.guests_text || attrs.vacancies_text) list.push({ label: "Vagas", val: attrs.guests_text || attrs.vacancies_text });
+      return list;
     }
     if (nicheId.includes("alim") || nicheId.includes("gastro") || nicheId.includes("restaurante")) {
-      return [
-        { label: "Preparo", val: attrs.prep_time || "Pronta entrega" },
-        { label: "Cardápio", val: attrs.meal_type ? attrs.meal_type.replace(/_/g, " ") : "Artesanal" },
-        { label: "Entrega", val: Array.isArray(attrs.service_modes) && attrs.service_modes.includes("motolink") ? "Delivery" : "Retirada" },
-      ];
+      if (attrs.prep_time) list.push({ label: "Preparo", val: attrs.prep_time });
+      if (attrs.meal_type) list.push({ label: "Tipo", val: attrs.meal_type.replace(/_/g, " ") });
+      if (Array.isArray(attrs.service_modes) && attrs.service_modes.length > 0) {
+        list.push({ label: "Entrega", val: attrs.service_modes.includes("motolink") ? "Delivery" : "Retirada" });
+      }
+      return list;
     }
     if (nicheId.includes("hosped") || nicheId.includes("temporada")) {
-      return [
-        { label: "Tipo", val: attrs.property_type || "—" },
-        { label: "Hóspedes", val: attrs.max_guests ? `${attrs.max_guests} máx.` : "—" },
-        { label: "Quartos", val: attrs.bedrooms ? `${attrs.bedrooms} qto(s)` : "—" },
-      ];
+      if (attrs.property_type) list.push({ label: "Tipo", val: attrs.property_type });
+      if (attrs.max_guests) list.push({ label: "Hóspedes", val: `${attrs.max_guests} máx.` });
+      if (attrs.bedrooms) list.push({ label: "Quartos", val: `${attrs.bedrooms} qto(s)` });
+      return list;
     }
     if (nicheId.includes("imov") || nicheId.includes("real_estate")) {
-      return [
-        { label: "Área", val: attrs.area_sqm ? `${attrs.area_sqm} m²` : "—" },
-        { label: "Quartos", val: attrs.bedrooms ? `${attrs.bedrooms} qtos` : "—" },
-        { label: "Vagas", val: attrs.parking_spots ? `${attrs.parking_spots} vg(s)` : "—" },
-      ];
+      if (attrs.area_sqm) list.push({ label: "Área", val: `${attrs.area_sqm} m²` });
+      if (attrs.bedrooms) list.push({ label: "Quartos", val: `${attrs.bedrooms} qtos` });
+      if (attrs.parking_spots) list.push({ label: "Vagas", val: `${attrs.parking_spots} vg(s)` });
+      return list;
     }
     if (nicheId.includes("veic") || nicheId.includes("car") || nicheId.includes("auto")) {
-      return [
-        { label: "Ano", val: attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model}` : "—" },
-        { label: "Km", val: attrs.mileage_km ? `${attrs.mileage_km} km` : "Zero Km" },
-        { label: "Câmbio", val: attrs.transmission || "—" },
-      ];
+      if (attrs.year_model) list.push({ label: "Ano", val: `${attrs.year_fab ? `${attrs.year_fab}/` : ""}${attrs.year_model}` });
+      if (attrs.mileage_km) list.push({ label: "Km", val: `${attrs.mileage_km} km` });
+      if (attrs.transmission) list.push({ label: "Câmbio", val: attrs.transmission });
+      return list;
     }
     if (nicheId.includes("serv") || nicheId.includes("prof")) {
-      return [
-        { label: "Modalidade", val: attrs.modality === "remoto" ? "Online / Remoto" : "Presencial" },
-        { label: "Região", val: attrs.service_area || "Local" },
-        { label: "Garantia", val: "Com Nota" },
-      ];
+      if (attrs.modality) list.push({ label: "Modalidade", val: attrs.modality === "remoto" ? "Online / Remoto" : "Presencial" });
+      if (attrs.service_area) list.push({ label: "Região", val: attrs.service_area });
+      if (attrs.estimated_duration) list.push({ label: "Duração", val: `~${attrs.estimated_duration} min` });
+      return list;
     }
     if (nicheId.includes("equip")) {
-      return [
-        { label: "Período", val: attrs.equipment_period === "evento" ? "Por Evento" : "Por Diária" },
-        { label: "Caução", val: attrs.deposit_cents ? formatMoney(attrs.deposit_cents) : "Sem Caução" },
-        { label: "Estado", val: "Revisado" },
-      ];
+      if (attrs.equipment_period) list.push({ label: "Período", val: attrs.equipment_period === "evento" ? "Por Evento" : "Por Diária" });
+      if (attrs.deposit_cents) list.push({ label: "Caução", val: formatMoney(attrs.deposit_cents) });
+      return list;
     }
     if (nicheId.includes("digit")) {
-      return [
-        { label: "Formato", val: attrs.digital_file_type || "Digital" },
-        { label: "Downloads", val: `${attrs.digital_download_limit || "Ilimitados"}` },
-        { label: "Acesso", val: "Imediato" },
-      ];
+      if (attrs.digital_file_type) list.push({ label: "Formato", val: attrs.digital_file_type });
+      if (attrs.digital_download_limit) list.push({ label: "Downloads", val: `${attrs.digital_download_limit}` });
+      return list;
     }
     if (nicheId.includes("vaga") || nicheId.includes("job")) {
-      return [
-        { label: "Modelo", val: attrs.work_model ? (attrs.work_model === "remoto" ? "Remoto" : attrs.work_model === "hibrido" ? "Híbrido" : "Presencial") : "Presencial" },
-        { label: "Regime", val: attrs.regime || "CLT" },
-        { label: "Remuneração", val: attrs.salary_range || "A combinar" },
-      ];
+      if (attrs.work_model) list.push({ label: "Modelo", val: attrs.work_model === "remoto" ? "Remoto" : attrs.work_model === "hibrido" ? "Híbrido" : "Presencial" });
+      if (attrs.regime) list.push({ label: "Regime", val: attrs.regime });
+      if (attrs.salary_range) list.push({ label: "Remuneração", val: attrs.salary_range });
+      return list;
     }
     if (nicheId.includes("doacao") || attrs.is_donation) {
-      return [
-        { label: "Tipo", val: "Doação Solidária" },
-        { label: "Valor", val: "Gratuito R$ 0" },
-        { label: "Condição", val: attrs.condition ? attrs.condition.replace(/_/g, " ") : "Pronto para Uso" },
-      ];
+      list.push({ label: "Tipo", val: "Doação" });
+      if (attrs.condition) list.push({ label: "Condição", val: attrs.condition.replace(/_/g, " ") });
+      return list;
     }
     if (nicheId.includes("assinatura") || classified?.pricing_model === "recurring") {
-      return [
-        { label: "Ciclo", val: classified?.billing_cycle === "yearly" ? "Anual" : classified?.billing_cycle === "quarterly" ? "Trimestral" : classified?.billing_cycle === "semiannual" ? "Semestral" : "Mensal" },
-        { label: "Adesão", val: classified?.setup_fee_cents ? formatMoney(classified.setup_fee_cents) : "Isento" },
-        { label: "Teste", val: classified?.trial_days ? `${classified.trial_days} dias grátis` : "Acesso Direto" },
-      ];
+      if (classified?.billing_cycle) {
+        list.push({ label: "Ciclo", val: classified.billing_cycle === "yearly" ? "Anual" : classified.billing_cycle === "quarterly" ? "Trimestral" : classified.billing_cycle === "semiannual" ? "Semestral" : "Mensal" });
+      }
+      if (classified?.setup_fee_cents) list.push({ label: "Adesão", val: formatMoney(classified.setup_fee_cents) });
+      if (classified?.trial_days) list.push({ label: "Teste", val: `${classified.trial_days} dias grátis` });
+      return list;
     }
-    return [
-      { label: "Condição", val: attrs.item_condition ? attrs.item_condition.replace(/_/g, " ") : "Excelente" },
-      { label: "Garantia", val: attrs.item_warranty || "Testado" },
-      { label: "Negociação", val: classified?.negotiable ? "Sim" : "Fixa" },
-    ];
+
+    // Desapego / Genérico
+    const condition = attrs.condition || attrs.item_condition;
+    if (condition) {
+      const condLabel = condition === "novo" ? "Novo" : condition === "usado_excelente" ? "Como Novo" : condition === "usado_bom" ? "Bom Estado" : condition.replace(/_/g, " ");
+      list.push({ label: "Condição", val: condLabel });
+    }
+    if (attrs.item_warranty || attrs.warranty) {
+      list.push({ label: "Garantia", val: attrs.item_warranty || attrs.warranty });
+    }
+    if (classified?.negotiable) {
+      list.push({ label: "Negociação", val: "Aceita Proposta" });
+    }
+    return list;
   };
 
   const headerStats = getHeaderStats();
@@ -366,9 +373,9 @@ export function EditorialShowcaseView({
 
   // ── CTA Text do Botão Primário ─────────────────────────────────────────────
   const getPrimaryCtaLabel = () => {
-    if (nicheId.includes("viag") || nicheId.includes("tour")) return "Reservar Pacote";
-    if (nicheId.includes("alim") || nicheId.includes("gastro")) return "Fazer Pedido / Reserva";
-    if (nicheId.includes("hosped")) return "Consultar Datas & Reservar";
+    if (isTravel) return "Reservar Pacote";
+    if (nicheId.includes("alim") || nicheId.includes("gastro") || nicheId === "food") return "Fazer Pedido";
+    if (isHospitality) return "Consultar Datas & Reservar";
     if (nicheId.includes("imov")) return "Agendar Visita ao Imóvel";
     if (nicheId.includes("veic")) return "Agendar Test-Drive / Proposta";
     if (nicheId.includes("serv")) return "Solicitar Orçamento";
@@ -376,8 +383,7 @@ export function EditorialShowcaseView({
     if (nicheId.includes("digit")) return "Comprar & Baixar";
     if (nicheId.includes("vaga") || nicheId.includes("job")) return "Candidatar-se à Vaga";
     if (nicheId.includes("doacao") || attrs.is_donation) return "Quero Receber Doação";
-    if (nicheId.includes("assinatura") || classified?.pricing_model === "recurring") return "Assinar Agora";
-    return "Comprar / Falar com Vendedor";
+    return classified?.price_cents > 0 ? "Comprar Agora" : "Fazer Proposta";
   };
 
   const handleShare = () => {
@@ -389,7 +395,7 @@ export function EditorialShowcaseView({
       }).catch(() => {});
     } else if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
-      alert("Link copiado para a área de transferência!");
+      toast.success("Link copiado para a área de transferência!");
     }
   };
 
@@ -656,41 +662,70 @@ export function EditorialShowcaseView({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Coluna Esquerda: Mídias, Roteiro & Abas Editoriais (7 colunas no Desktop) */}
           <div className="lg:col-span-7 space-y-5">
-            {/* ── Header Editorial (Avatar Circular com Story Ring Gradiente + Estatísticas) ── */}
-            <div className="flex items-center gap-3.5 sm:gap-6">
-          <div className="relative shrink-0">
-            <div className="size-18 sm:size-22 rounded-full p-[2.5px] bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-md">
-              {images[0] ? (
-                <img
-                  src={images[0]}
-                  alt={classified.title}
-                  className="size-full rounded-full object-cover border-2 border-background"
-                />
-              ) : (
-                <div className="size-full rounded-full bg-muted flex items-center justify-center border-2 border-background">
-                  <Sparkles className="size-6 text-muted-foreground" />
+            {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
+            {images.length > 0 && (
+              <div className="w-full space-y-2">
+                <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-muted/30 border border-border/40 group">
+                  <img
+                    src={images[0]}
+                    alt={classified.title}
+                    className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
+                    onClick={() => setFullscreenImage(images[0])}
+                  />
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-mono font-medium">
+                      {images.length} {images.length === 1 ? "foto" : "fotos"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFullscreenImage(images[0])}
+                    className="absolute bottom-3.5 right-3.5 px-3 py-1.5 rounded-xl bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 shadow-xs flex items-center gap-1.5 transition-all"
+                  >
+                    <Maximize2 className="size-3.5" />
+                    <span>Expandir</span>
+                  </button>
                 </div>
-              )}
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 size-5 sm:size-5.5 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-xs border-2 border-background">
-              <CheckCircle2 className="size-3 sm:size-3.5 fill-white text-blue-500" />
-            </div>
-          </div>
 
-          {/* Estatísticas em 3 Colunas Canônicas (Polimórficas & Sem Truncamento Cego) */}
-          <div className="flex-1 grid grid-cols-3 gap-1 text-center divide-x divide-border/30 min-w-0">
-            {headerStats.map((stat, i) => (
-              <div key={i} className={`flex flex-col justify-center min-w-0 ${i > 0 ? "pl-1.5" : ""}`}>
-                <span className="font-display font-extrabold text-xs sm:text-sm text-foreground tracking-tight line-clamp-2 leading-tight px-0.5 capitalize">
-                  {stat.val || "—"}
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">
-                  {stat.label}
-                </span>
+                {/* Miniaturas de Acesso Rápido */}
+                {images.length > 1 && (
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                    {images.slice(0, 6).map((img, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setFullscreenImage(img)}
+                        className="relative size-16 sm:size-18 rounded-xl overflow-hidden border border-border/50 bg-muted shrink-0 group cursor-pointer hover:border-primary transition-colors"
+                      >
+                        <img src={img} alt={`Miniatura ${idx + 1}`} className="size-full object-cover group-hover:scale-105 transition-transform" />
+                      </button>
+                    ))}
+                    {images.length > 6 && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("grid")}
+                        className="size-16 sm:size-18 rounded-xl border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 transition-colors"
+                      >
+                        <span>+{images.length - 6}</span>
+                        <span className="text-[10px] font-normal">fotos</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
+            )}
+
+            {/* Estatísticas Canônicas (Chips Semânticos) */}
+            {headerStats.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap pt-1">
+                {headerStats.map((stat, i) => (
+                  <div key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-muted/40 border border-border/40 text-xs">
+                    <span className="text-muted-foreground uppercase text-[10px] tracking-wider font-semibold">{stat.label}:</span>
+                    <strong className="text-foreground font-bold">{stat.val}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
 
         {/* ── Título, Subtítulo & Bullets ── */}
         <div className="space-y-1.5">
@@ -941,7 +976,7 @@ export function EditorialShowcaseView({
               {/* Especificações por Nicho */}
 
               {/* Pacote de Viagem & Turismo (Paridade CMS ↔ Vitrine - Regra 19) */}
-              {(nicheId.includes("viag") || nicheId.includes("travel") || nicheId.includes("tour") || classified?.category === "travel") && (
+              {isTravel && (
                 <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/30 space-y-3.5 text-xs">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
@@ -1211,7 +1246,7 @@ export function EditorialShowcaseView({
               )}
 
               {/* Desapego & Bens Físicos */}
-              {(nicheId.includes("desapego") || attrs.desapego_subcategory) && (
+              {isGoods && (
                 <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
@@ -1248,7 +1283,7 @@ export function EditorialShowcaseView({
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                      <Sparkles className="size-3.5 text-emerald-600" />
+                      <Star className="size-3.5 text-emerald-600" />
                       <span>Doação Solidária Comunitária</span>
                     </h4>
                     <Badge className="bg-emerald-600 text-white font-bold text-[10px]">
@@ -1271,7 +1306,7 @@ export function EditorialShowcaseView({
                 <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                      <Sparkles className="size-3.5 text-primary" />
+                      <Award className="size-3.5 text-primary" />
                       <span>Plano & Assinatura Recorrente</span>
                     </h4>
                     <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30 capitalize">
@@ -1447,7 +1482,7 @@ export function EditorialShowcaseView({
                     (classified.recurring_features || attrs.recurring_features).length > 0 && (
                       <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
                         <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                          <Sparkles className="size-3.5 text-primary" />
+                          <Award className="size-3.5 text-primary" />
                           <span>Vantagens do Plano</span>
                         </h4>
                         <div className="space-y-1.5">
@@ -1541,7 +1576,7 @@ export function EditorialShowcaseView({
               {(nicheId.includes("doacao") || attrs.is_donation) ? (
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-3">
                   <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs uppercase tracking-wider">
-                    <Sparkles className="size-4 text-emerald-600" />
+                    <HeartHandshake className="size-4 text-emerald-600" />
                     <span>Condições de Retirada Solidária</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -1588,8 +1623,8 @@ export function EditorialShowcaseView({
               ) : (nicheId.includes("assinatura") || classified.pricing_model === "recurring") ? (
                 <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
                   <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
-                    <Sparkles className="size-4 text-primary" />
-                    <span>Condições do Plano & Assinatura</span>
+                    <CreditCard className="size-4 text-primary" />
+                    <span>Condições do Plano &amp; Assinatura</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
@@ -1692,8 +1727,8 @@ export function EditorialShowcaseView({
                 </div>
               )}
 
-              {/* Card de Transporte Polimórfico */}
-              {flightDetails && (
+              {/* Card de Transporte Polimórfico (Apenas Turismo/Viagens) */}
+              {isTravel && flightDetails && (
                 <div className="p-4 rounded-2xl bg-muted/40 border border-border/40 space-y-3">
 
                   {/* ── AÉREO ── */}
@@ -1909,8 +1944,8 @@ export function EditorialShowcaseView({
                 </div>
               )}
 
-              {/* Saídas Confirmadas (Múltiplas Datas) */}
-              {departureOptions.length > 0 && (
+              {/* Saídas Confirmadas (Múltiplas Datas - Apenas Turismo/Excursões) */}
+              {isTravel && departureOptions.length > 0 && (
                 <div className="space-y-2.5">
                   <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
                     <Calendar className="size-3.5 text-primary" />
@@ -1966,8 +2001,8 @@ export function EditorialShowcaseView({
                 </div>
               )}
 
-              {/* Clima Real via wttr.in */}
-              {destinationCity ? (
+              {/* Clima Real via wttr.in (Exclusivo para Viagens e Hospedagem) */}
+              {(isTravel || isHospitality) && destinationCity ? (
                 <WeatherWidget city={destinationCity} />
               ) : null}
 
@@ -1999,17 +2034,14 @@ export function EditorialShowcaseView({
           <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-6 shadow-xs">
             {/* ── 1. Topo & Identificação Editorial ── */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="px-3.5 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/25 text-xs font-black uppercase tracking-wider">
-                  Pacote Selecionado
-                </Badge>
-                {!hideLocation && classified.location_name && (
+              {!hideLocation && classified.location_name && (
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="px-3 py-1 rounded-xl bg-muted/60 text-foreground text-xs font-semibold gap-1.5">
                     <MapPin className="size-3.5 text-primary" />
                     <span>{classified.location_name}</span>
                   </Badge>
-                )}
-              </div>
+                </div>
+              )}
 
               <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-snug tracking-tight">
                 {classified.title}
@@ -2018,16 +2050,18 @@ export function EditorialShowcaseView({
 
             {/* ── 2. Card Financeiro & Precificação Estruturada ── */}
             <div className="p-5 rounded-2xl bg-muted/25 dark:bg-muted/15 border border-border/70 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase font-extrabold text-muted-foreground tracking-wider block">
-                  {pricingType === "starting_at" ? "A partir de" : "Investimento"}
-                </span>
-                {pixDiscountPercent > 0 && (
-                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
-                    -{pixDiscountPercent}% via PIX
+              {pricingType === "starting_at" && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase font-extrabold text-muted-foreground tracking-wider block">
+                    A partir de
                   </span>
-                )}
-              </div>
+                  {pixDiscountPercent > 0 && (
+                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                      -{pixDiscountPercent}% via PIX
+                    </span>
+                  )}
+                </div>
+              )}
 
               <div className="flex flex-col">
                 {pricingType === "on_quote" ? (
@@ -2066,31 +2100,31 @@ export function EditorialShowcaseView({
               </div>
             </div>
 
-            {/* ── 3. Feature Cards Estruturados (Grid de 2 Colunas) ── */}
+            {/* ── 3. Feature Cards Estruturados (Lista Compacta sem Truncamento) ── */}
             {(() => {
               const fCards = getClassifiedFeatureCards(classified);
               if (!fCards || fCards.length === 0) return null;
               return (
                 <div className="space-y-2">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground block">
-                    Destaques da Experiência
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Destaques
                   </span>
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 gap-2">
                     {fCards.map((card, idx) => {
                       const Icon = card.icon;
                       return (
                         <div
                           key={idx}
-                          className="p-3 rounded-xl bg-background border border-border/70 flex items-center gap-2.5 shadow-2xs min-w-0"
+                          className="p-2.5 rounded-xl bg-background border border-border/70 flex items-center gap-2.5 shadow-2xs min-w-0"
                         >
-                          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                             <Icon className="size-4" />
                           </div>
-                          <div className="min-w-0 flex flex-col">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                          <div className="min-w-0 flex flex-col flex-1">
+                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                               {card.title}
                             </span>
-                            <span className="text-xs font-black text-foreground truncate" title={card.value}>
+                            <span className="text-xs font-bold text-foreground truncate" title={card.value}>
                               {card.value}
                             </span>
                           </div>
@@ -2122,7 +2156,7 @@ export function EditorialShowcaseView({
                     <CheckCircle2 className="size-4 text-blue-500 shrink-0" title="Verificado Waesy" />
                   </div>
                   <span className="text-xs text-muted-foreground truncate">
-                    {advertiserCity ? `${advertiserCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante Verificado"}
+                    {advertiserCity ? `${advertiserCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante"}
                   </span>
                 </div>
               </div>
@@ -2169,12 +2203,6 @@ export function EditorialShowcaseView({
                   <span>Mais Opções</span>
                 </Button>
               </div>
-            </div>
-
-            {/* ── 6. Garantia e Políticas ── */}
-            <div className="pt-2 text-xs text-muted-foreground flex items-center gap-2 justify-center">
-              <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-              <span>Negociação direta e transparente com o anunciante</span>
             </div>
           </div>
         </div>

@@ -326,7 +326,7 @@ export function CanonicalStoreProfileView({
   };
 
   const handleAddToCart = async (p: any) => {
-    if (p.optionGroups && p.optionGroups.length > 0) {
+    if (p.hasModifiers || (p.optionGroups && p.optionGroups.length > 0) || (p.modifierGroups && p.modifierGroups.length > 0)) {
       setSelectedProductForModifiers(p);
       return;
     }
@@ -359,7 +359,7 @@ export function CanonicalStoreProfileView({
         if (!optionsPayload[m.groupId]) {
           optionsPayload[m.groupId] = [];
         }
-        optionsPayload[m.groupId].push(m.title);
+        optionsPayload[m.groupId].push(m.modifierId || m.title);
       });
 
       const res = await addToCart({

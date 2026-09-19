@@ -4,6 +4,7 @@ import { SevenSinHookDTO } from "../types/squads-and-onboarding";
 import { getStoreBrandDna } from "./market-radar.functions";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ── DEFINIÇÃO DOS 7 PECADOS & GATILHOS PSICOLÓGICOS ─────────────────────────
 export const SEVEN_SINS_DEFINITIONS = {
@@ -45,8 +46,8 @@ export const SEVEN_SINS_DEFINITIONS = {
   },
   preguica: {
     label: "Preguiça & Zero Esforço",
-    subconscious: "Conveniência extrema, solução pronta em 1 clique sem nenhum esforço mental.",
-    defaultAngle: "Um toque na tela e tudo resolvido. Você não precisa nem levantar do sofá.",
+    subconscious: "Conveniência máxima, fricção eliminada, entrega pronta sem burocracia ou perda de tempo.",
+    defaultAngle: "Em apenas 1 clique tudo resolvido. Sem filas, sem complicações.",
     color: "#0A84FF", // Blue
   },
 };
@@ -77,7 +78,7 @@ export async function generateSevenSinCopyLogic(data: {
   let storeId = data.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
 
   let productName = data.productNameFallback || "Produto Destaque";
@@ -163,6 +164,40 @@ export async function generateSevenSinCopyLogic(data: {
       break;
   }
 
+  // Tenta enriquecer a copy via Orquestrador Universal de IA (OpenRouter, Groq, Gemini, OpenAI)
+  try {
+    const aiRes = await executeUnifiedAiCall({
+      systemPrompt: `Você é o Redator-Chefe e Especialista em Neuro-Copywriting da Plataforma Waesy.
+Sua missão é gerar um gancho de vendas de altíssima conversão baseado na metodologia dos 7 Pecados Capitais e neuro-gatilhos subconscientes.
+Gere uma copy autêntica, direta, sofisticada e adaptada ao canal solicitado.
+É mandatório retornar um objeto JSON estrito com:
+{
+  "headline": "<headline impactante contendo o nome do produto>",
+  "body": "<corpo persuasivo de 2-3 frases contextualizado para o canal>",
+  "cta": "<chamada para ação direta e magnética>"
+}`,
+      userPrompt: `Produto: ${productName}
+Preço: ${productPrice}
+Pecado Capital: ${def.label} (${data.sin})
+Gatilho Subconsciente: ${def.subconscious}
+Ângulo Recomendado: ${def.defaultAngle}
+Arquétipo da Marca: ${brandArchetype}
+Canal de Destino: ${data.targetChannel}
+
+Gere o gancho persuasivo definitivo para este produto.`,
+      responseFormat: "json_object",
+      temperature: 0.6,
+    });
+
+    if (aiRes?.parsedJson?.headline && aiRes?.parsedJson?.body && aiRes?.parsedJson?.cta) {
+      headline = aiRes.parsedJson.headline;
+      body = aiRes.parsedJson.body;
+      cta = aiRes.parsedJson.cta;
+    }
+  } catch (aiErr) {
+    console.warn("[seven-sins] IA pool em fallback determinístico:", aiErr);
+  }
+
   return {
     sin: data.sin as SinType,
     title: `${def.label} — ${productName}`,
@@ -174,60 +209,61 @@ export async function generateSevenSinCopyLogic(data: {
   };
 }
 
-// ── LÓGICA DE NEGÓCIO: SIMLAB PERSONAS ─────────────────────────────────────
+// ── BASE DE PERSONAS SINTÉTICAS ──────────────────────────────────────────
+export const SIMLAB_BASE_PERSONAS = [
+  {
+    persona_id: "persona_lucas_universitario",
+    name: "Lucas Menezes, 23 anos",
+    archetype_label: "Universitário Pragmático & Ágil",
+    avatar_url: null,
+    preferredSins: ["preguica", "ganancia", "gula"],
+    bias: 0.85,
+  },
+  {
+    persona_id: "persona_claudia_mae",
+    name: "Cláudia Silveira, 41 anos",
+    archetype_label: "Mãe Gestora & Família",
+    avatar_url: null,
+    preferredSins: ["ganancia", "ira", "orgulho"],
+    bias: 0.78,
+  },
+  {
+    persona_id: "persona_rodrigo_executivo",
+    name: "Rodrigo Carvalho, 36 anos",
+    archetype_label: "Executivo Sem Tempo & Status",
+    avatar_url: null,
+    preferredSins: ["orgulho", "preguica", "inveja"],
+    bias: 0.92,
+  },
+  {
+    persona_id: "persona_amanda_foodie",
+    name: "Amanda Fontana, 28 anos",
+    archetype_label: "Entusiasta Experiencial & Design",
+    avatar_url: null,
+    preferredSins: ["luxuria", "orgulho", "inveja"],
+    bias: 0.88,
+  },
+  {
+    persona_id: "persona_marcos_economico",
+    name: "Marcos Vinícius, 52 anos",
+    archetype_label: "Consumidor Tradicional Cético",
+    avatar_url: null,
+    preferredSins: ["ganancia", "ira"],
+    bias: 0.70,
+  },
+];
+
+// ── LÓGICA DETERMINÍSTICA BASE (TESTES & OFFLINE) ──────────────────────────
 export function runSimLabPersonaTestLogic(data: {
   sin: SinType;
   copyHeadline: string;
   copyBody: string;
 }): SimLabPersonaResult[] {
-  const personas = [
-    {
-      persona_id: "persona_lucas_universitario",
-      name: "Lucas Menezes, 23 anos",
-      archetype_label: "Universitário Pragmático & Ágil",
-      avatar_url: null,
-      preferredSins: ["preguica", "ganancia", "gula"],
-      bias: 0.85,
-    },
-    {
-      persona_id: "persona_claudia_mae",
-      name: "Cláudia Silveira, 41 anos",
-      archetype_label: "Mãe Gestora & Família",
-      avatar_url: null,
-      preferredSins: ["ganancia", "ira", "orgulho"],
-      bias: 0.78,
-    },
-    {
-      persona_id: "persona_rodrigo_executivo",
-      name: "Rodrigo Carvalho, 36 anos",
-      archetype_label: "Executivo Sem Tempo & Status",
-      avatar_url: null,
-      preferredSins: ["orgulho", "preguica", "inveja"],
-      bias: 0.92,
-    },
-    {
-      persona_id: "persona_amanda_foodie",
-      name: "Amanda Fontana, 28 anos",
-      archetype_label: "Entusiasta Experiencial & Design",
-      avatar_url: null,
-      preferredSins: ["luxuria", "orgulho", "inveja"],
-      bias: 0.88,
-    },
-    {
-      persona_id: "persona_marcos_economico",
-      name: "Marcos Vinícius, 52 anos",
-      archetype_label: "Consumidor Tradicional Cético",
-      avatar_url: null,
-      preferredSins: ["ganancia", "ira"],
-      bias: 0.70,
-    },
-  ];
-
-  return personas.map((p) => {
+  return SIMLAB_BASE_PERSONAS.map((p) => {
     const isPreferred = p.preferredSins.includes(data.sin);
     const score = Math.min(
       98,
-      Math.max(45, Math.round(p.bias * 100 + (isPreferred ? 15 : -10) + (Math.random() * 8 - 4)))
+      Math.max(45, Math.round(p.bias * 100 + (isPreferred ? 12 : -8)))
     );
 
     let verbatim = "";
@@ -259,6 +295,61 @@ export function runSimLabPersonaTestLogic(data: {
   });
 }
 
+// ── AVALIAÇÃO COM IA REAL DO POOL (ORQUESTRADOR) ──────────────────────────
+export async function runSimLabPersonaTestWithAI(data: {
+  sin: SinType;
+  copyHeadline: string;
+  copyBody: string;
+}): Promise<SimLabPersonaResult[]> {
+  try {
+    const aiRes = await executeUnifiedAiCall({
+      systemPrompt: `Você é o Simulador de Foco e Comportamento do Consumidor (SimLab V2) da Waesy.
+Sua missão é avaliar com rigor e realismo como 5 personas consumidoras autênticas reagem ao anúncio apresentado.
+Para cada persona, retorne:
+- "persona_id": id exato da persona
+- "conversion_probability": número inteiro de 0 a 100
+- "reaction_verbatim": fala realista em primeira pessoa comentando o anúncio espontaneamente
+- "primary_objection": principal hesitação ou dúvida da persona
+- "recommended_fix": ajuste prático na copy para convencê-la
+
+Retorne ESTRITAMENTE um JSON com o campo "personas": [...]`,
+      userPrompt: `Gatilho/Pecado: ${data.sin}
+Headline: "${data.copyHeadline}"
+Corpo: "${data.copyBody}"
+
+Personas para avaliar:
+1. persona_lucas_universitario (Lucas Menezes, 23 anos - Universitário Pragmático & Ágil, busca velocidade e preço)
+2. persona_claudia_mae (Cláudia Silveira, 41 anos - Mãe Gestora & Família, busca confiança e economia real)
+3. persona_rodrigo_executivo (Rodrigo Carvalho, 36 anos - Executivo Sem Tempo & Status, busca exclusividade e zero fricção)
+4. persona_amanda_foodie (Amanda Fontana, 28 anos - Entusiasta Experiencial & Design, busca estética e prazer)
+5. persona_marcos_economico (Marcos Vinícius, 52 anos - Consumidor Tradicional Cético, desconfia de promessas fáceis)`,
+      responseFormat: "json_object",
+      temperature: 0.5,
+    });
+
+    const list = aiRes?.parsedJson?.personas;
+    if (Array.isArray(list) && list.length >= 5) {
+      return SIMLAB_BASE_PERSONAS.map((bp) => {
+        const found = list.find((item: any) => item.persona_id === bp.persona_id) || list[0];
+        return {
+          persona_id: bp.persona_id,
+          name: bp.name,
+          archetype_label: bp.archetype_label,
+          avatar_url: bp.avatar_url,
+          conversion_probability: Math.min(99, Math.max(25, Number(found.conversion_probability) || 70)),
+          reaction_verbatim: found.reaction_verbatim || "Gostei da proposta, mas preciso analisar mais.",
+          primary_objection: found.primary_objection || undefined,
+          recommended_fix: found.recommended_fix || undefined,
+        };
+      });
+    }
+  } catch (err) {
+    console.warn("[seven-sins] IA pool em fallback na simulação:", err);
+  }
+
+  return runSimLabPersonaTestLogic(data);
+}
+
 // ── LÓGICA DE NEGÓCIO: SALVAR GANCHO ──────────────────────────────────────
 export async function saveSevenSinHookToStoreLogic(data: {
   storeId?: string;
@@ -269,7 +360,7 @@ export async function saveSevenSinHookToStoreLogic(data: {
   let storeId = data.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
   if (!storeId) {
     throw new Error("Loja não identificada para salvar o gancho de marketing.");
@@ -313,7 +404,7 @@ export async function listStoreProductsQuickLogic(data: {
   let storeId = data?.storeId;
   if (!storeId) {
     const identity = await getServerIdentity().catch(() => null);
-    storeId = identity?.store_id;
+    storeId = identity?.store_id || undefined;
   }
   if (!storeId) return [];
 
@@ -359,7 +450,7 @@ export const runSimLabPersonaTest = createServerFn({ method: "POST" })
     copyBody: string;
   }) => input)
   .handler(async ({ data }): Promise<SimLabPersonaResult[]> => {
-    return runSimLabPersonaTestLogic(data);
+    return runSimLabPersonaTestWithAI(data);
   });
 
 export const saveSevenSinHookToStore = createServerFn({ method: "POST" })

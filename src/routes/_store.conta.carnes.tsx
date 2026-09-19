@@ -370,7 +370,7 @@ function ClientCarnesPage() {
 
                         {isSettled && (
                           <Link
-                            to="/_store/conta/contratos"
+                            to="/conta/contratos"
                             className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
                             title="Ver Certificado de Quitação no Cofre"
                           >

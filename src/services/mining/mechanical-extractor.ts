@@ -179,6 +179,25 @@ export async function fetchHtmlWithStealth(url: string, timeoutMs = 20000): Prom
     }
   }
 
+  // Camada de Contingência: Jina Reader Proxy (Converte URLs com anti-bot em conteúdo limpo)
+  try {
+    const jinaRes = await fetch(`https://r.jina.ai/${url}`, {
+      headers: {
+        Accept: "text/plain",
+        "X-Return-Format": "text",
+      },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (jinaRes.ok) {
+      const text = await jinaRes.text();
+      if (text && text.length >= 80) {
+        return `<html><head><title>Jina Extracted</title></head><body><article>${text.replace(/\n/g, "<p>")}</article></body></html>`;
+      }
+    }
+  } catch {
+    // Segue para erro padrão se proxy também falhar
+  }
+
   throw new Error(`Falha mecânica ao acessar ${url}: ${lastError?.message || "Erro de conexão"}`);
 }
 

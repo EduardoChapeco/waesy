@@ -50,6 +50,7 @@ async function main() {
         ...cfg,
         ssl: { rejectUnauthorized: false },
         connect_timeout: 10,
+        max: 1,
       });
       // Test query
       await client`SELECT 1`;

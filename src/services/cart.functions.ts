@@ -199,22 +199,38 @@ export async function mapCartToDTO(cart: any): Promise<CartDTO> {
  }
  });
 
- const optionMetaMap: Record<string, { label: string; priceModifierCents: number }> = {};
- if (allOptionIds.size > 0) {
- const { data: optionVals } = await supabase
- .from("option_values")
- .select("id, label, price_modifier_cents")
- .in("id", Array.from(allOptionIds));
+  const optionMetaMap: Record<string, { label: string; priceModifierCents: number }> = {};
+  if (allOptionIds.size > 0) {
+    const idList = Array.from(allOptionIds);
+    const [optRes, modRes] = await Promise.all([
+      supabase
+        .from("option_values")
+        .select("id, label, price_modifier_cents")
+        .in("id", idList),
+      supabase
+        .from("product_modifiers")
+        .select("id, title, price_delta_cents")
+        .in("id", idList),
+    ]);
 
- if (optionVals) {
- optionVals.forEach((v) => {
- optionMetaMap[v.id] = {
- label: v.label,
- priceModifierCents: v.price_modifier_cents || 0,
- };
- });
- }
- }
+    if (optRes.data) {
+      optRes.data.forEach((v) => {
+        optionMetaMap[v.id] = {
+          label: v.label,
+          priceModifierCents: v.price_modifier_cents || 0,
+        };
+      });
+    }
+
+    if (modRes.data) {
+      modRes.data.forEach((m) => {
+        optionMetaMap[m.id] = {
+          label: m.title,
+          priceModifierCents: m.price_delta_cents || 0,
+        };
+      });
+    }
+  }
 
  const items: any[] = [];
  for (const item of rawItems) {
@@ -575,15 +591,25 @@ export const addToCart = createServerFn({ method: "POST" })
  if (Array.isArray(val)) val.forEach((v) => selectedOptionIds.push(v));
  else if (typeof val === "string" && val) selectedOptionIds.push(val);
  });
- }
- if (selectedOptionIds.length > 0) {
- const { data: optRows } = await supabase
- .from("option_values")
- .select("price_modifier_cents")
- .in("id", selectedOptionIds);
- if (optRows) {
- optionsTotalCents = optRows.reduce((acc, row) => acc + (row.price_modifier_cents || 0), 0);
- }
+    if (selectedOptionIds.length > 0) {
+      const [optRes, modRes] = await Promise.all([
+        supabase
+          .from("option_values")
+          .select("price_modifier_cents")
+          .in("id", selectedOptionIds),
+        supabase
+          .from("product_modifiers")
+          .select("price_delta_cents")
+          .in("id", selectedOptionIds),
+      ]);
+
+      if (optRes.data) {
+        optionsTotalCents += optRes.data.reduce((acc, row) => acc + (row.price_modifier_cents || 0), 0);
+      }
+      if (modRes.data) {
+        optionsTotalCents += modRes.data.reduce((acc, row) => acc + (row.price_delta_cents || 0), 0);
+      }
+    }
  }
 
  const basePrice =

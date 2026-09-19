@@ -15,12 +15,12 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
 
     const niche = resolveClassifiedNiche(classified);
     expect(niche.id).toBe("travel");
-    expect(niche.shortLabel).toBe("Viagem & Tour");
+    expect(niche.shortLabel).toBe("Viagens");
     expect(niche.priceSuffix).toBe(" por pessoa");
     expect(niche.primaryActionLabel).toBe("Reservar Vagas / Cotação");
 
     const badges = getSemanticBadges(classified);
-    expect(badges.some((b) => b.label === "Roteiro & Viagem Verificada")).toBe(true);
+    expect(badges.some((b) => b.label === "Roteiro Verificado")).toBe(true);
   });
 
   it("resolve corretamente o nicho de Aluguel de Equipamentos (Eventos & Obras)", () => {
@@ -141,7 +141,7 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
 
     const niche = resolveClassifiedNiche(classified);
     expect(niche.id).toBe("donation");
-    expect(niche.shortLabel).toBe("Doação Gratuita");
+    expect(niche.shortLabel).toBe("Doações");
     expect(niche.primaryActionLabel).toBe("Solicitar Doação / Retirada");
     expect(niche.allowEscrowGuarantee).toBe(false);
   });

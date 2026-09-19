@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
+import { sendWhatsAppNotification } from "./integrations.functions";
 
 // ─── Tipos e Contratos de Domínio ─────────────────────────────────────────────
 
@@ -538,6 +539,22 @@ export const createTravelProposal = createServerFn({ method: "POST" })
           .eq("id", input.leadId);
       } catch (leadErr) {
         console.warn("[travel-proposal] Erro ao sincronizar lead status:", leadErr);
+      }
+    }
+
+    // 4. Disparo transacional via WhatsApp Cloud API (se configurado na loja)
+    if (effectiveStoreId && clientWhatsapp) {
+      const cleanPhone = clientWhatsapp.replace(/\D/g, "");
+      if (cleanPhone.length >= 10) {
+        const publicUrl = `https://app.usewaesy.com/proposta/${publicToken}`;
+        const messageText = `Olá ${clientName}! Sua proposta de viagem para *${destinationCity}* foi gerada com sucesso pela agência.\n\nVocê pode visualizá-la, conferir o roteiro e aprovar online pelo link:\n${publicUrl}`;
+        sendWhatsAppNotification({
+          storeId: effectiveStoreId,
+          recipientPhone: cleanPhone,
+          messageText,
+        }).catch((err) => {
+          console.warn("[travel-proposal] WhatsApp Cloud notification warning:", err?.message);
+        });
       }
     }
 

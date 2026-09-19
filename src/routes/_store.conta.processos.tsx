@@ -139,7 +139,7 @@ function UserLawsuitsPage() {
         </button>
 
         <Link
-          to="/_store/conta/contratos"
+          to="/conta/contratos"
           className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary transition-all ml-auto"
         >
           <ShieldCheck className="size-3.5" />

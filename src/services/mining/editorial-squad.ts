@@ -12,7 +12,7 @@
  */
 
 import { z } from "zod";
-import { getNextActiveKey } from "../api-orchestrator.functions";
+import { getNextActiveKey, executeUnifiedAiCall } from "../api-orchestrator.functions";
 
 export const CuratedArticleOutputSchema = z.object({
   title: z.string().min(10).max(180),
@@ -102,106 +102,24 @@ Formate o resultado rigorosamente no JSON:
   "anti_ai_audit_score": 95
 }`;
 
-  // 1. Tenta obter chave do pool ativo de IA
-  let apiKey = "";
-  let provider = "google";
-
+  // 1. Execução via Motor Unificado de IA (OpenRouter -> Groq -> Gemini -> OpenAI)
   try {
-    const activeKey = await getNextActiveKey("gemini");
-    if (activeKey?.rawKey) {
-      apiKey = activeKey.rawKey;
-      provider = "google";
+    const aiResult = await executeUnifiedAiCall({
+      systemPrompt: SQUAD_SYSTEM_PROMPT,
+      userPrompt,
+      responseFormat: "json_object",
+      temperature: 0.3,
+    });
+
+    const parsed = aiResult.parsedJson || (aiResult.content ? JSON.parse(aiResult.content) : null);
+    if (parsed) {
+      return CuratedArticleOutputSchema.parse(parsed);
     }
-  } catch {
-    // Fallback para variável de ambiente
-    apiKey = process.env.LOVABLE_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY || "";
-    if (process.env.OPENAI_API_KEY && !process.env.GEMINI_API_KEY) {
-      provider = "openai";
-    }
+  } catch (err: any) {
+    console.warn("[editorial-squad] Falha no pool de IA, aplicando fallback determinístico:", err?.message);
   }
 
-  // Se não houver chave de IA configurada, gera uma curadoria mecânica determinística (zero mock / zero quebra)
-  if (!apiKey) {
-    return generateDeterministicCuratedFallback(params);
-  }
-
-  try {
-    let rawJsonResponse = "";
-
-    if (provider === "google") {
-      // Gemini API / Lovable Gateway
-      const endpoint = process.env.LOVABLE_API_KEY
-        ? "https://ai.gateway.lovable.dev/v1/chat/completions"
-        : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-      if (process.env.LOVABLE_API_KEY) {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
-            messages: [
-              { role: "system", content: SQUAD_SYSTEM_PROMPT },
-              { role: "user", content: userPrompt },
-            ],
-            response_format: { type: "json_object" },
-          }),
-          signal: AbortSignal.timeout(25000),
-        });
-
-        if (!res.ok) throw new Error(`Lovable Gateway Error: ${res.status}`);
-        const data = await res.json();
-        rawJsonResponse = data?.choices?.[0]?.message?.content || "";
-      } else {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: `${SQUAD_SYSTEM_PROMPT}\n\n${userPrompt}` }] }],
-            generationConfig: { responseMimeType: "application/json" },
-          }),
-          signal: AbortSignal.timeout(25000),
-        });
-
-        if (!res.ok) throw new Error(`Google API Error: ${res.status}`);
-        const data = await res.json();
-        rawJsonResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      }
-    } else {
-      // OpenAI API
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: SQUAD_SYSTEM_PROMPT },
-            { role: "user", content: userPrompt },
-          ],
-          response_format: { type: "json_object" },
-        }),
-        signal: AbortSignal.timeout(25000),
-      });
-
-      if (!res.ok) throw new Error(`OpenAI API Error: ${res.status}`);
-      const data = await res.json();
-      rawJsonResponse = data?.choices?.[0]?.message?.content || "";
-    }
-
-    // Extrai e valida o JSON
-    const jsonStr = rawJsonResponse.replace(/```(?:json)?\s*([\s\S]*?)```/, "$1").trim();
-    const parsed = JSON.parse(jsonStr);
-    return CuratedArticleOutputSchema.parse(parsed);
-  } catch (err) {
-    console.warn("[editorial-squad] Falha na curadoria por IA, aplicando fallback determinístico:", err);
-    return generateDeterministicCuratedFallback(params);
-  }
+  return generateDeterministicCuratedFallback(params);
 }
 
 /**

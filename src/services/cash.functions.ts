@@ -646,7 +646,7 @@ export const getRegisterShiftDetails = createServerFn({ method: "GET" })
 
     const profiles = await getProfilesById([register.opened_by, register.closed_by].filter(Boolean) as string[]);
     const entries = await getEntriesForRegister(register.id);
-    const summary = summarizeCashEntries(entries);
+    const summary = summarizeCashEntries(register.initial_balance_cents, entries);
 
     return {
       ...register,

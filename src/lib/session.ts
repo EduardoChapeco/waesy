@@ -1,4 +1,4 @@
-import { getRequest, getResponseHeaders } from "@tanstack/react-start/server";
+import { getRequest, getResponseHeaders } from "@tanstack/start-server-core";
 import crypto from "node:crypto";
 
 import { appendResponseCookie, readCookieFromRequest } from "./http-cookies";

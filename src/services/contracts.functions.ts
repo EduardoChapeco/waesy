@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 import {
   interpolateContractVariables,
   autoPositionSignatureFieldsFromContent,
@@ -382,23 +383,6 @@ export const extractContractDataFromOcr = createServerFn({ method: "POST" })
       throw new Error("Nenhuma imagem fornecida para o OCR.");
     }
 
-    const geminiKey = await getNextActiveKey("gemini");
-    if (!geminiKey) {
-      // Fallback gracioso com parsing básico de texto se IA não estiver configurada
-      return {
-        name: null,
-        document: null,
-        documentType: "other",
-        birthDate: null,
-        nationality: "Brasileira",
-        documentExpiry: null,
-        address: null,
-        suggestedClauses: [],
-        rawText: "Chave de visão computacional em configuração.",
-        confidence: "low",
-      };
-    }
-
     const systemPrompt = `Você é o Agente Especialista em OCR e Extração de Documentos Oficiais Brasileiros da Waesy Platform (Padrão BigTech).
 Sua missão é extrair com precisão cirúrgica os dados de CNH, RG, Passaporte ou contratos comerciais escaneados.
 Retorne ESTRITAMENTE um JSON com este formato (sem markdown \`\`\`json):
@@ -418,40 +402,19 @@ Retorne ESTRITAMENTE um JSON com este formato (sem markdown \`\`\`json):
     const userPrompt = `Analise a imagem deste documento oficial ou contrato e extraia os dados cadastrais estruturados.`;
 
     try {
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey.rawKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [
-              {
-                parts: [
-                  { text: userPrompt },
-                  { inlineData: { mimeType, data: imageBase64 } },
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              responseMimeType: "application/json",
-            },
-          }),
-        },
-      );
+      const aiRes = await executeUnifiedAiCall({
+        systemPrompt,
+        userPrompt,
+        images: [{ mimeType, base64: imageBase64 }],
+        preferredProvider: "gemini",
+        responseFormat: "json_object",
+        temperature: 0.1,
+      });
 
-      if (!geminiRes.ok) {
-        const errText = await geminiRes.text();
-        await markKeyError(geminiKey.id, `OCR Gemini Error: ${errText.slice(0, 150)}`);
-        throw new Error("Falha no serviço de reconhecimento visual.");
+      if (aiRes.parsedJson) {
+        return aiRes.parsedJson as OcrContractExtractionResult;
       }
-
-      const resData = await geminiRes.json();
-      const responseText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!responseText) throw new Error("Resposta de visão vazia.");
-
-      return JSON.parse(responseText) as OcrContractExtractionResult;
+      return JSON.parse(aiRes.content) as OcrContractExtractionResult;
     } catch (err: any) {
       return {
         name: null,

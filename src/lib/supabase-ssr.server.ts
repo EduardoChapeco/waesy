@@ -9,7 +9,7 @@
  */
 
 import { createServerClient, parseCookieHeader } from "@supabase/ssr";
-import { getRequestHeader, setCookie } from "@tanstack/react-start/server";
+import { getRequestHeader, setCookie } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { SupabaseUnconfiguredError } from "./supabase";
 import { getEnvVar } from "./env";

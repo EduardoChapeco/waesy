@@ -7,34 +7,34 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 // Types & Schemas
 // ---------------------------------------------------------------------------
 
-export type AiProviderType = "openai" | "anthropic" | "gemini" | "deepseek" | "groq" | "custom";
+export type AiProviderType = "openai" | "anthropic" | "gemini" | "deepseek" | "groq" | "openrouter" | "custom";
 
 export interface TenantAiProviderItem {
- id: string;
- store_id: string;
- provider: AiProviderType;
- model_name: string;
- api_key_masked: string;
- is_active: boolean;
- monthly_token_limit?: number | null;
- last_tested_at?: string | null;
- status: "untested" | "active" | "error";
- created_at: string;
- updated_at: string;
+  id: string;
+  store_id: string;
+  provider: AiProviderType;
+  model_name: string;
+  api_key_masked: string;
+  is_active: boolean;
+  monthly_token_limit?: number | null;
+  last_tested_at?: string | null;
+  status: "untested" | "active" | "error";
+  created_at: string;
+  updated_at: string;
 }
 
 export const SaveAiProviderSchema = z.object({
- store_id: z.string().uuid(),
- provider: z.enum(["openai", "anthropic", "gemini", "deepseek", "groq", "custom"]),
- model_name: z.string().min(2, "Nome do modelo é obrigatório"),
- api_key: z.string().min(5, "Chave de API inválida"),
- monthly_token_limit: z.number().int().optional().nullable(),
- is_active: z.boolean().default(true),
+  store_id: z.string().uuid(),
+  provider: z.enum(["openai", "anthropic", "gemini", "deepseek", "groq", "openrouter", "custom"]),
+  model_name: z.string().min(2, "Nome do modelo é obrigatório"),
+  api_key: z.string().min(5, "Chave de API inválida"),
+  monthly_token_limit: z.number().int().optional().nullable(),
+  is_active: z.boolean().default(true),
 });
 
 export const TestAiProviderSchema = z.object({
- store_id: z.string().uuid(),
- provider: z.enum(["openai", "anthropic", "gemini", "deepseek", "groq", "custom"]),
+  store_id: z.string().uuid(),
+  provider: z.enum(["openai", "anthropic", "gemini", "deepseek", "groq", "openrouter", "custom"]),
 });
 
 function maskApiKey(key: string): string {
@@ -154,17 +154,19 @@ export const testAiProviderConnection = createServerFn({ method: "POST" })
  let errorMessage = "";
 
  try {
- if (row.provider === "openai" || row.provider === "groq" || row.provider === "deepseek") {
- const baseUrl =
- row.provider === "groq"
- ? "https://api.groq.com/openai/v1/models"
- : row.provider === "deepseek"
- ? "https://api.deepseek.com/models"
- : "https://api.openai.com/v1/models";
+    if (row.provider === "openai" || row.provider === "groq" || row.provider === "deepseek" || row.provider === "openrouter") {
+      const baseUrl =
+        row.provider === "groq"
+          ? "https://api.groq.com/openai/v1/models"
+          : row.provider === "deepseek"
+          ? "https://api.deepseek.com/models"
+          : row.provider === "openrouter"
+          ? "https://openrouter.ai/api/v1/models"
+          : "https://api.openai.com/v1/models";
 
- const res = await fetch(baseUrl, {
- headers: { Authorization: `Bearer ${row.api_key}` },
- });
+      const res = await fetch(baseUrl, {
+        headers: { Authorization: `Bearer ${row.api_key}` },
+      });
 
  if (res.ok) {
  isSuccess = true;

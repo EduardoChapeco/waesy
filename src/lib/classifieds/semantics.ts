@@ -35,7 +35,6 @@ import {
   Users,
   Banknote,
   Briefcase,
-  Sparkles,
   Download,
   DownloadCloud,
   FileArchive,
@@ -64,7 +63,8 @@ export type ClassifiedNicheId =
   | "subscription" // Clubes, Assinaturas, Mensalidades Recorrentes
   | "job" // Empregos, Vagas & Recrutamento
   | "pharmacy" // Farmácia, Beleza & Saúde
-  | "market"; // Mercado, Hortifruti & Açougue
+  | "market" // Mercado, Hortifruti & Açougue
+  | "business"; // Negócios, M&A, Pontos Comerciais & Empresas à Venda (meuBIZ / Quero Um Negócio)
 
 export interface ClassifiedNicheDefinition {
   id: ClassifiedNicheId;
@@ -136,11 +136,11 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "vehicle",
     canonicalCategory: "vehicle",
     dealType: "venda",
-    title: "Veículo & Automotivo",
-    shortLabel: "Veículo",
-    subtitle: "Carros, Motos, Caminhões & Náutica",
+    title: "Veículos",
+    shortLabel: "Veículos",
+    subtitle: "Carros, motos, caminhões e náutica",
     icon: Car,
-    badge: "Ficha Técnica Verificada",
+    badge: "Veículo Verificado",
     priceSuffix: "",
     primaryActionLabel: "Agendar Test Drive & Vistoria",
     secondaryActionLabel: "Simular Financiamento",
@@ -152,11 +152,11 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "goods",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Desapego & Produto Físico",
-    shortLabel: "Desapego Direto",
-    subtitle: "Eletrônicos, Móveis, Equipamentos & Moda",
+    title: "Desapego",
+    shortLabel: "Desapego",
+    subtitle: "Eletrônicos, móveis, ferramentas e usados",
     icon: Tag,
-    badge: "Desapego da Região",
+    badge: "Desapego Regional",
     priceSuffix: "",
     primaryActionLabel: "Comprar com Segurança",
     secondaryActionLabel: "Fazer Oferta ao Vendedor",
@@ -168,11 +168,11 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "service",
     canonicalCategory: "service",
     dealType: "servico",
-    title: "Serviço Profissional",
-    shortLabel: "Serviço",
-    subtitle: "Especialistas, Obras, Técnicos & Autônomos",
+    title: "Serviços",
+    shortLabel: "Serviços",
+    subtitle: "Profissionais para pessoas físicas e empresas (CNPJ)",
     icon: Wrench,
-    badge: "Profissional Verificado",
+    badge: "Serviço Verificado",
     priceSuffix: " a partir de",
     primaryActionLabel: "Solicitar Orçamento Gratuito",
     secondaryActionLabel: "Chamar no WhatsApp",
@@ -184,9 +184,9 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "agri",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Agronegócio & Maquinário",
-    shortLabel: "Agro & Máquinas",
-    subtitle: "Tratores, Implementos, Insumos & Rural",
+    title: "Agronegócio",
+    shortLabel: "Agro",
+    subtitle: "Tratores, implementos, insumos e rural",
     icon: Tractor,
     badge: "Agro Regional",
     priceSuffix: "",
@@ -200,11 +200,11 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "travel",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Pacote de Viagem & Turismo",
-    shortLabel: "Viagem & Tour",
-    subtitle: "Resorts, Roteiros Guiados, Excursões & Cruzeiros",
+    title: "Viagens",
+    shortLabel: "Viagens",
+    subtitle: "Pacotes, resorts, passeios guiados e excursões",
     icon: Plane,
-    badge: "Roteiro & Viagem Verificada",
+    badge: "Roteiro Verificado",
     priceSuffix: " por pessoa",
     primaryActionLabel: "Reservar Vagas / Cotação",
     secondaryActionLabel: "Chamar Agência no WhatsApp",
@@ -216,9 +216,9 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "equipment",
     canonicalCategory: "sale",
     dealType: "aluguel",
-    title: "Aluguel de Equipamento",
-    shortLabel: "Locação Equipamento",
-    subtitle: "Eventos, Iluminação, Obras, Som & Festas",
+    title: "Equipamentos",
+    shortLabel: "Equipamentos",
+    subtitle: "Locação de som, luz, máquinas e ferramentas",
     icon: Layers,
     badge: "Equipamento para Locação",
     priceSuffix: "/diária",
@@ -232,11 +232,11 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "donation",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Doação & Solidariedade",
-    shortLabel: "Doação Gratuita",
-    subtitle: "Desapego Solidário sem Custo Financeiro",
+    title: "Doações",
+    shortLabel: "Doações",
+    subtitle: "Itens gratuitos para a comunidade local",
     icon: HeartHandshake,
-    badge: "Item para Doação (R$ 0,00)",
+    badge: "Doação Gratuita (R$ 0)",
     priceSuffix: " (Gratuito)",
     primaryActionLabel: "Solicitar Doação / Retirada",
     secondaryActionLabel: "Combinar Retirada com Doador",
@@ -248,11 +248,11 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "food",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Alimentação & Gastronomia Artesanal",
+    title: "Gastronomia",
     shortLabel: "Gastronomia",
-    subtitle: "Pratos, Doces, Bebidas & Kits",
+    subtitle: "Pratos, doces, bebidas e marmitas",
     icon: Utensils,
-    badge: "Pronto para Consumo",
+    badge: "Gastronomia Artesanal",
     priceSuffix: "",
     primaryActionLabel: "Comprar / Fazer Pedido",
     secondaryActionLabel: "Tirar Dúvida do Cardápio",
@@ -264,9 +264,9 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "pharmacy",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Farmácia, Saúde & Beleza",
+    title: "Farmácia",
     shortLabel: "Farmácia",
-    subtitle: "Medicamentos, Suplementos & Cosméticos",
+    subtitle: "Medicamentos, suplementos e cosméticos",
     icon: Package,
     badge: "Saúde & Bem-Estar",
     priceSuffix: "",
@@ -280,16 +280,33 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "market",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Mercado, Padaria & Essenciais",
+    title: "Mercado",
     shortLabel: "Mercado",
-    subtitle: "Alimentos Frescos, Bebidas & Limpeza",
+    subtitle: "Alimentos frescos, bebidas e essenciais",
     icon: Package,
-    badge: "Itens de Conveniência",
+    badge: "Itens de Mercado",
     priceSuffix: "",
     primaryActionLabel: "Adicionar à Cesta de Mercado",
     secondaryActionLabel: "Consultar Disponibilidade",
     showDeliveryBadges: true,
     showTechnicalSpecs: false,
+    allowEscrowGuarantee: true,
+  },
+
+  business: {
+    id: "business",
+    canonicalCategory: "sale",
+    dealType: "venda",
+    title: "Negócios",
+    shortLabel: "Negócios",
+    subtitle: "Empresas em operação, pontos comerciais e busca de investidores",
+    icon: Briefcase,
+    badge: "Oportunidade Comercial",
+    priceSuffix: " valor do negócio",
+    primaryActionLabel: "Tenho Interesse no Negócio",
+    secondaryActionLabel: "Falar com o Empreendedor",
+    showDeliveryBadges: false,
+    showTechnicalSpecs: true,
     allowEscrowGuarantee: true,
   },
 
@@ -316,7 +333,7 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     title: "Clube & Assinatura Recorrente",
     shortLabel: "Assinatura",
     subtitle: "Planos Mensais, Assinaturas de Serviços & Benefícios Recorrentes",
-    icon: Sparkles,
+    icon: RefreshCw,
     badge: "Cobrança Recorrente",
     priceSuffix: "/mês",
     primaryActionLabel: "Assinar Plano Mensal",
@@ -386,7 +403,7 @@ export function resolveClassifiedNiche(classified: any): ClassifiedNicheDefiniti
     return NICHE_DEFINITIONS.subscription;
   }
 
-  // 4. Doação Solidária (preço 0, is_free_donation flag ou categoria donation/doacao, exceto se for serviço/vaga/imóvel)
+  // 4. Doações (categoria explícita donation/doacao, flag is_free_donation, ou preço zero exclusivo de desapego)
   if (
     category === "donation" ||
     category === "doacao" ||
@@ -394,7 +411,10 @@ export function resolveClassifiedNiche(classified: any): ClassifiedNicheDefiniti
     rawNiche === "donation" ||
     classified.is_free_donation ||
     classified.attributes?.is_free_donation ||
-    (priceCents === 0 && !["service", "real_estate", "job"].includes(category))
+    (priceCents === 0 &&
+      !["service", "real_estate", "job", "business", "negocios", "negocio", "empresa", "vehicle", "veiculo", "veiculos"].includes(category) &&
+      !classified.attributes?.is_business_sale &&
+      !classified.attributes?.business_type)
   ) {
     return NICHE_DEFINITIONS.donation;
   }
@@ -440,6 +460,22 @@ export function resolveClassifiedNiche(classified: any): ClassifiedNicheDefiniti
     rawNiche === "turismo"
   ) {
     return NICHE_DEFINITIONS.travel;
+  }
+
+  // 6.5 Negócios, Empresas à Venda & M&A (meuBIZ / Quero Um Negócio)
+  if (
+    category === "business" ||
+    category === "negocios" ||
+    category === "empresa" ||
+    category === "m&a" ||
+    rawNiche === "business" ||
+    rawNiche === "negocios" ||
+    rawNiche === "empresa" ||
+    rawNiche === "m&a" ||
+    classified.attributes?.is_business_sale ||
+    classified.attributes?.niche === "business"
+  ) {
+    return NICHE_DEFINITIONS.business;
   }
 
   // 7. Aluguel de Equipamentos & Ferramentas
@@ -567,47 +603,53 @@ export function getSemanticBadges(classified: any): Array<{ label: string; icon:
     if (attrs.digital_file_type) {
       badges.push({ label: `Formato ${attrs.digital_file_type.toUpperCase()}`, icon: FileArchive, variant: "outline" });
     }
-    badges.push({ label: "Download Instantâneo", icon: DownloadCloud, variant: "outline" });
     if (attrs.digital_preview_url) {
-      badges.push({ label: "Demonstração Disponível", icon: Sparkles, variant: "outline" });
+      badges.push({ label: "Demonstração Disponível", icon: FileCheck, variant: "outline" });
     }
   }
 
   // Nicho: Assinatura Recorrente
   if (niche.id === "subscription") {
-    badges.push({
-      label: attrs.subscription_cycle === "anual" ? "Cobrança Anual" : "Cobrança Mensal",
-      icon: RefreshCw,
-      variant: "outline",
-    });
-    if (attrs.trial_days) {
-      badges.push({ label: `${attrs.trial_days} Dias Grátis`, icon: Sparkles, variant: "outline" });
+    if (attrs.subscription_cycle) {
+      badges.push({
+        label: attrs.subscription_cycle === "anual" ? "Cobrança Anual" : "Cobrança Mensal",
+        icon: RefreshCw,
+        variant: "outline",
+      });
     }
-    badges.push({ label: "Cancele quando quiser", icon: ShieldCheck, variant: "outline" });
+    if (attrs.trial_days) {
+      badges.push({ label: `${attrs.trial_days} Dias de Teste`, icon: Clock, variant: "outline" });
+    }
   }
 
   // Nicho: Doação Solidária
   if (niche.id === "donation") {
     badges.push({ label: "100% Gratuito (Solidário)", icon: HeartHandshake, variant: "outline" });
-    badges.push({
-      label: attrs.delivery_mode === "pickup" ? "Retirada em Mãos" : "Combinar Entrega",
-      icon: Truck,
-      variant: "outline",
-    });
+    if (attrs.delivery_mode) {
+      badges.push({
+        label: attrs.delivery_mode === "pickup" ? "Retirada em Mãos" : "A Combinar Entrega",
+        icon: Truck,
+        variant: "outline",
+      });
+    }
   }
 
   // Nicho: Equipamento
   if (niche.id === "equipment") {
-    badges.push({
-      label: attrs.operator_included ? "Com Operador Incluso" : "Sem Operador Incluso",
-      icon: UserCheck,
-      variant: "outline",
-    });
-    badges.push({
-      label: attrs.equipment_period === "mensal" ? "Locação Mensal" : attrs.equipment_period === "evento" ? "Locação por Evento" : "Locação por Diária",
-      icon: Layers,
-      variant: "outline",
-    });
+    if (attrs.operator_included !== undefined) {
+      badges.push({
+        label: attrs.operator_included ? "Com Operador Incluso" : "Sem Operador Incluso",
+        icon: UserCheck,
+        variant: "outline",
+      });
+    }
+    if (attrs.equipment_period) {
+      badges.push({
+        label: attrs.equipment_period === "mensal" ? "Locação Mensal" : attrs.equipment_period === "evento" ? "Locação por Evento" : "Locação por Diária",
+        icon: Layers,
+        variant: "outline",
+      });
+    }
   }
 
   // Nicho: Vaga de Emprego
@@ -625,13 +667,15 @@ export function getSemanticBadges(classified: any): Array<{ label: string; icon:
     if (attrs.duration_days) {
       badges.push({ label: `${attrs.duration_days} Dias de Roteiro`, icon: Calendar, variant: "outline" });
     }
-    badges.push({ label: "Vagas Limitadas", icon: Users, variant: "outline" });
+    if (attrs.remaining_spots && Number(attrs.remaining_spots) > 0) {
+      badges.push({ label: `${attrs.remaining_spots} Vagas Restantes`, icon: Users, variant: "outline" });
+    }
   }
 
   // Nicho: Desapego / Produtos Físicos
   if (niche.id === "goods") {
     const deliveryMode = attrs.delivery_mode;
-    if (deliveryMode === "both" || !deliveryMode) {
+    if (deliveryMode === "both") {
       badges.push({ label: "Retirada em Mãos & Entrega Local", icon: Truck, variant: "outline" });
     } else if (deliveryMode === "pickup") {
       badges.push({ label: "Somente Retirada em Mãos", icon: Package, variant: "outline" });
@@ -692,17 +736,18 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       icon: Key,
     });
 
-    const checkinType = attrs.checkin_type || "self_checkin";
-    cards.push({
-      title: "Acesso",
-      value: checkinType === "self_checkin" || checkinType === "smart_lock" 
-        ? "Self Check-in" 
-        : checkinType === "host_greeting" 
-        ? "Com Anfitrião" 
-        : "Recepção 24h",
-      icon: Lock,
-      hint: checkinType === "self_checkin" || checkinType === "smart_lock" ? "Fechadura Digital" : undefined,
-    });
+    if (attrs.checkin_type) {
+      cards.push({
+        title: "Acesso",
+        value: attrs.checkin_type === "self_checkin" || attrs.checkin_type === "smart_lock" 
+          ? "Self Check-in" 
+          : attrs.checkin_type === "host_greeting" 
+          ? "Com Anfitrião" 
+          : "Recepção 24h",
+        icon: Lock,
+        hint: attrs.checkin_type === "self_checkin" || attrs.checkin_type === "smart_lock" ? "Fechadura Digital" : undefined,
+      });
+    }
 
     const guests = classified.max_guests || attrs.max_guests;
     if (guests) {
@@ -771,7 +816,7 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
   else if (niche.id === "vehicle") {
     cards.push({
       title: "Categoria",
-      value: "Veículo Verificado",
+      value: "Veículo",
       icon: Car,
     });
 
@@ -808,17 +853,13 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
 
   // Nicho: Serviços
   else if (niche.id === "service") {
-    cards.push({
-      title: "Atendimento",
-      value: attrs.modality === "domicilio" ? "A Domicílio" : attrs.modality === "remoto" ? "Online / Remoto" : "Presencial",
-      icon: Wrench,
-    });
-
-    cards.push({
-      title: "Agendamento",
-      value: "Disponível Online",
-      icon: Calendar,
-    });
+    if (attrs.modality) {
+      cards.push({
+        title: "Atendimento",
+        value: attrs.modality === "domicilio" ? "A Domicílio" : attrs.modality === "remoto" ? "Online / Remoto" : "Presencial",
+        icon: Wrench,
+      });
+    }
 
     if (classified.service_duration_minutes) {
       cards.push({
@@ -828,11 +869,13 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       });
     }
 
-    cards.push({
-      title: "Atendimento",
-      value: "Direto com Prestador",
-      icon: ShieldCheck,
-    });
+    if (attrs.warranty_days) {
+      cards.push({
+        title: "Garantia",
+        value: `${attrs.warranty_days} dias`,
+        icon: ShieldCheck,
+      });
+    }
   }
 
   // Nicho: Doação Solidária
@@ -844,38 +887,32 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       hint: "Sem custo financeiro",
     });
 
-    cards.push({
-      title: "Custo",
-      value: "R$ 0,00 Gratuito",
-      icon: Banknote,
-    });
-
-    cards.push({
-      title: "Retirada",
-      value: attrs.delivery_mode === "pickup" ? "Retirada no Local" : "A Combinar com Doador",
-      icon: Truck,
-    });
-
-    cards.push({
-      title: "Comunidade",
-      value: "Desapego Regional",
-      icon: Users,
-    });
+    if (attrs.delivery_mode) {
+      cards.push({
+        title: "Retirada",
+        value: attrs.delivery_mode === "pickup" ? "Retirada no Local" : "A Combinar com Doador",
+        icon: Truck,
+      });
+    }
   }
 
   // Nicho: Assinatura Recorrente
   else if (niche.id === "subscription") {
-    cards.push({
-      title: "Cobrança",
-      value: attrs.subscription_cycle === "anual" ? "Cobrança Anual" : "Mensalidade Recorrente",
-      icon: RefreshCw,
-    });
+    if (attrs.subscription_cycle) {
+      cards.push({
+        title: "Cobrança",
+        value: attrs.subscription_cycle === "anual" ? "Cobrança Anual" : "Mensalidade Recorrente",
+        icon: RefreshCw,
+      });
+    }
 
-    cards.push({
-      title: "Período Teste",
-      value: attrs.trial_days ? `${attrs.trial_days} dias grátis` : "Acesso Imediato",
-      icon: Sparkles,
-    });
+    if (attrs.trial_days && Number(attrs.trial_days) > 0) {
+      cards.push({
+        title: "Período Teste",
+        value: `${attrs.trial_days} dias grátis`,
+        icon: ShieldCheck,
+      });
+    }
 
     if (attrs.setup_fee_cents) {
       cards.push({
@@ -883,7 +920,7 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
         value: formatMoney(attrs.setup_fee_cents),
         icon: CreditCard,
       });
-    } else {
+    } else if (attrs.no_setup_fee) {
       cards.push({
         title: "Adesão",
         value: "Sem Taxa de Matrícula",
@@ -891,71 +928,81 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       });
     }
 
-    cards.push({
-      title: "Fidelidade",
-      value: "Cancele quando quiser",
-      icon: ShieldCheck,
-    });
+    if (attrs.cancellation_policy || attrs.no_commitment) {
+      cards.push({
+        title: "Fidelidade",
+        value: attrs.cancellation_policy || "Sem Fidelidade",
+        icon: ShieldCheck,
+      });
+    }
   }
 
   // Nicho: Produto Digital
   else if (niche.id === "digital") {
-    cards.push({
-      title: "Formato",
-      value: attrs.digital_file_type ? attrs.digital_file_type.toUpperCase() : "Arquivo Digital",
-      icon: FileArchive,
-    });
+    if (attrs.digital_file_type) {
+      cards.push({
+        title: "Formato",
+        value: attrs.digital_file_type.toUpperCase(),
+        icon: FileArchive,
+      });
+    }
 
-    cards.push({
-      title: "Tamanho",
-      value: attrs.digital_file_size_bytes
-        ? `${(attrs.digital_file_size_bytes / (1024 * 1024)).toFixed(1)} MB`
-        : attrs.file_size || "Acesso Direto",
-      icon: DownloadCloud,
-    });
+    if (attrs.digital_file_size_bytes || attrs.file_size) {
+      cards.push({
+        title: "Tamanho",
+        value: attrs.digital_file_size_bytes
+          ? `${(attrs.digital_file_size_bytes / (1024 * 1024)).toFixed(1)} MB`
+          : attrs.file_size,
+        icon: DownloadCloud,
+      });
+    }
 
-    cards.push({
-      title: "Download",
-      value: attrs.digital_download_limit ? `Até ${attrs.digital_download_limit} tentativas` : "Ilimitado",
-      icon: Download,
-    });
-
-    cards.push({
-      title: "Acesso",
-      value: "Vitalício & Imediato",
-      icon: ShieldCheck,
-    });
+    if (attrs.digital_download_limit) {
+      cards.push({
+        title: "Download",
+        value: `Até ${attrs.digital_download_limit} tentativas`,
+        icon: Download,
+      });
+    }
   }
 
   // Nicho: Aluguel de Equipamentos
   else if (niche.id === "equipment") {
-    cards.push({
-      title: "Período",
-      value: attrs.equipment_period === "mensal"
-        ? "Locação Mensal"
-        : attrs.equipment_period === "evento"
-        ? "Por Evento"
-        : "Diária de Locação",
-      icon: Layers,
-    });
+    if (attrs.equipment_period) {
+      cards.push({
+        title: "Período",
+        value: attrs.equipment_period === "mensal"
+          ? "Locação Mensal"
+          : attrs.equipment_period === "evento"
+          ? "Por Evento"
+          : "Diária de Locação",
+        icon: Layers,
+      });
+    }
 
-    cards.push({
-      title: "Caução",
-      value: attrs.deposit_cents ? formatMoney(attrs.deposit_cents) : "Sem Caução Prévia",
-      icon: ShieldCheck,
-    });
+    if (attrs.deposit_cents) {
+      cards.push({
+        title: "Caução",
+        value: formatMoney(attrs.deposit_cents),
+        icon: ShieldCheck,
+      });
+    }
 
-    cards.push({
-      title: "Operador",
-      value: attrs.operator_included ? "Operador Técnico Incluso" : "Por Conta do Cliente",
-      icon: UserCheck,
-    });
+    if (attrs.operator_included !== undefined) {
+      cards.push({
+        title: "Operador",
+        value: attrs.operator_included ? "Operador Técnico Incluso" : "Por Conta do Cliente",
+        icon: UserCheck,
+      });
+    }
 
-    cards.push({
-      title: "Logística",
-      value: attrs.delivery_available ? "Entrega no Local" : "Retirada no Balcão",
-      icon: Truck,
-    });
+    if (attrs.delivery_available !== undefined) {
+      cards.push({
+        title: "Logística",
+        value: attrs.delivery_available ? "Entrega no Local" : "Retirada no Balcão",
+        icon: Truck,
+      });
+    }
   }
 
   // Nicho: Vaga de Emprego
@@ -995,51 +1042,57 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
 
     const flightDetails = attrs.flight_details || {};
     const gateways = Array.isArray(flightDetails.boarding_gateways) ? flightDetails.boarding_gateways : [];
-    cards.push({
-      title: "Embarque",
-      value: gateways[0] || flightDetails.departure_airport || attrs.meeting_point || "Saída Regional",
-      icon: MapPin,
-    });
+    const departure = gateways[0] || flightDetails.departure_airport || attrs.meeting_point;
+    if (departure) {
+      cards.push({
+        title: "Embarque",
+        value: departure,
+        icon: MapPin,
+      });
+    }
 
-    cards.push({
-      title: "Duração",
-      value: attrs.duration_days ? `${attrs.duration_days} Dias` : "Roteiro Completo",
-      icon: Calendar,
-    });
+    if (attrs.duration_days) {
+      cards.push({
+        title: "Duração",
+        value: `${attrs.duration_days} Dias`,
+        icon: Calendar,
+      });
+    }
 
-    const maxInst = Math.max(1, Number(attrs.max_installments) || 12);
-    cards.push({
-      title: "Parcelamento",
-      value: maxInst > 1 ? `Até ${maxInst}x` : "À Vista",
-      icon: CreditCard,
-    });
+    if (attrs.max_installments && Number(attrs.max_installments) > 1) {
+      cards.push({
+        title: "Parcelamento",
+        value: `Até ${attrs.max_installments}x`,
+        icon: CreditCard,
+      });
+    }
   }
 
   // Nicho: Alimentação / Gastronomia
   else if (niche.id === "food") {
-    cards.push({
-      title: "Cardápio",
-      value: attrs.meal_type?.replace(/_/g, " ") || "Refeição Artesanal",
-      icon: Utensils,
-    });
+    if (attrs.meal_type) {
+      cards.push({
+        title: "Cardápio",
+        value: attrs.meal_type.replace(/_/g, " "),
+        icon: Utensils,
+      });
+    }
 
-    cards.push({
-      title: "Preparo",
-      value: attrs.prep_time || "Pronta Entrega",
-      icon: Clock,
-    });
+    if (attrs.prep_time) {
+      cards.push({
+        title: "Preparo",
+        value: attrs.prep_time,
+        icon: Clock,
+      });
+    }
 
-    cards.push({
-      title: "Entrega",
-      value: "MotoLink & Retirada",
-      icon: Truck,
-    });
-
-    cards.push({
-      title: "Padrão",
-      value: "Artesanal da Região",
-      icon: CheckCircle2,
-    });
+    if (attrs.delivery_mode) {
+      cards.push({
+        title: "Entrega",
+        value: attrs.delivery_mode === "pickup" ? "Retirada no Local" : "Entrega Delivery",
+        icon: Truck,
+      });
+    }
   }
 
   // Nicho: Desapego / Bens Físicos
@@ -1051,11 +1104,13 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
     });
 
     const deliveryMode = attrs.delivery_mode;
-    cards.push({
-      title: "Disponibilidade",
-      value: deliveryMode === "pickup" ? "Retirada Local" : deliveryMode === "shipping" ? "Envio / Correios" : "Pronta Entrega",
-      icon: Truck,
-    });
+    if (deliveryMode) {
+      cards.push({
+        title: "Disponibilidade",
+        value: deliveryMode === "pickup" ? "Retirada Local" : "Envio / Entrega",
+        icon: Truck,
+      });
+    }
 
     if (attrs.has_invoice) {
       cards.push({
@@ -1072,15 +1127,6 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
         icon: CheckCircle2,
       });
     }
-  }
-
-  // Garantir pelo menos 2 cards para manter a harmonia do grid
-  if (cards.length === 1) {
-    cards.push({
-      title: "Contato",
-      value: "Direto com Anunciante",
-      icon: ShieldCheck,
-    });
   }
 
   return cards;
@@ -1112,11 +1158,11 @@ export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentM
   }
 
   if (attrs.accepts_card === true || paymentMethods.includes("card") || classified.accepts_card) {
-    const maxInst = attrs.max_installments || 12;
+    const maxInst = Number(attrs.max_installments);
     items.push({
       id: "card",
       label: "Cartão de Crédito",
-      badge: maxInst > 1 ? `Até ${maxInst}x` : "À vista",
+      badge: maxInst > 1 ? `Até ${maxInst}x` : "Crédito",
       icon: CreditCard,
     });
   }

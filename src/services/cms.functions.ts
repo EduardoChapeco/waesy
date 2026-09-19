@@ -8,26 +8,25 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
-import { getSSRClient } from "@/lib/server-access";
 
 // ---------------------------------------------------------------------------
 // Admin CRUD
 // ---------------------------------------------------------------------------
 
-export async function _listAdminPages() {
- const { getServerIdentity } = await import("@/lib/server-access");
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("Loja não encontrada");
+async function _listAdminPages() {
+  const { getServerIdentity, getSSRClient } = await import("@/lib/server-access");
+  const { store_id } = await getServerIdentity();
+  if (!store_id) throw new Error("Loja não encontrada");
 
- const db = await getSSRClient();
- const { data, error } = await db
- .from("pages")
- .select("id, title, slug, status, created_at, updated_at")
- .eq("store_id", store_id)
- .order("created_at", { ascending: false });
+  const db = await getSSRClient();
+  const { data, error } = await db
+    .from("pages")
+    .select("id, title, slug, status, created_at, updated_at")
+    .eq("store_id", store_id)
+    .order("created_at", { ascending: false });
 
- if (error) throw error;
- return data || [];
+  if (error) throw error;
+  return data || [];
 }
 
 export const listAdminPages = createServerFn({ method: "GET" }).handler(async () => {
@@ -557,51 +556,67 @@ export const createProductReview = createServerFn({ method: "POST" })
 // Link-in-Bio
 // ---------------------------------------------------------------------------
 
-export const getLinkInBio = createServerFn({ method: "GET" }).handler(async () => {
-  try {
-    const db = getServerClient();
+export const getLinkInBio = createServerFn({ method: "GET" })
+  .validator((d: { slug?: string } | undefined) => d)
+  .handler(async ({ data }) => {
+    try {
+      const db = getServerClient();
+      let storeId: string | null = null;
 
-    const { resolveTenantStoreId } = await import("@/lib/tenant.server");
-    let storeId = await resolveTenantStoreId();
+      if (data?.slug) {
+        const { data: storeRow } = await db
+          .from("stores")
+          .select("id")
+          .eq("slug", data.slug)
+          .maybeSingle();
+        if (storeRow?.id) {
+          storeId = storeRow.id;
+        }
+      }
 
-    if (!storeId) {
-      const { resolvePlatformRootStore } = await import("@/services/master.functions");
-      const rootStore = await resolvePlatformRootStore(db);
-      storeId = rootStore?.id || null;
-    }
+      if (!storeId) {
+        const { resolveTenantStoreId } = await import("@/lib/tenant.server");
+        storeId = await resolveTenantStoreId();
+      }
 
-    if (!storeId) return null;
+      if (!storeId) {
+        const { resolvePlatformRootStore } = await import("@/services/master.functions");
+        const rootStore = await resolvePlatformRootStore(db);
+        storeId = rootStore?.id || null;
+      }
 
-    const { data, error } = await db
-      .from("link_in_bio")
-      .select("*")
-      .eq("store_id", storeId)
-      .maybeSingle();
+      if (!storeId) return null;
 
-    if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
-
-    if (!data) {
-      // Create default if it doesn't exist
-      const { data: newData, error: insertError } = await db
+      const { data: bioData, error } = await db
         .from("link_in_bio")
-        .insert({ store_id: storeId })
-        .select()
+        .select("*")
+        .eq("store_id", storeId)
         .maybeSingle();
 
-      if (insertError) {
-        console.warn("[cms.functions] getLinkInBio insert error:", insertError);
-        return null;
-      }
-      return newData || null;
-    }
+      if (error && error.code !== "PGRST116") throw error; // PGRST116 is not found
 
-    return data;
-  } catch (e) {
-    if (e instanceof SupabaseUnconfiguredError) return null;
-    console.warn("[cms.functions] getLinkInBio fallback:", e instanceof Error ? e.message : e);
-    return null;
-  }
-});
+      if (!bioData) {
+        // Create default if it doesn't exist
+        const { data: newData, error: insertError } = await db
+          .from("link_in_bio")
+          .insert({ store_id: storeId })
+          .select()
+          .maybeSingle();
+
+        if (insertError) {
+          console.warn("[cms.functions] getLinkInBio insert error:", insertError);
+          return null;
+        }
+        return newData || null;
+      }
+
+      return bioData;
+    } catch (e) {
+      if (e instanceof SupabaseUnconfiguredError) return null;
+      console.warn("[cms.functions] getLinkInBio fallback:", e instanceof Error ? e.message : e);
+      return null;
+    }
+  });
 
 export const upsertLinkInBio = createServerFn({ method: "POST" })
  .validator(
@@ -821,9 +836,10 @@ export const createReview = createServerFn({ method: "POST" })
  comment: z.string().max(1000).optional(),
  }),
  )
- .handler(async ({ data: { productId, orderId, rating, comment } }) => {
- try {
- const ssrClient = await getSSRClient();
+  .handler(async ({ data: { productId, orderId, rating, comment } }) => {
+    try {
+      const { getSSRClient } = await import("@/lib/server-access");
+      const ssrClient = await getSSRClient();
  const {
  data: { user },
  } = await ssrClient.auth.getUser();
@@ -910,8 +926,9 @@ export const createReview = createServerFn({ method: "POST" })
  });
 
 export const listCustomerReviews = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const ssrClient = await getSSRClient();
+  try {
+    const { getSSRClient } = await import("@/lib/server-access");
+    const ssrClient = await getSSRClient();
  const {
  data: { user },
  } = await ssrClient.auth.getUser();

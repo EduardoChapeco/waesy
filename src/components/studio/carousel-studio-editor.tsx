@@ -27,7 +27,7 @@ import {
   X
 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
-import { saveStudioProject, publishStudioCarouselToSocial } from "@/services/studio.functions";
+import { saveStudioProject, publishStudioCarouselToSocial, refineSlideTextWithAI, type RefinedSlideOption } from "@/services/studio.functions";
 
 interface CarouselStudioEditorProps {
   project: EscamasCarouselProject;
@@ -53,6 +53,12 @@ export function CarouselStudioEditor({
 
   // Canvas zoom/scale factor para exibição ergonômica
   const [canvasScale, setCanvasScale] = useState(0.42);
+
+  // Estados de Refinamento de Texto com IA Universal
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [isRefiningAI, setIsRefiningAI] = useState(false);
+  const [aiTone, setAiTone] = useState<"direct_punchy" | "journalistic_editorial" | "persuasive_cta" | "educational_authority">("journalistic_editorial");
+  const [aiVariants, setAiVariants] = useState<RefinedSlideOption[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const activeDimensions = getSlideDimensions(aspectRatio);
@@ -83,6 +89,54 @@ export function CarouselStudioEditor({
         [field]: val,
       },
     });
+  };
+
+  // Refinamento com IA Orquestrada
+  const handleTriggerAiRefinement = async (toneOverride?: typeof aiTone) => {
+    const headline = currentSlide?.text_content?.headline;
+    if (!headline || !headline.trim()) {
+      toast.error("Preencha pelo menos a Manchete para a IA poder refinar o slide.");
+      return;
+    }
+    const toneToUse = toneOverride || aiTone;
+    setIsRefiningAI(true);
+    try {
+      const res = await refineSlideTextWithAI({
+        data: {
+          headline,
+          body: currentSlide.text_content.body || "",
+          badge: currentSlide.text_content.badge || "",
+          kicker: currentSlide.text_content.kicker || "",
+          niche: project.title,
+          brandName: project.brand.name,
+          targetTone: toneToUse,
+        },
+      });
+      if (res.variants && res.variants.length > 0) {
+        setAiVariants(res.variants);
+      } else {
+        toast.error("Nenhuma variação gerada pela IA.");
+      }
+    } catch (err: any) {
+      toast.error("Erro ao refinar com IA: " + (err?.message || "Tente novamente."));
+    } finally {
+      setIsRefiningAI(false);
+    }
+  };
+
+  const handleApplyVariant = (variant: RefinedSlideOption) => {
+    updateCurrentSlide({
+      text_content: {
+        ...currentSlide.text_content,
+        badge: variant.badge,
+        kicker: variant.kicker,
+        headline: variant.headline,
+        body: variant.body,
+        ...(variant.cta_text ? { cta_text: variant.cta_text } : {}),
+      },
+    });
+    setShowAiModal(false);
+    toast.success("Texto refinado pela IA aplicado com sucesso no slide!");
   };
 
   // Salvar no Banco
@@ -442,10 +496,27 @@ export function CarouselStudioEditor({
           {/* PAINEL LATERAL DE EDIÇÃO DO SLIDE */}
           <aside className="w-84 border-l border-border bg-card p-5 overflow-y-auto space-y-6 shrink-0">
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-                <Type className="size-3.5" />
-                Textos do Slide {currentSlideIndex + 1}
-              </h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Type className="size-3.5" />
+                  Textos do Slide {currentSlideIndex + 1}
+                </h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowAiModal(true);
+                    if (aiVariants.length === 0) {
+                      handleTriggerAiRefinement();
+                    }
+                  }}
+                  className="h-7 px-2.5 gap-1 rounded-lg text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
+                >
+                  <Sparkles className="size-3 text-primary" />
+                  Refinar com IA
+                </Button>
+              </div>
 
               <div className="space-y-4">
                 <div>
@@ -577,6 +648,141 @@ export function CarouselStudioEditor({
             </div>
           </aside>
         </div>
+
+        {/* MODAL DE REFINAMENTO DE TEXTO COM IA UNIVERSAL (ORQUESTRADOR) */}
+        <Dialog open={showAiModal} onOpenChange={setShowAiModal}>
+          <DialogContent className="max-w-3xl w-[92vw] max-h-[85vh] p-6 flex flex-col bg-background border-border rounded-2xl shadow-2xl overflow-hidden">
+            <DialogHeader className="pb-3 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <Sparkles className="size-4" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-base font-bold text-foreground">
+                      Refinar Textos do Slide com IA
+                    </DialogTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Modelos generativos do pool orquestrado (BYOK / Gemini / OpenAI / Groq)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {/* BARRA DE TONS & RE-GERAR */}
+            <div className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-border/60">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  { id: "journalistic_editorial" as const, label: "Jornalístico" },
+                  { id: "direct_punchy" as const, label: "Impacto & Curto" },
+                  { id: "persuasive_cta" as const, label: "Persuasivo & CTA" },
+                  { id: "educational_authority" as const, label: "Educativo" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      setAiTone(t.id);
+                      handleTriggerAiRefinement(t.id);
+                    }}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      aiTone === t.id
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "bg-muted text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleTriggerAiRefinement()}
+                disabled={isRefiningAI}
+                className="h-8 gap-1.5 text-xs font-medium rounded-xl"
+              >
+                <RefreshCw className={`size-3.5 ${isRefiningAI ? "animate-spin" : ""}`} />
+                {isRefiningAI ? "Refinando..." : "Gerar Novas Variações"}
+              </Button>
+            </div>
+
+            {/* LISTAGEM DE VARIAÇÕES REFINADAS */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+              {isRefiningAI ? (
+                <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
+                  <div className="size-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                  <p className="text-xs text-muted-foreground">
+                    Orquestrando modelos de IA para criar variações de alto impacto...
+                  </p>
+                </div>
+              ) : aiVariants.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground text-xs space-y-3">
+                  <p>Nenhuma variação gerada ainda.</p>
+                  <Button
+                    size="sm"
+                    onClick={() => handleTriggerAiRefinement()}
+                    className="h-8 rounded-xl text-xs font-semibold"
+                  >
+                    Gerar Variações Agora
+                  </Button>
+                </div>
+              ) : (
+                aiVariants.map((variant, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl border border-border/80 bg-card hover:border-primary/50 transition-all space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                          {variant.tone}
+                        </Badge>
+                        {variant.badge && (
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                            • {variant.badge}
+                          </span>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleApplyVariant(variant)}
+                        className="h-7 px-3 text-xs font-bold rounded-lg cursor-pointer"
+                      >
+                        <Check className="size-3 mr-1" />
+                        Aplicar no Slide
+                      </Button>
+                    </div>
+
+                    <div>
+                      {variant.kicker && (
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+                          {variant.kicker}
+                        </p>
+                      )}
+                      <h4 className="text-sm font-extrabold text-foreground uppercase leading-snug">
+                        {variant.headline}
+                      </h4>
+                      {variant.body && (
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          {variant.body}
+                        </p>
+                      )}
+                    </div>
+
+                    {variant.rationale && (
+                      <p className="text-[11px] text-primary/80 italic bg-primary/5 p-2 rounded-lg border border-primary/10">
+                        💡 {variant.rationale}
+                      </p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );

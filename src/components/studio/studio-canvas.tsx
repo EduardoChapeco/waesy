@@ -69,11 +69,42 @@ export function StudioCanvas({ onExportToHero, className = '', aspectRatio, back
  setSelectedLayerId(newL.id);
  };
 
- const handleExport = () => {
- // In real app, creates canvas data URL. For now, emits svg / placeholder data url
- const fakeUrl = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400"><rect width="800" height="400" fill="%230f172a"/><text x="40" y="100" fill="%2338bdf8" font-size="32" font-family="sans-serif">PROMOÇÃO WAESY</text></svg>';
- if (onExportToHero) onExportToHero(fakeUrl);
- };
+  const handleExport = () => {
+    try {
+      const width = aspect === '16:9' ? 1200 : aspect === '9:16' ? 720 : 1080;
+      const height = aspect === '16:9' ? 675 : aspect === '9:16' ? 1280 : 1080;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        // 1. Renderiza fundo real
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, width, height);
+
+        // 2. Fator de escala proporcional
+        const scale = width / (aspect === '16:9' ? 672 : aspect === '9:16' ? 320 : 384);
+
+        // 3. Renderiza cada camada real com fidelidade tipográfica
+        for (const l of layers) {
+          if (l.type === 'text' && l.text) {
+            ctx.fillStyle = l.color || '#ffffff';
+            const scaledFontSize = Math.round((l.fontSize || 18) * scale);
+            ctx.font = `bold ${scaledFontSize}px Inter, -apple-system, BlinkMacSystemFont, sans-serif`;
+            ctx.textBaseline = 'top';
+            ctx.fillText(l.text, l.x * scale, l.y * scale);
+          }
+        }
+
+        const realDataUrl = canvas.toDataURL("image/png");
+        if (onExportToHero) onExportToHero(realDataUrl);
+      }
+    } catch (err) {
+      console.error("[studio-canvas] Falha ao exportar canvas:", err);
+    }
+  };
 
  return (
  <div className={'p-6 rounded-2xl bg-card border border-border shadow-xl space-y-5 ' + className}>

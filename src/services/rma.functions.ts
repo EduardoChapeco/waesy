@@ -226,33 +226,40 @@ export const listAdminRmas = createServerFn({ method: "GET" }).handler(async () 
 });
 
 export const updateRmaStatus = createServerFn({ method: "POST" })
- .validator(
- z.object({
- rmaId: z.string().uuid(),
- status: z.enum(["authorized", "received", "resolved", "rejected", "cancelled"]),
- }),
- )
- .handler(async ({ data }) => {
- try {
- const identity = await getServerIdentity();
- await assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "logistics"]);
+  .validator(
+    z.object({
+      rmaId: z.string().uuid(),
+      status: z.enum(["authorized", "received", "resolved", "rejected", "cancelled"]),
+      returnTrackingCode: z.string().optional().nullable(),
+      returnLabelUrl: z.string().url().optional().nullable(),
+      returnCarrier: z.string().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    try {
+      const identity = await getServerIdentity();
+      await assertStoreAccess(identity, ["owner", "admin", "manager", "finance", "logistics"]);
 
- const db = getServerClient();
+      const db = getServerClient();
 
- const updatePayload: any = { status: data.status, updated_at: new Date().toISOString() };
+      const updatePayload: any = { status: data.status, updated_at: new Date().toISOString() };
 
- // Logística Reversa: se autorizado, geramos a etiqueta do MelhorEnvio/Correios
- if (data.status === "authorized") {
- updatePayload.return_tracking_code = `BR${Math.floor(Math.random() * 1000000000)}LOG`;
- updatePayload.return_label_url = "https://logistica.exemplo.com/etiqueta.pdf";
- updatePayload.return_carrier = "Correios (Logística Reversa)";
- }
+      // Persiste dados oficiais de logística reversa se fornecidos pelo operador/integração
+      if (data.returnTrackingCode) {
+        updatePayload.return_tracking_code = data.returnTrackingCode;
+      }
+      if (data.returnLabelUrl) {
+        updatePayload.return_label_url = data.returnLabelUrl;
+      }
+      if (data.returnCarrier) {
+        updatePayload.return_carrier = data.returnCarrier;
+      }
 
- const { error } = await db
- .from("rma_requests")
- .update(updatePayload)
- .eq("id", data.rmaId)
- .eq("store_id", identity.store_id);
+      const { error } = await db
+        .from("rma_requests")
+        .update(updatePayload)
+        .eq("id", data.rmaId)
+        .eq("store_id", identity.store_id);
 
  if (error) throw error;
  return { success: true };

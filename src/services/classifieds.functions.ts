@@ -4,6 +4,7 @@ import { getIdentity } from "./identity.functions";
 import { requireAdmin } from "@/lib/server-access";
 import { z } from "zod";
 import { classifiedSchema } from "@/types/community";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ---------------------------------------------------------------------------
 // PUBLIC (no auth required) — 100% Real no Supabase | Zero Mocks
@@ -94,11 +95,11 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
 
       classifiedData.profiles = profile || {
         id: classifiedData.author_profile_id,
-        full_name: "Anunciante Verificado",
+        full_name: classifiedData.contact_name || "Anunciante",
         avatar_url: null,
         phone: classifiedData.contact_whatsapp || classifiedData.whatsapp,
       };
- }
+  }
 
     // Busca informações da loja associada e perguntas personalizadas de atendimento
     if (classifiedData.store_id) {
@@ -152,6 +153,31 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
  : identity?.id
  ? "visitor"
  : "anonymous";
+
+  // LGPD & Micro-fase 7.4: Blindagem server-side de endereço quando a privacidade estiver ativada
+  const isPrivacyHidden = Boolean(
+    classifiedData.hide_location ||
+    classifiedData.attributes?.hide_location ||
+    classifiedData.attributes?.hide_address ||
+    classifiedData.attributes?.hide_exact_address ||
+    classifiedData.attributes?.location_privacy === "hidden"
+  );
+
+  if (!canManage && isPrivacyHidden) {
+    classifiedData.location_lat = null;
+    classifiedData.location_lng = null;
+    classifiedData.location_name = null;
+    classifiedData.city = null;
+    classifiedData.state = null;
+    classifiedData.neighborhood = null;
+    if (classifiedData.attributes) {
+      classifiedData.attributes.city = null;
+      classifiedData.attributes.state = null;
+      classifiedData.attributes.neighborhood = null;
+      classifiedData.attributes.location_lat = null;
+      classifiedData.attributes.location_lng = null;
+    }
+  }
 
  return {
  classified: classifiedData,
@@ -337,6 +363,8 @@ const upsertClassifiedInput = z.object({
  location_privacy: z.enum(["full", "city_only", "hidden"]).optional(),
  attributes: z.record(z.any()).optional().default({}),
  status: z.enum(["draft", "active", "paused", "closed"]).default("active"),
+ max_discount_pct: z.coerce.number().min(0).max(100).optional().default(0),
+ delivery_type: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both"]).optional(),
 });
 
 export const upsertClassified = createServerFn({ method: "POST" })
@@ -417,37 +445,112 @@ export const upsertClassified = createServerFn({ method: "POST" })
    ...(rest.working_hours_end ? { working_hours_end: rest.working_hours_end } : {}),
  },
  status: rest.status || "active",
+ max_discount_pct: rest.max_discount_pct ?? 0,
+ delivery_type: rest.delivery_type || rest.delivery_mode || rest.attributes?.delivery_type || "pickup",
  author_profile_id: identity.id,
  store_id: rest.store_id || null,
  };
 
- if (isUpdating) {
- const { data, error } = await supabase
- .from("classifieds")
- .update(payload)
- .eq("id", id)
- .eq("author_profile_id", identity.id)
- .select()
- .single();
+  let savedRecord: any = null;
 
- if (error) {
- console.error("Error updating classified:", error);
- throw new Error(error.message || "Falha ao atualizar anúncio.");
- }
- return data;
- } else {
- const { data, error } = await supabase
- .from("classifieds")
- .insert(payload)
- .select()
- .single();
+  if (isUpdating) {
+    const { data, error } = await supabase
+      .from("classifieds")
+      .update(payload)
+      .eq("id", id)
+      .eq("author_profile_id", identity.id)
+      .select()
+      .single();
 
- if (error) {
- console.error("Error inserting classified:", error);
- throw new Error(error.message || "Falha ao salvar anúncio.");
- }
- return data;
- }
+    if (error) {
+      console.error("Error updating classified:", error);
+      throw new Error(error.message || "Falha ao atualizar anúncio.");
+    }
+    savedRecord = data;
+  } else {
+    const { data, error } = await supabase
+      .from("classifieds")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error inserting classified:", error);
+      throw new Error(error.message || "Falha ao salvar anúncio.");
+    }
+    savedRecord = data;
+  }
+
+  // Telemetria invisível de histórico de rotatividade de ponto comercial (Fase 4 Master Plan)
+  if (savedRecord && (savedRecord.category === "business" || savedRecord.attributes?.commercial_point_type)) {
+    const address = savedRecord.location_name || savedRecord.location_text || savedRecord.address;
+    if (address && address.trim()) {
+      (async () => {
+        try {
+          const city = savedRecord.city || "Chapecó";
+          const state = savedRecord.state || "SC";
+          const addressNorm = address.trim().toLowerCase();
+
+          const { data: existingPoint } = await supabase
+            .from("commercial_point_records")
+            .select("id, turnover_count")
+            .ilike("address_normalized", `%${addressNorm}%`)
+            .maybeSingle();
+
+          let pointId = existingPoint?.id;
+          if (!pointId) {
+            const { data: newPoint } = await supabase
+              .from("commercial_point_records")
+              .insert({
+                address_normalized: address.trim(),
+                city,
+                state,
+                area_sqm: Number(savedRecord.attributes?.area_sqm) || null,
+                point_type: savedRecord.attributes?.commercial_point_type || "loja_rua",
+                current_occupant_name: savedRecord.title,
+                current_occupant_cnpj: savedRecord.attributes?.company_cnpj || null,
+                current_occupant_segment: savedRecord.attributes?.business_segment || "Comércio Geral",
+                occupancy_status: savedRecord.attributes?.business_type === "repasse_ponto" ? "transitioning" : "occupied",
+                turnover_count: 1,
+              })
+              .select("id")
+              .single();
+            pointId = newPoint?.id;
+          } else {
+            await supabase
+              .from("commercial_point_records")
+              .update({
+                current_occupant_name: savedRecord.title,
+                current_occupant_cnpj: savedRecord.attributes?.company_cnpj || null,
+                current_occupant_segment: savedRecord.attributes?.business_segment || "Comércio Geral",
+                occupancy_status: savedRecord.attributes?.business_type === "repasse_ponto" ? "transitioning" : "occupied",
+                turnover_count: ((existingPoint as any)?.turnover_count || 0) + 1,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", pointId);
+          }
+
+          if (pointId) {
+            await supabase.from("commercial_point_turnover").insert({
+              commercial_point_id: pointId,
+              former_company_name: savedRecord.title,
+              former_cnpj: savedRecord.attributes?.company_cnpj || null,
+              segment: savedRecord.attributes?.business_segment || "Comércio Geral",
+              duration_months: Number(savedRecord.attributes?.contract_remaining_years) 
+                ? Math.round(Number(savedRecord.attributes.contract_remaining_years) * 12) 
+                : 12,
+              reason_for_leaving: savedRecord.attributes?.sale_reason || "Transição Comercial",
+              reported_revenue_monthly_cents: savedRecord.attributes?.monthly_revenue_cents || null,
+            });
+          }
+        } catch (telemetryErr: any) {
+          console.warn("[classifieds] Telemetria de ponto comercial registrada com fallback:", telemetryErr?.message);
+        }
+      })().catch(() => {});
+    }
+  }
+
+  return savedRecord;
  });
 
 export const deleteClassified = createServerFn({ method: "POST" })
@@ -1345,3 +1448,544 @@ export const getBoostPaymentById = createServerFn({ method: "GET" })
 // Mantido para compatibilidade com imports antigos — agora é alias seguro
 // que retorna erro se não há gateway configurado.
 export const boostClassifiedAd = initiateBoostPayment;
+
+/**
+ * Refina título, descrição persuasiva e tags do classificado via Pool Unificado de IA.
+ * Pure handler desacoplado para testes e uso interno.
+ */
+export async function internalRefineClassifiedWithAI(options: {
+  title?: string;
+  description?: string;
+  niche?: string;
+}) {
+  const title = options.title || "";
+  const description = options.description || "";
+  const niche = options.niche || "desapego";
+
+  const systemPrompt = `Você é um Copywriter e Especialista em Classificados de alta conversão da plataforma Waesy.
+O usuário fornecerá um título preliminar e/ou descrição de um anúncio do nicho "${niche}".
+Sua tarefa é aprimorar o anúncio mantendo a fidelidade total aos fatos, tornando a linguagem persuasiva, elegante, clara e estruturada.
+Formate a descrição com parágrafos curtos e tópicos (bullet points) destacando diferenciais, estado de conservação, garantias ou especificações técnicas.
+Retorne APENAS um JSON válido no seguinte formato:
+{
+  "title": "Título refinado, direto e atraente (máx 80 caracteres)",
+  "description": "Texto estruturado e persuasivo para o anúncio",
+  "suggestedTags": ["tag1", "tag2", "tag3"]
+}
+Sem blocos de código markdown adicionais fora do JSON.`;
+
+  const userPrompt = `Nicho: ${niche}\nTítulo atual: ${title || "Não informado"}\nDescrição atual: ${description || "Não informada"}\n\nPor favor, aprimore e retorne o JSON.`;
+
+  try {
+    const res = await executeUnifiedAiCall({
+      systemPrompt,
+      userPrompt,
+      responseFormat: "json_object",
+      maxTokens: 800,
+      temperature: 0.3,
+    });
+
+    const parsed = res.parsedJson || JSON.parse(res.content);
+    return {
+      success: true,
+      title: (parsed.title || title).trim(),
+      description: (parsed.description || description).trim(),
+      suggestedTags: Array.isArray(parsed.suggestedTags) ? parsed.suggestedTags : [],
+    };
+  } catch (err: any) {
+    console.warn("[classifieds] refineClassifiedWithAI fallback defensivo:", err?.message);
+    return {
+      success: false,
+      title,
+      description,
+      suggestedTags: [],
+      message: err?.message || "Não foi possível conectar ao motor de IA no momento.",
+    };
+  }
+}
+
+/**
+ * Server Function para refinar anúncios via IA a partir da interface do usuário.
+ */
+export const refineClassifiedWithAI = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      title: z.string().optional().default(""),
+      description: z.string().optional().default(""),
+      niche: z.string().optional().default("desapego"),
+    })
+  )
+  .handler(async ({ data }) => internalRefineClassifiedWithAI(data));
+
+// ============================================================================
+// TERMOS DE CONFIDENCIALIDADE (NDA DIGITAL) — 100% REAL COM PERSISTÊNCIA
+// ============================================================================
+
+/**
+ * Assina digitalmente o termo de confidencialidade (NDA) para revelar dados
+ * financeiros e estratégicos de anúncios de empresas e pontos comerciais.
+ */
+export const signClassifiedNda = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      classifiedId: z.string().uuid("ID de anúncio inválido"),
+      signerName: z.string().min(3, "Nome completo é obrigatório"),
+      signerEmail: z.string().email("E-mail corporativo válido é obrigatório"),
+      signerDocument: z.string().min(11, "CPF ou CNPJ válido é obrigatório"),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getIdentity();
+    if (!identity?.id) {
+      throw new Error("É necessário estar autenticado para assinar o termo de confidencialidade.");
+    }
+
+    const supabase = getServerClient();
+
+    // 1. Validar que o anúncio existe e exige NDA
+    const { data: classified, error: classifiedErr } = await supabase
+      .from("classified_ads")
+      .select("id, owner_id, title, attributes")
+      .eq("id", data.classifiedId)
+      .maybeSingle();
+
+    if (classifiedErr || !classified) {
+      throw new Error("Oportunidade não encontrada.");
+    }
+
+    // Se o usuário é o próprio anunciante, não precisa assinar
+    if (classified.owner_id === identity.id) {
+      return {
+        success: true,
+        alreadyOwner: true,
+        message: "Você é o proprietário deste anúncio.",
+      };
+    }
+
+    // 2. Extrair dados de auditoria de rede se disponível
+    let ipAddress: string | null = null;
+    let userAgent: string | null = null;
+    try {
+      const { getRequest } = await import("@tanstack/start-server-core");
+      const req = getRequest();
+      if (req) {
+        ipAddress = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for") || null;
+        userAgent = req.headers.get("user-agent") || null;
+      }
+    } catch {
+      // Ignora erro em ambientes de teste
+    }
+
+    // 3. Registrar assinatura no banco de dados com RLS
+    const { data: record, error: signErr } = await supabase
+      .from("classified_nda_signatures")
+      .upsert(
+        {
+          classified_id: data.classifiedId,
+          user_id: identity.id,
+          signer_name: data.signerName.trim(),
+          signer_email: data.signerEmail.trim().toLowerCase(),
+          signer_document: data.signerDocument.trim(),
+          ip_address: ipAddress,
+          user_agent: userAgent,
+          status: "active",
+          signed_at: new Date().toISOString(),
+        },
+        { onConflict: "classified_id, user_id" }
+      )
+      .select("id, signed_at")
+      .single();
+
+    if (signErr) {
+      console.error("[signClassifiedNda] Erro ao registrar assinatura:", signErr);
+      throw new Error("Falha ao salvar assinatura digital do termo: " + signErr.message);
+    }
+
+    return {
+      success: true,
+      signatureId: record.id,
+      signedAt: record.signed_at,
+      message: "Termo de confidencialidade assinado com sucesso! Dados liberados.",
+    };
+  });
+
+/**
+ * Consulta se o usuário autenticado já assinou o NDA de um anúncio específico.
+ */
+export const checkClassifiedNdaStatus = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      classifiedId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getIdentity().catch(() => null);
+    if (!identity?.id) {
+      return { isSigned: false, isOwner: false };
+    }
+
+    const supabase = getServerClient();
+
+    // 1. Verificar se é o proprietário
+    const { data: classified } = await supabase
+      .from("classified_ads")
+      .select("owner_id")
+      .eq("id", data.classifiedId)
+      .maybeSingle();
+
+    if (classified?.owner_id === identity.id) {
+      return { isSigned: true, isOwner: true };
+    }
+
+    // 2. Verificar assinatura ativa
+    const { data: signature } = await supabase
+      .from("classified_nda_signatures")
+      .select("id, signed_at")
+      .eq("classified_id", data.classifiedId)
+      .eq("user_id", identity.id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    return {
+      isSigned: !!signature,
+      signedAt: signature?.signed_at || null,
+      isOwner: false,
+    };
+  });
+
+/**
+ * Lista todos os investidores que assinaram o NDA para o proprietário do anúncio.
+ */
+export const listClassifiedNdaSignatures = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      classifiedId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    const supabase = getServerClient();
+
+    // Validar autoridade do proprietário ou admin
+    const { data: classified } = await supabase
+      .from("classified_ads")
+      .select("id, owner_id, title")
+      .eq("id", data.classifiedId)
+      .single();
+
+    if (!classified) throw new Error("Anúncio não encontrado");
+
+    if (classified.owner_id !== identity.id && identity.role !== "admin") {
+      throw new Error("Apenas o anunciante pode auditar os termos de sigilo deste anúncio.");
+    }
+
+    const { data: signatures, error } = await supabase
+      .from("classified_nda_signatures")
+      .select("id, signer_name, signer_email, signer_document, signed_at, status")
+      .eq("classified_id", data.classifiedId)
+      .order("signed_at", { ascending: false });
+
+    if (error) {
+      throw new Error("Erro ao listar assinaturas de sigilo: " + error.message);
+    }
+
+    // Mascarar CPF/CNPJ para conformidade LGPD
+    return (signatures || []).map((sig) => {
+      const doc = sig.signer_document || "";
+      const maskedDoc = doc.length > 6
+        ? `${doc.slice(0, 3)}.***.${doc.slice(-2)}`
+        : "***";
+
+      return {
+        id: sig.id,
+        signerName: sig.signer_name,
+        signerEmail: sig.signer_email,
+        signerDocumentMasked: maskedDoc,
+        signedAt: sig.signed_at,
+        status: sig.status,
+      };
+    });
+  });
+
+// ---------------------------------------------------------------------------
+// CONVERSÃO DE ANÚNCIO PARA WORKSPACE PRO (FASE 5: Estabilidade & Pontes Pro)
+// ---------------------------------------------------------------------------
+
+export const ConvertClassifiedToWorkspaceStoreSchema = z.object({
+  classifiedId: z.string().uuid(),
+  customStoreName: z.string().optional(),
+});
+
+export const convertClassifiedToWorkspaceStore = createServerFn({ method: "POST" })
+  .validator(ConvertClassifiedToWorkspaceStoreSchema)
+  .handler(async ({ data: { classifiedId, customStoreName } }) => {
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Sessão não autenticada.");
+
+    const db = getServerClient();
+
+    // 1. Buscar o anúncio
+    const { data: classified, error: classError } = await db
+      .from("classifieds")
+      .select("*")
+      .eq("id", classifiedId)
+      .single();
+
+    if (classError || !classified) {
+      throw new Error("Anúncio não encontrado.");
+    }
+
+    // 2. Validar se o usuário é o autor do anúncio
+    const authorId = classified.author_id;
+    if (authorId && authorId !== identity.id && identity.role !== "admin") {
+      throw new Error("Apenas o autor do anúncio pode convertê-lo em Loja Pro no Workspace.");
+    }
+
+    // 3. Se já possuir loja vinculada, retornar os dados da loja existente
+    if (classified.store_id) {
+      const { data: existingStore } = await db
+        .from("stores")
+        .select("id, name, slug")
+        .eq("id", classified.store_id)
+        .maybeSingle();
+
+      if (existingStore) {
+        return {
+          success: true,
+          storeId: existingStore.id,
+          storeSlug: existingStore.slug,
+          isExisting: true,
+          redirectUrl: "/workspace",
+        };
+      }
+    }
+
+    // 4. Criar organização e loja profissional
+    const storeName = customStoreName || classified.title || "Minha Empresa";
+    const baseSlug = storeName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "empresa";
+    const uniqueSlug = `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const { data: org, error: orgErr } = await db
+      .from("organizations")
+      .insert({
+        name: storeName,
+        slug: uniqueSlug,
+      })
+      .select("id")
+      .single();
+
+    if (orgErr || !org) {
+      throw new Error("Falha ao criar organização para a nova loja: " + (orgErr?.message || "Erro desconhecido"));
+    }
+
+    const attrs = classified.attributes || {};
+    const storeSettings: Record<string, any> = {
+      type: attrs.business_segment || classified.category || "negocios",
+      segment: attrs.business_segment || attrs.sub_niche || classified.category || "negocios",
+      niche: attrs.niche || classified.category || "negocios",
+      logoUrl: classified.images?.[0] || null,
+      bannerUrl: classified.images?.[1] || classified.images?.[0] || null,
+      origin_classified_id: classified.id,
+      converted_from_classified_at: new Date().toISOString(),
+      niche_attributes: attrs,
+      commercial_point: attrs.commercial_point_type || null,
+      point_id: attrs.point_id || null,
+      token_wallet: {
+        balance: 50_000,
+        lifetime_purchased: 50_000,
+        lifetime_consumed: 0,
+        estimated_time_saved_hours: 24.0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    };
+
+    const { data: store, error: storeErr } = await db
+      .from("stores")
+      .insert({
+        organization_id: org.id,
+        name: storeName,
+        slug: uniqueSlug,
+        cnpj: attrs.company_cnpj || null,
+        city: classified.location_name || attrs.city || "Chapecó",
+        phone: classified.contact_whatsapp || classified.contact_phone || null,
+        logo_url: classified.images?.[0] || null,
+        banner_url: classified.images?.[1] || classified.images?.[0] || null,
+        settings: storeSettings,
+      })
+      .select("id, name, slug")
+      .single();
+
+    if (storeErr || !store) {
+      throw new Error("Falha ao criar loja profissional: " + (storeErr?.message || "Erro desconhecido"));
+    }
+
+    // 5. Vincular usuário como proprietário (owner)
+    try {
+      await db.from("workspace_members").upsert(
+        {
+          profile_id: identity.id,
+          store_id: store.id,
+          role: "owner",
+        },
+        { onConflict: "profile_id,store_id" }
+      );
+    } catch (e: any) {
+      console.warn("[convertClassifiedToWorkspaceStore] workspace_members upsert warning:", e?.message);
+    }
+
+    // 6. Atualizar anúncio vinculando ao store_id recém-criado
+    await db
+      .from("classifieds")
+      .update({
+        store_id: store.id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", classified.id);
+
+    // 7. Se houver ponto comercial com endereço, vincular telemetria física
+    if (attrs.point_id) {
+      try {
+        await db
+          .from("commercial_point_records")
+          .update({
+            current_occupant_name: store.name,
+            occupancy_status: "occupied",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", attrs.point_id);
+      } catch {
+        // Silencioso
+      }
+    }
+
+    return {
+      success: true,
+      storeId: store.id,
+      storeSlug: store.slug,
+      isExisting: false,
+      redirectUrl: "/workspace",
+    };
+  });
+
+// ---------------------------------------------------------------------------
+// GESTÃO WORKSPACE: NEGÓCIOS / M&A, NDAs E DOAÇÕES (FASE 3 & FASE 5)
+// ---------------------------------------------------------------------------
+
+/**
+ * Lista todos os anúncios de negócios, empresas e pontos comerciais pertencentes à loja / lojista.
+ */
+export const listStoreBusinessClassifieds = createServerFn({ method: "GET" }).handler(async () => {
+  const identity = await getIdentity();
+  if (!identity?.id) throw new Error("Não autenticado");
+
+  const supabase = getServerClient();
+  let query = supabase
+    .from("classifieds")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (identity.store_id) {
+    query = query.or(`store_id.eq.${identity.store_id},author_profile_id.eq.${identity.id}`);
+  } else {
+    query = query.eq("author_profile_id", identity.id);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error("Erro ao buscar negócios da loja: " + error.message);
+
+  return (data || []).filter((item: any) => {
+    return (
+      item.category === "business" ||
+      item.attributes?.niche === "business" ||
+      Boolean(item.attributes?.is_business_sale)
+    );
+  });
+});
+
+/**
+ * Lista todos os termos de sigilo (NDAs) assinados por investidores/compradores para empresas da loja.
+ */
+export const listStoreAllNdaSignatures = createServerFn({ method: "GET" }).handler(async () => {
+  const identity = await getIdentity();
+  if (!identity?.id) throw new Error("Não autenticado");
+
+  const supabase = getServerClient();
+  let adsQuery = supabase.from("classifieds").select("id, title");
+  if (identity.store_id) {
+    adsQuery = adsQuery.or(`store_id.eq.${identity.store_id},author_profile_id.eq.${identity.id}`);
+  } else {
+    adsQuery = adsQuery.eq("author_profile_id", identity.id);
+  }
+
+  const { data: ads, error: adsErr } = await adsQuery;
+  if (adsErr || !ads || ads.length === 0) return [];
+
+  const adIds = ads.map((a: any) => a.id);
+  const adMap = new Map(ads.map((a: any) => [a.id, a.title]));
+
+  const { data: signatures, error: sigErr } = await supabase
+    .from("classified_nda_signatures")
+    .select("id, classified_id, signer_name, signer_email, signer_document, signed_at, ip_address, status")
+    .in("classified_id", adIds)
+    .order("signed_at", { ascending: false });
+
+  if (sigErr) {
+    console.warn("[listStoreAllNdaSignatures] Erro ou tabela sem registros:", sigErr.message);
+    return [];
+  }
+
+  return (signatures || []).map((sig: any) => {
+    const doc = sig.signer_document || "";
+    const maskedDoc = doc.length > 6 ? `${doc.slice(0, 3)}.***.${doc.slice(-2)}` : "***";
+    return {
+      id: sig.id,
+      classifiedId: sig.classified_id,
+      classifiedTitle: adMap.get(sig.classified_id) || "Empresa / Ponto Comercial",
+      signerName: sig.signer_name,
+      signerEmail: sig.signer_email,
+      signerDocumentMasked: maskedDoc,
+      signedAt: sig.signed_at,
+      ipAddress: sig.ip_address || "Não registrado",
+      status: sig.status,
+    };
+  });
+});
+
+/**
+ * Lista todas as doações e campanhas de solidariedade promovidas pela loja.
+ */
+export const listStoreDonations = createServerFn({ method: "GET" }).handler(async () => {
+  const identity = await getIdentity();
+  if (!identity?.id) throw new Error("Não autenticado");
+
+  const supabase = getServerClient();
+  let query = supabase
+    .from("classifieds")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (identity.store_id) {
+    query = query.or(`store_id.eq.${identity.store_id},author_profile_id.eq.${identity.id}`);
+  } else {
+    query = query.eq("author_profile_id", identity.id);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error("Erro ao buscar doações: " + error.message);
+
+  return (data || []).filter((item: any) => {
+    return (
+      item.category === "donation" ||
+      item.attributes?.niche === "donation" ||
+      item.attributes?.niche === "doacao"
+    );
+  });
+});
