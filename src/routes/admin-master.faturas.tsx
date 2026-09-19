@@ -9,7 +9,7 @@ import {
   toggleStoreDebtBlock,
 } from "@/services/master.functions";
 import { formatMoney, parseMoney } from "@/lib/money";
-import { DollarSign, Plus, Receipt, Copy, Trash2, ExternalLink, FileText, ShieldAlert, ShieldCheck, Filter, Smartphone } from "lucide-react";
+import { DollarSign, Plus, Receipt, Copy, Trash2, ExternalLink, FileText, ShieldAlert, ShieldCheck, Filter, Smartphone, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -241,11 +241,13 @@ function MasterFaturasPage() {
   const pendingCount = (invoices || []).filter((i: any) => i.status === "pending" && !i.is_overdue).length;
   const overdueCount = (invoices || []).filter((i: any) => i.status !== "paid" && (i.status === "overdue" || i.is_overdue)).length;
   const paidCount = (invoices || []).filter((i: any) => i.status === "paid").length;
+  const withReceiptCount = (invoices || []).filter((i: any) => Boolean(i.receipt_url) && i.status !== "paid").length;
 
   const filteredInvoices = (invoices || []).filter((inv: any) => {
     if (statusFilter === "paid" && inv.status !== "paid") return false;
     if (statusFilter === "overdue" && (inv.status === "paid" || !(inv.status === "overdue" || inv.is_overdue))) return false;
     if (statusFilter === "pending" && (inv.status !== "pending" || inv.is_overdue)) return false;
+    if (statusFilter === "with_receipt" && (!inv.receipt_url || inv.status === "paid")) return false;
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -445,6 +447,7 @@ function MasterFaturasPage() {
                 { id: "pending", label: `Pendentes (${pendingCount})` },
                 { id: "overdue", label: `Vencidas (${overdueCount})` },
                 { id: "paid", label: `Pagas (${paidCount})` },
+                { id: "with_receipt", label: `Com Comprovante (${withReceiptCount})` },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -539,16 +542,23 @@ function MasterFaturasPage() {
                     </td>
                     <td className="px-5 py-3">
                       {inv.receipt_url ? (
-                        <a
-                          href={inv.receipt_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
-                        >
-                          <FileText className="size-3.5" />
-                          <span>Ver</span>
-                          <ExternalLink className="size-3 opacity-60" />
-                        </a>
+                        <div className="flex flex-col gap-1 items-start">
+                          <a
+                            href={inv.receipt_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 font-semibold text-primary hover:underline text-xs"
+                          >
+                            <FileText className="size-3.5" />
+                            <span>Ver Comprovante</span>
+                            <ExternalLink className="size-3 opacity-60" />
+                          </a>
+                          {inv.status !== "paid" && (
+                            <span className="text-[9px] font-semibold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                              Anexado p/ Lojista
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-muted-foreground/50 text-[11px]">—</span>
                       )}
@@ -577,15 +587,27 @@ function MasterFaturasPage() {
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {inv.status !== "paid" && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-500/10"
-                            disabled={loadingAction === inv.id}
-                            onClick={() => handleUpdateStatus(inv.id, "paid")}
-                          >
-                            Marcar Pago
-                          </Button>
+                          inv.receipt_url ? (
+                            <Button
+                              size="sm"
+                              className="h-7 px-2.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1 cursor-pointer"
+                              disabled={loadingAction === inv.id}
+                              onClick={() => handleUpdateStatus(inv.id, "paid")}
+                            >
+                              <CheckCircle2 className="size-3.5" />
+                              <span>Aprovar & Baixar</span>
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-500/10 cursor-pointer"
+                              disabled={loadingAction === inv.id}
+                              onClick={() => handleUpdateStatus(inv.id, "paid")}
+                            >
+                              Marcar Pago
+                            </Button>
+                          )
                         )}
                         {inv.status === "pending" && (
                           <Button

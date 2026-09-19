@@ -238,40 +238,134 @@ export const toggleStoreStatus = createServerFn({ method: "POST" })
  return { success: true };
  });
 
+/**
+ * 2.1 Atualiza status de fatura da plataforma com governança bilateral e auditoria forense
+ * Tabela de Origem: `public.platform_invoices`
+ * Tabelas Sincronizadas: `public.stores` (campo `settings.blocked_due_to_debt`), `public.forensic_audit_events`
+ */
 export const updateInvoiceStatus = createServerFn({ method: "POST" })
- .validator(
- z.object({
- invoiceId: z.string().uuid(),
- status: z.enum(["pending", "paid", "overdue", "cancelled"]),
- receiptUrl: z.string().url().optional().nullable(),
- notes: z.string().optional().nullable(),
- }),
- )
- .handler(async ({ data }) => {
- await requirePlatformAdmin();
- const db = getServerClient();
+  .validator(
+    z.object({
+      invoiceId: z.string().uuid(),
+      status: z.enum(["pending", "paid", "overdue", "cancelled"]),
+      receiptUrl: z.string().url().optional().nullable(),
+      notes: z.string().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const admin = await requirePlatformAdmin();
+    const db = getServerClient();
 
- const updateData: any = { status: data.status };
- if (data.status === "paid") {
- updateData.paid_at = new Date().toISOString();
- } else {
- updateData.paid_at = null;
- }
- if (data.receiptUrl !== undefined) {
- updateData.receipt_url = data.receiptUrl;
- }
- if (data.notes !== undefined) {
- updateData.notes = data.notes;
- }
+    // 1. Busca dados prévios da fatura para validação de integridade e loja de origem
+    const { data: currentInv, error: fetchErr } = await db
+      .from("platform_invoices")
+      .select("id, store_id, status, amount_cents")
+      .eq("id", data.invoiceId)
+      .single();
 
- const { error } = await db
- .from("platform_invoices")
- .update(updateData)
- .eq("id", data.invoiceId);
+    if (fetchErr || !currentInv) {
+      throw new Error("Fatura não encontrada na plataforma.");
+    }
 
- if (error) throw new Error("Erro ao atualizar status da fatura: " + error.message);
- return { success: true };
- });
+    const updateData: any = { status: data.status };
+    if (data.status === "paid") {
+      updateData.paid_at = new Date().toISOString();
+    } else {
+      updateData.paid_at = null;
+    }
+    if (data.receiptUrl !== undefined) {
+      updateData.receipt_url = data.receiptUrl;
+    }
+    if (data.notes !== undefined) {
+      updateData.notes = data.notes;
+    }
+
+    // 2. Persistência atômica na tabela platform_invoices
+    const { error: updateErr } = await db
+      .from("platform_invoices")
+      .update(updateData)
+      .eq("id", data.invoiceId);
+
+    if (updateErr) throw new Error("Erro ao atualizar status da fatura: " + updateErr.message);
+
+    // 3. Bilateralidade: Se quitada, verificar se a loja pode ser desbloqueada automaticamente
+    if (data.status === "paid" && currentInv.store_id) {
+      const nowIso = new Date().toISOString();
+      const { data: remainingOverdue } = await db
+        .from("platform_invoices")
+        .select("id")
+        .eq("store_id", currentInv.store_id)
+        .neq("id", data.invoiceId)
+        .neq("status", "paid")
+        .neq("status", "cancelled")
+        .lt("due_date", nowIso);
+
+      // Se não houver outras faturas vencidas em aberto, verifica status de bloqueio
+      if (!remainingOverdue || remainingOverdue.length === 0) {
+        const { data: targetStore } = await db
+          .from("stores")
+          .select("id, name, settings")
+          .eq("id", currentInv.store_id)
+          .single();
+
+        const currentSettings = (targetStore?.settings as Record<string, any>) || {};
+        if (currentSettings.blocked_due_to_debt) {
+          const updatedSettings = {
+            ...currentSettings,
+            blocked_due_to_debt: false,
+            debt_unblocked_at: nowIso,
+            debt_unblock_reason: "Quitação integral de faturas pendentes da plataforma.",
+          };
+
+          await db
+            .from("stores")
+            .update({ settings: updatedSettings })
+            .eq("id", currentInv.store_id);
+
+          // Registra auditoria forense do desbloqueio bilateral automático
+          try {
+            await db.from("forensic_audit_events").insert({
+              actor_id: admin.id,
+              actor_role: "platform_admin",
+              target_entity_type: "store",
+              target_entity_id: currentInv.store_id,
+              action: "store_auto_unblocked_debt_cleared",
+              payload_snapshot: {
+                reason: "Desbloqueio bilateral automático após liquidação da fatura.",
+                settled_invoice_id: data.invoiceId,
+                store_name: targetStore?.name,
+              },
+            });
+          } catch (e) {
+            console.warn("[updateInvoiceStatus] Falha ao registrar log de desbloqueio:", e);
+          }
+        }
+      }
+    }
+
+    // 4. Registra trilha forense da alteração de status
+    try {
+      await db.from("forensic_audit_events").insert({
+        actor_id: admin.id,
+        actor_role: "platform_admin",
+        target_entity_type: "platform_invoice",
+        target_entity_id: data.invoiceId,
+        action: `invoice_marked_${data.status}`,
+        payload_snapshot: {
+          previous_status: currentInv.status,
+          new_status: data.status,
+          store_id: currentInv.store_id,
+          amount_cents: currentInv.amount_cents,
+          receipt_url: data.receiptUrl,
+          notes: data.notes,
+        },
+      });
+    } catch (e) {
+      console.warn("[updateInvoiceStatus] Falha ao registrar evento forense:", e);
+    }
+
+    return { success: true };
+  });
 
 export const createPlatformInvoice = createServerFn({ method: "POST" })
  .validator(

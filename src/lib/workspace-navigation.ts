@@ -604,7 +604,7 @@ const GROUP_TEAM_RH: NavGroup = {
     { path: "/workspace/configuracoes/equipe", label: "Colaboradores & Acessos", icon: Users },
     { path: "/workspace/rh/ponto", label: "Controle de Ponto & Turnos", icon: Clock },
     { path: "/workspace/financeiro/comissoes", label: "Comissões & Metas", icon: Target },
-    { path: "/workspace/configuracoes/sessoes", label: "Sessões & Segurança", icon: ShieldCheck },
+    { path: "/workspace/configuracoes/sessoes", label: "Sessões & Auditoria", icon: ShieldCheck },
   ],
 };
 
@@ -629,6 +629,7 @@ const GROUP_SETTINGS: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/configuracoes", label: "Dados da Loja", icon: Settings },
+    { path: "/workspace/configuracoes/sessoes", label: "Sessões & Auditoria", icon: ShieldCheck },
     { path: "/workspace/integracoes/marketplaces", label: "Hub de Marketplaces & Canais", icon: Globe },
     { path: "/workspace/configuracoes/inteligencia-artificial", label: "Inteligência Artificial (IAs)", icon: Bot },
     { path: "/workspace/configuracoes/integracoes", label: "Integrações & Domínios", icon: Link2 },

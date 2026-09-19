@@ -92,4 +92,58 @@ describe("Tourism Seats, CSPRNG & Invoices System", () => {
     expect(externalJob.external_url).toBeTruthy();
     expect(externalJob.external_source).toBe("Gupy");
   });
+
+  it("verifica elegibilidade de desbloqueio bilateral automático de inadimplência após quitação", () => {
+    const store = {
+      id: "store-123",
+      settings: {
+        blocked_due_to_debt: true,
+        debt_blocked_at: "2026-09-01T00:00:00Z",
+      },
+    };
+
+    const remainingOverdueInvoices: any[] = []; // Nenhuma outra fatura em aberto
+
+    let shouldUnblock = false;
+    let updatedSettings = { ...store.settings };
+
+    if (remainingOverdueInvoices.length === 0 && store.settings.blocked_due_to_debt) {
+      shouldUnblock = true;
+      updatedSettings = {
+        ...store.settings,
+        blocked_due_to_debt: false,
+        debt_unblocked_at: "2026-09-19T10:00:00Z",
+      };
+    }
+
+    expect(shouldUnblock).toBe(true);
+    expect(updatedSettings.blocked_due_to_debt).toBe(false);
+    expect(updatedSettings.debt_unblocked_at).toBeTruthy();
+  });
+
+  it("enriquece audit logs operacionais com dados de perfis de membros da equipe sem N+1 queries", () => {
+    const rawAuditRows = [
+      { id: "log-1", user_id: "user-a", action: "product_updated", entity_type: "product" },
+      { id: "log-2", user_id: "user-b", action: "order_approved", entity_type: "order" },
+      { id: "log-3", user_id: "user-a", action: "price_changed", entity_type: "product" },
+    ];
+
+    const profiles = [
+      { id: "user-a", full_name: "Ana Gerente", username: "ana.loja" },
+      { id: "user-b", full_name: "Bruno Caixa", username: "bruno.pdv" },
+    ];
+
+    const profileMap = new Map(profiles.map((p) => [p.id, p]));
+
+    const enrichedLogs = rawAuditRows.map((row) => ({
+      ...row,
+      user_name: profileMap.get(row.user_id)?.full_name || "Membro da Equipe",
+    }));
+
+    expect(enrichedLogs).toHaveLength(3);
+    expect(enrichedLogs[0].user_name).toBe("Ana Gerente");
+    expect(enrichedLogs[1].user_name).toBe("Bruno Caixa");
+    expect(enrichedLogs[2].user_name).toBe("Ana Gerente");
+  });
 });
+

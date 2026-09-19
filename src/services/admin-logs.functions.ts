@@ -214,3 +214,183 @@ export const clearSystemLogs = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+// ─── 5. BILATERALIDADE FORENSE & GOVERNANÇA (Master ↔ Loja) ─────────────────
+
+export interface ForensicAuditEventItem {
+  id: string;
+  actor_id: string | null;
+  actor_role: string | null;
+  target_entity_type: string;
+  target_entity_id: string;
+  action: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  payload_snapshot: any;
+  checksum_sha256: string | null;
+  created_at: string;
+  actor_name?: string;
+  actor_username?: string;
+}
+
+/**
+ * Consulta a trilha imutável de eventos forenses de governança da plataforma.
+ * Acesso exclusivo: Administradores da Plataforma (Admin Master).
+ */
+export const getForensicAuditEvents = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        targetType: z.string().optional(),
+        targetId: z.string().optional(),
+        action: z.string().optional(),
+        limit: z.number().int().min(1).max(200).optional().default(50),
+      })
+      .optional(),
+  )
+  .handler(async ({ data: filter }): Promise<ForensicAuditEventItem[]> => {
+    await requirePlatformAdmin();
+    const db = getServerClient();
+
+    let query = db
+      .from("forensic_audit_events")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(filter?.limit || 50);
+
+    if (filter?.targetType) {
+      query = query.eq("target_entity_type", filter.targetType);
+    }
+    if (filter?.targetId) {
+      query = query.eq("target_entity_id", filter.targetId);
+    }
+    if (filter?.action) {
+      query = query.eq("action", filter.action);
+    }
+
+    const { data: rows, error } = await query;
+    if (error || !rows) {
+      console.error("[getForensicAuditEvents] Erro ao buscar eventos forenses:", error);
+      return [];
+    }
+
+    // Enriquece com nomes dos atores
+    const actorIds = [...new Set(rows.map((r: any) => r.actor_id).filter(Boolean))];
+    const profileMap = new Map<string, any>();
+
+    if (actorIds.length > 0) {
+      try {
+        const { data: profiles } = await db
+          .from("profiles")
+          .select("id, full_name, username")
+          .in("id", actorIds);
+        (profiles || []).forEach((p: any) => profileMap.set(p.id, p));
+      } catch (e) {
+        console.warn("[getForensicAuditEvents] Não foi possível carregar perfis dos atores:", e);
+      }
+    }
+
+    return rows.map((row: any): ForensicAuditEventItem => {
+      const prof = profileMap.get(row.actor_id);
+      return {
+        id: row.id,
+        actor_id: row.actor_id,
+        actor_role: row.actor_role,
+        target_entity_type: row.target_entity_type,
+        target_entity_id: row.target_entity_id,
+        action: row.action,
+        ip_address: row.ip_address,
+        user_agent: row.user_agent,
+        payload_snapshot: row.payload_snapshot,
+        checksum_sha256: row.checksum_sha256,
+        created_at: row.created_at,
+        actor_name: prof?.full_name || prof?.username || "Sistema / Administrador",
+        actor_username: prof?.username || undefined,
+      };
+    });
+  });
+
+export interface StoreAuditLogItem {
+  id: string;
+  store_id: string;
+  user_id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  payload_snapshot: any;
+  created_at: string;
+  user_name?: string;
+}
+
+/**
+ * Consulta a trilha de auditoria operacional da Loja autenticada no Workspace.
+ * Garante bilateralidade: o lojista audita ações realizadas na sua própria loja.
+ */
+export const getStoreAuditLogs = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        action: z.string().optional(),
+        entityType: z.string().optional(),
+        limit: z.number().int().min(1).max(100).optional().default(50),
+      })
+      .optional(),
+  )
+  .handler(async ({ data: filter }): Promise<StoreAuditLogItem[]> => {
+    const { getServerIdentity } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autorizado.");
+
+    const storeId = identity.store_id || identity.memberships?.[0]?.store_id;
+    if (!storeId) return [];
+
+    const db = getServerClient();
+
+    let query = db
+      .from("audit_logs")
+      .select("*")
+      .eq("store_id", storeId)
+      .order("created_at", { ascending: false })
+      .limit(filter?.limit || 50);
+
+    if (filter?.action) query = query.eq("action", filter.action);
+    if (filter?.entityType) query = query.eq("entity_type", filter.entityType);
+
+    const { data: rows, error } = await query;
+    if (error || !rows) {
+      console.error("[getStoreAuditLogs] Erro ao buscar logs da loja:", error);
+      return [];
+    }
+
+    // Enriquece com nomes dos usuários da equipe
+    const userIds = [...new Set(rows.map((r: any) => r.user_id).filter(Boolean))];
+    const profileMap = new Map<string, any>();
+
+    if (userIds.length > 0) {
+      try {
+        const { data: profiles } = await db
+          .from("profiles")
+          .select("id, full_name, username")
+          .in("id", userIds);
+        (profiles || []).forEach((p: any) => profileMap.set(p.id, p));
+      } catch (e) {
+        console.warn("[getStoreAuditLogs] Falha ao ler perfis de equipe:", e);
+      }
+    }
+
+    return rows.map((row: any): StoreAuditLogItem => {
+      const prof = profileMap.get(row.user_id);
+      return {
+        id: row.id,
+        store_id: row.store_id,
+        user_id: row.user_id,
+        action: row.action,
+        entity_type: row.entity_type,
+        entity_id: row.entity_id,
+        payload_snapshot: row.payload_snapshot,
+        created_at: row.created_at,
+        user_name: prof?.full_name || prof?.username || "Membro da Equipe",
+      };
+    });
+  });
+
