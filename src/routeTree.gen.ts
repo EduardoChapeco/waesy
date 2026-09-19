@@ -243,6 +243,7 @@ import { Route as WorkspaceFinanceiroAfiliadosRouteImport } from './routes/works
 import { Route as WorkspaceFinanceiroComissoesRouteImport } from './routes/workspace.financeiro.comissoes'
 import { Route as WorkspaceFinanceiroComprovantesRouteImport } from './routes/workspace.financeiro.comprovantes'
 import { Route as WorkspaceFinanceiroContasPagarRouteImport } from './routes/workspace.financeiro.contas-pagar'
+import { Route as WorkspaceFinanceiroFaturasRouteImport } from './routes/workspace.financeiro.faturas'
 import { Route as WorkspaceFinanceiroFuncionariosRouteImport } from './routes/workspace.financeiro.funcionarios'
 import { Route as WorkspaceFinanceiroPagamentosRouteImport } from './routes/workspace.financeiro.pagamentos'
 import { Route as WorkspaceFinanceiroRecebiveisRouteImport } from './routes/workspace.financeiro.recebiveis'
@@ -1555,6 +1556,12 @@ const WorkspaceFinanceiroContasPagarRoute =
     path: '/financeiro/contas-pagar',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceFinanceiroFaturasRoute =
+  WorkspaceFinanceiroFaturasRouteImport.update({
+    id: '/financeiro/faturas',
+    path: '/financeiro/faturas',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceFinanceiroFuncionariosRoute =
   WorkspaceFinanceiroFuncionariosRouteImport.update({
     id: '/financeiro/funcionarios',
@@ -2434,6 +2441,7 @@ export interface FileRoutesByFullPath {
   '/workspace/financeiro/comissoes': typeof WorkspaceFinanceiroComissoesRoute
   '/workspace/financeiro/comprovantes': typeof WorkspaceFinanceiroComprovantesRoute
   '/workspace/financeiro/contas-pagar': typeof WorkspaceFinanceiroContasPagarRoute
+  '/workspace/financeiro/faturas': typeof WorkspaceFinanceiroFaturasRoute
   '/workspace/financeiro/funcionarios': typeof WorkspaceFinanceiroFuncionariosRoute
   '/workspace/financeiro/pagamentos': typeof WorkspaceFinanceiroPagamentosRoute
   '/workspace/financeiro/recebiveis': typeof WorkspaceFinanceiroRecebiveisRoute
@@ -2778,6 +2786,7 @@ export interface FileRoutesByTo {
   '/workspace/financeiro/comissoes': typeof WorkspaceFinanceiroComissoesRoute
   '/workspace/financeiro/comprovantes': typeof WorkspaceFinanceiroComprovantesRoute
   '/workspace/financeiro/contas-pagar': typeof WorkspaceFinanceiroContasPagarRoute
+  '/workspace/financeiro/faturas': typeof WorkspaceFinanceiroFaturasRoute
   '/workspace/financeiro/funcionarios': typeof WorkspaceFinanceiroFuncionariosRoute
   '/workspace/financeiro/pagamentos': typeof WorkspaceFinanceiroPagamentosRoute
   '/workspace/financeiro/recebiveis': typeof WorkspaceFinanceiroRecebiveisRoute
@@ -3131,6 +3140,7 @@ export interface FileRoutesById {
   '/workspace/financeiro/comissoes': typeof WorkspaceFinanceiroComissoesRoute
   '/workspace/financeiro/comprovantes': typeof WorkspaceFinanceiroComprovantesRoute
   '/workspace/financeiro/contas-pagar': typeof WorkspaceFinanceiroContasPagarRoute
+  '/workspace/financeiro/faturas': typeof WorkspaceFinanceiroFaturasRoute
   '/workspace/financeiro/funcionarios': typeof WorkspaceFinanceiroFuncionariosRoute
   '/workspace/financeiro/pagamentos': typeof WorkspaceFinanceiroPagamentosRoute
   '/workspace/financeiro/recebiveis': typeof WorkspaceFinanceiroRecebiveisRoute
@@ -3484,6 +3494,7 @@ export interface FileRouteTypes {
     | '/workspace/financeiro/comissoes'
     | '/workspace/financeiro/comprovantes'
     | '/workspace/financeiro/contas-pagar'
+    | '/workspace/financeiro/faturas'
     | '/workspace/financeiro/funcionarios'
     | '/workspace/financeiro/pagamentos'
     | '/workspace/financeiro/recebiveis'
@@ -3828,6 +3839,7 @@ export interface FileRouteTypes {
     | '/workspace/financeiro/comissoes'
     | '/workspace/financeiro/comprovantes'
     | '/workspace/financeiro/contas-pagar'
+    | '/workspace/financeiro/faturas'
     | '/workspace/financeiro/funcionarios'
     | '/workspace/financeiro/pagamentos'
     | '/workspace/financeiro/recebiveis'
@@ -4180,6 +4192,7 @@ export interface FileRouteTypes {
     | '/workspace/financeiro/comissoes'
     | '/workspace/financeiro/comprovantes'
     | '/workspace/financeiro/contas-pagar'
+    | '/workspace/financeiro/faturas'
     | '/workspace/financeiro/funcionarios'
     | '/workspace/financeiro/pagamentos'
     | '/workspace/financeiro/recebiveis'
@@ -5998,6 +6011,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceFinanceiroContasPagarRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/financeiro/faturas': {
+      id: '/workspace/financeiro/faturas'
+      path: '/financeiro/faturas'
+      fullPath: '/workspace/financeiro/faturas'
+      preLoaderRoute: typeof WorkspaceFinanceiroFaturasRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/financeiro/funcionarios': {
       id: '/workspace/financeiro/funcionarios'
       path: '/financeiro/funcionarios'
@@ -7327,6 +7347,7 @@ interface WorkspaceRouteChildren {
   WorkspaceFinanceiroComissoesRoute: typeof WorkspaceFinanceiroComissoesRoute
   WorkspaceFinanceiroComprovantesRoute: typeof WorkspaceFinanceiroComprovantesRoute
   WorkspaceFinanceiroContasPagarRoute: typeof WorkspaceFinanceiroContasPagarRoute
+  WorkspaceFinanceiroFaturasRoute: typeof WorkspaceFinanceiroFaturasRoute
   WorkspaceFinanceiroFuncionariosRoute: typeof WorkspaceFinanceiroFuncionariosRoute
   WorkspaceFinanceiroPagamentosRoute: typeof WorkspaceFinanceiroPagamentosRoute
   WorkspaceFinanceiroRecebiveisRoute: typeof WorkspaceFinanceiroRecebiveisRoute
@@ -7483,6 +7504,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceFinanceiroComissoesRoute: WorkspaceFinanceiroComissoesRoute,
   WorkspaceFinanceiroComprovantesRoute: WorkspaceFinanceiroComprovantesRoute,
   WorkspaceFinanceiroContasPagarRoute: WorkspaceFinanceiroContasPagarRoute,
+  WorkspaceFinanceiroFaturasRoute: WorkspaceFinanceiroFaturasRoute,
   WorkspaceFinanceiroFuncionariosRoute: WorkspaceFinanceiroFuncionariosRoute,
   WorkspaceFinanceiroPagamentosRoute: WorkspaceFinanceiroPagamentosRoute,
   WorkspaceFinanceiroRecebiveisRoute: WorkspaceFinanceiroRecebiveisRoute,

@@ -414,21 +414,54 @@ function JobDetailPage() {
  )}
 
   <div className="sticky top-20 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card p-6 space-y-5">
- <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground">Candidate-se a esta vaga</h3>
- <p className="text-xs text-muted-foreground">
- Envie suas informações diretamente para o time de RH da {job.company_name}.
- </p>
- </div>
+    <div className="space-y-1">
+      <h3 className="text-sm font-bold text-foreground">
+        {job.is_external ? "Candidatura da Vaga" : "Candidate-se a esta vaga"}
+      </h3>
+      <p className="text-xs text-muted-foreground">
+        {job.is_external
+          ? `Vaga publicada por ${job.company_name} via ${job.external_source || "portal corporativo externo"}.`
+          : `Envie suas informações diretamente para o time de RH da ${job.company_name}.`}
+      </p>
+    </div>
 
- {/* Modal de Candidatura Real */}
- <Sheet open={isApplyOpen} onOpenChange={setIsApplyOpen}>
- <SheetTrigger asChild>
- <Button className="w-full rounded-xl font-bold h-12 text-sm bg-foreground text-background gap-2">
- <PaperPlaneTilt size={18} weight="bold" />
- <span>Enviar Candidatura</span>
- </Button>
- </SheetTrigger>
+    {/* Botão Oficial Externo para Vaga Minerada */}
+    {job.is_external && job.external_url && (
+      <Button
+        asChild
+        className="w-full rounded-xl font-bold h-12 text-sm bg-foreground text-background gap-2 hover:bg-foreground/90 transition-colors"
+      >
+        <a
+          href={job.external_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2"
+        >
+          <LinkSimple size={18} weight="bold" />
+          <span>Candidatar-se no Site Oficial</span>
+        </a>
+      </Button>
+    )}
+
+    {/* Modal de Candidatura */}
+    <Sheet open={isApplyOpen} onOpenChange={setIsApplyOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant={job.is_external && job.external_url ? "outline" : "default"}
+          className={`w-full rounded-xl font-bold gap-2 ${
+            job.is_external && job.external_url
+              ? "h-10 text-xs border-border/80"
+              : "h-12 text-sm bg-foreground text-background"
+          }`}
+        >
+          <PaperPlaneTilt size={job.is_external && job.external_url ? 15 : 18} weight="bold" />
+          <span>
+            {job.is_external && job.external_url
+              ? "Registrar Candidatura no Waesy"
+              : "Enviar Candidatura"}
+          </span>
+        </Button>
+      </SheetTrigger>
 
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">

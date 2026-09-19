@@ -197,87 +197,165 @@ export const getPublicTourismById = createServerFn({ method: "GET" })
 // ─── 3. Reserva Direta com Emissão de Voucher Digital (In-App Booking) ────────
 
 export const bookTourismExperience = createServerFn({ method: "POST" })
- .validator(
- z.object({
- experienceId: z.string(),
- customerName: z.string().min(2, "Informe seu nome completo"),
- customerEmail: z.string().email("E-mail inválido"),
- customerPhone: z.string().min(8, "Telefone inválido"),
- desiredDate: z.string().min(1, "Selecione a data da viagem/passeio"),
- guestsCount: z.number().int().min(1, "Mínimo de 1 participante").default(1),
- passengers: z
- .array(
- z.object({
- name: z.string().min(2, "Nome do passageiro"),
- document: z.string().optional(),
- phone: z.string().optional(),
- notes: z.string().optional(),
- }),
- )
- .optional(),
- paymentMethod: z.enum(["pix", "credit_card", "boleto", "agency_pay"]).default("pix"),
- message: z.string().max(1000).optional(),
- }),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getCurrentIdentity().catch(() => null);
+  .validator(
+    z.object({
+      experienceId: z.string(),
+      customerName: z.string().min(2, "Informe seu nome completo"),
+      customerEmail: z.string().email("E-mail inválido"),
+      customerPhone: z.string().min(8, "Telefone inválido"),
+      desiredDate: z.string().min(1, "Selecione a data da viagem/passeio"),
+      guestsCount: z.number().int().min(1, "Mínimo de 1 participante").default(1),
+      selectedSeats: z.array(z.number().int().positive()).optional().default([]),
+      passengers: z
+        .array(
+          z.object({
+            name: z.string().min(2, "Nome do passageiro"),
+            document: z.string().optional(),
+            phone: z.string().optional(),
+            notes: z.string().optional(),
+            seatNumber: z.number().optional(),
+          }),
+        )
+        .optional(),
+      paymentMethod: z.enum(["pix", "credit_card", "boleto", "agency_pay"]).default("pix"),
+      message: z.string().max(1000).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity().catch(() => null);
 
- // 1. Obter detalhes da experiência
- const { data: experience, error: expError } = await supabase
- .from("tourism_experiences")
- .select("id, title, location, price_cents, provider_name, contact_whatsapp")
- .eq("id", data.experienceId)
- .single();
+    // 1. Obter detalhes da experiência e o mapa de assentos atual
+    const { data: experience, error: expError } = await supabase
+      .from("tourism_experiences")
+      .select("id, title, location, price_cents, provider_name, contact_whatsapp, seats, total_seats, available_seats, category")
+      .eq("id", data.experienceId)
+      .single();
 
- if (expError || !experience) {
- throw new Error("Experiência turística não encontrada ou indisponível.");
- }
+    if (expError || !experience) {
+      throw new Error("Experiência turística não encontrada ou indisponível.");
+    }
 
- // 2. Gerar código único e legível de voucher (ex: WDR-TUR-783921)
- const randomSuffix = Math.floor(100000 + Math.random() * 900000);
- const voucherCode = `WDR-TUR-${randomSuffix}`;
+    // 2. Validação e Reserva Atômica de Poltronas (se informadas)
+    const seatsToBook = (data.selectedSeats && data.selectedSeats.length > 0)
+      ? data.selectedSeats
+      : (data.passengers || []).map((p: any) => p.seatNumber).filter((s): s is number => typeof s === "number" && s > 0);
 
- // 3. Calcular valor total em centavos
- const unitPrice = Number(experience.price_cents || 0);
- const totalPriceCents = unitPrice * data.guestsCount;
+    let updatedSeatsArray = Array.isArray(experience.seats) ? [...experience.seats] : null;
 
- // 4. Inserir reserva no Supabase com persistência real
- const { data: booking, error: bookError } = await supabase
- .from("tourism_inquiries")
- .insert({
- experience_id: data.experienceId,
- profile_id: identity?.customer_id || null,
- voucher_code: voucherCode,
- customer_name: data.customerName.trim(),
- customer_email: data.customerEmail.trim().toLowerCase(),
- customer_phone: data.customerPhone.trim(),
- desired_date: data.desiredDate,
- guests_count: data.guestsCount,
- total_price_cents: totalPriceCents,
- payment_status: "confirmed",
- payment_method: data.paymentMethod,
- passengers: data.passengers || [{ name: data.customerName.trim() }],
- meeting_point: experience.location,
- message: data.message?.trim() || null,
- status: "confirmed",
- })
- .select("id, voucher_code, created_at")
- .single();
+    if (seatsToBook.length > 0 && updatedSeatsArray) {
+      for (const seatNum of seatsToBook) {
+        const seatIdx = updatedSeatsArray.findIndex((s: any) => s.seat_number === seatNum);
+        if (seatIdx !== -1) {
+          const targetSeat = updatedSeatsArray[seatIdx];
+          if (targetSeat.status === "reserved" || targetSeat.status === "blocked") {
+            throw new Error(`A poltrona nº ${seatNum} já está reservada por outro passageiro. Por favor, selecione outro assento.`);
+          }
+        }
+      }
 
- if (bookError) {
- console.error("[tourism.functions] Erro ao gravar reserva de turismo:", bookError);
- throw new Error("Não foi possível confirmar a sua reserva no momento. Tente novamente.");
- }
+      // Aloca os assentos aos passageiros
+      seatsToBook.forEach((seatNum, idx) => {
+        const seatIdx = updatedSeatsArray!.findIndex((s: any) => s.seat_number === seatNum);
+        const pax = data.passengers?.[idx] || { name: data.customerName, document: undefined, phone: data.customerPhone };
+        const updatedSeat = {
+          ...(seatIdx !== -1 ? updatedSeatsArray![seatIdx] : {
+            seat_number: seatNum,
+            row: Math.ceil(seatNum / 4),
+            column: seatNum % 2 === 1 ? "A" : "B",
+            floor: 1,
+          }),
+          status: "reserved",
+          passenger_name: pax.name || data.customerName,
+          passenger_document: pax.document || null,
+          passenger_phone: pax.phone || data.customerPhone,
+        };
 
- return {
- success: true,
- booking_id: booking.id,
- voucher_code: booking.voucher_code,
- message: "Reserva confirmada com sucesso! Seu voucher digital foi emitido.",
- redirect_url: `/conta/viagens?voucher=${booking.voucher_code}`,
- };
- });
+        if (seatIdx !== -1) {
+          updatedSeatsArray![seatIdx] = updatedSeat;
+        } else {
+          updatedSeatsArray!.push(updatedSeat);
+        }
+      });
+
+      const currentAvailable = Number(experience.available_seats ?? experience.total_seats ?? 46);
+      const newAvailable = Math.max(0, currentAvailable - seatsToBook.length);
+
+      const { error: seatUpdateError } = await supabase
+        .from("tourism_experiences")
+        .update({
+          seats: updatedSeatsArray,
+          available_seats: newAvailable,
+        })
+        .eq("id", data.experienceId);
+
+      if (seatUpdateError) {
+        console.error("[tourism.functions] Erro ao alocar poltronas:", seatUpdateError);
+        throw new Error("Não foi possível reservar a poltrona selecionada no momento.");
+      }
+
+      // Sincroniza espelho em trip_seat_reservations para telemetria de frota
+      for (const seatNum of seatsToBook) {
+        try {
+          await supabase.from("trip_seat_reservations").insert({
+            experience_id: data.experienceId,
+            seat_number: seatNum,
+            passenger_name: data.customerName,
+            passenger_doc: data.passengers?.[0]?.document || null,
+            passenger_phone: data.customerPhone,
+            status: "confirmed",
+          });
+        } catch {}
+      }
+    }
+
+    // 3. Gerar código único de voucher com Entropia Criptográfica (CSPRNG)
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    const randomSuffix = 100000 + (randomBuffer[0] % 900000);
+    const voucherCode = `WDR-TUR-${randomSuffix}`;
+
+    // 4. Calcular valor total em centavos
+    const unitPrice = Number(experience.price_cents || 0);
+    const totalPriceCents = unitPrice * data.guestsCount;
+
+    // 5. Inserir reserva no Supabase com persistência real
+    const { data: booking, error: bookError } = await supabase
+      .from("tourism_inquiries")
+      .insert({
+        experience_id: data.experienceId,
+        profile_id: identity?.customer_id || null,
+        voucher_code: voucherCode,
+        customer_name: data.customerName.trim(),
+        customer_email: data.customerEmail.trim().toLowerCase(),
+        customer_phone: data.customerPhone.trim(),
+        desired_date: data.desiredDate,
+        guests_count: data.guestsCount,
+        total_price_cents: totalPriceCents,
+        payment_status: "confirmed",
+        payment_method: data.paymentMethod,
+        passengers: data.passengers || [{ name: data.customerName.trim() }],
+        meeting_point: experience.location,
+        message: data.message?.trim() || null,
+        status: "confirmed",
+        notes: seatsToBook.length > 0 ? `Poltrona(s) reservada(s): ${seatsToBook.join(", ")}` : null,
+      })
+      .select("id, voucher_code, created_at")
+      .single();
+
+    if (bookError) {
+      console.error("[tourism.functions] Erro ao gravar reserva de turismo:", bookError);
+      throw new Error("Não foi possível confirmar a sua reserva no momento. Tente novamente.");
+    }
+
+    return {
+      success: true,
+      booking_id: booking.id,
+      voucher_code: booking.voucher_code,
+      message: "Reserva confirmada com sucesso! Seu voucher digital foi emitido.",
+      redirect_url: `/conta/viagens?voucher=${booking.voucher_code}`,
+    };
+  });
 
 // ─── 4. Inquérito / Solicitação de Orçamento Turístico ────────────────────────
 

@@ -576,6 +576,7 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
     { path: "/workspace/financeiro/pagamentos", label: "Pagamentos & Repasses", icon: DollarSign },
     { path: "/workspace/financeiro/contas-pagar", label: "Contas a Pagar & Despesas", icon: Receipt },
     { path: "/workspace/financeiro/recebiveis", label: "Recebíveis, Carnês & Malas", icon: Receipt },
+    { path: "/workspace/financeiro/faturas", label: "Faturas da Plataforma & Planos", icon: Receipt },
     { path: "/workspace/financeiro/relatorios-canal", label: "DRE & Canais de Venda", icon: FileSpreadsheet },
     { path: "/workspace/financeiro/afiliados", label: "Comissões de Afiliados", icon: Coins },
     { path: "/workspace/financeiro/funcionarios", label: "Folha & Salários", icon: Users },
