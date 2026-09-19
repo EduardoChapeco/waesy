@@ -186,4 +186,16 @@ O sistema é organizado em camadas estritamente unidirecionais. Nenhuma camada s
     - Nenhuma chamada ao Supabase em componentes visuais.
     - Isolamento Multi-Tenant estrito derivado da sessão via `getServerIdentity()`.
 
-
+### 11.6 Ledger Criptográfico Imutável (Padrão Bacen / SHA-256 Blockchain-Like) & Auditoria Forense
+- Camada de contabilidade criptográfica imutável e trilha forense universal para todas as mutações financeiras (Tokens, Carnês, PIX, Carteira, Comissões):
+  - **Tabelas Canônicas:**
+    - `public.financial_immutable_ledger`: Tabela append-only protegida por trigger inviolável (`prevent_ledger_modification`), encadeamento de digest SHA-256 (`entry_hash` e `prev_hash`), sequência numérica monotônica (`sequence_number`), carimbo de tempo, chave de idempotência e telemetria forense (IP Cloudflare, país, cidade, User-Agent, ator e papel).
+    - `public.forensic_audit_events`: Tabela de telemetria forense profunda para todas as mutações sistêmicas com checksum e dados de sessão.
+  - **Stored Procedures & Verificação Matemática:**
+    - `record_immutable_ledger_entry`: Executada com `SECURITY DEFINER`, computa o digest SHA-256 e anexa o bloco à cadeia.
+    - `verify_ledger_chain_integrity`: Audita matematicamente toda a cadeia desde o bloco Genesis (`0000...0000`), identificando qualquer adulteração física ou quebra de continuidade.
+  - **Módulos de Operação e Governança:**
+    - `/admin-master/auditoria-forense` (Painel Master de Auditoria Forense, Verificação de Cadeia em Tempo Real, Visualização de Hashes e Histórico Forense).
+  - **Camada BFF (`/services`):**
+    - `src/services/immutable-ledger.functions.ts`: Funções `recordLedgerTransaction`, `recordLedgerEntryCore`, `verifyLedgerIntegrity` e `listLedgerEntries`.
+    - Integrações bilaterais automáticas em `tokens.functions.ts` e `receivables.functions.ts`.

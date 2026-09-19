@@ -72,4 +72,16 @@ RLS desde o primeiro schema, nenhuma confiança em dado de cliente para tenant/p
   - Todo input e texto de CMS retornado ao DOM é escapado contra injeções XSS.
   - Conteúdos em XML no feed RSS utilizam a função de escape \escapeXml()\.
 - **Sanitização de CEPs e Entradas:**
-  - Entradas de formulários de frete, cartões e dados pessoais passam por sanificação estrita via esquemas de validação \zod\ no BFF.
+  - Entradas de formulários de frete, cartões e dados pessoais passam por sanificação estrita via esquemas de validação `zod` no BFF.
+
+## 10. Padrão Bacen / PCI-DSS / Ledger Criptográfico Imutável (Alta Blindagem Financeira)
+
+- **Ledger Append-Only Criptográfico (`financial_immutable_ledger`):**
+  - **Inviolabilidade Física:** Trigger Postgres (`prevent_ledger_modification`) bloqueia sumariamente qualquer tentativa de `UPDATE` ou `DELETE`, mesmo por usuários autenticados.
+  - **Encadeamento de Hashes SHA-256 (Merkle/Blockchain-like):** Cada registro armazena `prev_hash` e calcula `entry_hash = digest(sequence_number || prev_hash || transaction_type || amount_cents || token_amount || sender_id || receiver_id || store_id || timestamp || idempotency_key, 'sha256')`.
+  - **Verificação Matemática Contínua:** A Stored Procedure `verify_ledger_chain_integrity()` valida matematicamente toda a cadeia desde o bloco Genesis (`0000...0000`). Qualquer adulteração histórica quebra a cadeia e emite laudo de violação instantâneo.
+  - **Zero-Trust RLS:** Mutações diretas via cliente são negadas por padrão (`DENY ALL` para INSERT/UPDATE/DELETE). Inserções ocorrem unicamente via Stored Procedure `record_immutable_ledger_entry` com privilégios `SECURITY DEFINER`.
+- **Telemetria Forense Profunda:**
+  - Todo evento crítico e financeiro grava em `forensic_audit_events` com IP Cloudflare (`CF-Connecting-IP`, `X-Forwarded-For`), país, cidade, User-Agent, ator e papel autenticado.
+- **Proteção Anti-DDoS e Rate Limiting:**
+  - Middleware de limitação de taxa por IP e sliding window nos endpoints sensíveis do TanStack Start.

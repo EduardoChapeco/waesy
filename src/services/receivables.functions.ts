@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { getServerIdentity, assertStoreAccess, requirePlatformAdmin } from "@/lib/server-access";
+import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 // ==============================================================================
 // 1. FUNÇÕES LEGADAS / COMPATIBILIDADE DE NEGOCIAÇÕES DIRETAS
@@ -492,6 +493,30 @@ export const approveInstallmentPayment = createServerFn({ method: "POST" })
       console.warn("[receivables] Error notifying debtor:", notifErr);
     }
 
+    // 5. Registro Criptográfico no Ledger Imutável (Bacen / SHA-256)
+    try {
+      await recordLedgerEntryCore({
+        transactionType: "carne_installment_paid",
+        amountCents: finalAmount,
+        senderId: rec.debtor_id || null,
+        receiverId: rec.creditor_id || null,
+        storeId: rec.store_id || null,
+        actorId: serverIdentity.id,
+        actorRole: serverIdentity.role,
+        referenceEntityType: "receivable_installments",
+        referenceEntityId: inst.id,
+        metadata: {
+          receivable_id: rec.id,
+          installment_number: inst.installment_number,
+          payment_method: input.paymentMethod,
+          discount_cents: input.discountCents,
+          waived_interest: input.waiveInterest,
+        },
+      });
+    } catch (ledgerErr) {
+      console.warn("[receivables] Falha ao selar parcela no ledger imutável:", ledgerErr);
+    }
+
     return rpcResult;
   });
 
@@ -769,6 +794,29 @@ export const createStoreCarne = createServerFn({ method: "POST" })
       });
     } catch (notifErr) {
       console.warn("[receivables] Error notifying debtor of new carne:", notifErr);
+    }
+
+    // Registro Criptográfico no Ledger Imutável (Bacen / SHA-256)
+    try {
+      await recordLedgerEntryCore({
+        transactionType: "carne_issued",
+        amountCents: input.totalCents,
+        senderId: input.debtorId,
+        receiverId: serverIdentity.id,
+        storeId: storeId || null,
+        actorId: serverIdentity.id,
+        actorRole: serverIdentity.role,
+        referenceEntityType: "receivables",
+        referenceEntityId: result && typeof result === "object" && "id" in result ? String(result.id) : null,
+        metadata: {
+          title: input.title,
+          installments_count: input.installmentsCount,
+          interest_rate_monthly: input.interestRateMonthly,
+          fine_percent: input.finePercent,
+        },
+      });
+    } catch (ledgerErr) {
+      console.warn("[receivables] Falha ao selar emissão de carnê no ledger imutável:", ledgerErr);
     }
 
     return result;

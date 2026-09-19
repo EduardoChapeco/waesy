@@ -67,6 +67,7 @@ import { Route as StoreTrocasEDevolucoesRouteImport } from './routes/_store.troc
 import { Route as StoreTurismoRouteImport } from './routes/_store.turismo'
 import { Route as AdminMasterIndexRouteImport } from './routes/admin-master.index'
 import { Route as AdminMasterAlgoritmoRouteImport } from './routes/admin-master.algoritmo'
+import { Route as AdminMasterAuditoriaForenseRouteImport } from './routes/admin-master.auditoria-forense'
 import { Route as AdminMasterBannersRouteImport } from './routes/admin-master.banners'
 import { Route as AdminMasterBoostPaymentsRouteImport } from './routes/admin-master.boost-payments'
 import { Route as AdminMasterBotoesRouteImport } from './routes/admin-master.botoes'
@@ -650,6 +651,12 @@ const AdminMasterAlgoritmoRoute = AdminMasterAlgoritmoRouteImport.update({
   path: '/algoritmo',
   getParentRoute: () => AdminMasterRoute,
 } as any)
+const AdminMasterAuditoriaForenseRoute =
+  AdminMasterAuditoriaForenseRouteImport.update({
+    id: '/auditoria-forense',
+    path: '/auditoria-forense',
+    getParentRoute: () => AdminMasterRoute,
+  } as any)
 const AdminMasterBannersRoute = AdminMasterBannersRouteImport.update({
   id: '/banners',
   path: '/banners',
@@ -2285,6 +2292,7 @@ export interface FileRoutesByFullPath {
   '/trocas-e-devolucoes': typeof StoreTrocasEDevolucoesRoute
   '/turismo': typeof StoreTurismoRouteWithChildren
   '/admin-master/algoritmo': typeof AdminMasterAlgoritmoRoute
+  '/admin-master/auditoria-forense': typeof AdminMasterAuditoriaForenseRoute
   '/admin-master/banners': typeof AdminMasterBannersRoute
   '/admin-master/boost-payments': typeof AdminMasterBoostPaymentsRoute
   '/admin-master/botoes': typeof AdminMasterBotoesRoute
@@ -2629,6 +2637,7 @@ export interface FileRoutesByTo {
   '/termos': typeof StoreTermosRoute
   '/trocas-e-devolucoes': typeof StoreTrocasEDevolucoesRoute
   '/admin-master/algoritmo': typeof AdminMasterAlgoritmoRoute
+  '/admin-master/auditoria-forense': typeof AdminMasterAuditoriaForenseRoute
   '/admin-master/banners': typeof AdminMasterBannersRoute
   '/admin-master/boost-payments': typeof AdminMasterBoostPaymentsRoute
   '/admin-master/botoes': typeof AdminMasterBotoesRoute
@@ -2983,6 +2992,7 @@ export interface FileRoutesById {
   '/_store/trocas-e-devolucoes': typeof StoreTrocasEDevolucoesRoute
   '/_store/turismo': typeof StoreTurismoRouteWithChildren
   '/admin-master/algoritmo': typeof AdminMasterAlgoritmoRoute
+  '/admin-master/auditoria-forense': typeof AdminMasterAuditoriaForenseRoute
   '/admin-master/banners': typeof AdminMasterBannersRoute
   '/admin-master/boost-payments': typeof AdminMasterBoostPaymentsRoute
   '/admin-master/botoes': typeof AdminMasterBotoesRoute
@@ -3338,6 +3348,7 @@ export interface FileRouteTypes {
     | '/trocas-e-devolucoes'
     | '/turismo'
     | '/admin-master/algoritmo'
+    | '/admin-master/auditoria-forense'
     | '/admin-master/banners'
     | '/admin-master/boost-payments'
     | '/admin-master/botoes'
@@ -3682,6 +3693,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/trocas-e-devolucoes'
     | '/admin-master/algoritmo'
+    | '/admin-master/auditoria-forense'
     | '/admin-master/banners'
     | '/admin-master/boost-payments'
     | '/admin-master/botoes'
@@ -4035,6 +4047,7 @@ export interface FileRouteTypes {
     | '/_store/trocas-e-devolucoes'
     | '/_store/turismo'
     | '/admin-master/algoritmo'
+    | '/admin-master/auditoria-forense'
     | '/admin-master/banners'
     | '/admin-master/boost-payments'
     | '/admin-master/botoes'
@@ -4777,6 +4790,13 @@ declare module '@tanstack/react-router' {
       path: '/algoritmo'
       fullPath: '/admin-master/algoritmo'
       preLoaderRoute: typeof AdminMasterAlgoritmoRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
+    '/admin-master/auditoria-forense': {
+      id: '/admin-master/auditoria-forense'
+      path: '/auditoria-forense'
+      fullPath: '/admin-master/auditoria-forense'
+      preLoaderRoute: typeof AdminMasterAuditoriaForenseRouteImport
       parentRoute: typeof AdminMasterRoute
     }
     '/admin-master/banners': {
@@ -7178,6 +7198,7 @@ const AdminMasterSegurancaCertificadosRouteWithChildren =
 
 interface AdminMasterRouteChildren {
   AdminMasterAlgoritmoRoute: typeof AdminMasterAlgoritmoRoute
+  AdminMasterAuditoriaForenseRoute: typeof AdminMasterAuditoriaForenseRoute
   AdminMasterBannersRoute: typeof AdminMasterBannersRoute
   AdminMasterBoostPaymentsRoute: typeof AdminMasterBoostPaymentsRoute
   AdminMasterBotoesRoute: typeof AdminMasterBotoesRoute
@@ -7213,6 +7234,7 @@ interface AdminMasterRouteChildren {
 
 const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterAlgoritmoRoute: AdminMasterAlgoritmoRoute,
+  AdminMasterAuditoriaForenseRoute: AdminMasterAuditoriaForenseRoute,
   AdminMasterBannersRoute: AdminMasterBannersRoute,
   AdminMasterBoostPaymentsRoute: AdminMasterBoostPaymentsRoute,
   AdminMasterBotoesRoute: AdminMasterBotoesRoute,

@@ -77,6 +77,7 @@ const NAV_SECTIONS = [
   {
     title: "Segurança & Compliance",
     items: [
+      { to: "/admin-master/auditoria-forense", label: "Ledger Criptográfico (Bacen)", icon: Lock },
       { to: "/admin-master/seguranca", label: "Segurança Forense", icon: ShieldAlert },
       { to: "/admin-master/seguranca/certificados", label: "Certificados MCTU", icon: Fingerprint },
       { to: "/admin-master/seguranca/telemetria", label: "Telemetria Live", icon: Radio },

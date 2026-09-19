@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { z } from "zod";
+import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 export interface TokenPackage {
  id: string;
@@ -220,6 +221,27 @@ export const purchaseTokenPackage = createServerFn({ method: "POST" })
  },
  });
 
+  // Registro no Ledger Criptográfico Imutável (Bacen/Blockchain-like)
+  try {
+    await recordLedgerEntryCore({
+      transactionType: "token_purchase",
+      amountCents: pkg.price_cents,
+      tokenAmount: pkg.tokens,
+      storeId: store.id,
+      actorId: identity.id,
+      actorRole: identity.role,
+      referenceEntityType: "token_packages",
+      referenceEntityId: pkg.id,
+      metadata: {
+        package_name: pkg.name,
+        payment_method: data.payment_method,
+        balance_after: newBalance,
+      },
+    });
+  } catch (ledgerErr) {
+    console.warn("[tokens] Registro no ledger criptográfico:", ledgerErr);
+  }
+
  return {
  success: true,
  new_balance: newBalance,
@@ -298,6 +320,27 @@ export const consumeTokens = createServerFn({ method: "POST" })
  metadata: data.metadata || {},
  },
  });
+
+  // Registro no Ledger Criptográfico Imutável (Bacen/Blockchain-like)
+  try {
+    await recordLedgerEntryCore({
+      transactionType: "token_spend",
+      tokenAmount: data.tokens,
+      storeId: store.id,
+      actorId: identity.id,
+      actorRole: identity.role,
+      referenceEntityType: "token_action",
+      referenceEntityId: data.action_type,
+      metadata: {
+        description: data.description,
+        time_saved_minutes: data.time_saved_minutes,
+        balance_after: newBalance,
+        ...data.metadata,
+      },
+    });
+  } catch (ledgerErr) {
+    console.warn("[tokens] Registro no ledger criptográfico:", ledgerErr);
+  }
 
  return {
  success: true,
