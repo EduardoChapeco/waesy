@@ -24,6 +24,7 @@ import { toast } from "sonner";
 
 import { getDealsByUser, respondToDealProposal } from "@/services/deals.functions";
 import { generateContractFromDeal } from "@/services/contracts.functions";
+import { createStoreCarne } from "@/services/receivables.functions";
 import { DealDeliveryTrackingCard } from "@/components/commercial/deal-delivery-tracking-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

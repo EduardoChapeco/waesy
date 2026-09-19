@@ -25,6 +25,14 @@ import {
   Download,
   Package,
   Truck,
+  CreditCard,
+  QrCode,
+  Receipt,
+  FileSpreadsheet,
+  BookOpenCheck,
+  RefreshCw,
+  Landmark,
+  BadgePercent,
   Bed,
   Bath,
   CarFront,
@@ -273,7 +281,29 @@ export function UniversalClassifiedShowcase({
   // 3. Preços e Custos
   const priceCents = classified?.price_cents || 0;
   const maxInstallments = Math.max(1, Number(classified?.attributes?.max_installments) || 12);
+  const cardInterestFree = attrs.card_interest_free !== undefined ? !!attrs.card_interest_free : true;
   const installmentCents = Math.round(priceCents / maxInstallments);
+
+  const acceptsPix = attrs.accepts_pix !== undefined ? !!attrs.accepts_pix : true;
+  const pixDiscountPercent = Number(attrs.pix_discount_percent) || 0;
+  const acceptsCard = attrs.accepts_card !== undefined ? !!attrs.accepts_card : true;
+  const acceptsBoleto = !!attrs.accepts_boleto;
+  const boletoDueDays = Number(attrs.boleto_due_days) || 3;
+  const acceptsBoletoInstallments = !!attrs.accepts_boleto_installments;
+  const maxBoletoInstallments = Math.max(1, Number(attrs.max_boleto_installments) || 12);
+  const boletoMinDownPaymentCents = attrs.boleto_min_down_payment_cents;
+  const boletoNotes = attrs.boleto_notes || "";
+  const acceptsCarne = !!attrs.accepts_carne;
+  const maxCarneInstallments = Math.max(1, Number(attrs.max_carne_installments) || 12);
+  const carneGraceDays = Number(attrs.carne_grace_days) || 30;
+  const carneMinDownPaymentCents = attrs.carne_min_down_payment_cents;
+  const carneNotes = attrs.carne_notes || "";
+  const acceptsCash = attrs.accepts_cash !== undefined ? !!attrs.accepts_cash : true;
+  const acceptsTrade = attrs.accepts_trade !== undefined ? !!attrs.accepts_trade : !!classified?.accepts_trade;
+  const tradeNotes = attrs.trade_notes || "";
+  const acceptsFinancing = !!attrs.accepts_financing;
+  const financingNotes = attrs.financing_notes || "";
+  const cancellationPolicy = attrs.cancellation_policy || "flexible";
 
   // Custos Imobiliários
   const condoCents = Number(classified?.attributes?.condo_cents) || 0;
@@ -1827,6 +1857,142 @@ export function UniversalClassifiedShowcase({
                   </div>
                 )}
 
+                {/* Meios de Pagamento Aceitos & Condições Comerciais */}
+                <div className="rounded-xl border border-border/30 bg-card p-4 sm:p-5 space-y-3.5 text-xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/30">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="size-4 text-primary" />
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                        Formas de Pagamento & Condições Comerciais
+                      </h2>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-medium border-none bg-primary/10 text-primary">
+                      Acordo Transparente
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    {acceptsPix && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-border/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                          <QrCode className="size-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">PIX à Vista</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {pixDiscountPercent > 0 ? `${pixDiscountPercent}% de desconto imediato` : "Aprovação instantânea"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {acceptsCard && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-border/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                          <CreditCard className="size-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Cartão de Crédito</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Até <strong>{maxInstallments}x</strong> {installmentCents > 0 ? `de ${formatMoney(installmentCents)}` : ""} {cardInterestFree ? "(sem juros)" : ""}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {acceptsBoleto && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-border/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0">
+                          <Receipt className="size-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Boleto Bancário à Vista</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Vencimento em {boletoDueDays} dias úteis
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {acceptsBoletoInstallments && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-border/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                          <FileSpreadsheet className="size-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Boleto Parcelado Direto</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Até <strong>{maxBoletoInstallments}x</strong> {boletoMinDownPaymentCents ? `(Entrada ${formatMoney(boletoMinDownPaymentCents)})` : "direto com anunciante"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {acceptsCarne && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-primary/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <BookOpenCheck className="size-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Carnê Digital da Loja</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Até <strong>{maxCarneInstallments}x</strong> {carneGraceDays ? `(1ª parcela em ${carneGraceDays}d)` : ""} direto na Waesy
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {acceptsCash && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-border/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-slate-500/10 text-slate-600 flex items-center justify-center shrink-0">
+                          <Banknote className="size-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Dinheiro em Espécie</p>
+                          <p className="text-[11px] text-muted-foreground">Pagamento presencial na entrega / retirada</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {acceptsTrade && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-border/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center shrink-0">
+                          <RefreshCw className="size-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Aceita Permuta / Troca</p>
+                          <p className="text-[11px] text-muted-foreground">{tradeNotes || "Aceita propostas de troca sob avaliação"}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {acceptsFinancing && (
+                      <div className="p-3 rounded-xl bg-muted/15 border border-border/30 flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                          <Landmark className="size-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">Financiamento / Consórcio</p>
+                          <p className="text-[11px] text-muted-foreground">{financingNotes || "Suporte bancário e aprovação de crédito"}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-border/30 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>Política de Cancelamento / Devolução:</span>
+                    <strong className="text-foreground font-semibold">
+                      {cancellationPolicy === "flexible"
+                        ? "Flexível: Cancelamento grátis até 24h antes"
+                        : cancellationPolicy === "moderate"
+                        ? "Moderado: Cancelamento com 50% de reembolso"
+                        : cancellationPolicy === "strict"
+                        ? "Rígido: Não reembolsável após confirmação"
+                        : "A combinar diretamente com o anunciante"}
+                    </strong>
+                  </div>
+                </div>
+
                 {/* Termos de Garantia e Custódia */}
                 <div className="rounded-xl border border-border/30 bg-card p-4 space-y-2 text-xs">
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
@@ -1900,11 +2066,51 @@ export function UniversalClassifiedShowcase({
                       )}
                     </div>
 
-                    {priceCents > 0 && maxInstallments > 1 && (
+                    {priceCents > 0 && maxInstallments > 1 && acceptsCard && (
                       <p className="text-xs text-muted-foreground font-mono">
-                        ou até {maxInstallments}x de {formatMoney(installmentCents)}
+                        ou até {maxInstallments}x de {formatMoney(installmentCents)} {cardInterestFree ? "sem juros" : ""}
                       </p>
                     )}
+
+                    {/* Pills Rápidos de Condições Comerciais */}
+                    <div className="flex flex-wrap gap-1.5 pt-2">
+                      {acceptsPix && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                          <QrCode className="size-3 text-emerald-600" />
+                          PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : "à vista"}
+                        </span>
+                      )}
+                      {acceptsCard && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                          <CreditCard className="size-3 text-blue-600" />
+                          Cartão até {maxInstallments}x
+                        </span>
+                      )}
+                      {acceptsBoleto && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-muted/60 text-foreground">
+                          <Receipt className="size-3 text-muted-foreground" />
+                          Boleto à vista
+                        </span>
+                      )}
+                      {acceptsBoletoInstallments && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-200">
+                          <FileSpreadsheet className="size-3 text-amber-600" />
+                          Boleto até {maxBoletoInstallments}x
+                        </span>
+                      )}
+                      {acceptsCarne && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-primary/10 text-primary">
+                          <BookOpenCheck className="size-3 text-primary" />
+                          Carnê até {maxCarneInstallments}x
+                        </span>
+                      )}
+                      {acceptsTrade && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
+                          <RefreshCw className="size-3 text-indigo-600" />
+                          Permuta
+                        </span>
+                      )}
+                    </div>
                   </>
                 )}
               </div>

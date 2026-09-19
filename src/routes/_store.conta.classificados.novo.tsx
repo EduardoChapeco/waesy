@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -1200,6 +1200,18 @@ function SpecializedClassifiedEditor({
   const [acceptsPix, setAcceptsPix] = useState(true);
   const [acceptsCard, setAcceptsCard] = useState(false);
   const [maxInstallments, setMaxInstallments] = useState(12);
+  const [cardInterestFree, setCardInterestFree] = useState(true);
+  const [acceptsBoleto, setAcceptsBoleto] = useState(false);
+  const [boletoDueDays, setBoletoDueDays] = useState(3);
+  const [acceptsBoletoInstallments, setAcceptsBoletoInstallments] = useState(false);
+  const [maxBoletoInstallments, setMaxBoletoInstallments] = useState(12);
+  const [boletoMinDownPaymentCents, setBoletoMinDownPaymentCents] = useState<number | undefined>(undefined);
+  const [boletoNotes, setBoletoNotes] = useState("");
+  const [acceptsCarne, setAcceptsCarne] = useState(false);
+  const [maxCarneInstallments, setMaxCarneInstallments] = useState(12);
+  const [carneGraceDays, setCarneGraceDays] = useState(30);
+  const [carneMinDownPaymentCents, setCarneMinDownPaymentCents] = useState<number | undefined>(undefined);
+  const [carneNotes, setCarneNotes] = useState("");
   const [acceptsCash, setAcceptsCash] = useState(true);
   const [acceptsTrade, setAcceptsTrade] = useState(false);
   const [cancellationPolicy, setCancellationPolicy] = useState<"flexible" | "moderate" | "strict" | "negotiable">("flexible");
@@ -1545,6 +1557,18 @@ function SpecializedClassifiedEditor({
       if (initialData.attributes.accepts_pix !== undefined) setAcceptsPix(!!initialData.attributes.accepts_pix);
       if (initialData.attributes.accepts_card !== undefined) setAcceptsCard(!!initialData.attributes.accepts_card);
       if (initialData.attributes.max_installments) setMaxInstallments(initialData.attributes.max_installments);
+      if (initialData.attributes.card_interest_free !== undefined) setCardInterestFree(!!initialData.attributes.card_interest_free);
+      if (initialData.attributes.accepts_boleto !== undefined) setAcceptsBoleto(!!initialData.attributes.accepts_boleto);
+      if (initialData.attributes.boleto_due_days) setBoletoDueDays(initialData.attributes.boleto_due_days);
+      if (initialData.attributes.accepts_boleto_installments !== undefined) setAcceptsBoletoInstallments(!!initialData.attributes.accepts_boleto_installments);
+      if (initialData.attributes.max_boleto_installments) setMaxBoletoInstallments(initialData.attributes.max_boleto_installments);
+      if (initialData.attributes.boleto_min_down_payment_cents !== undefined) setBoletoMinDownPaymentCents(initialData.attributes.boleto_min_down_payment_cents);
+      if (initialData.attributes.boleto_notes) setBoletoNotes(initialData.attributes.boleto_notes);
+      if (initialData.attributes.accepts_carne !== undefined) setAcceptsCarne(!!initialData.attributes.accepts_carne);
+      if (initialData.attributes.max_carne_installments) setMaxCarneInstallments(initialData.attributes.max_carne_installments);
+      if (initialData.attributes.carne_grace_days) setCarneGraceDays(initialData.attributes.carne_grace_days);
+      if (initialData.attributes.carne_min_down_payment_cents !== undefined) setCarneMinDownPaymentCents(initialData.attributes.carne_min_down_payment_cents);
+      if (initialData.attributes.carne_notes) setCarneNotes(initialData.attributes.carne_notes);
       if (initialData.attributes.accepts_cash !== undefined) setAcceptsCash(!!initialData.attributes.accepts_cash);
       if (initialData.attributes.accepts_trade !== undefined) setAcceptsTrade(!!initialData.attributes.accepts_trade);
       if (initialData.attributes.cancellation_policy) setCancellationPolicy(initialData.attributes.cancellation_policy);
@@ -1793,6 +1817,18 @@ function SpecializedClassifiedEditor({
         accepts_pix: acceptsPix,
         pix_discount_percent: acceptsPix ? Number(pixDiscountPercent) || 0 : undefined,
         accepts_card: acceptsCard,
+        card_interest_free: acceptsCard ? cardInterestFree : true,
+        accepts_boleto: acceptsBoleto,
+        boleto_due_days: acceptsBoleto ? boletoDueDays : undefined,
+        accepts_boleto_installments: acceptsBoletoInstallments,
+        max_boleto_installments: acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 12 : undefined,
+        boleto_min_down_payment_cents: acceptsBoletoInstallments ? boletoMinDownPaymentCents : undefined,
+        boleto_notes: acceptsBoletoInstallments ? boletoNotes.trim() : undefined,
+        accepts_carne: acceptsCarne,
+        max_carne_installments: acceptsCarne ? Number(maxCarneInstallments) || 12 : undefined,
+        carne_grace_days: acceptsCarne ? carneGraceDays : undefined,
+        carne_min_down_payment_cents: acceptsCarne ? carneMinDownPaymentCents : undefined,
+        carne_notes: acceptsCarne ? carneNotes.trim() : undefined,
         accepts_cash: niche.id === "digital" ? false : acceptsCash,
         accepts_trade: niche.id === "digital" ? false : acceptsTrade,
         trade_notes: acceptsTrade ? tradeNotes.trim() : undefined,
@@ -1803,6 +1839,18 @@ function SpecializedClassifiedEditor({
           pix_discount_percent: acceptsPix ? Number(pixDiscountPercent) || 0 : 0,
           accepts_card: acceptsCard,
           max_installments: acceptsCard ? Number(maxInstallments) || 12 : 1,
+          card_interest_free: cardInterestFree,
+          accepts_boleto: acceptsBoleto,
+          boleto_due_days: boletoDueDays,
+          accepts_boleto_installments: acceptsBoletoInstallments,
+          max_boleto_installments: maxBoletoInstallments,
+          boleto_min_down_payment_cents: boletoMinDownPaymentCents,
+          boleto_notes: boletoNotes,
+          accepts_carne: acceptsCarne,
+          max_carne_installments: maxCarneInstallments,
+          carne_grace_days: carneGraceDays,
+          carne_min_down_payment_cents: carneMinDownPaymentCents,
+          carne_notes: carneNotes,
           accepts_cash: acceptsCash,
           accepts_trade: acceptsTrade,
           trade_notes: tradeNotes,
@@ -1812,11 +1860,16 @@ function SpecializedClassifiedEditor({
         accepted_payment_methods: [
           ...(acceptsPix ? ["pix"] : []),
           ...(acceptsCard ? ["cartao_credito"] : []),
+          ...(acceptsBoleto ? ["boleto"] : []),
+          ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
+          ...(acceptsCarne ? ["carne_digital"] : []),
           ...(acceptsCash ? ["dinheiro"] : []),
+          ...(acceptsTrade ? ["permuta"] : []),
+          ...(acceptsFinancing ? ["financiamento"] : []),
         ],
-        installments_available: acceptsCard,
+        installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
         cancellation_policy: cancellationPolicy,
-        max_installments: acceptsCard ? Number(maxInstallments) || 12 : 1,
+        max_installments: acceptsCard ? Number(maxInstallments) || 12 : (acceptsCarne ? maxCarneInstallments : (acceptsBoletoInstallments ? maxBoletoInstallments : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
         template_style: templateStyle,
         story_highlights: travelStoryHighlights,
@@ -2043,9 +2096,14 @@ function SpecializedClassifiedEditor({
           accepted_payment_methods: [
             ...(acceptsPix ? ["pix"] : []),
             ...(acceptsCard ? ["cartao_credito"] : []),
+            ...(acceptsBoleto ? ["boleto"] : []),
+            ...(acceptsBoletoInstallments ? ["boleto_parcelado"] : []),
+            ...(acceptsCarne ? ["carne_digital"] : []),
             ...(acceptsCash ? ["dinheiro"] : []),
+            ...(acceptsTrade ? ["permuta"] : []),
+            ...(acceptsFinancing ? ["financiamento"] : []),
           ],
-          installments_available: acceptsCard,
+          installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
           cancellation_policy: cancellationPolicy,
           store_id: storeId || initialData?.store_id || undefined,
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
@@ -2260,6 +2318,18 @@ function SpecializedClassifiedEditor({
         pix_discount_percent: pixDiscountPercent,
         accepts_card: acceptsCard,
         max_installments: acceptsCard ? (niche.id === "viagem" ? Number(travelMaxInstallments) || 12 : Number(maxInstallments) || 12) : 1,
+        card_interest_free: cardInterestFree,
+        accepts_boleto: acceptsBoleto,
+        boleto_due_days: boletoDueDays,
+        accepts_boleto_installments: acceptsBoletoInstallments,
+        max_boleto_installments: maxBoletoInstallments,
+        boleto_min_down_payment_cents: boletoMinDownPaymentCents,
+        boleto_notes: boletoNotes,
+        accepts_carne: acceptsCarne,
+        max_carne_installments: maxCarneInstallments,
+        carne_grace_days: carneGraceDays,
+        carne_min_down_payment_cents: carneMinDownPaymentCents,
+        carne_notes: carneNotes,
         accepts_trade: acceptsTrade,
         trade_notes: tradeNotes,
         accepts_financing: acceptsFinancing,
@@ -3122,6 +3192,59 @@ function SpecializedClassifiedEditor({
                           <Input value={travelFlightDuration} onChange={(e) => setTravelFlightDuration(e.target.value)} placeholder="Ex: 12h (ida), 14h (volta)" className="h-11 rounded-xl text-xs bg-background" />
                         </div>
                       </div>
+
+                      {/* Badges de Meios de Pagamento Aceitos na Prévia */}
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {acceptsPix && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                            <QrCode className="size-3 text-emerald-600" />
+                            <span>PIX {pixDiscountPercent > 0 ? `(${pixDiscountPercent}% off)` : ""}</span>
+                          </Badge>
+                        )}
+                        {acceptsCard && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                            <CreditCard className="size-3 text-blue-600" />
+                            <span>Cartão até {maxInstallments}x</span>
+                          </Badge>
+                        )}
+                        {acceptsBoleto && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-muted/60 text-foreground">
+                            <Receipt className="size-3 text-muted-foreground" />
+                            <span>Boleto à vista</span>
+                          </Badge>
+                        )}
+                        {acceptsBoletoInstallments && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-amber-500/10 text-amber-800 dark:text-amber-200">
+                            <FileSpreadsheet className="size-3 text-amber-600" />
+                            <span>Boleto até {maxBoletoInstallments}x</span>
+                          </Badge>
+                        )}
+                        {acceptsCarne && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-primary/10 text-primary">
+                            <BookOpenCheck className="size-3 text-primary" />
+                            <span>Carnê da Loja até {maxCarneInstallments}x</span>
+                          </Badge>
+                        )}
+                        {acceptsCash && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-slate-500/10 text-slate-700 dark:text-slate-300">
+                            <Banknote className="size-3 text-slate-600" />
+                            <span>Dinheiro</span>
+                          </Badge>
+                        )}
+                        {acceptsTrade && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                            <RefreshCw className="size-3 text-amber-600" />
+                            <span>Aceita Troca</span>
+                          </Badge>
+                        )}
+                        {acceptsFinancing && (
+                          <Badge variant="secondary" className="text-[10px] font-medium gap-1 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300">
+                            <Landmark className="size-3 text-indigo-600" />
+                            <span>Financiamento</span>
+                          </Badge>
+                        )}
+                      </div>
+
                       {/* Embarques na Rota (Gateways) */}
                       <div className="space-y-2">
                         <Label className="text-xs font-medium flex items-center gap-1.5">
@@ -6088,7 +6211,7 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <CreditCard className="size-4 text-primary shrink-0" />
-                    <span>3. Pagamento</span>
+                    <span>3. Pagamento & Condições Comerciais</span>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-bold">
                     Negociação Transparente
@@ -6098,71 +6221,392 @@ function SpecializedClassifiedEditor({
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold text-foreground tracking-tight">Meios de Pagamento Aceitos</Label>
-                    <span className="text-[10px] text-muted-foreground font-mono">À vista ou parcelado</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">Toque para ativar ou desativar</span>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+
+                  {/* 8 Cards Táteis Apple HIG — Ergonomia de Toque >= 54px e Zero Sobreposição */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                    {/* 1. PIX */}
                     <div
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all cursor-pointer min-h-[44px] ${
-                        acceptsPix ? "border-primary bg-primary/10 text-primary font-medium" : "border-border/60 bg-background text-foreground/80 hover:bg-muted/40"
-                      }`}
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsPix
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
                       onClick={() => setAcceptsPix(!acceptsPix)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsPix(!acceptsPix); } }}
                     >
-                      <Checkbox checked={acceptsPix} onCheckedChange={(c) => setAcceptsPix(!!c)} />
-                      <div className="flex items-center gap-1.5 text-xs select-none">
-                        <QrCode className="size-3.5 text-primary" />
-                        <span>PIX</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsPix ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <QrCode className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsPix ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            PIX
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsPix ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsPix && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsPix ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          {pixDiscountPercent > 0 ? `${pixDiscountPercent}% OFF à vista` : "À vista imediato"}
+                        </span>
                       </div>
                     </div>
 
+                    {/* 2. Cartão de Crédito */}
                     <div
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all cursor-pointer min-h-[44px] ${
-                        acceptsCard ? "border-primary bg-primary/10 text-primary font-medium" : "border-border/60 bg-background text-foreground/80 hover:bg-muted/40"
-                      }`}
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsCard
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
                       onClick={() => setAcceptsCard(!acceptsCard)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsCard(!acceptsCard); } }}
                     >
-                      <Checkbox checked={acceptsCard} onCheckedChange={(c) => setAcceptsCard(!!c)} />
-                      <div className="flex items-center gap-1.5 text-xs select-none">
-                        <CreditCard className="size-3.5 text-primary" />
-                        <span>Cartão</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsCard ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <CreditCard className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsCard ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            Cartão
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsCard ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsCard && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsCard ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          {cardInterestFree ? `Até ${maxInstallments}x s/ juros` : `Até ${maxInstallments}x`}
+                        </span>
                       </div>
                     </div>
 
+                    {/* 3. Boleto à Vista */}
                     <div
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all cursor-pointer min-h-[44px] ${
-                        acceptsCash ? "border-primary bg-primary/10 text-primary font-medium" : "border-border/60 bg-background text-foreground/80 hover:bg-muted/40"
-                      }`}
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsBoleto
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
+                      onClick={() => setAcceptsBoleto(!acceptsBoleto)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsBoleto(!acceptsBoleto); } }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsBoleto ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <Receipt className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsBoleto ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            Boleto
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsBoleto ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsBoleto && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsBoleto ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          Venc. em {boletoDueDays}d
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 4. Boleto Parcelado */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsBoletoInstallments
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
+                      onClick={() => setAcceptsBoletoInstallments(!acceptsBoletoInstallments)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsBoletoInstallments(!acceptsBoletoInstallments); } }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsBoletoInstallments ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <FileSpreadsheet className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsBoletoInstallments ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            Boleto Parcelado
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsBoletoInstallments ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsBoletoInstallments && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsBoletoInstallments ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          Até {maxBoletoInstallments}x direto
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 5. Carnê da Loja / Digital */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsCarne
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
+                      onClick={() => setAcceptsCarne(!acceptsCarne)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsCarne(!acceptsCarne); } }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsCarne ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <BookOpenCheck className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsCarne ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            Carnê da Loja
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsCarne ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsCarne && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsCarne ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          Até {maxCarneInstallments}x direto
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 6. Dinheiro em Espécie */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsCash
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
                       onClick={() => setAcceptsCash(!acceptsCash)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsCash(!acceptsCash); } }}
                     >
-                      <Checkbox checked={acceptsCash} onCheckedChange={(c) => setAcceptsCash(!!c)} />
-                      <div className="flex items-center gap-1.5 text-xs select-none">
-                        <Banknote className="size-3.5 text-primary" />
-                        <span>Dinheiro</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsCash ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <Banknote className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsCash ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            Dinheiro
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsCash ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsCash && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsCash ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          Presencial / Retirada
+                        </span>
                       </div>
                     </div>
 
+                    {/* 7. Trocas / Permuta */}
                     <div
-                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all cursor-pointer min-h-[44px] ${
-                        acceptsTrade ? "border-primary bg-primary/10 text-primary font-medium" : "border-border/60 bg-background text-foreground/80 hover:bg-muted/40"
-                      }`}
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsTrade
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
                       onClick={() => setAcceptsTrade(!acceptsTrade)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsTrade(!acceptsTrade); } }}
                     >
-                      <Checkbox checked={acceptsTrade} onCheckedChange={(c) => setAcceptsTrade(!!c)} />
-                      <div className="flex items-center gap-1.5 text-xs select-none">
-                        <RefreshCw className="size-3.5 text-primary" />
-                        <span>Trocas</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsTrade ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <RefreshCw className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsTrade ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            Trocas
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsTrade ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsTrade && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsTrade ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          Sob avaliação
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 8. Financiamento / Consórcio */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={cn(
+                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
+                        acceptsFinancing
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
+                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
+                      )}
+                      onClick={() => setAcceptsFinancing(!acceptsFinancing)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsFinancing(!acceptsFinancing); } }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={cn(
+                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            acceptsFinancing ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
+                          )}>
+                            <Landmark className="size-3.5" />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-bold truncate",
+                            acceptsFinancing ? "text-foreground" : "text-foreground/80"
+                          )}>
+                            Financiamento
+                          </span>
+                        </div>
+                        <div className={cn(
+                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
+                          acceptsFinancing ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
+                        )}>
+                          {acceptsFinancing && <Check className="size-2.5 stroke-[3]" />}
+                        </div>
+                      </div>
+                      <div className="pt-1.5 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[10px] font-medium truncate",
+                          acceptsFinancing ? "text-primary font-semibold" : "text-muted-foreground"
+                        )}>
+                          Banco / Consórcio
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
+                {/* ── Sub-Painéis de Configuração Contextual para Cada Método Ativo ── */}
+
+                {/* PIX Config */}
                 {acceptsPix && (
-                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-background border border-border/60">
-                    <BadgePercent className="size-4 text-emerald-600 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <Label className="text-xs font-semibold text-foreground">Desconto à vista no PIX (%)</Label>
-                      <span className="text-[10px] text-muted-foreground block truncate">Destaca badge de desconto imediato na vitrine</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-background border border-border/60">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                        <BadgePercent className="size-4" />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold text-foreground">Desconto à vista no PIX (%)</Label>
+                        <span className="text-[11px] text-muted-foreground block">
+                          {pixDiscountPercent > 0 && priceCents && priceCents > 0
+                            ? `Preço c/ desconto: ${formatMoney(Math.round(priceCents * (1 - pixDiscountPercent / 100)))} (Economia de ${formatMoney(Math.round(priceCents * (pixDiscountPercent / 100)))})`
+                            : "Destaca badge de desconto imediato na vitrine"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="w-20 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                       <Input
                         type="number"
                         min={0}
@@ -6170,21 +6614,24 @@ function SpecializedClassifiedEditor({
                         value={pixDiscountPercent || ""}
                         onChange={(e) => setPixDiscountPercent(Math.min(50, Math.max(0, Number(e.target.value))))}
                         placeholder="0"
-                        className="h-9 text-xs text-right font-mono"
+                        className="h-9 w-20 text-xs text-right font-mono"
                       />
+                      <span className="text-xs font-bold text-muted-foreground">%</span>
                     </div>
-                    <span className="text-xs font-bold text-muted-foreground">%</span>
                   </div>
                 )}
 
+                {/* Cartão de Crédito Config */}
                 {acceptsCard && (
-                  <div className="space-y-2 p-3 rounded-xl bg-background border border-border/60">
+                  <div className="space-y-3 p-3.5 rounded-xl bg-background border border-border/60">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                      <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
                         <CreditCard className="size-3.5 text-primary" />
                         <span>Parcelamento Máximo no Cartão</span>
                       </Label>
-                      <span className="text-xs font-black text-primary font-mono">{maxInstallments}x</span>
+                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
+                        {maxInstallments}x
+                      </span>
                     </div>
                     <input
                       type="range"
@@ -6203,17 +6650,209 @@ function SpecializedClassifiedEditor({
                       <span>18x</span>
                       <span>24x</span>
                     </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={cardInterestFree}
+                          onCheckedChange={setCardInterestFree}
+                          id="card-interest-free"
+                        />
+                        <Label htmlFor="card-interest-free" className="text-xs font-medium cursor-pointer">
+                          Parcelamento Sem Juros para o comprador
+                        </Label>
+                      </div>
+                      {priceCents && priceCents > 0 && (
+                        <span className="text-[11px] text-muted-foreground font-mono font-medium">
+                          {maxInstallments}x de <strong>{formatMoney(Math.round(priceCents / maxInstallments))}</strong> {cardInterestFree ? "sem juros" : ""}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Boleto à Vista Config */}
+                {acceptsBoleto && (
+                  <div className="p-3.5 rounded-xl bg-background border border-border/60 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Receipt className="size-4 text-primary" />
+                        <Label className="text-xs font-semibold text-foreground">Prazo de Vencimento do Boleto</Label>
+                      </div>
+                      <span className="text-[11px] text-muted-foreground font-mono font-medium">
+                        {boletoDueDays} dias úteis
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 5, 7].map((days) => (
+                        <Button
+                          key={days}
+                          type="button"
+                          variant={boletoDueDays === days ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setBoletoDueDays(days)}
+                          className="h-8 px-3 text-xs font-semibold rounded-lg"
+                        >
+                          {days} {days === 1 ? "dia" : "dias"}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      O boleto bancário é gerado com código de barras e linha digitável. A compensação ocorre em até 1 dia útil após o pagamento.
+                    </p>
+                  </div>
+                )}
+
+                {/* Boleto Parcelado Direto Config */}
+                {acceptsBoletoInstallments && (
+                  <div className="space-y-3 p-3.5 rounded-xl bg-background border border-border/60">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
+                        <FileSpreadsheet className="size-3.5 text-primary" />
+                        <span>Parcelamento Máximo no Boleto Direto</span>
+                      </Label>
+                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
+                        {maxBoletoInstallments}x
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={1}
+                      max={24}
+                      step={1}
+                      value={maxBoletoInstallments}
+                      onChange={(e) => setMaxBoletoInstallments(Number(e.target.value) || 1)}
+                      className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                      aria-label="Parcelamento Máximo no Boleto Direto"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                      <span>1x</span>
+                      <span>6x</span>
+                      <span>12x</span>
+                      <span>18x</span>
+                      <span>24x</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-foreground">Entrada Mínima Sugerida (R$)</Label>
+                        <CurrencyField
+                          value={boletoMinDownPaymentCents}
+                          onChange={setBoletoMinDownPaymentCents}
+                          placeholder="0,00"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-foreground">Requisitos / Análise de Crédito</Label>
+                        <Input
+                          value={boletoNotes}
+                          onChange={(e) => setBoletoNotes(e.target.value)}
+                          placeholder="Ex: Sujeito a análise cadastral de CPF e contrato"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+
                     {priceCents && priceCents > 0 && (
-                      <p className="text-[11px] text-muted-foreground">
-                        Parcela estimada: <strong>{maxInstallments}x de {formatMoney(Math.round(priceCents / maxInstallments))} sem juros</strong>
+                      <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/30 font-mono">
+                        Estimativa: Entrada {formatMoney(boletoMinDownPaymentCents || 0)} + {maxBoletoInstallments}x de{" "}
+                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (boletoMinDownPaymentCents || 0)) / maxBoletoInstallments))}</strong> em boletos mensais
                       </p>
                     )}
                   </div>
                 )}
 
+                {/* Carnê Digital da Loja Config */}
+                {acceptsCarne && (
+                  <div className="space-y-3.5 p-3.5 rounded-xl bg-background border border-primary/40 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
+                        <BookOpenCheck className="size-4 text-primary" />
+                        <span>Parcelamento no Carnê da Loja / Crediário Próprio</span>
+                      </Label>
+                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
+                        Até {maxCarneInstallments}x
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={1}
+                      max={36}
+                      step={1}
+                      value={maxCarneInstallments}
+                      onChange={(e) => setMaxCarneInstallments(Number(e.target.value) || 1)}
+                      className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                      aria-label="Parcelamento Máximo no Carnê"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                      <span>1x</span>
+                      <span>6x</span>
+                      <span>12x</span>
+                      <span>24x</span>
+                      <span>36x</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-foreground">Carência para 1º Vencimento</Label>
+                        <Select value={String(carneGraceDays)} onValueChange={(v) => setCarneGraceDays(Number(v) || 30)}>
+                          <SelectTrigger className="h-9 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="30">30 dias</SelectItem>
+                            <SelectItem value="45">45 dias</SelectItem>
+                            <SelectItem value="60">60 dias</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-foreground">Entrada Mínima (R$)</Label>
+                        <CurrencyField
+                          value={carneMinDownPaymentCents}
+                          onChange={setCarneMinDownPaymentCents}
+                          placeholder="0,00"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-foreground">Condições do Crediário</Label>
+                        <Input
+                          value={carneNotes}
+                          onChange={(e) => setCarneNotes(e.target.value)}
+                          placeholder="Ex: Crediário próprio rápido"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {priceCents && priceCents > 0 && (
+                      <p className="text-[11px] text-muted-foreground font-mono pt-1 border-t border-border/30">
+                        Simulação: Entrada {formatMoney(carneMinDownPaymentCents || 0)} + {maxCarneInstallments}x de{" "}
+                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (carneMinDownPaymentCents || 0)) / maxCarneInstallments))}</strong> (1ª parcela após {carneGraceDays} dias)
+                      </p>
+                    )}
+
+                    {/* Banner de Bilateralidade do Carnê Digital */}
+                    <div className="flex items-start gap-2.5 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+                      <BookOpenCheck className="size-4 text-primary shrink-0 mt-0.5" />
+                      <div className="space-y-0.5 text-foreground/90">
+                        <strong className="text-primary block font-semibold">Bilateralidade Waesy Carnê Digital</strong>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          Ao concluir uma venda ou aceitar uma proposta parcelada no carnê, você emite o carnê oficial com 1 clique na área de Negociações. O comprador acompanha e quita as parcelas diretamente em <strong>Minha Conta &gt; Carnês</strong>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Trocas Config */}
                 {acceptsTrade && (
-                  <div className="space-y-1.5 p-3 rounded-xl bg-background border border-border/60">
-                    <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <div className="space-y-1.5 p-3.5 rounded-xl bg-background border border-border/60">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <RefreshCw className="size-3.5 text-primary" />
                       <span>Condições / O que você aceita na troca?</span>
                     </Label>
@@ -6226,30 +6865,25 @@ function SpecializedClassifiedEditor({
                   </div>
                 )}
 
-                {/* Financiamento Bancário / Consórcio */}
-                <div className="p-3 rounded-xl bg-background border border-border/60 space-y-2">
-                  <div
-                    className="flex items-center gap-2.5 cursor-pointer"
-                    onClick={() => setAcceptsFinancing(!acceptsFinancing)}
-                  >
-                    <Checkbox checked={acceptsFinancing} onCheckedChange={(c) => setAcceptsFinancing(!!c)} />
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-foreground select-none">
-                      <Landmark className="size-3.5 text-primary" />
-                      <span>Aceita Financiamento Bancário / Carta de Consórcio</span>
+                {/* Financiamento Bancário / Consórcio Config */}
+                {acceptsFinancing && (
+                  <div className="p-3.5 rounded-xl bg-background border border-border/60 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Landmark className="size-4 text-primary" />
+                      <Label className="text-xs font-semibold text-foreground">Instituições Financeiras / Carta de Crédito</Label>
                     </div>
-                  </div>
-                  {acceptsFinancing && (
                     <Input
                       value={financingNotes}
                       onChange={(e) => setFinancingNotes(e.target.value)}
-                      placeholder="Ex: Financiamento via BV, Santander, Itaú ou Caixa em até 60 meses"
+                      placeholder="Ex: Financiamento via BV, Santander, Itaú ou carta de consórcio contemplada"
                       className="h-9 text-xs"
                     />
-                  )}
-                </div>
+                  </div>
+                )}
 
+                {/* Política de Cancelamento */}
                 <div className="space-y-1.5 pt-1 border-t border-border/40">
-                  <Label className="text-xs text-foreground font-medium">Política de Cancelamento / Devolução</Label>
+                  <Label className="text-xs text-foreground font-semibold">Política de Cancelamento / Devolução</Label>
                   <Select value={cancellationPolicy} onValueChange={(v: any) => setCancellationPolicy(v)}>
                     <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
                       <SelectValue />

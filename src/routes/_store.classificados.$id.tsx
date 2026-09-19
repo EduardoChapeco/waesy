@@ -41,6 +41,9 @@ import {
   Store as StoreIcon,
   Hotel,
   Building2,
+  BookOpenCheck,
+  Receipt,
+  FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -60,6 +63,13 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatMoney } from "@/lib/money";
 import { formatRelativeTime, formatDate } from "@/lib/datetime";
@@ -299,6 +309,7 @@ function ClassifiedDetailPage() {
  const [proposalPriceCents, setProposalPriceCents] = useState<number | undefined>(
  classified?.price_cents || undefined,
  );
+ const [proposalPaymentMethod, setProposalPaymentMethod] = useState<string>("pix");
  const [proposalInstallments, setProposalInstallments] = useState("1");
  const [proposalDepositCents, setProposalDepositCents] = useState<number | undefined>(undefined);
  const [proposalTerms, setProposalTerms] = useState("");
@@ -497,7 +508,28 @@ function ClassifiedDetailPage() {
       }
     }
 
-    const finalTerms = (proposalTerms.trim() + formattedCustomFields).trim();
+    const paymentMethodLabel =
+      proposalPaymentMethod === "pix"
+        ? "PIX à vista"
+        : proposalPaymentMethod === "cartao_credito"
+        ? `Cartão de Crédito em ${installments}x`
+        : proposalPaymentMethod === "boleto"
+        ? "Boleto à vista"
+        : proposalPaymentMethod === "boleto_parcelado"
+        ? `Boleto Parcelado em ${installments}x`
+        : proposalPaymentMethod === "carne_digital"
+        ? `Carnê Digital da Loja em ${installments}x`
+        : proposalPaymentMethod === "dinheiro"
+        ? "Dinheiro em espécie"
+        : proposalPaymentMethod === "permuta"
+        ? "Permuta / Troca"
+        : "Financiamento Bancário";
+
+    const finalTerms = (
+      `[Forma de Pagamento: ${paymentMethodLabel}${depositCents > 0 ? ` com entrada de ${formatMoney(depositCents)}` : ""}]\n` +
+      proposalTerms.trim() +
+      formattedCustomFields
+    ).trim();
 
  setIsSendingProposal(true);
  try {
@@ -1051,29 +1083,100 @@ const handleDownloadDigitalFile = async () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Forma de Pagamento
+                  <label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                    <span>Meio de Pagamento Desejado *</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">Condições aceitas pelo anúncio</span>
                   </label>
-                  <Input
-                    value={proposalInstallments}
-                    onChange={(e) => setProposalInstallments(e.target.value)}
-                    placeholder="1 (À vista)"
-                    className="h-9 rounded-xl text-xs bg-background font-mono"
-                  />
+                  <Select value={proposalPaymentMethod} onValueChange={setProposalPaymentMethod}>
+                    <SelectTrigger className="h-10 rounded-xl text-xs bg-background">
+                      <SelectValue placeholder="Selecione o meio de pagamento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pix">
+                        PIX à Vista {classified?.attributes?.pix_discount_percent ? `(${classified.attributes.pix_discount_percent}% de desconto)` : ""}
+                      </SelectItem>
+                      <SelectItem value="cartao_credito">
+                        Cartão de Crédito (até {classified?.attributes?.max_installments || 12}x)
+                      </SelectItem>
+                      <SelectItem value="boleto">
+                        Boleto Bancário à Vista
+                      </SelectItem>
+                      <SelectItem value="boleto_parcelado">
+                        Boleto Parcelado Direto (até {classified?.attributes?.max_boleto_installments || 12}x)
+                      </SelectItem>
+                      <SelectItem value="carne_digital">
+                        Carnê Digital da Loja / Crediário (até {classified?.attributes?.max_carne_installments || 12}x)
+                      </SelectItem>
+                      <SelectItem value="dinheiro">
+                        Dinheiro em Espécie (na entrega / retirada)
+                      </SelectItem>
+                      <SelectItem value="permuta">
+                        Permuta / Troca por outro item
+                      </SelectItem>
+                      <SelectItem value="financiamento">
+                        Financiamento Bancário / Consórcio
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Sinal / Entrada (R$)
-                  </label>
-                  <CurrencyField
-                    value={proposalDepositCents}
-                    onChange={setProposalDepositCents}
-                    placeholder="0,00"
-                    className="h-9 rounded-xl text-xs bg-background"
-                  />
-                </div>
+
+                {/* Sub-campos de Parcelamento e Entrada */}
+                {(proposalPaymentMethod === "cartao_credito" || proposalPaymentMethod === "carne_digital" || proposalPaymentMethod === "boleto_parcelado") && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-muted/20 border border-border/40">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground">
+                        Número de Parcelas
+                      </label>
+                      <Select
+                        value={proposalInstallments}
+                        onValueChange={setProposalInstallments}
+                      >
+                        <SelectTrigger className="h-9 rounded-xl text-xs bg-background font-mono">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from(
+                            {
+                              length: proposalPaymentMethod === "carne_digital"
+                                ? (Number(classified?.attributes?.max_carne_installments) || 12)
+                                : proposalPaymentMethod === "boleto_parcelado"
+                                ? (Number(classified?.attributes?.max_boleto_installments) || 12)
+                                : (Number(classified?.attributes?.max_installments) || 12)
+                            },
+                            (_, i) => i + 1
+                          ).map((n) => (
+                            <SelectItem key={n} value={String(n)}>
+                              {n}x {proposalPriceCents && proposalPriceCents > 0 ? `de ${formatMoney(Math.round(Math.max(0, proposalPriceCents - (proposalDepositCents || 0)) / n))}` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground">
+                        Sinal / Entrada (R$)
+                      </label>
+                      <CurrencyField
+                        value={proposalDepositCents}
+                        onChange={setProposalDepositCents}
+                        placeholder="0,00"
+                        className="h-9 rounded-xl text-xs bg-background"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {proposalPaymentMethod === "carne_digital" && (
+                  <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground/80 flex items-start gap-2">
+                    <BookOpenCheck className="size-4 text-primary shrink-0 mt-0.5" />
+                    <span>
+                      Ao aprovar esta proposta, o vendedor poderá emitir seu <strong>Carnê Digital</strong> oficial. Você acompanhará os boletos, datas e comprovantes em <strong>Minha Conta &gt; Carnês</strong>.
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">
