@@ -1259,6 +1259,8 @@ export interface ClassifiedHeroHighlight {
   primaryValue: string;
   secondaryLabel?: string;
   secondaryValue?: string;
+  tertiaryLabel?: string;
+  tertiaryValue?: string;
 }
 
 export interface ClassifiedEditorialSpec {
@@ -1267,8 +1269,8 @@ export interface ClassifiedEditorialSpec {
 }
 
 /**
- * Retorna os 2 valores de destaque primordial (Hero Highlights) do anúncio em tipografia marcante.
- * Ex: Viagens (Saída / Retorno), Hospedagem (Check-in / Check-out), Veículos (Ano / KM), etc.
+ * Retorna os valores de destaque primordial (Hero Highlights) do anúncio em tipografia marcante.
+ * Ex: Viagens (Saída / Retorno / Duração), Hospedagem (Check-in / Check-out / Hóspedes), Veículos (Ano / KM / Câmbio), etc.
  */
 export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: any): ClassifiedHeroHighlight | null {
   if (!classified) return null;
@@ -1294,18 +1296,40 @@ export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: 
       }
     };
 
+    // Duração inteligente
+    let durationVal: string | null = null;
+    if (attrs.duration_days) {
+      const nights = attrs.duration_nights ? ` / ${attrs.duration_nights}N` : "";
+      durationVal = `${attrs.duration_days} Dias${nights}`;
+    } else if (attrs.duration_text) {
+      durationVal = attrs.duration_text;
+    } else if (depDate && retDate) {
+      try {
+        const d1 = new Date(depDate);
+        const d2 = new Date(retDate);
+        const diffDays = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays > 0) {
+          durationVal = `${diffDays + 1} Dias`;
+        }
+      } catch {}
+    }
+
     if (depDate || retDate) {
       return {
         primaryLabel: "Saída",
         primaryValue: depDate ? fmt(depDate) : "A Definir",
         secondaryLabel: "Retorno",
         secondaryValue: retDate ? fmt(retDate) : "A Definir",
+        tertiaryLabel: durationVal ? "Duração" : undefined,
+        tertiaryValue: durationVal || undefined,
       };
     }
     if (datesText) {
       return {
         primaryLabel: "Datas",
         primaryValue: datesText,
+        secondaryLabel: durationVal ? "Duração" : undefined,
+        secondaryValue: durationVal || undefined,
       };
     }
     return null;
@@ -1315,11 +1339,14 @@ export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: 
   if (niche.id === "hospitality_stay") {
     const checkin = attrs.checkin_time || "14:00";
     const checkout = attrs.checkout_time || "11:00";
+    const guests = classified.max_guests || attrs.max_guests;
     return {
       primaryLabel: "Check-in",
       primaryValue: checkin,
       secondaryLabel: "Check-out",
       secondaryValue: checkout,
+      tertiaryLabel: guests ? "Capacidade" : undefined,
+      tertiaryValue: guests ? `Até ${guests} hóspedes` : undefined,
     };
   }
 
@@ -1327,12 +1354,15 @@ export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: 
   if (niche.id === "real_estate_sale" || niche.id === "real_estate_rent") {
     const area = classified.area_sqm || attrs.area_sqm;
     const beds = classified.bedrooms || attrs.bedrooms;
+    const parking = attrs.parking_spaces || attrs.parking_spots;
     if (area || beds) {
       return {
         primaryLabel: "Área Útil",
         primaryValue: area ? `${area} m²` : "Sob Consulta",
         secondaryLabel: "Dormitórios",
         secondaryValue: beds ? `${beds} Quarto${Number(beds) > 1 ? "s" : ""}` : "Sob Consulta",
+        tertiaryLabel: parking ? "Vagas" : undefined,
+        tertiaryValue: parking ? `${parking} Vaga${Number(parking) > 1 ? "s" : ""}` : undefined,
       };
     }
   }
@@ -1341,12 +1371,15 @@ export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: 
   if (niche.id === "vehicle") {
     const year = attrs.year_fab || attrs.year_model ? `${attrs.year_fab || ""}/${attrs.year_model || ""}` : null;
     const km = attrs.mileage_km !== undefined ? `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km` : null;
+    const trans = attrs.transmission || null;
     if (year || km) {
       return {
-        primaryLabel: "Ano / Modelo",
+        primaryLabel: "Ano / Mod.",
         primaryValue: year || "Não Informado",
         secondaryLabel: "Quilometragem",
         secondaryValue: km || "0 km (Novo)",
+        tertiaryLabel: trans ? "Câmbio" : undefined,
+        tertiaryValue: trans || undefined,
       };
     }
   }
@@ -1355,12 +1388,15 @@ export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: 
   if (niche.id === "job") {
     const reg = getRegimeLabel(attrs.regime);
     const model = getWorkplaceModelLabel(attrs.work_model) || attrs.work_schedule;
+    const salary = attrs.salary_range || null;
     if (reg || model) {
       return {
         primaryLabel: "Regime",
         primaryValue: reg || "CLT",
-        secondaryLabel: "Modelo / Horário",
+        secondaryLabel: "Modelo",
         secondaryValue: model || "Integral",
+        tertiaryLabel: salary ? "Remuneração" : undefined,
+        tertiaryValue: salary || undefined,
       };
     }
   }
@@ -1369,12 +1405,15 @@ export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: 
   if (niche.id === "service") {
     const duration = classified.service_duration_minutes ? `${classified.service_duration_minutes} min` : (attrs.estimated_days ? `${attrs.estimated_days} dias` : null);
     const warranty = attrs.warranty_days ? `${attrs.warranty_days} dias` : null;
+    const modality = attrs.modality ? (attrs.modality === "remoto" ? "Online" : (attrs.modality === "domicilio" ? "A Domicílio" : "Presencial")) : null;
     if (duration || warranty) {
       return {
         primaryLabel: "Prazo Médio",
         primaryValue: duration || "A Combinar",
         secondaryLabel: "Garantia",
         secondaryValue: warranty || "Garantia Waesy",
+        tertiaryLabel: modality ? "Atendimento" : undefined,
+        tertiaryValue: modality || undefined,
       };
     }
   }
@@ -1464,11 +1503,26 @@ export function getClassifiedEditorialSpecs(classified: any): ClassifiedEditoria
 
   // 1. Viagens
   if (niche.id === "travel" || classified.category === "travel" || classified.category === "viagem") {
-    if (attrs.duration_days) {
-      const nights = attrs.duration_nights ? ` / ${attrs.duration_nights}N` : "";
-      specs.push({ label: "Duração", value: `${attrs.duration_days} Dias${nights}` });
-    } else if (attrs.duration_text) {
-      specs.push({ label: "Duração", value: attrs.duration_text });
+    const hasDates = !!(attrs.departure_date || attrs.return_date || attrs.dates_text);
+    // Somente adiciona Duração aqui se NÃO houver datas (pois com datas ela já está na tríade superior de Hero Highlight)
+    if (!hasDates) {
+      if (attrs.duration_days) {
+        const nights = attrs.duration_nights ? ` / ${attrs.duration_nights}N` : "";
+        specs.push({ label: "Duração", value: `${attrs.duration_days} Dias${nights}` });
+      } else if (attrs.duration_text) {
+        specs.push({ label: "Duração", value: attrs.duration_text });
+      }
+    }
+
+    // Modalidade de Transporte
+    const transport = attrs.flight_details?.transport_type || attrs.transport_type;
+    if (transport) {
+      const transLabel = transport === "bus" || transport === "terrestre"
+        ? "Ônibus Leito / Terrestre"
+        : (transport === "airplane" || transport === "aereo"
+          ? "Aéreo Incluso"
+          : (transport === "cruise" || transport === "cruzeiro" ? "Cruzeiro Marítimo" : transport));
+      specs.push({ label: "Transporte", value: transLabel });
     }
 
     if (attrs.meal_regime_label || attrs.meal_regime) {

@@ -271,13 +271,18 @@ export function EditorialShowcaseView({
   const departureOptions: DepartureOption[] = Array.isArray(attrs.departure_options) ? attrs.departure_options : [];
   const selectedDeparture = departureOptions.find(d => (d.id || "") === selectedDepartureId) || null;
 
+  const departureCity: string =
+    attrs.departure_city ||
+    flightDetails?.departure_city ||
+    attrs.origin_city ||
+    (!hideLocation && classified?.location_name ? classified.location_name : "") ||
+    "";
+
   const destinationCity: string =
     attrs.destination_city ||
     attrs.destination ||
     flightDetails?.arrival_city ||
     flightDetails?.destination ||
-    classified?.city ||
-    (classified?.location_name ? classified.location_name.split("—")[0].trim().split("-")[0].trim() : "") ||
     "";
 
   // ── Estatísticas do Topo (Polimórficas por Nicho — Zero Fake Fallback) ──
@@ -727,28 +732,55 @@ export function EditorialShowcaseView({
             {/* Stats movidos para a coluna direita — sem pills repetitivos aqui */}
 
         {/* ── Título, Subtítulo & Bullets ── */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="space-y-2">
+          {/* Título & Localização — Apenas no Mobile (no Desktop está em destaque no card fixo à direita) */}
+          <div className="lg:hidden space-y-1">
+            {isTravel ? (
+              departureCity ? (
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-primary">
+                    <Navigation className="size-3 shrink-0" />
+                    <span>Saída:</span>
+                  </span>
+                  <span className="font-bold text-foreground">{departureCity}</span>
+                  {destinationCity && destinationCity.toLowerCase() !== departureCity.toLowerCase() && (
+                    <>
+                      <span className="text-muted-foreground/60 mx-0.5">➔</span>
+                      <span className="inline-flex items-center gap-1 text-primary">
+                        <span>Destino:</span>
+                      </span>
+                      <span className="font-bold text-foreground">{destinationCity}</span>
+                    </>
+                  )}
+                </div>
+              ) : null
+            ) : (
+              !hideLocation && classified.location_name && (
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                  <MapPin className="size-3 text-primary shrink-0" />
+                  <span>{classified.location_name}</span>
+                </p>
+              )
+            )}
             <h1 className="text-base sm:text-lg font-black text-foreground tracking-tight leading-snug">
               {classified.title || "Sem título"}
             </h1>
-            {!hideLocation && classified.location_name && (
-              <Badge variant="outline" className="text-[10px] gap-1 py-0.5 bg-muted/30">
-                <MapPin className="size-2.5 text-primary" />
-                <span>{classified.location_name}</span>
-              </Badge>
-            )}
           </div>
 
-          {/* Bullets de Diferenciais Contextuais */}
+          {/* Bullets de Diferenciais Contextuais — Visíveis em Mobile e Desktop */}
           {bioBullets.length > 0 ? (
-            <ul className="space-y-1 pt-1">
-              {bioBullets.map((bullet, idx) => (
-                <li key={idx} className="text-xs text-foreground/90 flex items-start gap-1.5 font-medium">
-                  <span>{bullet}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-1.5 pt-0.5">
+              <p className="hidden lg:block text-[11px] uppercase tracking-wider text-muted-foreground font-bold pb-0.5">
+                Destaques Inclusos
+              </p>
+              <ul className="space-y-1.5">
+                {bioBullets.map((bullet, idx) => (
+                  <li key={idx} className="text-xs text-foreground/90 flex items-start gap-2 font-medium">
+                    <span className="leading-relaxed">{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : (
             classified.content && (
               <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
@@ -780,7 +812,7 @@ export function EditorialShowcaseView({
                 </span>
               </div>
               <span className="text-[11px] text-muted-foreground truncate">
-                {advertiserCity ? `${advertiserCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante Verificado"}
+                {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante Verificado")}
               </span>
             </div>
           </div>
@@ -2082,30 +2114,56 @@ export function EditorialShowcaseView({
       <div className="hidden lg:block lg:col-span-5 lg:sticky lg:top-24 space-y-4">
         <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-5 shadow-xs">
 
-          {/* ── 1. Localização + Título ── */}
-          <div className="space-y-1.5">
-            {!hideLocation && classified.location_name && (
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-                <MapPin className="size-3 shrink-0" />
-                {classified.location_name}
-              </p>
+          {/* ── 1. Localização / Rota + Título ── */}
+          <div className="space-y-2">
+            {isTravel ? (
+              departureCity ? (
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-primary">
+                    <Navigation className="size-3 shrink-0" />
+                    <span>Saída:</span>
+                  </span>
+                  <span className="font-bold text-foreground">{departureCity}</span>
+                  {destinationCity && destinationCity.toLowerCase() !== departureCity.toLowerCase() && (
+                    <>
+                      <span className="text-muted-foreground/60 mx-0.5">➔</span>
+                      <span className="inline-flex items-center gap-1 text-primary">
+                        <span>Destino:</span>
+                      </span>
+                      <span className="font-bold text-foreground">{destinationCity}</span>
+                    </>
+                  )}
+                </div>
+              ) : null
+            ) : (
+              !hideLocation && classified.location_name && (
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                  <MapPin className="size-3 shrink-0 text-primary" />
+                  <span>{classified.location_name}</span>
+                </p>
+              )
             )}
             <h1 className="text-2xl sm:text-3xl font-black text-foreground leading-tight tracking-tight">
               {classified.title}
             </h1>
           </div>
 
-          {/* ── 2. Destaque Primário Semântico (Datas de Viagem, Horários, Specs Chave em font-black) ── */}
+          {/* ── 2. Destaque Primário Semântico (Tríade de Viagem: Saída / Retorno / Duração em 3 colunas) ── */}
           {(() => {
             const heroHighlight = getClassifiedHeroHighlight(classified, selectedDeparture);
             if (!heroHighlight) return null;
+            const gridCols = heroHighlight.tertiaryValue
+              ? "grid-cols-3"
+              : heroHighlight.secondaryValue
+              ? "grid-cols-2"
+              : "grid-cols-1";
             return (
-              <div className="flex items-start gap-8 py-3.5 border-t border-b border-border/40">
+              <div className={`grid ${gridCols} gap-3 sm:gap-4 py-3.5 border-t border-b border-border/40`}>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
                     {heroHighlight.primaryLabel}
                   </p>
-                  <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
+                  <p className="text-base sm:text-lg font-black text-foreground mt-0.5 leading-tight truncate">
                     {heroHighlight.primaryValue}
                   </p>
                 </div>
@@ -2114,8 +2172,18 @@ export function EditorialShowcaseView({
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
                       {heroHighlight.secondaryLabel}
                     </p>
-                    <p className="text-lg sm:text-xl font-black text-foreground mt-0.5 leading-tight">
+                    <p className="text-base sm:text-lg font-black text-foreground mt-0.5 leading-tight truncate">
                       {heroHighlight.secondaryValue}
+                    </p>
+                  </div>
+                )}
+                {heroHighlight.tertiaryLabel && heroHighlight.tertiaryValue && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+                      {heroHighlight.tertiaryLabel}
+                    </p>
+                    <p className="text-base sm:text-lg font-black text-foreground mt-0.5 leading-tight truncate">
+                      {heroHighlight.tertiaryValue}
                     </p>
                   </div>
                 )}
@@ -2295,7 +2363,7 @@ export function EditorialShowcaseView({
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground truncate">
-                  {advertiserCity ? `${advertiserCity} • ` : ""}{isCompany ? "Loja Oficial" : "Anunciante"}
+                  {isTravel ? (isCompany ? "Agência / Operadora Oficial" : "Organizador da Excursão") : (advertiserCity ? `${advertiserCity} • ` : "") + (isCompany ? "Loja Oficial" : "Anunciante")}
                 </span>
               </div>
             </div>
