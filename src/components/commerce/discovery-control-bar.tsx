@@ -58,6 +58,11 @@ export interface DiscoveryControlBarProps {
  // Total de itens encontrados
  resultsCount?: number;
  className?: string;
+
+ // Ordenação Opcional Desktop
+ sortOption?: string;
+ onSortChange?: (value: string) => void;
+ sortOptions?: Array<{ value: string; label: string }>;
 }
 
 export function DiscoveryControlBar({
@@ -73,6 +78,9 @@ export function DiscoveryControlBar({
  fastFilters = [],
  resultsCount,
  className = "",
+ sortOption,
+ onSortChange,
+ sortOptions,
 }: DiscoveryControlBarProps) {
   const tabsContainerRef = React.useRef<HTMLDivElement>(null);
   const activeTabRef = React.useRef<HTMLDivElement | null>(null);
@@ -143,6 +151,24 @@ export function DiscoveryControlBar({
             </kbd>
           )}
         </div>
+
+        {/* Seletor Desktop de Ordenação (Integrado em Linha Única) */}
+        {sortOptions && sortOptions.length > 0 && onSortChange && (
+          <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+            <select
+              value={sortOption}
+              onChange={(e) => onSortChange(e.target.value)}
+              className="h-10 px-3 rounded-xl bg-card border border-border text-xs font-semibold text-foreground focus:ring-1 focus:ring-primary cursor-pointer hover:border-foreground/30 transition-colors"
+              aria-label="Ordenar resultados"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Comutador de Visualização (Mesma Linha) */}
         {allowedViewModes.length > 1 && onViewModeChange && (

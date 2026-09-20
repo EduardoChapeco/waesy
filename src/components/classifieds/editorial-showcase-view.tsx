@@ -34,6 +34,7 @@ import {
   Check,
   Info,
   ExternalLink,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
   ChevronUp,
@@ -156,6 +157,37 @@ export function EditorialShowcaseView({
   const [showChatInput, setShowChatInput] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showDesktopInstallments, setShowDesktopInstallments] = useState(false);
+
+  // ── Atalhos de Teclado Desktop para Galeria & Modal Ampliado ─────────────
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+      if (images.length <= 1) return;
+
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        const nextIdx = (activeImageIndex + 1) % images.length;
+        setActiveImageIndex(nextIdx);
+        if (fullscreenImage) {
+          setFullscreenImage(images[nextIdx]);
+        }
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        const prevIdx = (activeImageIndex - 1 + images.length) % images.length;
+        setActiveImageIndex(prevIdx);
+        if (fullscreenImage) {
+          setFullscreenImage(images[prevIdx]);
+        }
+      } else if (e.key === "Escape" && fullscreenImage) {
+        setFullscreenImage(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [images, activeImageIndex, fullscreenImage]);
 
   const handleDownloadDigitalFile = async () => {
     if (!classified?.id) return;
@@ -2253,11 +2285,21 @@ export function EditorialShowcaseView({
                       {formatMoney(priceCents)}
                     </span>
                   )}
-                  {pixDiscountPercent > 0 && (
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1">
-                      -{pixDiscountPercent}% via PIX
-                    </p>
-                  )}
+                  {pixDiscountPercent > 0 && (() => {
+                    const pixPrice = Math.round(priceCents * (1 - pixDiscountPercent / 100));
+                    const pixSavings = priceCents - pixPrice;
+                    return (
+                      <div className="pt-2 border-t border-border/40 mt-1 flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">À vista no PIX:</span>
+                          <span className="text-xs font-black text-foreground font-display">{formatMoney(pixPrice)}</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                          Economize {formatMoney(pixSavings)} (-{pixDiscountPercent}%)
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </>
               ) : (
                 <span className="text-xl font-bold text-foreground">Consulte Valores</span>
@@ -2489,15 +2531,93 @@ export function EditorialShowcaseView({
         </Dialog>
       )}
 
-      {/* ── Modal de Imagem em Tela Cheia ── */}
+      {/* ── Modal de Imagem em Tela Cheia (Padrão Apple & Airbnb com Navegação Completa) ── */}
       {fullscreenImage && (
         <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
-          <DialogContent className="max-w-2xl p-2 bg-black/95 border-none">
-            <img
-              src={fullscreenImage}
-              alt="Ampliação"
-              className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
-            />
+          <DialogContent className="max-w-4xl p-0 bg-black/95 border-none overflow-hidden sm:rounded-2xl text-white select-none">
+            {/* Topbar do Modal: Contador e Botão Fechar */}
+            <div className="absolute top-3 left-3 right-3 z-50 flex items-center justify-between pointer-events-none">
+              <span className="px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md text-white text-xs font-mono font-medium border border-white/10 pointer-events-auto">
+                Foto {activeImageIndex + 1} de {images.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => setFullscreenImage(null)}
+                className="size-9 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md border border-white/10 transition-colors pointer-events-auto cursor-pointer"
+                title="Fechar (Esc)"
+                aria-label="Fechar ampliação"
+              >
+                <X className="size-4.5" />
+              </button>
+            </div>
+
+            {/* Imagem Principal Centralizada */}
+            <div className="relative w-full h-[70vh] sm:h-[80vh] flex items-center justify-center p-4">
+              <img
+                src={fullscreenImage}
+                alt={`Foto ${activeImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg animate-in fade-in duration-200"
+              />
+
+              {/* Chevrons Flutuantes de Navegação (se houver mais de 1 foto) */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const prevIdx = (activeImageIndex - 1 + images.length) % images.length;
+                      setActiveImageIndex(prevIdx);
+                      setFullscreenImage(images[prevIdx]);
+                    }}
+                    className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    title="Foto anterior (Seta esquerda)"
+                    aria-label="Foto anterior"
+                  >
+                    <ChevronLeft className="size-6" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const nextIdx = (activeImageIndex + 1) % images.length;
+                      setActiveImageIndex(nextIdx);
+                      setFullscreenImage(images[nextIdx]);
+                    }}
+                    className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md border border-white/20 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    title="Próxima foto (Seta direita)"
+                    aria-label="Próxima foto"
+                  >
+                    <ChevronRight className="size-6" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Miniaturas na Base do Modal */}
+            {images.length > 1 && (
+              <div className="p-3 bg-black/80 border-t border-white/10 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setActiveImageIndex(idx);
+                      setFullscreenImage(img);
+                    }}
+                    className={cn(
+                      "size-12 rounded-lg overflow-hidden border shrink-0 transition-all cursor-pointer",
+                      activeImageIndex === idx
+                        ? "border-primary ring-2 ring-primary scale-105 opacity-100"
+                        : "border-white/20 opacity-60 hover:opacity-90"
+                    )}
+                  >
+                    <img src={img} alt={`Miniatura ${idx + 1}`} className="size-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}

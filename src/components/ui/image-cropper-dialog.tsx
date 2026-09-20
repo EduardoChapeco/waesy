@@ -67,6 +67,35 @@ export function ImageCropperDialog({
     }
   }, [open, initialAspect, aspectRatio, cropShape]);
 
+  // Atalhos de teclado Desktop para ajuste fino milimétrico (estilo Figma/Canva)
+  React.useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const step = e.shiftKey ? 1 : 6;
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setCrop((prev) => ({ ...prev, y: prev.y - step }));
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setCrop((prev) => ({ ...prev, y: prev.y + step }));
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setCrop((prev) => ({ ...prev, x: prev.x - step }));
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setCrop((prev) => ({ ...prev, x: prev.x + step }));
+      } else if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        setZoom((prev) => Math.min(5, Number((prev + 0.1).toFixed(2))));
+      } else if (e.key === "-" || e.key === "_") {
+        e.preventDefault();
+        setZoom((prev) => Math.max(0.8, Number((prev - 0.1).toFixed(2))));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
   const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
