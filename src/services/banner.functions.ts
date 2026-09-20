@@ -59,6 +59,9 @@ export interface BannerDTO {
  show_title?: boolean;
  show_description?: boolean;
  show_overlay?: boolean;
+ show_shadow?: boolean;
+ bg_color?: string | null;
+ bg_overlay_opacity?: number | null;
  show_badge?: boolean;
  show_cta?: boolean;
 }
@@ -178,6 +181,9 @@ export const createBanner = createServerFn({ method: "POST" })
  show_title: z.boolean().optional(),
  show_description: z.boolean().optional(),
  show_overlay: z.boolean().optional(),
+ show_shadow: z.boolean().optional(),
+ bg_color: z.string().nullable().optional(),
+ bg_overlay_opacity: z.number().min(0).max(100).optional(),
  show_badge: z.boolean().optional(),
  show_cta: z.boolean().optional(),
  }),
@@ -243,6 +249,9 @@ export const updateBanner = createServerFn({ method: "POST" })
  show_title: z.boolean().optional(),
  show_description: z.boolean().optional(),
  show_overlay: z.boolean().optional(),
+ show_shadow: z.boolean().optional(),
+ bg_color: z.string().nullable().optional(),
+ bg_overlay_opacity: z.number().min(0).max(100).optional(),
  show_badge: z.boolean().optional(),
  show_cta: z.boolean().optional(),
  }),

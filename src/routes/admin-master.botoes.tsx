@@ -117,9 +117,13 @@ function AdminMasterHotpagesPage() {
  const [templateType, setTemplateType] = useState<HotpageTemplateType>("hero_module");
  const [module, setModule] = useState<HotpageModule>("home");
  const [sortOrder, setSortOrder] = useState(0);
- const [showTitle, setShowTitle] = useState(false);
+ const [showTitle, setShowTitle] = useState(true);
  const [showBadge, setShowBadge] = useState(false);
  const [showOverlay, setShowOverlay] = useState(false);
+ const [showShadow, setShowShadow] = useState(false);
+ const [bgOverlayOpacity, setBgOverlayOpacity] = useState(30);
+ const [bgColor, setBgColor] = useState("#000000");
+ const [textColor, setTextColor] = useState("");
  const [isActive, setIsActive] = useState(true);
 
  // Filtra hotpages de acordo com a aba ativa
@@ -162,19 +166,21 @@ function AdminMasterHotpagesPage() {
  setTemplateType(forTab);
  setModule(forTab === "hero_module" ? "home" : selectedModuleTab === "all" ? "home" : selectedModuleTab);
  setSortOrder(0);
- // Defaults por aba
- if (forTab === "hero_module") {
- setShowTitle(false);
- setShowBadge(false);
+ // Defaults por aba — Zero sombra e overlay por padrão
+ setShowShadow(false);
  setShowOverlay(false);
+ setBgOverlayOpacity(30);
+ setBgColor("#000000");
+ setTextColor("");
+ if (forTab === "hero_module") {
+ setShowTitle(true);
+ setShowBadge(false);
  } else if (forTab === "category_hub") {
  setShowTitle(true);
  setShowBadge(false);
- setShowOverlay(false);
  } else {
  setShowTitle(true);
  setShowBadge(true);
- setShowOverlay(true);
  }
  setIsActive(true);
  };
@@ -199,9 +205,13 @@ function AdminMasterHotpagesPage() {
  setTemplateType(item.template_type || activeMainTab);
  setModule(item.module || "home");
  setSortOrder(item.sort_order || 0);
- setShowTitle(item.show_title === true);
+ setShowTitle(item.show_title !== false);
  setShowBadge(item.show_badge === true);
  setShowOverlay(item.show_overlay === true);
+ setShowShadow(item.show_shadow === true);
+ setBgOverlayOpacity(typeof item.bg_overlay_opacity === "number" ? item.bg_overlay_opacity : 30);
+ setBgColor(item.bg_color || "#000000");
+ setTextColor((item as any).text_color || "");
  setIsActive(item.is_active !== false);
  setIsSheetOpen(true);
  };
@@ -235,6 +245,10 @@ function AdminMasterHotpagesPage() {
  show_title: showTitle,
  show_badge: showBadge,
  show_overlay: showOverlay,
+ show_shadow: showShadow,
+ bg_overlay_opacity: bgOverlayOpacity,
+ bg_color: bgColor || null,
+ text_color: textColor || null,
  is_active: isActive,
  },
  });
@@ -257,6 +271,9 @@ function AdminMasterHotpagesPage() {
  show_title: showTitle,
  show_badge: showBadge,
  show_overlay: showOverlay,
+ show_shadow: showShadow,
+ bg_overlay_opacity: bgOverlayOpacity,
+ bg_color: bgColor,
  is_active: isActive,
  }
  : h
@@ -282,6 +299,10 @@ function AdminMasterHotpagesPage() {
  show_title: showTitle,
  show_badge: showBadge,
  show_overlay: showOverlay,
+ show_shadow: showShadow,
+ bg_overlay_opacity: bgOverlayOpacity,
+ bg_color: bgColor || undefined,
+ text_color: textColor || undefined,
  },
  });
 
@@ -626,12 +647,15 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => {
  const showTitleOnCard = item.show_title !== false;
  const showBadgeOnCard = item.show_badge !== false && (!!item.badge_label || !!item.hero_stat_badge);
- const showOverlayOnCard = item.show_overlay !== false;
+ const showOverlayOnCard = item.show_overlay === true;
+ const showShadowOnCard = item.show_shadow === true;
+ const overlayColor = item.bg_color || "#000000";
+ const overlayOpacity = typeof item.bg_overlay_opacity === "number" ? item.bg_overlay_opacity : 30;
 
  return (
  <div
  key={item.id}
- className="group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 shadow-xs hover:border-foreground/30 hover:shadow-md"
+ className={`group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-md hover:shadow-xl" : "shadow-xs"}`}
  >
  {item.cover_image_url ? (
  <img
@@ -647,7 +671,12 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showOverlayOnCard && (
- <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent" />
+ <div
+ className="absolute inset-0 pointer-events-none"
+ style={{
+ background: `linear-gradient(to top, ${overlayColor}${Math.round(overlayOpacity * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
+ }}
+ />
  )}
 
  <div className="relative z-10 p-3 space-y-1.5 text-left w-full">
@@ -747,7 +776,7 @@ function AdminMasterHotpagesPage() {
  </div>
  </div>
  ) : (
- <div className="relative aspect-16/9 rounded-xl overflow-hidden bg-card border border-border/80 shadow-xs">
+ <div className={`relative aspect-16/9 rounded-xl overflow-hidden bg-card border border-border/80 ${showShadow ? "shadow-md" : "shadow-xs"}`}>
  {coverImageUrl ? (
  <img src={coverImageUrl} alt="Preview Capa" className="size-full object-cover" />
  ) : (
@@ -757,7 +786,12 @@ function AdminMasterHotpagesPage() {
  )}
 
  {showOverlay && (
- <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
+ <div
+ className="absolute inset-0 pointer-events-none"
+ style={{
+ background: `linear-gradient(to top, ${bgColor || "#000000"}${Math.round(bgOverlayOpacity * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
+ }}
+ />
  )}
 
  {showBadge && (badgeLabel || heroStatBadge) && (
@@ -945,23 +979,119 @@ function AdminMasterHotpagesPage() {
  </span>
 
  <div className="space-y-2.5">
- {templateType !== "hero_module" && (
+ {/* Título: disponível para todos os tipos */}
  <div className="flex items-center justify-between">
  <div>
  <p className="text-xs font-bold text-foreground">Exibir Título no Card</p>
- <p className="text-[10px] text-muted-foreground">Mostra texto sobreposto</p>
+ <p className="text-[10px] text-muted-foreground">Mostra o nome sobre a imagem</p>
  </div>
  <Switch checked={showTitle} onCheckedChange={setShowTitle} />
  </div>
- )}
 
- {templateType === "editorial_card" && (
+ {/* Sombra Externa: para todos os tipos */}
  <div className="flex items-center justify-between border-t border-border/40 pt-2">
  <div>
- <p className="text-xs font-bold text-foreground">Degradê Escuro (Overlay)</p>
- <p className="text-[10px] text-muted-foreground">Legibilidade para textos</p>
+ <p className="text-xs font-bold text-foreground">Sombra Externa do Card</p>
+ <p className="text-[10px] text-muted-foreground">Box shadow elevada — desativada por padrão</p>
+ </div>
+ <Switch checked={showShadow} onCheckedChange={setShowShadow} />
+ </div>
+
+ {/* Overlay: disponível para todos os tipos */}
+ <div className="flex items-center justify-between border-t border-border/40 pt-2">
+ <div>
+ <p className="text-xs font-bold text-foreground">Overlay sobre a Imagem</p>
+ <p className="text-[10px] text-muted-foreground">Degradê de contraste — desativado por padrão</p>
  </div>
  <Switch checked={showOverlay} onCheckedChange={setShowOverlay} />
+ </div>
+
+ {/* Controles de Overlay (visíveis somente quando overlay ativado) */}
+ {showOverlay && (
+ <div className="pl-2 border-l-2 border-primary/30 space-y-3 mt-1">
+ <div className="space-y-1.5">
+ <div className="flex items-center justify-between">
+ <Label className="text-[11px] font-bold text-muted-foreground">Opacidade do Overlay</Label>
+ <span className="text-[11px] font-mono text-primary font-bold">{bgOverlayOpacity}%</span>
+ </div>
+ <input
+ type="range"
+ min={0}
+ max={100}
+ step={5}
+ value={bgOverlayOpacity}
+ onChange={(e) => setBgOverlayOpacity(Number(e.target.value))}
+ className="w-full h-2 rounded-full bg-muted accent-primary cursor-pointer"
+ />
+ <div className="flex justify-between text-[9px] text-muted-foreground/70 font-mono">
+ <span>0% (Transparente)</span>
+ <span>100% (Opaco)</span>
+ </div>
+ </div>
+
+ <div className="space-y-1.5">
+ <Label className="text-[11px] font-bold text-muted-foreground">Cor do Overlay</Label>
+ <div className="flex items-center gap-2">
+ <input
+ type="color"
+ value={bgColor}
+ onChange={(e) => setBgColor(e.target.value)}
+ className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+ title="Escolher cor do overlay"
+ />
+ <Input
+ value={bgColor}
+ onChange={(e) => setBgColor(e.target.value)}
+ placeholder="#000000"
+ className="h-8 rounded-xl bg-card text-xs font-mono flex-1"
+ maxLength={7}
+ />
+ {/* Paleta rápida */}
+ <div className="flex gap-1">
+ {["#000000", "#1a1a2e", "#0f3460", "#ffffff"].map((c) => (
+ <button
+ key={c}
+ type="button"
+ onClick={() => setBgColor(c)}
+ className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0"
+ style={{ backgroundColor: c }}
+ title={c}
+ />
+ ))}
+ </div>
+ </div>
+ </div>
+ </div>
+ )}
+
+ {/* Cor do Texto (quando não há overlay) */}
+ {!showOverlay && showTitle && (
+ <div className="space-y-1.5 border-t border-border/40 pt-2">
+ <Label className="text-[11px] font-bold text-muted-foreground">Cor do Título</Label>
+ <div className="flex items-center gap-2">
+ <input
+ type="color"
+ value={textColor || "#111827"}
+ onChange={(e) => setTextColor(e.target.value)}
+ className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+ title="Cor do título"
+ />
+ <Input
+ value={textColor}
+ onChange={(e) => setTextColor(e.target.value)}
+ placeholder="Padrão do tema"
+ className="h-8 rounded-xl bg-card text-xs font-mono flex-1"
+ />
+ {textColor && (
+ <button
+ type="button"
+ onClick={() => setTextColor("")}
+ className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+ >
+ Limpar
+ </button>
+ )}
+ </div>
  </div>
  )}
 

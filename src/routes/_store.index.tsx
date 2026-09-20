@@ -234,6 +234,13 @@ function CommunityHomePage() {
         coverUrl,
         title,
         to,
+        // Configurações visuais persistidas no banco — Zero sombra por padrão
+        showOverlay: match?.show_overlay === true,
+        showShadow: match?.show_shadow === true,
+        bgOverlayOpacity: typeof match?.bg_overlay_opacity === "number" ? match.bg_overlay_opacity : 30,
+        bgColor: match?.bg_color || "#000000",
+        showTitle: match?.show_title !== false,
+        textColor: match?.text_color || null,
       };
     });
   }, [heroCards]);
@@ -513,11 +520,11 @@ function CommunityHomePage() {
             <Link
               key={card.slug}
               to={card.to as any}
-              className="min-w-[190px] sm:min-w-[215px] md:min-w-[235px] max-w-[250px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[2/1] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-[0.98]"
+              className={`min-w-[190px] sm:min-w-[215px] md:min-w-[235px] max-w-[250px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[2/1] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 transition-all duration-300 active:scale-[0.98] ${(card as any).showShadow ? "shadow-md hover:shadow-xl" : "shadow-none"}`}
             >
-              {card.coverUrl ? (
+              {(card as any).coverUrl ? (
                 <img
-                  src={card.coverUrl}
+                  src={(card as any).coverUrl}
                   alt={card.title}
                   className="absolute inset-0 size-full object-cover group-hover:scale-105 transition-transform duration-500"
                   loading="eager"
@@ -526,19 +533,40 @@ function CommunityHomePage() {
                 <div className="absolute inset-0 size-full bg-gradient-to-br from-neutral-800 to-neutral-950" />
               )}
 
-              {/* Degradê sutil para legibilidade impecável */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+              {/* Overlay configurável — Zero por padrão, somente se ativado no Admin */}
+              {(card as any).showOverlay && (
+                <div
+                  className="absolute inset-0 bg-gradient-to-t to-transparent pointer-events-none"
+                  style={{
+                    background: `linear-gradient(to top, ${
+                      (card as any).bgColor || "#000000"
+                    }${Math.round(((card as any).bgOverlayOpacity ?? 30) * 2.55).toString(16).padStart(2, "0")} 0%, transparent 60%)`,
+                  }}
+                />
+              )}
 
-              {/* Identificação do Card */}
-              <div className="relative z-10 p-2.5 sm:p-3 w-full">
-                {card.isPlacesBadge ? (
-                  <PlacesHighlightBadge className="text-white text-xs font-bold drop-shadow-sm" />
-                ) : (
-                  <h2 className="text-xs font-bold text-white leading-tight drop-shadow-sm truncate">
-                    {card.title}
-                  </h2>
-                )}
-              </div>
+              {/* Identificação do Card — visível somente se show_title não está desativado */}
+              {(card as any).showTitle !== false && (
+                <div className="relative z-10 p-2.5 sm:p-3 w-full">
+                  {(card as any).isPlacesBadge ? (
+                    <PlacesHighlightBadge
+                      className={`text-xs font-bold drop-shadow-sm ${
+                        (card as any).showOverlay ? "text-white" : (card as any).textColor ? "" : "text-foreground"
+                      }`}
+                      style={(card as any).textColor && !(card as any).showOverlay ? { color: (card as any).textColor } : undefined}
+                    />
+                  ) : (
+                    <h2
+                      className={`text-xs font-bold leading-tight drop-shadow-sm truncate backdrop-blur-[2px] ${
+                        (card as any).showOverlay ? "text-white" : (card as any).textColor ? "" : "text-foreground"
+                      }`}
+                      style={(card as any).textColor && !(card as any).showOverlay ? { color: (card as any).textColor } : undefined}
+                    >
+                      {card.title}
+                    </h2>
+                  )}
+                </div>
+              )}
             </Link>
           ))}
         </HorizontalRail>

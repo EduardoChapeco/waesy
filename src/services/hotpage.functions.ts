@@ -118,6 +118,8 @@ export interface HotpageDTO {
  hero_secondary_badge?: string | null;
  hero_floating_render_url?: string | null;
  featured_rail_title?: string | null;
+ show_shadow?: boolean;
+ text_color?: string | null;
 }
 
 export const listHotpages = createServerFn({ method: "GET" })
@@ -168,8 +170,12 @@ export const listHotpages = createServerFn({ method: "GET" })
  ...h,
  show_title: h.show_title !== false,
  show_description: h.show_description !== false,
- show_overlay: h.show_overlay !== false,
+ show_overlay: h.show_overlay === true,
+ show_shadow: h.show_shadow === true,
  show_badge: h.show_badge !== false,
+ bg_overlay_opacity: typeof h.bg_overlay_opacity === "number" ? h.bg_overlay_opacity : 30,
+ bg_color: h.bg_color || "#000000",
+ text_color: h.text_color || null,
  })) as HotpageDTO[];
  });
 
@@ -190,10 +196,14 @@ export const listHomeHeroCards = createServerFn({ method: "GET" }).handler(
 
  return (rows || []).map((h: any) => ({
  ...h,
- show_title: h.show_title ?? false,
+ show_title: h.show_title ?? true,
  show_description: h.show_description ?? false,
- show_overlay: h.show_overlay ?? false,
+ show_overlay: h.show_overlay === true,
+ show_shadow: h.show_shadow === true,
  show_badge: h.show_badge ?? false,
+ bg_overlay_opacity: typeof h.bg_overlay_opacity === "number" ? h.bg_overlay_opacity : 30,
+ bg_color: h.bg_color || "#000000",
+ text_color: h.text_color || null,
  })) as HotpageDTO[];
  }
 );
@@ -376,8 +386,10 @@ export const createHotpage = createServerFn({ method: "POST" })
  sort_order: z.number().int().default(0),
  show_title: z.boolean().default(true),
  show_description: z.boolean().default(true),
- show_overlay: z.boolean().default(true),
+ show_overlay: z.boolean().default(false),
+ show_shadow: z.boolean().default(false),
  show_badge: z.boolean().default(true),
+ text_color: z.string().nullable().optional(),
  }),
  )
  .handler(async ({ data }) => {
@@ -409,7 +421,9 @@ export const createHotpage = createServerFn({ method: "POST" })
  show_title: data.show_title,
  show_description: data.show_description,
  show_overlay: data.show_overlay,
+ show_shadow: data.show_shadow,
  show_badge: data.show_badge,
+ text_color: data.text_color || null,
  is_active: true,
  })
  .select()
@@ -457,7 +471,9 @@ export const updateHotpage = createServerFn({ method: "POST" })
  show_title: z.boolean().optional(),
  show_description: z.boolean().optional(),
  show_overlay: z.boolean().optional(),
+ show_shadow: z.boolean().optional(),
  show_badge: z.boolean().optional(),
+ text_color: z.string().nullable().optional(),
  is_active: z.boolean().optional(),
  }),
  )
