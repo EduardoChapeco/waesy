@@ -50,6 +50,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
+import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import { ProductTelemetry } from "@/components/commerce/product-telemetry";
 import { AiSdrChat } from "@/components/commerce/ai-sdr-chat";
 import { Input } from "@/components/ui/input";
@@ -308,6 +309,12 @@ function ClassifiedDetailPage() {
  const navigate = useNavigate();
  const queryClient = useQueryClient();
  const { classified, isOwner, canManage, viewerContext, currentProfile } = ((Route.useLoaderData?.() as any) || {});
+
+  const effectiveIsOwner = Boolean(
+    isOwner ||
+    canManage ||
+    (currentProfile?.id && classified?.author_profile_id === currentProfile.id)
+  );
 
  const [activeImage, setActiveImage] = useState(0);
  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
@@ -1348,6 +1355,48 @@ const handleDownloadDigitalFile = async () => {
     </Dialog>
   );
 
+  const isConvenienceProduct = Boolean(
+    classified?.attributes?.template_style === "conveniencia" ||
+    classified?.category === "mercado" ||
+    classified?.attributes?.niche === "mercado" ||
+    classified?.category === "food" ||
+    classified?.attributes?.niche === "gastronomia" ||
+    (classified?.title && /drink|whisky|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo/i.test(classified.title))
+  );
+
+  if (isConvenienceProduct) {
+    return (
+      <>
+        <ProductTelemetry
+          storeId={classified?.store_id || classified?.storeId}
+          productId={classified?.id}
+          title={classified?.title || "Produto de Conveniência"}
+          description={classified?.content}
+          priceCents={classified?.price_cents || 0}
+          currency="BRL"
+          imageUrl={classified?.images?.[0]}
+          brandName={classified?.store_name || "Comunidade Waesy"}
+          categoryName="Conveniência"
+          sku={classified?.id}
+          inStock={classified?.status === "active"}
+        />
+        <ConvenienceShowcaseView
+          classified={classified}
+          isOwner={effectiveIsOwner}
+          onEdit={() =>
+            navigate({
+              to: "/conta/classificados/novo",
+              search: { editId: classified.id } as any,
+            })
+          }
+        />
+        {classified?.ai_agent_enabled && (
+          <AiSdrChat classifiedId={classified.id} storeName={classified.store_name} />
+        )}
+      </>
+    );
+  }
+
   if (
     niche.id === "travel" ||
     classified?.category === "travel" ||
@@ -1373,7 +1422,7 @@ const handleDownloadDigitalFile = async () => {
         />
         <EditorialShowcaseView
           classified={classified}
-          isOwner={isOwner}
+          isOwner={effectiveIsOwner}
           onOpenBookingModal={(dep) => {
             if (dep) setSelectedDeparture(dep);
             setBookingOpen(true);
@@ -1412,8 +1461,8 @@ const handleDownloadDigitalFile = async () => {
       />
       <UniversalClassifiedShowcase
         classified={classified}
-        isOwner={isOwner}
-        canManage={canManage}
+        isOwner={effectiveIsOwner}
+        canManage={effectiveIsOwner || canManage}
         viewerContext={viewerContext}
         currentProfile={currentProfile}
         onOpenBookingModal={(dep) => {

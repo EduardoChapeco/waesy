@@ -774,10 +774,51 @@ export function UniversalClassifiedShowcase({
     };
   }, [isDonation, isInvestmentOpportunity, isBusiness, niche, classified, onOpenBookingModal, onOpenProposalModal, onDirectBuy, onDownloadDigital, isBuyingDirect, isDownloadingDigital, priceCents]);
 
-  const locationText = classified?.address || [classified?.neighborhood, classified?.city, classified?.state].filter(Boolean).join(", ") || "Localização sob consulta";
+  const isPrivacyHidden = Boolean(
+    classified?.hide_location ||
+    classified?.attributes?.hide_location ||
+    classified?.attributes?.hide_address ||
+    classified?.attributes?.location_privacy === "hidden"
+  );
+
+  const locationText = isPrivacyHidden
+    ? "Localização preservada a pedido do anunciante"
+    : (
+        classified?.address ||
+        classified?.location_name ||
+        classified?.location_text ||
+        classified?.attributes?.location_name ||
+        [
+          classified?.neighborhood || classified?.attributes?.neighborhood,
+          classified?.city || classified?.attributes?.city,
+          classified?.state || classified?.attributes?.state,
+        ].filter(Boolean).join(", ") ||
+        "Localização sob consulta"
+      );
 
   return (
     <div className="w-full min-h-screen bg-background text-foreground pb-20 lg:pb-12">
+      {/* ── Banner de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
+      {isOwner && (
+        <div className="w-full bg-amber-500/10 border-b border-amber-500/25 py-2.5 px-4 sm:px-6 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+            <span className="font-semibold">Modo Proprietário · Você é o anunciante desta publicação</span>
+          </div>
+          {onEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onEdit}
+              className="h-7 text-xs gap-1.5 rounded-lg border-amber-500/40 bg-background/90 hover:bg-amber-500/20 text-foreground cursor-pointer font-bold shrink-0"
+            >
+              <Edit3 className="size-3" />
+              <span>Editar Anúncio</span>
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* ── Top Bar Minimalista (Voltar + Ações) ── */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-3">
         <Button
@@ -1898,7 +1939,9 @@ export function UniversalClassifiedShowcase({
                         <div>
                           <p className="font-bold text-foreground">Cartão de Crédito</p>
                           <p className="text-[11px] text-muted-foreground">
-                            Até <strong>{maxInstallments}x</strong> {installmentCents > 0 ? `de ${formatMoney(installmentCents)}` : ""} {cardInterestFree ? "(sem juros)" : ""}
+                            {maxInstallments === 1
+                              ? "Pagamento à vista"
+                              : `Até ${maxInstallments}x ${installmentCents > 0 ? `de ${formatMoney(installmentCents)}` : ""} ${cardInterestFree ? "(sem juros)" : ""}`}
                           </p>
                         </div>
                       </div>
@@ -2087,7 +2130,7 @@ export function UniversalClassifiedShowcase({
                       {acceptsCard && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300">
                           <CreditCard className="size-3 text-blue-600" />
-                          Cartão até {maxInstallments}x
+                          {maxInstallments === 1 ? "Cartão à vista" : `Cartão até ${maxInstallments}x`}
                         </span>
                       )}
                       {acceptsBoleto && (
@@ -2230,6 +2273,19 @@ export function UniversalClassifiedShowcase({
                     </div>
                   </div>
                 )}
+
+                {/* Botão de Edição Rápida para o Dono do Anúncio */}
+                {isOwner && onEdit && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onEdit}
+                    className="w-full h-11 rounded-xl text-xs font-bold border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                  >
+                    <Edit3 className="size-4 text-amber-600" />
+                    <span>Editar Anúncio no CMS</span>
+                  </Button>
+                )}
               </div>
 
               {/* Microcopy de Confiança (Estilo Airbnb) */}
@@ -2289,6 +2345,18 @@ export function UniversalClassifiedShowcase({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {isOwner && onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="h-11 px-3 rounded-xl border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Edit3 className="size-3.5 text-amber-600" />
+              <span>Editar</span>
+            </Button>
+          )}
+
           {(classified?.contact_whatsapp || classified?.whatsapp) && (
             <Button
               variant="outline"

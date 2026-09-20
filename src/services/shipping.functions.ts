@@ -254,15 +254,40 @@ export async function _calculateShipping({
 
       const alreadyHasMoto = finalQuotes.some((q) => (q.service_name || "").toLowerCase().includes("motolink"));
       if (!alreadyHasMoto) {
+        // Cálculo real de tempo: Tempo de Preparo/Separação da Loja + Deslocamento local
+        const prepMinutes = Number(settings.prep_time_minutes || settings.preparation_time_minutes || 0);
+        const serviceDisplayName = payload.service_name || "MotoLink Express (Entrega Local)";
+        const allowScheduling = Boolean(
+          settings.allow_scheduled_delivery ||
+          storeType === "market" ||
+          storeType === "supermarket" ||
+          storeType === "pharmacy"
+        );
+
+        let timelineDesc = "Entrega local sob demanda · Despacho após confirmação";
+        if (prepMinutes > 0) {
+          timelineDesc = `Separação (~${prepMinutes} min) + deslocamento do entregador`;
+        }
+
         finalQuotes.push({
           id: "motolink-express",
-          name: "MotoLink Express · 35-50 min",
+          name: serviceDisplayName,
           provider: "MotoLink Express",
-          service_name: "MotoLink Express · 35-50 min",
+          service_name: serviceDisplayName,
           price_cents: finalPriceCents,
           estimated_days: 0,
+          description: timelineDesc,
           surge_applied: isPeakHour,
-          notice: isPeakHour ? "Tarifa dinâmica por alta demanda local" : undefined,
+          notice: isPeakHour ? "Tarifa dinâmica temporária por alta demanda local" : undefined,
+          allow_scheduling: allowScheduling,
+          scheduled_windows: allowScheduling
+            ? [
+                { id: "today-morning", label: "Hoje (09h às 12h)" },
+                { id: "today-afternoon", label: "Hoje (14h às 18h)" },
+                { id: "tomorrow-morning", label: "Amanhã (09h às 12h)" },
+                { id: "tomorrow-afternoon", label: "Amanhã (14h às 18h)" },
+              ]
+            : undefined,
         });
       }
     }

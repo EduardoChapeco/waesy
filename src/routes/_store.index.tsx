@@ -198,6 +198,18 @@ export const Route = createFileRoute("/_store/")({
 });
 
 function CommunityHomePage() {
+  const data = (Route.useLoaderData?.() as any) || {};
+  const routeSearch = (Route.useSearch?.() as any) || {};
+  const isMarketplace = routeSearch.view === "marketplace" || routeSearch.view === "vitrine";
+
+  if (!isMarketplace) {
+    return <LaunchHomeView initialSettings={data.launchSettings || null} />;
+  }
+
+  return <CommunityMarketplaceView data={data} />;
+}
+
+function CommunityMarketplaceView({ data }: { data: any }) {
   const {
     banners = [],
     middleBanners = [],
@@ -210,17 +222,7 @@ function CommunityHomePage() {
     newsArticles = [],
     feedPosts = [],
     concursos = [],
-  } = ((Route.useLoaderData?.() as any) || {});
-
-  // Roteamento temporário: por padrão a raiz / exibe a landing page de lançamento (Circuito 2027)
-  // com botão de login. A vitrine comunitária completa permanece 100% preservada e acessível
-  // via URL /explorar ou adicionando ?view=marketplace.
-  const routeSearch = ((Route.useSearch?.() as any) || {});
-  const isMarketplace = routeSearch.view === "marketplace" || routeSearch.view === "vitrine";
-
-  if (!isMarketplace) {
-    return <LaunchHomeView initialSettings={launchSettings} />;
-  }
+  } = (data || {});
 
   // Estado dos 3 Modos Canônicos de Visualização (Feed, Grid, List) e Filtros
   const [search, setSearch] = useState("");

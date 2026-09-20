@@ -8,6 +8,7 @@ import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
+import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
@@ -1288,6 +1289,24 @@ function SpecializedClassifiedEditor({
   const [acceptsTrade, setAcceptsTrade] = useState(false);
   const [cancellationPolicy, setCancellationPolicy] = useState<"flexible" | "moderate" | "strict" | "negotiable">("flexible");
 
+  // ── Modo Conveniência & Fast Delivery (Bebidas, Mercado, Lanches) ──
+  const [convenienceVolume, setConvenienceVolume] = useState<string>(initialData?.attributes?.volume || "");
+  const [convenienceTemp, setConvenienceTemp] = useState<"gelada" | "ambiente" | "congelado" | "fresco" | "none">(
+    initialData?.attributes?.temperature || "gelada"
+  );
+  const [isAlcoholic, setIsAlcoholic] = useState<boolean>(
+    initialData?.attributes?.is_alcoholic ?? (niche.id === "mercado")
+  );
+  const [convenienceBrand, setConvenienceBrand] = useState<string>(
+    initialData?.attributes?.brand || ""
+  );
+  const [deliveryEstimateText, setDeliveryEstimateText] = useState<string>(
+    initialData?.attributes?.delivery_estimate || "35-50 min (MotoLink Express)"
+  );
+  const [readyDelivery, setReadyDelivery] = useState<boolean>(
+    initialData?.attributes?.ready_delivery ?? true
+  );
+
   // Computadores Canônicos
   const [computerType, setComputerType] = useState("");
   const [computerBrand, setComputerBrand] = useState("");
@@ -1610,12 +1629,20 @@ function SpecializedClassifiedEditor({
     if (initialData.price_cents !== undefined) setPriceCents(initialData.price_cents ?? undefined);
     if (initialData.negotiable !== undefined) setNegotiable(initialData.negotiable);
     if (initialData.location_name || initialData.location_text) setLocationName(initialData.location_name || initialData.location_text);
+    if (initialData.delivery_mode) setDeliveryMode(initialData.delivery_mode as any);
+    if (initialData.attributes?.delivery_mode) setDeliveryMode(initialData.attributes.delivery_mode as any);
     if (initialData.attributes?.hide_location !== undefined) setHideLocation(!!initialData.attributes.hide_location);
     if (initialData.contact_whatsapp || initialData.whatsapp) setWhatsapp(initialData.contact_whatsapp || initialData.whatsapp);
     if (Array.isArray(initialData.images)) setImages(initialData.images);
 
     if (initialData.attributes) {
-      if (initialData.attributes.template_style) setTemplateStyle(initialData.attributes.template_style === "editorial" || initialData.attributes.template_style === "instagram" ? "editorial" : "standard");
+      if (initialData.attributes.template_style) setTemplateStyle(initialData.attributes.template_style === "editorial" || initialData.attributes.template_style === "instagram" ? "editorial" : initialData.attributes.template_style === "conveniencia" ? "conveniencia" : "standard");
+      if (initialData.attributes.volume) setConvenienceVolume(initialData.attributes.volume);
+      if (initialData.attributes.temperature) setConvenienceTemp(initialData.attributes.temperature);
+      if (initialData.attributes.is_alcoholic !== undefined) setIsAlcoholic(!!initialData.attributes.is_alcoholic);
+      if (initialData.attributes.brand) setConvenienceBrand(initialData.attributes.brand);
+      if (initialData.attributes.delivery_estimate) setDeliveryEstimateText(initialData.attributes.delivery_estimate);
+      if (initialData.attributes.ready_delivery !== undefined) setReadyDelivery(!!initialData.attributes.ready_delivery);
       if (initialData.attributes.pricing_type) setPricingType(initialData.attributes.pricing_type);
       if (initialData.attributes.price_min_cents !== undefined) setPriceMinCents(initialData.attributes.price_min_cents);
       if (initialData.attributes.price_max_cents !== undefined) setPriceMaxCents(initialData.attributes.price_max_cents);
@@ -6652,704 +6679,490 @@ function SpecializedClassifiedEditor({
                 </div>
               )}
 
-              {/* Formas de Pagamento (8 Cartões Táteis Apple HIG >= 48px com Títulos Simples e Diretos) */}
+              {/* Formas de Pagamento (LISTA ESTRUTURADA ESPAÇOSA - ZERO TRUNCATION - 1x = À VISTA) */}
               <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <CreditCard className="size-4 text-primary shrink-0" />
-                    <span>Formas de Pagamento</span>
+                    <span>Formas de Pagamento Aceitas</span>
                   </div>
+                  <span className="text-[10px] text-muted-foreground font-mono">Ative as opções aceitas</span>
                 </div>
 
-                <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-foreground tracking-tight">Formas aceitas</Label>
-                    <span className="text-[10px] text-muted-foreground font-mono">Toque para ativar</span>
-                  </div>
+                {/* Lista Vertical Espaçosa e Descomplicada */}
+                <div className="space-y-3">
 
-                  {/* 8 Cartões Táteis Interativos — Ergonomia de Toque >= 58px */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                    {/* 1. Pix */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsPix
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsPix(!acceptsPix)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsPix(!acceptsPix); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsPix ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <QrCode className="size-3.5" />
-                          </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsPix ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Pix
+                  {/* 1. Pix */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    acceptsPix
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsPix ? "bg-emerald-600 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <QrCode className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Pix (Pagamento Instantâneo)</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            {pixDiscountPercent > 0
+                              ? `${pixDiscountPercent}% de desconto à vista imediato`
+                              : "Pagamento à vista com confirmação em segundos"}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={acceptsPix}
+                        onCheckedChange={setAcceptsPix}
+                        aria-label="Aceitar Pix"
+                      />
+                    </div>
+
+                    {acceptsPix && (
+                      <div className="pt-2 border-t border-border/40 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                            <BadgePercent className="size-3.5 text-emerald-600" />
+                            <span>Desconto no Pix à Vista</span>
+                          </Label>
+                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                            {pixDiscountPercent}% OFF
                           </span>
                         </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsPix ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsPix && <Check className="size-2.5 stroke-[3]" />}
+                        <input
+                          type="range"
+                          min={0}
+                          max={30}
+                          step={1}
+                          value={pixDiscountPercent}
+                          onChange={(e) => setPixDiscountPercent(Math.min(30, Math.max(0, Number(e.target.value) || 0)))}
+                          className="w-full h-2 rounded-full accent-emerald-600 cursor-pointer"
+                          aria-label="Desconto no Pix"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                          <span>0% (Sem desconto)</span>
+                          <span>10%</span>
+                          <span>20%</span>
+                          <span>30%</span>
                         </div>
-                      </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsPix ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsPix ? (pixDiscountPercent > 0 ? `${pixDiscountPercent}% off` : "À vista") : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 2. Cartão de Crédito */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsCard
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsCard(!acceptsCard)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsCard(!acceptsCard); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsCard ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <CreditCard className="size-3.5" />
+                        {pixDiscountPercent > 0 && priceCents && priceCents > 0 && (
+                          <div className="pt-1 flex items-center justify-between text-xs font-medium">
+                            <span className="text-muted-foreground">Economia: {formatMoney(Math.round(priceCents * (pixDiscountPercent / 100)))}</span>
+                            <span className="font-bold text-emerald-600">Sai por: {formatMoney(Math.round(priceCents * (1 - pixDiscountPercent / 100)))}</span>
                           </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsCard ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Cartão de Crédito
-                          </span>
-                        </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsCard ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsCard && <Check className="size-2.5 stroke-[3]" />}
-                        </div>
+                        )}
                       </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsCard ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsCard ? (cardInterestFree ? `Até ${maxInstallments}x s/ juros` : `Até ${maxInstallments}x`) : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 3. Boleto */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsBoleto
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsBoleto(!acceptsBoleto)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsBoleto(!acceptsBoleto); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsBoleto ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <Receipt className="size-3.5" />
-                          </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsBoleto ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Boleto
-                          </span>
-                        </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsBoleto ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsBoleto && <Check className="size-2.5 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsBoleto ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsBoleto ? `Vence em ${boletoDueDays}d` : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 4. Boleto Parcelado */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsBoletoInstallments
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsBoletoInstallments(!acceptsBoletoInstallments)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsBoletoInstallments(!acceptsBoletoInstallments); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsBoletoInstallments ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <FileSpreadsheet className="size-3.5" />
-                          </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsBoletoInstallments ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Boleto Parcelado
-                          </span>
-                        </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsBoletoInstallments ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsBoletoInstallments && <Check className="size-2.5 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsBoletoInstallments ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsBoletoInstallments ? `Até ${maxBoletoInstallments}x` : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 5. Carnê Digital */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsCarne
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsCarne(!acceptsCarne)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsCarne(!acceptsCarne); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsCarne ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <BookOpenCheck className="size-3.5" />
-                          </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsCarne ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Carnê Digital
-                          </span>
-                        </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsCarne ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsCarne && <Check className="size-2.5 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsCarne ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsCarne ? `Até ${maxCarneInstallments}x` : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 6. Dinheiro */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsCash
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsCash(!acceptsCash)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsCash(!acceptsCash); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsCash ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <Banknote className="size-3.5" />
-                          </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsCash ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Dinheiro
-                          </span>
-                        </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsCash ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsCash && <Check className="size-2.5 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsCash ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsCash ? "Presencial" : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 7. Troca */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsTrade
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsTrade(!acceptsTrade)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsTrade(!acceptsTrade); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsTrade ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <RefreshCw className="size-3.5" />
-                          </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsTrade ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Troca
-                          </span>
-                        </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsTrade ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsTrade && <Check className="size-2.5 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsTrade ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsTrade ? "Aceita proposta" : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 8. Financiamento */}
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={cn(
-                        "group relative flex flex-col justify-between p-3 rounded-xl border transition-all cursor-pointer select-none min-h-[58px] sm:min-h-[64px]",
-                        acceptsFinancing
-                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/40 shadow-2xs"
-                          : "border-border/60 bg-background/80 text-muted-foreground hover:bg-muted/40 hover:border-border hover:text-foreground"
-                      )}
-                      onClick={() => setAcceptsFinancing(!acceptsFinancing)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAcceptsFinancing(!acceptsFinancing); } }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={cn(
-                            "size-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                            acceptsFinancing ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"
-                          )}>
-                            <Landmark className="size-3.5" />
-                          </div>
-                          <span className={cn(
-                            "text-xs font-bold truncate",
-                            acceptsFinancing ? "text-foreground" : "text-foreground/80"
-                          )}>
-                            Financiamento
-                          </span>
-                        </div>
-                        <div className={cn(
-                          "size-4 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                          acceptsFinancing ? "bg-primary border-primary text-primary-foreground" : "border-border/60 bg-transparent"
-                        )}>
-                          {acceptsFinancing && <Check className="size-2.5 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <div className="pt-1.5 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[10px] font-medium truncate",
-                          acceptsFinancing ? "text-primary font-semibold" : "text-muted-foreground"
-                        )}>
-                          {acceptsFinancing ? "Banco ou consórcio" : "Desativado"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ── Sub-Painéis de Configuração Contextual com Sliders e Títulos Diretos ── */}
-
-                {/* 1. Pix Config com Slider de 0 a 30% e Cálculo Imediato */}
-                {acceptsPix && (
-                  <div className="space-y-3 p-4 rounded-xl bg-background border border-border/60">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                        <BadgePercent className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>Desconto no Pix</span>
-                      </Label>
-                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-md">
-                        {pixDiscountPercent}% OFF
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={30}
-                      step={1}
-                      value={pixDiscountPercent}
-                      onChange={(e) => setPixDiscountPercent(Math.min(30, Math.max(0, Number(e.target.value) || 0)))}
-                      className="w-full h-2 rounded-full accent-emerald-600 cursor-pointer"
-                      aria-label="Desconto no Pix"
-                    />
-                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-                      <span>0%</span>
-                      <span>5%</span>
-                      <span>10%</span>
-                      <span>15%</span>
-                      <span>20%</span>
-                      <span>25%</span>
-                      <span>30%</span>
-                    </div>
-                    {pixDiscountPercent > 0 && priceCents && priceCents > 0 ? (
-                      <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">
-                          Economia: <strong className="text-emerald-600 dark:text-emerald-400">{formatMoney(Math.round(priceCents * (pixDiscountPercent / 100)))}</strong>
-                        </span>
-                        <span className="font-semibold text-foreground">
-                          Preço final: {formatMoney(Math.round(priceCents * (1 - pixDiscountPercent / 100)))}
-                        </span>
-                      </div>
-                    ) : (
-                      <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/40">
-                        {pixDiscountPercent > 0 ? `${pixDiscountPercent}% de desconto imediato à vista` : "Sem desconto (valor integral à vista)"}
-                      </p>
                     )}
                   </div>
-                )}
 
-                {/* 2. Cartão de Crédito Config */}
-                {acceptsCard && (
-                  <div className="space-y-3 p-4 rounded-xl bg-background border border-border/60">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
-                        <CreditCard className="size-3.5 text-primary" />
-                        <span>Parcelas no Cartão</span>
-                      </Label>
-                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
-                        Até {maxInstallments}x
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={1}
-                      max={24}
-                      step={1}
-                      value={maxInstallments}
-                      onChange={(e) => setMaxInstallments(Number(e.target.value) || 1)}
-                      className="w-full h-2 rounded-full accent-primary cursor-pointer"
-                      aria-label="Parcelas no Cartão"
-                    />
-                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-                      <span>1x</span>
-                      <span>6x</span>
-                      <span>12x</span>
-                      <span>18x</span>
-                      <span>24x</span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={cardInterestFree}
-                          onCheckedChange={setCardInterestFree}
-                          id="card-interest-free"
-                        />
-                        <Label htmlFor="card-interest-free" className="text-xs font-medium cursor-pointer">
-                          Sem juros
-                        </Label>
+                  {/* 2. Cartão de Crédito (1x = À Vista, 2x+ = Parcelamento) */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    acceptsCard
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsCard ? "bg-blue-600 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <CreditCard className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Cartão de Crédito / Débito</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            {maxInstallments === 1
+                              ? "Cobrança única à vista"
+                              : `À vista ou parcelado em até ${maxInstallments}x ${cardInterestFree ? "sem juros" : ""}`}
+                          </p>
+                        </div>
                       </div>
-                      {priceCents && priceCents > 0 && (
-                        <span className="text-[11px] text-muted-foreground font-mono font-medium">
-                          {maxInstallments}x de <strong>{formatMoney(Math.round(priceCents / maxInstallments))}</strong> {cardInterestFree ? "sem juros" : ""}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. Boleto Config com 1 a 7 dias úteis */}
-                {acceptsBoleto && (
-                  <div className="p-4 rounded-xl bg-background border border-border/60 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                        <Receipt className="size-3.5 text-primary" />
-                        <span>Vencimento do Boleto</span>
-                      </Label>
-                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
-                        {boletoDueDays} {boletoDueDays === 1 ? "dia útil" : "dias úteis"}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[1, 2, 3, 5, 7].map((days) => (
-                        <Button
-                          key={days}
-                          type="button"
-                          variant={boletoDueDays === days ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setBoletoDueDays(days)}
-                          className="h-10 text-xs font-semibold rounded-lg cursor-pointer"
-                        >
-                          {days} {days === 1 ? "dia" : "dias"}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. Boleto Parcelado Config */}
-                {acceptsBoletoInstallments && (
-                  <div className="space-y-3 p-4 rounded-xl bg-background border border-border/60">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
-                        <FileSpreadsheet className="size-3.5 text-primary" />
-                        <span>Parcelas no Boleto</span>
-                      </Label>
-                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
-                        Até {maxBoletoInstallments}x
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={1}
-                      max={24}
-                      step={1}
-                      value={maxBoletoInstallments}
-                      onChange={(e) => setMaxBoletoInstallments(Number(e.target.value) || 1)}
-                      className="w-full h-2 rounded-full accent-primary cursor-pointer"
-                      aria-label="Parcelas no Boleto"
-                    />
-                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-                      <span>1x</span>
-                      <span>6x</span>
-                      <span>12x</span>
-                      <span>18x</span>
-                      <span>24x</span>
+                      <Switch
+                        checked={acceptsCard}
+                        onCheckedChange={setAcceptsCard}
+                        aria-label="Aceitar Cartão"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Entrada Mínima (R$)</Label>
-                        <CurrencyField
-                          value={boletoMinDownPaymentCents}
-                          onChange={setBoletoMinDownPaymentCents}
-                          placeholder="0,00"
-                          className="h-9 text-xs"
+                    {acceptsCard && (
+                      <div className="pt-2 border-t border-border/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
+                            <CreditCard className="size-3.5 text-primary" />
+                            <span>Parcelamento Máximo</span>
+                          </Label>
+                          <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
+                            {maxInstallments === 1 ? "À vista" : `Até ${maxInstallments}x`}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={1}
+                          max={24}
+                          step={1}
+                          value={maxInstallments}
+                          onChange={(e) => setMaxInstallments(Number(e.target.value) || 1)}
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                          aria-label="Parcelas no Cartão"
                         />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Requisitos</Label>
-                        <Input
-                          value={boletoNotes}
-                          onChange={(e) => setBoletoNotes(e.target.value)}
-                          placeholder="Ex: Análise cadastral de CPF"
-                          className="h-9 text-xs"
-                        />
-                      </div>
-                    </div>
+                        <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                          <span>À vista (1x)</span>
+                          <span>2x</span>
+                          <span>6x</span>
+                          <span>12x</span>
+                          <span>18x</span>
+                          <span>24x</span>
+                        </div>
 
-                    {priceCents && priceCents > 0 && (
-                      <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/30 font-mono">
-                        Simulação: Entrada {formatMoney(boletoMinDownPaymentCents || 0)} + {maxBoletoInstallments}x de{" "}
-                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (boletoMinDownPaymentCents || 0)) / maxBoletoInstallments))}</strong>
-                      </p>
+                        <div className="flex items-center justify-between pt-1 text-xs">
+                          {maxInstallments > 1 ? (
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={cardInterestFree}
+                                onCheckedChange={setCardInterestFree}
+                                id="card-interest-free"
+                              />
+                              <Label htmlFor="card-interest-free" className="text-xs font-medium cursor-pointer">
+                                Sem juros para o comprador
+                              </Label>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground">Somente à vista (sem parcelas)</span>
+                          )}
+
+                          {priceCents && priceCents > 0 && maxInstallments > 1 && (
+                            <span className="text-[11px] text-muted-foreground font-mono font-medium">
+                              ${maxInstallments}x de <strong>${formatMoney(Math.round(priceCents / maxInstallments))}</strong>
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
-                )}
 
-                {/* 5. Carnê Digital Config */}
-                {acceptsCarne && (
-                  <div className="space-y-3.5 p-4 rounded-xl bg-background border border-primary/40 shadow-2xs">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs text-foreground font-semibold flex items-center gap-1.5">
-                        <BookOpenCheck className="size-4 text-primary" />
-                        <span>Parcelas no Carnê</span>
-                      </Label>
-                      <span className="text-xs font-black text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-md">
-                        Até {maxCarneInstallments}x
-                      </span>
+                  {/* 3. Dinheiro em Espécie (Presencial) */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-2",
+                    acceptsCash
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsCash ? "bg-slate-700 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <Banknote className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Dinheiro em Espécie (Presencial)</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            Pagamento no ato da entrega pelo motoboy ou na retirada no balcão
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={acceptsCash}
+                        onCheckedChange={setAcceptsCash}
+                        aria-label="Aceitar Dinheiro"
+                      />
                     </div>
-                    <input
-                      type="range"
-                      min={1}
-                      max={36}
-                      step={1}
-                      value={maxCarneInstallments}
-                      onChange={(e) => setMaxCarneInstallments(Number(e.target.value) || 1)}
-                      className="w-full h-2 rounded-full accent-primary cursor-pointer"
-                      aria-label="Parcelas no Carnê"
-                    />
-                    <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
-                      <span>1x</span>
-                      <span>6x</span>
-                      <span>12x</span>
-                      <span>24x</span>
-                      <span>36x</span>
+                  </div>
+
+                  {/* 4. Boleto Bancário à Vista */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    acceptsBoleto
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsBoleto ? "bg-amber-600 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <Receipt className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Boleto Bancário à Vista</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            {acceptsBoleto ? `Compensação com vencimento em ${boletoDueDays} dias úteis` : "Emissão de boleto para pagamento em bancos ou lotéricas"}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={acceptsBoleto}
+                        onCheckedChange={setAcceptsBoleto}
+                        aria-label="Aceitar Boleto"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">1º Vencimento</Label>
-                        <div className="grid grid-cols-3 gap-1">
-                          {[30, 45, 60].map((days) => (
+                    {acceptsBoleto && (
+                      <div className="pt-2 border-t border-border/40 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-foreground">Prazo de Vencimento</Label>
+                          <span className="text-xs font-mono font-bold text-primary">{boletoDueDays} dias úteis</span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-2">
+                          {[1, 2, 3, 5, 7].map((days) => (
                             <Button
                               key={days}
                               type="button"
-                              variant={carneGraceDays === days ? "default" : "outline"}
+                              variant={boletoDueDays === days ? "default" : "outline"}
                               size="sm"
-                              onClick={() => setCarneGraceDays(days)}
-                              className="h-9 px-1 text-xs font-semibold rounded-lg cursor-pointer"
+                              onClick={() => setBoletoDueDays(days)}
+                              className="h-8 text-xs font-semibold rounded-lg cursor-pointer"
                             >
                               {days}d
                             </Button>
                           ))}
                         </div>
                       </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Entrada Mínima (R$)</Label>
-                        <CurrencyField
-                          value={carneMinDownPaymentCents}
-                          onChange={setCarneMinDownPaymentCents}
-                          placeholder="0,00"
-                          className="h-9 text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-xs font-medium text-foreground">Requisitos</Label>
-                        <Input
-                          value={carneNotes}
-                          onChange={(e) => setCarneNotes(e.target.value)}
-                          placeholder="Ex: Análise rápida"
-                          className="h-9 text-xs"
-                        />
-                      </div>
-                    </div>
-
-                    {priceCents && priceCents > 0 && (
-                      <p className="text-[11px] text-muted-foreground font-mono pt-1 border-t border-border/30">
-                        Simulação: Entrada {formatMoney(carneMinDownPaymentCents || 0)} + {maxCarneInstallments}x de{" "}
-                        <strong>{formatMoney(Math.round(Math.max(0, priceCents - (carneMinDownPaymentCents || 0)) / maxCarneInstallments))}</strong> (1ª parcela em {carneGraceDays} dias)
-                      </p>
                     )}
+                  </div>
 
-                    <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-foreground/80 space-y-1">
-                      <span className="font-semibold text-primary block">Carnê Digital Waesy</span>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        Ao fechar a venda, você gera o carnê em 1 toque. O comprador acompanha e paga as parcelas pelo aplicativo.
-                      </p>
+                  {/* 5. Boleto Parcelado */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    acceptsBoletoInstallments
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsBoletoInstallments ? "bg-orange-600 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <FileSpreadsheet className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Boleto Parcelado</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            {acceptsBoletoInstallments ? `Parcelamento em até ${maxBoletoInstallments}x direto` : "Parcelamento via boletos mensais emitidos pela loja"}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={acceptsBoletoInstallments}
+                        onCheckedChange={setAcceptsBoletoInstallments}
+                        aria-label="Aceitar Boleto Parcelado"
+                      />
                     </div>
-                  </div>
-                )}
 
-                {/* 6. Dinheiro Config */}
-                {acceptsCash && (
-                  <div className="p-3.5 rounded-xl bg-background border border-border/60">
-                    <p className="text-xs text-muted-foreground">
-                      Pagamento presencial em dinheiro na entrega ou retirada.
-                    </p>
+                    {acceptsBoletoInstallments && (
+                      <div className="pt-2 border-t border-border/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-foreground font-semibold">Número de Boletos</Label>
+                          <span className="text-xs font-black text-primary font-mono">Até {maxBoletoInstallments}x</span>
+                        </div>
+                        <input
+                          type="range"
+                          min={2}
+                          max={24}
+                          step={1}
+                          value={maxBoletoInstallments}
+                          onChange={(e) => setMaxBoletoInstallments(Number(e.target.value) || 2)}
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Entrada Mínima (R$)</Label>
+                            <CurrencyField
+                              value={boletoMinDownPaymentCents}
+                              onChange={setBoletoMinDownPaymentCents}
+                              placeholder="0,00"
+                              className="h-9 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Requisitos</Label>
+                            <Input
+                              value={boletoNotes}
+                              onChange={(e) => setBoletoNotes(e.target.value)}
+                              placeholder="Ex: Análise cadastral"
+                              className="h-9 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {/* 7. Troca Config */}
-                {acceptsTrade && (
-                  <div className="space-y-1.5 p-4 rounded-xl bg-background border border-border/60">
-                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      <RefreshCw className="size-3.5 text-primary" />
-                      <span>O que você aceita na troca?</span>
-                    </Label>
-                    <Input
-                      value={tradeNotes}
-                      onChange={(e) => setTradeNotes(e.target.value)}
-                      placeholder="Ex: Veículo, moto, eletrônicos ou itens sob avaliação"
-                      className="h-9 text-xs"
-                    />
-                  </div>
-                )}
-
-                {/* 8. Financiamento Config */}
-                {acceptsFinancing && (
-                  <div className="space-y-1.5 p-4 rounded-xl bg-background border border-border/60">
-                    <div className="flex items-center gap-2">
-                      <Landmark className="size-4 text-primary" />
-                      <Label className="text-xs font-semibold text-foreground">Bancos e cartas aceitas</Label>
+                  {/* 6. Carnê Digital Waesy */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    acceptsCarne
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsCarne ? "bg-purple-600 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <BookOpenCheck className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Carnê Digital Waesy</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            {acceptsCarne ? `Parcelamento em até ${maxCarneInstallments}x direto no app` : "Emissão de crediário digital com gestão pela plataforma"}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={acceptsCarne}
+                        onCheckedChange={setAcceptsCarne}
+                        aria-label="Aceitar Carnê Digital"
+                      />
                     </div>
-                    <Input
-                      value={financingNotes}
-                      onChange={(e) => setFinancingNotes(e.target.value)}
-                      placeholder="Ex: Financiamento bancário ou carta de consórcio contemplada"
-                      className="h-9 text-xs"
-                    />
+
+                    {acceptsCarne && (
+                      <div className="pt-2 border-t border-border/40 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-foreground font-semibold">Parcelas no Carnê</Label>
+                          <span className="text-xs font-black text-primary font-mono">Até {maxCarneInstallments}x</span>
+                        </div>
+                        <input
+                          type="range"
+                          min={2}
+                          max={36}
+                          step={1}
+                          value={maxCarneInstallments}
+                          onChange={(e) => setMaxCarneInstallments(Number(e.target.value) || 2)}
+                          className="w-full h-2 rounded-full accent-primary cursor-pointer"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">1º Vencimento</Label>
+                            <div className="grid grid-cols-3 gap-1">
+                              {[30, 45, 60].map((days) => (
+                                <Button
+                                  key={days}
+                                  type="button"
+                                  variant={carneGraceDays === days ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => setCarneGraceDays(days)}
+                                  className="h-8 text-xs font-semibold rounded-lg"
+                                >
+                                  {days}d
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-foreground">Entrada Mínima (R$)</Label>
+                            <CurrencyField
+                              value={carneMinDownPaymentCents}
+                              onChange={setCarneMinDownPaymentCents}
+                              placeholder="0,00"
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* 7. Aceita Troca / Permuta */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    acceptsTrade
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsTrade ? "bg-amber-600 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <RefreshCw className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Aceita Troca / Permuta</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            Aceita propostas de troca por outros itens, veículos ou produtos
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={acceptsTrade}
+                        onCheckedChange={setAcceptsTrade}
+                        aria-label="Aceitar Troca"
+                      />
+                    </div>
+
+                    {acceptsTrade && (
+                      <div className="pt-2 border-t border-border/40 space-y-1">
+                        <Label className="text-xs font-semibold text-foreground">O que você aceita na troca?</Label>
+                        <Input
+                          value={tradeNotes}
+                          onChange={(e) => setTradeNotes(e.target.value)}
+                          placeholder="Ex: Veículo, moto, eletrônicos ou itens sob avaliação"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 8. Financiamento Bancário */}
+                  <div className={cn(
+                    "p-3.5 sm:p-4 rounded-xl border transition-all space-y-3",
+                    acceptsFinancing
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border/60 bg-muted/20 opacity-80"
+                  )}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                          acceptsFinancing ? "bg-teal-600 text-white shadow-2xs" : "bg-muted text-muted-foreground"
+                        )}>
+                          <Landmark className="size-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-foreground">Financiamento Bancário</h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            Intermediação com bancos parceiros ou carta de consórcio contemplada
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={acceptsFinancing}
+                        onCheckedChange={setAcceptsFinancing}
+                        aria-label="Aceitar Financiamento"
+                      />
+                    </div>
+
+                    {acceptsFinancing && (
+                      <div className="pt-2 border-t border-border/40 space-y-1">
+                        <Label className="text-xs font-semibold text-foreground">Bancos ou cartas aceitas</Label>
+                        <Input
+                          value={financingNotes}
+                          onChange={(e) => setFinancingNotes(e.target.value)}
+                          placeholder="Ex: Santander, BV, Bradesco ou consórcio contemplado"
+                          className="h-9 text-xs"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                </div>
 
                 {/* Cancelamento */}
-                <div className="space-y-1.5 pt-1 border-t border-border/40">
-                  <Label className="text-xs text-foreground font-semibold">Cancelamento</Label>
+                <div className="space-y-1.5 pt-2 border-t border-border/40">
+                  <Label className="text-xs text-foreground font-semibold">Política de Cancelamento</Label>
                   <Select value={cancellationPolicy} onValueChange={(v: any) => setCancellationPolicy(v)}>
                     <SelectTrigger className="h-11 rounded-xl text-xs bg-background font-medium">
                       <SelectValue />
