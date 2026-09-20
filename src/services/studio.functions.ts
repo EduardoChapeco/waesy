@@ -831,6 +831,14 @@ export const saveBrandKit = createServerFn({ method: "POST" })
         .from("stores")
         .update(storeUpdates)
         .eq("id", identity.store_id);
+
+      // Sincroniza atomicamente com o card da empresa no Places (directory_listings)
+      if (data.logos.cover_url) {
+        await supabase
+          .from("directory_listings")
+          .update({ banner_url: data.logos.cover_url })
+          .eq("store_id", identity.store_id);
+      }
     }
 
     return brandKitResult;

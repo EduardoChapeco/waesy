@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoreRouteImport } from './routes/_store'
 import { Route as AdminMasterRouteImport } from './routes/admin-master'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as SitemapNewsDotxmlRouteImport } from './routes/sitemap-news[.]xml'
 import { Route as SitemapProductsDotxmlRouteImport } from './routes/sitemap-products[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -39,6 +40,7 @@ import { Route as StoreEletronicosRouteImport } from './routes/_store.eletronico
 import { Route as StoreEmpregosRouteImport } from './routes/_store.empregos'
 import { Route as StoreEntrarRouteImport } from './routes/_store.entrar'
 import { Route as StoreEventosRouteImport } from './routes/_store.eventos'
+import { Route as StoreExplorarRouteImport } from './routes/_store.explorar'
 import { Route as StoreFaqRouteImport } from './routes/_store.faq'
 import { Route as StoreFarmaciaRouteImport } from './routes/_store.farmacia'
 import { Route as StoreFeedRouteImport } from './routes/_store.feed'
@@ -89,6 +91,7 @@ import { Route as AdminMasterMiningRouteImport } from './routes/admin-master.min
 import { Route as AdminMasterModulosRouteImport } from './routes/admin-master.modulos'
 import { Route as AdminMasterOnboardingRouteImport } from './routes/admin-master.onboarding'
 import { Route as AdminMasterPortalCompletoRouteImport } from './routes/admin-master.portal-completo'
+import { Route as AdminMasterPreCadastroRouteImport } from './routes/admin-master.pre-cadastro'
 import { Route as AdminMasterSimlabsRouteImport } from './routes/admin-master.simlabs'
 import { Route as AdminMasterTermosRouteImport } from './routes/admin-master.termos'
 import { Route as AdminMasterTokensRouteImport } from './routes/admin-master.tokens'
@@ -371,6 +374,11 @@ const AdminMasterRoute = AdminMasterRouteImport.update({
   path: '/admin-master',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapNewsDotxmlRoute = SitemapNewsDotxmlRouteImport.update({
   id: '/sitemap-news.xml',
   path: '/sitemap-news.xml',
@@ -509,6 +517,11 @@ const StoreEntrarRoute = StoreEntrarRouteImport.update({
 const StoreEventosRoute = StoreEventosRouteImport.update({
   id: '/eventos',
   path: '/eventos',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreExplorarRoute = StoreExplorarRouteImport.update({
+  id: '/explorar',
+  path: '/explorar',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreFaqRoute = StoreFaqRouteImport.update({
@@ -764,6 +777,11 @@ const AdminMasterPortalCompletoRoute =
     path: '/portal-completo',
     getParentRoute: () => AdminMasterRoute,
   } as any)
+const AdminMasterPreCadastroRoute = AdminMasterPreCadastroRouteImport.update({
+  id: '/pre-cadastro',
+  path: '/pre-cadastro',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
 const AdminMasterSimlabsRoute = AdminMasterSimlabsRouteImport.update({
   id: '/simlabs',
   path: '/simlabs',
@@ -2238,6 +2256,7 @@ const WorkspaceTurismoGruposIdEmbarqueRoute =
 export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
   '/admin-master': typeof AdminMasterRouteWithChildren
+  '/home': typeof HomeRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -2265,6 +2284,7 @@ export interface FileRoutesByFullPath {
   '/empregos': typeof StoreEmpregosRouteWithChildren
   '/entrar': typeof StoreEntrarRoute
   '/eventos': typeof StoreEventosRoute
+  '/explorar': typeof StoreExplorarRoute
   '/faq': typeof StoreFaqRoute
   '/farmacia': typeof StoreFarmaciaRoute
   '/feed': typeof StoreFeedRoute
@@ -2314,6 +2334,7 @@ export interface FileRoutesByFullPath {
   '/admin-master/modulos': typeof AdminMasterModulosRoute
   '/admin-master/onboarding': typeof AdminMasterOnboardingRoute
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
+  '/admin-master/pre-cadastro': typeof AdminMasterPreCadastroRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
   '/admin-master/tokens': typeof AdminMasterTokensRoute
@@ -2589,6 +2610,7 @@ export interface FileRoutesByFullPath {
   '/workspace/turismo/grupos/$id/embarque': typeof WorkspaceTurismoGruposIdEmbarqueRoute
 }
 export interface FileRoutesByTo {
+  '/home': typeof HomeRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -2611,6 +2633,7 @@ export interface FileRoutesByTo {
   '/eletronicos': typeof StoreEletronicosRoute
   '/entrar': typeof StoreEntrarRoute
   '/eventos': typeof StoreEventosRoute
+  '/explorar': typeof StoreExplorarRoute
   '/faq': typeof StoreFaqRoute
   '/farmacia': typeof StoreFarmaciaRoute
   '/feed': typeof StoreFeedRoute
@@ -2659,6 +2682,7 @@ export interface FileRoutesByTo {
   '/admin-master/modulos': typeof AdminMasterModulosRoute
   '/admin-master/onboarding': typeof AdminMasterOnboardingRoute
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
+  '/admin-master/pre-cadastro': typeof AdminMasterPreCadastroRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
   '/admin-master/tokens': typeof AdminMasterTokensRoute
@@ -2938,6 +2962,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_store': typeof StoreRouteWithChildren
   '/admin-master': typeof AdminMasterRouteWithChildren
+  '/home': typeof HomeRoute
   '/sitemap-news.xml': typeof SitemapNewsDotxmlRoute
   '/sitemap-products.xml': typeof SitemapProductsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -2965,6 +2990,7 @@ export interface FileRoutesById {
   '/_store/empregos': typeof StoreEmpregosRouteWithChildren
   '/_store/entrar': typeof StoreEntrarRoute
   '/_store/eventos': typeof StoreEventosRoute
+  '/_store/explorar': typeof StoreExplorarRoute
   '/_store/faq': typeof StoreFaqRoute
   '/_store/farmacia': typeof StoreFarmaciaRoute
   '/_store/feed': typeof StoreFeedRoute
@@ -3014,6 +3040,7 @@ export interface FileRoutesById {
   '/admin-master/modulos': typeof AdminMasterModulosRoute
   '/admin-master/onboarding': typeof AdminMasterOnboardingRoute
   '/admin-master/portal-completo': typeof AdminMasterPortalCompletoRoute
+  '/admin-master/pre-cadastro': typeof AdminMasterPreCadastroRoute
   '/admin-master/simlabs': typeof AdminMasterSimlabsRoute
   '/admin-master/termos': typeof AdminMasterTermosRoute
   '/admin-master/tokens': typeof AdminMasterTokensRoute
@@ -3294,6 +3321,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin-master'
+    | '/home'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
@@ -3321,6 +3349,7 @@ export interface FileRouteTypes {
     | '/empregos'
     | '/entrar'
     | '/eventos'
+    | '/explorar'
     | '/faq'
     | '/farmacia'
     | '/feed'
@@ -3370,6 +3399,7 @@ export interface FileRouteTypes {
     | '/admin-master/modulos'
     | '/admin-master/onboarding'
     | '/admin-master/portal-completo'
+    | '/admin-master/pre-cadastro'
     | '/admin-master/simlabs'
     | '/admin-master/termos'
     | '/admin-master/tokens'
@@ -3645,6 +3675,7 @@ export interface FileRouteTypes {
     | '/workspace/turismo/grupos/$id/embarque'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/home'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
@@ -3667,6 +3698,7 @@ export interface FileRouteTypes {
     | '/eletronicos'
     | '/entrar'
     | '/eventos'
+    | '/explorar'
     | '/faq'
     | '/farmacia'
     | '/feed'
@@ -3715,6 +3747,7 @@ export interface FileRouteTypes {
     | '/admin-master/modulos'
     | '/admin-master/onboarding'
     | '/admin-master/portal-completo'
+    | '/admin-master/pre-cadastro'
     | '/admin-master/simlabs'
     | '/admin-master/termos'
     | '/admin-master/tokens'
@@ -3993,6 +4026,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_store'
     | '/admin-master'
+    | '/home'
     | '/sitemap-news.xml'
     | '/sitemap-products.xml'
     | '/sitemap.xml'
@@ -4020,6 +4054,7 @@ export interface FileRouteTypes {
     | '/_store/empregos'
     | '/_store/entrar'
     | '/_store/eventos'
+    | '/_store/explorar'
     | '/_store/faq'
     | '/_store/farmacia'
     | '/_store/feed'
@@ -4069,6 +4104,7 @@ export interface FileRouteTypes {
     | '/admin-master/modulos'
     | '/admin-master/onboarding'
     | '/admin-master/portal-completo'
+    | '/admin-master/pre-cadastro'
     | '/admin-master/simlabs'
     | '/admin-master/termos'
     | '/admin-master/tokens'
@@ -4348,6 +4384,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   StoreRoute: typeof StoreRouteWithChildren
   AdminMasterRoute: typeof AdminMasterRouteWithChildren
+  HomeRoute: typeof HomeRoute
   SitemapNewsDotxmlRoute: typeof SitemapNewsDotxmlRoute
   SitemapProductsDotxmlRoute: typeof SitemapProductsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -4398,6 +4435,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-master'
       fullPath: '/admin-master'
       preLoaderRoute: typeof AdminMasterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap-news.xml': {
@@ -4594,6 +4638,13 @@ declare module '@tanstack/react-router' {
       path: '/eventos'
       fullPath: '/eventos'
       preLoaderRoute: typeof StoreEventosRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/explorar': {
+      id: '/_store/explorar'
+      path: '/explorar'
+      fullPath: '/explorar'
+      preLoaderRoute: typeof StoreExplorarRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/faq': {
@@ -4944,6 +4995,13 @@ declare module '@tanstack/react-router' {
       path: '/portal-completo'
       fullPath: '/admin-master/portal-completo'
       preLoaderRoute: typeof AdminMasterPortalCompletoRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
+    '/admin-master/pre-cadastro': {
+      id: '/admin-master/pre-cadastro'
+      path: '/pre-cadastro'
+      fullPath: '/admin-master/pre-cadastro'
+      preLoaderRoute: typeof AdminMasterPreCadastroRouteImport
       parentRoute: typeof AdminMasterRoute
     }
     '/admin-master/simlabs': {
@@ -7042,6 +7100,7 @@ interface StoreRouteChildren {
   StoreEmpregosRoute: typeof StoreEmpregosRouteWithChildren
   StoreEntrarRoute: typeof StoreEntrarRoute
   StoreEventosRoute: typeof StoreEventosRoute
+  StoreExplorarRoute: typeof StoreExplorarRoute
   StoreFaqRoute: typeof StoreFaqRoute
   StoreFarmaciaRoute: typeof StoreFarmaciaRoute
   StoreFeedRoute: typeof StoreFeedRoute
@@ -7122,6 +7181,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreEmpregosRoute: StoreEmpregosRouteWithChildren,
   StoreEntrarRoute: StoreEntrarRoute,
   StoreEventosRoute: StoreEventosRoute,
+  StoreExplorarRoute: StoreExplorarRoute,
   StoreFaqRoute: StoreFaqRoute,
   StoreFarmaciaRoute: StoreFarmaciaRoute,
   StoreFeedRoute: StoreFeedRoute,
@@ -7220,6 +7280,7 @@ interface AdminMasterRouteChildren {
   AdminMasterModulosRoute: typeof AdminMasterModulosRoute
   AdminMasterOnboardingRoute: typeof AdminMasterOnboardingRoute
   AdminMasterPortalCompletoRoute: typeof AdminMasterPortalCompletoRoute
+  AdminMasterPreCadastroRoute: typeof AdminMasterPreCadastroRoute
   AdminMasterSimlabsRoute: typeof AdminMasterSimlabsRoute
   AdminMasterTermosRoute: typeof AdminMasterTermosRoute
   AdminMasterTokensRoute: typeof AdminMasterTokensRoute
@@ -7256,6 +7317,7 @@ const AdminMasterRouteChildren: AdminMasterRouteChildren = {
   AdminMasterModulosRoute: AdminMasterModulosRoute,
   AdminMasterOnboardingRoute: AdminMasterOnboardingRoute,
   AdminMasterPortalCompletoRoute: AdminMasterPortalCompletoRoute,
+  AdminMasterPreCadastroRoute: AdminMasterPreCadastroRoute,
   AdminMasterSimlabsRoute: AdminMasterSimlabsRoute,
   AdminMasterTermosRoute: AdminMasterTermosRoute,
   AdminMasterTokensRoute: AdminMasterTokensRoute,
@@ -7650,6 +7712,7 @@ const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   StoreRoute: StoreRouteWithChildren,
   AdminMasterRoute: AdminMasterRouteWithChildren,
+  HomeRoute: HomeRoute,
   SitemapNewsDotxmlRoute: SitemapNewsDotxmlRoute,
   SitemapProductsDotxmlRoute: SitemapProductsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

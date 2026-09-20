@@ -53,6 +53,7 @@ export interface MobileNavProps {
 // ── Mapa de nichos para o Admin Mode ─────────────────────────────────────────
 const ROUTE_NICHE_MAP: Record<string, { id: string; label: string }> = {
   "/": { id: "home", label: "Início" },
+  "/explorar": { id: "home", label: "Explorar" },
   "/mercado": { id: "mercado", label: "Mercado" },
   "/gastronomia": { id: "gastronomia", label: "Gastronomia" },
   "/farmacia": { id: "farmacia", label: "Farmácia" },

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ArrowDownLeft, ArrowUpRight, Calculator, History, Lock, Play, ReceiptText, DollarSign, AlertTriangle, Plus, Minus, CheckCircle2, Clock, User, ShieldCheck, CreditCard, QrCode, Banknote, MonitorCheck, Layers, ExternalLink, ChevronRight, TrendingUp } from 'lucide-react';
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { ErrorState, EmptyState } from "@/components/state/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -115,7 +116,32 @@ function CashRegisterError({ error }: { error: Error }) {
  );
 }
 
+const CAIXA_TOUR_SLIDES: TourSlide[] = [
+  {
+    title: "Gestão de Turnos de Caixa",
+    description: "Abra turnos com fundo de troco registrado. Todo lançamento em dinheiro, Pix ou cartão fica auditado por operador.",
+    icon: Banknote,
+    highlightBadge: "Turnos Auditados",
+    tip: "Caixas abertos há mais de 24 horas são sinalizados para fechamento e auditoria preventiva.",
+  },
+  {
+    title: "Sangrias & Suprimentos Rápidos",
+    description: "Lance retiradas de dinheiro (sangrias) ou reforços no caixa (suprimentos) com justificativa e impressão opcional do comprovante.",
+    icon: ArrowUpRight,
+    highlightBadge: "Movimentações",
+    tip: "Use os botões no topo para registrar movimentações em 2 cliques.",
+  },
+  {
+    title: "Fechamento Cego de Turno",
+    description: "No encerramento, o operador digita os valores contados sem ver o saldo do sistema. O sistema calcula quebra de caixa automaticamente com precisão de centavos.",
+    icon: Lock,
+    highlightBadge: "Conferência Cega",
+    tip: "O histórico completo de turnos fica preservado na aba 'Histórico de Turnos' com exportação para PDF.",
+  },
+];
+
 function CashRegisterManagerPage() {
+  const [isTourOpen, setIsTourOpen] = useState(false);
  const { register, history } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
 
@@ -1122,6 +1148,15 @@ function CashRegisterManagerPage() {
  </Form>
  </SheetContent>
  </Sheet>
- </div>
+ 
+      {/* ── ONBOARDING GUIADO DO CAIXA ── */}
+      <ModuleTourModal
+        moduleId="caixa"
+        moduleName="Controle de Caixa"
+        slides={CAIXA_TOUR_SLIDES}
+        isOpen={isTourOpen}
+        onOpenChange={setIsTourOpen}
+      />
+    </div>
  );
 }

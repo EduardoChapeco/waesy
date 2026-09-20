@@ -668,17 +668,17 @@ export function BrandKitPage() {
         {/* ABA: LOGOS & CAPA */}
         {activeTab === "logos" && (
           <div className="space-y-6">
-            {/* Banner Panorâmico de Capa (21:9 Canônico) */}
+            {/* Capa do Anúncio / Card da Empresa no Places (16:10 Canônico) */}
             <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Banner 21:9)</Label>
+                  <Label className="text-sm font-semibold">Capa do Anúncio (Card da Empresa no Places & Vitrines)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Banner de topo exibido na página pública da sua loja (aspect ratio canônico 21:9)
+                    Imagem oficial do seu negócio exibida nos cards do Places (Lista Telefônica), vitrines da Home e buscas
                   </p>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono">
-                  21:9 Panorâmico
+                  16:10 Card Places
                 </Badge>
               </div>
               <div className="p-5">
@@ -687,8 +687,8 @@ export function BrandKitPage() {
                   onChange={(url) => update({ cover_url: url })}
                   onRemove={() => update({ cover_url: "" })}
                   bucket="store-assets"
-                  aspectPreset="banner"
-                  helperText="Clique ou arraste para carregar a capa oficial da loja com máscara de corte 21:9"
+                  aspect={16 / 10}
+                  helperText="Clique ou arraste para carregar a capa do card da sua empresa no Places (Lista Telefônica) com corte 16:10. A capa panorâmica do perfil é gerenciada em Editar Perfil."
                 />
               </div>
             </div>

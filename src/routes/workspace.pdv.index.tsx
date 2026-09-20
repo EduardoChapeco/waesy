@@ -39,11 +39,47 @@ import {
 	Smartphone,
 } from "lucide-react";
 import {
+  ModuleTourModal,
+  ModuleTourTrigger,
+  type TourSlide,
+} from "@/components/ui/module-tour-modal";
+import {
   DigitalCompanionCard,
   type CompanionCardSectionItem,
   type CompanionRuleItem,
   type CompanionContactItem,
 } from "@/components/documents/digital-companion-card";
+
+const PDV_TOUR_SLIDES: TourSlide[] = [
+  {
+    title: "Lançamento Rápido de Itens",
+    description: "Adicione itens clicando na vitrine, buscando por nome ou bipando o código de barras com leitor USB/Bluetooth. O ticket lateral atualiza em tempo real.",
+    icon: ShoppingCart,
+    highlightBadge: "Teclado & Scanner",
+    tip: "Pressione F2 a qualquer momento para focar diretamente na busca.",
+  },
+  {
+    title: "Atendimento por Balcão, Mesa ou Comanda",
+    description: "Alterne instantaneamente o modo de atendimento. Lance pedidos para comandas ou mesas individuais com suporte completo a adicionais e modificadores.",
+    icon: Coffee,
+    highlightBadge: "Modos Flexíveis",
+    tip: "Ao selecionar itens com modificadores, a via da cozinha é impressa automaticamente com as observações.",
+  },
+  {
+    title: "Checkout Ágil em Pix, Cartão e Dinheiro",
+    description: "Finalize a venda com cálculo automático de troco, geração de QR Code Pix na tela e divisão de contas em múltiplos métodos de pagamento.",
+    icon: CreditCard,
+    highlightBadge: "Fechamento F4",
+    tip: "Pressione F4 para acionar o checkout de qualquer lugar da tela.",
+  },
+  {
+    title: "Conferência Cega e Sangria / Suprimento",
+    description: "Realize retiradas (sangria) ou reforços de caixa (suprimento) com registro de motivo. Ao final do turno, a conferência cega impede vazamento do saldo esperado.",
+    icon: Receipt,
+    highlightBadge: "Auditoria & Caixa",
+    tip: "Use F7 para Sangria rápida e F8 para Suprimento.",
+  },
+];
 import { generateContractFromOrder } from "@/services/contracts.functions";
 import { printThermalReceipt, type ThermalReceiptData } from "@/lib/thermal-printer";
 import {
@@ -300,6 +336,7 @@ function PdvTerminal() {
  const [checkoutOpen, setCheckoutOpen] = useState(false);
  const [modifiersModalOpen, setModifiersModalOpen] = useState(false);
  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+ const [isTourOpen, setIsTourOpen] = useState(false);
   const [contractSigningInfo, setContractSigningInfo] = useState<{ contractId: string; title: string; signingUrl: string; whatsappLink: string | null } | null>(null);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
   const [companionCardOpen, setCompanionCardOpen] = useState(false);
@@ -935,6 +972,11 @@ function PdvTerminal() {
  >
  <Keyboard className="size-4" />
  </Button>
+
+ <ModuleTourTrigger
+ onClick={() => setIsTourOpen(true)}
+ label="Guia do PDV"
+ />
 
  <Button
  variant="ghost"
@@ -1703,6 +1745,15 @@ function PdvTerminal() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ── TOUR GUIADO INTERATIVO DO PDV ── */}
+      <ModuleTourModal
+        moduleId="pdv"
+        moduleName="Frente de Caixa (PDV)"
+        slides={PDV_TOUR_SLIDES}
+        isOpen={isTourOpen}
+        onOpenChange={setIsTourOpen}
+      />
     </div>
   );
 }

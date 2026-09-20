@@ -32,6 +32,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -250,6 +251,31 @@ function getStalenessInfo(lead: any) {
   };
 }
 
+
+const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
+  {
+    title: "Pipeline Visual de Oportunidades (Kanban)",
+    description: "Acompanhe cada negociação desde o primeiro contato até o fechamento com estágios visuais e somatório financeiro em tempo real.",
+    icon: Kanban,
+    highlightBadge: "Kanban 360°",
+    tip: "Arraste os cards entre as colunas para atualizar o estágio e disparar lembretes automáticos.",
+  },
+  {
+    title: "Atendimento Rápido via WhatsApp",
+    description: "Inicie conversas com mensagens pré-formatadas, envie propostas comerciais e acompanhe o histórico do cliente em um só lugar.",
+    icon: Phone,
+    highlightBadge: "WhatsApp Nativo",
+    tip: "Clique no ícone de WhatsApp em qualquer card para abrir o chat diretamente.",
+  },
+  {
+    title: "Propostas Comerciais & Cotações Inteligentes",
+    description: "Gere links de propostas com fotos, itinerários e condições de pagamento parceladas prontas para assinatura e aprovação pelo cliente.",
+    icon: FileText,
+    highlightBadge: "Propostas & PNR",
+    tip: "Ao aprovar uma proposta, ela é convertida automaticamente em viagem confirmada no módulo de Turismo.",
+  },
+];
+
 function WorkspaceComercialPage() {
   const { leads = [], team = [], store = null } = ((Route.useLoaderData?.() as any) || {});
   const router = useRouter();
@@ -269,6 +295,7 @@ function WorkspaceComercialPage() {
   const [flightLead, setFlightLead] = useState<any | null>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const [stages, setStages] = useState(STAGES);
 
   // Formulário Avançado de Novo Lead (Padrão TravelAgências Enterprise)
@@ -580,6 +607,11 @@ function WorkspaceComercialPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-[calc(100vh-120px)] pb-12 overflow-x-hidden">
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs font-medium text-muted-foreground">Pipeline de oportunidades, CRM e propostas comerciais</p>
+        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
+      </div>
+
       {/* ── BARRA OPERACIONAL CANÔNICA (SILENCIOSA & ALTA DENSIDADE) ── */}
       <WorkspaceCanonicalToolbar
         searchValue={searchTerm}
@@ -1591,6 +1623,15 @@ function WorkspaceComercialPage() {
         lead={flightLead}
         storeId={storeId}
         onSuccess={() => router.invalidate()}
+      />
+    
+      {/* ── ONBOARDING GUIADO DO COMERCIAL ── */}
+      <ModuleTourModal
+        moduleId="comercial"
+        moduleName="Comercial & CRM"
+        slides={COMERCIAL_TOUR_SLIDES}
+        isOpen={isTourOpen}
+        onOpenChange={setIsTourOpen}
       />
     </div>
   );

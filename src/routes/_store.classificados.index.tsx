@@ -318,6 +318,26 @@ function ClassifiedsMasterPage() {
 
   // Faceta de Produtos Digitais
   const [onlyInstantDigital, setOnlyInstantDigital] = useState(false);
+
+  // Chips de categoria enriquecidos dinamicamente pelo CMS (Admin Master /botoes)
+  const dynamicCategoryChips = useMemo(() => {
+    return CLASSIFIED_CHIPS.map((chip) => {
+      const match = (hotpages || []).find((h: any) =>
+        h.slug === chip.id ||
+        h.slug === `classificados-${chip.id}` ||
+        h.target_route?.includes(`category=${chip.id}`) ||
+        h.title?.toLowerCase() === chip.label.toLowerCase()
+      );
+      return {
+        ...chip,
+        label: match?.title || chip.label,
+        customIconUrl: match?.custom_icon_url || null,
+        bgMediaUrl: match?.bg_media_url || match?.cover_image_url || null,
+        textColor: match?.text_color || null,
+        isActive: match ? match.is_active !== false : true,
+      };
+    }).filter((c) => c.isActive !== false);
+  }, [hotpages]);
   // Facetas Especializadas de Desapego, Serviços e Vagas
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("todos");
   const [selectedServiceModality, setSelectedServiceModality] = useState<string>("todos");
@@ -673,9 +693,9 @@ function ClassifiedsMasterPage() {
             </div>
           </div>
 
-          {/* NÍVEL 2: Navegação de Categorias (Clean Tabs) */}
+          {/* NÍVEL 2: Navegação de Categorias (Clean Tabs Dinâmicas do CMS) */}
           <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full focus:outline-none">
-            {CLASSIFIED_CHIPS.map((cat) => {
+            {dynamicCategoryChips.map((cat) => {
               const isActive = selectedCategory === cat.id;
               const Icon = cat.icon;
               return (
@@ -692,8 +712,13 @@ function ClassifiedsMasterPage() {
                       ? "bg-primary/10 text-primary border border-primary/30 font-bold shadow-2xs"
                       : "bg-muted/40 hover:bg-muted/60 text-muted-foreground hover:text-foreground border border-border/40"
                   )}
+                  style={(cat as any).textColor ? { color: (cat as any).textColor } : undefined}
                 >
-                  {Icon && <Icon className={cn("size-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/70")} />}
+                  {(cat as any).customIconUrl ? (
+                    <img src={(cat as any).customIconUrl} alt="" className="size-3.5 object-contain shrink-0" />
+                  ) : Icon ? (
+                    <Icon className={cn("size-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/70")} />
+                  ) : null}
                   <span>{cat.label}</span>
                 </button>
               );
@@ -1289,8 +1314,11 @@ function ClassifiedsMasterPage() {
                       <div className="flex items-baseline gap-2 pt-0.5">
                         <span className="text-lg sm:text-xl font-black text-foreground font-mono">
                           {formatMoney(item.price_cents || 0)}
-                          {isAluguel && <span className="text-[10px] font-normal text-muted-foreground">/mês</span>}
-                          {isTemporada && <span className="text-[10px] font-normal text-muted-foreground">/dia</span>}
+                          {(itemNiche.priceSuffix || (isAluguel ? " /mês" : isTemporada ? " /diária" : "")) && (
+                            <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                              {itemNiche.priceSuffix || (isAluguel ? "/mês" : "/diária")}
+                            </span>
+                          )}
                         </span>
                       </div>
                     </Link>
@@ -1374,6 +1402,7 @@ function ClassifiedsMasterPage() {
                     const img = getClassifiedCover(item);
                     const isTemporada = item.deal_type === "temporada";
                     const isAluguel = item.deal_type === "aluguel";
+                    const itemNiche = resolveClassifiedNiche(item);
                     const targetPhone = item.contact_whatsapp || item.whatsapp || item.profiles?.phone;
 
                     return (
@@ -1397,7 +1426,10 @@ function ClassifiedsMasterPage() {
                                   <Tag size={28} className="text-muted-foreground/30" />
                                 </div>
                               )}
-                              <div className="absolute top-2.5 left-2.5 flex items-center gap-1">
+                              <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
+                                <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border border-border/40">
+                                  {itemNiche.shortLabel}
+                                </Badge>
                                 {item.deal_type && (
                                   <Badge
                                     variant="secondary"
@@ -1413,8 +1445,11 @@ function ClassifiedsMasterPage() {
                               <div>
                                 <span className="text-lg sm:text-xl font-black text-foreground font-mono block">
                                   {formatMoney(item.price_cents || 0)}
-                                  {isAluguel && <span className="text-[10px] font-normal text-muted-foreground">/mês</span>}
-                                  {isTemporada && <span className="text-[10px] font-normal text-muted-foreground">/dia</span>}
+                                  {(itemNiche.priceSuffix || (isAluguel ? " /mês" : isTemporada ? " /diária" : "")) && (
+                                    <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                                      {itemNiche.priceSuffix || (isAluguel ? "/mês" : "/diária")}
+                                    </span>
+                                  )}
                                 </span>
 
                                 <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-tight group-hover:underline mt-1 h-9 overflow-hidden">
@@ -1530,8 +1565,11 @@ function ClassifiedsMasterPage() {
                       <div>
                         <span className="text-xl sm:text-2xl font-black text-foreground font-mono block">
                           {formatMoney(item.price_cents || 0)}
-                          {isAluguel && <span className="text-xs font-normal text-muted-foreground">/mês</span>}
-                          {isTemporada && <span className="text-xs font-normal text-muted-foreground">/dia</span>}
+                          {(itemNiche.priceSuffix || (isAluguel ? " /mês" : isTemporada ? " /diária" : "")) && (
+                            <span className="text-xs font-normal text-muted-foreground ml-1">
+                              {itemNiche.priceSuffix || (isAluguel ? "/mês" : "/diária")}
+                            </span>
+                          )}
                         </span>
 
                         <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors mt-1 h-11 sm:h-12 overflow-hidden">

@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, isRedirect } from "@tanstack/react-router";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target, Lock } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target, Lock, Sparkles } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -74,6 +74,7 @@ const NAV_SECTIONS = [
   {
     title: "Vitrines & Marketing",
     items: [
+      { to: "/admin-master/pre-cadastro", label: "Pré-Cadastro & Lançamento", icon: Sparkles },
       { to: "/admin-master/portal-completo", label: "Portal Completo", icon: Building2 },
       { to: "/admin-master/vitrines", label: "Vitrines (CMS)", icon: Layout },
       { to: "/admin-master/banners", label: "Banners Globais", icon: ImageIcon },

@@ -471,8 +471,12 @@ export function UniversalClassifiedShowcase({
       list.push("Vagas");
       if (classified?.attributes?.regime) list.push(getRegimeLabel(classified.attributes.regime));
     } else {
-      if (classified?.condition === "new") list.push("Novo");
-      else if (classified?.condition === "used") list.push("Usado");
+      // Semantic Library: showDeliveryBadges: false = proibido mostrar condição Novo/Usado
+      // (imóveis, hospedagem, veículos, serviços, agro, turismo, digital, assinaturas, doações, negócios)
+      if (niche.showDeliveryBadges !== false) {
+        if (classified?.condition === "new") list.push("Novo");
+        else if (classified?.condition === "used") list.push("Usado");
+      }
     }
 
     if (classified?.negotiable === false) list.push("Valor Fixo");
@@ -570,8 +574,12 @@ export function UniversalClassifiedShowcase({
       if (classified.attributes?.max_guests) {
         cards.push({ icon: Users, label: "Capacidade", value: `Até ${classified.attributes.max_guests} hóspedes` });
       }
-      cards.push({ icon: Clock, label: "Check-in", value: classified.attributes?.checkin_time || "14:00" });
-      cards.push({ icon: Clock, label: "Check-out", value: classified.attributes?.checkout_time || "11:00" });
+      if (classified.attributes?.checkin_time) {
+        cards.push({ icon: Clock, label: "Check-in", value: `A partir de ${classified.attributes.checkin_time}` });
+      }
+      if (classified.attributes?.checkout_time) {
+        cards.push({ icon: Clock, label: "Check-out", value: `Até ${classified.attributes.checkout_time}` });
+      }
       if (classified.bedrooms) {
         cards.push({ icon: Bed, label: "Quartos", value: `${classified.bedrooms} quarto(s)` });
       }
@@ -582,8 +590,12 @@ export function UniversalClassifiedShowcase({
       if (classified.attributes?.destination_city) {
         cards.push({ icon: MapPin, label: "Destino", value: classified.attributes.destination_city });
       }
-      cards.push({ icon: ShieldCheck, label: "Hospedagem", value: classified.attributes?.hotel_included !== false ? "Inclusa" : "À parte" });
-      cards.push({ icon: CheckCircle2, label: "Transporte", value: classified.attributes?.transport_type || "Aéreo/Rodoviário" });
+      if (classified.attributes?.hotel_included !== undefined) {
+        cards.push({ icon: ShieldCheck, label: "Hospedagem", value: classified.attributes.hotel_included ? "Inclusa" : "À parte" });
+      }
+      if (classified.attributes?.transport_type) {
+        cards.push({ icon: CheckCircle2, label: "Transporte", value: String(classified.attributes.transport_type) });
+      }
     } else if (isBusiness) {
       if (attrs.monthly_revenue_cents || attrs.monthly_revenue_masked) {
         cards.push({
@@ -2169,16 +2181,28 @@ export function UniversalClassifiedShowcase({
                   {primaryCta.label}
                 </Button>
 
-                {/* Botões Secundários */}
+                {/* Botões Secundários — CTAs derivados por nicho via semantics.ts */}
                 <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={onOpenProposalModal}
-                    className="h-10 rounded-xl text-xs font-semibold border-border/60 hover:bg-muted/50 text-foreground"
-                  >
-                    <Handshake className="size-3.5 mr-1.5" />
-                    <span>Fazer Proposta</span>
-                  </Button>
+                  {/* CTA Secundário Canônico por Nicho */}
+                  {niche.secondaryActionLabel && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        // Hospedagem/Serviço: abre proposta/agendamento. Imóvel/Veículo: proposta formal.
+                        if (niche.id === "hospitality_stay" || niche.id === "travel") {
+                          onOpenBookingModal?.();
+                        } else if (niche.id === "service") {
+                          handleWhatsApp();
+                        } else {
+                          onOpenProposalModal?.();
+                        }
+                      }}
+                      className="h-10 rounded-xl text-xs font-semibold border-border/60 hover:bg-muted/50 text-foreground"
+                    >
+                      <Handshake className="size-3.5 mr-1.5" />
+                      <span className="truncate">{niche.secondaryActionLabel}</span>
+                    </Button>
+                  )}
 
                   {(classified?.contact_whatsapp || classified?.whatsapp) && (
                     <Button
@@ -2191,6 +2215,21 @@ export function UniversalClassifiedShowcase({
                     </Button>
                   )}
                 </div>
+
+                {/* Proteção Waesy (Escrow) — apenas para nichos com allowEscrowGuarantee */}
+                {niche.allowEscrowGuarantee && !isDonation && priceCents > 0 && (
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs">
+                    <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-300 block">
+                        Proteção Waesy disponível
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Pagamento em custódia até confirmar recebimento
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Microcopy de Confiança (Estilo Airbnb) */}

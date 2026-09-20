@@ -7,6 +7,7 @@ import { StoryHighlightUploader, type StoryHighlight } from "@/components/classi
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
+import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
 import { uploadClassifiedMedia, uploadClassifiedDocument } from "@/lib/classifieds/upload-classified-media";
 import { CANONICAL_AIRPORTS, CANONICAL_AIRLINES, CANONICAL_TRANSPORT_TYPES, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, airportLabel, type DepartureOption, type DepartureStatus } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
@@ -880,7 +881,11 @@ function SpecializedClassifiedEditor({
 }) {
   const navigate = useNavigate();
  const queryClient = useQueryClient();
- const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  const [currentStep, setCurrentStep] = useState<2 | 3 | 4 | 5>(2);
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
+  const [isCustomCommercialOpen, setIsCustomCommercialOpen] = useState(false);
+  const [draftInfo, setDraftInfo] = useState<{ step: number; savedAt: string } | null>(null);
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
  const [jobWorkSchedule, setJobWorkSchedule] = useState("integral_44h");
  const [jobAcceptedMethods, setJobAcceptedMethods] = useState<string[]>([
  "perfil_waesy",
@@ -2279,6 +2284,154 @@ function SpecializedClassifiedEditor({
     }
   };
 
+  // ── Qualidade do Anúncio (Score de 0 a 100%) ──
+  const qualityScore = useMemo(() => {
+    let score = 0;
+    if (title.trim().length >= 8) score += 15;
+    if (description.trim().length >= 30) score += 20;
+    if (images.length >= 1) score += 15;
+    if (images.length >= 3) score += 10;
+    if (locationName.trim().length > 0 || structuredLoc?.city) score += 10;
+    if (priceCents !== undefined || pricingType === "on_quote" || pricingType === "free" || pricingType === "exchange_only") score += 15;
+
+    // Campos ricos por nicho
+    if (niche.id === "veiculo" && (vehicleKm || vehicleYearModel || vehicleTransmission)) score += 15;
+    else if (niche.id === "imovel" && (reAreaSqm || reBedrooms || rePropertyType)) score += 15;
+    else if (niche.id === "hospedagem" && (hospGuests || hospBedrooms || hospPropertyType)) score += 15;
+    else if (niche.id === "viagem" && (travelDuration || travelDestinationCity || travelMealPlan)) score += 15;
+    else if (niche.id === "vaga" && (jobRegime || jobModel || jobSalaryRange)) score += 15;
+    else if (niche.id === "servico" && (serviceModality || serviceArea)) score += 15;
+    else if (niche.id === "desapego" && (itemCondition || desapegoCategory)) score += 15;
+    else score += 15;
+
+    return Math.min(100, Math.max(10, score));
+  }, [
+    title,
+    description,
+    images.length,
+    locationName,
+    structuredLoc,
+    priceCents,
+    pricingType,
+    niche.id,
+    vehicleKm,
+    vehicleYearModel,
+    vehicleTransmission,
+    reAreaSqm,
+    reBedrooms,
+    rePropertyType,
+    hospGuests,
+    hospBedrooms,
+    hospPropertyType,
+    travelDuration,
+    travelDestinationCity,
+    travelMealPlan,
+    jobRegime,
+    jobModel,
+    jobSalaryRange,
+    serviceModality,
+    serviceArea,
+    itemCondition,
+    desapegoCategory,
+  ]);
+
+  // ── Persistência Híbrida de Rascunhos (Drafts) ──
+  useEffect(() => {
+    if (typeof window !== "undefined" && !editId) {
+      try {
+        const saved = localStorage.getItem(`waesy_draft_classified_${niche.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.savedAt && parsed.title) {
+            setDraftInfo({ step: parsed.step || 2, savedAt: parsed.savedAt });
+          }
+        }
+      } catch {}
+    }
+  }, [niche.id, editId]);
+
+  const handleRestoreDraft = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(`waesy_draft_classified_${niche.id}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.title) setTitle(parsed.title);
+          if (parsed.description) setDescription(parsed.description);
+          if (parsed.priceCents !== undefined) setPriceCents(parsed.priceCents);
+          if (parsed.locationName) setLocationName(parsed.locationName);
+          if (Array.isArray(parsed.images) && parsed.images.length > 0) setImages(parsed.images);
+          if (parsed.pricingType) setPricingType(parsed.pricingType);
+          if (parsed.step && parsed.step >= 2 && parsed.step <= 5) setCurrentStep(parsed.step as any);
+          toast.success("Rascunho recuperado com sucesso!");
+          setDraftInfo(null);
+        }
+      } catch {
+        toast.error("Não foi possível carregar o rascunho.");
+      }
+    }
+  };
+
+  const handleDiscardDraft = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(`waesy_draft_classified_${niche.id}`);
+      setDraftInfo(null);
+      toast.info("Rascunho descartado.");
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    setIsSubmitting(true);
+    toast.loading("Salvando rascunho...", { id: "save-draft" });
+    try {
+      if (typeof window !== "undefined") {
+        const draftObj = {
+          title,
+          description,
+          priceCents,
+          locationName,
+          images,
+          pricingType,
+          step: currentStep,
+          savedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(`waesy_draft_classified_${niche.id}`, JSON.stringify(draftObj));
+      }
+
+      if (title.trim()) {
+        let resolvedCategory = niche.canonicalCategory;
+        if (niche.id === "viagem") resolvedCategory = "travel";
+        if (niche.id === "equipamento") resolvedCategory = "equipment";
+        if (niche.id === "doacao") resolvedCategory = "donation";
+        if (niche.id === "negocio") resolvedCategory = "business";
+        if (niche.id === "gastronomia") resolvedCategory = "food";
+
+        await upsertClassified({
+          data: {
+            id: editId || undefined,
+            category: resolvedCategory as any,
+            title: title.trim(),
+            content: description.trim() || "Rascunho em preenchimento...",
+            status: "draft",
+            images,
+            price_cents: priceCents ?? null,
+            location_name: locationName.trim() || undefined,
+            attributes: {
+              draft_step: currentStep,
+              niche: niche.id,
+            },
+          },
+        });
+      }
+      toast.success("Rascunho salvo com sucesso!", { id: "save-draft" });
+    } catch (err: any) {
+      console.warn("Aviso ao salvar rascunho:", err);
+      toast.success("Rascunho salvo no seu navegador!", { id: "save-draft" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const parsedPriceCents = priceCents ?? null;
 
   const livePreviewClassified = useMemo(() => {
@@ -2717,7 +2870,219 @@ function SpecializedClassifiedEditor({
         </div>
       </div>
 
- {/* ── Grid Principal: Editor (42%) + Truthful Preview (58%) ── */}
+      {/* ── 5-Step Adaptive Stepper Tracker (Apple Clean / Minimalist) ── */}
+      <div className="w-full bg-card rounded-2xl border border-border/60 p-2 sm:p-2.5 shadow-2xs">
+        <div className="grid grid-cols-5 gap-1 sm:gap-2">
+          {[
+            { step: 1, label: "Nicho", short: "Nicho" },
+            { step: 2, label: "Especificações", short: "Specs" },
+            { step: 3, label: "Fotos & Mídia", short: "Mídia" },
+            { step: 4, label: "Condições Comerciais", short: "Comercial" },
+            { step: 5, label: "Prévia & Publicar", short: "Publicar" },
+          ].map((s) => {
+            const isCurrent = currentStep === s.step;
+            const isPast = currentStep > s.step;
+            return (
+              <button
+                key={s.step}
+                type="button"
+                onClick={() => {
+                  if (s.step === 1) onBack();
+                  else setCurrentStep(s.step as any);
+                }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-2 px-1 sm:px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer text-center",
+                  isCurrent
+                    ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                    : isPast
+                    ? "bg-muted/50 text-foreground hover:bg-muted"
+                    : "text-muted-foreground hover:bg-muted/30 opacity-70"
+                )}
+              >
+                <span
+                  className={cn(
+                    "size-5 rounded-full flex items-center justify-center text-[10px] font-mono shrink-0",
+                    isCurrent
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : isPast
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {isPast ? "✓" : s.step}
+                </span>
+                <span className="hidden sm:inline truncate">{s.label}</span>
+                <span className="sm:hidden truncate">{s.short}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Alerta Discreto de Rascunho Disponível ── */}
+      {draftInfo && (
+        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+          <span className="text-muted-foreground">
+            Rascunho não finalizado encontrado (Etapa {draftInfo.step} de 5).
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRestoreDraft}
+              className="font-bold text-primary hover:underline cursor-pointer"
+            >
+              Restaurar
+            </button>
+            <span className="text-muted-foreground/40">•</span>
+            <button
+              type="button"
+              onClick={handleDiscardDraft}
+              className="text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              Descartar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Barra de Score de Qualidade (Silenciosa & Informativa) ── */}
+      <div className="flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-card border border-border/60 text-xs">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">
+            Qualidade
+          </span>
+          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden max-w-xs">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                qualityScore >= 80 ? "bg-emerald-500" : qualityScore >= 50 ? "bg-amber-500" : "bg-primary"
+              )}
+              style={{ width: `${qualityScore}%` }}
+            />
+          </div>
+          <span className="font-mono font-bold text-foreground text-[11px] shrink-0">{qualityScore}%</span>
+        </div>
+        <span className="text-[11px] text-muted-foreground truncate hidden sm:inline">
+          {qualityScore >= 80 ? "Excelente · Pronto para publicar" : qualityScore >= 50 ? "Bom · Adicione fotos e dados para 100%" : "Básico · Preencha mais campos"}
+        </span>
+      </div>
+
+      {currentStep === 5 ? (
+        <div className="space-y-4 max-w-5xl mx-auto">
+          {/* Header do Preview com Alternador de Dispositivo sem Emojis */}
+          <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-card border border-border/60">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                Visualização do Comprador
+              </span>
+            </div>
+
+            {/* Alternador Limpo: Mobile vs Desktop (Sem Emojis) */}
+            <div className="flex items-center bg-muted p-0.5 rounded-xl text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("mobile")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  previewDevice === "mobile"
+                    ? "bg-card text-foreground font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Mobile (390px)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("desktop")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer",
+                  previewDevice === "desktop"
+                    ? "bg-card text-foreground font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Desktop
+              </button>
+            </div>
+          </div>
+
+          {/* Container da Prévia Real */}
+          <div className="flex justify-center">
+            <div
+              className={cn(
+                "w-full transition-all duration-300",
+                previewDevice === "mobile"
+                  ? "max-w-[390px] border border-border/80 rounded-3xl p-1 bg-background shadow-lg overflow-hidden"
+                  : "max-w-5xl"
+              )}
+            >
+              {templateStyle === "editorial" || niche.id === "viagem" ? (
+                <EditorialShowcaseView
+                  classified={livePreviewClassified}
+                  isOwner={true}
+                  onOpenBookingModal={() => toast.info("Simulação: Modal de reserva abre aqui.")}
+                  onOpenProposalModal={() => toast.info("Simulação: Modal de proposta abre aqui.")}
+                  onEditClassified={() => setCurrentStep(2)}
+                />
+              ) : (
+                <UniversalClassifiedShowcase
+                  classified={livePreviewClassified}
+                  isOwner={true}
+                  canManage={true}
+                  onOpenBookingModal={() => toast.info("Simulação: Modal de reserva abre aqui.")}
+                  onOpenProposalModal={() => toast.info("Simulação: Modal de proposta abre aqui.")}
+                  onEdit={() => setCurrentStep(2)}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Sticky Thumb Zone Action Bar no Step 5 */}
+          <div className="sticky bottom-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/80 p-3 sm:p-4 -mx-3.5 sm:mx-0 sm:rounded-2xl sm:border flex items-center justify-between gap-3 shadow-lg">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCurrentStep(4)}
+              className="rounded-xl h-11 px-4 text-xs font-semibold gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="size-4" />
+              <span>Ajustar Condições</span>
+            </Button>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+                className="rounded-xl h-11 px-3 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                Salvar Rascunho
+              </Button>
+
+              <Button
+                type="button"
+                onClick={handlePublish}
+                disabled={isSubmitting || isUploadingMedia}
+                className="rounded-xl h-11 px-6 text-sm font-bold bg-primary text-primary-foreground shadow-md active:scale-98 transition-all gap-2 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Publicando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="size-4 stroke-[2.5]" />
+                    <span>{editId ? "Salvar Alterações" : "Publicar Anúncio"}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ── Grid Principal: Editor (42%) + Truthful Preview (58%) ── */
  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
  {/* Painel Esquerdo: Formulário Especializado com Scroll Dedicado */}
  <aside
@@ -7635,6 +8000,7 @@ function SpecializedClassifiedEditor({
         )}
  </main>
  </div>
+      )}
  </div>
  );
 }

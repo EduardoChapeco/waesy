@@ -1,5 +1,3 @@
-import { getLaunchLandingSettings } from "@/services/launch.functions";
-import { LaunchHomeView } from "@/components/landing/launch-home-view";
 import React, { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -111,10 +109,10 @@ const DISCOVERY_CATEGORIES: FilterChipOption[] = [
   { id: "concursos", label: "Concursos de Sorte", emoji: "🏆" },
 ];
 
-export const Route = createFileRoute("/_store/")({
+export const Route = createFileRoute("/_store/explorar")({
   head: () => ({
     meta: [
-      { title: "Waesy — Seja um Membro Fundador | Circuito 2027" },
+      { title: "Waesy — Explorar Vitrine Comunitária & Negócios Locais" },
       {
         name: "description",
         content:
@@ -136,7 +134,6 @@ export const Route = createFileRoute("/_store/")({
         }
       }
       const filteredCity = activeCity && activeCity !== "Global" ? activeCity : undefined;
-      const launchSettings = await getLaunchLandingSettings().catch(() => null);
 
       const [
         banners,
@@ -211,16 +208,6 @@ function CommunityHomePage() {
     feedPosts = [],
     concursos = [],
   } = ((Route.useLoaderData?.() as any) || {});
-
-  // Roteamento temporário: por padrão a raiz / exibe a landing page de lançamento (Circuito 2027)
-  // com botão de login. A vitrine comunitária completa permanece 100% preservada e acessível
-  // via URL /explorar ou adicionando ?view=marketplace.
-  const routeSearch = ((Route.useSearch?.() as any) || {});
-  const isMarketplace = routeSearch.view === "marketplace" || routeSearch.view === "vitrine";
-
-  if (!isMarketplace) {
-    return <LaunchHomeView initialSettings={launchSettings} />;
-  }
 
   // Estado dos 3 Modos Canônicos de Visualização (Feed, Grid, List) e Filtros
   const [search, setSearch] = useState("");

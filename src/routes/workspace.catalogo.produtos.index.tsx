@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -211,44 +212,69 @@ function EditableStockCell({
  );
 }
 
+
+const CATALOGO_TOUR_SLIDES: TourSlide[] = [
+  {
+    title: "Gestão Ágil de Produtos & Serviços",
+    description: "Cadastre itens com fotos em alta definição, descrições ricas, categorias e visibilidade instantânea na vitrine digital e no PDV.",
+    icon: Package,
+    highlightBadge: "Catálogo Unificado",
+    tip: "Clique diretamente no preço ou no estoque da tabela para editar o valor sem precisar abrir a página completa.",
+  },
+  {
+    title: "Grade de Variações e Modificadores",
+    description: "Configure variações de tamanho, cor, voltagem ou complementos adicionais (como bordas, adicionais de lanche ou opcionais de viagem).",
+    icon: Layers,
+    highlightBadge: "Matriz de Opções",
+    tip: "Aba 'Complementos & Adicionais' permite reutilizar grupos em múltiplos produtos.",
+  },
+  {
+    title: "Canais de Venda & Sincronização",
+    description: "Escolha onde cada item deve ser vendido: Loja Física (PDV), Vitrine Online, Delivery ou Catálogo no WhatsApp.",
+    icon: Globe,
+    highlightBadge: "Omnichannel",
+    tip: "Pausar um item oculta-o da vitrine imediatamente mantendo o histórico de vendas.",
+  },
+];
+
 function AdminProductsPage() {
- const { products: initialProducts, store } = ((Route.useLoaderData?.() as any) || {});
- const semantics = getNicheSemantics(store);
- const nicheCtx = getNicheCatalogContext(store);
+  const { products: initialProducts, store } = ((Route.useLoaderData?.() as any) || {});
+  const semantics = getNicheSemantics(store);
+  const nicheCtx = getNicheCatalogContext(store);
 
- const [products, setProducts] = useState<AdminProductRow[]>(initialProducts);
- const [mainTab, setMainTab] = useState<"products" | "complements">("products");
- const [searchQuery, setSearchQuery] = useState("");
- const [statusFilter, setStatusFilter] = useState<string>("active");
- const [selectedIds, setSelectedIds] = useState<string[]>([]);
- const [isProcessing, setIsProcessing] = useState(false);
- const [isImportModalOpen, setIsImportModalOpen] = useState(false);
- const navigate = useNavigate();
+  const [products, setProducts] = useState<AdminProductRow[]>(initialProducts);
+  const [mainTab, setMainTab] = useState<"products" | "complements">("products");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("active");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const navigate = useNavigate();
 
- const handleToggleActive = async (product: AdminProductRow, active: boolean) => {
- const newStatus: "published" | "draft" = active ? "published" : "draft";
- setProducts((prev) =>
- prev.map((p) => (p.id === product.id ? { ...p, status: newStatus } : p)),
- );
- try {
- await toggleProductStatus({ data: { productId: product.id, status: newStatus } });
- toast.success(
- active
- ? `${nicheCtx.entityName} ativado com sucesso!`
- : `${nicheCtx.entityName} pausado!`,
- );
- } catch {
- toast.error("Erro ao alterar status do item.");
- setProducts((prev) =>
- prev.map((p) => (p.id === product.id ? { ...p, status: product.status } : p)),
- );
- }
- };
+  const handleToggleActive = async (product: AdminProductRow, active: boolean) => {
+    const newStatus: "published" | "draft" = active ? "published" : "draft";
+    setProducts((prev) =>
+      prev.map((p) => (p.id === product.id ? { ...p, status: newStatus } : p)),
+    );
+    try {
+      await toggleProductStatus({ data: { productId: product.id, status: newStatus } });
+      toast.success(
+        active
+          ? `${nicheCtx.entityName} ativado com sucesso!`
+          : `${nicheCtx.entityName} pausado!`,
+      );
+    } catch {
+      toast.error("Erro ao alterar status do item.");
+      setProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? { ...p, status: product.status } : p)),
+      );
+    }
+  };
 
- // Filter products by search & status tab
- const filteredProducts = useMemo(() => {
- return products.filter((p) => {
- const matchesSearch =
+  // Filter products by search & status tab
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
  p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
  p.slug.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -835,6 +861,15 @@ function AdminProductsPage() {
  if (fresh) setProducts(fresh);
  }}
  />
- </div>
+ 
+      {/* ── ONBOARDING GUIADO DO CATÁLOGO ── */}
+      <ModuleTourModal
+        moduleId="catalogo"
+        moduleName="Catálogo & Produtos"
+        slides={CATALOGO_TOUR_SLIDES}
+        isOpen={isTourOpen}
+        onOpenChange={setIsTourOpen}
+      />
+    </div>
  );
 }

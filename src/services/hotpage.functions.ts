@@ -118,8 +118,45 @@ export interface HotpageDTO {
  hero_secondary_badge?: string | null;
  hero_floating_render_url?: string | null;
  featured_rail_title?: string | null;
- show_shadow?: boolean;
- text_color?: string | null;
+  show_shadow?: boolean;
+  text_color?: string | null;
+}
+
+export function mapHotpageDTO(row: any): HotpageDTO {
+  if (!row) return row;
+  const filterRules = row.filter_rules && typeof row.filter_rules === "object" ? row.filter_rules : {};
+  return {
+    ...row,
+    show_title: row.show_title !== false,
+    show_description: row.show_description !== false,
+    show_overlay: row.show_overlay === true,
+    show_shadow: row.show_shadow ?? filterRules.show_shadow ?? false,
+    show_badge: row.show_badge !== false,
+    text_color: row.text_color || filterRules.text_color || null,
+  };
+}
+
+export function sanitizeHotpagePayload(payload: Record<string, any>): Record<string, any> {
+  const { show_shadow, text_color, filter_rules, ...rest } = payload;
+  const mergedFilterRules = {
+    ...(filter_rules || {}),
+    ...(show_shadow !== undefined ? { show_shadow } : {}),
+    ...(text_color !== undefined ? { text_color } : {}),
+  };
+
+  const cleanPayload: Record<string, any> = {
+    ...rest,
+    filter_rules: mergedFilterRules,
+  };
+
+  if (show_shadow !== undefined) {
+    cleanPayload.show_shadow = show_shadow;
+  }
+  if (text_color !== undefined) {
+    cleanPayload.text_color = text_color;
+  }
+
+  return cleanPayload;
 }
 
 export const listHotpages = createServerFn({ method: "GET" })
@@ -161,23 +198,14 @@ export const listHotpages = createServerFn({ method: "GET" })
       }
     }
 
- const { data: records, error } = await query;
- if (error || !records) {
- return [];
- }
+    const { data: records, error } = await query.order("sort_order", { ascending: true });
 
- return records.map((h: any) => ({
- ...h,
- show_title: h.show_title !== false,
- show_description: h.show_description !== false,
- show_overlay: h.show_overlay === true,
- show_shadow: h.show_shadow === true,
- show_badge: h.show_badge !== false,
- bg_overlay_opacity: typeof h.bg_overlay_opacity === "number" ? h.bg_overlay_opacity : 30,
- bg_color: h.bg_color || "#000000",
- text_color: h.text_color || null,
- })) as HotpageDTO[];
- });
+    if (error || !records) {
+      return [];
+    }
+
+    return records.map(mapHotpageDTO);
+  });
 
 export const listActiveHotpages = listHotpages;
 
@@ -185,27 +213,17 @@ export const listActiveHotpages = listHotpages;
  * Lista exclusivamente os Cards Herói do Topo (Módulos Principais 16:9 Limpos da Home)
  */
 export const listHomeHeroCards = createServerFn({ method: "GET" }).handler(
- async (): Promise<HotpageDTO[]> => {
- const supabase = getAnonServerClient();
- const { data: rows } = await supabase
- .from("hotpages")
- .select("*")
- .eq("is_active", true)
- .or("template_type.eq.hero_module,and(module.eq.home,template_type.neq.category_hub,template_type.neq.editorial_card)")
- .order("sort_order", { ascending: true });
+  async (): Promise<HotpageDTO[]> => {
+    const supabase = getAnonServerClient();
+    const { data: rows } = await supabase
+      .from("hotpages")
+      .select("*")
+      .eq("is_active", true)
+      .or("template_type.eq.hero_module,and(module.eq.home,template_type.neq.category_hub,template_type.neq.editorial_card)")
+      .order("sort_order", { ascending: true });
 
- return (rows || []).map((h: any) => ({
- ...h,
- show_title: h.show_title ?? true,
- show_description: h.show_description ?? false,
- show_overlay: h.show_overlay === true,
- show_shadow: h.show_shadow === true,
- show_badge: h.show_badge ?? false,
- bg_overlay_opacity: typeof h.bg_overlay_opacity === "number" ? h.bg_overlay_opacity : 30,
- bg_color: h.bg_color || "#000000",
- text_color: h.text_color || null,
- })) as HotpageDTO[];
- }
+    return (rows || []).map(mapHotpageDTO);
+  }
 );
 
 /**
@@ -395,101 +413,129 @@ export const createHotpage = createServerFn({ method: "POST" })
  .handler(async ({ data }) => {
  await requireAdmin();
  const supabase = getServerClient();
- const { data: created, error } = await supabase
- .from("hotpages")
- .insert({
- slug: data.slug,
- title: data.title,
- template_type: data.template_type || "editorial_card",
- badge_label: data.badge_label || null,
- hero_stat_badge: data.hero_stat_badge || null,
- hero_secondary_badge: data.hero_secondary_badge || null,
- description: data.description || null,
- cover_image_url: data.cover_image_url || null,
- icon_name: data.icon_name || null,
- icon_url: data.icon_url || data.custom_icon_url || null,
- custom_icon_url: data.custom_icon_url || data.icon_url || null,
- target_route: data.target_route || null,
- bg_media_type: data.bg_media_type || "none",
- bg_media_url: data.bg_media_url || null,
- bg_color: data.bg_color || null,
- bg_overlay_opacity: data.bg_overlay_opacity ?? 30,
- bg_texture: data.bg_texture || "none",
- filter_rules: data.filter_rules || {},
- module: data.module || "home",
- sort_order: data.sort_order,
- show_title: data.show_title,
- show_description: data.show_description,
- show_overlay: data.show_overlay,
- show_shadow: data.show_shadow,
- show_badge: data.show_badge,
- text_color: data.text_color || null,
- is_active: true,
- })
- .select()
- .single();
+ const sanitized = sanitizeHotpagePayload({
+      slug: data.slug,
+      title: data.title,
+      template_type: data.template_type || "editorial_card",
+      badge_label: data.badge_label || null,
+      hero_stat_badge: data.hero_stat_badge || null,
+      hero_secondary_badge: data.hero_secondary_badge || null,
+      description: data.description || null,
+      cover_image_url: data.cover_image_url || null,
+      icon_name: data.icon_name || null,
+      icon_url: data.icon_url || data.custom_icon_url || null,
+      custom_icon_url: data.custom_icon_url || data.icon_url || null,
+      target_route: data.target_route || null,
+      bg_media_type: data.bg_media_type || "none",
+      bg_media_url: data.bg_media_url || null,
+      bg_color: data.bg_color || null,
+      bg_overlay_opacity: data.bg_overlay_opacity ?? 30,
+      bg_texture: data.bg_texture || "none",
+      filter_rules: data.filter_rules || {},
+      module: data.module || "home",
+      sort_order: data.sort_order,
+      show_title: data.show_title,
+      show_description: data.show_description,
+      show_overlay: data.show_overlay,
+      show_shadow: data.show_shadow,
+      show_badge: data.show_badge,
+      text_color: data.text_color || null,
+      is_active: true,
+    });
 
- if (error) throw new Error(error.message);
- return created as HotpageDTO;
- });
+    let { data: created, error } = await supabase
+      .from("hotpages")
+      .insert(sanitized)
+      .select()
+      .single();
+
+    // Blindagem extrema: se o schema cache do PostgREST ainda não tiver a coluna física show_shadow ou text_color
+    if (error && (error.message.includes("schema cache") || error.message.includes("show_shadow") || error.message.includes("text_color"))) {
+      const { show_shadow, text_color, ...safePayload } = sanitized;
+      const fallbackResult = await supabase
+        .from("hotpages")
+        .insert(safePayload)
+        .select()
+        .single();
+      created = fallbackResult.data;
+      error = fallbackResult.error;
+    }
+
+    if (error) throw new Error(error.message);
+    return mapHotpageDTO(created);
+  });
 
 export const updateHotpage = createServerFn({ method: "POST" })
- .validator(
- z.object({
- id: z.string().uuid(),
- slug: z.string().min(2).optional(),
- title: z.string().min(2).optional(),
- badge_label: z.string().nullable().optional(),
- hero_stat_badge: z.string().nullable().optional(),
- hero_secondary_badge: z.string().nullable().optional(),
- description: z.string().nullable().optional(),
- cover_image_url: z.string().nullable().optional(),
- icon_name: z.string().nullable().optional(),
- icon_url: z.string().nullable().optional(),
- custom_icon_url: z.string().nullable().optional(),
- target_route: z.string().nullable().optional(),
- bg_media_type: z.enum(["none", "image", "video", "gif"]).optional(),
- bg_media_url: z.string().nullable().optional(),
- bg_color: z.string().nullable().optional(),
- bg_overlay_opacity: z.number().min(0).max(100).optional(),
- bg_texture: z.enum(["none", "noise", "dots", "grid", "mesh", "glass"]).optional(),
- filter_rules: z.record(z.any()).nullable().optional(),
- module: HotpageModuleSchema.optional(),
- template_type: z.enum([
- "hero_module",
- "category_hub",
- "editorial_card",
- "turbo",
- "hits",
- "bogo",
- "market",
- "travel",
- "services",
- "custom",
- ]).optional(),
- sort_order: z.number().int().optional(),
- show_title: z.boolean().optional(),
- show_description: z.boolean().optional(),
- show_overlay: z.boolean().optional(),
- show_shadow: z.boolean().optional(),
- show_badge: z.boolean().optional(),
- text_color: z.string().nullable().optional(),
- is_active: z.boolean().optional(),
- }),
- )
- .handler(async ({ data: { id, ...patch } }) => {
- await requireAdmin();
- const supabase = getServerClient();
- const { data: updated, error } = await supabase
- .from("hotpages")
- .update(patch)
- .eq("id", id)
- .select()
- .single();
+  .validator(
+    z.object({
+      id: z.string().uuid(),
+      slug: z.string().min(2).optional(),
+      title: z.string().min(2).optional(),
+      badge_label: z.string().nullable().optional(),
+      hero_stat_badge: z.string().nullable().optional(),
+      hero_secondary_badge: z.string().nullable().optional(),
+      description: z.string().nullable().optional(),
+      cover_image_url: z.string().nullable().optional(),
+      icon_name: z.string().nullable().optional(),
+      icon_url: z.string().nullable().optional(),
+      custom_icon_url: z.string().nullable().optional(),
+      target_route: z.string().nullable().optional(),
+      bg_media_type: z.enum(["none", "image", "video", "gif"]).optional(),
+      bg_media_url: z.string().nullable().optional(),
+      bg_color: z.string().nullable().optional(),
+      bg_overlay_opacity: z.number().min(0).max(100).optional(),
+      bg_texture: z.enum(["none", "noise", "dots", "grid", "mesh", "glass"]).optional(),
+      filter_rules: z.record(z.any()).nullable().optional(),
+      module: HotpageModuleSchema.optional(),
+      template_type: z.enum([
+        "hero_module",
+        "category_hub",
+        "editorial_card",
+        "turbo",
+        "hits",
+        "bogo",
+        "market",
+        "travel",
+        "services",
+        "custom",
+      ]).optional(),
+      sort_order: z.number().int().optional(),
+      show_title: z.boolean().optional(),
+      show_description: z.boolean().optional(),
+      show_overlay: z.boolean().optional(),
+      show_shadow: z.boolean().optional(),
+      show_badge: z.boolean().optional(),
+      text_color: z.string().nullable().optional(),
+      is_active: z.boolean().optional(),
+    }),
+  )
+  .handler(async ({ data: { id, ...patch } }) => {
+    await requireAdmin();
+    const supabase = getServerClient();
+    const sanitized = sanitizeHotpagePayload(patch);
+    let { data: updated, error } = await supabase
+      .from("hotpages")
+      .update(sanitized)
+      .eq("id", id)
+      .select()
+      .single();
 
- if (error) throw new Error(error.message);
- return updated as HotpageDTO;
- });
+    // Blindagem extrema: se o schema cache do PostgREST ainda não tiver a coluna física show_shadow ou text_color
+    if (error && (error.message.includes("schema cache") || error.message.includes("show_shadow") || error.message.includes("text_color"))) {
+      const { show_shadow, text_color, ...safePayload } = sanitized;
+      const fallbackResult = await supabase
+        .from("hotpages")
+        .update(safePayload)
+        .eq("id", id)
+        .select()
+        .single();
+      updated = fallbackResult.data;
+      error = fallbackResult.error;
+    }
+
+    if (error) throw new Error(error.message);
+    return mapHotpageDTO(updated);
+  });
 
 export const deleteHotpage = createServerFn({ method: "POST" })
  .validator(z.object({ id: z.string().uuid() }))

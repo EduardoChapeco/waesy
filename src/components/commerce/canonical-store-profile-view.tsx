@@ -41,6 +41,7 @@ import {
   Camera,
   Edit3,
   Package,
+  LayoutGrid,
 } from "lucide-react";
 import {
   WhatsappLogo,
@@ -560,111 +561,124 @@ export function CanonicalStoreProfileView({
         </div>
       )}
 
-      {/* ── 2. BLOCO PANORÂMICO: AVATAR SQUIRCLE 1:1 + CAPA 1090PX + CARD DE STATS ── */}
-      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-6 shadow-xs">
-        {/* Faixa Superior Panorâmica: Foto + Capa Panorâmica 3:1 + Card de Stats */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-          {/* Linha de Logo + Capa Panorâmica */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-            {/* Foto da Empresa em Squircle 1:1 */}
-            <div className="flex-shrink-0 relative group">
-              <div className="size-20 sm:size-36 rounded-2xl ring-2 ring-border/60 bg-muted flex-shrink-0 overflow-hidden shadow-xs flex items-center justify-center">
-                {logoUrl ? (
-                  <img
-                    src={logoUrl}
-                    alt={store.name || store.business_name}
-                    className="size-full object-cover"
-                  />
-                ) : (
-                  <span className="text-xl sm:text-3xl font-extrabold bg-muted text-foreground font-mono">
-                    {(store.name || store.business_name || "WD").slice(0, 2).toUpperCase()}
-                  </span>
-                )}
-              </div>
-              {isOwner && (
-                <Link
-                  to="/workspace/marketing/brand-kit"
-                  search={{ storeId: store.id }}
-                  className="absolute inset-0 bg-black/40 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
-                  title="Alterar Logo da Marca"
-                >
-                  <Camera className="size-4 sm:size-5" />
-                  <span className="text-[9px] sm:text-[10px]">Alterar</span>
-                </Link>
+      {/* ── 2. CABEÇALHO DO PERFIL: FOTO 1:1 + CAPA 21:9 NA MESMA ALTURA SEM BORDAS PESADAS ── */}
+      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4 shadow-xs">
+        {/* Faixa Superior: Foto 1:1 + Capa 21:9 com Mesma Altura */}
+        <div className="flex items-center gap-3 sm:gap-4 w-full">
+          {/* Foto da Empresa em Squircle 1:1 */}
+          <div className="flex-shrink-0 relative group">
+            <div className="size-20 sm:size-32 rounded-2xl bg-muted flex-shrink-0 overflow-hidden shadow-2xs flex items-center justify-center">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={store.name || store.business_name}
+                  className="size-full object-cover"
+                />
+              ) : (
+                <span className="text-xl sm:text-3xl font-extrabold bg-muted text-foreground font-mono">
+                  {(store.name || store.business_name || "WD").slice(0, 2).toUpperCase()}
+                </span>
               )}
             </div>
-
-            {/* Container da Capa Panorâmica com Scroll Interno */}
-            <div className="flex-1 h-20 sm:h-36 rounded-2xl bg-muted/30 border border-border/40 relative overflow-hidden flex items-center">
-              <div 
-                tabIndex={0}
-                aria-label="Galeria de banners da empresa"
-                className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 p-1 snap-x snap-mandatory"
+            {isOwner && (
+              <Link
+                to="/workspace/marketing/brand-kit"
+                search={{ storeId: store.id }}
+                className="absolute inset-0 bg-black/40 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-xs font-semibold gap-1 cursor-pointer"
+                title="Alterar Logo da Marca"
               >
-                {storeBannersList.length > 0 ? (
-                  storeBannersList.map((banner, idx) => (
-                    <div
-                      key={idx}
-                      className="h-full min-w-full sm:min-w-[320px] md:min-w-[420px] rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/40"
-                    >
-                      <img
-                        src={banner.imageUrl}
-                        alt={banner.title || "Capa da empresa"}
-                        className="size-full object-cover select-none rounded-xl"
-                      />
-                      {banner.link && (
-                        <a
-                          href={banner.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="absolute inset-0 z-10"
-                          aria-label="Abrir link do banner"
-                        />
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="size-full bg-gradient-to-r from-primary/10 via-muted/40 to-primary/15 flex items-center justify-center rounded-xl">
-                    <Store className="size-6 sm:size-8 text-primary/30" />
-                  </div>
-                )}
-              </div>
-              {isOwner && (
-                <Link
-                  to="/workspace/marketing/brand-kit"
-                  search={{ storeId: store.id }}
-                  className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 shadow-xs cursor-pointer transition-colors z-20"
-                >
-                  <Camera className="size-3 sm:size-3.5" />
-                  <span>Alterar Capa</span>
-                </Link>
-              )}
-            </div>
+                <Camera className="size-4 sm:size-5" />
+                <span className="text-[9px] sm:text-[10px]">Alterar</span>
+              </Link>
+            )}
           </div>
 
-          {/* Card de Stats no Final com Dados 100% Reais (Seguidores, Seguindo, Curtidas) */}
-          <div className="h-14 sm:h-36 sm:min-w-[220px] flex-shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/60 p-2 sm:p-4 flex flex-col justify-center shadow-xs">
-            <div className="grid grid-cols-3 gap-2 sm:gap-2 text-center max-w-sm mx-auto w-full">
-              <div>
-                <p className="text-xs sm:text-base font-extrabold text-foreground">
-                  {store.followers_count || store.followersCount || 0}
-                </p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Seguidores</p>
-              </div>
-              <div>
-                <p className="text-xs sm:text-base font-extrabold text-foreground">
-                  {store.following_count || store.followingCount || 0}
-                </p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Seguindo</p>
-              </div>
-              <div>
-                <p className="text-xs sm:text-base font-extrabold text-foreground font-mono">
-                  {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc: number, p: any) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
-                </p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">Curtidas</p>
-              </div>
+          {/* Container da Capa Panorâmica com Mesma Altura e Scroll Interno Suave */}
+          <div className="flex-1 h-20 sm:h-32 rounded-2xl bg-muted/20 relative overflow-hidden flex items-center">
+            <div 
+              tabIndex={0}
+              aria-label="Galeria de banners da empresa"
+              className="size-full overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth flex items-center gap-2 snap-x snap-mandatory"
+            >
+              {storeBannersList.length > 0 ? (
+                storeBannersList.map((banner, idx) => (
+                  <div
+                    key={idx}
+                    className="h-full min-w-full sm:min-w-[340px] md:min-w-[460px] rounded-xl overflow-hidden relative shrink-0 snap-center bg-muted/30"
+                  >
+                    <img
+                      src={banner.imageUrl}
+                      alt={banner.title || "Capa da empresa"}
+                      className="size-full object-cover select-none rounded-xl"
+                    />
+                    {banner.link && (
+                      <a
+                        href={banner.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute inset-0 z-10"
+                        aria-label="Abrir link do banner"
+                      />
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="size-full bg-gradient-to-r from-primary/10 via-muted/30 to-primary/10 flex items-center justify-center rounded-xl">
+                  <Store className="size-6 sm:size-8 text-primary/30" />
+                </div>
+              )}
             </div>
+            {isOwner && (
+              <Link
+                to="/workspace/marketing/brand-kit"
+                search={{ storeId: store.id }}
+                className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer transition-colors z-20"
+              >
+                <Camera className="size-3 sm:size-3.5" />
+                <span>Alterar Capa</span>
+              </Link>
+            )}
           </div>
+        </div>
+
+        {/* Stats Reais no Padrão Instagram (Limpo, Sem Card Cinza de Fundo) */}
+        <div className="flex items-center gap-6 sm:gap-10 py-1">
+          <div className="text-left">
+            <span className="block text-sm sm:text-base font-bold text-foreground">
+              {store.followers_count || store.followersCount || 0}
+            </span>
+            <span className="text-[11px] text-muted-foreground">Seguidores</span>
+          </div>
+          <div className="text-left">
+            <span className="block text-sm sm:text-base font-bold text-foreground">
+              {store.following_count || store.followingCount || 0}
+            </span>
+            <span className="text-[11px] text-muted-foreground">Seguindo</span>
+          </div>
+          <div className="text-left">
+            <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
+              {store.likes_count || (Array.isArray(posts) ? posts.reduce((acc: number, p: any) => acc + (p.likes_count || p.likes || 0), 0) : 0)}
+            </span>
+            <span className="text-[11px] text-muted-foreground">Curtidas</span>
+          </div>
+          {/* Avaliação Real exclusivamente para Empresas */}
+          {(source === "directory" || store.is_company || store.business_name || !store.is_personal) && (
+            <div className="text-left">
+              <span className="inline-flex items-center gap-1 text-sm sm:text-base font-bold text-foreground">
+                {realReviewsCount > 0 && realRatingAverage !== null ? (
+                  <>
+                    <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                    <span>{realRatingAverage.toFixed(1)}</span>
+                  </>
+                ) : (
+                  <span className="text-muted-foreground font-normal text-xs sm:text-sm">—</span>
+                )}
+              </span>
+              <span className="text-[11px] text-muted-foreground block">
+                {realReviewsCount > 0 ? `(${realReviewsCount}) Avaliações` : "Avaliações"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Linha de Identidade e Ações Minimalistas */}
@@ -681,50 +695,41 @@ export function CanonicalStoreProfileView({
                     @{store.slug}
                   </span>
                 )}
-
-                {/* AVALIAÇÃO REAL AO LADO DO NOME (ZERO MOCKS) */}
-                {realReviewsCount > 0 && realRatingAverage !== null ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs border border-amber-500/20">
-                    <Star className="size-3.5 fill-amber-500 text-amber-500" />
-                    <span>{realRatingAverage.toFixed(1)}</span>
-                    <span className="text-[10px] font-medium text-muted-foreground">({realReviewsCount})</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-muted text-muted-foreground text-[11px] font-medium border border-border/50">
-                    Sem avaliações ainda
-                  </span>
-                )}
               </div>
 
-              {/* Badges sutis e limpos padrão Instagram / Apple */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
-                  {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa Local")}
+              {/* Informações úteis em texto limpo — Sem cards de fundo pesados */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground pt-0.5">
+                <span className="font-semibold text-foreground/90">
+                  {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa")}
                 </span>
+                <span className="text-muted-foreground/40">•</span>
                 <span
                   className={cn(
-                    "px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border",
+                    "font-medium",
                     openStatus?.isOpenNow
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "border-border/50 bg-transparent text-muted-foreground"
+                      ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+                      : "text-muted-foreground"
                   )}
                 >
                   {openStatus ? openStatus.text : "Horários sob consulta"}
                 </span>
                 {orderTypes.delivery && (
-                  <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
-                    Delivery
-                  </span>
+                  <>
+                    <span className="text-muted-foreground/40">•</span>
+                    <span>Delivery</span>
+                  </>
                 )}
                 {orderTypes.takeout && (
-                  <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
-                    Retirada
-                  </span>
+                  <>
+                    <span className="text-muted-foreground/40">•</span>
+                    <span>Retirada</span>
+                  </>
                 )}
                 {orderTypes.dine_in && (
-                  <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border border-border/50 bg-transparent text-muted-foreground">
-                    No Local
-                  </span>
+                  <>
+                    <span className="text-muted-foreground/40">•</span>
+                    <span>No Local</span>
+                  </>
                 )}
               </div>
             </div>
@@ -948,13 +953,20 @@ export function CanonicalStoreProfileView({
               return (
                 <>
                   {store.address && (
-                    <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        [store.address, store.city, store.state].filter(Boolean).join(", ")
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-foreground/80 hover:text-primary hover:underline cursor-pointer"
+                    >
                       <MapPin className="size-3.5 text-primary shrink-0" />
                       <span>
                         {store.address}
                         {store.city ? ` — ${store.city}, ${store.state || "SC"}` : ""}
                       </span>
-                    </span>
+                    </a>
                   )}
 
                   {store.latitude && store.longitude && (
@@ -1036,7 +1048,7 @@ export function CanonicalStoreProfileView({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Sparkles className="size-4" />
+              <LayoutGrid className="size-4" />
               <span>Vitrine</span>
             </button>
 

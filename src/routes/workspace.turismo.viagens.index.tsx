@@ -33,6 +33,35 @@ import {
 } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
+import {
+  ModuleTourModal,
+  ModuleTourTrigger,
+  type TourSlide,
+} from "@/components/ui/module-tour-modal";
+
+const TURISMO_TOUR_SLIDES: TourSlide[] = [
+  {
+    title: "Gestão Completa de Viagens & Roteiros",
+    description: "Controle roteiros terrestres e aéreos, datas de embarque, lista de passageiros e status de confirmação com integração direta a vouchers.",
+    icon: Compass,
+    highlightBadge: "Roteiros & PNR",
+    tip: "Clique em 'Nova Reserva' para cadastrar um pacote ou 'Importar Operadora' para OCR automático de vouchers da CVC, Azul e ViagensPromo.",
+  },
+  {
+    title: "Mapa Interativo de Assentos do Ônibus",
+    description: "Aloque passageiros poltrona por poltrona no mapa visual do veículo (convencional, executivo ou double decker) e veja a ocupação em tempo real.",
+    icon: Users,
+    highlightBadge: "Frota & Assentos",
+    tip: "A poltrona selecionada é sincronizada no ingresso do passageiro com QR Code de embarque.",
+  },
+  {
+    title: "Emissão de Manifesto ANTT & Rooming List",
+    description: "Exporte em 1 clique o manifesto formal de passageiros exigido pela ANTT em PDF e a lista de quartos (Rooming List) para a recepção dos hotéis.",
+    icon: FileSpreadsheet,
+    highlightBadge: "Compliance & PDF",
+    tip: "O manifesto já sai com número de documento, órgão expedidor e telefone de emergência.",
+  },
+];
 
 export const Route = createFileRoute("/workspace/turismo/viagens/")({
   head: () => ({
@@ -65,6 +94,7 @@ export default function WorkspaceTripsListPage() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isNewTripOpen, setIsNewTripOpen] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
 
   const {
     data: trips = [],
@@ -129,6 +159,11 @@ export default function WorkspaceTripsListPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs font-medium text-muted-foreground">Gestão de reservas, roteiros rodoviários e aéreos</p>
+        <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
+      </div>
+
       {/* ── 1. TOOLBAR CANÔNICA PADRÃO Waesy ── */}
       <WorkspaceCanonicalToolbar
         tabs={TABS}
@@ -315,6 +350,15 @@ export default function WorkspaceTripsListPage() {
         title="Painel Executivo de Viagens"
         subtitle="Indicadores de faturamento, reservas ativas e passageiros"
         metrics={metricsItems}
+      />
+
+      {/* ── 5. ONBOARDING GUIADO DO MÓDULO DE TURISMO ── */}
+      <ModuleTourModal
+        moduleId="turismo"
+        moduleName="Turismo e Viagens"
+        slides={TURISMO_TOUR_SLIDES}
+        isOpen={isTourOpen}
+        onOpenChange={setIsTourOpen}
       />
     </div>
   );

@@ -363,6 +363,7 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  key={item.id || idx}
  className={cn(
  "group relative rounded-xl overflow-hidden border border-border bg-card shadow-xs transition-all hover:border-primary/50",
+ idx === 0 && "ring-2 ring-primary/60 border-primary",
  computedAspect === 1 ? "aspect-square" : computedAspect === 4 / 3 ? "aspect-[4/3]" : "aspect-video"
  )}
  >

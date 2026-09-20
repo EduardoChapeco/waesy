@@ -155,13 +155,16 @@ export async function _calculateShipping({
  const surgeMultiplier = isLocalExpress ? 1.20 : 1.0;
  const finalPriceCents = Math.round(rate.price_cents * surgeMultiplier);
 
- finalQuotes.push({
- provider: zone.name,
- service_name: isLocalExpress && surgeMultiplier > 1.0 ? `${rate.name} (Surge Pricing +20%)` : rate.name,
- price_cents: finalPriceCents,
- estimated_days: rate.estimated_days || 1,
- surge_applied: surgeMultiplier > 1.0,
- });
+        finalQuotes.push({
+          id: rate.id || `rate-${rate.name || "local"}`.toLowerCase().replace(/\s+/g, "-"),
+          name: rate.name,
+          provider: zone.name,
+          service_name: rate.name,
+          price_cents: finalPriceCents,
+          estimated_days: rate.estimated_days || 1,
+          surge_applied: surgeMultiplier > 1.0,
+          notice: surgeMultiplier > 1.0 ? "Tarifa dinâmica temporária" : undefined,
+        });
  });
  }
  });
@@ -252,13 +255,14 @@ export async function _calculateShipping({
       const alreadyHasMoto = finalQuotes.some((q) => (q.service_name || "").toLowerCase().includes("motolink"));
       if (!alreadyHasMoto) {
         finalQuotes.push({
+          id: "motolink-express",
+          name: "MotoLink Express · 35-50 min",
           provider: "MotoLink Express",
-          service_name: isPeakHour
-            ? "MotoLink Express (Alta Demanda +25%)"
-            : "MotoLink Express (Entrega Local em 45-60 min)",
+          service_name: "MotoLink Express · 35-50 min",
           price_cents: finalPriceCents,
           estimated_days: 0,
           surge_applied: isPeakHour,
+          notice: isPeakHour ? "Tarifa dinâmica por alta demanda local" : undefined,
         });
       }
     }

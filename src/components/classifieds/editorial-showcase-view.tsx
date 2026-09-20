@@ -158,6 +158,12 @@ export function EditorialShowcaseView({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showDesktopInstallments, setShowDesktopInstallments] = useState(false);
 
+  const images: string[] =
+    (Array.isArray(classified?.images) && classified.images.length > 0 ? classified.images : null) ||
+    (Array.isArray(classified?.photos) && classified.photos.length > 0 ? classified.photos : null) ||
+    (Array.isArray(classified?.media) && classified.media.length > 0 ? classified.media : null) ||
+    [];
+
   // ── Atalhos de Teclado Desktop para Galeria & Modal Ampliado ─────────────
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -216,12 +222,6 @@ export function EditorialShowcaseView({
   const isTravel = nicheId === "travel" || nicheId.includes("viag") || nicheId.includes("tour") || classified?.category === "travel";
   const isHospitality = nicheId === "hospitality_stay" || nicheId.includes("hosped") || nicheId.includes("temporada");
   const isGoods = nicheId === "goods" || nicheId.includes("goods") || nicheId.includes("desapego") || attrs.desapego_subcategory || (!isTravel && !isHospitality && !nicheId.includes("veic") && !nicheId.includes("imov") && !nicheId.includes("serv") && !nicheId.includes("vaga") && !nicheId.includes("food") && !nicheId.includes("doacao") && !nicheId.includes("digit") && !nicheId.includes("assinatura") && !nicheId.includes("equip"));
-
-  const images: string[] =
-    (Array.isArray(classified?.images) && classified.images.length > 0 ? classified.images : null) ||
-    (Array.isArray(classified?.photos) && classified.photos.length > 0 ? classified.photos : null) ||
-    (Array.isArray(classified?.media) && classified.media.length > 0 ? classified.media : null) ||
-    [];
 
   // ── Modalidade de Preço & Dinamismo ──────────────────────────────────────────
   const pricingType: string = attrs.pricing_type || (classified?.negotiable ? "fixed" : "fixed");

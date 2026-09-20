@@ -19,10 +19,14 @@ import {
   ExternalLink,
   Users,
   Smartphone,
+  CheckSquare,
+  PackageCheck,
+  Link as LinkIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getDealsByUser, respondToDealProposal } from "@/services/deals.functions";
+import { getProfile } from "@/services/auth.functions";
 import { generateContractFromDeal } from "@/services/contracts.functions";
 import { createStoreCarne } from "@/services/receivables.functions";
 import { DealDeliveryTrackingCard } from "@/components/commercial/deal-delivery-tracking-card";
@@ -45,6 +49,7 @@ import {
 } from "@/components/documents/digital-companion-card";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
+import React from "react";
 
 export const Route = createFileRoute("/_store/conta/negociacoes")({
  head: () => ({ meta: [{ title: "Minhas Negociações & Reservas | Waesy" }] }),
@@ -62,14 +67,65 @@ const STATUS_CONFIG: Record<
  completed: { label: "Concluída", variant: "default" },
 };
 
+// Timeline de Progresso do Deal (Nielsen Norman: visibilidade do status do sistema)
+const DEAL_STEPS = [
+  { key: "negotiating", label: "Proposta" },
+  { key: "accepted", label: "Aceita" },
+  { key: "confirmed", label: "Paga" },
+  { key: "completed", label: "Concluída" },
+];
+
+function DealTimeline({ status }: { status: string }) {
+  const activeIndex = status === "negotiating" ? 0 : status === "accepted" ? 1 : status === "confirmed" ? 2 : status === "completed" ? 3 : -1;
+  if (activeIndex < 0) return null;
+  return (
+    <div className="flex items-center gap-0 w-full py-1" role="progressbar" aria-valuenow={activeIndex} aria-valuemax={3}>
+      {DEAL_STEPS.map((step, i) => {
+        const isDone = i < activeIndex;
+        const isActive = i === activeIndex;
+        return (
+          <React.Fragment key={step.key}>
+            <div className="flex flex-col items-center gap-1 shrink-0">
+              <div className={`size-5 rounded-full flex items-center justify-center border-2 transition-all ${
+                isDone ? "bg-emerald-500 border-emerald-500 text-white" :
+                isActive ? "bg-primary border-primary text-primary-foreground" :
+                "bg-muted border-border"
+              }`}>
+                {isDone ? (
+                  <CheckCircle2 className="size-3" />
+                ) : (
+                  <span className="text-[9px] font-bold">{i + 1}</span>
+                )}
+              </div>
+              <span className={`text-[9px] font-semibold whitespace-nowrap ${
+                isDone || isActive ? "text-foreground" : "text-muted-foreground/60"
+              }`}>{step.label}</span>
+            </div>
+            {i < DEAL_STEPS.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-1 mb-3.5 rounded-full transition-all ${
+                isDone ? "bg-emerald-500" : "bg-border/50"
+              }`} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
 function NegociacoesPage() {
  const queryClient = useQueryClient();
  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
  const [counterPriceCents, setCounterPriceCents] = useState<number | undefined>(undefined);
  const [counterMessage, setCounterMessage] = useState("");
- const [activeTab, setActiveTab] = useState<"all" | "bookings" | "deals">("all");
+ const [activeTab, setActiveTab] = useState<"all" | "purchases" | "sales" | "bookings">("all");
  const [generatingContractId, setGeneratingContractId] = useState<string | null>(null);
  const [selectedCompanionDeal, setSelectedCompanionDeal] = useState<any | null>(null);
+
+ const { data: profile } = useQuery({
+   queryKey: ["current-user-profile"],
+   queryFn: () => getProfile(),
+ });
 
  const { data: deals, isLoading } = useQuery({
  queryKey: ["user-deals"],
@@ -90,30 +146,30 @@ function NegociacoesPage() {
  },
  });
 
- const handleAction = (dealId: string, action: "accept" | "reject" | "counter_proposal") => {
- if (action === "counter_proposal") {
- const counterCents = counterPriceCents;
- if (!counterCents || counterCents <= 0) {
- toast.error("Informe o valor da contraproposta.");
- return;
- }
- respondMutation.mutate({
- data: {
- dealId,
- action: "counter_proposal",
- counterPriceCents: counterCents,
- message: counterMessage.trim() || undefined,
- },
- });
- } else {
- respondMutation.mutate({
- data: {
- dealId,
- action,
- },
- });
- }
- };
+  const handleAction = (dealId: string, action: "accept" | "reject" | "counter_proposal" | "complete" | "cancel") => {
+    if (action === "counter_proposal") {
+      const counterCents = counterPriceCents;
+      if (!counterCents || counterCents <= 0) {
+        toast.error("Informe o valor da contraproposta.");
+        return;
+      }
+      respondMutation.mutate({
+        data: {
+          dealId,
+          action: "counter_proposal",
+          counterPriceCents: counterCents,
+          message: counterMessage.trim() || undefined,
+        },
+      });
+    } else {
+      respondMutation.mutate({
+        data: {
+          dealId,
+          action,
+        },
+      });
+    }
+  };
 
  const handleGenerateContract = async (dealId: string) => {
  try {
@@ -134,13 +190,16 @@ function NegociacoesPage() {
  };
 
  const filteredDeals = (deals || []).filter((deal: any) => {
- if (activeTab === "bookings") {
- return deal.is_direct_booking || deal.deal_type === "rental" || deal.start_date;
- }
- if (activeTab === "deals") {
- return !deal.is_direct_booking && deal.deal_type !== "rental" && !deal.start_date;
- }
- return true;
+   if (activeTab === "purchases") {
+     return deal.buyer_id === profile?.id;
+   }
+   if (activeTab === "sales") {
+     return deal.seller_id === profile?.id;
+   }
+   if (activeTab === "bookings") {
+     return deal.is_direct_booking || deal.deal_type === "rental" || deal.start_date;
+   }
+   return true;
  });
 
   return (
@@ -183,6 +242,28 @@ function NegociacoesPage() {
         </button>
         <button
           type="button"
+          onClick={() => setActiveTab("purchases")}
+          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            activeTab === "purchases"
+              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
+          }`}
+        >
+          Minhas Compras ({deals?.filter((d: any) => d.buyer_id === profile?.id).length || 0})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("sales")}
+          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            activeTab === "sales"
+              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
+          }`}
+        >
+          Meus Anúncios ({deals?.filter((d: any) => d.seller_id === profile?.id).length || 0})
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveTab("bookings")}
           className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
             activeTab === "bookings"
@@ -191,17 +272,6 @@ function NegociacoesPage() {
           }`}
         >
           Hospedagens & Diárias
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("deals")}
-          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
-            activeTab === "deals"
-              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-          }`}
-        >
-          Vendas & Propostas
         </button>
       </div>
 
@@ -258,6 +328,13 @@ function NegociacoesPage() {
  </span>
  </div>
  </div>
+
+  {/* ── Timeline de Progresso do Deal ── */}
+  {["negotiating", "accepted", "confirmed", "completed"].includes(deal.status) && (
+    <div className="px-0.5">
+      <DealTimeline status={deal.status} />
+    </div>
+  )}
 
  {/* Detalhes da Reserva / Proposta */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-muted/20 p-3.5 rounded-xl ">
@@ -330,11 +407,13 @@ function NegociacoesPage() {
  {/* Ações de Negociação */}
  {isNegotiating && !isCountering && (
  <div className="flex flex-wrap items-center gap-2 pt-1">
+ {deal.seller_id === profile?.id ? (
+ <>
  <Button
  size="sm"
  onClick={() => handleAction(deal.id, "accept")}
  disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+ className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Aceitar Proposta</span>
@@ -345,7 +424,7 @@ function NegociacoesPage() {
  variant="outline"
  onClick={() => setSelectedDealId(deal.id)}
  disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-semibold gap-1.5"
+ className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
  >
  <DollarSign className="size-3.5 text-primary" />
  <span>Fazer Contraproposta</span>
@@ -356,10 +435,51 @@ function NegociacoesPage() {
  variant="ghost"
  onClick={() => handleAction(deal.id, "reject")}
  disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10"
+ className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
  >
  <XCircle className="size-3.5" />
  <span>Recusar</span>
+ </Button>
+ </>
+ ) : deal.buyer_id === profile?.id ? (
+ <div className="flex items-center gap-2 flex-wrap">
+ <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+ <Clock className="size-3.5 text-amber-500" />
+ Proposta enviada ao anunciante. Aguardando resposta.
+ </span>
+ <Button
+ size="sm"
+ variant="ghost"
+ onClick={() => handleAction(deal.id, "cancel")}
+ disabled={respondMutation.isPending}
+ className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+ >
+ <XCircle className="size-3.5" />
+ <span>Cancelar Proposta</span>
+ </Button>
+ </div>
+ ) : (
+ <Button
+ size="sm"
+ onClick={() => handleAction(deal.id, "accept")}
+ disabled={respondMutation.isPending}
+ className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+ >
+ <CheckCircle2 className="size-3.5" />
+ <span>Aceitar Proposta</span>
+ </Button>
+ )}
+
+ <Button
+ asChild
+ size="sm"
+ variant="outline"
+ className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer ml-auto"
+ >
+ <Link to="/conta/conversas">
+ <MessageSquare className="size-3.5 text-primary" />
+ <span>Abrir Chat</span>
+ </Link>
  </Button>
  </div>
  )}
@@ -489,6 +609,19 @@ function NegociacoesPage() {
  <Smartphone className="size-3.5" />
  <span>{isRental ? "Guia do Imóvel 9:16" : "Cartão 9:16"}</span>
  </Button>
+  {!isRental && deal.status === "accepted" && (
+    <Button
+      type="button"
+      size="sm"
+      onClick={() => handleAction(deal.id, "complete")}
+      disabled={respondMutation.isPending}
+      className="rounded-xl text-xs font-bold shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+      title="Confirmar que o item foi recebido e liberar o pagamento para o vendedor"
+    >
+      <CheckCircle2 className="size-3.5" />
+      <span>Confirmar Recebimento</span>
+    </Button>
+  )}
  </div>
  )}
  </div>

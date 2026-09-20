@@ -1181,13 +1181,15 @@ export function CheckoutPage() {
  </div>
  ) : shippingRates.length > 0 ? (
  <div className="grid gap-2">
- {shippingRates.map((rate) => {
- const isSelected = selectedRateId === rate.id;
+ {shippingRates.map((rate, idx) => {
+ const rateKey = rate.id || rate.service_name || rate.name || `rate-${idx}`;
+ const rateName = rate.name || rate.service_name || "Entrega Expressa";
+ const isSelected = selectedRateId === rateKey;
  return (
  <button
- key={rate.id}
+ key={rateKey}
  type="button"
- onClick={() => handleSelectRate(rate)}
+ onClick={() => handleSelectRate({ ...rate, id: rateKey, name: rateName })}
  className={cn(
  "flex items-center justify-between p-3.5 rounded-2xl border text-left transition-all cursor-pointer",
  isSelected
@@ -1196,10 +1198,15 @@ export function CheckoutPage() {
  )}
  >
  <div className="space-y-0.5">
- <p className="font-bold text-xs text-foreground">{rate.name}</p>
- {rate.estimated_days && (
+ <p className="font-bold text-xs text-foreground">{rateName}</p>
+ {rate.notice && (
+ <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+ {rate.notice}
+ </p>
+ )}
+ {rate.estimated_days !== undefined && (
  <p className="text-[10px] text-muted-foreground">
- Previsão: {rate.estimated_days} dias úteis
+ Previsão: {rate.estimated_days === 0 ? "Hoje (Expressa)" : `${rate.estimated_days} ${rate.estimated_days === 1 ? "dia útil" : "dias úteis"}`}
  </p>
  )}
  </div>

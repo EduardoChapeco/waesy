@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 export interface PlacesHighlightBadgeProps {
   className?: string;
   subtle?: boolean;
+  style?: React.CSSProperties;
 }
 
 /**
@@ -12,9 +13,9 @@ export interface PlacesHighlightBadgeProps {
  * sobre a expressão "(Lista Telefônica)", modernizando o conceito e gerando contraste nostálgico.
  * NÃO REMOVER: Requisito explícito solicitado pelo usuário.
  */
-export function PlacesHighlightBadge({ className, subtle = false }: PlacesHighlightBadgeProps) {
+export function PlacesHighlightBadge({ className, subtle = false, style }: PlacesHighlightBadgeProps) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 font-bold tracking-tight text-foreground", className)}>
+    <span style={style} className={cn("inline-flex items-center gap-1.5 font-bold tracking-tight text-foreground", className)}>
       <span>Places</span>
       <span className="relative inline-block px-1 text-neutral-950 dark:text-neutral-950 font-bold text-[0.82em] leading-tight select-none">
         <span

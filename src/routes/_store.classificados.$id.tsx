@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Tag,
   MapPin,
@@ -90,7 +90,7 @@ import {
   getRegimeLabel,
   getWorkplaceModelLabel,
 } from "@/lib/classifieds/canonical-hiring";
-import { createDealProposal } from "@/services/deals.functions";
+import { createDealProposal, getClassifiedBookedDates } from "@/services/deals.functions";
 import { getProfile } from "@/services/auth.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import {
@@ -342,6 +342,25 @@ function ClassifiedDetailPage() {
  const [isBooking, setIsBooking] = useState(false);
  const [isBuyingDirect, setIsBuyingDirect] = useState(false);
 
+  // Consulta datas já reservadas para este anúncio no banco de dados (Camadas 1, 2 e 6)
+  const { data: bookedDates = [] } = useQuery({
+    queryKey: ["classified-booked-dates", classified?.id],
+    queryFn: () => getClassifiedBookedDates({ data: { classifiedId: classified.id } }),
+    enabled: Boolean(classified?.id),
+  });
+
+  const isDateRangeOverlapping = useMemo(() => {
+    if (!checkInDate || !checkOutDate || !bookedDates || bookedDates.length === 0) return false;
+    const start = new Date(checkInDate).getTime();
+    const end = new Date(checkOutDate).getTime();
+    return bookedDates.some((b: any) => {
+      if (!b.startDate || !b.endDate) return false;
+      const bStart = new Date(b.startDate).getTime();
+      const bEnd = new Date(b.endDate).getTime();
+      return start <= bEnd && end >= bStart;
+    });
+  }, [checkInDate, checkOutDate, bookedDates]);
+
   // Travel Package Specific Booking State
   const [selectedDeparture, setSelectedDeparture] = useState<DepartureOption | null>(null);
   const [travelPassengers, setTravelPassengers] = useState(1);
@@ -592,6 +611,12 @@ function ClassifiedDetailPage() {
 
         toast.success("Solicitação de reserva de pacote enviada com sucesso! O operador foi notificado.");
       } else {
+        if (isDateRangeOverlapping) {
+          toast.error("O intervalo de datas selecionado coincide com uma reserva já confirmada.");
+          setIsBooking(false);
+          return;
+        }
+
         await createDealProposal({
           data: {
             classifiedId: classified.id,
@@ -989,6 +1014,35 @@ const handleDownloadDigitalFile = async () => {
                 />
               </div>
 
+              {/* Alerta de conflito de datas */}
+              {bookedDates.length > 0 && (
+                <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-[11px] space-y-1">
+                  <span className="font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <Calendar className="size-3.5 text-amber-500 shrink-0" />
+                    Datas já reservadas neste anúncio:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    {bookedDates.slice(0, 4).map((b: any, i: number) => (
+                      <span key={i} className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 font-mono text-[10px]">
+                        {b.startDate} a {b.endDate}
+                      </span>
+                    ))}
+                    {bookedDates.length > 4 && (
+                      <span className="text-[10px] text-muted-foreground self-center">
+                        +{bookedDates.length - 4} período(s)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {isDateRangeOverlapping && (
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-center gap-2">
+                  <AlertTriangle className="size-4 shrink-0" />
+                  <span>As datas selecionadas coincidem com uma reserva já confirmada. Por favor, escolha outro período.</span>
+                </div>
+              )}
+
               {/* Resumo de Valores */}
               <div className="p-3.5 rounded-xl bg-muted/40 space-y-2 text-xs">
                 <div className="flex justify-between text-muted-foreground">
@@ -1017,14 +1071,18 @@ const handleDownloadDigitalFile = async () => {
 
               <Button
                 onClick={handleDirectBooking}
-                disabled={isBooking}
-                className="w-full h-11 rounded-xl text-xs font-bold gap-2"
+                disabled={isBooking || isDateRangeOverlapping}
+                className={`w-full h-11 rounded-xl text-xs font-bold gap-2 ${
+                  isDateRangeOverlapping ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+                }`}
               >
                 {isBooking ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
                     <span>Confirmando Reserva...</span>
                   </>
+                ) : isDateRangeOverlapping ? (
+                  <span>Período Indisponível (Já Reservado)</span>
                 ) : (
                   <>
                     <Check className="size-4" />

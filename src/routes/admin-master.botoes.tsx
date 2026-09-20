@@ -147,7 +147,7 @@ function AdminMasterHotpagesPage() {
  const matchesModule =
  selectedModuleTab === "all" || item.module === selectedModuleTab;
 
- return matchesType && (activeMainTab === "editorial_card" ? matchesModule : true);
+      return matchesType && (activeMainTab === "hero_module" ? true : matchesModule);
  });
  }, [hotpages, activeMainTab, selectedModuleTab]);
 
@@ -462,14 +462,14 @@ function AdminMasterHotpagesPage() {
  </div>
 
  {/* ── Sub-Filtro por Módulo (Visível principalmente na aba de Hotpages Editoriais) ── */}
- {activeMainTab === "editorial_card" && (
+        {(activeMainTab === "editorial_card" || activeMainTab === "category_hub") && (
  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 scrollbar-hide border-b border-border/40">
  {MODULE_TABS.map((tab) => {
  const isSelected = selectedModuleTab === tab.id;
  const count =
  tab.id === "all"
- ? hotpages.filter((h) => h.template_type === "editorial_card").length
- : hotpages.filter((h) => h.template_type === "editorial_card" && h.module === tab.id).length;
+              ? hotpages.filter((h) => h.template_type === activeMainTab).length
+              : hotpages.filter((h) => h.template_type === activeMainTab && h.module === tab.id).length;
 
  return (
  <button
@@ -1064,46 +1064,61 @@ function AdminMasterHotpagesPage() {
  </div>
  )}
 
- {/* Cor do Texto (quando não há overlay) */}
- {!showOverlay && showTitle && (
- <div className="space-y-1.5 border-t border-border/40 pt-2">
- <Label className="text-[11px] font-bold text-muted-foreground">Cor do Título</Label>
- <div className="flex items-center gap-2">
- <input
- type="color"
- value={textColor || "#111827"}
- onChange={(e) => setTextColor(e.target.value)}
- className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
- title="Cor do título"
- />
- <Input
- value={textColor}
- onChange={(e) => setTextColor(e.target.value)}
- placeholder="Padrão do tema"
- className="h-8 rounded-xl bg-card text-xs font-mono flex-1"
- />
- {textColor && (
- <button
- type="button"
- onClick={() => setTextColor("")}
- className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
- >
- Limpar
- </button>
- )}
- </div>
- </div>
- )}
+                {/* Cor do Texto — Sempre configurável quando showTitle estiver ativo */}
+                {showTitle && (
+                  <div className="space-y-1.5 border-t border-border/40 pt-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[11px] font-bold text-muted-foreground">Cor do Título</Label>
+                      {textColor && (
+                        <button
+                          type="button"
+                          onClick={() => setTextColor("")}
+                          className="text-[10px] text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                        >
+                          Restaurar Padrão
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={textColor || "#ffffff"}
+                        onChange={(e) => setTextColor(e.target.value)}
+                        className="size-8 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+                        title="Cor do título"
+                      />
+                      <Input
+                        value={textColor}
+                        onChange={(e) => setTextColor(e.target.value)}
+                        placeholder="Ex: #ffffff ou #000000"
+                        className="h-8 rounded-xl bg-card text-xs font-mono flex-1"
+                      />
+                      {/* Presets rápidos de cores para o título */}
+                      <div className="flex gap-1 shrink-0">
+                        {["#ffffff", "#000000", "#f8fafc", "#0f172a"].map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setTextColor(c)}
+                            className="size-6 rounded-md border border-border/60 transition-transform hover:scale-110 active:scale-95 shrink-0 cursor-pointer"
+                            style={{ backgroundColor: c }}
+                            title={`Título em ${c}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
- <div className="flex items-center justify-between border-t border-border/40 pt-2">
- <div>
- <p className="text-xs font-bold text-foreground">Item Ativo</p>
- <p className="text-[10px] text-muted-foreground">Visível para usuários</p>
- </div>
- <Switch checked={isActive} onCheckedChange={setIsActive} />
- </div>
- </div>
- </div>
+                <div className="flex items-center justify-between border-t border-border/40 pt-2">
+                  <div>
+                    <p className="text-xs font-bold text-foreground">Item Ativo</p>
+                    <p className="text-[10px] text-muted-foreground">Visível para usuários</p>
+                  </div>
+                  <Switch checked={isActive} onCheckedChange={setIsActive} />
+                </div>
+              </div>
+            </div>
 
  <div className="space-y-1.5">
  <Label className="text-xs font-bold">Ordem de Exibição (Sort Order)</Label>
