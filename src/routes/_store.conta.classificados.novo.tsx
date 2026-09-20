@@ -1005,7 +1005,7 @@ function SpecializedClassifiedEditor({
 
   // ── Novos campos de viagem: Destino e Aeroportos ──
   const [travelDestinationCity, setTravelDestinationCity] = useState(
-    initialData?.attributes?.destination_city || ""
+    initialData?.attributes?.destination_city || initialData?.attributes?.destination || initialData?.attributes?.flight_details?.arrival_city || ""
   );
   const [travelDepartureDate, setTravelDepartureDate] = useState(
     initialData?.attributes?.departure_date || ""
@@ -1059,7 +1059,7 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.flight_details?.bus_company || ""
   );
   const [travelDepartureCity, setTravelDepartureCity] = useState(
-    initialData?.attributes?.flight_details?.departure_city || ""
+    initialData?.attributes?.flight_details?.departure_city || initialData?.attributes?.departure_city || ""
   );
   const [travelMeetingPoint, setTravelMeetingPoint] = useState(
     initialData?.attributes?.flight_details?.meeting_point || ""
@@ -3249,8 +3249,12 @@ function SpecializedClassifiedEditor({
                           <Input value={travelBusCompany} onChange={(e) => setTravelBusCompany(e.target.value)} placeholder="Ex: Expresso Itapemirim, Fretur SC..." className="h-11 rounded-xl text-xs bg-background" />
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Cidade / Ponto de Saída Principal</Label>
+                          <Label className="text-xs font-medium">Cidade de Saída / Embarque (Origem)</Label>
                           <Input value={travelDepartureCity} onChange={(e) => setTravelDepartureCity(e.target.value)} placeholder="Ex: Chapecó, SC" className="h-11 rounded-xl text-xs bg-background" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Cidade de Destino da Viagem</Label>
+                          <Input value={travelDestinationCity} onChange={(e) => setTravelDestinationCity(e.target.value)} placeholder="Ex: Beto Carrero / Penha, SC" className="h-11 rounded-xl text-xs bg-background" />
                         </div>
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">Horário de Embarque (Saída)</Label>
@@ -7015,7 +7019,7 @@ function SpecializedClassifiedEditor({
  folder="classifieds"
  aspect={4 / 3}
  enableCrop={true}
- lockAspect={false}
+ lockAspect={true}
  maxFiles={8}
  />
  </div>

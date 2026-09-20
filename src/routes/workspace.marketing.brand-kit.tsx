@@ -668,17 +668,17 @@ export function BrandKitPage() {
         {/* ABA: LOGOS & CAPA */}
         {activeTab === "logos" && (
           <div className="space-y-6">
-            {/* Banner Panorâmico de Capa (3:1 Canônico) */}
+            {/* Banner Panorâmico de Capa (21:9 Canônico) */}
             <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Banner 3:1)</Label>
+                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Banner 21:9)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Banner de topo exibido na página pública da sua loja (aspect ratio canônico 3:1: 1200x400)
+                    Banner de topo exibido na página pública da sua loja (aspect ratio canônico 21:9)
                   </p>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono">
-                  3:1 Panorâmico
+                  21:9 Panorâmico
                 </Badge>
               </div>
               <div className="p-5">
@@ -687,8 +687,8 @@ export function BrandKitPage() {
                   onChange={(url) => update({ cover_url: url })}
                   onRemove={() => update({ cover_url: "" })}
                   bucket="store-assets"
-                  aspectPreset="cover"
-                  helperText="Clique ou arraste para carregar a capa oficial da loja com máscara de corte 3:1"
+                  aspectPreset="banner"
+                  helperText="Clique ou arraste para carregar a capa oficial da loja com máscara de corte 21:9"
                 />
               </div>
             </div>

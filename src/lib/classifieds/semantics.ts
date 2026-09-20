@@ -1315,21 +1315,32 @@ export function getClassifiedHeroHighlight(classified: any, selectedDeparture?: 
     }
 
     if (depDate || retDate) {
+      const datesUnified = depDate && retDate
+        ? `${fmt(depDate)} a ${fmt(retDate)}`
+        : depDate ? `Saída: ${fmt(depDate)}` : `Retorno: ${fmt(retDate)}`;
+
+      const depCity = attrs.departure_city || attrs.flight_details?.departure_city || "";
+      const destCity = attrs.destination_city || attrs.destination || attrs.flight_details?.arrival_city || "";
+
       return {
-        primaryLabel: "Saída",
-        primaryValue: depDate ? fmt(depDate) : "A Definir",
-        secondaryLabel: "Retorno",
-        secondaryValue: retDate ? fmt(retDate) : "A Definir",
-        tertiaryLabel: durationVal ? "Duração" : undefined,
-        tertiaryValue: durationVal || undefined,
+        primaryLabel: "Período da Viagem",
+        primaryValue: durationVal ? `${datesUnified} • ${durationVal}` : datesUnified,
+        secondaryLabel: depCity ? "Embarque (Saída)" : undefined,
+        secondaryValue: depCity || undefined,
+        tertiaryLabel: destCity && destCity.toLowerCase() !== depCity.toLowerCase() ? "Destino" : undefined,
+        tertiaryValue: destCity && destCity.toLowerCase() !== depCity.toLowerCase() ? destCity : undefined,
       };
     }
     if (datesText) {
+      const depCity = attrs.departure_city || attrs.flight_details?.departure_city || "";
+      const destCity = attrs.destination_city || attrs.destination || attrs.flight_details?.arrival_city || "";
       return {
-        primaryLabel: "Datas",
-        primaryValue: datesText,
-        secondaryLabel: durationVal ? "Duração" : undefined,
-        secondaryValue: durationVal || undefined,
+        primaryLabel: "Período da Viagem",
+        primaryValue: durationVal ? `${datesText} • ${durationVal}` : datesText,
+        secondaryLabel: depCity ? "Embarque (Saída)" : undefined,
+        secondaryValue: depCity || undefined,
+        tertiaryLabel: destCity && destCity.toLowerCase() !== depCity.toLowerCase() ? "Destino" : undefined,
+        tertiaryValue: destCity && destCity.toLowerCase() !== depCity.toLowerCase() ? destCity : undefined,
       };
     }
     return null;

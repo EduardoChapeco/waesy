@@ -586,12 +586,16 @@ export const registerClassifiedLead = createServerFn({ method: "POST" })
 
     // 5. Inserir notificação para o lojista/anunciante
     try {
+      const destinationUrl = classified.store_id
+        ? `/workspace/comercial?dealId=${deal.id}`
+        : `/_store/conta/negociacoes`;
+
       await supabase.from("notifications").insert({
         user_id: classified.author_profile_id,
         type: "new_lead",
         title: "Novo Lead Recebido!",
         message: `${data.buyerName || "Cliente"} demonstrou interesse em "${classified.title}".`,
-        link_url: "/conta/empresa",
+        link_url: destinationUrl,
         author_name: data.buyerName || "Cliente Interessado",
       });
     } catch (nErr: any) {
