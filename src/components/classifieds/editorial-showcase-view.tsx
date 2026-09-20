@@ -154,6 +154,8 @@ export function EditorialShowcaseView({
   const [isDownloadingDigital, setIsDownloadingDigital] = useState(false);
   const [showAllInstallments, setShowAllInstallments] = useState(false);
   const [showChatInput, setShowChatInput] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [showDesktopInstallments, setShowDesktopInstallments] = useState(false);
 
   const handleDownloadDigitalFile = async () => {
     if (!classified?.id) return;
@@ -664,10 +666,10 @@ export function EditorialShowcaseView({
               <div className="w-full space-y-2">
                 <div className="relative -mx-1 sm:mx-0 w-[calc(100%+8px)] sm:w-full aspect-[16/10] rounded-none sm:rounded-2xl overflow-hidden bg-muted/30 border-y sm:border border-border/40 group">
                   <img
-                    src={images[0]}
+                    src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
                     className="size-full object-cover cursor-pointer group-hover:scale-[1.01] transition-transform duration-300"
-                    onClick={() => setFullscreenImage(images[0])}
+                    onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                   />
                   <div className="absolute top-3 right-3 flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-mono font-medium">
@@ -676,7 +678,7 @@ export function EditorialShowcaseView({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setFullscreenImage(images[0])}
+                    onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
                     className="absolute bottom-3.5 right-3.5 px-3 py-1.5 rounded-xl bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 shadow-xs flex items-center gap-1.5 transition-all"
                   >
                     <Maximize2 className="size-3.5" />
@@ -684,19 +686,28 @@ export function EditorialShowcaseView({
                   </button>
                 </div>
 
-                {/* Miniaturas de Acesso Rápido */}
+                {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal */}
                 {images.length > 1 && (
                   <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                    {images.slice(0, 6).map((img, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setFullscreenImage(img)}
-                        className="relative size-16 sm:size-18 rounded-xl overflow-hidden border border-border/50 bg-muted shrink-0 group cursor-pointer hover:border-primary transition-colors"
-                      >
-                        <img src={img} alt={`Miniatura ${idx + 1}`} className="size-full object-cover group-hover:scale-105 transition-transform" />
-                      </button>
-                    ))}
+                    {images.slice(0, 6).map((img, idx) => {
+                      const isActive = activeImageIndex === idx;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={cn(
+                            "relative size-16 sm:size-18 rounded-xl overflow-hidden border bg-muted shrink-0 group cursor-pointer transition-all",
+                            isActive
+                              ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
+                              : "border-border/50 hover:border-primary/50 opacity-80 hover:opacity-100"
+                          )}
+                          title={`Ver imagem ${idx + 1}`}
+                        >
+                          <img src={img} alt={`Miniatura ${idx + 1}`} className="size-full object-cover group-hover:scale-105 transition-transform" />
+                        </button>
+                      );
+                    })}
                     {images.length > 6 && (
                       <button
                         type="button"
@@ -2137,10 +2148,37 @@ export function EditorialShowcaseView({
                       <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1.5 border-t border-border/40 mt-1">
                         <span>Total à vista: <strong className="text-foreground">{formatMoney(priceCents)}</strong></span>
                         <span>•</span>
-                        <span className={installmentsInterestFree ? "text-emerald-600 font-bold" : "text-primary font-semibold"}>
+                        <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-primary font-semibold"}>
                           {installmentsInterestFree ? "sem juros" : "no cartão"}
                         </span>
                       </div>
+
+                      {/* Toggle Inline da Tabela Completa de Parcelas no Desktop */}
+                      <button
+                        type="button"
+                        onClick={() => setShowDesktopInstallments(!showDesktopInstallments)}
+                        className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-1"
+                      >
+                        <span>{showDesktopInstallments ? "Ocultar tabela" : `Ver parcelas em até ${maxInstallments}x`}</span>
+                        <ChevronDown className={cn("size-3 transition-transform", showDesktopInstallments && "rotate-180")} />
+                      </button>
+
+                      {showDesktopInstallments && (
+                        <div className="pt-2 divide-y divide-border/20 max-h-48 overflow-y-auto no-scrollbar border-t border-border/30 mt-1">
+                          {Array.from({ length: maxInstallments }, (_, idx) => {
+                            const num = idx + 1;
+                            const part = Math.round(priceCents / num);
+                            return (
+                              <div key={num} className="py-1.5 flex items-center justify-between text-[11px]">
+                                <span className="text-foreground font-medium">{num}x de {formatMoney(part)}</span>
+                                <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "text-muted-foreground"}>
+                                  {installmentsInterestFree ? "Sem juros" : "No cartão"}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </>
                   ) : (
                     <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-display">

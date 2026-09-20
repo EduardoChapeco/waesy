@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, CheckCheck, Tag, Briefcase, Store, Info, Layers, ArrowRight } from 'lucide-react';
+import { Bell, Check, CheckCheck, Tag, Briefcase, Store, Info, Layers, ArrowRight } from 'lucide-react';
 import {
  Popover,
  PopoverContent,
@@ -228,10 +228,24 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  )}
  </div>
 
- {/* Indicador de Não Lida */}
- {!item.isRead && (
- <span className="size-2 rounded-full bg-primary shrink-0 mt-1.5" />
- )}
+ {/* Indicador de Não Lida e Ação Rápida de Marcar como Lida no Desktop Hover */}
+ {!item.isRead ? (
+ <div className="shrink-0 flex items-center mt-1">
+ <button
+ type="button"
+ title="Marcar como lida"
+ aria-label="Marcar como lida"
+ onClick={(e) => {
+ e.stopPropagation();
+ markReadMutation.mutate(item.id);
+ }}
+ className="hidden sm:group-hover:flex items-center justify-center size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+ >
+ <Check className="size-3" />
+ </button>
+ <span className="size-2 rounded-full bg-primary sm:group-hover:hidden" />
+ </div>
+ ) : null}
  </div>
  ))}
  </div>

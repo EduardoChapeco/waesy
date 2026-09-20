@@ -74,24 +74,43 @@ export function DiscoveryControlBar({
  resultsCount,
  className = "",
 }: DiscoveryControlBarProps) {
- const tabsContainerRef = React.useRef<HTMLDivElement>(null);
- const activeTabRef = React.useRef<HTMLDivElement | null>(null);
+  const tabsContainerRef = React.useRef<HTMLDivElement>(null);
+  const activeTabRef = React.useRef<HTMLDivElement | null>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
- // Auto-centralização suave de abas HORIZONTALMENTE sem jamais tocar no eixo vertical
- React.useEffect(() => {
- if (activeCategory && activeTabRef.current && tabsContainerRef.current) {
- const container = tabsContainerRef.current;
- const tab = activeTabRef.current;
- const left = tab.offsetLeft - container.clientWidth / 2 + tab.clientWidth / 2;
- container.scrollTo({ left, behavior: "smooth" });
- }
- }, [activeCategory]);
+  // Atalho Desktop ⌘K / Ctrl+K para focar busca instantaneamente
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignorar se o usuário já estiver digitando em outro input, textarea ou contentEditable
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Auto-centralização suave de abas HORIZONTALMENTE sem jamais tocar no eixo vertical
+  React.useEffect(() => {
+    if (activeCategory && activeTabRef.current && tabsContainerRef.current) {
+      const container = tabsContainerRef.current;
+      const tab = activeTabRef.current;
+      const left = tab.offsetLeft - container.clientWidth / 2 + tab.clientWidth / 2;
+      container.scrollTo({ left, behavior: "smooth" });
+    }
+  }, [activeCategory]);
 
  return (
  <section aria-label="Controles e Filtros" className={`space-y-3 w-full ${className}`}>
       {/* ── 1. LINHA SUPERIOR: BUSCA CONTEXTUAL + COMUTADOR DE VISUALIZAÇÃO EM LINHA ÚNICA RESPONSIVA ── */}
       <div className="flex items-center justify-between gap-2 sm:gap-3 w-full">
-        {/* Campo de Busca Contextual com Ícone e Botão Clear */}
+        {/* Campo de Busca Contextual com Ícone, Atalho Desktop e Botão Clear */}
         <div className="relative flex-1 min-w-0">
           <MagnifyingGlass
             size={16}
@@ -99,21 +118,29 @@ export function DiscoveryControlBar({
             className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
           />
           <Input
+            ref={inputRef}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9.5 pr-8 h-10 rounded-xl bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
+            className="pl-9.5 pr-12 h-10 rounded-xl bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
             aria-label="Buscar produtos ou categorias"
           />
-          {search && (
+          {search ? (
             <button
               type="button"
-              onClick={() => onSearchChange("")}
+              onClick={() => {
+                onSearchChange("");
+                inputRef.current?.focus();
+              }}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors"
               aria-label="Limpar busca"
             >
               <X size={14} weight="bold" />
             </button>
+          ) : (
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 select-none rounded border border-border/80 bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground/80">
+              <span className="text-[11px]">⌘</span>K
+            </kbd>
           )}
         </div>
 

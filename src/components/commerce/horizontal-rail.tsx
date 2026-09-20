@@ -106,16 +106,39 @@ export function HorizontalRail({
  </div>
  )}
 
- {/* ── Horizontal Scroll Container with Snap & Peek ────────── */}
- <div
- ref={scrollContainerRef}
- className={`flex items-stretch gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none ${containerClassName}`}
- tabIndex={0}
- aria-label={`Carrossel de ${title}`}
- >
- {leadCard && <div className="shrink-0 snap-start">{leadCard}</div>}
- {children}
- </div>
- </section>
+      {/* ── Horizontal Scroll Container with Snap, Peek & Desktop Hover Floating Arrows ────────── */}
+      <div className="relative group/rail w-full">
+        {/* Seta Flutuante Esquerda (Desktop) */}
+        <button
+          type="button"
+          onClick={() => scroll("left")}
+          aria-label="Rolar para a esquerda"
+          className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3.5 z-20 size-9 rounded-full bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+
+        {/* Scroll Container */}
+        <div
+          ref={scrollContainerRef}
+          className={`flex items-stretch gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none ${containerClassName}`}
+          tabIndex={0}
+          aria-label={`Carrossel de ${title}`}
+        >
+          {leadCard && <div className="shrink-0 snap-start">{leadCard}</div>}
+          {children}
+        </div>
+
+        {/* Seta Flutuante Direita (Desktop) */}
+        <button
+          type="button"
+          onClick={() => scroll("right")}
+          aria-label="Rolar para a direita"
+          className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3.5 z-20 size-9 rounded-full bg-background/95 hover:bg-background backdrop-blur-md shadow-md border border-border/70 items-center justify-center text-foreground opacity-0 group-hover/rail:opacity-100 transition-all hover:scale-105 active:scale-95 cursor-pointer select-none"
+        >
+          <ChevronRight className="size-5" />
+        </button>
+      </div>
+    </section>
  );
 }
