@@ -60,21 +60,23 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
  const fileInputRef = useRef<HTMLInputElement>(null);
 
- // Compute smart aspect based on bucket/folder if not explicitly provided
+ // Compute smart aspect based on bucket/folder if not explicitly provided (1:1 com a renderização)
  const computedAspect =
- aspect !== undefined
- ? aspect
- : bucket === "banners" || folder === "destaques" || folder === "banners"
- ? 21 / 9
- : folder === "hotpages" || folder === "cards"
- ? 16 / 9
- : folder === "icons" || folder === "avatars" || folder === "avatar" || folder === "perfil" || folder === "produtos" || folder === "products"
- ? 1
- : folder === "botoes" || folder === "chips"
- ? 16 / 9
- : folder === "classifieds"
- ? 4 / 3
- : 21 / 9;
+   aspect !== undefined
+     ? aspect
+     : bucket === "banners" || folder === "destaques" || folder === "banners"
+     ? 21 / 9
+     : folder === "cover" || folder === "capa" || folder === "covers"
+     ? 3 / 1
+     : folder === "story" || folder === "stories" || folder === "guias"
+     ? 9 / 16
+     : folder === "hotpages" || folder === "cards" || folder === "botoes" || folder === "chips"
+     ? 16 / 9
+     : folder === "icons" || folder === "avatars" || folder === "avatar" || folder === "perfil" || folder === "produtos" || folder === "products"
+     ? 1
+     : folder === "classifieds"
+     ? 4 / 3
+     : 4 / 3;
 
  // Crop dialog state
  const [cropModalOpen, setCropModalOpen] = useState(false);

@@ -513,7 +513,7 @@ function CommunityHomePage() {
             <Link
               key={card.slug}
               to={card.to as any}
-              className="min-w-[160px] sm:min-w-[185px] md:min-w-[205px] max-w-[215px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[16/9] border border-border/60 hover:border-foreground/30 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-[0.98]"
+              className="min-w-[190px] sm:min-w-[215px] md:min-w-[235px] max-w-[250px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[2/1] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-[0.98]"
             >
               {card.coverUrl ? (
                 <img

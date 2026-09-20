@@ -13,6 +13,7 @@ interface HorizontalRailProps {
  leadCard?: React.ReactNode;
  children: React.ReactNode;
  className?: string;
+ containerClassName?: string;
  /** Silêncio Visual: oculta completamente o cabeçalho de seção (título, badge, setas).
  * Use em todas as páginas públicas de vitrine (Home, Mercado, Notícias, etc.).
  * Apenas aria-label no <section> externo é mantida para acessibilidade. */
@@ -29,6 +30,7 @@ export function HorizontalRail({
  leadCard,
  children,
  className = "",
+ containerClassName = "",
  hideHeader = false,
 }: HorizontalRailProps) {
  const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -107,7 +109,7 @@ export function HorizontalRail({
  {/* ── Horizontal Scroll Container with Snap & Peek ────────── */}
  <div
  ref={scrollContainerRef}
- className="flex items-stretch gap-3.5 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none"
+ className={`flex items-stretch gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory focus:outline-none ${containerClassName}`}
  tabIndex={0}
  aria-label={`Carrossel de ${title}`}
  >

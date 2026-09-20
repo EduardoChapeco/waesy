@@ -824,28 +824,6 @@ export function UniversalClassifiedShowcase({
         </div>
       </div>
 
-      {/* ── Modo Proprietário Banner Sutil (Regra 23) ── */}
-      {isOwner && (
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 mb-4">
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-amber-500 shrink-0" />
-              <span className="font-medium">Modo Proprietário: Você está visualizando seu próprio anúncio público.</span>
-            </div>
-            {onOpenCompanion && (
-              <button
-                type="button"
-                onClick={onOpenCompanion}
-                className="text-[11px] font-bold text-amber-900 dark:text-amber-100 hover:underline sm:hidden flex items-center gap-1"
-              >
-                <Smartphone className="size-3" />
-                <span>Guia 9:16</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* ── Seção de Mídia (Mobile: Edge-to-Edge / Desktop: Mosaico Airbnb) ── */}
       <section aria-label="Galeria de Fotos e Vídeos" className="w-full max-w-7xl mx-auto px-0 sm:px-6 mb-4 sm:mb-5">
         {images.length > 0 ? (

@@ -27,11 +27,13 @@ export interface ImageCropperDialogProps {
 }
 
 const ASPECT_PRESETS: Array<{ label: string; value: number | undefined }> = [
+  { label: "21:9 (Hero)", value: 21 / 9 },
   { label: "3:1 (Capa)", value: 3 / 1 },
   { label: "16:9 (Wide)", value: 16 / 9 },
   { label: "4:3 (Foto)", value: 4 / 3 },
   { label: "1:1 (Quadrado)", value: 1 },
   { label: "9:16 (Story)", value: 9 / 16 },
+  { label: "4:1 (Topo)", value: 4 / 1 },
   { label: "Livre", value: undefined },
 ];
 
@@ -104,6 +106,19 @@ export function ImageCropperDialog({
 
   const isRound = cropShape === "round";
 
+  const getAspectLabel = (val?: number, round?: boolean) => {
+    if (round) return "1:1 Circular (Avatar / Perfil)";
+    if (!val) return "Proporção Livre";
+    if (Math.abs(val - 3) < 0.05) return "3:1 (Capa de Loja / Perfil)";
+    if (Math.abs(val - 21 / 9) < 0.05) return "21:9 (Banner Hero)";
+    if (Math.abs(val - 16 / 9) < 0.05) return "16:9 (Panorâmico)";
+    if (Math.abs(val - 4 / 3) < 0.05) return "4:3 (Classificados / Vitrine)";
+    if (Math.abs(val - 1) < 0.05) return "1:1 (Produtos & Logos)";
+    if (Math.abs(val - 9 / 16) < 0.05) return "9:16 (Story / Guia)";
+    if (Math.abs(val - 4) < 0.05) return "4:1 (Faixa Panorâmica)";
+    return `${val.toFixed(2)}:1`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl p-0 overflow-hidden bg-card border-border sm:rounded-2xl shadow-2xl select-none max-h-[92vh] flex flex-col">
@@ -140,7 +155,19 @@ export function ImageCropperDialog({
 
         {imageSrc ? (
           <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto flex-1">
-            {/* Seletor de Proporções Rápidas (quando não for circular) */}
+            {/* Indicador de Máscara Canônica Fiel ao Frame de Renderização */}
+            {lockAspect && (
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Máscara Canônica do Frame:
+                </span>
+                <span className="text-[11px] font-bold text-foreground bg-muted/70 px-2 py-0.5 rounded-md border border-border/50 font-mono">
+                  {getAspectLabel(selectedAspect, isRound)}
+                </span>
+              </div>
+            )}
+
+            {/* Seletor de Proporções Rápidas (apenas quando o aspecto for livre) */}
             {!isRound && !lockAspect && (
               <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 <span className="text-[11px] font-mono uppercase text-muted-foreground mr-1 shrink-0">
@@ -166,7 +193,7 @@ export function ImageCropperDialog({
               </div>
             )}
 
-            {/* Viewport Amplo do Cropper com Máscara e Zoom Livre */}
+            {/* Viewport Amplo do Cropper com Máscara e Puxa/Arrasta Livre */}
             <div className="relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-2xl bg-[#09090b] select-none border border-border/40">
               <Cropper
                 image={imageSrc}
@@ -179,6 +206,8 @@ export function ImageCropperDialog({
                 objectFit={objectFit}
                 minZoom={0.8}
                 maxZoom={5}
+                zoomWithScroll={true}
+                zoomSpeed={0.1}
                 onCropChange={setCrop}
                 onCropComplete={onCropComplete}
                 onZoomChange={setZoom}
@@ -232,6 +261,11 @@ export function ImageCropperDialog({
                 {Math.round(zoom * 100)}%
               </span>
             </div>
+
+            {/* Dica de Ergonomia de Enquadramento */}
+            <p className="text-[11px] text-muted-foreground text-center pt-0.5">
+              💡 Arraste para posicionar e use o slider ou a roda do mouse para ajustar o zoom.
+            </p>
           </div>
         ) : (
           <div className="py-16 text-center text-xs text-muted-foreground">

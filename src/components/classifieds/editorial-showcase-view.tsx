@@ -35,6 +35,8 @@ import {
   Info,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Handshake,
   Landmark,
   Coins,
@@ -150,6 +152,8 @@ export function EditorialShowcaseView({
   const [contactMessage, setContactMessage] = useState("");
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [isDownloadingDigital, setIsDownloadingDigital] = useState(false);
+  const [showAllInstallments, setShowAllInstallments] = useState(false);
+  const [showChatInput, setShowChatInput] = useState(false);
 
   const handleDownloadDigitalFile = async () => {
     if (!classified?.id) return;
@@ -544,7 +548,6 @@ export function EditorialShowcaseView({
           <span className="font-extrabold text-xs tracking-tight text-foreground truncate">
             {classified.title || "Vitrine Imersiva"}
           </span>
-          <span className="size-1.5 rounded-full bg-emerald-500/70 shrink-0" title="Ativo" />
         </div>
 
         <div className="flex items-center gap-1">
@@ -593,28 +596,6 @@ export function EditorialShowcaseView({
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-6 animate-in fade-in duration-200">
-        {/* ── Modo Proprietário Banner (Regra 23) ── */}
-        {isOwner && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 animate-in fade-in duration-200">
-            <div className="flex items-center gap-2">
-              <span className="font-bold flex items-center gap-1.5 shrink-0">
-                <span className="size-1.5 rounded-full bg-amber-500/80 shrink-0" />
-                Modo Proprietário Ativo:
-              </span>
-              <span>Você está visualizando este anúncio como autor. Ajustes feitos no painel de edição refletem imediatamente aqui.</span>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={handleEditClick}
-              className="h-7 text-xs rounded-lg border-amber-500/40 hover:bg-amber-500/20 shrink-0 font-medium cursor-pointer"
-            >
-              <Edit3 className="size-3 mr-1" />
-              Editar Anúncio
-            </Button>
-          </div>
-        )}
 
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
         <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">
@@ -681,7 +662,7 @@ export function EditorialShowcaseView({
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
-                <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-muted/30 border border-border/40 group">
+                <div className="relative -mx-1 sm:mx-0 w-[calc(100%+8px)] sm:w-full aspect-[16/10] rounded-none sm:rounded-2xl overflow-hidden bg-muted/30 border-y sm:border border-border/40 group">
                   <img
                     src={images[0]}
                     alt={classified.title}
@@ -2300,23 +2281,38 @@ export function EditorialShowcaseView({
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 shadow-2xl pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3">
-          <div className="flex flex-col min-w-0 flex-1">
+          {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
+          <button
+            type="button"
+            onClick={() => setIsContactModalOpen(true)}
+            className="flex flex-col text-left min-w-0 flex-1 cursor-pointer group active:opacity-80 transition-opacity"
+            title="Ver opções de pagamento e atendimento"
+          >
             {pricingType === "on_quote" ? (
-              <span className="text-sm sm:text-base font-black text-foreground tracking-tight">Sob Consulta</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm sm:text-base font-black text-foreground tracking-tight">Sob Consulta</span>
+                <ChevronUp className="size-3.5 text-muted-foreground" />
+              </div>
             ) : pricingType === "free" ? (
-              <span className="text-sm sm:text-base font-black text-emerald-600 tracking-tight">Gratuito</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm sm:text-base font-black text-emerald-600 tracking-tight">Gratuito</span>
+                <ChevronUp className="size-3.5 text-muted-foreground" />
+              </div>
             ) : pricingType === "exchange_only" ? (
-              <span className="text-sm sm:text-base font-black text-amber-600 tracking-tight">Somente Troca</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm sm:text-base font-black text-amber-600 tracking-tight">Somente Troca</span>
+                <ChevronUp className="size-3.5 text-muted-foreground" />
+              </div>
             ) : priceCents > 0 ? (
               <>
-                <div className="flex items-baseline gap-1 min-w-0">
+                <div className="flex items-baseline gap-1.5 min-w-0">
                   {pricingType === "starting_at" && (
-                    <span className="text-[9.5px] font-bold text-muted-foreground uppercase shrink-0">A partir</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase shrink-0">A partir</span>
                   )}
                   {maxInstallments > 1 ? (
                     <>
-                      <span className="text-[10.5px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider shrink-0">
-                        {maxInstallments}x
+                      <span className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-tight shrink-0">
+                        {maxInstallments}x de
                       </span>
                       <span className="text-base sm:text-lg font-black text-foreground tracking-tight font-display truncate">
                         {formatMoney(installmentCents)}
@@ -2327,13 +2323,14 @@ export function EditorialShowcaseView({
                       {formatMoney(priceCents)}
                     </span>
                   )}
+                  <ChevronUp className="size-3.5 text-muted-foreground shrink-0 group-hover:translate-y-[-1px] transition-transform" />
                 </div>
-                <div className="flex items-center gap-1 text-[10px] sm:text-[10.5px] text-muted-foreground truncate">
+                <div className="flex items-center gap-1.5 text-[10.5px] sm:text-[11px] text-muted-foreground truncate">
                   {maxInstallments > 1 ? (
                     <>
                       <span>Total: {formatMoney(priceCents)}</span>
                       <span>•</span>
-                      <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400 font-bold" : ""}>
+                      <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400 font-semibold" : ""}>
                         {installmentsInterestFree ? "sem juros" : "no cartão"}
                       </span>
                     </>
@@ -2341,51 +2338,28 @@ export function EditorialShowcaseView({
                     <span>À vista</span>
                   )}
                   {pixDiscountPercent > 0 && (
-                    <span className="ml-1 text-emerald-600 font-bold bg-emerald-500/10 px-1 py-0.2 rounded text-[9px]">
+                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded text-[10px]">
                       -{pixDiscountPercent}% PIX
                     </span>
                   )}
                 </div>
               </>
             ) : (
-              <span className="text-xs font-bold text-foreground">Consulte Valores</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-foreground">Consulte Valores</span>
+                <ChevronUp className="size-3 text-muted-foreground" />
+              </div>
             )}
-          </div>
+          </button>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            {advertiserPhone && (
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={handleWhatsAppDirect}
-                className="size-11 rounded-full border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 active:scale-95 transition-all shrink-0 cursor-pointer"
-                title="Falar no WhatsApp"
-                aria-label="Falar no WhatsApp"
-              >
-                <MessageCircle className="size-5" />
-              </Button>
-            )}
-
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => setIsContactModalOpen(true)}
-              className="size-11 rounded-full border-border/80 text-foreground hover:bg-muted active:scale-95 transition-all shrink-0 cursor-pointer"
-              title="Mais Opções de Contato"
-              aria-label="Mais Opções de Contato"
-            >
-              <MessageSquare className="size-5" />
-            </Button>
-
-            <Button
-              onClick={handleOpenAction}
-              className="h-11 px-4 sm:px-6 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight shadow-md active:scale-95 transition-all shrink-0 cursor-pointer"
-            >
-              {getPrimaryCtaLabel()}
-            </Button>
-          </div>
+          {/* Lado Direito: Botão Primário Responsivo */}
+          <Button
+            type="button"
+            onClick={() => setIsContactModalOpen(true)}
+            className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight shadow-md active:scale-95 transition-all shrink-0 cursor-pointer"
+          >
+            {getPrimaryCtaLabel()}
+          </Button>
         </div>
       </div>
 
@@ -2422,43 +2396,109 @@ export function EditorialShowcaseView({
         </Dialog>
       )}
 
-      {/* ── Modal de Opções de Contato & Negociação Multi-Canal ── */}
+      {/* ── Modal de Opções de Pagamento, Atendimento & Negociação (Apple HIG List Format) ── */}
       <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
-        <DialogContent className="max-w-md p-5 rounded-3xl bg-background/98 backdrop-blur-xl border border-border/60">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
-              <MessageSquare className="size-5 text-primary" />
-              <span>Canais de Atendimento</span>
+        <DialogContent className="max-w-md p-5 rounded-3xl bg-background/98 backdrop-blur-xl border border-border/60 max-h-[90vh] overflow-y-auto no-scrollbar">
+          <DialogHeader className="pb-1">
+            <DialogTitle className="text-base font-bold text-foreground">
+              {classified.title || "Opções & Atendimento"}
             </DialogTitle>
+            <p className="text-xs text-muted-foreground">
+              {advertiserCity ? `${advertiserCity} • ` : ""}{advertiserName}
+            </p>
           </DialogHeader>
 
           <div className="space-y-4 pt-2">
-            {/* Resumo do Anunciante */}
-            <div className="p-3 rounded-2xl bg-muted/40 border border-border/50 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="size-10 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
-                  {advertiserAvatar ? (
-                    <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
-                  ) : (
-                    <StoreIcon className="size-5 text-muted-foreground" />
-                  )}
+            {/* ── 1. Valores & Condições de Pagamento (Formato Lista Apple HIG) ── */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
+                Valores & Condições de Pagamento
+              </span>
+              <div className="rounded-2xl border border-border/60 bg-muted/20 divide-y divide-border/40 overflow-hidden text-xs">
+                {/* 1.1 Valor Total */}
+                <div className="p-3.5 flex items-center justify-between">
+                  <span className="text-muted-foreground font-medium">Valor Total</span>
+                  <span className="font-black text-base text-foreground font-display">
+                    {priceCents > 0 ? formatMoney(priceCents) : "Sob Consulta"}
+                  </span>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-xs text-foreground truncate">{advertiserName}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{advertiserCity}</p>
+
+                {/* 1.2 Valor com Desconto no PIX */}
+                {priceCents > 0 && (
+                  <div className="p-3.5 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-muted-foreground font-medium">À Vista no PIX</span>
+                      {pixDiscountPercent > 0 && (
+                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">
+                          -{pixDiscountPercent}% OFF
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400 font-display">
+                      {formatMoney(pixDiscountPercent > 0 ? Math.round(priceCents * (1 - pixDiscountPercent / 100)) : priceCents)}
+                    </span>
+                  </div>
+                )}
+
+                {/* 1.3 Valor Parcelado (com/sem juros) */}
+                {priceCents > 0 && maxInstallments > 1 && (
+                  <div className="p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground font-medium">Parcelamento no Cartão</span>
+                      <span className="font-bold text-foreground">
+                        Até {maxInstallments}x de {formatMoney(installmentCents)}{" "}
+                        <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground font-normal"}>
+                          ({installmentsInterestFree ? "Sem juros" : "No cartão"})
+                        </span>
+                      </span>
+                    </div>
+
+                    {/* Toggle Expansível de Todas as Parcelas */}
+                    <button
+                      type="button"
+                      onClick={() => setShowAllInstallments(!showAllInstallments)}
+                      className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer pt-0.5"
+                    >
+                      <span>{showAllInstallments ? "Ocultar tabela" : `Ver todas as parcelas (1x a ${maxInstallments}x)`}</span>
+                      <ChevronDown className={cn("size-3 transition-transform", showAllInstallments && "rotate-180")} />
+                    </button>
+
+                    {showAllInstallments && (
+                      <div className="pt-2 divide-y divide-border/20 max-h-44 overflow-y-auto no-scrollbar">
+                        {Array.from({ length: maxInstallments }, (_, idx) => {
+                          const num = idx + 1;
+                          const part = Math.round(priceCents / num);
+                          return (
+                            <div key={num} className="py-1.5 flex items-center justify-between text-[11px]">
+                              <span className="text-foreground">{num}x de {formatMoney(part)}</span>
+                              <span className={installmentsInterestFree ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-muted-foreground"}>
+                                {installmentsInterestFree ? "Sem juros" : "No cartão"}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 1.4 Formas de Pagamento Aceitas */}
+                <div className="p-3.5 flex items-center justify-between text-muted-foreground">
+                  <span className="font-medium">Formas de Pagamento</span>
+                  <span className="font-semibold text-foreground text-[11px]">
+                    PIX • Cartão de Crédito{acceptsBoleto ? " • Boleto" : ""}{acceptsCash ? " • Dinheiro" : ""}
+                  </span>
                 </div>
               </div>
-              {storeProfileUrl && (
-                <Button asChild size="sm" variant="ghost" className="h-8 text-xs font-bold text-primary">
-                  <Link to={storeProfileUrl}>
-                    Ver Loja
-                  </Link>
-                </Button>
-              )}
             </div>
 
-            {/* Ações de Contato */}
-            <div className="space-y-2">
+            {/* ── 2. Opções de Atendimento & Negociação (Botões em Lista Apple HIG) ── */}
+            <div className="space-y-2 pt-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
+                Canais de Atendimento & Negociação
+              </span>
+
+              {/* Botão 1: WhatsApp Oficial */}
               {advertiserPhone && (
                 <button
                   type="button"
@@ -2466,7 +2506,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     handleWhatsAppDirect();
                   }}
-                  className="w-full p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-[48px] p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
@@ -2474,60 +2514,93 @@ export function EditorialShowcaseView({
                     </div>
                     <div>
                       <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">WhatsApp Oficial</p>
-                      <p className="text-[11px] text-muted-foreground">Conversar direto com resposta rápida</p>
+                      <p className="text-[11px] text-muted-foreground">Atendimento direto com resposta rápida</p>
                     </div>
                   </div>
                   <ChevronRight className="size-4 text-emerald-600" />
                 </button>
               )}
 
-              {/* Detalhes de Parcelamento */}
-              {priceCents > 0 && maxInstallments > 1 && (
+              {/* Botão 2: Inbox / Chat pelo App */}
+              <button
+                type="button"
+                onClick={() => setShowChatInput(!showChatInput)}
+                className="w-full min-h-[48px] p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 border border-border/50 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <MessageSquare className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground">Inbox / Chat pelo App</p>
+                    <p className="text-[11px] text-muted-foreground">Envie uma mensagem direta ao anunciante</p>
+                  </div>
+                </div>
+                <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", showChatInput && "rotate-180")} />
+              </button>
+
+              {showChatInput && (
+                <div className="p-3 rounded-2xl bg-muted/20 border border-border/40 space-y-2">
+                  <Textarea
+                    placeholder="Olá! Tenho interesse neste anúncio e gostaria de tirar dúvidas ou fazer uma proposta..."
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    rows={3}
+                    className="text-xs resize-none"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleSendAppMessage}
+                    disabled={isSendingMessage || !contactMessage.trim()}
+                    className="w-full h-10 rounded-xl text-xs font-bold gap-2"
+                  >
+                    {isSendingMessage ? "Enviando..." : "Enviar Mensagem pelo Chat"}
+                  </Button>
+                </div>
+              )}
+
+              {/* Botão 3: Enviar Proposta / Reserva Formal */}
+              {(isTravel || isHospitality) ? (
                 <button
                   type="button"
                   onClick={() => {
                     setIsContactModalOpen(false);
-                    setIsInstallmentsModalOpen(true);
+                    setIsBookingDossierOpen(true);
                   }}
-                  className="w-full p-3 rounded-2xl bg-muted/40 hover:bg-muted/60 border border-border/50 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <CreditCard className="size-4.5" />
+                    <div className="size-9 rounded-xl bg-background/20 text-background flex items-center justify-center shrink-0">
+                      <Calendar className="size-5" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-foreground">Tabela de Parcelamento</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        Em até {maxInstallments}x {installmentsInterestFree ? "sem juros" : "no cartão"}
-                      </p>
+                      <p className="text-xs font-bold text-background">Reservar Pacote Terrestre</p>
+                      <p className="text-[11px] text-background/80">Preencher dados dos passageiros e itinerário</p>
                     </div>
                   </div>
-                  <ChevronRight className="size-4 text-muted-foreground" />
+                  <ChevronRight className="size-4 text-background/80" />
                 </button>
-              )}
-            </div>
-
-            {/* Formulário de Mensagem Direta pelo App */}
-            <div className="pt-2 border-t border-border/40 space-y-2">
-              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Send className="size-3.5 text-primary" />
-                <span>Mensagem Direta pelo App</span>
-              </label>
-              <Textarea
-                placeholder="Olá! Gostaria de tirar dúvidas ou fazer uma proposta neste anúncio..."
-                value={contactMessage}
-                onChange={(e) => setContactMessage(e.target.value)}
-                rows={3}
-                className="text-xs resize-none"
-              />
-              <Button
-                type="button"
-                onClick={handleSendAppMessage}
-                disabled={isSendingMessage || !contactMessage.trim()}
-                className="w-full h-10 rounded-xl text-xs font-bold gap-2"
-              >
-                {isSendingMessage ? "Enviando..." : "Enviar Mensagem ao Anunciante"}
-              </Button>
+              ) : onOpenProposalModal ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsContactModalOpen(false);
+                    onOpenProposalModal();
+                  }}
+                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer shadow-sm"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-9 rounded-xl bg-background/20 text-background flex items-center justify-center shrink-0">
+                      <Send className="size-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-background">Enviar Proposta Formal</p>
+                      <p className="text-[11px] text-background/80">Negocie valores e condições personalizadas</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="size-4 text-background/80" />
+                </button>
+              ) : null}
             </div>
           </div>
         </DialogContent>

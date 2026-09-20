@@ -25,7 +25,7 @@ interface NotificationsPopoverProps {
 
 const FILTER_TABS: { id: string; label: string; type?: NotificationType }[] = [
  { id: "all", label: "Tudo" },
- { id: "interaction", label: "Interações", type: "interaction" },
+ { id: "interaction", label: "Interações & Leads", type: "interaction" },
  { id: "promotion", label: "Promoções", type: "promotion" },
  { id: "opportunity", label: "Vagas", type: "opportunity" },
  { id: "system", label: "Avisos", type: "system" },
@@ -56,6 +56,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  mutationFn: (id: string) => markNotificationAsRead({ data: { notificationId: id } }),
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ["user-notifications"] });
+ queryClient.invalidateQueries({ queryKey: ["user-notifications-full"] });
  },
  });
 
@@ -63,6 +64,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  mutationFn: () => markAllNotificationsAsRead(),
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ["user-notifications"] });
+ queryClient.invalidateQueries({ queryKey: ["user-notifications-full"] });
  },
  });
 
@@ -73,6 +75,14 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  setOpen(false);
  if (item.linkUrl) {
  navigate({ to: item.linkUrl });
+ }
+ };
+
+ const handleTriggerClick = (e: React.MouseEvent) => {
+ if (typeof window !== "undefined" && window.innerWidth < 768) {
+ e.preventDefault();
+ e.stopPropagation();
+ navigate({ to: "/conta/notificacoes" });
  }
  };
 
@@ -98,7 +108,8 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  case "opportunity":
  return <Briefcase className="size-4 text-primary" />;
  case "interaction":
- return <Store className="size-4 text-primary" />;
+ case "new_lead":
+ return <Store className="size-4 text-emerald-600" />;
  default:
  return <Info className="size-4 text-primary" />;
  }
@@ -109,12 +120,13 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  <PopoverTrigger asChild>
  <button
  type="button"
- className="relative size-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all cursor-pointer focus-visible:outline-none"
+ onClick={handleTriggerClick}
  aria-label="Abrir Notificações"
+ className="relative size-10 rounded-full flex items-center justify-center text-foreground hover:bg-muted/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
  >
- <Bell className="size-4" />
+ <Bell className="size-5" />
  {unreadCount > 0 && (
- <span className="absolute top-1 right-1 size-2 rounded-full bg-primary ring-2 ring-background animate-pulse" />
+ <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary ring-2 ring-background animate-pulse" />
  )}
  </button>
  </PopoverTrigger>
@@ -170,8 +182,8 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  })}
  </div>
 
- {/* ── 3. Lista de Notificações com Scroll Interno ── */}
- <ScrollArea className="max-h-[380px] divide-y divide-border/40">
+ {/* ── 3. Lista de Notificações com Scroll Interno Nativo ── */}
+ <div className="max-h-[380px] overflow-y-auto divide-y divide-border/40 overscroll-contain">
  {notifications.length > 0 ? (
  <div className="p-1 space-y-0.5">
  {notifications.map((item) => (
@@ -232,7 +244,7 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  </p>
  </div>
  )}
- </ScrollArea>
+ </div>
 
  {/* ── 4. Rodapé com Link para Visualização Completa In-Page ── */}
  <div className="p-2.5 bg-muted/10 flex items-center justify-between">

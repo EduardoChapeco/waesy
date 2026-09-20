@@ -89,90 +89,87 @@ export function DiscoveryControlBar({
 
  return (
  <section aria-label="Controles e Filtros" className={`space-y-3 w-full ${className}`}>
- {/* ── 1. LINHA SUPERIOR: BUSCA CONTEXTUAL + COMUTADOR DE VISUALIZAÇÃO ── */}
- <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
- {/* Campo de Busca Contextual com Ícone e Botão Clear */}
- <div className="relative flex-1 max-w-md">
- <MagnifyingGlass
- size={16}
- weight="bold"
- className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
- />
- <Input
- value={search}
- onChange={(e) => onSearchChange(e.target.value)}
- placeholder={searchPlaceholder}
- className="pl-9.5 pr-8 h-10 rounded-xl bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
- aria-label="Buscar produtos ou categorias"
- />
- {search && (
- <button
- type="button"
- onClick={() => onSearchChange("")}
- className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors"
- aria-label="Limpar busca"
- >
- <X size={14} weight="bold" />
- </button>
- )}
- </div>
+      {/* ── 1. LINHA SUPERIOR: BUSCA CONTEXTUAL + COMUTADOR DE VISUALIZAÇÃO EM LINHA ÚNICA RESPONSIVA ── */}
+      <div className="flex items-center justify-between gap-2 sm:gap-3 w-full">
+        {/* Campo de Busca Contextual com Ícone e Botão Clear */}
+        <div className="relative flex-1 min-w-0">
+          <MagnifyingGlass
+            size={16}
+            weight="bold"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+          />
+          <Input
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="pl-9.5 pr-8 h-10 rounded-xl bg-card border-border text-xs focus:ring-1 focus:ring-primary w-full"
+            aria-label="Buscar produtos ou categorias"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => onSearchChange("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors"
+              aria-label="Limpar busca"
+            >
+              <X size={14} weight="bold" />
+            </button>
+          )}
+        </div>
 
-        {/* Comutador de Visualização */}
-        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+        {/* Comutador de Visualização (Mesma Linha) */}
+        {allowedViewModes.length > 1 && onViewModeChange && (
+          <div className="flex items-center p-1 rounded-2xl bg-muted/60 shrink-0">
+            {allowedViewModes.includes("grid") && (
+              <button
+                type="button"
+                onClick={() => onViewModeChange("grid")}
+                className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === "grid"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Visualização em Grade"
+                aria-label="Modo Grade"
+              >
+                <SquaresFour size={16} weight="bold" />
+              </button>
+            )}
 
- {allowedViewModes.length > 1 && onViewModeChange && (
- <div className="flex items-center p-1 rounded-2xl bg-muted/60 shrink-0">
- {allowedViewModes.includes("grid") && (
- <button
- type="button"
- onClick={() => onViewModeChange("grid")}
- className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
- viewMode === "grid"
- ? "bg-foreground text-background"
- : "text-muted-foreground hover:text-foreground"
- }`}
- title="Visualização em Grade"
- aria-label="Modo Grade"
- >
- <SquaresFour size={16} weight="bold" />
- </button>
- )}
+            {allowedViewModes.includes("list") && (
+              <button
+                type="button"
+                onClick={() => onViewModeChange("list")}
+                className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Visualização em Lista (Padrão Delivery)"
+                aria-label="Modo Lista"
+              >
+                <ListDashes size={16} weight="bold" />
+              </button>
+            )}
 
- {allowedViewModes.includes("list") && (
- <button
- type="button"
- onClick={() => onViewModeChange("list")}
- className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
- viewMode === "list"
- ? "bg-foreground text-background"
- : "text-muted-foreground hover:text-foreground"
- }`}
- title="Visualização em Lista (Padrão Delivery)"
- aria-label="Modo Lista"
- >
- <ListDashes size={16} weight="bold" />
- </button>
- )}
-
- {allowedViewModes.includes("feed") && (
- <button
- type="button"
- onClick={() => onViewModeChange("feed")}
- className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
- viewMode === "feed"
- ? "bg-foreground text-background"
- : "text-muted-foreground hover:text-foreground"
- }`}
- title="Visualização em Feed (Carrosséis por Loja/Departamento)"
- aria-label="Modo Feed"
- >
- <Rows size={16} weight="bold" />
- </button>
- )}
- </div>
- )}
- </div>
- </div>
+            {allowedViewModes.includes("feed") && (
+              <button
+                type="button"
+                onClick={() => onViewModeChange("feed")}
+                className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === "feed"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                title="Visualização em Feed (Carrosséis por Loja/Departamento)"
+                aria-label="Modo Feed"
+              >
+                <Rows size={16} weight="bold" />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
  {/* ── 2. LINHA DE BOTÕES DE CATEGORIAS (PADRÃO UNIVERSAL: DYNAMIC MEDIA CHIP) ── */}
  {categories.length > 0 && onSelectCategory && (

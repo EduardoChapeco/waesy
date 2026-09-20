@@ -9,26 +9,45 @@ import { uploadMediaUniversal } from "@/services/storage.functions";
 import { cn } from "@/lib/utils";
 
 interface MediaUploaderProps {
- value: string;
- onChange: (value: string) => void;
- label?: string;
- bucket?: string;
- className?: string;
+  value: string;
+  onChange: (value: string) => void;
+  label?: string;
+  bucket?: string;
+  folder?: string;
+  className?: string;
+  aspect?: number;
+  cropShape?: "rect" | "round";
+  lockAspect?: boolean;
 }
 
 const PRESET_DEMO_IMAGES: Array<{ label: string; url: string }> = [];
 
 export function MediaUploader({
- value,
- onChange,
- label,
- bucket = "store-assets",
- className,
+  value,
+  onChange,
+  label,
+  bucket = "store-assets",
+  folder = "builder",
+  className,
+  aspect,
+  cropShape = "rect",
+  lockAspect = true,
 }: MediaUploaderProps) {
  const [isUploading, setIsUploading] = useState(false);
  const [activeMode, setActiveMode] = useState<"upload" | "url">("upload");
  const [showPresets, setShowPresets] = useState(false);
  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const computedAspect =
+    aspect !== undefined
+      ? aspect
+      : bucket === "banners" || folder === "banners"
+      ? 21 / 9
+      : folder === "cover" || folder === "capa"
+      ? 3 / 1
+      : folder === "avatars" || folder === "logos"
+      ? 1
+      : 16 / 9;
 
  // Crop dialog state
  const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -282,6 +301,9 @@ export function MediaUploader({
  open={cropModalOpen}
  onOpenChange={setCropModalOpen}
  imageSrc={currentImageSrc}
+ aspect={computedAspect}
+ cropShape={cropShape}
+ lockAspect={lockAspect}
  onCropCompleteAction={handleCropComplete}
  />
  </div>

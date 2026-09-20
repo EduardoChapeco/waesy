@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_store/conta/notificacoes")({
 
 const CATEGORY_TABS = [
  { id: "all", label: "Todas Notificações" },
- { id: "interaction", label: "Interações & Lojas" },
+ { id: "interaction", label: "Interações & Leads" },
  { id: "promotion", label: "Ofertas & Promoções" },
  { id: "opportunity", label: "Vagas & Oportunidades" },
  { id: "system", label: "Avisos do Sistema" },
@@ -123,13 +123,21 @@ function NotificationsPage() {
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.history.length > 1 ? window.history.back() : navigate({ to: "/" })}
+            className="p-2 -ml-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors active:scale-95"
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="size-5" />
+          </button>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Notificações
           </h1>
           {unreadCount > 0 && (
             <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
-              {unreadCount} não lidas
+              {unreadCount} novas
             </Badge>
           )}
         </div>
