@@ -268,7 +268,7 @@ export const saveMasterPrompt = createServerFn({ method: "POST" })
  systemInstruction: z.string().min(10),
  promptTemplate: z.string().min(10),
  targetProvider: z.string().default("gemini"),
- targetModel: z.string().default("gemini-1.5-flash"),
+ targetModel: z.string().default("gemini-2.5-flash"),
  temperature: z.number().min(0).max(1).default(0.2),
  isDefault: z.boolean().default(false),
  }),
@@ -554,10 +554,10 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
     providersToTry.push(preferred);
   }
 
-  // Se houver imagens (visão computacional / OCR), prioriza Gemini, OpenRouter, OpenAI e Anthropic (Groq é text-only no momento)
+  // Prioriza provedores com chaves ativas no pool da plataforma (Groq responde em ~200ms com Qwen 3.8, Gemini como fallback robusto)
   const defaultCascade: ApiProvider[] = images.length > 0
-    ? ["gemini", "openrouter", "openai", "anthropic"]
-    : ["openrouter", "groq", "gemini", "openai", "anthropic"];
+    ? ["gemini", "openai", "openrouter", "anthropic"]
+    : ["groq", "gemini", "openrouter", "openai", "anthropic"];
 
   for (const p of defaultCascade) {
     if (!providersToTry.includes(p)) {
@@ -602,7 +602,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
     for (const keyInfo of keysToTry) {
       try {
       if (provider === "openrouter") {
-        const defaultModel = images.length > 0 ? "google/gemini-flash-1.5" : "meta-llama/llama-3.3-70b-instruct";
+        const defaultModel = images.length > 0 ? "google/gemini-2.5-flash" : "meta-llama/llama-3.3-70b-instruct";
         const model = options.modelOverride || defaultModel;
         const messages: any[] = [];
         if (systemPrompt) {
@@ -641,7 +641,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
             "X-Title": "Waesy Platform",
           },
           body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(22000),
+          signal: AbortSignal.timeout(8000),
         });
 
         if (!res.ok) {
@@ -680,7 +680,8 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           continue;
         }
 
-        const model = options.modelOverride || "llama-3.3-70b-versatile";
+        // Modelo validado e ativo no pool Groq em 2026 (substitui o descontinuado llama-3.3-70b-versatile)
+        const model = options.modelOverride || "qwen/qwen3.8-27b";
         const messages: any[] = [];
         if (systemPrompt) {
           messages.push({ role: "system", content: systemPrompt });
@@ -704,7 +705,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
             Authorization: `Bearer ${keyInfo.rawKey}`,
           },
           body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(8000),
         });
 
         if (!res.ok) {
@@ -738,7 +739,8 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
       }
 
       if (provider === "gemini") {
-        const model = options.modelOverride || "gemini-1.5-flash";
+        // Modelo validado e ativo no pool Google em 2026 (substitui o descontinuado gemini-1.5-flash)
+        const model = options.modelOverride || "gemini-2.5-flash";
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keyInfo.rawKey}`;
 
         const parts: any[] = [{ text: userPrompt }];
@@ -773,7 +775,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(8000),
         });
 
         if (!res.ok) {
@@ -843,7 +845,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
             Authorization: `Bearer ${keyInfo.rawKey}`,
           },
           body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(8000),
         });
 
         if (!res.ok) {
@@ -915,7 +917,7 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
             "anthropic-version": "2023-06-01",
           },
           body: JSON.stringify(bodyPayload),
-          signal: AbortSignal.timeout(25000),
+          signal: AbortSignal.timeout(8000),
         });
 
         if (!res.ok) {

@@ -309,11 +309,29 @@ function NovoClassificadoPage() {
   const editId = search?.editId as string | undefined;
   const storeId = search?.storeId as string | undefined;
 
-  const [initialData, setInitialData] = useState<any>(null);
+  const [initialData, setInitialData] = useState<any>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem("waesy_ai_prefill");
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return null;
+  });
   const [isLoadingEdit, setIsLoadingEdit] = useState<boolean>(!!editId);
 
   useEffect(() => {
     if (!editId) {
+      if (typeof window !== "undefined") {
+        try {
+          const saved = sessionStorage.getItem("waesy_ai_prefill");
+          if (saved) {
+            setInitialData(JSON.parse(saved));
+            setIsLoadingEdit(false);
+            return;
+          }
+        } catch (e) {}
+      }
       setInitialData(null);
       setIsLoadingEdit(false);
       return;
@@ -408,22 +426,61 @@ function NovoClassificadoPage() {
           })
         }
         onAiPrefill={(listing) => {
-          setInitialData({
+          let resolvedNiche = (listing.niche as ClassifiedNicheType) || "desapego";
+          let resolvedSub = listing.subcategory || undefined;
+
+          // Se o nicho retornado não for um card principal (ex: retornou 'eletronicos'), ajusta
+          if (!NICHE_CARDS.some(n => n.id === resolvedNiche)) {
+            const desapegoItem = DESAPEGO_TAXONOMY.find(d => d.id === resolvedNiche);
+            if (desapegoItem) {
+              resolvedSub = desapegoItem.id;
+              resolvedNiche = "desapego";
+            } else if (listing.category === "vehicle") {
+              resolvedNiche = "veiculo";
+            } else if (listing.category === "real_estate") {
+              resolvedNiche = "imovel";
+            } else if (listing.category === "service") {
+              resolvedNiche = "servico";
+            } else if (listing.category === "job") {
+              resolvedNiche = "vaga";
+            } else if (listing.category === "travel") {
+              resolvedNiche = "viagem";
+            } else if (listing.category === "equipment") {
+              resolvedNiche = "equipamento";
+            } else if (listing.category === "donation") {
+              resolvedNiche = "doacao";
+            } else {
+              resolvedNiche = "desapego";
+            }
+          }
+
+          const prefillPayload = {
             category: listing.category || "sale",
             title: listing.title || "",
-            content: listing.content || "",
+            content: listing.content || listing.description || "",
+            description: listing.description || listing.content || "",
             price_cents: listing.price_cents ?? undefined,
             negotiable: true,
             attributes: {
               ...(listing.attributes || {}),
-              niche: listing.niche || "desapego",
+              niche: resolvedNiche,
+              subcategory: resolvedSub,
               pricing_type: listing.price_cents ? "fixed" : "free",
             },
-          });
+          };
+
+          if (typeof window !== "undefined") {
+            try {
+              sessionStorage.setItem("waesy_ai_prefill", JSON.stringify(prefillPayload));
+            } catch (e) {}
+          }
+
+          setInitialData(prefillPayload);
           navigate({
             to: "/conta/classificados/novo",
             search: {
-              tipo: (listing.niche as ClassifiedNicheType) || "desapego",
+              tipo: resolvedNiche,
+              sub: resolvedSub || undefined,
               storeId: storeId || undefined,
             },
           });
@@ -439,9 +496,15 @@ function NovoClassificadoPage() {
       editId={editId}
       storeId={storeId}
       initialSubcategory={search?.sub}
-      onBack={() =>
-        navigate({ to: "/conta/classificados/novo", search: { editId: editId || undefined, storeId: storeId || undefined } })
-      }
+      onBack={() => {
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.removeItem("waesy_ai_prefill");
+          } catch (e) {}
+        }
+        setInitialData(null);
+        navigate({ to: "/conta/classificados/novo", search: { editId: editId || undefined, storeId: storeId || undefined } });
+      }}
     />
   );
 }
@@ -832,8 +895,10 @@ function SpecializedClassifiedEditor({
  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
  // Common Form States
- const [title, setTitle] = useState("");
- const [description, setDescription] = useState("");
+ const [title, setTitle] = useState(initialData?.title || "");
+ const [description, setDescription] = useState(
+   initialData?.content || initialData?.description || ""
+ );
  const [isRefiningDescription, setIsRefiningDescription] = useState(false);
 
  const handleRefineDescriptionWithAI = async () => {
@@ -872,7 +937,9 @@ function SpecializedClassifiedEditor({
  const [maxDiscountPct, setMaxDiscountPct] = useState<number>(
    initialData?.max_discount_pct ?? 0
  );
- const [priceCents, setPriceCents] = useState<number | undefined>(undefined);
+ const [priceCents, setPriceCents] = useState<number | undefined>(
+   initialData?.price_cents ?? undefined
+ );
  const [negotiable, setNegotiable] = useState(true);
  const [locationName, setLocationName] = useState("");
  const [structuredLoc, setStructuredLoc] = useState<StructuredLocationValue | null>(null);
@@ -1534,7 +1601,7 @@ function SpecializedClassifiedEditor({
   useEffect(() => {
     if (!initialData) return;
     if (initialData.title) setTitle(initialData.title);
-    if (initialData.content) setDescription(initialData.content);
+    if (initialData.content || initialData.description) setDescription(initialData.content || initialData.description);
     if (initialData.price_cents !== undefined) setPriceCents(initialData.price_cents ?? undefined);
     if (initialData.negotiable !== undefined) setNegotiable(initialData.negotiable);
     if (initialData.location_name || initialData.location_text) setLocationName(initialData.location_name || initialData.location_text);
@@ -2182,6 +2249,12 @@ function SpecializedClassifiedEditor({
           status: "active",
         },
       });
+
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.removeItem("waesy_ai_prefill");
+        } catch (e) {}
+      }
 
       if (editId) {
         toast.success("Anúncio atualizado com sucesso!");

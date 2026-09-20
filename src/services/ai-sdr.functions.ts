@@ -23,13 +23,19 @@ const AIClassifiedSchema = z.object({
     "travel",
     "equipment",
     "donation",
-  ]).describe("Categoria base estrutural do anúncio."),
-  niche: z.string().describe("O id do nicho (ex: desapego, imovel, veiculo, digital)."),
-  title: z.string().describe("Título otimizado para o anúncio."),
-  content: z.string().describe("Descrição clara e bem estruturada."),
-  price_cents: z.number().nullable().describe("Preço estimado em centavos, ou null se indefinido."),
-  attributes: z.record(z.any()).describe("Atributos extras baseados no texto."),
-});
+  ]).default("sale").describe("Categoria base estrutural do anúncio."),
+  niche: z.string().default("desapego").describe("O id do nicho (ex: desapego, imovel, veiculo, digital)."),
+  subcategory: z.string().optional().describe("Subcategoria opcional."),
+  title: z.string().default("Anúncio sem título").describe("Título otimizado para o anúncio."),
+  content: z.string().optional().default("").describe("Descrição clara e bem estruturada."),
+  description: z.string().optional().default("").describe("Descrição alternativa."),
+  price_cents: z.number().nullable().optional().default(null).describe("Preço estimado em centavos, ou null se indefinido."),
+  attributes: z.record(z.any()).optional().default({}).describe("Atributos extras baseados no texto."),
+}).transform((val) => ({
+  ...val,
+  content: val.content || val.description || "",
+  description: val.description || val.content || "",
+}));
 
 // ─── Fallback heurístico (sem IA) ──────────────────────────────────────────────
 function parsePromptFallback(rawPrompt: string) {
@@ -58,19 +64,17 @@ function parsePromptFallback(rawPrompt: string) {
   const priceMatch = prompt.match(/(?:r\$\s*|por\s+r\$\s*|valor\s*:?\s*)?(\d{1,3}(?:\.\d{3})*(?:,\d{2})?|\d+(?:,\d{2})?)/i);
   if (priceMatch && !/(iphone|ano|\d{4}\b)/i.test(priceMatch[0])) {
     const rawVal = priceMatch[1].replace(/\./g, "").replace(",", ".");
-    const num = parseFloat(rawVal);
-    if (!isNaN(num) && num > 0 && num < 100000000) {
-      price_cents = Math.round(num * 100);
-    }
+    const parsed = parseFloat(rawVal);
+    if (!isNaN(parsed)) price_cents = Math.round(parsed * 100);
   }
 
-  let title = prompt
-    .replace(/^(quero\s+vender|vendo|estou\s+vendendo|anunciar|passo)\s+/i, "")
-    .trim();
+  let title = prompt;
+  if (priceMatch) title = title.replace(priceMatch[0], "").trim();
+  title = title.replace(/^(quero\s+vender|vendo|vende-se|anuncio|anunciar|procuro|ofere[cç]o)\s+/i, "");
   title = title.charAt(0).toUpperCase() + title.slice(1);
   if (title.length > 70) title = title.slice(0, 67) + "...";
 
-  return { category, niche, title, content: prompt, price_cents, attributes: {} };
+  return { category, niche, title, content: prompt, description: prompt, price_cents, attributes: {} };
 }
 
 // ─── [REQ-1] Criar Anúncio com IA — Integrado ao Pool ──────────────────────────
@@ -100,19 +104,31 @@ export const createListingWithAI = createServerFn({ method: "POST" })
 O usuário enviará uma frase curta dizendo o que quer anunciar.
 Extraia a intenção e gere um JSON com os dados do anúncio pré-preenchidos.
 
-Categorias disponíveis:
-- desapego: roupas, celulares, eletrônicos, móveis → category: "sale"
-- veiculo: carros e motos → category: "vehicle"
-- imovel: venda ou aluguel → category: "real_estate"
-- servico: prestação de serviços → category: "service"
-- vaga: vagas de emprego → category: "job"
-- viagem: pacotes turísticos → category: "travel"
-- equipamento: máquinas e ferramentas → category: "equipment"
-- doacao: itens gratuitos → category: "donation"
+Regras de Nicho e Categoria:
+- "niche" DEVE ser OBRIGATORIAMENTE um destes valores canônicos:
+  * "desapego": para roupas, celulares, computadores, eletrônicos, móveis e usados em geral. (category: "sale")
+  * "veiculo": para carros, motos, barcos, utilitários. (category: "vehicle")
+  * "imovel": para casas, apartamentos, terrenos, salas comerciais à venda ou para alugar fixo. (category: "real_estate")
+  * "hospedagem": para chalés, diárias, pousadas, casas de temporada. (category: "real_estate")
+  * "servico": para prestadores de serviço, autônomos, assistências, fretes. (category: "service")
+  * "vaga": para vagas de emprego, estágios e contratações. (category: "job")
+  * "viagem": para pacotes de turismo, passagens, excursões. (category: "travel")
+  * "equipamento": para máquinas industriais, equipamentos pesados e ferramentas agro. (category: "equipment")
+  * "digital": para infoprodutos, cursos, e-books, softwares, templates. (category: "sale")
+  * "doacao": para itens gratuitos e desapego solidário. (category: "donation")
+  * "negocios": para repasse de ponto, venda de empresas ou quotas. (category: "sale")
 
 Retorne APENAS UM JSON VÁLIDO:
-{"category":"sale","niche":"desapego","title":"Título chamativo","content":"Descrição bem feita...","price_cents":10000,"attributes":{}}
-Sem blocos markdown. Apenas o JSON puro.`;
+{
+  "category": "sale",
+  "niche": "desapego",
+  "subcategory": "celulares",
+  "title": "iPhone 13 Pro 128GB - Impecável",
+  "content": "Aparelho em excelente estado...",
+  "price_cents": 350000,
+  "attributes": {}
+}
+Sem blocos markdown adicionais. Apenas o JSON puro.`;
 
     try {
       const response = await executeUnifiedAiCall({
@@ -123,6 +139,28 @@ Sem blocos markdown. Apenas o JSON puro.`;
         temperature: 0.3,
       });
       const parsedData = response.parsedJson || JSON.parse(response.content);
+
+      // Normalização defensiva caso o modelo use nomes alternativos
+      if (!parsedData.content && (parsedData.description || parsedData.descricao)) {
+        parsedData.content = parsedData.description || parsedData.descricao;
+      }
+      if (!parsedData.title && parsedData.titulo) {
+        parsedData.title = parsedData.titulo;
+      }
+      if (parsedData.price_cents === undefined && parsedData.price !== undefined) {
+        const num = typeof parsedData.price === "number" ? parsedData.price : parseFloat(String(parsedData.price).replace(/[^\d.,]/g, "").replace(",", "."));
+        if (!isNaN(num)) {
+          parsedData.price_cents = Math.round(num < 1000 ? num * 100 : num);
+        }
+      }
+
+      const DESAPEGO_SUBS = ["celulares", "computadores", "moveis", "eletrodomesticos", "moda_brecho", "tenis_calcados", "joias_relogios", "eletronicos", "games_consoles", "instrumentos", "esportes_fitness", "bebes_criancas", "ferramentas", "outros"];
+      if (DESAPEGO_SUBS.includes(parsedData.niche)) {
+        parsedData.subcategory = parsedData.niche;
+        parsedData.niche = "desapego";
+        parsedData.category = "sale";
+      }
+
       const validatedData = AIClassifiedSchema.parse(parsedData);
       return { success: true, listing: validatedData };
     } catch (e: any) {
