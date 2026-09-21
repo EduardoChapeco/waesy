@@ -32,10 +32,10 @@ import {
   User,
   Building2,
   Loader2,
+  Maximize2,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -121,6 +121,7 @@ export function ConvenienceShowcaseView({
 }: ConvenienceShowcaseViewProps) {
   const [quantity, setQuantity] = useState(1);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [selectedPrepOption, setSelectedPrepOption] = useState<string>("");
 
   // Estado do Checkout / Order Drawer
@@ -984,19 +985,30 @@ export function ConvenienceShowcaseView({
              ═══════════════════════════════════════════════════════════════════ */}
           <div className="md:col-span-7 space-y-4 sm:space-y-6">
             
-            {/* Box da Foto: Grande, sem container sufocante, limpo */}
+            {/* Box da Foto: Grande, full-bleed, limpo */}
             <div className="space-y-2 sm:space-y-3">
-              <div className="relative aspect-square sm:aspect-4/3 w-full rounded-none sm:rounded-2xl overflow-hidden bg-muted/15 border-b sm:border border-border/50 flex items-center justify-center shadow-none sm:shadow-2xs group">
+              <div
+                className="relative aspect-square w-full rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer"
+                onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
+              >
                 {images.length > 0 ? (
                   <img
                     src={images[activePhotoIdx] || images[0]}
                     alt={title}
-                    className="w-full h-full object-contain p-2 sm:p-6 transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground p-8 text-center">
                     <ShoppingBag className="size-12 stroke-[1.2] text-primary/40" />
                     <p className="text-xs">Foto do produto</p>
+                  </div>
+                )}
+                {images.length > 0 && (
+                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="px-2.5 py-1 rounded-xl bg-background/90 backdrop-blur-md text-[11px] font-semibold text-foreground border border-border/50 shadow-xs flex items-center gap-1.5">
+                      <Maximize2 className="size-3.5" />
+                      Expandir
+                    </span>
                   </div>
                 )}
               </div>
@@ -1010,13 +1022,13 @@ export function ConvenienceShowcaseView({
                       type="button"
                       onClick={() => setActivePhotoIdx(idx)}
                       className={cn(
-                        "size-14 rounded-xl overflow-hidden border shrink-0 bg-muted/20 p-1 transition-all cursor-pointer",
+                        "size-14 rounded-xl overflow-hidden border shrink-0 bg-muted/20 transition-all cursor-pointer",
                         activePhotoIdx === idx
                           ? "border-primary ring-2 ring-primary/20"
                           : "border-border/60 opacity-60 hover:opacity-100"
                       )}
                     >
-                      <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-contain" />
+                      <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -1429,7 +1441,7 @@ export function ConvenienceShowcaseView({
             {/* Resumo do Item */}
             <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/60">
               {images[0] ? (
-                <img src={images[0]} alt={title} className="size-14 rounded-lg object-contain bg-muted/30 p-1 border shrink-0" />
+                <img src={images[0]} alt={title} className="size-14 rounded-lg aspect-square object-cover border shrink-0" />
               ) : (
                 <div className="size-14 rounded-lg bg-muted/40 flex items-center justify-center shrink-0">
                   <ShoppingBag className="size-6 text-muted-foreground/50" />
@@ -1818,9 +1830,9 @@ export function ConvenienceShowcaseView({
                       </div>
 
                       {isCurrent ? (
-                        <Badge variant="outline" className="text-[10px] text-primary border-primary/30 bg-primary/10">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
                           Vinculada
-                        </Badge>
+                        </span>
                       ) : (
                         <Button
                           size="sm"
@@ -1850,6 +1862,23 @@ export function ConvenienceShowcaseView({
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Modal de Foto em Tela Cheia (Lightbox) */}
+      <Dialog open={!!fullscreenImage} onOpenChange={(open) => !open && setFullscreenImage(null)}>
+        <DialogContent className="max-w-4xl p-2 bg-background/95 backdrop-blur-xl border-border/80 rounded-2xl overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Foto do Produto</DialogTitle>
+          </DialogHeader>
+          {fullscreenImage && (
+            <div className="relative aspect-square sm:aspect-[4/3] w-full max-h-[85vh] rounded-xl overflow-hidden flex items-center justify-center bg-black/5">
+              <img
+                src={fullscreenImage}
+                alt={title}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

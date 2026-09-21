@@ -477,17 +477,15 @@ export function TravelPackageDetailView({
  </div>
 
  {/* Card de Clima Real via wttr.in (Regra 21) */}
+ {(destination.name || destination.city) && (
  <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/70 space-y-2.5 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground">
  <Sun className="size-4 text-amber-500" />
  <h4 className="text-xs font-bold uppercase tracking-wider">Clima no Destino</h4>
  </div>
- {destination.name || destination.city ? (
  <WeatherWidget city={destination.city || destination.name} compact={true} />
- ) : (
- <p className="text-xs text-muted-foreground">Previsão meteorológica em tempo real disponível após definir o destino.</p>
- )}
  </div>
+ )}
  </section>
 
  {/* Galeria do Destino (Apenas se houver fotos cadastradas) */}
@@ -1217,13 +1215,10 @@ export function TravelPackageDetailView({
  />
  </div>
  ) : (
- <div className="p-6 bg-muted/20 flex flex-col items-center justify-center text-center space-y-2">
- <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
- <MapPin className="size-5" />
- </div>
+ <div className="p-6 bg-muted/10 flex flex-col items-center justify-center text-center space-y-1.5 border border-border/50 rounded-2xl">
  <h4 className="text-xs font-bold text-foreground">{destination.name || productTitle}</h4>
  <p className="text-[11px] text-muted-foreground max-w-sm">
- {resort.location || destination.region || "Localização privilegiada com fácil acesso às principais atrações da região."}
+ {resort.location || destination.region || "Localização sob consulta com a agência parceira."}
  </p>
  </div>
  )}
