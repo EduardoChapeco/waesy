@@ -409,33 +409,33 @@ function ProfilePage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
-            <TabsList className="bg-transparent p-0 gap-2 h-auto flex flex-nowrap">
+            <TabsList className="bg-transparent p-0 gap-1.5 h-auto flex flex-nowrap">
               <TabsTrigger
                 value="dados"
-                className="h-10 px-4 rounded-xl text-xs font-bold gap-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <User className="size-3.5" />
+                <User className="size-3.5" strokeWidth={1.75} />
                 <span>Dados & Identidade</span>
               </TabsTrigger>
               <TabsTrigger
                 value="criador"
-                className="h-10 px-4 rounded-xl text-xs font-bold gap-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <Sparkles className="size-3.5 text-amber-500" />
+                <Sparkles className="size-3.5 text-primary" strokeWidth={1.75} />
                 <span>Perfil de Criador & Marca</span>
               </TabsTrigger>
               <TabsTrigger
                 value="profissional"
-                className="h-10 px-4 rounded-xl text-xs font-bold gap-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <Briefcase className="size-3.5" />
+                <Briefcase className="size-3.5" strokeWidth={1.75} />
                 <span>Perfil Profissional & Currículo</span>
               </TabsTrigger>
               <TabsTrigger
                 value="biolinks"
-                className="h-10 px-4 rounded-xl text-xs font-bold gap-1.5 data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
-                <LinkIcon className="size-3.5" />
+                <LinkIcon className="size-3.5" strokeWidth={1.75} />
                 <span>Botões de Ação & Links</span>
               </TabsTrigger>
             </TabsList>

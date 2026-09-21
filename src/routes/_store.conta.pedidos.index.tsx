@@ -18,18 +18,18 @@ export const Route = createFileRoute("/_store/conta/pedidos/")(({
   component: Page,
 } as any));
 
-const STATUS_STYLE: Record<string, string> = {
-  draft: "bg-muted text-muted-foreground",
-  awaiting_payment: "bg-warning/10 text-warning",
-  paid: "bg-info/10 text-info",
-  processing: "bg-info/10 text-info",
-  ready_for_pickup: "bg-primary/10 text-primary",
-  shipped: "bg-primary/10 text-primary",
-  delivered: "bg-primary/10 text-primary",
-  completed: "bg-success/10 text-success",
-  cancelled: "bg-destructive/10 text-destructive",
-  return_requested: "bg-warning/10 text-warning",
-  returned: "bg-muted text-muted-foreground",
+const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info"> = {
+  draft: "secondary",
+  awaiting_payment: "warning",
+  paid: "info",
+  processing: "info",
+  ready_for_pickup: "default",
+  shipped: "default",
+  delivered: "success",
+  completed: "success",
+  cancelled: "destructive",
+  return_requested: "warning",
+  returned: "secondary",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -72,24 +72,22 @@ function Page() {
       {/* ── Lista ── */}
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 py-16 px-4 text-center gap-3">
-          <div className="size-16 rounded-3xl bg-muted/60 flex items-center justify-center mb-1 text-muted-foreground">
-            <ShoppingBag className="size-8 stroke-[1.5]" />
-          </div>
+          <ShoppingBag className="size-10 stroke-[1.5] text-muted-foreground/60 mb-1" />
           <div>
             <h2 className="text-lg font-bold text-foreground">Nenhum pedido realizado</h2>
             <p className="text-xs text-muted-foreground mt-0.5 max-w-xs mx-auto">
               Suas compras em lojas e restaurantes parceiros aparecerão aqui com rastreamento em tempo real.
             </p>
           </div>
-          <Button asChild size="sm" className="rounded-2xl h-11 px-6 text-sm font-bold mt-3 shadow-xs">
+          <Button asChild size="sm" className="rounded-xl h-10 px-5 text-xs font-bold mt-2 shadow-xs">
             <Link to="/mercado">Explorar Lojas</Link>
           </Button>
         </div>
       ) : (
-        <div className="divide-y divide-border/30">
+        <div className="divide-y divide-border/20 rounded-2xl bg-card border border-border/40 overflow-hidden">
           {orders.map((order: any) => {
             const statusLabel = STATUS_LABELS[order.status] || order.status;
-            const statusStyle = STATUS_STYLE[order.status] || "bg-muted text-muted-foreground";
+            const statusVariant = STATUS_VARIANTS[order.status] || "secondary";
             const firstItem = order.order_items?.[0];
             const extraCount = (order.order_items?.length || 1) - 1;
 
@@ -123,9 +121,9 @@ function Page() {
 
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${statusStyle}`}>
+                      <Badge variant={statusVariant} className="text-[10px]">
                         {statusLabel}
-                      </span>
+                      </Badge>
                       <span className="text-[11px] text-muted-foreground font-mono hidden xs:block">
                         {formatDate(order.created_at)}
                       </span>
@@ -134,7 +132,7 @@ function Page() {
                       <span className="text-sm font-bold text-foreground">
                         {formatMoney(order.total_cents)}
                       </span>
-                      <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-all group-hover:translate-x-0.5" />
+                      <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-all group-hover:translate-x-0.5" strokeWidth={1.75} />
                     </div>
                   </div>
                 </div>

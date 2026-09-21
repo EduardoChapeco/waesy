@@ -49,38 +49,18 @@ export const Route = createFileRoute("/_store/conta/agendamentos")({
 });
 
 function getStatusBadge(status: string) {
- switch (status) {
- case "confirmed":
- return (
- <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
- Confirmado
- </span>
- );
- case "pending":
- return (
- <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
- Pendente
- </span>
- );
- case "completed":
- return (
- <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
- Concluído
- </span>
- );
- case "cancelled":
- return (
- <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40">
- Cancelado
- </span>
- );
- default:
- return (
- <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground">
- {status}
- </span>
- );
- }
+  switch (status) {
+    case "confirmed":
+      return <Badge variant="success" className="text-[10px]">Confirmado</Badge>;
+    case "pending":
+      return <Badge variant="warning" className="text-[10px]">Pendente</Badge>;
+    case "completed":
+      return <Badge variant="secondary" className="text-[10px]">Concluído</Badge>;
+    case "cancelled":
+      return <Badge variant="destructive" className="text-[10px]">Cancelado</Badge>;
+    default:
+      return <Badge variant="outline" className="text-[10px]">{status}</Badge>;
+  }
 }
 
 function CustomerAgendaPage() {
@@ -213,7 +193,7 @@ function CustomerAgendaPage() {
  return (
           <div
             key={appt.id}
-            className="rounded-2xl border border-border/60 bg-card p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-border shadow-2xs"
+            className="rounded-2xl border border-border/60 bg-card p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-border"
           >
  {/* Data e Horário em Destaque */}
  <div className="flex items-start gap-4">

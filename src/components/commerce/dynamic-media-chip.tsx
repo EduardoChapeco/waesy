@@ -107,16 +107,16 @@ export function DynamicMediaChip({
 
  const content = (
  <div
- className={`relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 border transition-all select-none group cursor-pointer shrink-0 max-w-full active:scale-[0.98] ${heightClasses} ${
- show_shadow ? "shadow-md hover:shadow-lg" : "shadow-xs"
- } ${
- isActive
- ? "border-foreground ring-2 ring-foreground/10 font-bold"
- : "border-border hover:border-foreground/30 hover:bg-muted/60"
- } ${!hasMedia && !bg_color ? (isActive ? "bg-foreground text-background" : "bg-card text-foreground") : ""} ${className}`}
- style={{
- backgroundColor: bg_color && !hasMedia ? bg_color : undefined,
- }}
+   className={`relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 border transition-all select-none group cursor-pointer shrink-0 max-w-full active:scale-[0.98] ${heightClasses} ${
+     show_shadow ? "shadow-xs" : ""
+   } ${
+     isActive
+       ? "border-primary/40 ring-1 ring-primary/20 font-bold"
+       : "border-border hover:border-foreground/30 hover:bg-muted/60"
+   } ${!hasMedia && !bg_color ? (isActive ? "bg-primary/10 text-primary" : "bg-card text-foreground") : ""} ${className}`}
+   style={{
+     backgroundColor: bg_color && !hasMedia ? bg_color : undefined,
+   }}
  >
  {/* 1. Mídia de Background (Vídeo MP4 / GIF / Imagem) */}
  {hasMedia && (

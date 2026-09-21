@@ -162,11 +162,9 @@ function AddressesPage() {
       {/* ── 2. Apple HIG Inset-Grouped Form: Novo Endereço ── */}
       {isAdding && (
         <div className="bg-card rounded-2xl border border-border/80 shadow-xs overflow-hidden transition-all animate-in fade-in-50 duration-200">
-          <div className="px-5 py-4 bg-muted/40 border-b border-border/60 flex items-center justify-between">
+          <div className="px-5 py-4 bg-muted/20 border-b border-border/40 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <MapPin className="size-4" />
-              </div>
+              <MapPin className="size-5 text-foreground" strokeWidth={1.75} />
               <h3 className="text-base font-semibold text-foreground">Cadastrar Novo Endereço</h3>
             </div>
             <Button
@@ -317,18 +315,16 @@ function AddressesPage() {
             addresses.map((addr: any) => (
               <div
                 key={addr.id}
-                className={`bg-card rounded-2xl border p-5 shadow-xs flex flex-col justify-between gap-4 transition-all ${
+                className={`bg-card rounded-2xl border p-5 flex flex-col justify-between gap-4 transition-all ${
                   addr.is_default
-                    ? "border-primary/50 ring-2 ring-primary/10"
-                    : "border-border/70 hover:border-foreground/20 hover:shadow-sm"
+                    ? "border-primary/50 ring-1 ring-primary/20"
+                    : "border-border/70 hover:border-foreground/20"
                 }`}
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                        <MapPin className="size-4" />
-                      </div>
+                      <MapPin className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-foreground truncate">
                           {addr.street}, {addr.number}
@@ -342,10 +338,9 @@ function AddressesPage() {
                     </div>
 
                     {addr.is_default && (
-                      <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0">
-                        <CheckCircle2 className="size-3" />
+                      <Badge variant="success" className="text-[10px] shrink-0">
                         Padrão
-                      </span>
+                      </Badge>
                     )}
                   </div>
 

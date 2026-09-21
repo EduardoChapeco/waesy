@@ -172,14 +172,14 @@ export function DiscoveryControlBar({
 
         {/* Comutador de Visualização (Mesma Linha) */}
         {allowedViewModes.length > 1 && onViewModeChange && (
-          <div className="flex items-center p-1 rounded-2xl bg-muted/60 shrink-0">
+          <div className="flex items-center p-0.5 rounded-xl bg-muted/50 shrink-0 border border-border/40">
             {allowedViewModes.includes("grid") && (
               <button
                 type="button"
                 onClick={() => onViewModeChange("grid")}
-                className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-foreground text-background"
+                    ? "bg-card text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Visualização em Grade"
@@ -193,9 +193,9 @@ export function DiscoveryControlBar({
               <button
                 type="button"
                 onClick={() => onViewModeChange("list")}
-                className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewMode === "list"
-                    ? "bg-foreground text-background"
+                    ? "bg-card text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Visualização em Lista (Padrão Delivery)"
@@ -209,9 +209,9 @@ export function DiscoveryControlBar({
               <button
                 type="button"
                 onClick={() => onViewModeChange("feed")}
-                className={`p-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`p-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewMode === "feed"
-                    ? "bg-foreground text-background"
+                    ? "bg-card text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="Visualização em Feed (Carrosséis por Loja/Departamento)"

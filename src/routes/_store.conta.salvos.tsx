@@ -180,11 +180,11 @@ function SavedItemsPage() {
                     onClick={() => setSelectedType(tab.id)}
                     className={`h-9 px-3.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
                       isActive
-                        ? "bg-foreground text-background border-foreground shadow-xs font-bold"
-                        : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
+                        ? "bg-primary/10 text-primary border-primary/20 font-bold"
+                        : "bg-transparent text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/50"
                     }`}
                   >
-                    {tab.icon && <tab.icon className="size-3.5 shrink-0" />}
+                    {tab.icon && <tab.icon className="size-3.5 shrink-0" strokeWidth={1.75} />}
                     <span>{tab.label}</span>
                   </button>
                 );
