@@ -484,7 +484,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
     >
       <nav
         aria-label={adminMode ? "Navegação Admin Master" : "Navegação principal mobile"}
-        className="flex items-center gap-1.5 p-1.5 bg-background/95 backdrop-blur-xl border border-border/60 shadow-xl rounded-[24px] ring-1 ring-black/5 dark:ring-white/10 transition-all duration-200"
+        className="flex items-center gap-1.5 p-1.5 bg-background border border-border/70 shadow-xs rounded-[24px] transition-all duration-200"
       >
         {/* ── ADMIN MODE BAR ── */}
         {adminMode && (
@@ -521,7 +521,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                     className={cn(
                       "h-11 px-3.5 rounded-2xl font-sans font-medium text-[13.5px] flex items-center gap-2 shrink-0 transition-all active:scale-95",
                       shortcut.highlight
-                        ? "bg-primary text-primary-foreground shadow-sm"
+                        ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                         : "bg-muted/40 hover:bg-muted/70 text-foreground/85 hover:text-foreground border border-border/30"
                     )}
                   >
@@ -599,11 +599,11 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             className={cn(
               "h-11 px-3.5 rounded-2xl font-sans font-medium text-[13.5px] flex items-center gap-2 shrink-0 transition-all active:scale-95",
               isHomeActive
-                ? "bg-foreground text-background font-semibold shadow-xs"
+                ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                 : "bg-muted/40 hover:bg-muted/70 text-foreground/85 hover:text-foreground border border-border/30"
             )}
           >
-            <Home className={cn("size-[18px]", isHomeActive && "fill-current")} />
+            <Home className="size-[18px]" strokeWidth={isHomeActive ? 2.25 : 1.75} />
             <span className="whitespace-nowrap">Início</span>
           </Link>
 
@@ -613,11 +613,11 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             className={cn(
               "h-11 px-3.5 rounded-2xl font-sans font-medium text-[13.5px] flex items-center gap-2 shrink-0 transition-all active:scale-95",
               isSearchActive
-                ? "bg-foreground text-background font-semibold shadow-xs"
+                ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                 : "bg-muted/40 hover:bg-muted/70 text-foreground/85 hover:text-foreground border border-border/30"
             )}
           >
-            <Search className="size-[18px]" strokeWidth={isSearchActive ? 2.5 : 2} />
+            <Search className="size-[18px]" strokeWidth={isSearchActive ? 2.25 : 1.75} />
             <span className="whitespace-nowrap">Explorar</span>
           </Link>
 
@@ -627,12 +627,13 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             className={cn(
               "h-11 px-3.5 rounded-2xl font-sans font-medium text-[13.5px] flex items-center gap-2 shrink-0 transition-all active:scale-95",
               isMessagesActive
-                ? "bg-foreground text-background font-semibold shadow-xs"
+                ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                 : "bg-muted/40 hover:bg-muted/70 text-foreground/85 hover:text-foreground border border-border/30"
             )}
           >
             <MessageCircle
-              className={cn("size-[18px]", isMessagesActive && "fill-current")}
+              className="size-[18px]"
+              strokeWidth={isMessagesActive ? 2.25 : 1.75}
             />
             <span className="whitespace-nowrap">Mensagens</span>
           </Link>
@@ -649,11 +650,11 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                   className={cn(
                     "h-11 px-3.5 rounded-2xl font-sans font-medium text-[13.5px] flex items-center gap-2 shrink-0 transition-all active:scale-95",
                     isActive
-                      ? "bg-foreground text-background font-semibold shadow-xs"
+                      ? "bg-primary/10 text-primary border border-primary/25 font-bold"
                       : "bg-muted/40 hover:bg-muted/70 text-foreground/85 hover:text-foreground border border-border/30"
                   )}
                 >
-                  <Icon className="size-[18px]" />
+                  <Icon className="size-[18px]" strokeWidth={isActive ? 2.25 : 1.75} />
                   <span className="whitespace-nowrap">{s.label}</span>
                 </Link>
               );

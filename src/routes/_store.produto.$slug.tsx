@@ -383,7 +383,17 @@ function ProductPage() {
   if (isConvenienceProduct) {
     const store = (product as any)?.store;
     const foodSpecs = (product?.attributes as any)?.food_specs || {};
-    const mediaUrls = (product.images || []).map((img: any) => (typeof img === "string" ? img : img.url)).filter(Boolean);
+    const mediaUrls =
+      product.media?.filter((m: any) => m.mediaType === "image")?.map((m: any) => m.url) || [];
+    const currentThumbnailUrl =
+      mediaUrls[0] ||
+      product.media?.[0]?.url ||
+      null;
+    const storePhone =
+      store?.phone ||
+      store?.whatsapp ||
+      (product as any)?.seller?.phone ||
+      "49991448651";
 
     return (
       <ConvenienceShowcaseView
@@ -401,7 +411,7 @@ function ProductPage() {
           unitType: foodSpecs.portion_unit || "un",
           estimatedWeightPerUnit: foodSpecs.portion_weight,
           department: (product as any)?.category?.name || "Mercado & Varejo",
-          brand: product.brand,
+          brand: product.brand || undefined,
           barcodeEan: product.ean || foodSpecs.barcode_ean,
           stockQty: 10,
           groceryFreshPricing: foodSpecs.is_fresh_pricing_active ? {

@@ -77,7 +77,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
     location.pathname.startsWith("/membro");
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-background/95 backdrop-blur-md select-none border-b border-border/40">
+    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/50">
       {/* ── Camada 1: Topo Principal Compacto ── */}
       <div className="px-3 sm:px-5 py-1.5 sm:py-2 flex items-center justify-between gap-2 sm:gap-4 min-h-[48px] w-full">
         {/* Lado Esquerdo: Logo + Localização */}

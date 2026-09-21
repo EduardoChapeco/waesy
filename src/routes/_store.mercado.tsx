@@ -264,8 +264,8 @@ function SupermarketMasterPage() {
  onClick={() => setSelectedStore("todos")}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
  selectedStore === "todos"
- ? "bg-foreground text-background"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
+ ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+ : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
  }`}
  >
  Todos os Mercados
@@ -278,8 +278,8 @@ function SupermarketMasterPage() {
  onClick={() => setSelectedStore(store)}
  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
  selectedStore === store
- ? "bg-foreground text-background"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
+ ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+ : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
  }`}
  >
  {store}
@@ -319,8 +319,8 @@ function SupermarketMasterPage() {
  onClick={() => setSelectedDietary(f.id)}
  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
  isSelected
- ? "bg-foreground text-background"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted"
+ ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+ : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
  }`}
  >
  <span>{f.label}</span>

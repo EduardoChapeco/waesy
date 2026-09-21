@@ -57,7 +57,7 @@ function MuralPage() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
       {/* ─── Topo / Filtros Rápidos ────────────────────────────────── */}
-      <div className="border-b border-border/40 bg-card/60 sticky top-14 z-20 backdrop-blur-md">
+      <div className="border-b border-border/40 bg-background sticky top-14 z-20">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
           <div className="flex items-center gap-1.5">
             <button
@@ -65,8 +65,8 @@ function MuralPage() {
               onClick={() => setActiveFilter("all")}
               className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "all"
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
               }`}
             >
               Para Você
@@ -77,8 +77,8 @@ function MuralPage() {
               onClick={() => setActiveFilter("simple")}
               className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "simple"
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
               }`}
             >
               Fotos & Ideias
@@ -89,8 +89,8 @@ function MuralPage() {
               onClick={() => setActiveFilter("news")}
               className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "news"
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
               }`}
             >
               Notícias Locais
@@ -101,8 +101,8 @@ function MuralPage() {
               onClick={() => setActiveFilter("travel")}
               className={`h-8 px-3.5 rounded-full text-xs font-semibold transition-all ${
                 activeFilter === "travel"
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                  ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
               }`}
             >
               Roteiros

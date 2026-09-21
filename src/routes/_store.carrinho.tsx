@@ -212,7 +212,7 @@ function StoreCartPage() {
 
                           <button
                             type="button"
-                            className="h-11 px-2 text-xs text-red-700/80 hover:text-red-700 dark:text-red-400/80 dark:hover:text-red-400 transition-colors cursor-pointer font-medium select-none"
+                            className="h-11 px-2 text-xs text-destructive/80 hover:text-destructive transition-colors cursor-pointer font-medium select-none"
                             onClick={() => handleRemove(item.id)}
                           >
                             Remover
@@ -293,7 +293,7 @@ function StoreCartPage() {
 
       {/* ── Sticky Mobile Bottom Bar (Thumb Zone para Mobile) ── */}
       {selectedCart && selectedCart.items.length > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-background/95 backdrop-blur-md border-t border-border/80 z-40 shadow-lg">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-background border-t border-border/60 z-40 shadow-xs">
           <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-semibold">
@@ -314,7 +314,7 @@ function StoreCartPage() {
                 search={{ store: selectedCart.storeId }}
                 className="flex-1 max-w-[220px]"
               >
-                <Button className="w-full h-12 font-bold rounded-xl text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-md active:scale-98 transition-all cursor-pointer">
+                <Button className="w-full h-12 font-bold rounded-xl text-sm flex items-center justify-center gap-2 bg-primary text-primary-foreground shadow-none active:scale-95 transition-all cursor-pointer">
                   <span>Finalizar Compra</span>
                   <ArrowRight className="size-4 shrink-0" />
                 </Button>

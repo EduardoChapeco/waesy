@@ -241,7 +241,7 @@ function TourismMasterPage() {
  <Button
  asChild
  size="sm"
- className="rounded-xl font-bold text-xs h-9 px-4 bg-foreground text-background hover:bg-foreground/90 "
+ className="rounded-xl font-bold text-xs h-9 px-4"
  >
  <Link to="/turismo/$id" params={{ id: item.id }}>
  <span>Ver Roteiro</span>
@@ -318,7 +318,7 @@ function TourismMasterPage() {
 											<Button
 												asChild
 												size="sm"
-												className="h-9 px-3 rounded-xl font-bold text-xs bg-foreground text-background"
+												className="h-9 px-3 rounded-xl font-bold text-xs"
 											>
 												<Link to="/turismo/$id" params={{ id: item.id }}>
 													Ver

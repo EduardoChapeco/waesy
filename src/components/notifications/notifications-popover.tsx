@@ -172,8 +172,8 @@ export function NotificationsPopover({ session }: NotificationsPopoverProps) {
  className={cn(
  "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
  isActive
- ? "bg-foreground text-background font-bold "
- : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
+ ? "bg-primary/10 text-primary border border-primary/25 font-bold"
+ : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
  )}
  >
  {tab.label}

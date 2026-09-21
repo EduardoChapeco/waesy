@@ -15,6 +15,7 @@ import {
   Lightbulb,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   listPublicArticles,
@@ -129,9 +130,7 @@ export function NoticiasFeedPage() {
       {/* ── 2. Barra Superior Editorial & Busca ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider bg-foreground text-background">
-            Notícias
-          </span>
+          <Badge variant="secondary">Notícias</Badge>
           <span className="text-xs text-muted-foreground font-mono">Cobertura em Tempo Real</span>
         </div>
 
@@ -162,7 +161,7 @@ export function NoticiasFeedPage() {
                 onClick={() => handleFilterCategory(cat.id)}
                 className={`inline-flex items-center gap-3 px-5 h-14 rounded-2xl border transition-all select-none group cursor-pointer shrink-0 active:scale-[0.98] ${
                   isSelected
-                    ? "bg-foreground text-background border-foreground font-bold "
+                    ? "bg-primary/10 text-primary border-primary/30 font-bold"
                     : "bg-card text-foreground border-border hover:bg-muted/70 hover:border-foreground/20"
                 }`}
               >
@@ -172,15 +171,15 @@ export function NoticiasFeedPage() {
                   ) : (
                     <Icon
                       size={24}
-                      weight={isSelected ? "fill" : "bold"}
-                      className={isSelected ? "text-background" : "text-foreground"}
+                      weight="bold"
+                      className={isSelected ? "text-primary" : "text-foreground"}
                     />
                   )}
                 </div>
 
                 <span
                   className={`text-sm font-bold whitespace-nowrap ${
-                    isSelected ? "text-background" : "text-foreground"
+                    isSelected ? "text-primary" : "text-foreground"
                   }`}
                 >
                   {cat.label}
@@ -246,9 +245,9 @@ export function NoticiasFeedPage() {
 
             <div className="p-5 sm:p-6 space-y-3">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-foreground text-background">
+                <Badge variant="secondary">
                   {featuredArticle.kicker || "Manchete Principal"}
-                </span>
+                </Badge>
                 <span className="text-[11px] text-muted-foreground font-mono">
                   {featuredArticle.reading_time_minutes} min de leitura
                 </span>

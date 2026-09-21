@@ -167,7 +167,7 @@ function OfertasPage() {
  onClick={() => handleNicheChange(chip.id)}
  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all border cursor-pointer active:scale-98 ${
  activeNiche === chip.id
- ? "bg-foreground text-background border-foreground font-bold"
+ ? "bg-primary/10 text-primary border-primary/30 font-bold"
  : "bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
  }`}
  >

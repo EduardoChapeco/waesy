@@ -1102,7 +1102,7 @@ function CommunityHomePage() {
                       Indique empresas para a plataforma e receba comissões e benefícios na sua conta.
                     </p>
                   </div>
-                  <Button asChild size="sm" className="h-10 px-5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer">
+                  <Button asChild size="sm" className="h-10 px-5 rounded-xl text-xs font-bold shrink-0 cursor-pointer">
                     <Link to="/afiliados">
                       <span>Conhecer Afiliados</span>
                       <ArrowRight size={13} className="ml-1.5" />
@@ -1300,7 +1300,7 @@ function CommunityHomePage() {
                       <Button
                         asChild
                         size="sm"
-                        className="h-10 sm:h-8 px-3.5 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer"
+                        className="h-10 sm:h-8 px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
                       >
                         <Link to={item.to as any}>
                           <span>Ver</span>
@@ -1362,7 +1362,7 @@ function CommunityHomePage() {
             </Link>
           </AdTelemetryBeacon>
         ) : (
-          <div className="p-6 sm:p-8 rounded-3xl border border-border/60 bg-card shadow-2xs space-y-4">
+          <div className="p-6 sm:p-8 rounded-3xl border border-border/60 bg-card space-y-4">
             <div className="max-w-xl space-y-1">
               <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider font-bold">
                 Empresas & Negócios
@@ -1376,7 +1376,7 @@ function CommunityHomePage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              <Button asChild className="h-10 px-5 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 shadow-2xs cursor-pointer">
+              <Button asChild className="h-10 px-5 rounded-xl font-bold text-xs cursor-pointer">
                 <Link to="/criar-negocio">
                   <Storefront size={15} weight="bold" className="mr-1.5" />
                   Cadastrar Empresa

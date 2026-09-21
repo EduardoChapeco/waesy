@@ -585,7 +585,9 @@ export const saveHotpage = createServerFn({ method: "POST" })
  show_title: z.boolean().default(true),
  show_description: z.boolean().default(true),
  show_overlay: z.boolean().default(true),
+ show_shadow: z.boolean().optional(),
  show_badge: z.boolean().default(true),
+ text_color: z.string().nullable().optional(),
  is_active: z.boolean().default(true),
  }),
  )

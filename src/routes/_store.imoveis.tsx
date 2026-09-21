@@ -191,11 +191,11 @@ function ImoveisVerticalPage() {
 
       {/* ── 5. Grade de Oportunidades Imobiliárias ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-6 rounded-2xl bg-card space-y-4 border border-border/40 shadow-2xs">
+        <div className="p-6 rounded-2xl bg-card space-y-4 border border-border/40 shadow-none">
           <div className="flex items-center justify-between">
-            <span className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold uppercase bg-foreground text-background">
+            <Badge variant="secondary">
               Locação Residencial
-            </span>
+            </Badge>
             <span className="text-xs font-mono font-bold text-primary">A partir de R$ 1.200/mês</span>
           </div>
           <div>
@@ -216,11 +216,11 @@ function ImoveisVerticalPage() {
           </div>
         </div>
 
-        <div className="p-6 rounded-2xl bg-card space-y-4 border border-border/40 shadow-2xs">
+        <div className="p-6 rounded-2xl bg-card space-y-4 border border-border/40 shadow-none">
           <div className="flex items-center justify-between">
-            <span className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold uppercase bg-foreground text-background">
+            <Badge variant="secondary">
               Venda & Lançamentos
-            </span>
+            </Badge>
             <span className="text-xs font-mono font-bold text-primary">Financiamento Caixa / Bancos</span>
           </div>
           <div>

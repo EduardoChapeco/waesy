@@ -228,7 +228,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="h-9 px-3.5 rounded-2xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 active:scale-95 transition-all cursor-pointer"
+ className="h-9 px-3.5 rounded-2xl font-bold text-xs gap-1.5 active:scale-95 transition-all cursor-pointer"
  >
  <Plus size={14} weight="bold" />
  <span>Publicar</span>
@@ -240,9 +240,9 @@ function FullscreenMapaPage() {
  <div
  className={cn(
  "absolute z-30 transition-all duration-300 ease-out",
- /* Mobile: Bottom Sheet ancorado embaixo */
- "bottom-0 left-0 right-0 rounded-t-3xl border-t border-x sm: bg-card/95 backdrop-blur-xl flex flex-col",
- isExpandedMobile ? "h-[85vh]" : "h-[36vh]",
+        /* Mobile: Bottom Sheet ancorado embaixo */
+        "bottom-0 left-0 right-0 rounded-t-3xl border-t border-x sm:border bg-card flex flex-col shadow-xs",
+        isExpandedMobile ? "h-[85vh]" : "h-[36vh]",
  /* Desktop: Sidebar flutuante à esquerda */
  "sm:bottom-4 sm:top-16 sm:left-4 sm:right-auto sm:w-[400px] sm:h-auto sm:max-h-none sm:rounded-2xl"
  )}
@@ -310,11 +310,11 @@ function FullscreenMapaPage() {
  className={cn(
  "h-7 px-2.5 rounded-xl text-[11px] font-bold shrink-0 transition-all border cursor-pointer flex items-center gap-1.5",
  isSelected
- ? "bg-foreground text-background border-foreground "
+ ? "bg-primary/10 text-primary border-primary/30 font-bold"
  : "bg-background/80 border-border/80 text-muted-foreground hover:text-foreground"
  )}
  >
- <Icon size={12} weight={isSelected ? "fill" : "regular"} />
+ <Icon size={12} weight={isSelected ? "bold" : "regular"} />
  <span>{f.label}</span>
  </button>
  );
@@ -341,7 +341,7 @@ function FullscreenMapaPage() {
  <Button
  size="sm"
  onClick={() => setIsPublishModalOpen(true)}
- className="rounded-xl font-bold text-xs bg-foreground text-background h-8 px-4"
+ className="rounded-xl font-bold text-xs h-8 px-4"
  >
  + Publicar Meu Momento
  </Button>

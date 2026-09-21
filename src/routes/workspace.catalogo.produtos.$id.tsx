@@ -503,8 +503,8 @@ function EditProductPage() {
  } : undefined,
  groceryRipenessConfig: foodSpecs.ripenessEnabled ? {
  enabled: true,
- stages: foodSpecs.ripenessStages || ["verde", "quase_maduro", "maduro", "passando"],
- default_stage: "maduro",
+ stages: (foodSpecs.ripenessStages || ["verde", "quase_maduro", "maduro", "passando"]) as any,
+ default_stage: "maduro" as any,
  } : undefined,
  progressiveDiscountTiers: foodSpecs.progressiveDiscounts && foodSpecs.progressiveDiscounts.length > 0
  ? foodSpecs.progressiveDiscounts.map((d: any) => ({

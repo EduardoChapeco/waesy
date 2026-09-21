@@ -182,12 +182,12 @@ export function GroceryProductCard({
 
  <div>
  {currentQty > 0 ? (
- <div className="flex items-center gap-1 bg-foreground text-background rounded-xl p-1">
+ <div className="flex items-center gap-1 border border-primary/30 bg-primary/10 text-primary rounded-xl p-0.5">
  <button
  type="button"
  onClick={handleDecrement}
  disabled={isAdding}
- className="size-5 rounded bg-background/20 hover:bg-background/30 flex items-center justify-center transition-colors cursor-pointer"
+ className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
  aria-label="Diminuir quantidade"
  >
  <Minus className="size-2.5" />
@@ -201,7 +201,7 @@ export function GroceryProductCard({
  type="button"
  onClick={handleIncrement}
  disabled={isAdding}
- className="size-5 rounded bg-background/20 hover:bg-background/30 flex items-center justify-center transition-colors cursor-pointer"
+ className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
  aria-label="Aumentar quantidade"
  >
  <Plus className="size-2.5" />
@@ -211,7 +211,7 @@ export function GroceryProductCard({
  <Button
  size="sm"
  onClick={handleQuickAdd}
- className="rounded-xl h-8 px-2.5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
+ className="rounded-xl h-8 px-2.5 font-bold text-xs gap-1 cursor-pointer"
  >
  <Plus className="size-3.5" />
  <span className="hidden sm:inline">Adicionar</span>
@@ -330,12 +330,12 @@ export function GroceryProductCard({
  {/* Stepper / Quick Add Button */}
  <div>
  {currentQty > 0 ? (
- <div className="flex items-center gap-1.5 bg-foreground text-background rounded-xl p-1">
+ <div className="flex items-center gap-1.5 border border-primary/30 bg-primary/10 text-primary rounded-xl p-1">
  <button
  type="button"
  onClick={handleDecrement}
  disabled={isAdding}
- className="size-6 rounded-lg bg-background/20 hover:bg-background/30 flex items-center justify-center transition-colors cursor-pointer"
+ className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
  aria-label="Diminuir quantidade"
  >
  <Minus className="size-3" />
@@ -349,7 +349,7 @@ export function GroceryProductCard({
  type="button"
  onClick={handleIncrement}
  disabled={isAdding}
- className="size-6 rounded-lg bg-background/20 hover:bg-background/30 flex items-center justify-center transition-colors cursor-pointer"
+ className="size-6 rounded-lg bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
  aria-label="Aumentar quantidade"
  >
  <Plus className="size-3" />
@@ -359,7 +359,7 @@ export function GroceryProductCard({
  <Button
  size="sm"
  onClick={handleQuickAdd}
- className="rounded-xl min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-3.5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer"
+ className="rounded-xl min-h-[44px] sm:min-h-0 h-11 sm:h-9 px-3.5 font-bold text-xs gap-1.5 cursor-pointer"
  >
  <Plus className="size-4 sm:size-3.5" />
  <span className="hidden sm:inline">Adicionar</span>

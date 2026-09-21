@@ -1526,9 +1526,7 @@ export function CheckoutPage() {
  )}
  >
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 font-bold">
- <QrCode size={18} />
- </div>
+ <QrCode className="size-5 text-primary shrink-0" strokeWidth={1.75} />
  <div>
  <p className="text-xs font-bold text-foreground">
  {storeProfile?.settings?.payment_processing_mode === "direct_store"
@@ -1546,12 +1544,12 @@ export function CheckoutPage() {
  </div>
  <div className="flex items-center gap-1.5">
  {storeProfile?.settings?.payment_processing_mode === "direct_store" ? (
- <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/40 text-emerald-600">
+ <Badge variant="success">
  Direto da Loja
  </Badge>
  ) : null}
  {pixDiscountPercent > 0 && (
- <Badge className="bg-emerald-500 text-white text-[10px] font-bold">
+ <Badge variant="success">
  {pixDiscountPercent}% OFF
  </Badge>
  )}
@@ -1585,9 +1583,7 @@ export function CheckoutPage() {
  )}
  >
  <div className="flex items-center gap-3">
- <div className="size-9 rounded-xl bg-info/10 text-info flex items-center justify-center shrink-0 font-bold">
- <CreditCard size={18} />
- </div>
+ <CreditCard className="size-5 text-primary shrink-0" strokeWidth={1.75} />
  <div>
  <p className="text-xs font-bold text-foreground">Cartão de Crédito Online</p>
  <p className="text-[11px] text-muted-foreground">
@@ -1894,7 +1890,7 @@ export function CheckoutPage() {
  </div>
 
  {appliedGiftCard && (
- <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+ <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-success/10 text-success border border-success/20">
  <span className="flex items-center gap-1 font-bold">
  <Gift size={13} /> Vale: {appliedGiftCard.code}
  </span>
