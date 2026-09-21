@@ -171,16 +171,24 @@ export function UnifiedNewProductPage() {
  const [optionGroups, setOptionGroups] = useState<any[]>(optionGroupsList || []);
  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<string[]>([]);
 
- // Especificações Gastronômicas & Padrão iFood
- const [bomItems, setBomItems] = useState<BomItem[]>([]);
- const [foodSpecs, setFoodSpecs] = useState<FoodSpecsData>({
- dietaryRestrictions: [],
- beverageTags: [],
- servesCount: "1 pessoa",
- portionWeight: "",
- portionUnit: "g",
- preparationTimeMinutes: 15,
- });
+  // Especificações Gastronômicas & Padrão iFood / Varejo
+  const [bomItems, setBomItems] = useState<BomItem[]>([]);
+  const [foodSpecs, setFoodSpecs] = useState<FoodSpecsData>({
+    dietaryRestrictions: [],
+    beverageTags: [],
+    servesCount: "1 pessoa",
+    portionWeight: "",
+    portionUnit: "g",
+    preparationTimeMinutes: 15,
+    barcodeEan: "",
+    isFreshPricingActive: false,
+    freshPricingMode: "unit",
+    avgPieceWeightGrams: undefined,
+    pricePerKgCents: undefined,
+    ripenessEnabled: false,
+    ripenessStages: ["Verde / Para amadurecer", "De vez / Firme", "Maduro / No ponto", "Bem maduro / Consumo hoje"],
+    progressiveDiscounts: [],
+  });
 
  const isTourismStore =
  semantics.nicheId === "tourism" ||
@@ -380,6 +388,7 @@ export function UnifiedNewProductPage() {
  short_description: data.short_description || null,
  status: data.status || "published",
  brand: data.brand || null,
+ ean: foodSpecs.barcodeEan?.trim() || data.ean || null,
  price_cents: data.price_cents,
  compare_at_cents: data.compare_at_cents > 0 ? data.compare_at_cents : null,
  cost_cents: data.cost_cents > 0 ? data.cost_cents : null,
@@ -408,6 +417,14 @@ export function UnifiedNewProductPage() {
  portion_unit: foodSpecs.portionUnit,
  preparation_time_minutes: foodSpecs.preparationTimeMinutes,
  pos_code: foodSpecs.posCode,
+ barcode_ean: foodSpecs.barcodeEan,
+ is_fresh_pricing_active: foodSpecs.isFreshPricingActive,
+ fresh_pricing_mode: foodSpecs.freshPricingMode,
+ avg_piece_weight_grams: foodSpecs.avgPieceWeightGrams,
+ price_per_kg_cents: foodSpecs.pricePerKgCents,
+ ripeness_enabled: foodSpecs.ripenessEnabled,
+ ripeness_stages: foodSpecs.ripenessStages,
+ progressive_discounts: foodSpecs.progressiveDiscounts,
  },
  fiscal: fiscalData,
  },

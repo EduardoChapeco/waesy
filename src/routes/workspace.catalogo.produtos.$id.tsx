@@ -209,6 +209,14 @@ function EditProductPage() {
  portionUnit: specs.portion_unit || specs.portionUnit || "g",
  preparationTimeMinutes: product?.preparation_time_days || specs.preparation_time_minutes || specs.preparationTimeMinutes || 15,
  posCode: specs.pos_code || specs.posCode || product?.sku || "",
+ barcodeEan: specs.barcode_ean || specs.barcodeEan || product?.ean || "",
+ isFreshPricingActive: Boolean(specs.is_fresh_pricing_active ?? specs.isFreshPricingActive),
+ freshPricingMode: specs.fresh_pricing_mode || specs.freshPricingMode || "unit",
+ avgPieceWeightGrams: specs.avg_piece_weight_grams || specs.avgPieceWeightGrams,
+ pricePerKgCents: specs.price_per_kg_cents || specs.pricePerKgCents,
+ ripenessEnabled: Boolean(specs.ripeness_enabled ?? specs.ripenessEnabled),
+ ripenessStages: specs.ripeness_stages || specs.ripenessStages || ["Verde / Para amadurecer", "De vez / Firme", "Maduro / No ponto", "Bem maduro / Consumo hoje"],
+ progressiveDiscounts: specs.progressive_discounts || specs.progressiveDiscounts || [],
  };
  }, [product]);
 
@@ -258,6 +266,7 @@ function EditProductPage() {
  data: {
  id: product.id,
  preparation_time_days: newSpecs.preparationTimeMinutes,
+ ean: newSpecs.barcodeEan?.trim() || product.ean,
  attributes: {
  ...(product.attributes || {}),
  dietary_restrictions: newSpecs.dietaryRestrictions,
@@ -267,6 +276,14 @@ function EditProductPage() {
  portion_unit: newSpecs.portionUnit,
  preparation_time_minutes: newSpecs.preparationTimeMinutes,
  pos_code: newSpecs.posCode,
+ barcode_ean: newSpecs.barcodeEan,
+ is_fresh_pricing_active: newSpecs.isFreshPricingActive,
+ fresh_pricing_mode: newSpecs.freshPricingMode,
+ avg_piece_weight_grams: newSpecs.avgPieceWeightGrams,
+ price_per_kg_cents: newSpecs.pricePerKgCents,
+ ripeness_enabled: newSpecs.ripenessEnabled,
+ ripeness_stages: newSpecs.ripenessStages,
+ progressive_discounts: newSpecs.progressiveDiscounts,
  },
  },
  });

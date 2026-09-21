@@ -36,6 +36,8 @@ import { ChoiceCard } from "@/components/ui/choice-card";
 import { SquircleCard } from "@/components/ui/squircle-card";
 import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city-combobox";
 import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
+import { getMyStoresList } from "@/services/store.functions";
+import { getProfile } from "@/services/auth.functions";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
 import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/services/market-intelligence.functions";
 import { lookupCnpj } from "@/services/public-apis.functions";
@@ -895,6 +897,36 @@ function SpecializedClassifiedEditor({
  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<2 | 3 | 4 | 5>(2);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
+
+  // Identidade do Anúncio (Perfil Pessoal vs Loja Oficial)
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(
+    storeId || initialData?.store_id || null
+  );
+  const [userStores, setUserStores] = useState<any[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isLoadingIdentity, setIsLoadingIdentity] = useState<boolean>(true);
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      getMyStoresList().catch(() => []),
+      getProfile().catch(() => null),
+    ]).then(([stores, prof]) => {
+      if (!mounted) return;
+      setUserStores(stores || []);
+      setUserProfile(prof);
+      setIsLoadingIdentity(false);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const selectedStore = useMemo(() => {
+    if (!selectedStoreId) return null;
+    return userStores.find((s) => s.id === selectedStoreId) || null;
+  }, [selectedStoreId, userStores]);
+
   const [isCustomCommercialOpen, setIsCustomCommercialOpen] = useState(false);
   const [draftInfo, setDraftInfo] = useState<{ step: number; savedAt: string } | null>(null);
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
@@ -2377,7 +2409,8 @@ function SpecializedClassifiedEditor({
           ],
           installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
           cancellation_policy: cancellationPolicy,
-          store_id: storeId || initialData?.store_id || undefined,
+          store_id: selectedStoreId || undefined,
+          is_store_official: Boolean(selectedStoreId),
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
           content: description.trim(),
           ai_instructions: aiInstructions.trim() || undefined,
@@ -2616,6 +2649,8 @@ function SpecializedClassifiedEditor({
               draft_step: currentStep,
               niche: niche.id,
             },
+            store_id: selectedStoreId || undefined,
+            is_store_official: Boolean(selectedStoreId),
           },
         });
       }
@@ -2728,7 +2763,21 @@ function SpecializedClassifiedEditor({
       contact_whatsapp: whatsapp || "",
       contact_phone: whatsapp || "",
       whatsapp: whatsapp || "",
-      contact_name: "Anunciante",
+      contact_name: selectedStore ? selectedStore.name : (userProfile?.full_name || "Você"),
+      store_id: selectedStore?.id || null,
+      store_name: selectedStore?.name || null,
+      store_slug: selectedStore?.slug || null,
+      store: selectedStore ? {
+        id: selectedStore.id,
+        name: selectedStore.name,
+        slug: selectedStore.slug,
+        logo_url: selectedStore.logo_url,
+      } : null,
+      profiles: !selectedStore ? {
+        id: userProfile?.id || "preview-user",
+        full_name: userProfile?.full_name || "Você",
+        avatar_url: userProfile?.avatar_url || null,
+      } : null,
       negotiable,
       accepts_trade: acceptsTrade,
       category: niche.id,
@@ -3250,7 +3299,69 @@ function SpecializedClassifiedEditor({
                   : "max-w-5xl"
               )}
             >
-              {templateStyle === "editorial" || niche.id === "viagem" ? (
+              {niche.id === "mercado" || templateStyle === "conveniencia" ? (
+                <ConvenienceShowcaseView
+                  classified={livePreviewClassified}
+                  previewData={{
+                    title: title || "Produto de Mercado",
+                    description: description,
+                    priceCents: computedPriceCents,
+                    images: images || [],
+                    locationName: locationName || "São Miguel do Oeste e Região",
+                    whatsapp,
+                    storeName: selectedStore?.name,
+                    storeSlug: selectedStore?.slug,
+                    storeLogo: selectedStore?.logo_url,
+                    authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
+                    authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
+                    authorId: !selectedStore ? userProfile?.id : undefined,
+                    volume: groceryVolume,
+                    unitType: groceryUnitType,
+                    department: groceryDepartment,
+                    temperature: groceryTemperature,
+                    isAlcoholic: groceryIsAlcoholic,
+                    containsGluten: groceryContainsGluten,
+                    containsLactose: groceryContainsLactose,
+                    isOrganic: groceryIsOrganic,
+                    brand: groceryBrand,
+                    barcodeEan: groceryBarcodeEan,
+                    ingredients: groceryIngredients,
+                    prepOptions: groceryPrepOptions,
+                    deliveryEstimate: groceryDeliveryEstimate,
+                    deliveryFeeCents: groceryDeliveryFeeCents,
+                    readyDelivery: groceryReadyDelivery,
+                    acceptsPix,
+                    pixDiscountPercent,
+                    acceptsCard,
+                    maxInstallments,
+                    cardInterestFree,
+                    acceptsCash,
+                    groceryFreshPricing: grocerySupportsFreshPricing ? {
+                      supports_fresh_pricing: true,
+                      default_pricing_mode: groceryDefaultPricingMode,
+                      avg_piece_weight_grams: groceryAvgPieceWeightGrams,
+                      price_per_kg_cents: groceryPricePerKgCents,
+                      price_per_unit_cents: priceCents,
+                    } : undefined,
+                    groceryRipenessConfig: groceryRipenessEnabled ? {
+                      enabled: true,
+                      stages: groceryRipenessStages,
+                      default_stage: "maduro",
+                    } : undefined,
+                    progressiveDiscountTiers: groceryProgressiveDiscountsEnabled ? groceryDiscountTiers : undefined,
+                    orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
+                      enabled: true,
+                      mode: "manual",
+                      target_title: groceryOrderBumpTitle.trim(),
+                      special_price_cents: groceryOrderBumpSpecialPriceCents,
+                      original_price_cents: groceryOrderBumpOriginalPriceCents,
+                      badge_text: groceryOrderBumpBadge,
+                    } : undefined,
+                  }}
+                  isOwner={true}
+                  onEdit={() => setCurrentStep(2)}
+                />
+              ) : templateStyle === "editorial" || niche.id === "viagem" ? (
                 <EditorialShowcaseView
                   classified={livePreviewClassified}
                   isOwner={true}

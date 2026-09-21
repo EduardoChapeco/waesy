@@ -29,6 +29,9 @@ import {
   Clock3,
   FileText,
   Scale,
+  User,
+  Building2,
+  Loader2,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
@@ -44,6 +47,8 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getMyStoresList } from "@/services/store.functions";
+import { linkClassifiedToStore } from "@/services/classifieds.functions";
 import {
   GroceryFreshPricing,
   GroceryRipenessConfig,
@@ -64,6 +69,9 @@ export interface ConveniencePreviewData {
   storeName?: string;
   storeSlug?: string;
   storeLogo?: string;
+  authorName?: string;
+  authorAvatar?: string;
+  authorId?: string;
   volume?: string;
   unitType?: string; // "un" | "kg" | "g" | "L" | "ml" | "fardo" | "bandeja" | "pct"
   estimatedWeightPerUnit?: string; // ex: "~1.2kg"
@@ -157,18 +165,80 @@ export function ConvenienceShowcaseView({
   const rawPhone = previewData?.whatsapp || classified?.contact_whatsapp || classified?.whatsapp || "";
   const cleanPhone = rawPhone.replace(/\D/g, "");
 
-  const storeName =
-    previewData?.storeName ||
-    classified?.store_name ||
-    classified?.store?.name ||
-    classified?.storeName ||
-    "Loja Parceira";
+  // ── Identidade Dual Estrita (Perfil Pessoal vs Loja Oficial) ──
+  const store = classified?.store;
+  const authorProfile = classified?.profiles;
+  const isCompany = Boolean(
+    (classified?.store_id && (store?.id || classified?.store_name)) ||
+    (previewData?.storeName && previewData?.storeSlug)
+  );
+
+  const advertiserName = isCompany
+    ? (previewData?.storeName || store?.name || classified?.store_name || "Loja Oficial")
+    : (previewData?.authorName || authorProfile?.full_name || classified?.contact_name || "Vendedor Particular");
+
+  const advertiserAvatar = isCompany
+    ? (previewData?.storeLogo || store?.logo_url || null)
+    : (previewData?.authorAvatar || authorProfile?.avatar_url || null);
 
   const storeSlug =
     previewData?.storeSlug ||
     classified?.store_slug ||
-    classified?.store?.slug ||
+    store?.slug ||
     "";
+
+  const advertiserProfileUrl = isCompany
+    ? (storeSlug ? `/loja/${storeSlug}` : store?.id ? `/perfil-da-loja?storeId=${store.id}` : null)
+    : (authorProfile?.id ? `/membro/${authorProfile.id}` : previewData?.authorId ? `/membro/${previewData.authorId}` : null);
+
+  const advertiserRoleLabel = isCompany ? "Loja Oficial" : "Vendedor Particular";
+
+  // Estados para modal de vinculação rápida de loja no Workspace (Modo Proprietário)
+  const [isLinkStoreModalOpen, setIsLinkStoreModalOpen] = useState(false);
+  const [userStoresList, setUserStoresList] = useState<any[]>([]);
+  const [isLoadingStores, setIsLoadingStores] = useState(false);
+  const [isLinkingStore, setIsLinkingStore] = useState(false);
+
+  const handleOpenLinkStoreModal = async () => {
+    setIsLinkStoreModalOpen(true);
+    setIsLoadingStores(true);
+    try {
+      const stores = await getMyStoresList();
+      setUserStoresList(stores || []);
+    } catch (err: any) {
+      console.warn("Erro ao buscar lojas do usuário:", err);
+      toast.error("Não foi possível carregar suas lojas.");
+    } finally {
+      setIsLoadingStores(false);
+    }
+  };
+
+  const handleSelectStoreLink = async (targetStoreId: string | null) => {
+    if (!classified?.id) return;
+    setIsLinkingStore(true);
+    try {
+      await linkClassifiedToStore({
+        data: {
+          classifiedId: classified.id,
+          storeId: targetStoreId,
+        },
+      });
+      toast.success(
+        targetStoreId
+          ? "Anúncio vinculado à loja com sucesso!"
+          : "Anúncio desvinculado e mantido no perfil pessoal!"
+      );
+      setIsLinkStoreModalOpen(false);
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+    } catch (err: any) {
+      console.error("Erro ao vincular anúncio à loja:", err);
+      toast.error(err?.message || "Erro ao vincular anúncio à loja.");
+    } finally {
+      setIsLinkingStore(false);
+    }
+  };
 
   // Atributos de Varejo Alimentar / Supermercado / Açougue / Bebidas
   const volume = previewData?.volume || attrs.volume || attrs.specification_volume || "";
@@ -387,8 +457,9 @@ export function ConvenienceShowcaseView({
       ? `\n• Desconto Progressivo: *Economia de ${formatMoney(discountResult.totalSavedCents)}*`
       : "";
 
+    const greeting = `Olá, ${advertiserName}!`;
     const msg = encodeURIComponent(
-      `Olá, ${storeName}! Gostaria de pedir *${quantity}x ${title}* (${formatMoney(subtotalCents)})${freshInfoText}${ripenessText}${prepText}${discountText}\n` +
+      `${greeting} Gostaria de pedir *${quantity}x ${title}* (${formatMoney(subtotalCents)})${freshInfoText}${ripenessText}${prepText}${discountText}\n` +
       `Local: ${locationName}\n` +
       `Poderiam me confirmar a disponibilidade para entrega?`
     );
@@ -440,7 +511,7 @@ export function ConvenienceShowcaseView({
     if (cleanPhone) {
       const msg = encodeURIComponent(
         `🛍️ *NOVO PEDIDO DE VAREJO ALIMENTAR / MERCADO*\n` +
-        `Loja: *${storeName}*\n\n` +
+        `${isCompany ? "Loja" : "Vendedor"}: *${advertiserName}* (${advertiserRoleLabel})\n\n` +
         `• Item: *${quantity}x ${title}* (${formatMoney(effectiveUnitPriceCents)}/un)${freshInfoText}${ripenessText}${prepText}${bumpText}${discountText}\n` +
         `• Subtotal Itens: ${formatMoney(currentOrderSubtotal)}\n` +
         `• Modalidade: ${deliveryText}\n` +
@@ -451,7 +522,7 @@ export function ConvenienceShowcaseView({
       );
       window.open(`https://wa.me/${cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone}?text=${msg}`, "_blank");
       setIsOrderModalOpen(false);
-      toast.success("Pedido gerado! Redirecionando para o WhatsApp do lojista...");
+      toast.success("Pedido gerado! Redirecionando para o WhatsApp...");
     } else {
       setIsOrderModalOpen(false);
       toast.success("Pedido confirmado com sucesso!");
@@ -459,6 +530,72 @@ export function ConvenienceShowcaseView({
   };
 
   const unitSuffix = volume ? volume : unitType === "kg" ? "kg" : unitType === "g" ? "g" : unitType === "L" ? "L" : unitType !== "un" ? unitType : "";
+
+  // Componente Reutilizável: Card do Anunciante com Isolamento Estrito (Pessoa vs Empresa)
+  const AdvertiserCard = () => (
+    <div className="p-3.5 rounded-2xl border border-border/60 bg-muted/15 space-y-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="size-9 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center shadow-2xs">
+            {advertiserAvatar ? (
+              <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
+            ) : isCompany ? (
+              <Store className="size-4 text-primary" />
+            ) : (
+              <User className="size-4 text-muted-foreground" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="text-xs font-bold text-foreground truncate">{advertiserName}</p>
+              {isCompany ? (
+                <span title="Loja Oficial Verificada" className="inline-flex shrink-0">
+                  <CheckCircle2 className="size-3.5 text-blue-500" />
+                </span>
+              ) : (
+                <span title="Anunciante Verificado" className="inline-flex shrink-0">
+                  <ShieldCheck className="size-3.5 text-emerald-500" />
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground truncate">
+              {isCompany ? "Loja Oficial" : "Vendedor Particular"} • {locationName}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          {advertiserProfileUrl && !isPreview && (
+            <Button asChild variant="ghost" size="sm" className="h-7 px-2.5 text-[11px] text-foreground/80 hover:text-foreground gap-1">
+              <Link to={advertiserProfileUrl}>
+                <span>{isCompany ? "Ver Loja" : "Ver Perfil"}</span>
+                <ExternalLink className="size-3" />
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Ação de Vinculação para o Dono do Anúncio (Owner Action) */}
+      {isOwner && !isCompany && classified?.id && (
+        <div className="pt-2 border-t border-border/40 flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted-foreground">
+            Anuncia como empresa?
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleOpenLinkStoreModal}
+            className="h-6 px-2 text-[10px] font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10 gap-1 rounded-lg cursor-pointer"
+          >
+            <Building2 className="size-3" />
+            <span>Vincular a Loja</span>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 
   // Componente Reutilizável: Metadados Textuais Sutis (Sem Badges Chunky, Sem Neon, Sem Emojis)
   const SubtleProductTags = () => (
@@ -895,7 +1032,7 @@ export function ConvenienceShowcaseView({
             <div className="md:hidden px-3.5 space-y-3.5">
               <div className="space-y-1">
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                  <span className="font-semibold text-foreground/90">{storeName}</span>
+                  <span className="font-semibold text-foreground/90">{advertiserName}</span>
                   <span>•</span>
                   <span>{department}</span>
                 </div>
@@ -1068,28 +1205,9 @@ export function ConvenienceShowcaseView({
               </div>
             )}
 
-            {/* Card da Loja no Mobile */}
-            <div className="md:hidden mx-3.5 p-3.5 rounded-2xl border border-border/60 bg-muted/15 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                    <Store className="size-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate">{storeName}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{locationName}</p>
-                  </div>
-                </div>
-
-                {storeSlug && !isPreview && (
-                  <Button asChild variant="ghost" size="sm" className="h-7 text-[11px] text-primary hover:text-primary gap-1">
-                    <Link to={`/loja/${storeSlug}`}>
-                      <span>Ver Loja</span>
-                      <ExternalLink className="size-3" />
-                    </Link>
-                  </Button>
-                )}
-              </div>
+            {/* Card do Anunciante / Loja no Mobile */}
+            <div className="md:hidden mx-3.5">
+              <AdvertiserCard />
             </div>
           </div>
 
@@ -1110,7 +1228,7 @@ export function ConvenienceShowcaseView({
             {/* Header de Categoria / Loja */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-                <span className="font-semibold text-foreground/90">{storeName}</span>
+                <span className="font-semibold text-foreground/90">{advertiserName}</span>
                 <span>•</span>
                 <span>{department}</span>
               </div>
@@ -1240,29 +1358,8 @@ export function ConvenienceShowcaseView({
               </div>
             </div>
 
-            {/* Card Resumo da Loja no Desktop */}
-            <div className="p-3.5 rounded-2xl border border-border/60 bg-muted/15 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                    <Store className="size-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate">{storeName}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{locationName}</p>
-                  </div>
-                </div>
-
-                {storeSlug && !isPreview && (
-                  <Button asChild variant="ghost" size="sm" className="h-7 text-[11px] text-primary hover:text-primary gap-1">
-                    <Link to={`/loja/${storeSlug}`}>
-                      <span>Ver Loja</span>
-                      <ExternalLink className="size-3" />
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </div>
+            {/* Card Resumo do Anunciante / Loja no Desktop */}
+            <AdvertiserCard />
 
           </div>
         </div>
@@ -1659,6 +1756,101 @@ export function ConvenienceShowcaseView({
               <ShoppingBag className="size-4" />
               <span>Confirmar Pedido · {formatMoney(grandTotalCents)}</span>
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog para Vincular Anúncio a uma Loja do Workspace (Modo Proprietário) ── */}
+      <Dialog open={isLinkStoreModalOpen} onOpenChange={setIsLinkStoreModalOpen}>
+        <DialogContent className="sm:max-w-md sm:rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Building2 className="size-4 text-primary" />
+              <span>Vincular Anúncio ao Workspace</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Você pode transformar este anúncio em um anúncio oficial de uma das suas lojas cadastradas.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            {isLoadingStores ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-xs text-muted-foreground">
+                <Loader2 className="size-4 animate-spin text-primary" />
+                <span>Buscando suas empresas...</span>
+              </div>
+            ) : userStoresList.length === 0 ? (
+              <div className="p-4 rounded-xl border border-dashed text-center space-y-2">
+                <Store className="size-8 mx-auto text-muted-foreground/50" />
+                <p className="text-xs text-muted-foreground">
+                  Você ainda não possui lojas cadastradas no Workspace.
+                </p>
+                <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                  <Link to="/workspace">Criar ou Gerenciar Lojas</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {userStoresList.map((st: any) => {
+                  const isCurrent = classified?.store_id === st.id;
+                  return (
+                    <div
+                      key={st.id}
+                      className={cn(
+                        "p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors",
+                        isCurrent
+                          ? "border-primary bg-primary/5"
+                          : "border-border/70 hover:border-primary/40 bg-card"
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="size-8 rounded-lg bg-background border border-border/70 overflow-hidden flex items-center justify-center shrink-0">
+                          {st.logo_url ? (
+                            <img src={st.logo_url} alt={st.name} className="size-full object-cover" />
+                          ) : (
+                            <Store className="size-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-foreground truncate">{st.name}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {st.city ? `${st.city}${st.state ? ` - ${st.state}` : ""}` : "Loja Waesy"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {isCurrent ? (
+                        <Badge variant="outline" className="text-[10px] text-primary border-primary/30 bg-primary/10">
+                          Vinculada
+                        </Badge>
+                      ) : (
+                        <Button
+                          size="sm"
+                          disabled={isLinkingStore}
+                          onClick={() => handleSelectStoreLink(st.id)}
+                          className="h-7 px-2.5 text-xs font-bold cursor-pointer"
+                        >
+                          {isLinkingStore ? <Loader2 className="size-3 animate-spin" /> : "Vincular"}
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {classified?.store_id && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isLinkingStore}
+                    onClick={() => handleSelectStoreLink(null)}
+                    className="w-full h-8 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer mt-1"
+                  >
+                    Desvincular loja (tornar anúncio de perfil pessoal)
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

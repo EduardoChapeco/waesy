@@ -1993,3 +1993,76 @@ export const listStoreDonations = createServerFn({ method: "GET" }).handler(asyn
     );
   });
 });
+
+/**
+ * Vincula ou desvincula um anúncio a uma Loja do Workspace.
+ * Permite que um anunciante transforme um anúncio pessoal em anúncio oficial de empresa
+ * ou retorne para anúncio de perfil pessoal com total transparência.
+ */
+export const linkClassifiedToStore = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      classifiedId: z.string().uuid(),
+      storeId: z.string().uuid().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    const supabase = getServerClient();
+
+    // 1. Obter o anúncio para verificar titularidade
+    const { data: ad, error: adErr } = await supabase
+      .from("classifieds")
+      .select("id, author_profile_id, store_id")
+      .eq("id", data.classifiedId)
+      .maybeSingle();
+
+    if (adErr || !ad) {
+      throw new Error("Anúncio não encontrado.");
+    }
+
+    const isPlatformAdmin = ["admin", "master", "superadmin", "platform_admin"].includes(identity.role || "");
+    const isAdAuthor = ad.author_profile_id === identity.id;
+
+    if (!isAdAuthor && !isPlatformAdmin) {
+      throw new Error("Você não tem autorização para alterar a titularidade deste anúncio.");
+    }
+
+    // 2. Se for vincular a uma loja, validar se o usuário é membro/dono dessa loja
+    if (data.storeId) {
+      if (!isPlatformAdmin) {
+        const { data: membership } = await supabase
+          .from("workspace_members")
+          .select("id, role")
+          .eq("store_id", data.storeId)
+          .eq("profile_id", identity.id)
+          .maybeSingle();
+
+        if (!membership) {
+          throw new Error("Você não tem autorização como membro ou administrador da loja selecionada.");
+        }
+      }
+    }
+
+    // 3. Atualizar o anúncio
+    const { error: updErr } = await supabase
+      .from("classifieds")
+      .update({
+        store_id: data.storeId,
+        is_store_official: Boolean(data.storeId),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.classifiedId);
+
+    if (updErr) {
+      throw new Error("Erro ao atualizar vinculação da loja: " + updErr.message);
+    }
+
+    return {
+      success: true,
+      storeId: data.storeId,
+      isStoreOfficial: Boolean(data.storeId),
+    };
+  });
