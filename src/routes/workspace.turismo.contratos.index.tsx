@@ -193,16 +193,15 @@ export default function WorkspaceContractsIndexPage() {
                           {c.contract_title}
                         </h3>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] font-bold uppercase ${
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider ${
                           isSigned
-                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                            : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-amber-600 dark:text-amber-400"
                         }`}
                       >
                         {isSigned ? "Assinado" : "Pendente"}
-                      </Badge>
+                      </span>
                     </div>
 
                     <div className="space-y-1 text-xs text-muted-foreground">

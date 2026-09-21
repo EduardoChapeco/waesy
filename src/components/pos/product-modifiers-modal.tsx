@@ -188,9 +188,9 @@ export function ProductModifiersModal({
  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
  {group.title}
  {group.is_required && (
- <Badge variant="destructive" className="text-[9px] py-0 px-1.5 h-4">
- Obrigatório
- </Badge>
+ <span className="text-[10px] font-bold text-destructive uppercase tracking-wider">
+ • Obrigatório
+ </span>
  )}
  </span>
  {group.description && (

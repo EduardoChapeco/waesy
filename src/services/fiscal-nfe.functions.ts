@@ -415,7 +415,11 @@ export const emitOrderNFeAutomated = createServerFn({ method: "POST" })
       console.warn("[fiscal] Storage receipts upload note:", e);
     }
 
-    const customerDoc = (order.customer_snapshot as any)?.cpf || (order.customer_snapshot as any)?.document || "00000000000";
+    const customerDoc =
+      (order as any).cpf_on_receipt?.cpf ||
+      (order.customer_snapshot as any)?.cpf ||
+      (order.customer_snapshot as any)?.document ||
+      "00000000000";
     const customerName = (order.customer_snapshot as any)?.name || "Consumidor Final";
 
     // 6. Grava registro na tabela store_nfe_invoices
