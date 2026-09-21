@@ -985,4 +985,104 @@ export const CANONICAL_BAKERY_PREP_OPTIONS = [
   "Bandeja fechada",
 ] as const;
 
+// ─── 9. VAREJO ALIMENTAR PRO: HORTIFRÚTI FRESCO, MATURAÇÃO & GAMIFICAÇÃO ──────
+
+export type GroceryPricingMode = "unit" | "weight";
+export type RipenessStage = "menos_maduro" | "maduro" | "mais_maduro";
+
+export interface GroceryFreshPricing {
+  supports_fresh_pricing: boolean;
+  default_pricing_mode: GroceryPricingMode;
+  avg_piece_weight_grams?: number; // ex: 500g por mamão papaya
+  min_increment_grams?: number; // ex: 100g, 250g
+  price_per_kg_cents?: number;
+  price_per_unit_cents?: number;
+}
+
+export interface GroceryRipenessConfig {
+  enabled: boolean;
+  stages: RipenessStage[];
+  default_stage: RipenessStage;
+  labels?: Partial<Record<RipenessStage, string>>;
+}
+
+export const DEFAULT_RIPENESS_LABELS: Record<RipenessStage, { title: string; desc: string }> = {
+  menos_maduro: { title: "Menos maduro", desc: "Mais firme, para consumo ao longo da semana" },
+  maduro: { title: "Maduro", desc: "Ponto ideal, textura perfeita para consumir em 1-2 dias" },
+  mais_maduro: { title: "Mais maduro", desc: "Bem maduro e doce, ideal para consumir hoje ou preparar sucos" },
+};
+
+export interface ProgressiveDiscountTier {
+  min_quantity: number; // ex: 2, 3, 5
+  discount_type: "percentage" | "fixed_cents"; // '%' ou 'R$'
+  discount_value: number; // ex: 10 para 10%, ou 500 para R$ 5,00
+  label?: string; // ex: "Pague Menos (2 un)", "Preço Atacado (5+ un)"
+}
+
+export interface OrderBumpOffer {
+  enabled: boolean;
+  mode: "manual" | "category_related";
+  target_product_id?: string;
+  target_title?: string;
+  target_image_url?: string;
+  special_price_cents?: number;
+  original_price_cents?: number;
+  badge_text?: string;
+}
+
+/**
+ * Calcula o desconto progressivo acumulado dado o preço base e a quantidade de itens.
+ */
+export function calculateProgressiveDiscount(
+  basePriceCents: number,
+  quantity: number,
+  tiers?: ProgressiveDiscountTier[]
+): {
+  finalUnitPriceCents: number;
+  subtotalCents: number;
+  activeTier: ProgressiveDiscountTier | null;
+  totalSavedCents: number;
+} {
+  const normalSubtotal = basePriceCents * quantity;
+  if (!tiers || tiers.length === 0 || quantity <= 1) {
+    return {
+      finalUnitPriceCents: basePriceCents,
+      subtotalCents: normalSubtotal,
+      activeTier: null,
+      totalSavedCents: 0,
+    };
+  }
+
+  // Ordena os tiers do maior min_quantity para o menor para encontrar a melhor faixa ativa
+  const sortedTiers = [...tiers].sort((a, b) => b.min_quantity - a.min_quantity);
+  const active = sortedTiers.find((t) => quantity >= t.min_quantity) || null;
+
+  if (!active) {
+    return {
+      finalUnitPriceCents: basePriceCents,
+      subtotalCents: normalSubtotal,
+      activeTier: null,
+      totalSavedCents: 0,
+    };
+  }
+
+  let finalUnitPriceCents = basePriceCents;
+  if (active.discount_type === "percentage") {
+    finalUnitPriceCents = Math.round(basePriceCents * (1 - active.discount_value / 100));
+  } else {
+    finalUnitPriceCents = Math.max(0, basePriceCents - active.discount_value);
+  }
+
+  const finalSubtotal = finalUnitPriceCents * quantity;
+  const totalSavedCents = Math.max(0, normalSubtotal - finalSubtotal);
+
+  return {
+    finalUnitPriceCents,
+    subtotalCents: finalSubtotal,
+    activeTier: active,
+    totalSavedCents,
+  };
+}
+
+
 

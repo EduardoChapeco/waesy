@@ -27,18 +27,7 @@ import {
   Edit3,
   Calendar,
   Clock3,
-  Flame,
-  Apple,
-  Croissant,
-  Milk,
-  Wine,
-  Snowflake,
   FileText,
-  Tag,
-  Scale,
-  Barcode,
-  HelpCircle,
-  X,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
@@ -166,7 +155,7 @@ export function ConvenienceShowcaseView({
     classified?.store?.slug ||
     "";
 
-  // Atributos Especializados de Varejo Alimentar / Supermercado / Açougue / Bebidas
+  // Atributos de Varejo Alimentar / Supermercado / Açougue / Bebidas
   const volume = previewData?.volume || attrs.volume || attrs.specification_volume || "";
   const unitType = previewData?.unitType || attrs.unit_type || attrs.unit || (volume ? "" : "un");
   const estimatedWeightPerUnit = previewData?.estimatedWeightPerUnit || attrs.estimated_weight_per_unit || "";
@@ -204,7 +193,7 @@ export function ConvenienceShowcaseView({
   const deliveryFeeCents =
     previewData?.deliveryFeeCents !== undefined
       ? previewData.deliveryFeeCents
-      : Number(attrs.delivery_fee_cents) || 500; // R$ 5,00 padrão
+      : Number(attrs.delivery_fee_cents) || 500;
   const readyDelivery =
     previewData?.readyDelivery !== undefined
       ? previewData.readyDelivery
@@ -252,7 +241,6 @@ export function ConvenienceShowcaseView({
   const currentOrderSubtotal = orderPaymentMethod === "pix" ? pixSubtotalCents : subtotalCents;
   const grandTotalCents = currentOrderSubtotal + currentDeliveryFeeCents;
 
-  // Parcelamento no cartão
   const installmentCents =
     maxInstallments >= 2 && effectivePriceCents > 0
       ? Math.round(effectivePriceCents / maxInstallments)
@@ -350,55 +338,164 @@ export function ConvenienceShowcaseView({
     }
   };
 
-  // Texto formatado de unidade/volume para exibir no preço
   const unitSuffix = volume ? volume : unitType === "kg" ? "kg" : unitType === "g" ? "g" : unitType === "L" ? "L" : unitType !== "un" ? unitType : "";
 
-  return (
-    <div className="w-full bg-background text-foreground antialiased pb-28 sm:pb-16">
-      {/* Banner de Modo Proprietário */}
-      {isOwner && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="font-semibold">Modo Proprietário · Produto de Mercado & Conveniência</span>
-          </div>
-          {onEdit && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onEdit}
-              className="h-7 text-xs gap-1 rounded-lg border-amber-500/30 bg-background/80 hover:bg-amber-500/15 cursor-pointer"
-            >
-              <Edit3 className="size-3" />
-              <span>Editar Produto</span>
-            </Button>
+  // Componente Reutilizável: Metadados Textuais Sutis (Sem Badges Chunky, Sem Neon, Sem Emojis)
+  const SubtleProductTags = () => (
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap pt-0.5">
+      {unitSuffix && <span className="font-semibold text-foreground/90">{unitSuffix}</span>}
+      {temperature === "gelada" && (
+        <>
+          <span className="text-border">•</span>
+          <span className="text-sky-600 dark:text-sky-400 font-medium">Gelada</span>
+        </>
+      )}
+      {temperature === "resfriado" && (
+        <>
+          <span className="text-border">•</span>
+          <span className="text-amber-600 dark:text-amber-400 font-medium">Resfriado</span>
+        </>
+      )}
+      {temperature === "congelado" && (
+        <>
+          <span className="text-border">•</span>
+          <span className="text-blue-600 dark:text-blue-400 font-medium">Congelado</span>
+        </>
+      )}
+      {readyDelivery && (
+        <>
+          <span className="text-border">•</span>
+          <span className="text-emerald-600 dark:text-emerald-400 font-medium">Pronta Entrega</span>
+        </>
+      )}
+      {isAlcoholic && (
+        <>
+          <span className="text-border">•</span>
+          <span className="text-rose-600 dark:text-rose-400 font-semibold">+18 anos</span>
+        </>
+      )}
+      {isOrganic && (
+        <>
+          <span className="text-border">•</span>
+          <span className="text-emerald-600 dark:text-emerald-400 font-medium">Orgânico</span>
+        </>
+      )}
+    </div>
+  );
+
+  // Componente Reutilizável: Bloco de Preço e Condições de Pagamento
+  const PricingBlock = () => (
+    <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-2.5">
+      <div className="flex items-baseline justify-between flex-wrap gap-2">
+        <div>
+          <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
+            {priceCents > 0 ? formatMoney(priceCents) : "Preço sob consulta"}
+          </span>
+          {unitSuffix && (
+            <span className="text-xs text-muted-foreground ml-1 font-mono">
+              / {unitSuffix}
+            </span>
           )}
+        </div>
+
+        {acceptsPix && pixDiscountPercent > 0 && priceCents > 0 && (
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+            {pixDiscountPercent}% OFF no Pix
+          </span>
+        )}
+      </div>
+
+      {acceptsPix && pixDiscountPercent > 0 && priceCents > 0 && (
+        <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+          <QrCode className="size-3.5" />
+          <span>
+            Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
+          </span>
         </div>
       )}
 
-      {/* Top Header com Botão de Voltar e Compartilhar */}
+      <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground space-y-1">
+        {acceptsCard && (
+          <div className="flex items-center gap-1.5">
+            <CreditCard className="size-3.5 text-primary shrink-0" />
+            <span>
+              {maxInstallments === 1 ? (
+                <span>Pagamento <strong>à vista</strong> no cartão</span>
+              ) : (
+                <span>
+                  ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
+                  {cardInterestFree ? "(sem juros)" : ""}
+                </span>
+              )}
+            </span>
+          </div>
+        )}
+
+        {acceptsCash && (
+          <div className="flex items-center gap-1.5 text-[11px]">
+            <Banknote className="size-3.5 text-muted-foreground shrink-0" />
+            <span>Aceita dinheiro em espécie com troco</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Componente Reutilizável: Linha Compacta de Entrega
+  const DeliveryEstimateLine = () => (
+    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60 text-xs">
+      <div className="flex items-center gap-2 text-foreground min-w-0">
+        <Truck className="size-4 text-primary shrink-0" />
+        <div className="truncate">
+          <span className="font-semibold">Entrega local</span>
+          <span className="text-muted-foreground ml-1">a partir de {formatMoney(deliveryFeeCents)}</span>
+          <span className="text-muted-foreground text-[11px] block">• Estimativa {deliveryEstimate}</span>
+        </div>
+      </div>
+      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md shrink-0">
+        Retirada grátis
+      </span>
+    </div>
+  );
+
+  return (
+    <div className="w-full bg-background text-foreground antialiased pb-28 sm:pb-16">
+      {/* Top Header com Botão de Voltar, Compartilhar e Botão Leve de Editar (Sem faixa amarela invasiva!) */}
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border/40 px-3 sm:px-6 h-12 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           {!isPreview ? (
-            <Button asChild variant="ghost" size="icon" className="size-8 rounded-full">
+            <Button asChild variant="ghost" size="icon" className="size-8 rounded-full shrink-0">
               <Link to="/mercado">
                 <ArrowLeft className="size-4" />
                 <span className="sr-only">Voltar ao Mercado</span>
               </Link>
             </Button>
           ) : (
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-primary shrink-0">
               <Zap className="size-3.5" />
-              <span>Prévia Mercado & Conveniência</span>
+              <span>Prévia Mercado</span>
             </div>
           )}
-          <span className="text-xs font-medium text-muted-foreground truncate max-w-[200px] sm:max-w-xs flex items-center gap-1">
+          <span className="text-xs font-medium text-muted-foreground truncate flex items-center gap-1">
             <MapPin className="size-3 text-muted-foreground/80 shrink-0" />
             <span className="truncate">{locationName}</span>
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Botão de Edição Leve e Discreto (Substitui a faixa amarela invasiva anterior!) */}
+          {isOwner && onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="h-8 px-2.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5 border-border/60 bg-background/60 hover:bg-muted cursor-pointer"
+            >
+              <Edit3 className="size-3.5" />
+              <span className="hidden sm:inline">Editar</span>
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="icon"
@@ -412,26 +509,27 @@ export function ConvenienceShowcaseView({
       </header>
 
       {/* Container Principal: Desktop em 2 Colunas | Mobile em Ordem Sequencial Natural */}
-      <main className="max-w-5xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+      <main className="max-w-5xl mx-auto px-0 sm:px-6 pt-0 sm:pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 items-start">
           
           {/* ═══════════════════════════════════════════════════════════════════
               COLUNA 1 (ESQUERDA - MD: 7 COLUNAS):
-              1. FOTO PRINCIPAL & BADGES
+              1. FOTO PRINCIPAL LIMPA (SEM BADGES NEON, SEM EMOJIS, FULL-BLEED NO MOBILE)
               2. MINIATURAS
-              3. DETALHES DO PRODUTO (SEMPRE ABAIXO DA FOTO)
-              4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS DE MERCADO
+              [NO MOBILE: HEADER DO PRODUTO + PREÇO AQUI LOGO APÓS A FOTO]
+              3. DETALHES DO PRODUTO (DESCRIÇÃO)
+              4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className="md:col-span-7 space-y-6">
+          <div className="md:col-span-7 space-y-4 sm:space-y-6">
             
-            {/* Box da Foto */}
-            <div className="space-y-3">
-              <div className="relative aspect-square sm:aspect-4/3 w-full rounded-2xl overflow-hidden bg-muted/30 border border-border/60 flex items-center justify-center shadow-2xs group">
+            {/* Box da Foto: Grande, sem container sufocante, limpo */}
+            <div className="space-y-2 sm:space-y-3">
+              <div className="relative aspect-square sm:aspect-4/3 w-full rounded-none sm:rounded-2xl overflow-hidden bg-muted/15 border-b sm:border border-border/50 flex items-center justify-center shadow-none sm:shadow-2xs group">
                 {images.length > 0 ? (
                   <img
                     src={images[activePhotoIdx] || images[0]}
                     alt={title}
-                    className="w-full h-full object-contain p-4 sm:p-6 transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-contain p-2 sm:p-6 transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground p-8 text-center">
@@ -439,55 +537,11 @@ export function ConvenienceShowcaseView({
                     <p className="text-xs">Foto do produto</p>
                   </div>
                 )}
-
-                {/* Badges Flutuantes Superiores Esquerdos */}
-                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
-                  {unitSuffix && (
-                    <Badge className="bg-background/90 text-foreground backdrop-blur-md border border-border/70 text-[11px] font-bold px-2 py-0.5 shadow-2xs">
-                      {unitSuffix}
-                    </Badge>
-                  )}
-                  {temperature === "gelada" && (
-                    <Badge className="bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 backdrop-blur-md border border-cyan-500/30 text-[10px] font-bold px-2 py-0.5">
-                      🧊 Gelada
-                    </Badge>
-                  )}
-                  {temperature === "resfriado" && (
-                    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 backdrop-blur-md border border-amber-500/30 text-[10px] font-bold px-2 py-0.5">
-                      🥩 Resfriado
-                    </Badge>
-                  )}
-                  {temperature === "congelado" && (
-                    <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-300 backdrop-blur-md border border-blue-500/30 text-[10px] font-bold px-2 py-0.5">
-                      ❄️ Congelado
-                    </Badge>
-                  )}
-                  {isOrganic && (
-                    <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 backdrop-blur-md border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5">
-                      🌱 Orgânico
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Badges Flutuantes Superiores Direitos */}
-                <div className="absolute top-3 right-3 flex flex-wrap gap-1.5 pointer-events-none">
-                  {isAlcoholic && (
-                    <Badge className="bg-rose-500/15 text-rose-700 dark:text-rose-300 backdrop-blur-md border border-rose-500/30 text-[10px] font-bold px-2 py-0.5">
-                      🔞 +18
-                    </Badge>
-                  )}
-                  {readyDelivery && (
-                    <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 backdrop-blur-md border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 flex items-center gap-1">
-                      <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Pronta Entrega</span>
-                    </Badge>
-                  )}
-                </div>
               </div>
 
               {/* Galeria de Miniaturas (se houver mais de 1 foto) */}
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar px-3 sm:px-0 pb-1">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
@@ -507,15 +561,71 @@ export function ConvenienceShowcaseView({
               )}
             </div>
 
+            {/* ═════════════════════════════════════════════════════════════════
+                BLOCO DE CABEÇALHO DO PRODUTO NO MOBILE (MD:HIDDEN)
+                Aparece imediatamente abaixo da foto no smartphone!
+               ═════════════════════════════════════════════════════════════════ */}
+            <div className="md:hidden px-3.5 space-y-3.5">
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                  <span className="font-semibold text-foreground/90">{storeName}</span>
+                  <span>•</span>
+                  <span>{department}</span>
+                </div>
+
+                <h1 className="text-xl font-black text-foreground tracking-tight leading-tight">
+                  {title}
+                </h1>
+
+                {/* Tags Sutis Textuais abaixo do título (Sem neon, sem badges) */}
+                <SubtleProductTags />
+              </div>
+
+              {/* Bloco de Preço no Mobile */}
+              <PricingBlock />
+
+              {/* Linha Compacta de Entrega no Mobile */}
+              <DeliveryEstimateLine />
+
+              {/* Seletor de Opções de Preparo / Corte se configurado */}
+              {prepOptions && prepOptions.length > 0 && (
+                <div className="p-3 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground block">
+                    Opção de Corte / Preparo:
+                  </Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {prepOptions.map((opt) => {
+                      const isSelected = selectedPrepOption === opt;
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setSelectedPrepOption(isSelected ? "" : opt)}
+                          className={cn(
+                            "px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer",
+                            isSelected
+                              ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                              : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
+                          )}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* ─────────────────────────────────────────────────────────────
-                SEÇÃO: DETALHES DO PRODUTO (SEMPRE ABAIXO DA FOTO)
+                SEÇÃO: DETALHES DO PRODUTO (DESCRIÇÃO SEMPRE ABAIXO DA FOTO)
                ───────────────────────────────────────────────────────────── */}
             {description && (
-              <div className="p-4 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+              <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                   <FileText className="size-4 text-primary" />
                   <span>Detalhes do Produto</span>
-                </h3>
+                </h2>
                 <div className="text-sm text-foreground/85 leading-relaxed whitespace-pre-wrap">
                   {description}
                 </div>
@@ -525,11 +635,11 @@ export function ConvenienceShowcaseView({
             {/* ─────────────────────────────────────────────────────────────
                 SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS
                ───────────────────────────────────────────────────────────── */}
-            <div className="p-4 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+            <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-4">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" />
                 <span>Especificações & Características</span>
-              </h3>
+              </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                 {brand && (
@@ -562,12 +672,12 @@ export function ConvenienceShowcaseView({
                   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Conservação</span>
                   <p className="font-semibold text-foreground capitalize">
                     {temperature === "gelada"
-                      ? "🧊 Gelada / Imediata"
+                      ? "Gelada / Imediata"
                       : temperature === "resfriado"
-                      ? "🥩 Resfriado (0° a 4°C)"
+                      ? "Resfriado (0° a 4°C)"
                       : temperature === "congelado"
-                      ? "❄️ Congelado (-18°C)"
-                      : "☀️ Ambiente / Seco"}
+                      ? "Congelado (-18°C)"
+                      : "Ambiente / Seco"}
                   </p>
                 </div>
 
@@ -589,7 +699,7 @@ export function ConvenienceShowcaseView({
                   <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Glúten</span>
                     <p className="font-semibold text-foreground">
-                      {containsGluten ? "Contém Glúten" : "Sem Glúten (Gluten-Free)"}
+                      {containsGluten ? "Contém Glúten" : "Sem Glúten"}
                     </p>
                   </div>
                 )}
@@ -598,13 +708,12 @@ export function ConvenienceShowcaseView({
                   <div className="p-3 rounded-xl border border-border/50 bg-muted/20 space-y-0.5">
                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Lactose</span>
                     <p className="font-semibold text-foreground">
-                      {containsLactose ? "Contém Lactose" : "Sem Lactose (Zero Lactose)"}
+                      {containsLactose ? "Contém Lactose" : "Sem Lactose"}
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Ingredientes adicionais se preenchido */}
               {ingredients && (
                 <div className="pt-2 border-t border-border/40 space-y-1">
                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Ingredientes / Composição:</span>
@@ -613,32 +722,57 @@ export function ConvenienceShowcaseView({
               )}
             </div>
 
-            {/* Aviso Legal Alcoólico */}
+            {/* Aviso Legal Regulatório */}
             {isAlcoholic && (
-              <div className="p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/5 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-400">
+              <div className="mx-3.5 sm:mx-0 p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/5 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-400">
                 <Info className="size-4 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold">Aviso Regulatório — Venda Restrita</p>
                   <p className="text-[11px] opacity-90 leading-relaxed">
-                    Venda e consumo proibidos para menores de 18 anos (Lei 8.069/1990). Beba com moderação. Se beber, não dirija.
+                    Venda e consumo proibidos para menores de 18 anos. Beba com moderação. Se beber, não dirija.
                   </p>
                 </div>
               </div>
             )}
+
+            {/* Card da Loja no Mobile */}
+            <div className="md:hidden mx-3.5 p-3.5 rounded-2xl border border-border/60 bg-muted/15 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                    <Store className="size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground truncate">{storeName}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{locationName}</p>
+                  </div>
+                </div>
+
+                {storeSlug && !isPreview && (
+                  <Button asChild variant="ghost" size="sm" className="h-7 text-[11px] text-primary hover:text-primary gap-1">
+                    <Link to={`/loja/${storeSlug}`}>
+                      <span>Ver Loja</span>
+                      <ExternalLink className="size-3" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════════
-              COLUNA 2 (DIREITA - MD: 5 COLUNAS):
+              COLUNA 2 (DIREITA - APENAS DESKTOP: MD:BLOCK):
               1. BREADCRUMBS & MARCA
               2. TÍTULO DO PRODUTO
-              3. BLOCO DE PREÇO & PIX / PARCELAMENTO
-              4. LINHA DISCRETA DE ENTREGA (1 LINHA COMPACTA)
-              5. SELETOR DE PREPARO/CORTE (SE HOUVER)
-              6. QUANTIDADE & SUBTOTAL
-              7. BOTÃO PEDIR AGORA (ABRE O CHECKOUT DRAWER)
-              8. CARD DA LOJA
+              3. TAGS SUTIS TEXTUAIS
+              4. BLOCO DE PREÇO & PIX / PARCELAMENTO
+              5. LINHA DISCRETA DE ENTREGA (1 LINHA COMPACTA)
+              6. SELETOR DE PREPARO/CORTE (SE HOUVER)
+              7. QUANTIDADE & SUBTOTAL
+              8. BOTÃO PEDIR AGORA (ABRE O CHECKOUT DRAWER)
+              9. CARD DA LOJA
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className="md:col-span-5 space-y-4 md:sticky md:top-16">
+          <div className="hidden md:block md:col-span-5 space-y-4 md:sticky md:top-16">
             
             {/* Header de Categoria / Loja */}
             <div className="space-y-1.5">
@@ -646,103 +780,21 @@ export function ConvenienceShowcaseView({
                 <span className="font-semibold text-foreground/90">{storeName}</span>
                 <span>•</span>
                 <span>{department}</span>
-                {unitSuffix && (
-                  <>
-                    <span>•</span>
-                    <span className="font-mono">{unitSuffix}</span>
-                  </>
-                )}
               </div>
 
               <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight leading-tight">
                 {title}
               </h1>
 
-              {isAlcoholic && (
-                <p className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                  <Info className="size-3" />
-                  <span>Venda proibida para menores de 18 anos.</span>
-                </p>
-              )}
+              {/* Tags Sutis Textuais abaixo do título no desktop */}
+              <SubtleProductTags />
             </div>
 
-            {/* Bloco de Preço & Condições de Pagamento */}
-            <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-2.5">
-              <div className="flex items-baseline justify-between flex-wrap gap-2">
-                <div>
-                  <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
-                    {priceCents > 0 ? formatMoney(priceCents) : "Preço sob consulta"}
-                  </span>
-                  {unitSuffix && (
-                    <span className="text-xs text-muted-foreground ml-1 font-mono">
-                      / {unitSuffix}
-                    </span>
-                  )}
-                </div>
+            {/* Bloco de Preço no Desktop */}
+            <PricingBlock />
 
-                {/* Badge Desconto Pix */}
-                {acceptsPix && pixDiscountPercent > 0 && priceCents > 0 && (
-                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2 py-0.5 gap-1">
-                    <BadgePercent className="size-3.5" />
-                    <span>{pixDiscountPercent}% OFF no Pix</span>
-                  </Badge>
-                )}
-              </div>
-
-              {/* Preço com Desconto Pix */}
-              {acceptsPix && pixDiscountPercent > 0 && priceCents > 0 && (
-                <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-                  <QrCode className="size-3.5" />
-                  <span>
-                    Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
-                  </span>
-                </div>
-              )}
-
-              {/* Condições de Cartão & Espécie */}
-              <div className="pt-2 border-t border-border/40 text-xs text-muted-foreground space-y-1">
-                {acceptsCard && (
-                  <div className="flex items-center gap-1.5">
-                    <CreditCard className="size-3.5 text-primary shrink-0" />
-                    <span>
-                      {maxInstallments === 1 ? (
-                        <span>Pagamento <strong>à vista</strong> no cartão</span>
-                      ) : (
-                        <span>
-                          ou até <strong>{maxInstallments}x de {formatMoney(installmentCents)}</strong>{" "}
-                          {cardInterestFree ? "(sem juros)" : ""}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                )}
-
-                {acceptsCash && (
-                  <div className="flex items-center gap-1.5 text-[11px]">
-                    <Banknote className="size-3.5 text-muted-foreground shrink-0" />
-                    <span>Aceita dinheiro em espécie com troco</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ─────────────────────────────────────────────────────────────
-                LINHA COMPACTA E DISCRETA DE ENTREGA (PADRÃO IFOOD / MERCADO)
-                Nunca mais um card gigante com abas tomando espaço aqui!
-               ───────────────────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60 text-xs">
-              <div className="flex items-center gap-2 text-foreground min-w-0">
-                <Truck className="size-4 text-primary shrink-0" />
-                <div className="truncate">
-                  <span className="font-semibold">Entrega local</span>
-                  <span className="text-muted-foreground ml-1">a partir de {formatMoney(deliveryFeeCents)}</span>
-                  <span className="text-muted-foreground text-[11px] block">• Estimativa {deliveryEstimate}</span>
-                </div>
-              </div>
-              <Badge variant="outline" className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 shrink-0">
-                Retirada grátis
-              </Badge>
-            </div>
+            {/* Linha Compacta de Entrega no Desktop */}
+            <DeliveryEstimateLine />
 
             {/* Seletor de Opções de Preparo / Corte (Açougue / Padaria) se configurado */}
             {prepOptions && prepOptions.length > 0 && (
@@ -781,7 +833,6 @@ export function ConvenienceShowcaseView({
                   <span className="text-[11px] text-muted-foreground">Adicione ao seu pedido</span>
                 </div>
 
-                {/* Controle Tátil - 1 + (Apple HIG >= 44px) */}
                 <div className="flex items-center gap-2 border border-border/70 rounded-xl bg-background p-1 shadow-2xs">
                   <Button
                     type="button"
@@ -810,7 +861,6 @@ export function ConvenienceShowcaseView({
                 </div>
               </div>
 
-              {/* Subtotal Dinâmico */}
               {priceCents > 0 && (
                 <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Subtotal ({quantity} {quantity === 1 ? "un" : "itens"}):</span>
@@ -827,7 +877,6 @@ export function ConvenienceShowcaseView({
                 </div>
               )}
 
-              {/* Botões de Ação Imediata */}
               <div className="space-y-2 pt-1">
                 <Button
                   onClick={() => setIsOrderModalOpen(true)}
@@ -852,7 +901,7 @@ export function ConvenienceShowcaseView({
               </div>
             </div>
 
-            {/* Card Resumo da Loja / Vendedor */}
+            {/* Card Resumo da Loja no Desktop */}
             <div className="p-3.5 rounded-2xl border border-border/60 bg-muted/15 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
@@ -882,10 +931,8 @@ export function ConvenienceShowcaseView({
 
       {/* ═══════════════════════════════════════════════════════════════════════
           FLOATING BOTTOM BAR NO MOBILE (THUMB ZONE ERGONOMICS)
-          Alvo mínimo de 44px, seletor compacto e botão direto
          ═══════════════════════════════════════════════════════════════════════ */}
       <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 shadow-lg flex items-center gap-3">
-        {/* Seletor Compacto no Mobile */}
         <div className="flex items-center border border-border/70 rounded-xl bg-card p-0.5 shrink-0">
           <Button
             type="button"
@@ -931,7 +978,6 @@ export function ConvenienceShowcaseView({
 
       {/* ═══════════════════════════════════════════════════════════════════════
           MODAL / SHEET DE FINALIZAÇÃO DE PEDIDO (CHECKOUT DE CONVENIÊNCIA)
-          Abre ao clicar em "Pedir Agora" com todas as opções e totalização
          ═══════════════════════════════════════════════════════════════════════ */}
       <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
         <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl sm:rounded-3xl border border-border">
@@ -1019,7 +1065,6 @@ export function ConvenienceShowcaseView({
                 </button>
               </div>
 
-              {/* Detalhes da Modalidade */}
               {orderDeliveryMode === "immediate" && (
                 <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-xs space-y-1">
                   <p className="font-semibold text-foreground flex items-center gap-1.5">
@@ -1070,7 +1115,6 @@ export function ConvenienceShowcaseView({
                 </div>
               )}
 
-              {/* Endereço de Entrega se não for retirada */}
               {orderDeliveryMode !== "pickup" && (
                 <div className="space-y-1.5 pt-1">
                   <Label className="text-xs font-semibold text-foreground">
@@ -1190,7 +1234,6 @@ export function ConvenienceShowcaseView({
             </div>
           </div>
 
-          {/* Rodapé do Modal */}
           <div className="p-4 sm:p-5 border-t border-border/50 bg-card flex items-center gap-2">
             <Button
               variant="outline"
