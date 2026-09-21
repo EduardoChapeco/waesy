@@ -26,6 +26,7 @@ import {
 
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
+import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import type { TravelPackageData } from "@/types/travel-package";
 
 import { PageHeader } from "@/components/commerce/page-header";
@@ -190,14 +191,34 @@ export function UnifiedNewProductPage() {
     progressiveDiscounts: [],
   });
 
- const isTourismStore =
- semantics.nicheId === "tourism" ||
- Boolean(nicheCtx.isTourismBusiness) ||
- store?.segment === "tourism_agency" ||
- store?.type === "tourism_agency" ||
- store?.settings?.segment === "tourism_agency";
+  const isTourismStore =
+    semantics.nicheId === "tourism" ||
+    Boolean(nicheCtx.isTourismBusiness) ||
+    store?.segment === "tourism_agency" ||
+    store?.type === "tourism_agency" ||
+    store?.settings?.segment === "tourism_agency";
 
- const [isTravelPackageMode, setIsTravelPackageMode] = useState<boolean>(isTourismStore);
+  const isGroceryStore =
+    semantics.nicheId === "supermarket" ||
+    semantics.nicheId === "convenience" ||
+    semantics.nicheId === "grocery" ||
+    Boolean((nicheCtx as any).isSupermarketBusiness) ||
+    store?.segment === "supermarket" ||
+    store?.segment === "grocery" ||
+    store?.segment === "convenience" ||
+    store?.type === "supermarket" ||
+    store?.type === "grocery" ||
+    store?.type === "convenience" ||
+    store?.settings?.segment === "supermarket" ||
+    store?.settings?.segment === "grocery" ||
+    store?.settings?.segment === "convenience";
+
+  const [showcaseMode, setShowcaseMode] = useState<"standard" | "travel" | "grocery">(
+    isTourismStore ? "travel" : isGroceryStore ? "grocery" : "standard"
+  );
+  const isTravelPackageMode = showcaseMode === "travel";
+  const isGroceryMode = showcaseMode === "grocery";
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "desktop">("mobile");
 
  const [travelData, setTravelData] = useState<Partial<TravelPackageData>>({
  destination: {
@@ -407,6 +428,8 @@ export function UnifiedNewProductPage() {
  option_group_ids: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,
  variants: variantsPayload,
  attributes: {
+ template_style: isGroceryMode ? "conveniencia" : isTravelPackageMode ? "editorial" : "standard",
+ templateStyle: isGroceryMode ? "conveniencia" : isTravelPackageMode ? "editorial" : "standard",
  ...(isTravelPackageMode ? { travel: travelData } : {}),
  bill_of_materials: bomItems,
  food_specs: {
@@ -691,19 +714,26 @@ export function UnifiedNewProductPage() {
  </TabsTrigger>
  </TabsList>
 
- {/* ── SELETOR DE MODO PARA AGÊNCIAS DE TURISMO ── */}
- {isTourismStore && (
+ {/* ── SELETOR DE MODO DE VITRINE / PUBLICAÇÃO ── */}
  <div className="p-3.5 rounded-2xl bg-card border border-border/70 flex items-center justify-between gap-3 shadow-2xs">
  <div className="flex items-center gap-2.5">
  <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+ {showcaseMode === "travel" ? (
  <Plane className="size-4" />
+ ) : showcaseMode === "grocery" ? (
+ <Package className="size-4" />
+ ) : (
+ <ShoppingBag className="size-4" />
+ )}
  </div>
  <div>
- <span className="text-xs font-bold text-foreground">Modo de Publicação</span>
+ <span className="text-xs font-bold text-foreground">Modelo de Vitrine</span>
  <p className="text-[10px] text-muted-foreground">
- {isTravelPackageMode
- ? "Pacote Turístico / Roteiro Completo (sem frete físico, com itinerário e inclusões)"
- : "Produto Físico / Souvenir / Mala (com frete e logística tradicional)"}
+ {showcaseMode === "travel"
+ ? "Pacote Turístico / Roteiro Completo (com itinerário, saídas e inclusões)"
+ : showcaseMode === "grocery"
+ ? "Mercado & Perecíveis (com frescor, maturação, temperatura e tabela nutricional)"
+ : "E-commerce & Varejo Geral (grade de estoque, variações e especificações)"}
  </p>
  </div>
  </div>
@@ -712,30 +742,43 @@ export function UnifiedNewProductPage() {
  <Button
  type="button"
  size="sm"
- variant={isTravelPackageMode ? "default" : "outline"}
+ variant={showcaseMode === "standard" ? "default" : "outline"}
  onClick={() => {
- setIsTravelPackageMode(true);
- setValue("is_physical", false);
- }}
- className="rounded-xl text-xs font-semibold h-8 cursor-pointer"
- >
- Pacote Turístico
- </Button>
- <Button
- type="button"
- size="sm"
- variant={!isTravelPackageMode ? "default" : "outline"}
- onClick={() => {
- setIsTravelPackageMode(false);
+ setShowcaseMode("standard");
  setValue("is_physical", true);
  }}
  className="rounded-xl text-xs font-semibold h-8 cursor-pointer"
  >
- Produto Físico
+ Padrão
  </Button>
- </div>
- </div>
+ <Button
+ type="button"
+ size="sm"
+ variant={showcaseMode === "grocery" ? "default" : "outline"}
+ onClick={() => {
+ setShowcaseMode("grocery");
+ setValue("is_physical", true);
+ }}
+ className="rounded-xl text-xs font-semibold h-8 cursor-pointer"
+ >
+ Mercado
+ </Button>
+ {(isTourismStore || showcaseMode === "travel") && (
+ <Button
+ type="button"
+ size="sm"
+ variant={showcaseMode === "travel" ? "default" : "outline"}
+ onClick={() => {
+ setShowcaseMode("travel");
+ setValue("is_physical", false);
+ }}
+ className="rounded-xl text-xs font-semibold h-8 cursor-pointer"
+ >
+ Turismo
+ </Button>
  )}
+ </div>
+ </div>
 
  {/* ── ABA 1: INFORMAÇÕES BÁSICAS ── */}
  <TabsContent value="basico" className="space-y-4 m-0">
@@ -1268,22 +1311,51 @@ export function UnifiedNewProductPage() {
  {/* COLUNA DIREITA: PREVIEW REAL DA VITRINE (7 COLUNAS STICKY) */}
  <div className="lg:col-span-7 lg:sticky lg:top-24">
  <div className="bg-card rounded-2xl overflow-hidden border border-border/80 shadow-md">
- {/* Header do Mockup */}
- <div className="bg-muted/40 px-5 py-3 border-b flex items-center justify-between">
- <div className="flex items-center gap-2">
- <Eye className="size-4 text-primary" />
- <span className="text-xs font-bold text-foreground">
- Preview Real da Vitrine ({isTravelPackageMode ? "Página de Viagem / Pacote" : "Página do Produto"})
+ {/* Header do Mockup com Seletor de Dispositivo */}
+ <div className="bg-muted/40 px-4 py-2.5 border-b flex items-center justify-between gap-2">
+ <div className="flex items-center gap-2 min-w-0">
+ <Eye className="size-4 text-primary shrink-0" />
+ <span className="text-xs font-bold text-foreground truncate">
+ Prévia ({isTravelPackageMode ? "Pacote Turístico" : isGroceryMode ? "Mercado & Perecíveis" : "E-commerce Padrão"})
  </span>
  </div>
- <Badge variant="secondary" className="text-[10px] font-mono">
- Live Preview
- </Badge>
+
+ <div className="flex items-center bg-muted/80 p-0.5 rounded-xl text-[11px] font-semibold shrink-0">
+ <button
+ type="button"
+ onClick={() => setPreviewDevice("mobile")}
+ className={cn(
+ "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+ previewDevice === "mobile"
+ ? "bg-card text-foreground font-bold shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Mobile (390px)
+ </button>
+ <button
+ type="button"
+ onClick={() => setPreviewDevice("desktop")}
+ className={cn(
+ "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+ previewDevice === "desktop"
+ ? "bg-card text-foreground font-bold shadow-xs"
+ : "text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Desktop
+ </button>
+ </div>
  </div>
 
- {/* Renderização Condicional: Pacote de Viagem vs E-commerce Comum */}
+ {/* Renderização Condicional: Pacote de Viagem vs Mercado & Conveniência vs E-commerce Comum */}
  {isTravelPackageMode ? (
- <div className="max-h-[80vh] overflow-y-auto no-scrollbar">
+ <div className={cn(
+ "overflow-y-auto no-scrollbar transition-all duration-300",
+ previewDevice === "mobile"
+ ? "max-w-[390px] mx-auto my-3 border border-border/80 rounded-3xl p-1 bg-background shadow-lg max-h-[750px]"
+ : "max-h-[85vh] p-3"
+ )}>
  <TravelPackageDetailView
  packageData={travelData}
  productTitle={formValues.title || travelData.destination?.name || "Pacote de Viagem"}

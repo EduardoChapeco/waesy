@@ -29,6 +29,7 @@ export interface NicheCatalogContext {
  isVehicleBusiness: boolean;
  isRealEstateBusiness: boolean;
  isTourismBusiness?: boolean;
+ isSupermarketBusiness?: boolean;
 }
 
 export function getNicheCatalogContext(storeOrSegment?: any): NicheCatalogContext {
@@ -398,6 +399,7 @@ export function getNicheCatalogContext(storeOrSegment?: any): NicheCatalogContex
  isServiceBusiness: false,
  isVehicleBusiness: false,
  isRealEstateBusiness: false,
+ isSupermarketBusiness: true,
  };
 
  // 11. ELETRÔNICOS & ASSISTÊNCIA TÉCNICA

@@ -111,6 +111,8 @@ interface ConvenienceShowcaseViewProps {
   onEdit?: () => void;
   onOpenBookingModal?: () => void;
   onOpenProposalModal?: () => void;
+  previewDevice?: "mobile" | "desktop";
+  compact?: boolean;
 }
 
 export function ConvenienceShowcaseView({
@@ -118,7 +120,10 @@ export function ConvenienceShowcaseView({
   previewData,
   isOwner = false,
   onEdit,
+  previewDevice,
+  compact = false,
 }: ConvenienceShowcaseViewProps) {
+  const isForcedMobile = previewDevice === "mobile" || compact;
   const [quantity, setQuantity] = useState(1);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
@@ -972,18 +977,18 @@ export function ConvenienceShowcaseView({
       </header>
 
       {/* Container Principal: Desktop em 2 Colunas | Mobile em Ordem Sequencial Natural */}
-      <main className="max-w-5xl mx-auto px-0 sm:px-6 pt-0 sm:pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 items-start">
+      <main className={cn(isForcedMobile ? "w-full max-w-full px-0 pt-0" : "max-w-5xl mx-auto px-0 sm:px-6 pt-0 sm:pt-6")}>
+        <div className={cn(isForcedMobile ? "flex flex-col gap-3" : "grid grid-cols-1 md:grid-cols-12 gap-0 sm:gap-8 items-start")}>
           
           {/* ═══════════════════════════════════════════════════════════════════
-              COLUNA 1 (ESQUERDA - MD: 7 COLUNAS):
+              COLUNA 1 (ESQUERDA - MD: 7 COLUNAS / FULL NO MOBILE):
               1. FOTO PRINCIPAL LIMPA (SEM BADGES NEON, SEM EMOJIS, FULL-BLEED NO MOBILE)
               2. MINIATURAS
               [NO MOBILE: HEADER DO PRODUTO + PREÇO AQUI LOGO APÓS A FOTO]
               3. DETALHES DO PRODUTO (DESCRIÇÃO)
               4. ESPECIFICAÇÕES TÉCNICAS E ATRIBUTOS
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className="md:col-span-7 space-y-4 sm:space-y-6">
+          <div className={cn(isForcedMobile ? "w-full space-y-3.5" : "md:col-span-7 space-y-4 sm:space-y-6")}>
             
             {/* Box da Foto: Grande, full-bleed, limpo */}
             <div className="space-y-2 sm:space-y-3">
@@ -1036,10 +1041,10 @@ export function ConvenienceShowcaseView({
             </div>
 
             {/* ═════════════════════════════════════════════════════════════════
-                BLOCO DE CABEÇALHO DO PRODUTO NO MOBILE (MD:HIDDEN)
+                BLOCO DE CABEÇALHO DO PRODUTO NO MOBILE (MD:HIDDEN OU FORCED MOBILE)
                 Aparece imediatamente abaixo da foto no smartphone!
                ═════════════════════════════════════════════════════════════════ */}
-            <div className="md:hidden px-3.5 space-y-3.5">
+            <div className={cn("px-3.5 space-y-3.5", isForcedMobile ? "block" : "md:hidden")}>
               <div className="space-y-1">
                 <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
                   <span className="font-semibold text-foreground/90">{advertiserName}</span>
@@ -1233,7 +1238,7 @@ export function ConvenienceShowcaseView({
               8. BOTÃO PEDIR AGORA (ABRE O CHECKOUT DRAWER)
               9. CARD DA LOJA
              ═══════════════════════════════════════════════════════════════════ */}
-          <div className="hidden md:block md:col-span-5 space-y-4 md:sticky md:top-16">
+          <div className={cn(isForcedMobile ? "hidden" : "hidden md:block md:col-span-5 space-y-4 md:sticky md:top-16")}>
             
             {/* Header de Categoria / Loja */}
             <div className="space-y-1.5">
@@ -1378,7 +1383,12 @@ export function ConvenienceShowcaseView({
       {/* ═══════════════════════════════════════════════════════════════════════
           FLOATING BOTTOM BAR NO MOBILE (THUMB ZONE ERGONOMICS)
          ═══════════════════════════════════════════════════════════════════════ */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 shadow-lg flex items-center gap-3">
+      <div className={cn(
+        "z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 shadow-lg flex items-center gap-3",
+        isForcedMobile || isPreview
+          ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-2xl"
+          : "md:hidden fixed bottom-0 inset-x-0"
+      )}>
         <div className="flex items-center border border-border/70 rounded-xl bg-card p-0.5 shrink-0">
           <Button
             type="button"

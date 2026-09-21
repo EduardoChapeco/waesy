@@ -1004,6 +1004,8 @@ function SpecializedClassifiedEditor({
       ? "conveniencia"
       : niche.id === "viagem"
       ? "editorial"
+      : niche.id === "mercado"
+      ? "conveniencia"
       : "standard"
   );
 
@@ -3360,6 +3362,8 @@ function SpecializedClassifiedEditor({
                     } : undefined,
                   }}
                   isOwner={true}
+                  previewDevice={previewDevice}
+                  compact={previewDevice === "mobile"}
                   onEdit={() => setCurrentStep(2)}
                 />
               ) : templateStyle === "editorial" || niche.id === "viagem" ? (
@@ -3443,12 +3447,12 @@ function SpecializedClassifiedEditor({
               <span>Informações Básicas</span>
             </div>
 
-            {/* Seletor de Template Visual (Padrão vs Vitrine Imersiva) */}
+            {/* Seletor de Template Visual (Padrão vs Vitrine Imersiva vs Mercado) */}
             <div className="space-y-1.5 pb-1">
               <Label className="text-xs text-foreground font-semibold">
                 Estilo Visual da Página
               </Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setTemplateStyle("standard")}
@@ -3474,11 +3478,29 @@ function SpecializedClassifiedEditor({
                   }`}
                 >
                   <p className="text-xs font-bold text-foreground flex items-center gap-1">
-                    <span>Vitrine Imersiva</span>
+                    <span>Imersiva</span>
                     <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Destaques visuais, abas e roteiro
+                    Roteiro e abas
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTemplateStyle("conveniencia")}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                    templateStyle === "conveniencia"
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border/60 hover:bg-muted/40"
+                  }`}
+                >
+                  <p className="text-xs font-bold text-foreground flex items-center gap-1">
+                    <span>Mercado</span>
+                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Frescor & gôndola
                   </p>
                 </button>
               </div>
@@ -8343,6 +8365,8 @@ function SpecializedClassifiedEditor({
                   } : undefined,
                 }}
                 isOwner={false}
+                previewDevice="desktop"
+                compact={false}
               />
             </div>
           </div>

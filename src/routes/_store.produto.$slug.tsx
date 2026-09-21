@@ -13,6 +13,7 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { getProductBySlug } from "@/services/product.functions";
 import type { ProductDetailDTO, ProductMediaDTO, VariantDTO } from "@/types/catalog";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
+import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import type { DepartureOption } from "@/lib/classifieds/canonical-airports";
 import { calculateShipping } from "@/services/shipping.functions";
 import { formatMoney } from "@/lib/money";
@@ -361,6 +362,70 @@ function ProductPage() {
         isOwner={isOwner}
         onReserveClick={handleTravelReserve}
         onEditClick={() =>
+          router.navigate({
+            to: "/workspace/catalogo/produtos/$id",
+            params: { id: product.id },
+          })
+        }
+      />
+    );
+  }
+
+  const isConvenienceProduct = Boolean(
+    (product?.attributes as any)?.template_style === "conveniencia" ||
+    (product?.attributes as any)?.templateStyle === "conveniencia" ||
+    (product as any)?.store?.segment === "supermarket" ||
+    (product as any)?.store?.segment === "grocery" ||
+    (product as any)?.store?.segment === "convenience" ||
+    (product?.attributes as any)?.food_specs?.is_fresh_pricing_active
+  );
+
+  if (isConvenienceProduct) {
+    const store = (product as any)?.store;
+    const foodSpecs = (product?.attributes as any)?.food_specs || {};
+    const mediaUrls = (product.images || []).map((img: any) => (typeof img === "string" ? img : img.url)).filter(Boolean);
+
+    return (
+      <ConvenienceShowcaseView
+        previewData={{
+          title: product.title,
+          description: product.description || undefined,
+          priceCents: product.priceCents || 0,
+          images: mediaUrls.length > 0 ? mediaUrls : currentThumbnailUrl ? [currentThumbnailUrl] : [],
+          locationName: store?.city || "São Miguel do Oeste e Região",
+          whatsapp: storePhone,
+          storeName: store?.name || "Loja Oficial",
+          storeSlug: store?.slug,
+          storeLogo: store?.logo_url,
+          volume: foodSpecs.portion_weight || undefined,
+          unitType: foodSpecs.portion_unit || "un",
+          estimatedWeightPerUnit: foodSpecs.portion_weight,
+          department: (product as any)?.category?.name || "Mercado & Varejo",
+          brand: product.brand,
+          barcodeEan: product.ean || foodSpecs.barcode_ean,
+          stockQty: 10,
+          groceryFreshPricing: foodSpecs.is_fresh_pricing_active ? {
+            supports_fresh_pricing: true,
+            default_pricing_mode: foodSpecs.fresh_pricing_mode || "unit",
+            avg_piece_weight_grams: foodSpecs.avg_piece_weight_grams || 500,
+            price_per_kg_cents: foodSpecs.price_per_kg_cents || ((product.priceCents || 0) > 0 ? (product.priceCents || 0) * 2 : 990),
+            price_per_unit_cents: product.priceCents || 0,
+          } : undefined,
+          groceryRipenessConfig: foodSpecs.ripeness_enabled ? {
+            enabled: true,
+            stages: foodSpecs.ripeness_stages || ["verde", "quase_maduro", "maduro", "passando"],
+            default_stage: "maduro",
+          } : undefined,
+          progressiveDiscountTiers: foodSpecs.progressive_discounts && foodSpecs.progressive_discounts.length > 0
+            ? foodSpecs.progressive_discounts.map((d: any) => ({
+                min_quantity: d.min_qty || d.min_quantity || 2,
+                discount_type: (d.type || d.discount_type || "percentage") as "percentage" | "fixed_cents",
+                discount_value: d.value || d.discount_value || 10,
+              }))
+            : undefined,
+        }}
+        isOwner={isOwner}
+        onEdit={() =>
           router.navigate({
             to: "/workspace/catalogo/produtos/$id",
             params: { id: product.id },

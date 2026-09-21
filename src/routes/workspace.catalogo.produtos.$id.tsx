@@ -40,6 +40,7 @@ import type { MasterProductRecord } from "@/lib/data/master-products-catalog";
 
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
+import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";
 import type { TravelPackageData } from "@/types/travel-package";
 
 import { ProductEditorLayout } from "@/components/admin/product-editor/product-editor-layout";
@@ -305,6 +306,24 @@ function EditProductPage() {
  Boolean((product?.attributes as any)?.travel) || isTourismStore
  );
 
+ const isGroceryStore =
+ semantics.nicheId === "supermarket" ||
+ semantics.nicheId === "convenience" ||
+ semantics.nicheId === "grocery" ||
+ store?.segment === "supermarket" ||
+ store?.segment === "grocery" ||
+ store?.segment === "convenience" ||
+ store?.type === "supermarket" ||
+ store?.type === "grocery" ||
+ store?.type === "convenience" ||
+ store?.settings?.segment === "supermarket" ||
+ store?.settings?.segment === "grocery" ||
+ store?.settings?.segment === "convenience" ||
+ (product?.attributes as any)?.template_style === "conveniencia" ||
+ (product?.attributes as any)?.templateStyle === "conveniencia";
+
+ const isGroceryMode = !isTravelPackageMode && isGroceryStore;
+
  const initialTravelData: Partial<TravelPackageData> = useMemo(() => {
  const saved = (product?.attributes as any)?.travel;
  if (saved) return saved;
@@ -452,6 +471,52 @@ function EditProductPage() {
  storeName={store?.name}
  storePhone={store?.phone || store?.settings?.whatsapp}
  isInteractivePreview={true}
+ />
+ </div>
+ ) : isGroceryMode ? (
+ <div className="w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-md max-h-[750px] overflow-y-auto no-scrollbar">
+ <ConvenienceShowcaseView
+ previewData={{
+ title: liveTitle || "Produto de Mercado",
+ description: liveDescription || "",
+ priceCents: livePriceCents || 0,
+ images: (product.product_media || []).map((m: any) => m.url).filter(Boolean),
+ locationName: store?.city || "São Miguel do Oeste e Região",
+ whatsapp: store?.phone || store?.settings?.whatsapp,
+ storeName: store?.name || "Sua Loja",
+ storeSlug: store?.slug,
+ storeLogo: store?.logo_url,
+ volume: foodSpecs.portionWeight || undefined,
+ unitType: "un",
+ estimatedWeightPerUnit: foodSpecs.portionWeight,
+ department: categories.find((c: any) => c.id === product?.category_id)?.name || "Mercado & Varejo",
+ subCategory: liveBrand,
+ brand: liveBrand,
+ barcodeEan: foodSpecs.barcodeEan || product?.ean,
+ stockQty: product?.stock || 10,
+ groceryFreshPricing: foodSpecs.isFreshPricingActive ? {
+ supports_fresh_pricing: true,
+ default_pricing_mode: foodSpecs.freshPricingMode || "unit",
+ avg_piece_weight_grams: foodSpecs.avgPieceWeightGrams || 500,
+ price_per_kg_cents: foodSpecs.pricePerKgCents || (livePriceCents ? livePriceCents * 2 : 990),
+ price_per_unit_cents: livePriceCents || 0,
+ } : undefined,
+ groceryRipenessConfig: foodSpecs.ripenessEnabled ? {
+ enabled: true,
+ stages: foodSpecs.ripenessStages || ["verde", "quase_maduro", "maduro", "passando"],
+ default_stage: "maduro",
+ } : undefined,
+ progressiveDiscountTiers: foodSpecs.progressiveDiscounts && foodSpecs.progressiveDiscounts.length > 0
+ ? foodSpecs.progressiveDiscounts.map((d: any) => ({
+ min_quantity: d.min_qty || d.min_quantity || 2,
+ discount_type: (d.type || d.discount_type || "percentage") as "percentage" | "fixed_cents",
+ discount_value: d.value || d.discount_value || 10,
+ }))
+ : undefined,
+ }}
+ previewDevice="mobile"
+ compact={true}
+ isOwner={true}
  />
  </div>
  ) : (
