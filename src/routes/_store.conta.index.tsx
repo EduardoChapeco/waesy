@@ -281,38 +281,34 @@ function AccountDashboardPage() {
     </div>
   )}
 
- {/* ── 3. SERVIÇOS & ATIVIDADES PESSOAIS (Hub do Cliente) ── */}
- <div className="bg-card rounded-2xl border border-border/60 overflow-hidden shadow-xs">
- <div className="px-5 py-4 border-b border-border/40">
- <h2 className="text-sm font-bold text-foreground tracking-tight">Minha Atividade Pessoal</h2>
- </div>
+      {/* ── 3. Menu e Configurações (Ultra-Minimalista V11) ── */}
+      <div className="bg-card rounded-2xl border border-border/40 overflow-hidden p-2 sm:p-3">
+        <div className="px-3 py-2">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Conta & Serviços</h2>
+        </div>
 
- <div className="divide-y divide-border/40">
- {ACCOUNT_SECTIONS.map((sec) => {
- const Icon = sec.icon;
- return (
- <Link
- key={sec.to}
- to={sec.to}
- className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors cursor-pointer group"
- >
- <div className="flex items-center gap-3">
- <div className="size-8 rounded-xl bg-muted/60 border border-border/40 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
- <Icon className="size-4" />
- </div>
- <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
- {sec.label}
- </span>
- </div>
+        <div className="space-y-0.5">
+          {ACCOUNT_SECTIONS.map((sec) => {
+            const Icon = sec.icon;
+            return (
+              <Link
+                key={sec.to}
+                to={sec.to}
+                className="flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center gap-3.5">
+                  <Icon className="size-4.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" strokeWidth={1.75} />
+                  <span className="text-xs sm:text-sm font-medium text-foreground">
+                    {sec.label}
+                  </span>
+                </div>
 
- <div className="flex items-center gap-2">
- <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
- </div>
- </Link>
- );
- })}
- </div>
- </div>
+                <ChevronRight className="size-4 text-muted-foreground/60 group-hover:text-foreground transition-transform group-hover:translate-x-0.5" strokeWidth={1.75} />
+              </Link>
+            );
+          })}
+        </div>
+      </div>
  </div>
  );
 }

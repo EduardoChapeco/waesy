@@ -146,26 +146,24 @@ function SecurityAndDevicesPage() {
  key={device.id}
  className="p-4 rounded-2xl bg-card border border-border/70 flex flex-col justify-between gap-3 relative overflow-hidden"
  >
- <div className="flex items-start gap-3">
- <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
- {device.device_type === "mobile" ? (
- <Smartphone className="size-5" />
- ) : (
- <Laptop className="size-5" />
- )}
- </div>
+  <div className="flex items-start gap-3">
+    {device.device_type === "mobile" ? (
+      <Smartphone className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
+    ) : (
+      <Laptop className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
+    )}
 
- <div className="min-w-0 flex-1">
- <div className="flex items-center gap-2">
- <p className="text-xs font-bold text-foreground truncate">
- {device.device_name || "Navegador Web"}
- </p>
- {device.is_trusted && (
- <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 px-1.5 py-0">
- Confiável
- </Badge>
- )}
- </div>
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-2">
+        <p className="text-xs font-bold text-foreground truncate">
+          {device.device_name || "Navegador Web"}
+        </p>
+        {device.is_trusted && (
+          <Badge variant="success" className="text-[10px]">
+            Confiável
+          </Badge>
+        )}
+      </div>
 
  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-1">
  {device.city && (
@@ -188,31 +186,31 @@ function SecurityAndDevicesPage() {
  </div>
  </div>
 
- <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
- {!device.is_trusted && (
- <Button
- variant="outline"
- size="sm"
- disabled={loadingDeviceId === device.id}
- onClick={() => handleTrustDevice(device.id)}
- className="h-8 text-[11px] rounded-lg gap-1.5 text-primary border-primary/30 hover:bg-primary/10"
- >
- <CheckCircle2 className="size-3" />
- Confiar
- </Button>
- )}
+  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
+    {!device.is_trusted && (
+      <Button
+        variant="secondary"
+        size="sm"
+        disabled={loadingDeviceId === device.id}
+        onClick={() => handleTrustDevice(device.id)}
+        className="h-8 text-xs rounded-lg gap-1.5"
+      >
+        <CheckCircle2 className="size-3.5" strokeWidth={1.75} />
+        Confiar
+      </Button>
+    )}
 
- <Button
- variant="ghost"
- size="sm"
- disabled={loadingDeviceId === device.id}
- onClick={() => handleRevokeDevice(device.id)}
- className="h-8 text-[11px] rounded-lg gap-1.5 text-red-600 hover:bg-red-500/10 hover:text-red-700"
- >
- <Trash2 className="size-3" />
- Desconectar
- </Button>
- </div>
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={loadingDeviceId === device.id}
+      onClick={() => handleRevokeDevice(device.id)}
+      className="h-8 text-xs rounded-lg gap-1.5 text-destructive hover:bg-destructive/10"
+    >
+      <Trash2 className="size-3.5" strokeWidth={1.75} />
+      Desconectar
+    </Button>
+  </div>
  </div>
  ))}
  </div>
@@ -242,51 +240,41 @@ function SecurityAndDevicesPage() {
 
  return (
  <div key={log.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
- <div className="flex items-start gap-3 min-w-0">
- <div
- className={`size-9 rounded-xl flex items-center justify-center shrink-0 ${
- isSuccess
- ? "bg-primary/10 text-primary"
- : isFailed
- ? "bg-red-500/10 text-red-600"
- : "bg-amber-500/10 text-amber-600"
- }`}
- >
- {isSuccess ? (
- <ShieldCheck className="size-4" />
- ) : isFailed ? (
- <AlertTriangle className="size-4" />
- ) : (
- <Activity className="size-4" />
- )}
- </div>
+    <div className="flex items-start gap-3 min-w-0">
+      {isSuccess ? (
+        <ShieldCheck className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
+      ) : isFailed ? (
+        <AlertTriangle className="size-5 text-destructive shrink-0 mt-0.5" strokeWidth={1.75} />
+      ) : (
+        <Activity className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
+      )}
 
- <div className="min-w-0">
- <div className="flex items-center gap-2 flex-wrap">
- <p className="text-xs font-bold text-foreground">
- {log.event_type === "login_success"
- ? "Login Efetuado"
- : log.event_type === "login_failed"
- ? "Tentativa com Senha Incorreta"
- : log.event_type === "signup"
- ? "Nova Conta Criada"
- : log.event_type === "session_revoked"
- ? "Sessão Revogada"
- : log.event_type}
- </p>
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-xs font-bold text-foreground">
+            {log.event_type === "login_success"
+              ? "Login Efetuado"
+              : log.event_type === "login_failed"
+              ? "Tentativa com Senha Incorreta"
+              : log.event_type === "signup"
+              ? "Nova Conta Criada"
+              : log.event_type === "session_revoked"
+              ? "Sessão Revogada"
+              : log.event_type}
+          </p>
 
- {isSuspicious && (
- <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-600 border-red-500/30 px-1.5 py-0">
- Risco Alto ({log.risk_score}%)
- </Badge>
- )}
+          {isSuspicious && (
+            <Badge variant="destructive" className="text-[10px]">
+              Risco Alto ({log.risk_score}%)
+            </Badge>
+          )}
 
- {log.is_datacenter && (
- <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-600 border-purple-500/30 px-1.5 py-0">
- VPN / VPS
- </Badge>
- )}
- </div>
+          {log.is_datacenter && (
+            <Badge variant="secondary" className="text-[10px]">
+              VPN / VPS
+            </Badge>
+          )}
+        </div>
 
  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-1">
  <span className="flex items-center gap-1 font-mono">

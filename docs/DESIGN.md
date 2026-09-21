@@ -6,6 +6,29 @@
 
 ---
 
+## 🏛️ FILOSOFIA V11: ULTRA-MINIMALISMO FUNCIONAL (WHATSAPP / APPLE HIG STANDARD)
+
+A Waesy adota o **Ultra-Minimalismo Funcional** como lei suprema de design para Mobile-First e Desktop:
+
+1. **Abolição do Fundo Colorido em Elementos Secundários:**
+   - Badges, chips, tags e botões secundários **NÃO PODEM** ter cor de fundo sólida preta ou vibrante.
+   - Devem utilizar fundo transparente (ou branco) com texto na cor de destaque, ou no máximo um fundo com 5% a 10% de opacidade da cor principal (`bg-primary/5` ou `bg-primary/10`, `border border-primary/20 text-primary`).
+2. **Botões e Call-to-Actions (CTAs):**
+   - **Primário (`default`):** Único elemento que pode ter fundo sólido (Preto/Azul/Verde profundo) com texto branco de alto contraste.
+   - **Secundário (`secondary`):** Fundo branco/transparente, borda fina (1px) na cor primária e texto na cor primária (`border border-primary text-primary bg-background hover:bg-primary/5`).
+   - **Neutro/Cancelamento (`outline`):** Fundo branco/transparente com borda fina neutra (`border border-border bg-background text-foreground hover:bg-muted/50`).
+3. **Tipografia e Hierarquia "Flat":**
+   - Fundos de tela: `#FFFFFF` (Branco puro) no Light Mode e `#0A0A0A` no Dark Mode.
+   - Separação hierárquica pelo peso da fonte (Bold/Medium) e cor (Preto vs. Cinza médio `#6B7280`), **NUNCA** por blocos coloridos ou sombras pesadas.
+   - Sombras projetadas extintas (`--shadow-*: none`), valorizando o contorno e a respiração do layout.
+4. **Ícones:**
+   - Apenas ícones estilo **Outline** (contorno fino 1.5px a 2px), sem círculos ou caixinhas coloridas decorativas atrás deles.
+5. **Erradicação do Glassmorphism & AI-Smell:**
+   - Proibição de `backdrop-blur` excessivo, gradientes espalhafatosos e caixas conversacionais prolixas.
+   - Qualquer tela ou objetivo deve ser resolvido em no máximo **3 passos lógicos**.
+
+---
+
 ## 0. Arquitetura dos Dois Universos Visuais
 
 A Waesy unifica dois universos complementares sob a mesma fundação de tokens semânticos:
@@ -36,7 +59,7 @@ A Waesy unifica dois universos complementares sob a mesma fundação de tokens s
 ## 1. Escala de Tokens Semânticos & Cores
 
 ### 1.1 Light Mode (Base Minimalista)
-- `--background`: `oklch(0.99 0 0)` (Branco suave)
+- `--background`: `oklch(1 0 0)` (#FFFFFF Branco puro operacional)
 - `--foreground`: `oklch(0.12 0 0)` (Preto suave, legibilidade ótima)
 - `--card`: `oklch(1 0 0)` (Branco puro)
 - `--primary`: `oklch(0.12 0 0)` (Preto Apple-like)
@@ -48,30 +71,41 @@ A Waesy unifica dois universos complementares sob a mesma fundação de tokens s
 - `--border`: `oklch(0.93 0 0)`
 
 ### 1.2 Dark Mode (Alto Contraste AAA — Sem Texto Invisível)
-- `--background`: `oklch(0.14 0 0)` (Preto fosco)
-- `--foreground`: `oklch(0.98 0 0)` (Branco puro)
-- `--card`: `oklch(0.18 0 0)` (Tom de superfície elevado)
+- `--background`: `oklch(0.12 0 0)` (#0A0A0A Preto operacional profundo)
+- `--foreground`: `oklch(0.96 0 0)` (Branco suave)
+- `--card`: `oklch(0.16 0 0)` (Superfície sutilmente elevada)
 - `--primary`: `oklch(0.98 0 0)` (Branco puro para ação primária)
 - `--primary-foreground`: `oklch(0.10 0 0)` (Preto forte para contraste total com o botão)
-- `--secondary`: `oklch(0.24 0 0)` (Cinza grafite com borda sutil)
+- `--secondary`: `oklch(0.20 0 0)` (Cinza grafite sutil)
 - `--secondary-foreground`: `oklch(0.96 0 0)`
-- `--muted`: `oklch(0.22 0 0)`
-- `--muted-foreground`: `oklch(0.72 0 0)`
-- `--border`: `oklch(0.26 0 0)`
+- `--muted`: `oklch(0.20 0 0)`
+- `--muted-foreground`: `oklch(0.70 0 0)`
+- `--border`: `oklch(0.22 0 0)`
 
 ---
 
-## 2. Família de Botões & Ações (Pill-Squircle System)
+## 2. Família de Botões & Ações (Pill-Squircle System V11 Ultra-Minimalista)
 
 | Variante | Classe / Tailwind | Propósito & Sensação Visual |
 | :--- | :--- | :--- |
-| **`default`** | `bg-primary text-primary-foreground` | Ação principal da página / modal com alto contraste e leve sombra. |
-| **`heroAction`** | `bg-linear-to-r from-primary ... hover:scale-[1.02]` | CTAs de conversão de alto impacto (ex: "Criar Minha Loja", "Publicar"). |
-| **`pillow`** | `rounded-full bg-primary text-primary-foreground` | Botão pill orgânico com micro-elevação ao toque. |
-| **`pillowOutline`**| `rounded-full border border-border bg-card` | Filtros, chips de categoria e seletores táteis. |
-| **`secondary`** | `bg-secondary text-secondary-foreground` | Ações secundárias e de apoio no fluxo. |
-| **`outline`** | `border border-border/90 bg-background text-foreground` | Botões neutros, cancelamento e alternadores. |
-| **`ghost`** | `hover:bg-muted text-muted-foreground hover:text-foreground` | Ações compactas e ícones em barras de ferramentas. |
+| **`default`** | `bg-primary text-primary-foreground font-bold shadow-xs hover:bg-primary/90` | **CTA Primário Único**: Único elemento com fundo sólido de alto contraste. |
+| **`secondary`** | `bg-background border border-primary text-primary hover:bg-primary/5 font-semibold` | **CTA Secundário / Chat Action**: Fundo branco/transparente, borda 1px na cor primária e texto na cor primária. |
+| **`outline`** | `border border-border bg-background hover:bg-muted/50 text-foreground font-semibold` | Botões neutros, cancelamento, alternadores e ações terciárias. |
+| **`ghost`** | `hover:bg-muted text-muted-foreground hover:text-foreground` | Ações compactas e ícones outline sem caixa decorativa. |
+| **`destructive`** | `bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/15 font-semibold` | Ações destrutivas com fundo sutil não-agressivo. |
+| **`link`** | `text-primary underline-offset-4 hover:underline font-semibold` | Ações de texto em linha direta. |
+
+### 2.1 Família de Badges & Chips (V11 Sem Fundo Sólido)
+
+| Variante | Classe / Tailwind | Propósito & Sensação Visual |
+| :--- | :--- | :--- |
+| **`default`** | `bg-primary/5 text-primary border border-primary/20 hover:bg-primary/10` | Destaque neutro elegante sem fundo chapado. |
+| **`secondary`** | `bg-muted/60 text-muted-foreground border border-border/50 hover:bg-muted` | Tag neutra sutil de contexto. |
+| **`outline`** | `bg-transparent text-foreground border border-border hover:bg-muted/30` | Pílula transparente com contorno fino. |
+| **`success`** | `bg-success/10 text-success border border-success/20 hover:bg-success/15` | Status positivo/confirmado (5-10% tint + contorno). |
+| **`warning`** | `bg-warning/10 text-warning border border-warning/20 hover:bg-warning/15` | Status pendente/atenção (5-10% tint + contorno). |
+| **`destructive`** | `bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/15` | Status cancelado/erro (5-10% tint + contorno). |
+| **`info`** | `bg-info/10 text-info border border-info/20 hover:bg-info/15` | Status informativo/processando (5-10% tint + contorno). |
 
 ---
 

@@ -229,7 +229,7 @@ function CustomerConversationsIndexPage() {
         </div>
       )}
 
-      {/* Filtros tipo chips rápidos estilo WhatsApp */}
+      {/* Filtros tipo chips rápidos estilo WhatsApp (Ultra-Minimalista V11) */}
       <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
         {FILTER_TABS.map((tab) => {
           const isSelected = activeFilter === tab.id;
@@ -237,10 +237,10 @@ function CustomerConversationsIndexPage() {
             <button
               key={tab.id}
               onClick={() => setActiveFilter(tab.id)}
-              className={`shrink-0 h-8 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none active:scale-95 ${
+              className={`shrink-0 h-8 px-3.5 rounded-full text-xs font-semibold transition-all cursor-pointer select-none active:scale-95 ${
                 isSelected
-                  ? "bg-foreground text-background shadow-xs font-bold"
-                  : "bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground"
+                  ? "bg-primary/10 text-primary border border-primary/20 font-bold"
+                  : "bg-transparent hover:bg-muted/50 text-muted-foreground hover:text-foreground border border-transparent"
               }`}
             >
               {tab.label}
@@ -252,9 +252,7 @@ function CustomerConversationsIndexPage() {
       {/* ── 2. Lista Fluida de Conversas ── */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 py-16 px-4 text-center gap-3">
-          <div className="size-16 rounded-3xl bg-muted/60 flex items-center justify-center mb-1 text-muted-foreground">
-            <MessageCircle className="size-8 stroke-[1.5]" />
-          </div>
+          <MessageCircle className="size-10 stroke-[1.5] text-muted-foreground/60 mb-1" />
           <div>
             <h2 className="text-lg font-bold text-foreground">
               {activeFilter !== "all" || searchQuery
@@ -270,13 +268,13 @@ function CustomerConversationsIndexPage() {
           <Button
             size="sm"
             onClick={() => setNewChatOpen(true)}
-            className="rounded-2xl h-11 px-6 text-sm font-bold mt-3 shadow-xs cursor-pointer"
+            className="rounded-xl h-10 px-5 text-xs font-bold mt-2 shadow-xs cursor-pointer"
           >
             Iniciar Conversa
           </Button>
         </div>
       ) : (
-        <div className="divide-y divide-border/30 rounded-2xl bg-card border border-border/40 overflow-hidden shadow-2xs">
+        <div className="divide-y divide-border/20 rounded-2xl bg-card border border-border/40 overflow-hidden">
           {filtered.map((thread: any) => {
             const statusInfo = STATUS_CONFIG[thread.status] || STATUS_CONFIG.open;
             const isP2P = thread.is_p2p;

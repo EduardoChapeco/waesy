@@ -43,12 +43,10 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  const statusInfo = STATUS_CONFIG[payload.status] || { label: payload.status, variant: "outline" };
 
  return (
- <div className="my-2 rounded-2xl border-2 border-destructive/20 bg-card p-4 space-y-3 max-w-sm sm:max-w-md w-full">
+ <div className="my-2 rounded-2xl border border-destructive/20 bg-card p-4 space-y-3 max-w-sm sm:max-w-md w-full">
  <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
  <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
- <ShieldAlert className="size-4" />
- </div>
+ <ShieldAlert className="size-5 text-destructive shrink-0" strokeWidth={1.75} />
  <div>
  <span className="text-xs font-bold text-foreground block">
  {TICKET_TYPE_LABELS[payload.ticket_type] || "Ocorrência"}

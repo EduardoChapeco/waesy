@@ -45,11 +45,9 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  <div className="my-2 rounded-2xl border border-border/80 bg-card p-4 space-y-3 max-w-sm sm:max-w-md w-full">
  {/* Top Header */}
  <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
- <div className="flex items-center gap-2 min-w-0">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
- <Package className="size-4" />
- </div>
- <div className="min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Package className="size-5 text-foreground shrink-0" strokeWidth={1.75} />
+          <div className="min-w-0">
  <div className="flex items-center gap-1.5">
  <span className="text-xs font-bold text-foreground truncate">
  Pedido #{order.id.slice(0, 8)}

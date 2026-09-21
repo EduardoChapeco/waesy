@@ -130,7 +130,7 @@
   --radius: 0.625rem; /* 10px padrão Apple HIG */
 
   /* ── Semânticos Light ────────────────────────────────────────────────── */
-  --background: oklch(0.99 0 0); /* Quase totalmente branco */
+  --background: oklch(1 0 0); /* #FFFFFF Branco puro operacional */
   --foreground: oklch(0.12 0 0); /* Preto suave para leitura perfeita */
 
   --card: oklch(1 0 0); /* Branco puro */
@@ -173,56 +173,56 @@
  * ===========================================================================*/
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: oklch(0.15 0 0); /* Fundo escuro */
+    --background: oklch(0.12 0 0); /* #0A0A0A Fundo escuro puro */
     --foreground: oklch(0.96 0 0);
 
-    --card: oklch(0.18 0 0); /* Um tom acima do fundo */
+    --card: oklch(0.16 0 0); /* Superfície sutilmente elevada */
     --card-foreground: oklch(0.96 0 0);
 
-    --popover: oklch(0.18 0 0);
+    --popover: oklch(0.16 0 0);
     --popover-foreground: oklch(0.96 0 0);
 
     --primary: oklch(0.98 0 0); /* Botão claro no dark mode */
     --primary-foreground: oklch(0.1 0 0); /* Texto muito escuro para forçar contraste */
 
-    --secondary: oklch(0.22 0 0);
+    --secondary: oklch(0.20 0 0);
     --secondary-foreground: oklch(0.96 0 0);
 
-    --muted: oklch(0.22 0 0);
+    --muted: oklch(0.20 0 0);
     --muted-foreground: oklch(0.7 0 0);
 
-    --accent: oklch(0.22 0 0);
+    --accent: oklch(0.20 0 0);
     --accent-foreground: oklch(0.96 0 0);
 
     --destructive: oklch(0.6 0.15 25);
     --destructive-foreground: oklch(0.96 0 0);
 
-    --border: oklch(0.25 0 0);
-    --input: oklch(0.25 0 0);
+    --border: oklch(0.22 0 0);
+    --input: oklch(0.22 0 0);
     --ring: oklch(0.96 0 0);
   }
 }
 
 .dark {
-  --background: oklch(0.15 0 0);
+  --background: oklch(0.12 0 0); /* #0A0A0A */
   --foreground: oklch(0.96 0 0);
 
-  --card: oklch(0.18 0 0);
+  --card: oklch(0.16 0 0);
   --card-foreground: oklch(0.96 0 0);
 
-  --popover: oklch(0.18 0 0);
+  --popover: oklch(0.16 0 0);
   --popover-foreground: oklch(0.96 0 0);
 
   --primary: oklch(0.98 0 0); /* Botão claro no dark mode */
   --primary-foreground: oklch(0.1 0 0); /* Texto muito escuro para forçar contraste */
 
-  --secondary: oklch(0.22 0 0);
+  --secondary: oklch(0.20 0 0);
   --secondary-foreground: oklch(0.96 0 0);
 
-  --muted: oklch(0.22 0 0);
+  --muted: oklch(0.20 0 0);
   --muted-foreground: oklch(0.7 0 0);
 
-  --accent: oklch(0.22 0 0);
+  --accent: oklch(0.20 0 0);
   --accent-foreground: oklch(0.96 0 0);
 
   --destructive: oklch(0.6 0.15 25);

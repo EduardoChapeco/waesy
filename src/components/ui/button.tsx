@@ -11,21 +11,21 @@ const buttonVariants = cva(
  variants: {
  variant: {
  default:
- "bg-foreground text-background hover:opacity-90 font-bold ",
+ "bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-xs",
  destructive:
- "bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold",
+ "bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/15 font-semibold",
  outline:
- " bg-background hover:bg-muted text-foreground hover:border-foreground/30 font-semibold ",
+ "border border-border bg-background hover:bg-muted/50 text-foreground font-semibold",
  secondary:
- "bg-secondary text-secondary-foreground hover:bg-secondary/80 font-semibold ",
+ "bg-background border border-primary text-primary hover:bg-primary/5 font-semibold",
  ghost: "hover:bg-muted hover:text-foreground text-muted-foreground",
  link: "text-primary underline-offset-4 hover:underline font-semibold",
  pillow:
- "rounded-xl bg-foreground text-background font-bold hover:opacity-90 hover:scale-[1.02] active:scale-[0.97]",
+ "rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 active:scale-[0.97]",
  pillowOutline:
- "rounded-xl bg-card hover:bg-muted text-foreground font-bold hover:scale-[1.02] active:scale-[0.97]",
+ "rounded-xl border border-border bg-background hover:bg-muted text-foreground font-bold active:scale-[0.97]",
  heroAction:
- "rounded-2xl bg-foreground text-background font-black hover:scale-[1.02] hover: active:scale-[0.97] ",
+ "rounded-2xl bg-primary text-primary-foreground font-black hover:bg-primary/90 active:scale-[0.97]",
  },
  size: {
  default: "h-11 px-5.5 py-2.5", /* 44px — padrão ergonômico Apple Squircle */
