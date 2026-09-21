@@ -277,8 +277,6 @@ export async function _calculateShipping({
           price_cents: finalPriceCents,
           estimated_days: 0,
           description: timelineDesc,
-          surge_applied: isPeakHour,
-          notice: isPeakHour ? "Tarifa dinâmica temporária por alta demanda local" : undefined,
           allow_scheduling: allowScheduling,
           scheduled_windows: allowScheduling
             ? [

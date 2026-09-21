@@ -175,23 +175,23 @@ function DeliveryCourierPage() {
  <div className="space-y-4">
  {/* Header da Corrida */}
  <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border/60 shadow-2xs">
- <div className="flex items-center gap-3">
- <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
- <Truck className="size-6" />
- </div>
- <div>
- <p className="text-xs text-muted-foreground font-semibold">Painel do Entregador</p>
- <h1 className="text-base font-bold text-foreground">
- Pedido #{delivery.order_number}
- </h1>
- </div>
- </div>
- <Badge
- variant={isDelivered ? "default" : "secondary"}
- className="rounded-full text-xs font-bold px-2.5 py-0.5"
- >
- {isDelivered ? "Entregue" : "Em Trânsito"}
- </Badge>
+        <div className="flex items-center gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground font-semibold">Painel do Entregador</p>
+            <h1 className="text-base font-bold text-foreground">
+              Pedido #{delivery.order_number}
+            </h1>
+          </div>
+        </div>
+        <span
+          className={`text-xs font-bold uppercase tracking-wider ${
+            isDelivered
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-amber-600 dark:text-amber-400"
+          }`}
+        >
+          {isDelivered ? "Entregue" : "Em Trânsito"}
+        </span>
  </div>
 
  {/* Taxa da Corrida */}
