@@ -228,6 +228,11 @@ export function PickingWizard({ order, isOpen, onOpenChange, onComplete }: Picki
  >
  {item.product_title}
  </h4>
+ {item.notes && (
+ <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold italic mt-0.5">
+ Obs: {item.notes}
+ </p>
+ )}
  <p className="text-xs text-muted-foreground mt-1 truncate">
  SKU: <span className="font-mono">{item.variant_sku}</span>
  </p>

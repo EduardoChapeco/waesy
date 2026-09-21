@@ -798,27 +798,6 @@ export function UniversalClassifiedShowcase({
 
   return (
     <div className="w-full min-h-screen bg-background text-foreground pb-20 lg:pb-12">
-      {/* ── Banner de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
-      {isOwner && (
-        <div className="w-full bg-amber-500/10 border-b border-amber-500/25 py-2.5 px-4 sm:px-6 flex items-center justify-between text-xs text-amber-900 dark:text-amber-200">
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-            <span className="font-semibold">Modo Proprietário · Você é o anunciante desta publicação</span>
-          </div>
-          {onEdit && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onEdit}
-              className="h-7 text-xs gap-1.5 rounded-lg border-amber-500/40 bg-background/90 hover:bg-amber-500/20 text-foreground cursor-pointer font-bold shrink-0"
-            >
-              <Edit3 className="size-3" />
-              <span>Editar Anúncio</span>
-            </Button>
-          )}
-        </div>
-      )}
-
       {/* ── Top Bar Minimalista (Voltar + Ações) ── */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-3">
         <Button
@@ -834,15 +813,15 @@ export function UniversalClassifiedShowcase({
         </Button>
 
         <div className="flex items-center gap-2">
-          {isOwner && (
+          {isOwner && onEdit && (
             <Button
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="h-9 px-3 rounded-xl text-xs font-medium border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+              className="h-8 px-2.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5 border-border/60 bg-background/60 hover:bg-muted cursor-pointer"
             >
-              <Edit3 className="size-3.5 mr-1.5" />
-              <span>Editar Anúncio</span>
+              <Edit3 className="size-3.5" />
+              <span>Editar</span>
             </Button>
           )}
 
@@ -1402,11 +1381,11 @@ export function UniversalClassifiedShowcase({
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-foreground">
-                          {author.full_name || classified?.store_name || "Anunciante"}
+                          {author.full_name || (classified?.store_id ? classified?.store_name : null) || "Anunciante"}
                         </span>
-                        <Badge variant="outline" className="text-[10px] font-medium border-none bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                           Verificado
-                        </Badge>
+                        </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Atendimento direto via plataforma

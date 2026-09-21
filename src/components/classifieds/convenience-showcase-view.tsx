@@ -665,21 +665,20 @@ export function ConvenienceShowcaseView({
         </div>
 
         {discountResult.activeTier ? (
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
             {discountResult.activeTier.discount_type === "percentage"
-              ? `${discountResult.activeTier.discount_value}% OFF ativado!`
-              : `${formatMoney(discountResult.activeTier.discount_value)} OFF ativado!`}
+              ? `${discountResult.activeTier.discount_value}% OFF`
+              : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
           </span>
         ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
             {pixDiscountPercent}% OFF no Pix
           </span>
         ) : null}
       </div>
 
       {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
-        <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-          <QrCode className="size-3.5" />
+        <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium flex items-center gap-1.5">
           <span>
             Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
           </span>
@@ -687,9 +686,8 @@ export function ConvenienceShowcaseView({
       )}
 
       {discountResult.totalSavedCents > 0 && (
-        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
-          <CheckCircle2 className="size-3.5 shrink-0" />
-          <span>Você está economizando <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo!</span>
+        <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+          Economia de <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo
         </div>
       )}
 
@@ -842,7 +840,7 @@ export function ConvenienceShowcaseView({
             <span className="text-xs font-bold text-foreground">Desconto Progressivo</span>
           </div>
           {discountResult.activeTier ? (
-            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
               {discountResult.activeTier.discount_type === "percentage"
                 ? `${discountResult.activeTier.discount_value}% OFF`
                 : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
@@ -866,8 +864,8 @@ export function ConvenienceShowcaseView({
                 className={cn(
                   "flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all",
                   isUnlocked
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-foreground font-semibold"
-                    : "bg-muted/20 border-border/50 text-muted-foreground"
+                    ? "border-emerald-500/40 text-foreground font-semibold"
+                    : "bg-muted/15 border-border/50 text-muted-foreground"
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -882,8 +880,8 @@ export function ConvenienceShowcaseView({
                 </div>
 
                 {isUnlocked ? (
-                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                    ✔ Ativado
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    Ativado
                   </span>
                 ) : (
                   <span className="text-[11px] text-muted-foreground font-mono">
@@ -896,7 +894,7 @@ export function ConvenienceShowcaseView({
         </div>
 
         {discountResult.totalSavedCents > 0 && (
-          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl flex items-center justify-between">
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center justify-between pt-1">
             <span>Economia no pedido:</span>
             <span className="font-mono font-bold">{formatMoney(discountResult.totalSavedCents)}</span>
           </div>
@@ -916,7 +914,7 @@ export function ConvenienceShowcaseView({
           <span className="text-muted-foreground text-[11px] block">• Estimativa {deliveryEstimate}</span>
         </div>
       </div>
-      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md shrink-0">
+      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
         Retirada grátis
       </span>
     </div>

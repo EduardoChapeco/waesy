@@ -470,6 +470,11 @@ function AdminOrderDetailPage() {
  </span>
  )}
  </p>
+ {item.notes && (
+ <p className="text-xs text-amber-600 dark:text-amber-400 font-medium italic mt-1 bg-amber-500/10 px-2 py-0.5 rounded-md inline-block">
+ Obs: {item.notes}
+ </p>
+ )}
  <p className="text-xs text-muted-foreground font-mono mt-0.5">
  SKU: {item.variant_sku || "N/A"}
  </p>
@@ -527,8 +532,62 @@ function AdminOrderDetailPage() {
  <p className="font-mono font-medium text-foreground">{customer.document}</p>
  </div>
  )}
+
+ {order.cpf_on_receipt?.requested && (
+ <div className="space-y-1">
+ <span className="text-muted-foreground font-semibold">CPF na Nota Fiscal:</span>
+ <p className="font-mono font-bold text-foreground">
+ {order.cpf_on_receipt.document || "Solicitado (Sem Documento)"}
+ </p>
+ </div>
+ )}
  </div>
  </div>
+
+ {/* Diretrizes de Atendimento & Separação do Nicho */}
+ {(order.receiver_info?.isOtherPerson || order.substitution_policy || order.checkout_niche_metadata?.utensilsRequested !== undefined) && (
+ <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80 space-y-4">
+ <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+ <Package className="size-4 text-primary" />
+ <span>Diretrizes de Atendimento & Separação</span>
+ </h3>
+
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+ {order.receiver_info?.isOtherPerson && (
+ <div className="space-y-1 p-3 rounded-2xl bg-muted/20 border border-border/40">
+ <span className="text-muted-foreground font-semibold block">Recebedor Autorizado (Terceiro):</span>
+ <p className="font-bold text-foreground">
+ {order.receiver_info.name} {order.receiver_info.phone ? `(${order.receiver_info.phone})` : ""}
+ </p>
+ </div>
+ )}
+
+ {order.substitution_policy && (
+ <div className="space-y-1 p-3 rounded-2xl bg-muted/20 border border-border/40">
+ <span className="text-muted-foreground font-semibold block">Se faltar item (Mercado / Hortifrúti):</span>
+ <p className="font-bold text-foreground">
+ {order.substitution_policy === "similar"
+ ? "Trocar por similar da mesma categoria"
+ : order.substitution_policy === "contact"
+ ? "Confirmar com o cliente via WhatsApp"
+ : "Cancelar item e abater valor"}
+ </p>
+ </div>
+ )}
+
+ {order.checkout_niche_metadata?.utensilsRequested !== undefined && (
+ <div className="space-y-1 p-3 rounded-2xl bg-muted/20 border border-border/40">
+ <span className="text-muted-foreground font-semibold block">Talheres & Descartáveis:</span>
+ <p className="font-bold text-foreground">
+ {order.checkout_niche_metadata.utensilsRequested
+ ? "Sim, enviar descartáveis com o pedido"
+ : "Não precisa de descartáveis (Cliente dispensou)"}
+ </p>
+ </div>
+ )}
+ </div>
+ </div>
+ )}
 
  {/* Informações Complementares / Campos de Nicho */}
  {hasCustomFields && (

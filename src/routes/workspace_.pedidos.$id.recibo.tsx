@@ -132,6 +132,11 @@ function ReceiptPrintPage() {
               <strong>Tel:</strong> {(order as any).customer_phone}
             </p>
           )}
+          {(order as any).cpf_on_receipt?.requested && (
+            <p>
+              <strong>CPF na Nota:</strong> {(order as any).cpf_on_receipt?.document || "Solicitado"}
+            </p>
+          )}
         </div>
         <div className="space-y-1">
           <p className="font-bold uppercase tracking-wider text-[10px] text-neutral-500">Logística & Entrega:</p>
@@ -145,6 +150,21 @@ function ReceiptPrintPage() {
               {typeof (order as any).shipping_address === "string"
                 ? (order as any).shipping_address
                 : `${(order as any).shipping_address?.street || ""}, ${(order as any).shipping_address?.number || ""} - ${(order as any).shipping_address?.neighborhood || ""}`}
+            </p>
+          )}
+          {(order as any).receiver_info?.isOtherPerson && (
+            <p className="text-[11px]">
+              <strong>Recebedor Autorizado:</strong> {(order as any).receiver_info?.name} {(order as any).receiver_info?.phone ? `(${(order as any).receiver_info.phone})` : ""}
+            </p>
+          )}
+          {(order as any).substitution_policy && (
+            <p className="text-[11px]">
+              <strong>Política em Falta:</strong> {(order as any).substitution_policy === "similar" ? "Trocar por similar" : (order as any).substitution_policy === "contact" ? "Confirmar WhatsApp" : "Cancelar item"}
+            </p>
+          )}
+          {(order as any).checkout_niche_metadata?.utensilsRequested && (
+            <p className="text-[11px]">
+              <strong>Descartáveis:</strong> Enviar talheres/guardanapos
             </p>
           )}
           {(order as any).payment_method && (
@@ -194,6 +214,7 @@ function ReceiptPrintPage() {
               <td className="py-2">{item.qty}x</td>
               <td className="py-2">
                 <div className="font-semibold">{item.product_title}</div>
+                {item.notes && <div className="text-[10px] text-amber-700 font-sans italic">Obs: {item.notes}</div>}
                 {item.variant_sku && <div className="text-[10px] text-neutral-500">SKU: {item.variant_sku}</div>}
               </td>
               <td className="text-right py-2">{formatMoney(item.unit_price_cents)}</td>

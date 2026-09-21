@@ -944,7 +944,7 @@ function ProductContent({
           <div className="block lg:hidden px-4 sm:px-0 space-y-4">
             <div className="space-y-1.5">
               {product.brand && (
-                <span className="text-[11px] font-bold tracking-wider uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-md inline-block">
+                <span className="text-xs font-bold tracking-wider uppercase text-primary">
                   {product.brand}
                 </span>
               )}
@@ -960,21 +960,18 @@ function ProductContent({
                   size="lg"
                 />
                 {product.compareAtCents && product.compareAtCents > product.priceCents && (
-                  <Badge
-                    variant="outline"
-                    className="bg-destructive/10 text-destructive border-destructive/20 text-xs font-bold px-2 py-0.5 rounded-md"
-                  >
-                    Economize {Math.round(((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100)}%
-                  </Badge>
+                  <span className="text-xs font-bold text-destructive">
+                    {Math.round(((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100)}% OFF
+                  </span>
                 )}
               </div>
             </div>
 
             {/* Disponibilidade / Esgotado */}
             {product.showStockPublicly && allOutOfStock && (
-              <Badge variant="destructive" className="w-fit text-xs font-bold py-1 px-3 rounded-lg">
+              <span className="text-xs font-bold text-destructive">
                 Sem estoque disponível
-              </Badge>
+              </span>
             )}
 
             {/* Seletores de Atributos (Cores e Tamanhos) no Mobile */}
@@ -1445,7 +1442,7 @@ function ProductContent({
           <div className="p-6 rounded-2xl border border-border/60 bg-card shadow-xs space-y-5">
             <div className="space-y-1.5">
               {product.brand && (
-                <span className="text-[11px] font-bold tracking-wider uppercase text-primary bg-primary/10 px-2.5 py-0.5 rounded-md inline-block">
+                <span className="text-xs font-bold tracking-wider uppercase text-primary">
                   {product.brand}
                 </span>
               )}
@@ -1461,21 +1458,18 @@ function ProductContent({
                   size="lg"
                 />
                 {product.compareAtCents && product.compareAtCents > product.priceCents && (
-                  <Badge
-                    variant="outline"
-                    className="bg-destructive/10 text-destructive border-destructive/20 text-xs font-bold px-2 py-0.5 rounded-md"
-                  >
-                    Economize {Math.round(((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100)}%
-                  </Badge>
+                  <span className="text-xs font-bold text-destructive">
+                    {Math.round(((product.compareAtCents - product.priceCents) / product.compareAtCents) * 100)}% OFF
+                  </span>
                 )}
               </div>
             </div>
 
             {/* Disponibilidade / Esgotado */}
             {product.showStockPublicly && allOutOfStock && (
-              <Badge variant="destructive" className="w-fit text-xs font-bold py-1 px-3 rounded-lg">
+              <span className="text-xs font-bold text-destructive">
                 Sem estoque disponível
-              </Badge>
+              </span>
             )}
 
             {/* Seletores de Atributos (Cores e Tamanhos) */}
