@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Plane, Bus, Ship, Anchor, Layers, Hotel, Calendar, Compass, MapPin, Clock, Check, ChevronRight, ExternalLink, MessageCircle, Share2, Sliders, Sun, CloudSun, CloudRain, ShieldCheck, ShieldAlert, Camera, Star, Coffee, Car, Ticket, Users, Utensils, ArrowRight, Info, Luggage, X, Edit3, Navigation } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { TravelPackageData } from "@/types/travel-package";
@@ -117,8 +116,8 @@ export function TravelPackageDetailView({
 
  // Condições Comerciais Configuradas pelo Gestor (Bilateral)
  const paymentConditions = packageData?.payment_conditions;
- const maxInstallments = Math.max(1, paymentConditions?.installments_max || 12);
- const feeFreeInstallments = Math.min(maxInstallments, paymentConditions?.installments_fee_free || maxInstallments);
+ const maxInstallments = paymentConditions?.installments_max ? Math.max(1, paymentConditions.installments_max) : 0;
+ const feeFreeInstallments = maxInstallments > 0 ? Math.min(maxInstallments, paymentConditions?.installments_fee_free || maxInstallments) : 0;
  const pixDiscountPercent = paymentConditions?.pix_discount_percent || 0;
  const depositPercent = paymentConditions?.deposit_percent || 0;
 
@@ -148,9 +147,12 @@ export function TravelPackageDetailView({
  const depInfo = selectedDeparture && selectedDeparture.departure_date
  ? ` para a saída de ${new Date(selectedDeparture.departure_date + "T00:00:00").toLocaleDateString("pt-BR")}${selectedDeparture.return_date ? ` até ${new Date(selectedDeparture.return_date + "T00:00:00").toLocaleDateString("pt-BR")}` : ""}`
  : "";
+ const paymentDesc = maxInstallments > 0
+ ? `(Valor: ${formattedTotal} em até ${maxInstallments}x de ${formattedInstallment})`
+ : `(Valor: ${formattedTotal} à vista)`;
  const message = encodeURIComponent(
  totalCents > 0
- ? `Olá! Tenho interesse no pacote *${productTitle}*${depInfo} (Valor: ${formattedTotal} em até ${maxInstallments}x de ${formattedInstallment}). Poderiam me enviar mais detalhes de datas e confirmação de reserva?`
+ ? `Olá! Tenho interesse no pacote *${productTitle}*${depInfo} ${paymentDesc}. Poderiam me enviar mais detalhes de datas e confirmação de reserva?`
  : `Olá! Tenho interesse no pacote *${productTitle}*${depInfo}. Poderiam me enviar mais detalhes de datas, disponibilidade e orçamento?`
  );
  if (cleanPhone) {
@@ -177,9 +179,9 @@ export function TravelPackageDetailView({
 
         <div className="flex items-center gap-2">
           {resort.duration_text && (
-            <Badge variant="outline" className="text-[10px] font-mono border-border/80">
+            <span className="text-[11px] font-mono text-muted-foreground border border-border/80 px-2 py-0.5 rounded-full">
               {resort.duration_text}
-            </Badge>
+            </span>
           )}
           {isOwner && onEditClick && (
             <Button
@@ -595,22 +597,28 @@ export function TravelPackageDetailView({
  </div>
  </div>
 
- {/* Card de Parcelamento Dinâmico (Bilateral) */}
+ {/* Card de Condição Comercial & Preço */}
  <div className="bg-card border border-border/70 rounded-2xl p-4 flex items-center justify-between shadow-2xs">
  <div className="space-y-0.5">
  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
  {totalCents > 0
+ ? maxInstallments > 0
  ? feeFreeInstallments >= maxInstallments
  ? "Parcelamento sem juros"
  : `Parcelamento facilitado (${feeFreeInstallments}x sem juros)`
+ : "Pagamento à Vista"
  : "Condição Comercial"}
  </span>
  <div className="flex items-baseline gap-1">
  {totalCents > 0 ? (
+ maxInstallments > 0 ? (
  <>
  <span className="text-xl font-bold text-foreground">{maxInstallments}x</span>
  <span className="text-sm font-bold text-foreground">{formattedInstallment}</span>
  </>
+ ) : (
+ <span className="text-xl font-bold text-foreground tracking-tight">{formattedTotal}</span>
+ )
  ) : (
  <span className="text-lg font-bold text-foreground">Sob Consulta</span>
  )}
@@ -618,10 +626,10 @@ export function TravelPackageDetailView({
  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
  {totalCents > 0 ? (
  <>
- <span>Total: {formattedTotal}</span>
+ {maxInstallments > 0 && <span>Total: {formattedTotal}</span>}
  {pixDiscountPercent > 0 && (
  <span className="text-emerald-600 font-semibold">
- • {formattedPixTotal} à vista no PIX ({pixDiscountPercent}% OFF)
+ {maxInstallments > 0 ? "• " : ""}{formattedPixTotal} à vista no PIX ({pixDiscountPercent}% OFF)
  </span>
  )}
  </>
@@ -631,11 +639,13 @@ export function TravelPackageDetailView({
  </div>
  </div>
  {depositPercent > 0 ? (
- <Badge variant="outline" className="text-xs font-mono border-primary/30 text-primary">
+ <span className="text-xs font-mono font-bold text-primary">
  Sinal: {depositPercent}%
- </Badge>
+ </span>
  ) : totalCents > 0 ? (
- <Badge className="bg-emerald-600 text-white font-semibold text-xs">Melhor Tarifa</Badge>
+ <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+ Melhor Tarifa
+ </span>
  ) : null}
  </div>
 
@@ -672,9 +682,9 @@ export function TravelPackageDetailView({
  <h3 className="text-sm font-bold text-foreground">Roteiro Completo Dia a Dia</h3>
  <p className="text-xs text-muted-foreground">Programação detalhada das suas férias</p>
  </div>
- <Badge variant="outline" className="text-xs font-mono">
+ <span className="text-xs font-mono text-muted-foreground border border-border/60 px-2 py-0.5 rounded-full">
  {itineraryDays.length} Dias
- </Badge>
+ </span>
  </div>
 
  {/* Timeline Vertical Contínua */}
@@ -803,7 +813,7 @@ export function TravelPackageDetailView({
  ? "Logística Multimodal Integrada"
  : "Logística Aérea & Horários Garantidos"}
  </span>
- <Badge variant="outline" className="text-[10px] font-mono">
+ <span className="text-[11px] font-mono text-muted-foreground border border-border/60 px-2 py-0.5 rounded-full">
  {isBus
  ? (flightDetails.bus_company || flightDetails.bus_category || "Transporte Terrestre")
  : isCruise
@@ -811,7 +821,7 @@ export function TravelPackageDetailView({
  : isCombo
  ? "Viagem Multimodal"
  : (flightDetails.airline_name || flightDetails.airline_partner || "Voo Incluso")}
- </Badge>
+ </span>
  </div>
 
  {/* ─── MODAL 1: AÉREO ─── */}
@@ -914,12 +924,12 @@ export function TravelPackageDetailView({
  )}
  </span>
  {flightDetails.bus_category && (
- <Badge variant="secondary" className="text-[10px] font-medium">
+ <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
  {(() => {
  const cat = CANONICAL_BUS_CATEGORIES.find(b => b.id === flightDetails.bus_category);
  return cat ? cat.label : flightDetails.bus_category;
  })()}
- </Badge>
+ </span>
  )}
  </div>
 
@@ -1022,9 +1032,9 @@ export function TravelPackageDetailView({
  )}
  </span>
  {flightDetails.cabin_category && (
- <Badge variant="secondary" className="text-[10px] font-medium">
+ <span className="text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
  {flightDetails.cabin_category}
- </Badge>
+ </span>
  )}
  </div>
 
@@ -1126,9 +1136,9 @@ export function TravelPackageDetailView({
  Datas & Saídas Disponíveis
  </h4>
  </div>
- <Badge variant="outline" className="text-[10px] font-mono">
+ <span className="text-[11px] font-mono text-muted-foreground border border-border/60 px-2 py-0.5 rounded-full">
  {departureOptions.length} opções confirmadas
- </Badge>
+ </span>
  </div>
 
  <div className="space-y-2 pt-1">
@@ -1230,6 +1240,7 @@ export function TravelPackageDetailView({
  {resort.guests_text ? `Valor por pacote (${resort.guests_text})` : "Resumo de Valor"}
  </span>
  {totalCents > 0 ? (
+ maxInstallments > 0 ? (
  <>
  <div className="flex items-baseline gap-1.5">
  <span className="text-xs font-semibold text-muted-foreground">{maxInstallments}x</span>
@@ -1250,6 +1261,21 @@ export function TravelPackageDetailView({
  )}
  </span>
  </>
+ ) : (
+ <>
+ <div className="flex items-baseline gap-1.5">
+ <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+ {formattedTotal}
+ </span>
+ <span className="text-[10px] font-medium text-muted-foreground">à vista</span>
+ </div>
+ {pixDiscountPercent > 0 && (
+ <span className="text-[10px] text-emerald-600 font-medium">
+ ou {formattedPixTotal} no PIX ({pixDiscountPercent}% off)
+ </span>
+ )}
+ </>
+ )
  ) : (
  <div className="flex items-baseline gap-1.5">
  <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
