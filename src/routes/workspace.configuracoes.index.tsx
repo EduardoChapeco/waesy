@@ -251,7 +251,38 @@ export default function WorkspaceConfiguracoesPage() {
  );
 
  // Perguntas Customizadas de Checkout
- const [customFields, setCustomFields] = useState<any[]>(
+ // Super Checkout Multi-Nicho Configs
+  const initialCheckoutCfg = store?.settings?.checkout_config || {};
+  const [cpfCheckoutEnabled, setCpfCheckoutEnabled] = useState<boolean>(
+    initialCheckoutCfg.cpf_on_receipt?.enabled ?? true
+  );
+  const [cpfCheckoutRequired, setCpfCheckoutRequired] = useState<boolean>(
+    initialCheckoutCfg.cpf_on_receipt?.required ?? false
+  );
+  const [cpfCheckoutDefaultChecked, setCpfCheckoutDefaultChecked] = useState<boolean>(
+    initialCheckoutCfg.cpf_on_receipt?.default_requested ?? false
+  );
+
+  const [substitutionPolicyEnabled, setSubstitutionPolicyEnabled] = useState<boolean>(
+    initialCheckoutCfg.substitution_policy?.enabled ?? true
+  );
+  const [substitutionDefaultOption, setSubstitutionDefaultOption] = useState<"similar" | "contact" | "cancel">(
+    initialCheckoutCfg.substitution_policy?.default ?? "similar"
+  );
+
+  const [receiverInfoEnabled, setReceiverInfoEnabled] = useState<boolean>(
+    initialCheckoutCfg.receiver_info?.enabled ?? true
+  );
+
+  const [utensilsPolicyEnabled, setUtensilsPolicyEnabled] = useState<boolean>(
+    initialCheckoutCfg.utensils_policy?.enabled ?? true
+  );
+
+  const [itemNotesEnabled, setItemNotesEnabled] = useState<boolean>(
+    initialCheckoutCfg.item_notes?.enabled ?? true
+  );
+
+  const [customFields, setCustomFields] = useState<any[]>(
  store?.settings?.custom_checkout_fields || [],
  );
 
@@ -328,64 +359,84 @@ export default function WorkspaceConfiguracoesPage() {
  };
 
  const handleSaveAll = async () => {
- if (!name.trim()) {
- toast.error("O nome da loja é obrigatório.");
- return;
- }
+    if (!name.trim()) {
+      toast.error("O nome da loja é obrigatório.");
+      return;
+    }
 
- setIsSaving(true);
- try {
- // 1. Salva Dados da Loja, Nicho, Módulos, Bairros e Matriz de Entrega
- await saveStoreSettings({
- data: {
- name: name.trim(),
- segment,
- enabled_modules: enabledModules,
- description: description.trim() || undefined,
- logoUrl: logoUrl.trim() || undefined,
- bannerUrl: bannerUrl.trim() || undefined,
- faviconUrl: faviconUrl.trim() || undefined,
- phone: phone.trim() || undefined,
- email: email.trim() || undefined,
- cnpj: cnpj.trim() || undefined,
- address: address.trim() || undefined,
- city: city.trim() || undefined,
- state: state.trim().toUpperCase() || undefined,
- zipCode: zipCode.trim() || undefined,
- deliveryZones: neighborhoods,
- customCheckoutFields: customFields,
- holidayExceptions: holidayExceptions,
- emergencyPauseUntil: emergencyPauseUntil,
- delivery_matrix: deliveryConfig,
- order_types: orderTypes,
- pix_key: pixKey.trim() || undefined,
- payment_instructions: paymentInstructions.trim() || undefined,
- payment_processing_mode: paymentProcessingMode,
- } as any,
- });
+    setIsSaving(true);
+    try {
+      // 1. Salva Dados da Loja, Nicho, Módulos, Bairros e Matriz de Entrega
+      await saveStoreSettings({
+        data: {
+          name: name.trim(),
+          segment,
+          enabled_modules: enabledModules,
+          description: description.trim() || undefined,
+          logoUrl: logoUrl.trim() || undefined,
+          bannerUrl: bannerUrl.trim() || undefined,
+          faviconUrl: faviconUrl.trim() || undefined,
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+          cnpj: cnpj.trim() || undefined,
+          address: address.trim() || undefined,
+          city: city.trim() || undefined,
+          state: state.trim().toUpperCase() || undefined,
+          zipCode: zipCode.trim() || undefined,
+          deliveryZones: neighborhoods,
+          customCheckoutFields: customFields,
+          checkout_config: {
+            cpf_on_receipt: {
+              enabled: cpfCheckoutEnabled,
+              required: cpfCheckoutRequired,
+              default_requested: cpfCheckoutDefaultChecked,
+            },
+            substitution_policy: {
+              enabled: substitutionPolicyEnabled,
+              default: substitutionDefaultOption,
+            },
+            receiver_info: {
+              enabled: receiverInfoEnabled,
+            },
+            utensils_policy: {
+              enabled: utensilsPolicyEnabled,
+            },
+            item_notes: {
+              enabled: itemNotesEnabled,
+            },
+          },
+          holidayExceptions: holidayExceptions,
+          emergencyPauseUntil: emergencyPauseUntil,
+          delivery_matrix: deliveryConfig,
+          order_types: orderTypes,
+          pix_key: pixKey.trim() || undefined,
+          payment_instructions: paymentInstructions.trim() || undefined,
+          payment_processing_mode: paymentProcessingMode,
+        } as any,
+      });
 
- // 2. Salva Políticas
- await savePolicies({
- data: {
- privacy_policy: privacyPolicy,
- return_policy: returnPolicy,
- terms,
- },
- }).catch(() => null);
+      // 2. Salva Políticas
+      await savePolicies({
+        data: {
+          privacy_policy: privacyPolicy,
+          return_policy: returnPolicy,
+          terms,
+        },
+      }).catch(() => null);
 
- // 3. Salva Horários se existirem
- if (hours && Object.keys(hours).length > 0) {
- await saveWorkingHours({ data: hours }).catch(() => null);
- }
+      // 3. Salva Horários se existirem
+      if (hours && Object.keys(hours).length > 0) {
+        await saveWorkingHours({ data: hours }).catch(() => null);
+      }
 
- toast.success("Configurações da loja salvas com sucesso!");
- router.invalidate();
- } catch (err: any) {
- toast.error(err.message || "Erro ao salvar configurações.");
- } finally {
- setIsSaving(false);
- }
- };
+      toast.success("Configurações da loja salvas com sucesso!");
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao salvar configurações.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
  const currentNiche = getNicheSemantics(segment);
  const isPhysicalDeliveryNiche = [
@@ -1234,6 +1285,125 @@ export default function WorkspaceConfiguracoesPage() {
 
  {/* ABA 5: Checkout & Modalidades de Pagamento */}
  <TabsContent value="checkout" className="space-y-6">
+        {/* Super Checkout: Opções Multi-Nicho & Comportamento */}
+        <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
+          <div className="pb-3 border-b border-border/40">
+            <h2 className="text-sm font-bold text-foreground">
+              Comportamento do Super Checkout Multi-Nicho
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Ative ou adapte os recursos dinâmicos do fechamento de pedido de acordo com o modelo da sua empresa.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Bloco 1: Fiscal / CPF na Nota */}
+            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-foreground">CPF na Nota Fiscal</h3>
+                  <p className="text-[11px] text-muted-foreground">Pergunta se o cliente deseja incluir documento fiscal</p>
+                </div>
+                <Switch
+                  checked={cpfCheckoutEnabled}
+                  onCheckedChange={setCpfCheckoutEnabled}
+                />
+              </div>
+
+              {cpfCheckoutEnabled && (
+                <div className="pt-2 border-t border-border/30 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Obrigatório preencher</span>
+                    <Switch
+                      checked={cpfCheckoutRequired}
+                      onCheckedChange={setCpfCheckoutRequired}
+                      className="scale-90"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Marcar "Sim" por padrão</span>
+                    <Switch
+                      checked={cpfCheckoutDefaultChecked}
+                      onCheckedChange={setCpfCheckoutDefaultChecked}
+                      className="scale-90"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Bloco 2: Logística & Quem Recebe */}
+            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-foreground">Quem Irá Receber as Compras</h3>
+                  <p className="text-[11px] text-muted-foreground">Permite indicar outra pessoa (nome e telefone de contato)</p>
+                </div>
+                <Switch
+                  checked={receiverInfoEnabled}
+                  onCheckedChange={setReceiverInfoEnabled}
+                />
+              </div>
+            </div>
+
+            {/* Bloco 3: Hortifrúti & Mercado: Falta de Itens */}
+            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-foreground">Política de Falta de Itens (Mercado / Hortifrúti)</h3>
+                  <p className="text-[11px] text-muted-foreground">Opções para quando um produto estiver esgotado no momento da separação</p>
+                </div>
+                <Switch
+                  checked={substitutionPolicyEnabled}
+                  onCheckedChange={setSubstitutionPolicyEnabled}
+                />
+              </div>
+
+              {substitutionPolicyEnabled && (
+                <div className="pt-2 border-t border-border/30 space-y-1.5 text-xs">
+                  <Label className="text-[11px] text-muted-foreground">Opção pré-selecionada sugerida:</Label>
+                  <select
+                    value={substitutionDefaultOption}
+                    onChange={(e) => setSubstitutionDefaultOption(e.target.value as any)}
+                    className="w-full h-8 px-2.5 rounded-lg bg-card border border-border/60 text-xs font-medium"
+                  >
+                    <option value="similar">Trocar por similar (mesma categoria)</option>
+                    <option value="contact">Confirmar com o cliente via WhatsApp</option>
+                    <option value="cancel">Cancelar item e abater valor</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Bloco 4: Gastronomia: Talheres Descartáveis */}
+            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-foreground">Talheres & Descartáveis (Gastronomia)</h3>
+                  <p className="text-[11px] text-muted-foreground">Pergunta ecológica: enviar talheres e guardanapos descartáveis?</p>
+                </div>
+                <Switch
+                  checked={utensilsPolicyEnabled}
+                  onCheckedChange={setUtensilsPolicyEnabled}
+                />
+              </div>
+            </div>
+
+            {/* Bloco 5: Observações por Item */}
+            <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3 md:col-span-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-foreground">Observações Individuais por Item</h3>
+                  <p className="text-[11px] text-muted-foreground">Permite ao cliente adicionar observações em itens individuais ("+ Observação do item")</p>
+                </div>
+                <Switch
+                  checked={itemNotesEnabled}
+                  onCheckedChange={setItemNotesEnabled}
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
  {/* ── Modalidade de Processamento de Pagamentos & Gateway ── */}
  <Card className="p-6 rounded-2xl border-border bg-card space-y-6">
  <div className="pb-2 border-b border-border/40 flex items-center justify-between">

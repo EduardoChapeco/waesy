@@ -380,9 +380,16 @@ function ConfirmationPage() {
  <ul className="divide-y divide-border">
  {items.map((item: any, idx: number) => (
  <li key={idx} className="flex justify-between py-3 text-sm">
+ <div className="flex flex-col">
  <div className="flex items-center">
  <span className="font-medium text-foreground">{item.quantity}x</span>
  <span className="ml-3 text-muted-foreground">{item.productName}</span>
+ </div>
+ {item.notes && (
+ <span className="ml-7 text-xs text-muted-foreground italic mt-0.5">
+ Obs: {item.notes}
+ </span>
+ )}
  </div>
  <span className="font-medium text-foreground">
  {formatMoney(item.priceCents * item.quantity)}
@@ -437,6 +444,45 @@ function ConfirmationPage() {
  Observações para a Loja:
  </span>
  <p className="text-foreground mt-0.5">{order.notes}</p>
+ </div>
+ )}
+
+ {/* Detalhes de Atendimento e Entrega do Nicho */}
+ {(order.cpf_on_receipt?.requested || order.receiver_info?.isOtherPerson || order.substitution_policy || order.checkout_niche_metadata?.utensilsRequested) && (
+ <div className="mt-4 p-3.5 rounded-xl bg-muted/20 border border-border/40 space-y-1.5 text-xs">
+ <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block">
+ Detalhes do Pedido & Entrega:
+ </span>
+ {order.cpf_on_receipt?.requested && (
+ <p className="text-foreground">
+ <span className="text-muted-foreground">CPF na Nota:</span>{" "}
+ <span className="font-medium">{order.cpf_on_receipt.document || "Sim"}</span>
+ </p>
+ )}
+ {order.receiver_info?.isOtherPerson && (
+ <p className="text-foreground">
+ <span className="text-muted-foreground">Recebedor autorizado:</span>{" "}
+ <span className="font-medium">{order.receiver_info.name} {order.receiver_info.phone ? `(${order.receiver_info.phone})` : ""}</span>
+ </p>
+ )}
+ {order.substitution_policy && (
+ <p className="text-foreground">
+ <span className="text-muted-foreground">Preferência em falta:</span>{" "}
+ <span className="font-medium">
+ {order.substitution_policy === "similar"
+ ? "Trocar por similar da mesma categoria"
+ : order.substitution_policy === "contact"
+ ? "Confirmar com o cliente via WhatsApp"
+ : "Cancelar item em falta"}
+ </span>
+ </p>
+ )}
+ {order.checkout_niche_metadata?.utensilsRequested && (
+ <p className="text-foreground">
+ <span className="text-muted-foreground">Talheres e descartáveis:</span>{" "}
+ <span className="font-medium">Enviar descartáveis com o pedido</span>
+ </p>
+ )}
  </div>
  )}
  </div>

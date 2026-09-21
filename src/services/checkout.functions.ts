@@ -19,6 +19,190 @@ import { getRequest } from "@tanstack/start-server-core";
 import { readCookieFromRequest } from "@/lib/http-cookies";
 import { generateTransactionCertificate } from "@/services/security.functions";
 
+export interface CheckoutDynamicConfig {
+  niche: "grocery" | "food" | "retail" | "services" | "general";
+  cpfOnReceipt: {
+    enabled: boolean;
+    required: boolean;
+    defaultRequested: boolean;
+    label: string;
+  };
+  substitutionPolicy: {
+    enabled: boolean;
+    default: "similar" | "contact" | "cancel" | "none";
+    options: Array<{ id: string; label: string; desc: string }>;
+  };
+  receiverInfo: {
+    enabled: boolean;
+    label: string;
+  };
+  utensilsPolicy: {
+    enabled: boolean;
+    label: string;
+  };
+  itemNotes: {
+    enabled: boolean;
+    placeholder: string;
+  };
+  orderNotes: {
+    enabled: boolean;
+    placeholder: string;
+  };
+  customFields: Array<{
+    id: string;
+    label: string;
+    type: "text" | "textarea" | "select" | "number";
+    required: boolean;
+    placeholder?: string;
+    options?: string[];
+  }>;
+}
+
+export const getStoreCheckoutConfig = createServerFn({ method: "GET" })
+  .validator(
+    withDataPayload(
+      z.object({
+        storeId: z.string().uuid().optional(),
+        cartId: z.string().uuid().optional(),
+      })
+    )
+  )
+  .handler(async ({ data: { storeId, cartId } }) => {
+    const db = await getServerClient();
+    let resolvedStoreId = storeId;
+
+    if (!resolvedStoreId && cartId) {
+      const { data: cart } = await db.from("carts").select("store_id").eq("id", cartId).maybeSingle();
+      if (cart?.store_id) resolvedStoreId = cart.store_id;
+    }
+
+    if (!resolvedStoreId) {
+      // Default fallback config
+      const defaultConfig: CheckoutDynamicConfig = {
+        niche: "general",
+        cpfOnReceipt: { enabled: true, required: false, defaultRequested: false, label: "CPF na Nota Fiscal" },
+        substitutionPolicy: {
+          enabled: false,
+          default: "similar",
+          options: [
+            { id: "similar", label: "Trocar por similar", desc: "Mesma marca ou categoria" },
+            { id: "contact", label: "Confirmar comigo", desc: "Avisar via WhatsApp" },
+            { id: "cancel", label: "Cancelar item", desc: "Abater valor do total" },
+          ],
+        },
+        receiverInfo: { enabled: true, label: "Quem irá receber as compras" },
+        utensilsPolicy: { enabled: false, label: "Precisa de talheres e guardanapos descartáveis?" },
+        itemNotes: { enabled: true, placeholder: "Observações ou preferências deste item..." },
+        orderNotes: { enabled: true, placeholder: "Instruções especiais para entrega ou ponto de referência..." },
+        customFields: [],
+      };
+      return defaultConfig;
+    }
+
+    const { data: store } = await db
+      .from("stores")
+      .select("id, name, segment, settings")
+      .eq("id", resolvedStoreId)
+      .single();
+
+    const seg = (store?.segment || "").toLowerCase();
+    let detectedNiche: "grocery" | "food" | "retail" | "services" | "general" = "general";
+    if (seg.includes("mercado") || seg.includes("market") || seg.includes("conveniencia") || seg.includes("supermercado")) {
+      detectedNiche = "grocery";
+    } else if (seg.includes("gastro") || seg.includes("food") || seg.includes("restaurante") || seg.includes("lanche") || seg.includes("pizz") || seg.includes("bar")) {
+      detectedNiche = "food";
+    } else if (seg.includes("servi") || seg.includes("turis") || seg.includes("consult")) {
+      detectedNiche = "services";
+    } else if (seg.includes("varejo") || seg.includes("retail") || seg.includes("loja") || seg.includes("moda")) {
+      detectedNiche = "retail";
+    }
+
+    const savedConfig = (store?.settings as any)?.checkout_config || {};
+
+    const resolvedConfig: CheckoutDynamicConfig = {
+      niche: detectedNiche,
+      cpfOnReceipt: {
+        enabled: savedConfig.cpf_on_receipt?.enabled ?? true,
+        required: savedConfig.cpf_on_receipt?.required ?? false,
+        defaultRequested: savedConfig.cpf_on_receipt?.default_requested ?? false,
+        label: savedConfig.cpf_on_receipt?.label || "CPF na Nota Fiscal",
+      },
+      substitutionPolicy: {
+        enabled: savedConfig.substitution_policy?.enabled ?? (detectedNiche === "grocery"),
+        default: savedConfig.substitution_policy?.default || "similar",
+        options: [
+          { id: "similar", label: "Trocar por similar", desc: "Mesma categoria ou marca equivalente" },
+          { id: "contact", label: "Confirmar comigo", desc: "Avisar pelo WhatsApp antes de fechar" },
+          { id: "cancel", label: "Cancelar item", desc: "Abater o valor do total" },
+        ],
+      },
+      receiverInfo: {
+        enabled: savedConfig.receiver_info?.enabled ?? (detectedNiche === "grocery" || detectedNiche === "retail"),
+        label: savedConfig.receiver_info?.label || "Quem irá receber as compras",
+      },
+      utensilsPolicy: {
+        enabled: savedConfig.utensils_policy?.enabled ?? (detectedNiche === "food"),
+        label: savedConfig.utensils_policy?.label || "Enviar talheres e guardanapos descartáveis?",
+      },
+      itemNotes: {
+        enabled: savedConfig.item_notes?.enabled ?? true,
+        placeholder: savedConfig.item_notes?.placeholder || (detectedNiche === "food" ? "Ex: Sem cebola, carne ao ponto..." : "Preferências deste item..."),
+      },
+      orderNotes: {
+        enabled: savedConfig.order_notes?.enabled ?? true,
+        placeholder: savedConfig.order_notes?.placeholder || "Instruções especiais ou ponto de referência...",
+      },
+      customFields: (store?.settings as any)?.custom_checkout_fields || savedConfig.custom_fields || [],
+    };
+
+    return resolvedConfig;
+  });
+
+export const updateStoreCheckoutConfig = createServerFn({ method: "POST" })
+  .validator(
+    withDataPayload(
+      z.object({
+        storeId: z.string().uuid(),
+        checkoutConfig: z.record(z.any()),
+      })
+    )
+  )
+  .handler(async ({ data: { storeId, checkoutConfig } }) => {
+    const identity = await getServerIdentity();
+    if (!identity) throw new Error("Não autenticado.");
+    const db = await getServerClient();
+
+    const { data: member } = await db
+      .from("store_members")
+      .select("role")
+      .eq("store_id", storeId)
+      .eq("profile_id", identity.id)
+      .maybeSingle();
+
+    if (!member && !identity.isPlatformAdmin) {
+      throw new Error("Sem autorização para alterar as configurações desta loja.");
+    }
+
+    const { data: store } = await db
+      .from("stores")
+      .select("settings")
+      .eq("id", storeId)
+      .single();
+
+    const currentSettings = (store?.settings as Record<string, any>) || {};
+    const updatedSettings = {
+      ...currentSettings,
+      checkout_config: checkoutConfig,
+    };
+
+    const { error } = await db
+      .from("stores")
+      .update({ settings: updatedSettings })
+      .eq("id", storeId);
+
+    if (error) throw error;
+    return { status: "success", checkoutConfig };
+  });
 
 const CheckoutSchema = z
  .object({
@@ -44,6 +228,25 @@ const CheckoutSchema = z
  giftCardCode: z.string().optional(),
  notes: z.string().optional(),
  customFields: z.record(z.any()).optional(),
+
+ // ── V10: Multi-Nicho Dynamic Checkout Attributes ──
+ cpfOnReceipt: z
+   .object({
+     requested: z.boolean(),
+     document: z.string().optional(),
+   })
+   .optional(),
+ substitutionPolicy: z.enum(["similar", "contact", "cancel", "none"]).optional(),
+ receiverInfo: z
+   .object({
+     isOtherPerson: z.boolean(),
+     name: z.string().optional(),
+     phone: z.string().optional(),
+   })
+   .optional(),
+ utensilsRequested: z.boolean().optional(),
+ itemNotes: z.record(z.string()).optional(),
+ checkoutNicheMetadata: z.record(z.unknown()).optional(),
  })
  .superRefine((val, ctx) => {
  if (val.shippingMethod === "manual_table" || val.shippingMethod === "provider") {
@@ -64,7 +267,7 @@ export const getOrderByToken = createServerFn({ method: "GET" })
  const { data } = await db
  .from("orders")
  .select(
- "id, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents, customer_snapshot, shipping_method, shipping_address, notes, custom_fields, created_at, stores(id, name, settings), payments(method, status, provider_name), order_items(id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options)",
+ "id, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents, customer_snapshot, shipping_method, shipping_address, notes, custom_fields, cpf_on_receipt, substitution_policy, receiver_info, checkout_niche_metadata, created_at, stores(id, name, settings), payments(method, status, provider_name), order_items(id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options, notes)",
  )
  .eq("public_token", token)
  .single();
@@ -187,19 +390,43 @@ export const processCheckout = createServerFn({ method: "POST" })
  return { status: "error" as const, message: "Checkout falhou." };
  }
 
- // Persist channel_origin, notes, and custom onboarding fields on the created order
- if (result.orderId) {
- try {
- const updatePayload: Record<string, any> = {
- channel_origin: "storefront",
- };
- if (params.notes) updatePayload.notes = params.notes;
- if (params.customFields) updatePayload.custom_fields = params.customFields;
- await db.from("orders").update(updatePayload).eq("id", result.orderId);
- } catch (orderUpdateErr) {
- console.warn("[checkout.functions] Falha não-bloqueante ao atualizar channel_origin/notes:", orderUpdateErr);
- }
- }
+    // Persist channel_origin, notes, custom fields, and V10 Multi-Nicho dynamic metadata on the created order
+    if (result.orderId) {
+      try {
+        const updatePayload: Record<string, any> = {
+          channel_origin: "storefront",
+        };
+        if (params.notes) updatePayload.notes = params.notes;
+        if (params.customFields) updatePayload.custom_fields = params.customFields;
+        if (params.cpfOnReceipt) updatePayload.cpf_on_receipt = params.cpfOnReceipt;
+        if (params.substitutionPolicy) updatePayload.substitution_policy = params.substitutionPolicy;
+        if (params.receiverInfo) updatePayload.receiver_info = params.receiverInfo;
+
+        const nicheMeta: Record<string, any> = {
+          ...(params.checkoutNicheMetadata || {}),
+        };
+        if (params.utensilsRequested !== undefined) {
+          nicheMeta.utensils_requested = params.utensilsRequested;
+        }
+        updatePayload.checkout_niche_metadata = nicheMeta;
+
+        await db.from("orders").update(updatePayload).eq("id", result.orderId);
+
+        // Se houver observações por item, persiste em order_items
+        if (params.itemNotes && Object.keys(params.itemNotes).length > 0) {
+          for (const [key, noteText] of Object.entries(params.itemNotes)) {
+            if (!noteText || typeof noteText !== "string" || !noteText.trim()) continue;
+            await db
+              .from("order_items")
+              .update({ notes: noteText.trim() })
+              .eq("order_id", result.orderId)
+              .or(`item_id.eq.${key},id.eq.${key},variant_sku.eq.${key}`);
+          }
+        }
+      } catch (orderUpdateErr) {
+        console.warn("[checkout.functions] Falha não-bloqueante ao atualizar metadados do pedido:", orderUpdateErr);
+      }
+    }
 
  // ── MCTU: Gerar Certificado de Transação (fire-and-forget, não bloqueia resposta) ──
  // O certificado é gerado SOMENTE após sucesso atômico confirmado.

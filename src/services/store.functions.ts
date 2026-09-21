@@ -75,6 +75,7 @@ export const saveStoreSettingsSchema = z.object({
  dine_in: z.boolean().default(true),
  })
  .optional(),
+ checkout_config: z.record(z.any()).optional(),
  ai_knowledge_base: z.string().optional().or(z.literal("")),
 });
 
@@ -92,6 +93,7 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  faviconUrl,
  hideNameWithLogo,
  custom_checkout_fields,
+ checkout_config,
  delivery_zones,
  holiday_exceptions,
  emergency_pause_until,
@@ -122,6 +124,10 @@ export async function _saveStoreSettings(data: z.infer<typeof saveStoreSettingsS
  custom_checkout_fields !== undefined
  ? custom_checkout_fields
  : currentStore?.settings?.custom_checkout_fields,
+ checkout_config:
+ checkout_config !== undefined
+ ? checkout_config
+ : currentStore?.settings?.checkout_config,
  delivery_zones:
  delivery_zones !== undefined
  ? delivery_zones

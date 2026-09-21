@@ -170,7 +170,7 @@ function StoreCartPage() {
                                 </p>
                               )}
                             {item.isOutOfStock && (
-                              <p className="text-[11px] font-bold text-destructive mt-1 bg-destructive/10 inline-block px-2 py-0.5 rounded-md">
+                              <p className="text-[11px] font-bold text-destructive mt-1 block">
                                 Sem estoque disponível
                               </p>
                             )}
@@ -212,11 +212,10 @@ function StoreCartPage() {
 
                           <button
                             type="button"
-                            className="h-11 px-3 text-xs sm:text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer font-semibold"
+                            className="h-11 px-2 text-xs text-red-700/80 hover:text-red-700 dark:text-red-400/80 dark:hover:text-red-400 transition-colors cursor-pointer font-medium select-none"
                             onClick={() => handleRemove(item.id)}
                           >
-                            <Trash2 className="size-4" />
-                            <span>Remover</span>
+                            Remover
                           </button>
                         </div>
                       </div>

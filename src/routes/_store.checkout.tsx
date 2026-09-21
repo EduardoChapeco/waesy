@@ -14,7 +14,7 @@ import {
  updateCartContact,
 } from "@/services/cart.functions";
 import { checkGiftCardBalance } from "@/services/giftcard.functions";
-import { processCheckout } from "@/services/checkout.functions";
+import { processCheckout, getStoreCheckoutConfig, type CheckoutDynamicConfig } from "@/services/checkout.functions";
 import {
  initiatePaymentTransaction,
  getPublicPaymentMethods,
@@ -62,6 +62,7 @@ export const Route = createFileRoute("/_store/checkout")({
         gatewayStatus,
         userProfile,
         userAddresses,
+        checkoutConfigRes,
       ] = await Promise.all([
         getCart(store ? { data: { storeId: store } } : undefined).catch((e) => {
           console.warn("[checkout] getCart fallback:", e);
@@ -73,6 +74,7 @@ export const Route = createFileRoute("/_store/checkout")({
         getGatewayStatus(store ? { data: { storeId: store } } : undefined).catch(() => false),
         getProfile().catch(() => null),
         getCustomerAddresses().catch(() => []),
+        getStoreCheckoutConfig(store ? { data: { storeId: store } } : undefined).catch(() => null),
       ]);
 
       const matchingCart = store
@@ -97,6 +99,7 @@ export const Route = createFileRoute("/_store/checkout")({
         isGatewayConfigured: gatewayStatus || false,
         userProfile: userProfile || null,
         userAddresses: userAddresses || [],
+        checkoutConfig: (checkoutConfigRes as CheckoutDynamicConfig | null) || null,
       };
     } catch (err) {
       console.error("[loader:_store.checkout] Unhandled loader error:", err);
@@ -115,6 +118,7 @@ export const Route = createFileRoute("/_store/checkout")({
         isGatewayConfigured: false,
         userProfile: null,
         userAddresses: [],
+        checkoutConfig: null,
       } as any;
     }
   },
@@ -138,6 +142,7 @@ export function CheckoutPage() {
     userProfile,
     userAddresses,
     isGatewayConfigured,
+    checkoutConfig,
   } = ((Route.useLoaderData?.() as any) || {});
   const navigate = useNavigate();
   const router = useRouter();
@@ -145,6 +150,21 @@ export function CheckoutPage() {
   const [cart, setCart] = useState(initialCart);
   const [activeStep, setActiveStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ── V10: Multi-Nicho Dynamic Checkout States ──
+  const [cpfRequested, setCpfRequested] = useState<boolean>(
+    Boolean(userProfile?.cpf || checkoutConfig?.cpfOnReceipt?.defaultRequested || false)
+  );
+  const [cpfDocument, setCpfDocument] = useState<string>(userProfile?.cpf || "");
+  const [substitutionPolicy, setSubstitutionPolicy] = useState<"similar" | "contact" | "cancel" | "none">(
+    checkoutConfig?.substitutionPolicy?.default || "similar"
+  );
+  const [receiverMode, setReceiverMode] = useState<"self" | "other">("self");
+  const [receiverName, setReceiverName] = useState<string>("");
+  const [receiverPhone, setReceiverPhone] = useState<string>("");
+  const [utensilsRequested, setUtensilsRequested] = useState<boolean>(false);
+  const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
+  const [openItemNoteId, setOpenItemNoteId] = useState<string | null>(null);
 
   // Credit card states
   const [selectedInstallment, setSelectedInstallment] = useState<number>(1);
@@ -218,6 +238,10 @@ export function CheckoutPage() {
  customerPhone: prev.customerPhone || userProfile.phone || "",
  customerDocument: prev.customerDocument || userProfile.cpf || "",
  }));
+ if (userProfile.cpf && !cpfDocument) {
+ setCpfDocument(userProfile.cpf);
+ setCpfRequested(true);
+ }
  }
  }, [userProfile]);
 
@@ -587,6 +611,13 @@ export function CheckoutPage() {
  giftCardCode: appliedGiftCard?.code || undefined,
  customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
  notes: orderNotes.trim() || undefined,
+ cpfOnReceipt: cpfRequested ? { requested: true, document: cpfDocument.trim() } : { requested: false },
+ substitutionPolicy: substitutionPolicy,
+ receiverInfo: receiverMode === "other"
+ ? { isOtherPerson: true, name: receiverName.trim(), phone: receiverPhone.trim() }
+ : { isOtherPerson: false },
+ utensilsRequested: utensilsRequested,
+ itemNotes: Object.keys(itemNotes).length > 0 ? itemNotes : undefined,
  },
  });
 
@@ -682,9 +713,9 @@ export function CheckoutPage() {
  {storeProfile?.name || "Checkout Seguro"}
  </span>
  {storeProfile?.type && (
- <Badge variant="secondary" className="text-[10px] uppercase font-bold py-0 h-4">
- {storeProfile.type}
- </Badge>
+ <span className="text-[11px] font-semibold text-muted-foreground uppercase">
+ • {storeProfile.type}
+ </span>
  )}
  </div>
  </div>
@@ -695,50 +726,41 @@ export function CheckoutPage() {
  </span>
  </div>
 
- {/* ── MENU TABS DE ETAPAS (Scroll Horizontal no Mobile) ── */}
- <div className="w-full overflow-x-auto no-scrollbar py-1">
- <div className="flex items-center gap-2 min-w-max p-1 bg-muted/40 rounded-2xl ">
- {steps.map((step) => {
- const isActive = activeStep === step.number;
- const isCompleted = activeStep > step.number || (step.number < activeStep && step.isReady);
- const canNavigate = step.number < activeStep || step.isReady;
+          {/* ── MENU TABS DE ETAPAS (Ultra-Minimalista: Tipografia & Linha Fina) ── */}
+          <div className="w-full overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center gap-6 min-w-max border-b border-border/40 pb-2">
+              {steps.map((step) => {
+                const isActive = activeStep === step.number;
+                const isCompleted = activeStep > step.number || (step.number < activeStep && step.isReady);
+                const canNavigate = step.number < activeStep || step.isReady;
 
- return (
- <button
- key={step.number}
- type="button"
- onClick={() => canNavigate && setActiveStep(step.number)}
- disabled={!canNavigate}
- className={cn(
- "flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-xs font-bold transition-all select-none cursor-pointer",
- isActive
- ? "bg-foreground text-background scale-102"
- : isCompleted
- ? "bg-card text-foreground hover:bg-card/80"
- : "text-muted-foreground/60 cursor-not-allowed"
- )}
- >
- <span
- className={cn(
- "size-5 rounded-full flex items-center justify-center text-[10px] font-mono font-bold",
- isActive
- ? "bg-background text-foreground"
- : isCompleted
- ? "bg-emerald-500 text-white"
- : "bg-muted text-muted-foreground"
- )}
- >
- {isCompleted ? <Check size={11} strokeWidth={3} /> : step.number}
- </span>
- <span>{step.label}</span>
- </button>
- );
- })}
- </div>
- </div>
+                return (
+                  <button
+                    key={step.number}
+                    type="button"
+                    onClick={() => canNavigate && setActiveStep(step.number)}
+                    disabled={!canNavigate}
+                    className={cn(
+                      "flex items-center gap-1.5 pb-1 text-xs transition-colors select-none cursor-pointer border-b-2 -mb-[9px]",
+                      isActive
+                        ? "border-foreground font-bold text-foreground"
+                        : isCompleted
+                        ? "border-transparent text-foreground hover:text-foreground font-medium"
+                        : "border-transparent text-muted-foreground/60 cursor-not-allowed font-normal"
+                    )}
+                  >
+                    <span className={cn("font-mono text-[11px]", isCompleted ? "text-emerald-600 dark:text-emerald-400 font-bold" : "")}>
+                      {isCompleted ? "✓" : `${step.number}.`}
+                    </span>
+                    <span>{step.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
- {/* ── CORPO PRINCIPAL (Etapa Ativa + Resumo Lateral) ── */}
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
+        {/* ── CORPO PRINCIPAL (Etapa Ativa + Resumo Lateral) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
  {/* Coluna da Esquerda: Etapa Ativa */}
  <div className="lg:col-span-2 space-y-6">
  {/* ── ETAPA 1: IDENTIFICAÇÃO DO CLIENTE ── */}
@@ -797,33 +819,80 @@ export function CheckoutPage() {
  />
  </div>
 
- <div className="space-y-1.5 sm:col-span-2">
- <Label className="text-xs font-bold text-foreground">
- CPF / CNPJ <span className="text-muted-foreground font-normal">(Opcional para NF-e)</span>
- </Label>
- <DocumentField
- mode="dynamic"
- value={formData.customerDocument}
- onChange={(masked, _isValid, clean) =>
- setFormData({ ...formData, customerDocument: clean || masked })
- }
- className="h-11 rounded-xl text-base sm:text-sm"
- />
- </div>
+                {/* ── Fiscal & Notas: CPF na Nota ── */}
+                {checkoutConfig?.cpfOnReceipt?.enabled !== false && (
+                  <div className="sm:col-span-2 space-y-2 pt-2 border-t border-border/40">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground">
+                          {checkoutConfig?.cpfOnReceipt?.label || "Deseja CPF na Nota Fiscal?"}
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Emissão oficial do cupom fiscal com seu documento
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCpfRequested(true);
+                            if (userProfile?.cpf && !cpfDocument) setCpfDocument(userProfile.cpf);
+                          }}
+                          className={cn(
+                            "px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                            cpfRequested
+                              ? "border-foreground text-foreground font-bold"
+                              : "border-border/60 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Sim
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCpfRequested(false)}
+                          className={cn(
+                            "px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                            !cpfRequested
+                              ? "border-foreground text-foreground font-bold"
+                              : "border-border/60 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          Não
+                        </button>
+                      </div>
+                    </div>
 
- {/* ── Perguntas e Campos Customizados do Nicho / Loja ── */}
- {storeProfile?.settings?.custom_checkout_fields &&
- Array.isArray(storeProfile.settings.custom_checkout_fields) &&
- storeProfile.settings.custom_checkout_fields.length > 0 && (
- <div className="sm:col-span-2 space-y-3 pt-3 border-t border-border/40">
- <div className="space-y-0.5">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
- <Layers className="size-3.5 text-primary" /> Informações Complementares ({storeProfile.name})
- </Label>
- <p className="text-[11px] text-muted-foreground">
- Dados necessários para a emissão e processamento deste pedido.
- </p>
- </div>
+                    {cpfRequested && (
+                      <div className="pt-1.5 animate-in fade-in duration-150">
+                        <DocumentField
+                          mode="dynamic"
+                          value={cpfDocument}
+                          onChange={(masked, _isValid, clean) => {
+                            const val = clean || masked;
+                            setCpfDocument(val);
+                            setFormData((prev) => ({ ...prev, customerDocument: val }));
+                          }}
+                          placeholder="Digite seu CPF para emissão da nota"
+                          className="h-11 rounded-xl text-base sm:text-sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Perguntas e Campos Customizados do Nicho / Loja ── */}
+                {storeProfile?.settings?.custom_checkout_fields &&
+                  Array.isArray(storeProfile.settings.custom_checkout_fields) &&
+                  storeProfile.settings.custom_checkout_fields.length > 0 && (
+                    <div className="sm:col-span-2 space-y-3 pt-3 border-t border-border/40">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground">
+                          Informações Complementares ({storeProfile.name})
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Dados necessários para a emissão e processamento deste pedido.
+                        </p>
+                      </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  {storeProfile.settings.custom_checkout_fields.map((f: any) => {
@@ -1231,8 +1300,8 @@ export function CheckoutPage() {
  {/* Janelas de Entrega (Apenas se a loja tiver configurado turnos) */}
  {storeDeliveryWindows.length > 0 && (
  <div className="space-y-2 pt-2">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
- <Clock size={13} className="text-primary" /> Horário Preferencial da Entrega
+ <Label className="text-xs font-bold text-foreground">
+ Horário Preferencial da Entrega
  </Label>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {storeDeliveryWindows.map((slot: any) => {
@@ -1245,8 +1314,8 @@ export function CheckoutPage() {
  className={cn(
  "p-3 rounded-xl border text-left transition-all cursor-pointer",
  isSelected
- ? "bg-primary/10 border-primary ring-1 ring-primary"
- : "bg-card border-border hover:bg-muted/60"
+ ? "border-foreground bg-muted/20 font-bold"
+ : "border-border/60 hover:border-foreground/30"
  )}
  >
  <p className="font-bold text-xs text-foreground">{slot.label}</p>
@@ -1258,42 +1327,145 @@ export function CheckoutPage() {
  </div>
  )}
 
- {/* Política de Substituição (EXCLUSIVO para Lojas do Nicho Mercado/Supermercado) */}
- {isMarketNiche && (
- <div className="p-4 rounded-2xl bg-muted/20 space-y-2.5 pt-3">
- <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
- <CheckCircle2 size={13} className="text-emerald-500" />
- Se algum item do mercado estiver em falta:
+ {/* ── Logística e Recebimento: Quem recebe as compras ── */}
+ {checkoutConfig?.receiverInfo?.enabled !== false && (
+ <div className="pt-3 border-t border-border/40 space-y-2.5">
+ <div className="space-y-0.5">
+ <Label className="text-xs font-bold text-foreground">
+ {checkoutConfig?.receiverInfo?.label || "Quem irá receber o pedido?"}
  </Label>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+ <p className="text-[11px] text-muted-foreground">
+ Ajuda o entregador ou portaria no momento da entrega
+ </p>
+ </div>
+
+ <div className="flex items-center gap-2">
+ <button
+ type="button"
+ onClick={() => setReceiverMode("self")}
+ className={cn(
+ "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+ receiverMode === "self"
+ ? "border-foreground text-foreground font-bold"
+ : "border-border/60 text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Eu mesmo
+ </button>
+ <button
+ type="button"
+ onClick={() => setReceiverMode("other")}
+ className={cn(
+ "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+ receiverMode === "other"
+ ? "border-foreground text-foreground font-bold"
+ : "border-border/60 text-muted-foreground hover:text-foreground"
+ )}
+ >
+ Outra pessoa
+ </button>
+ </div>
+
+ {receiverMode === "other" && (
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 animate-in fade-in duration-150">
+ <Input
+ placeholder="Nome de quem irá receber"
+ value={receiverName}
+ onChange={(e) => setReceiverName(e.target.value)}
+ className="h-11 rounded-xl text-base sm:text-sm"
+ />
+ <PhoneField
+ placeholder="Telefone de quem irá receber"
+ value={receiverPhone}
+ onChange={(val) => setReceiverPhone(val || "")}
+ className="h-11 rounded-xl text-base sm:text-sm"
+ />
+ </div>
+ )}
+ </div>
+ )}
+
+ {/* ── Política de Substituição (Supermercados / Alimentos) ── */}
+ {(checkoutConfig?.substitutionPolicy?.enabled ?? isMarketNiche) && (
+ <div className="pt-3 border-t border-border/40 space-y-2">
+ <div className="space-y-0.5">
+ <Label className="text-xs font-bold text-foreground">
+ Se algum item estiver em falta no mercado:
+ </Label>
+ <p className="text-[11px] text-muted-foreground">
+ Como a equipe de separação da loja deve proceder
+ </p>
+ </div>
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
  {[
  { id: "similar", label: "Trocar por similar", desc: "Mesma categoria" },
  { id: "contact", label: "Confirmar comigo", desc: "Via WhatsApp" },
- { id: "cancel", label: "Cancelar item", desc: "Abater valor" },
+ { id: "cancel", label: "Cancelar item", desc: "Abater do valor" },
  ].map((pol) => {
- const isSelected = formData.substitutionPolicy === pol.id;
+ const isSelected = substitutionPolicy === pol.id;
  return (
  <button
  key={pol.id}
  type="button"
- onClick={() => setFormData({ ...formData, substitutionPolicy: pol.id as any })}
+ onClick={() => {
+ setSubstitutionPolicy(pol.id as any);
+ setFormData((prev) => ({ ...prev, substitutionPolicy: pol.id as any }));
+ }}
  className={cn(
- "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
- isSelected
- ? "bg-foreground text-background border-foreground font-bold "
- : "bg-card border-border/80 hover:bg-muted/40"
- )}
- >
- <p className="text-[11px] font-bold leading-tight">{pol.label}</p>
- <p className={cn("text-[9px]", isSelected ? "text-background/80" : "text-muted-foreground")}>
- {pol.desc}
- </p>
- </button>
- );
- })}
- </div>
- </div>
- )}
+                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          isSelected
+                            ? "border-emerald-600 bg-emerald-500/5 text-foreground font-semibold"
+                            : "border-border/60 text-muted-foreground hover:border-border hover:text-foreground"
+                        )}
+                      >
+                        <div className="text-xs font-semibold leading-tight">{pol.label}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{pol.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── Descartáveis & Talheres (Gastronomia / Food) ── */}
+            {(checkoutConfig?.enableUtensilsOption ?? isFoodNiche) && (
+              <div className="pt-3 border-t border-border/40 space-y-2">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-bold text-foreground">
+                    Enviar talheres e guardanapos descartáveis?
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Ajude o meio ambiente caso já tenha talheres em seu local
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setUtensilsRequested(true)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                      utensilsRequested
+                        ? "border-foreground text-foreground font-bold"
+                        : "border-border/60 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Sim, por favor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUtensilsRequested(false)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer",
+                      !utensilsRequested
+                        ? "border-foreground text-foreground font-bold"
+                        : "border-border/60 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Não precisa
+                  </button>
+                </div>
+              </div>
+            )}
  </div>
  ) : (
  /* Opção 2: Retirar na Loja */
@@ -1664,6 +1836,29 @@ export function CheckoutPage() {
  {item.variant_name && (
  <p className="text-[10px] text-muted-foreground">{item.variant_name}</p>
  )}
+                      {/* Observação por item */}
+                      <div className="mt-1">
+                        {openItemNoteId === item.id || itemNotes[item.id] ? (
+                          <div className="space-y-1 pt-1 animate-in fade-in-50">
+                            <Input
+                              placeholder="Ex: ponto da carne, sem cebola, etc."
+                              value={itemNotes[item.id] || ""}
+                              onChange={(e) =>
+                                setItemNotes((prev) => ({ ...prev, [item.id]: e.target.value }))
+                              }
+                              className="h-7 text-xs rounded-lg px-2"
+                            />
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setOpenItemNoteId(item.id)}
+                            className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer select-none"
+                          >
+                            + Observação do item
+                          </button>
+                        )}
+                      </div>
  </div>
  <span className="font-mono font-bold text-foreground shrink-0">
  {formatMoney(item.price_cents * item.quantity)}
