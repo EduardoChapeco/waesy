@@ -323,7 +323,9 @@ export const emitOrderNFeAutomated = createServerFn({ method: "POST" })
     // 1. Busca pedido
     const { data: order, error: orderErr } = await supabase
       .from("orders")
-      .select("id, public_token, total_cents, channel_origin, customer_snapshot, customer_id, store_id")
+      .select(
+        "id, public_token, total_cents, channel_origin, customer_snapshot, customer_id, store_id, cpf_on_receipt"
+      )
       .eq("id", data.orderId)
       .eq("store_id", targetStoreId)
       .maybeSingle();

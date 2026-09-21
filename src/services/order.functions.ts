@@ -121,10 +121,22 @@ export async function _updateOrderStatus(
  }
 
  const updatePayload: Record<string, any> = { status };
- if (status === "paid") updatePayload.paid_at = new Date().toISOString();
+ if (status === "paid") {
+  updatePayload.paid_at = new Date().toISOString();
+  // Disparo em background da emissão automatizada de NF-e na confirmação de pagamento
+  emitOrderNFeAutomated({ data: { orderId, storeId: store_id } })
+   .then((res) => {
+    if (res.success && res.invoice) {
+     console.log(`[fiscal] NF-e #${res.invoice.nfe_number} emitida automaticamente no pagamento do pedido ${orderId}`);
+    }
+   })
+   .catch((err) => {
+    console.warn(`[fiscal] Background auto-emit (paid) aviso para o pedido ${orderId}:`, err);
+   });
+ }
  if (status === "processing") {
   updatePayload.prep_started_at = new Date().toISOString();
-  // Disparo em background da emissão automatizada de NF-e (não bloqueia o fluxo do pedido)
+  // Disparo em background da emissão automatizada de NF-e na separação (idempotente - checa duplicidade)
   emitOrderNFeAutomated({ data: { orderId, storeId: store_id } })
    .then((res) => {
     if (res.success && res.invoice) {
@@ -132,7 +144,7 @@ export async function _updateOrderStatus(
     }
    })
    .catch((err) => {
-    console.warn(`[fiscal] Background auto-emit aviso para o pedido ${orderId}:`, err);
+    console.warn(`[fiscal] Background auto-emit (processing) aviso para o pedido ${orderId}:`, err);
    });
  }
  if (status === "shipped") updatePayload.shipped_at = new Date().toISOString();
