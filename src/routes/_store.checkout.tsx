@@ -74,7 +74,7 @@ export const Route = createFileRoute("/_store/checkout")({
         getGatewayStatus(store ? { data: { storeId: store } } : undefined).catch(() => false),
         getProfile().catch(() => null),
         getCustomerAddresses().catch(() => []),
-        getStoreCheckoutConfig(store ? { data: { storeId: store } } : undefined).catch(() => null),
+        getStoreCheckoutConfig({ data: { storeId: store || undefined } }).catch(() => null),
       ]);
 
       const matchingCart = store
@@ -165,6 +165,12 @@ export function CheckoutPage() {
   const [utensilsRequested, setUtensilsRequested] = useState<boolean>(false);
   const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
   const [openItemNoteId, setOpenItemNoteId] = useState<string | null>(null);
+
+  const isFoodNiche =
+    checkoutConfig?.niche === "food" ||
+    checkoutConfig?.niche === "gastronomy" ||
+    storeProfile?.niche === "food" ||
+    storeProfile?.niche === "gastronomy";
 
   // Credit card states
   const [selectedInstallment, setSelectedInstallment] = useState<number>(1);

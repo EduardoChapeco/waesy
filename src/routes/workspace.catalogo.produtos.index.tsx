@@ -275,14 +275,15 @@ function AdminProductsPage() {
   // Filter products by search & status tab
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
- p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
- p.slug.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.slug.toLowerCase().includes(searchQuery.toLowerCase());
 
- const matchesStatus =
- statusFilter === "active" ? p.status !== "archived" : p.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "active" ? p.status !== "archived" : p.status === statusFilter;
 
- return matchesSearch && matchesStatus;
- });
+      return matchesSearch && matchesStatus;
+    });
  }, [products, searchQuery, statusFilter]);
 
  // Handle Select All

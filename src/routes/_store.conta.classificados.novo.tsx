@@ -997,9 +997,11 @@ function SpecializedClassifiedEditor({
  const [activePreviewImage, setActivePreviewImage] = useState(0);
 
   // Template de Exibição (Padrão Comercial vs Vitrine Imersiva / Glamour)
-  const [templateStyle, setTemplateStyle] = useState<"standard" | "editorial">(
+  const [templateStyle, setTemplateStyle] = useState<"standard" | "editorial" | "conveniencia">(
     initialData?.attributes?.template_style === "editorial" || initialData?.attributes?.template_style === "instagram"
       ? "editorial"
+      : initialData?.attributes?.template_style === "conveniencia"
+      ? "conveniencia"
       : niche.id === "viagem"
       ? "editorial"
       : "standard"
@@ -2316,8 +2318,8 @@ function SpecializedClassifiedEditor({
         attributes.barcode_ean = groceryBarcodeEan;
         attributes.ingredients = groceryIngredients;
         attributes.is_alcoholic = groceryIsAlcoholic;
-        attributes.contains_gluten = groceryContainsGluten;
-        attributes.contains_lactose = groceryContainsLactose;
+        attributes.contains_gluten = groceryContainsGluten ?? undefined;
+        attributes.contains_lactose = groceryContainsLactose ?? undefined;
         attributes.is_organic = groceryIsOrganic;
         attributes.prep_options = groceryPrepOptions;
         attributes.delivery_estimate = groceryDeliveryEstimate;
@@ -2326,8 +2328,8 @@ function SpecializedClassifiedEditor({
           supports_fresh_pricing: true,
           default_pricing_mode: groceryDefaultPricingMode,
           avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-          price_per_kg_cents: groceryPricePerKgCents || (priceCents > 0 ? priceCents * 2 : 990),
-          price_per_unit_cents: priceCents,
+          price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+          price_per_unit_cents: priceCents || 0,
         } : undefined;
         attributes.grocery_ripeness_config = groceryRipenessEnabled ? {
           enabled: true,
@@ -2410,7 +2412,6 @@ function SpecializedClassifiedEditor({
           installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
           cancellation_policy: cancellationPolicy,
           store_id: selectedStoreId || undefined,
-          is_store_official: Boolean(selectedStoreId),
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
           content: description.trim(),
           ai_instructions: aiInstructions.trim() || undefined,
@@ -2648,9 +2649,9 @@ function SpecializedClassifiedEditor({
             attributes: {
               draft_step: currentStep,
               niche: niche.id,
+              is_store_official: Boolean(selectedStoreId),
             },
             store_id: selectedStoreId || undefined,
-            is_store_official: Boolean(selectedStoreId),
           },
         });
       }
@@ -2919,8 +2920,8 @@ function SpecializedClassifiedEditor({
           supports_fresh_pricing: true,
           default_pricing_mode: groceryDefaultPricingMode,
           avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-          price_per_kg_cents: groceryPricePerKgCents || (priceCents > 0 ? priceCents * 2 : 990),
-          price_per_unit_cents: priceCents,
+          price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+          price_per_unit_cents: priceCents || 0,
         } : undefined,
         grocery_ripeness_config: groceryRipenessEnabled ? {
           enabled: true,
@@ -3305,7 +3306,7 @@ function SpecializedClassifiedEditor({
                   previewData={{
                     title: title || "Produto de Mercado",
                     description: description,
-                    priceCents: computedPriceCents,
+                    priceCents: priceCents || 0,
                     images: images || [],
                     locationName: locationName || "São Miguel do Oeste e Região",
                     whatsapp,
@@ -3315,13 +3316,13 @@ function SpecializedClassifiedEditor({
                     authorName: !selectedStore ? (userProfile?.full_name || "Você") : undefined,
                     authorAvatar: !selectedStore ? (userProfile?.avatar_url || undefined) : undefined,
                     authorId: !selectedStore ? userProfile?.id : undefined,
-                    volume: groceryVolume,
+                    volume: convenienceVolume,
                     unitType: groceryUnitType,
                     department: groceryDepartment,
                     temperature: groceryTemperature,
                     isAlcoholic: groceryIsAlcoholic,
-                    containsGluten: groceryContainsGluten,
-                    containsLactose: groceryContainsLactose,
+                    containsGluten: groceryContainsGluten ?? undefined,
+                    containsLactose: groceryContainsLactose ?? undefined,
                     isOrganic: groceryIsOrganic,
                     brand: groceryBrand,
                     barcodeEan: groceryBarcodeEan,
@@ -3329,7 +3330,7 @@ function SpecializedClassifiedEditor({
                     prepOptions: groceryPrepOptions,
                     deliveryEstimate: groceryDeliveryEstimate,
                     deliveryFeeCents: groceryDeliveryFeeCents,
-                    readyDelivery: groceryReadyDelivery,
+                    readyDelivery: readyDelivery,
                     acceptsPix,
                     pixDiscountPercent,
                     acceptsCard,
@@ -5760,8 +5761,8 @@ function SpecializedClassifiedEditor({
                     <div className="space-y-1.5">
                       <Label className="text-xs text-foreground font-semibold">Taxa Inicial de Entrega (R$)</Label>
                       <CurrencyField
-                        cents={groceryDeliveryFeeCents}
-                        onChange={setGroceryDeliveryFeeCents}
+                        value={groceryDeliveryFeeCents}
+                        onChange={(val) => setGroceryDeliveryFeeCents(val ?? 0)}
                         className="h-11 rounded-xl text-xs bg-background"
                       />
                     </div>
@@ -5771,9 +5772,8 @@ function SpecializedClassifiedEditor({
                   <div className="p-4 rounded-xl border border-border/50 bg-muted/15 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                          <Scale className="size-4 text-primary" />
-                          <span>Hortifrúti & Produtos Frescos (Peso Variável / Maturação)</span>
+                        <Label className="text-xs font-bold text-foreground">
+                          Hortifrúti & Produtos Frescos (Peso Variável / Maturação)
                         </Label>
                         <p className="text-[11px] text-muted-foreground">
                           Permite ao cliente alternar entre compra por unidade ou peso e escolher o nível de maturação.
@@ -5818,8 +5818,8 @@ function SpecializedClassifiedEditor({
                           <div className="space-y-1.5">
                             <Label className="text-xs text-foreground font-medium">Preço por Quilo (R$/kg)</Label>
                             <CurrencyField
-                              cents={groceryPricePerKgCents}
-                              onChange={setGroceryPricePerKgCents}
+                              value={groceryPricePerKgCents}
+                              onChange={(val) => setGroceryPricePerKgCents(val ?? 0)}
                               className="h-11 rounded-xl text-xs bg-background font-mono"
                             />
                           </div>
@@ -5936,10 +5936,10 @@ function SpecializedClassifiedEditor({
                                 />
                               ) : (
                                 <CurrencyField
-                                  cents={tier.discount_value}
+                                  value={tier.discount_value}
                                   onChange={(val) => {
                                     const updated = [...groceryDiscountTiers];
-                                    updated[idx] = { ...updated[idx], discount_value: val };
+                                    updated[idx] = { ...updated[idx], discount_value: val ?? 0 };
                                     setGroceryDiscountTiers(updated);
                                   }}
                                   className="h-9 rounded-lg text-xs bg-muted/20 font-mono"
@@ -6031,8 +6031,8 @@ function SpecializedClassifiedEditor({
                           <div className="space-y-1.5">
                             <Label className="text-xs text-foreground font-medium">Preço Promocional Especial (R$) *</Label>
                             <CurrencyField
-                              cents={groceryOrderBumpSpecialPriceCents}
-                              onChange={setGroceryOrderBumpSpecialPriceCents}
+                              value={groceryOrderBumpSpecialPriceCents}
+                              onChange={(val) => setGroceryOrderBumpSpecialPriceCents(val ?? 0)}
                               className="h-11 rounded-xl text-xs bg-background font-mono"
                             />
                           </div>
@@ -6040,8 +6040,8 @@ function SpecializedClassifiedEditor({
                           <div className="space-y-1.5">
                             <Label className="text-xs text-foreground font-medium">Preço Original Riscado (R$)</Label>
                             <CurrencyField
-                              cents={groceryOrderBumpOriginalPriceCents}
-                              onChange={setGroceryOrderBumpOriginalPriceCents}
+                              value={groceryOrderBumpOriginalPriceCents}
+                              onChange={(val) => setGroceryOrderBumpOriginalPriceCents(val ?? 0)}
                               className="h-11 rounded-xl text-xs bg-background font-mono"
                             />
                           </div>
@@ -8292,21 +8292,21 @@ function SpecializedClassifiedEditor({
               <ConvenienceShowcaseView
                 previewData={{
                   title: title || "Produto de Mercado / Conveniência",
-                  description: content,
+                  description: description,
                   priceCents: priceCents || 0,
                   images: images,
-                  locationName: locationName || (city ? `${city} - ${state}` : "São Miguel do Oeste - SC"),
-                  whatsapp: contactWhatsapp || whatsapp,
+                  locationName: locationName || "São Miguel do Oeste - SC",
+                  whatsapp: whatsapp,
                   storeName: "Sua Loja",
-                  volume,
+                  volume: convenienceVolume,
                   unitType: groceryUnitType,
                   estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
                   department: CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment)?.label || "Mercado & Varejo",
                   subCategory: grocerySubCategory,
                   temperature: groceryTemperature,
                   isAlcoholic: groceryIsAlcoholic,
-                  containsGluten: groceryContainsGluten,
-                  containsLactose: groceryContainsLactose,
+                  containsGluten: groceryContainsGluten ?? undefined,
+                  containsLactose: groceryContainsLactose ?? undefined,
                   isOrganic: groceryIsOrganic,
                   brand: groceryBrand,
                   barcodeEan: groceryBarcodeEan,
@@ -8324,8 +8324,8 @@ function SpecializedClassifiedEditor({
                     supports_fresh_pricing: true,
                     default_pricing_mode: groceryDefaultPricingMode,
                     avg_piece_weight_grams: groceryAvgPieceWeightGrams,
-                    price_per_kg_cents: groceryPricePerKgCents || (priceCents > 0 ? priceCents * 2 : 990),
-                    price_per_unit_cents: priceCents,
+                    price_per_kg_cents: groceryPricePerKgCents || ((priceCents || 0) > 0 ? (priceCents || 0) * 2 : 990),
+                    price_per_unit_cents: priceCents || 0,
                   } : undefined,
                   groceryRipenessConfig: groceryRipenessEnabled ? {
                     enabled: true,

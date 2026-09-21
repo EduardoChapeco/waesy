@@ -164,7 +164,12 @@ function AdminOrderDetailPage() {
   const handleEmitNFe = async () => {
     setIsEmittingNFe(true);
     try {
-      const customerDoc = (customer.document || "").replace(/\D/g, "");
+      const rawDoc =
+        order.cpf_on_receipt?.cpf ||
+        customer.document ||
+        customer.cpf ||
+        "";
+      const customerDoc = rawDoc.replace(/\D/g, "");
       const res = await emitNFeInvoice({
         data: {
           storeId: order.store_id,
@@ -660,13 +665,13 @@ function AdminOrderDetailPage() {
         <span>Documento Fiscal</span>
       </h3>
       {invoice ? (
-        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px] font-bold">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
           NF-e Emitida
-        </Badge>
+        </span>
       ) : (
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
           Pendente
-        </Badge>
+        </span>
       )}
     </div>
 
@@ -707,11 +712,28 @@ function AdminOrderDetailPage() {
         <p className="text-xs text-muted-foreground">
           Emita a NF-e nacional ou NFC-e deste pedido com 1 clique.
         </p>
+
+        {order.cpf_on_receipt?.requested && order.cpf_on_receipt?.cpf ? (
+          <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-1 text-xs">
+            <span className="text-muted-foreground text-[11px] block">CPF solicitado no Checkout:</span>
+            <span className="font-mono font-bold text-foreground">{order.cpf_on_receipt.cpf}</span>
+          </div>
+        ) : customer.document || customer.cpf ? (
+          <div className="p-3 rounded-xl bg-muted/20 border border-border/40 space-y-1 text-xs">
+            <span className="text-muted-foreground text-[11px] block">Documento do Cadastro:</span>
+            <span className="font-mono font-bold text-foreground">{customer.document || customer.cpf}</span>
+          </div>
+        ) : (
+          <p className="text-[11px] text-muted-foreground italic">
+            Nenhum CPF específico foi solicitado no checkout (Consumidor Final).
+          </p>
+        )}
+
         <Button
           onClick={handleEmitNFe}
           disabled={isEmittingNFe}
           size="sm"
-          className="w-full rounded-xl font-bold text-xs"
+          className="w-full rounded-xl font-bold text-xs h-10 cursor-pointer"
         >
           {isEmittingNFe ? "Emitindo NF-e..." : "Emitir NF-e (1-Clique)"}
         </Button>
