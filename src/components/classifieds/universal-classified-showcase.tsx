@@ -175,6 +175,30 @@ export function UniversalClassifiedShowcase({
   const [cnpjAuditData, setCnpjAuditData] = useState<CnpjAuditResult | null>(null);
   const [isAuditingCnpj, setIsAuditingCnpj] = useState(false);
 
+  // Estados de Reserva Integrada de Hospedagem / Temporada (Padrão Airbnb)
+  const [stayCheckIn, setStayCheckIn] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  });
+  const [stayCheckOut, setStayCheckOut] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 4);
+    return d.toISOString().split("T")[0];
+  });
+  const [stayGuests, setStayGuests] = useState(1);
+
+  const stayNights = useMemo(() => {
+    if (!stayCheckIn || !stayCheckOut) return 1;
+    const start = new Date(stayCheckIn).getTime();
+    const end = new Date(stayCheckOut).getTime();
+    const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
+  }, [stayCheckIn, stayCheckOut]);
+
+  const stayCleaningFee = Number(classified?.attributes?.cleaning_fee_cents || classified?.cleaning_fee_cents) || 0;
+  const stayTotal = (classified?.price_cents || 0) * stayNights + stayCleaningFee;
+
   // 1. Extração Normalizada de Imagens
   const images: string[] = useMemo(() => {
     if (Array.isArray(classified?.images) && classified.images.length > 0) return classified.images;
@@ -755,7 +779,20 @@ export function UniversalClassifiedShowcase({
         },
       };
     }
-    if (niche.id === "hospitality_stay" || niche.id === "travel") {
+    if (niche.id === "hospitality_stay") {
+      return {
+        label: priceCents > 0 ? `Reservar Estadia — ${formatMoney(stayTotal)}` : "Reservar Diárias",
+        action: () =>
+          onOpenBookingModal?.({
+            checkIn: stayCheckIn,
+            checkOut: stayCheckOut,
+            guests: stayGuests,
+            totalCents: stayTotal,
+            nights: stayNights,
+          }),
+      };
+    }
+    if (niche.id === "travel") {
       return {
         label: getClassifiedPrimaryCtaLabel(classified),
         action: () => onOpenBookingModal?.(),
@@ -2148,6 +2185,68 @@ export function UniversalClassifiedShowcase({
                         </span>
                       )}
                     </div>
+
+                    {/* Seletor Integrado de Datas para Hospedagem / Temporada (Padrão Airbnb) */}
+                    {niche.id === "hospitality_stay" && (
+                      <div className="pt-3 space-y-2.5 border-t border-border/40">
+                        <div className="rounded-xl border border-border/60 bg-muted/20 overflow-hidden">
+                          <div className="grid grid-cols-2 divide-x divide-border/60 border-b border-border/60 text-[11px]">
+                            <div className="p-2 space-y-0.5">
+                              <label className="text-[10px] uppercase font-bold text-muted-foreground block">Check-in</label>
+                              <input
+                                type="date"
+                                value={stayCheckIn}
+                                onChange={(e) => setStayCheckIn(e.target.value)}
+                                className="w-full bg-transparent font-mono text-xs font-semibold text-foreground focus:outline-none cursor-pointer"
+                              />
+                            </div>
+                            <div className="p-2 space-y-0.5">
+                              <label className="text-[10px] uppercase font-bold text-muted-foreground block">Check-out</label>
+                              <input
+                                type="date"
+                                value={stayCheckOut}
+                                onChange={(e) => setStayCheckOut(e.target.value)}
+                                className="w-full bg-transparent font-mono text-xs font-semibold text-foreground focus:outline-none cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                          <div className="p-2 flex items-center justify-between text-[11px]">
+                            <span className="text-muted-foreground font-medium">Hóspedes</span>
+                            <select
+                              value={stayGuests}
+                              onChange={(e) => setStayGuests(Number(e.target.value))}
+                              className="bg-transparent font-semibold text-foreground text-xs focus:outline-none cursor-pointer"
+                            >
+                              {Array.from({ length: Math.min(10, classified.attributes?.max_guests || classified.max_guests || 6) }, (_, i) => i + 1).map((n) => (
+                                <option key={n} value={n} className="bg-popover text-popover-foreground">
+                                  {n} {n === 1 ? "hóspede" : "hóspedes"}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Breakdown Transparente de Diárias */}
+                        {stayNights > 0 && priceCents > 0 && (
+                          <div className="space-y-1.5 text-xs text-muted-foreground pt-0.5">
+                            <div className="flex justify-between">
+                              <span>{formatMoney(priceCents)} × {stayNights} noite{stayNights > 1 ? "s" : ""}</span>
+                              <span className="font-mono text-foreground font-medium">{formatMoney(priceCents * stayNights)}</span>
+                            </div>
+                            {stayCleaningFee > 0 && (
+                              <div className="flex justify-between">
+                                <span>Taxa de limpeza</span>
+                                <span className="font-mono text-foreground font-medium">{formatMoney(stayCleaningFee)}</span>
+                              </div>
+                            )}
+                            <div className="pt-2 border-t border-border/40 flex justify-between items-baseline font-bold text-sm text-foreground">
+                              <span>Total estimado</span>
+                              <span className="font-mono text-primary font-extrabold text-base">{formatMoney(stayTotal)}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -2312,6 +2411,20 @@ export function UniversalClassifiedShowcase({
                   Cotas: {offeredEquity}
                 </span>
               )}
+            </div>
+          ) : niche.id === "hospitality_stay" ? (
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-baseline gap-1">
+                <span className="text-base sm:text-lg font-bold text-foreground font-mono truncate">
+                  {priceCents > 0 ? formatMoney(stayTotal) : "Consulte"}
+                </span>
+                <span className="text-[11px] text-muted-foreground shrink-0">
+                  ({stayNights} noite{stayNights > 1 ? "s" : ""})
+                </span>
+              </div>
+              <span className="text-[10px] text-muted-foreground font-mono truncate">
+                {formatMoney(priceCents)} /diária
+              </span>
             </div>
           ) : (
             <>

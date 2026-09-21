@@ -672,13 +672,13 @@ export function BrandKitPage() {
             <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-semibold">Capa do Anúncio (Card da Empresa no Places & Vitrines)</Label>
+                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Perfil & Vitrines)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Imagem oficial do seu negócio exibida nos cards do Places (Lista Telefônica), vitrines da Home e buscas
+                    Banner oficial exibido no cabeçalho do perfil público da loja e nos destaques do ecossistema Waesy
                   </p>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono">
-                  16:10 Card Places
+                  3:1 Panorâmica (1200×400px)
                 </Badge>
               </div>
               <div className="p-5">
@@ -687,8 +687,8 @@ export function BrandKitPage() {
                   onChange={(url) => update({ cover_url: url })}
                   onRemove={() => update({ cover_url: "" })}
                   bucket="store-assets"
-                  aspect={16 / 10}
-                  helperText="Clique ou arraste para carregar a capa do card da sua empresa no Places (Lista Telefônica) com corte 16:10. A capa panorâmica do perfil é gerenciada em Editar Perfil."
+                  aspectPreset="cover"
+                  helperText="Clique ou arraste para carregar a capa oficial com máscara 3:1 (1200×400px). Sincronizada atomicamente com o banner do perfil público da sua loja."
                 />
               </div>
             </div>

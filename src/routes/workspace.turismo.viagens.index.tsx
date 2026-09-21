@@ -159,8 +159,7 @@ export default function WorkspaceTripsListPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <div className="flex items-center justify-between px-1">
-        <p className="text-xs font-medium text-muted-foreground">Gestão de reservas, roteiros rodoviários e aéreos</p>
+      <div className="flex items-center justify-end px-1">
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
       </div>
 

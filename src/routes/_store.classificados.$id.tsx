@@ -1466,8 +1466,13 @@ const handleDownloadDigitalFile = async () => {
         canManage={effectiveIsOwner || canManage}
         viewerContext={viewerContext}
         currentProfile={currentProfile}
-        onOpenBookingModal={(dep) => {
-          if (dep) setSelectedDeparture(dep);
+        onOpenBookingModal={(payload) => {
+          if (payload) {
+            if (payload.checkIn) setCheckInDate(payload.checkIn);
+            if (payload.checkOut) setCheckOutDate(payload.checkOut);
+            if (payload.guests) setBookingGuests(payload.guests);
+            if (payload.departure_date || payload.id) setSelectedDeparture(payload);
+          }
           setBookingOpen(true);
         }}
         onOpenProposalModal={() => setProposalOpen(true)}
