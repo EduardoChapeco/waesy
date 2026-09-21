@@ -28,6 +28,7 @@ import {
   Calendar,
   Clock3,
   FileText,
+  Scale,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,15 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  GroceryFreshPricing,
+  GroceryRipenessConfig,
+  ProgressiveDiscountTier,
+  OrderBumpOffer,
+  RipenessStage,
+  DEFAULT_RIPENESS_LABELS,
+  calculateProgressiveDiscount,
+} from "@/lib/classifieds/canonical-taxonomy";
 
 export interface ConveniencePreviewData {
   title: string;
@@ -79,6 +89,11 @@ export interface ConveniencePreviewData {
   cardInterestFree?: boolean;
   acceptsCash?: boolean;
   stockQty?: number;
+  // FASE 1: Varejo Alimentar Pro
+  groceryFreshPricing?: GroceryFreshPricing;
+  groceryRipenessConfig?: GroceryRipenessConfig;
+  progressiveDiscountTiers?: ProgressiveDiscountTier[];
+  orderBumpOffer?: OrderBumpOffer;
 }
 
 interface ConvenienceShowcaseViewProps {
@@ -227,23 +242,106 @@ export function ConvenienceShowcaseView({
       ? previewData.acceptsCash
       : attrs.accepts_cash !== false;
 
-  // Cálculos financeiros
-  const effectivePriceCents = priceCents;
-  const subtotalCents = effectivePriceCents * quantity;
+  // ── Hortifrúti Fresco & Maturação (FASE 1) ──
+  const isFreshPricingActive =
+    previewData?.groceryFreshPricing?.supports_fresh_pricing ??
+    attrs.grocery_fresh_pricing?.supports_fresh_pricing ??
+    (department === "Hortifrúti & Feira" || attrs.grocery_department === "hortifruti");
+
+  const freshPricingConfig: GroceryFreshPricing =
+    previewData?.groceryFreshPricing ||
+    attrs.grocery_fresh_pricing || {
+      supports_fresh_pricing: isFreshPricingActive,
+      default_pricing_mode: "unit",
+      avg_piece_weight_grams: Number(attrs.avg_piece_weight_grams) || 500,
+      price_per_kg_cents: Number(attrs.price_per_kg_cents) || (priceCents > 0 ? priceCents * 2 : 990),
+      price_per_unit_cents: priceCents,
+    };
+
+  const isRipenessActive =
+    previewData?.groceryRipenessConfig?.enabled ??
+    attrs.grocery_ripeness_config?.enabled ??
+    isFreshPricingActive;
+
+  const ripenessConfig: GroceryRipenessConfig =
+    previewData?.groceryRipenessConfig ||
+    attrs.grocery_ripeness_config || {
+      enabled: isRipenessActive,
+      stages: ["menos_maduro", "maduro", "mais_maduro"],
+      default_stage: "maduro",
+    };
+
+  const progressiveDiscountTiers: ProgressiveDiscountTier[] =
+    previewData?.progressiveDiscountTiers ||
+    attrs.progressive_discount_tiers ||
+    (Array.isArray(attrs.discount_tiers) ? attrs.discount_tiers : []) ||
+    [];
+
+  const orderBumpOffer: OrderBumpOffer | undefined =
+    previewData?.orderBumpOffer ||
+    attrs.order_bump_offer ||
+    (isFreshPricingActive
+      ? {
+          enabled: true,
+          mode: "category_related",
+          target_title: "Maçã Gala Selecionada (1kg)",
+          original_price_cents: 1290,
+          special_price_cents: 890,
+          badge_text: "Oferta Relâmpago",
+        }
+      : undefined);
+
+  // Estados Interativos de Varejo Alimentar Pro
+  const [pricingMode, setPricingMode] = useState<"unit" | "weight">(
+    freshPricingConfig.default_pricing_mode || "unit"
+  );
+  const [weightGrams, setWeightGrams] = useState<number>(
+    freshPricingConfig.avg_piece_weight_grams || 500
+  );
+  const [selectedRipeness, setSelectedRipeness] = useState<RipenessStage>(
+    ripenessConfig.default_stage || "maduro"
+  );
+  const [isOrderBumpAdded, setIsOrderBumpAdded] = useState(false);
+
+  // Preço unitário base conforme o modo de precificação (Unidade vs Peso Fracionado)
+  const baseUnitPriceCents =
+    isFreshPricingActive && pricingMode === "weight"
+      ? Math.round(((freshPricingConfig.price_per_kg_cents || priceCents * 2 || 990) * weightGrams) / 1000)
+      : priceCents;
+
+  // Cálculo de desconto progressivo (gamificação em tempo real com checkmark animado)
+  const discountResult = calculateProgressiveDiscount(
+    baseUnitPriceCents,
+    quantity,
+    progressiveDiscountTiers
+  );
+
+  const effectiveUnitPriceCents = discountResult.finalUnitPriceCents;
+  const subtotalCents = discountResult.subtotalCents;
+
   const pixPriceCents =
     pixDiscountPercent > 0
-      ? Math.round(effectivePriceCents * (1 - pixDiscountPercent / 100))
-      : effectivePriceCents;
-  const pixSubtotalCents = pixPriceCents * quantity;
+      ? Math.round(effectiveUnitPriceCents * (1 - pixDiscountPercent / 100))
+      : effectiveUnitPriceCents;
+  const pixSubtotalCents =
+    pixDiscountPercent > 0
+      ? Math.round(subtotalCents * (1 - pixDiscountPercent / 100))
+      : subtotalCents;
+
+  const bumpPriceCents =
+    isOrderBumpAdded && orderBumpOffer?.enabled
+      ? orderBumpOffer.special_price_cents || 0
+      : 0;
 
   // Frete final no modal de pedido
   const currentDeliveryFeeCents = orderDeliveryMode === "pickup" ? 0 : deliveryFeeCents;
-  const currentOrderSubtotal = orderPaymentMethod === "pix" ? pixSubtotalCents : subtotalCents;
+  const currentOrderSubtotal =
+    (orderPaymentMethod === "pix" ? pixSubtotalCents : subtotalCents) + bumpPriceCents;
   const grandTotalCents = currentOrderSubtotal + currentDeliveryFeeCents;
 
   const installmentCents =
-    maxInstallments >= 2 && effectivePriceCents > 0
-      ? Math.round(effectivePriceCents / maxInstallments)
+    maxInstallments >= 2 && effectiveUnitPriceCents > 0
+      ? Math.round(effectiveUnitPriceCents / maxInstallments)
       : 0;
 
   const SCHEDULE_WINDOWS = [
@@ -278,9 +376,19 @@ export function ConvenienceShowcaseView({
       return;
     }
 
-    const prepText = selectedPrepOption ? `\nOpção de Corte/Preparo: *${selectedPrepOption}*` : "";
+    const freshInfoText = isFreshPricingActive
+      ? `\n• Modo de Compra: *${pricingMode === "weight" ? `${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`} (${formatMoney(baseUnitPriceCents)})` : `${quantity} un`}*`
+      : "";
+    const ripenessText = isRipenessActive
+      ? `\n• Ponto de Maturação: *${DEFAULT_RIPENESS_LABELS[selectedRipeness]?.title || selectedRipeness}*`
+      : "";
+    const prepText = selectedPrepOption ? `\n• Opção de Corte/Preparo: *${selectedPrepOption}*` : "";
+    const discountText = discountResult.totalSavedCents > 0
+      ? `\n• Desconto Progressivo: *Economia de ${formatMoney(discountResult.totalSavedCents)}*`
+      : "";
+
     const msg = encodeURIComponent(
-      `Olá, ${storeName}! Gostaria de pedir *${quantity}x ${title}* (${formatMoney(subtotalCents)})${prepText}\n` +
+      `Olá, ${storeName}! Gostaria de pedir *${quantity}x ${title}* (${formatMoney(subtotalCents)})${freshInfoText}${ripenessText}${prepText}${discountText}\n` +
       `Local: ${locationName}\n` +
       `Poderiam me confirmar a disponibilidade para entrega?`
     );
@@ -314,15 +422,27 @@ export function ConvenienceShowcaseView({
         ? "💳 Cartão de Crédito/Débito na Entrega (levar maquininha)"
         : `💵 Dinheiro em Espécie${cashChangeFor ? ` (Troco para R$ ${cashChangeFor})` : " (Valor exato)"}`;
 
+    const freshInfoText = isFreshPricingActive
+      ? `\n• Modo de Compra: *${pricingMode === "weight" ? `${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}` : `${quantity} un`}*`
+      : "";
+    const ripenessText = isRipenessActive
+      ? `\n• Maturação: *${DEFAULT_RIPENESS_LABELS[selectedRipeness]?.title || selectedRipeness}*`
+      : "";
     const prepText = selectedPrepOption ? `\n• Preparo/Corte: *${selectedPrepOption}*` : "";
+    const bumpText = isOrderBumpAdded && orderBumpOffer
+      ? `\n• Oferta Relâmpago Adicionada: *${orderBumpOffer.target_title}* (+${formatMoney(orderBumpOffer.special_price_cents || 0)})`
+      : "";
+    const discountText = discountResult.totalSavedCents > 0
+      ? `\n• Desconto Progressivo: *Economia de ${formatMoney(discountResult.totalSavedCents)}*`
+      : "";
     const addressText = orderDeliveryMode !== "pickup" ? `\n• Endereço: *${orderAddress}*` : "";
 
     if (cleanPhone) {
       const msg = encodeURIComponent(
-        `🛍️ *NOVO PEDIDO DE CONVENIÊNCIA / MERCADO*\n` +
+        `🛍️ *NOVO PEDIDO DE VAREJO ALIMENTAR / MERCADO*\n` +
         `Loja: *${storeName}*\n\n` +
-        `• Item: *${quantity}x ${title}*\n` +
-        `• Subtotal Itens: ${formatMoney(orderPaymentMethod === "pix" ? pixSubtotalCents : subtotalCents)}${prepText}\n` +
+        `• Item: *${quantity}x ${title}* (${formatMoney(effectiveUnitPriceCents)}/un)${freshInfoText}${ripenessText}${prepText}${bumpText}${discountText}\n` +
+        `• Subtotal Itens: ${formatMoney(currentOrderSubtotal)}\n` +
         `• Modalidade: ${deliveryText}\n` +
         `• Taxa de Entrega: ${formatMoney(currentDeliveryFeeCents)}${addressText}\n` +
         `• Forma de Pagamento: ${paymentText}\n\n` +
@@ -383,34 +503,56 @@ export function ConvenienceShowcaseView({
     </div>
   );
 
-  // Componente Reutilizável: Bloco de Preço e Condições de Pagamento
+  // Componente Reutilizável: Bloco de Preço e Condições de Pagamento com Suporte a Desconto Progressivo
   const PricingBlock = () => (
     <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-2.5">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div>
-          <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
-            {priceCents > 0 ? formatMoney(priceCents) : "Preço sob consulta"}
-          </span>
-          {unitSuffix && (
-            <span className="text-xs text-muted-foreground ml-1 font-mono">
-              / {unitSuffix}
+          <div className="flex items-baseline gap-2">
+            {discountResult.activeTier && (
+              <span className="text-sm sm:text-base text-muted-foreground line-through font-mono">
+                {formatMoney(baseUnitPriceCents)}
+              </span>
+            )}
+            <span className="text-2xl sm:text-3xl font-black text-foreground font-mono tracking-tight">
+              {effectiveUnitPriceCents > 0 ? formatMoney(effectiveUnitPriceCents) : "Preço sob consulta"}
             </span>
-          )}
+          </div>
+          <span className="text-xs text-muted-foreground font-mono">
+            {isFreshPricingActive && pricingMode === "weight"
+              ? `/ ${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}`
+              : unitSuffix
+              ? `/ ${unitSuffix}`
+              : "/ un"}
+          </span>
         </div>
 
-        {acceptsPix && pixDiscountPercent > 0 && priceCents > 0 && (
+        {discountResult.activeTier ? (
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+            {discountResult.activeTier.discount_type === "percentage"
+              ? `${discountResult.activeTier.discount_value}% OFF ativado!`
+              : `${formatMoney(discountResult.activeTier.discount_value)} OFF ativado!`}
+          </span>
+        ) : acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 ? (
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
             {pixDiscountPercent}% OFF no Pix
           </span>
-        )}
+        ) : null}
       </div>
 
-      {acceptsPix && pixDiscountPercent > 0 && priceCents > 0 && (
+      {acceptsPix && pixDiscountPercent > 0 && effectiveUnitPriceCents > 0 && (
         <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
           <QrCode className="size-3.5" />
           <span>
             Sai por <strong>{formatMoney(pixPriceCents)}</strong> à vista no Pix
           </span>
+        </div>
+      )}
+
+      {discountResult.totalSavedCents > 0 && (
+        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+          <CheckCircle2 className="size-3.5 shrink-0" />
+          <span>Você está economizando <strong>{formatMoney(discountResult.totalSavedCents)}</strong> com desconto progressivo!</span>
         </div>
       )}
 
@@ -440,6 +582,191 @@ export function ConvenienceShowcaseView({
       </div>
     </div>
   );
+
+  // Componente Reutilizável: Controles de Hortifrúti Fresco (Peso vs Unidade & Ponto de Maturação)
+  const FreshProduceControls = () => {
+    if (!isFreshPricingActive && !isRipenessActive) return null;
+
+    return (
+      <div className="p-3.5 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3">
+        {/* Toggle Unidade vs Peso */}
+        {isFreshPricingActive && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Scale className="size-3.5 text-primary" />
+                <span>Modo de Compra:</span>
+              </span>
+              {freshPricingConfig.avg_piece_weight_grams && (
+                <span className="text-[11px] text-muted-foreground font-mono">
+                  ~{freshPricingConfig.avg_piece_weight_grams}g / peça
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/50">
+              <button
+                type="button"
+                onClick={() => setPricingMode("unit")}
+                className={cn(
+                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  pricingMode === "unit"
+                    ? "bg-background text-foreground shadow-2xs font-bold ring-1 ring-border/80"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <span>Por Unidade</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPricingMode("weight")}
+                className={cn(
+                  "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  pricingMode === "weight"
+                    ? "bg-background text-foreground shadow-2xs font-bold ring-1 ring-border/80"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <span>Por Peso (kg)</span>
+              </button>
+            </div>
+
+            {pricingMode === "weight" && (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-muted/20 border border-border/40 text-xs">
+                <span className="text-muted-foreground">Gramas / Peso:</span>
+                <div className="flex items-center gap-1.5">
+                  {[250, 500, 1000, 1500].map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setWeightGrams(g)}
+                      className={cn(
+                        "px-2 py-1 rounded-lg text-xs font-mono font-medium border transition-all cursor-pointer",
+                        weightGrams === g
+                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
+                          : "bg-background text-muted-foreground border-border/60 hover:text-foreground"
+                      )}
+                    >
+                      {g >= 1000 ? `${(g / 1000).toFixed(1)}kg` : `${g}g`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Ponto de Maturação */}
+        {isRipenessActive && (
+          <div className="space-y-2 pt-1 border-t border-border/40">
+            <span className="text-xs font-bold text-foreground block">
+              Ponto de Maturação (Hortifrúti Fresco):
+            </span>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(["menos_maduro", "maduro", "mais_maduro"] as RipenessStage[]).map((stage) => {
+                const info = DEFAULT_RIPENESS_LABELS[stage];
+                const isSelected = selectedRipeness === stage;
+                return (
+                  <button
+                    key={stage}
+                    type="button"
+                    onClick={() => setSelectedRipeness(stage)}
+                    className={cn(
+                      "p-2.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5",
+                      isSelected
+                        ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs ring-1 ring-primary/30"
+                        : "border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                    )}
+                  >
+                    <span className="text-xs">{info.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {selectedRipeness && (
+              <p className="text-[11px] text-muted-foreground italic px-1">
+                • {DEFAULT_RIPENESS_LABELS[selectedRipeness]?.desc}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Componente Reutilizável: Gamificação de Desconto Progressivo (Checklist de Tiers)
+  const ProgressiveDiscountCard = () => {
+    if (!progressiveDiscountTiers || progressiveDiscountTiers.length === 0) return null;
+
+    return (
+      <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <BadgePercent className="size-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-xs font-bold text-foreground">Desconto Progressivo</span>
+          </div>
+          {discountResult.activeTier ? (
+            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+              {discountResult.activeTier.discount_type === "percentage"
+                ? `${discountResult.activeTier.discount_value}% OFF`
+                : `${formatMoney(discountResult.activeTier.discount_value)} OFF`}
+            </span>
+          ) : (
+            <span className="text-[11px] text-muted-foreground">Compre mais, pague menos</span>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          {progressiveDiscountTiers.map((tier, idx) => {
+            const isUnlocked = quantity >= tier.min_quantity;
+            const discountLabel =
+              tier.discount_type === "percentage"
+                ? `${tier.discount_value}% OFF`
+                : `${formatMoney(tier.discount_value)} OFF`;
+
+            return (
+              <div
+                key={idx}
+                className={cn(
+                  "flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all",
+                  isUnlocked
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-foreground font-semibold"
+                    : "bg-muted/20 border-border/50 text-muted-foreground"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  {isUnlocked ? (
+                    <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  ) : (
+                    <div className="size-4 rounded-full border border-border/80 shrink-0" />
+                  )}
+                  <span>
+                    Compre <strong>{tier.min_quantity}+ un</strong>: ganhe <strong>{discountLabel}</strong>
+                  </span>
+                </div>
+
+                {isUnlocked ? (
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                    ✔ Ativado
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    + {tier.min_quantity - quantity} un
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {discountResult.totalSavedCents > 0 && (
+          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl flex items-center justify-between">
+            <span>Economia no pedido:</span>
+            <span className="font-mono font-bold">{formatMoney(discountResult.totalSavedCents)}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Componente Reutilizável: Linha Compacta de Entrega
   const DeliveryEstimateLine = () => (
@@ -586,6 +913,12 @@ export function ConvenienceShowcaseView({
 
               {/* Linha Compacta de Entrega no Mobile */}
               <DeliveryEstimateLine />
+
+              {/* Controles de Hortifrúti Fresco (Unidade vs Peso & Maturação) */}
+              <FreshProduceControls />
+
+              {/* Gamificação de Desconto Progressivo */}
+              <ProgressiveDiscountCard />
 
               {/* Seletor de Opções de Preparo / Corte se configurado */}
               {prepOptions && prepOptions.length > 0 && (
@@ -796,6 +1129,12 @@ export function ConvenienceShowcaseView({
             {/* Linha Compacta de Entrega no Desktop */}
             <DeliveryEstimateLine />
 
+            {/* Controles de Hortifrúti Fresco (Unidade vs Peso & Maturação) */}
+            <FreshProduceControls />
+
+            {/* Gamificação de Desconto Progressivo */}
+            <ProgressiveDiscountCard />
+
             {/* Seletor de Opções de Preparo / Corte (Açougue / Padaria) se configurado */}
             {prepOptions && prepOptions.length > 0 && (
               <div className="p-3.5 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-2">
@@ -1004,8 +1343,16 @@ export function ConvenienceShowcaseView({
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-foreground truncate">{title}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {quantity}x de {formatMoney(effectivePriceCents)} {unitSuffix ? `(${unitSuffix})` : ""}
+                  {quantity}x de {formatMoney(effectiveUnitPriceCents)} {unitSuffix ? `(${unitSuffix})` : ""}
+                  {isFreshPricingActive && (
+                    <span> • {pricingMode === "weight" ? `${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}` : "Unidade"}</span>
+                  )}
                 </p>
+                {isRipenessActive && selectedRipeness && (
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    Maturação: {DEFAULT_RIPENESS_LABELS[selectedRipeness]?.title}
+                  </p>
+                )}
                 {selectedPrepOption && (
                   <p className="text-[10px] text-primary font-medium mt-0.5">
                     Preparo: {selectedPrepOption}
@@ -1016,6 +1363,63 @@ export function ConvenienceShowcaseView({
                 {formatMoney(subtotalCents)}
               </span>
             </div>
+
+            {/* Oferta Relâmpago (Order Bump / Cross-sell no Carrinho) */}
+            {orderBumpOffer?.enabled && (
+              <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+                    <Zap className="size-3.5 fill-amber-500 text-amber-500" />
+                    <span>{orderBumpOffer.badge_text || "Oferta Relâmpago no Carrinho"}</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Adicione com 1 clique</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 pt-0.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {orderBumpOffer.target_image_url ? (
+                      <img
+                        src={orderBumpOffer.target_image_url}
+                        alt={orderBumpOffer.target_title}
+                        className="size-10 rounded-lg object-contain bg-background p-1 border shrink-0"
+                      />
+                    ) : (
+                      <div className="size-10 rounded-lg bg-background flex items-center justify-center border shrink-0 text-amber-600">
+                        <Sparkles className="size-4" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground truncate">{orderBumpOffer.target_title}</p>
+                      <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                        {orderBumpOffer.original_price_cents && (
+                          <span className="line-through text-muted-foreground text-[10px]">
+                            {formatMoney(orderBumpOffer.original_price_cents)}
+                          </span>
+                        )}
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                          {formatMoney(orderBumpOffer.special_price_cents || 0)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={isOrderBumpAdded ? "default" : "outline"}
+                    onClick={() => setIsOrderBumpAdded(!isOrderBumpAdded)}
+                    className={cn(
+                      "h-8 px-3 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-all",
+                      isOrderBumpAdded
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
+                    )}
+                  >
+                    {isOrderBumpAdded ? "✔ Adicionado" : "+ Adicionar"}
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Opções de Recebimento */}
             <div className="space-y-2">
@@ -1213,6 +1617,12 @@ export function ConvenienceShowcaseView({
                 <span>Subtotal dos Itens:</span>
                 <span className="font-mono font-medium">{formatMoney(subtotalCents)}</span>
               </div>
+              {isOrderBumpAdded && orderBumpOffer && (
+                <div className="flex justify-between text-amber-700 dark:text-amber-400 font-medium">
+                  <span className="truncate">Oferta Relâmpago ({orderBumpOffer.target_title}):</span>
+                  <span className="font-mono font-bold">+{formatMoney(orderBumpOffer.special_price_cents || 0)}</span>
+                </div>
+              )}
               {orderPaymentMethod === "pix" && pixDiscountPercent > 0 && (
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
                   <span>Desconto no Pix ({pixDiscountPercent}%):</span>

@@ -75,6 +75,12 @@ import {
  CANONICAL_STORAGE_TEMPERATURES,
  CANONICAL_MEAT_CUT_OPTIONS,
  CANONICAL_BAKERY_PREP_OPTIONS,
+ GroceryFreshPricing,
+ GroceryRipenessConfig,
+ ProgressiveDiscountTier,
+ OrderBumpOffer,
+ RipenessStage,
+ DEFAULT_RIPENESS_LABELS,
 } from "@/lib/classifieds/canonical-taxonomy";
 import {
  CANONICAL_EDUCATION_LEVELS,
@@ -1435,6 +1441,59 @@ function SpecializedClassifiedEditor({
     Number(initialData?.attributes?.delivery_fee_cents) || 500
   );
 
+  // FASE 1: Hortifrúti Fresco & Maturação
+  const [grocerySupportsFreshPricing, setGrocerySupportsFreshPricing] = useState<boolean>(
+    initialData?.attributes?.grocery_fresh_pricing?.supports_fresh_pricing ??
+    (initialData?.attributes?.grocery_department === "hortifruti" || initialData?.attributes?.unit_type === "kg")
+  );
+  const [groceryDefaultPricingMode, setGroceryDefaultPricingMode] = useState<"unit" | "weight">(
+    initialData?.attributes?.grocery_fresh_pricing?.default_pricing_mode || "unit"
+  );
+  const [groceryAvgPieceWeightGrams, setGroceryAvgPieceWeightGrams] = useState<number>(
+    initialData?.attributes?.grocery_fresh_pricing?.avg_piece_weight_grams || 500
+  );
+  const [groceryPricePerKgCents, setGroceryPricePerKgCents] = useState<number>(
+    initialData?.attributes?.grocery_fresh_pricing?.price_per_kg_cents || 0
+  );
+  const [groceryRipenessEnabled, setGroceryRipenessEnabled] = useState<boolean>(
+    initialData?.attributes?.grocery_ripeness_config?.enabled ??
+    (initialData?.attributes?.grocery_department === "hortifruti")
+  );
+  const [groceryRipenessStages, setGroceryRipenessStages] = useState<RipenessStage[]>(
+    initialData?.attributes?.grocery_ripeness_config?.stages || ["menos_maduro", "maduro", "mais_maduro"]
+  );
+
+  // FASE 1: Motor de Promoções & Upsell (Gamificação)
+  const [groceryDiscountTiers, setGroceryDiscountTiers] = useState<ProgressiveDiscountTier[]>(() => {
+    if (Array.isArray(initialData?.attributes?.progressive_discount_tiers) && initialData.attributes.progressive_discount_tiers.length > 0) {
+      return initialData.attributes.progressive_discount_tiers;
+    }
+    return [
+      { min_quantity: 2, discount_type: "percentage", discount_value: 10 },
+      { min_quantity: 3, discount_type: "percentage", discount_value: 20 },
+    ];
+  });
+  const [groceryProgressiveDiscountsEnabled, setGroceryProgressiveDiscountsEnabled] = useState<boolean>(
+    (initialData?.attributes?.progressive_discount_tiers?.length ?? 0) > 0
+  );
+
+  // FASE 1: Oferta Relâmpago / Order Bump no Checkout
+  const [groceryOrderBumpEnabled, setGroceryOrderBumpEnabled] = useState<boolean>(
+    initialData?.attributes?.order_bump_offer?.enabled ?? false
+  );
+  const [groceryOrderBumpTitle, setGroceryOrderBumpTitle] = useState<string>(
+    initialData?.attributes?.order_bump_offer?.target_title || ""
+  );
+  const [groceryOrderBumpSpecialPriceCents, setGroceryOrderBumpSpecialPriceCents] = useState<number>(
+    initialData?.attributes?.order_bump_offer?.special_price_cents || 0
+  );
+  const [groceryOrderBumpOriginalPriceCents, setGroceryOrderBumpOriginalPriceCents] = useState<number>(
+    initialData?.attributes?.order_bump_offer?.original_price_cents || 0
+  );
+  const [groceryOrderBumpBadge, setGroceryOrderBumpBadge] = useState<string>(
+    initialData?.attributes?.order_bump_offer?.badge_text || "Oferta Relâmpago"
+  );
+
   // Specialized: Serviços Especializados & Conselhos
   const [serviceSubNiche, setServiceSubNiche] = useState<string>(
     initialData?.attributes?.service_subniche || "advocacia"
@@ -2231,6 +2290,27 @@ function SpecializedClassifiedEditor({
         attributes.prep_options = groceryPrepOptions;
         attributes.delivery_estimate = groceryDeliveryEstimate;
         attributes.delivery_fee_cents = groceryDeliveryFeeCents;
+        attributes.grocery_fresh_pricing = grocerySupportsFreshPricing ? {
+          supports_fresh_pricing: true,
+          default_pricing_mode: groceryDefaultPricingMode,
+          avg_piece_weight_grams: groceryAvgPieceWeightGrams,
+          price_per_kg_cents: groceryPricePerKgCents || (priceCents > 0 ? priceCents * 2 : 990),
+          price_per_unit_cents: priceCents,
+        } : undefined;
+        attributes.grocery_ripeness_config = groceryRipenessEnabled ? {
+          enabled: true,
+          stages: groceryRipenessStages,
+          default_stage: "maduro",
+        } : undefined;
+        attributes.progressive_discount_tiers = groceryProgressiveDiscountsEnabled && groceryDiscountTiers.length > 0 ? groceryDiscountTiers : undefined;
+        attributes.order_bump_offer = groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
+          enabled: true,
+          mode: "manual",
+          target_title: groceryOrderBumpTitle.trim(),
+          special_price_cents: groceryOrderBumpSpecialPriceCents,
+          original_price_cents: groceryOrderBumpOriginalPriceCents,
+          badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
+        } : undefined;
       } else if (niche.id === "negocio") {
         attributes.niche = "business";
         attributes.is_business_sale = true;
@@ -2786,6 +2866,27 @@ function SpecializedClassifiedEditor({
         prep_options: groceryPrepOptions,
         delivery_estimate: groceryDeliveryEstimate,
         delivery_fee_cents: groceryDeliveryFeeCents,
+        grocery_fresh_pricing: grocerySupportsFreshPricing ? {
+          supports_fresh_pricing: true,
+          default_pricing_mode: groceryDefaultPricingMode,
+          avg_piece_weight_grams: groceryAvgPieceWeightGrams,
+          price_per_kg_cents: groceryPricePerKgCents || (priceCents > 0 ? priceCents * 2 : 990),
+          price_per_unit_cents: priceCents,
+        } : undefined,
+        grocery_ripeness_config: groceryRipenessEnabled ? {
+          enabled: true,
+          stages: groceryRipenessStages,
+          default_stage: "maduro",
+        } : undefined,
+        progressive_discount_tiers: groceryProgressiveDiscountsEnabled && groceryDiscountTiers.length > 0 ? groceryDiscountTiers : undefined,
+        order_bump_offer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
+          enabled: true,
+          mode: "manual",
+          target_title: groceryOrderBumpTitle.trim(),
+          special_price_cents: groceryOrderBumpSpecialPriceCents,
+          original_price_cents: groceryOrderBumpOriginalPriceCents,
+          badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
+        } : undefined,
         // Negócios
         is_business_sale: niche.id === "negocio",
         business_type: businessType,
@@ -5554,6 +5655,289 @@ function SpecializedClassifiedEditor({
                       />
                     </div>
                   </div>
+
+                  {/* Lógica de Produtos Frescos (Hortifrúti, Peso Variável & Maturação) */}
+                  <div className="p-4 rounded-xl border border-border/50 bg-muted/15 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Scale className="size-4 text-primary" />
+                          <span>Hortifrúti & Produtos Frescos (Peso Variável / Maturação)</span>
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Permite ao cliente alternar entre compra por unidade ou peso e escolher o nível de maturação.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={grocerySupportsFreshPricing}
+                        onCheckedChange={setGrocerySupportsFreshPricing}
+                      />
+                    </div>
+
+                    {grocerySupportsFreshPricing && (
+                      <div className="space-y-3 pt-2 border-t border-border/40">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-foreground font-medium">Modo Padrão de Venda</Label>
+                            <Select
+                              value={groceryDefaultPricingMode}
+                              onValueChange={(v: "unit" | "weight") => setGroceryDefaultPricingMode(v)}
+                            >
+                              <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unit">Por Unidade (Padrão)</SelectItem>
+                                <SelectItem value="weight">Por Peso (Quilo / kg)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-foreground font-medium">Peso Médio da Peça (g)</Label>
+                            <Input
+                              type="number"
+                              value={groceryAvgPieceWeightGrams || ""}
+                              onChange={(e) => setGroceryAvgPieceWeightGrams(Number(e.target.value) || 0)}
+                              placeholder="Ex: 500"
+                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-foreground font-medium">Preço por Quilo (R$/kg)</Label>
+                            <CurrencyField
+                              cents={groceryPricePerKgCents}
+                              onChange={setGroceryPricePerKgCents}
+                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Seletor de Nível de Maturação */}
+                        <div className="p-3 rounded-lg border border-border/40 bg-background/50 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold text-foreground">
+                              Habilitar Escolha de Ponto de Maturação
+                            </Label>
+                            <Switch
+                              checked={groceryRipenessEnabled}
+                              onCheckedChange={setGroceryRipenessEnabled}
+                            />
+                          </div>
+                          {groceryRipenessEnabled && (
+                            <div className="grid grid-cols-3 gap-2 pt-1 text-center text-xs">
+                              <div className="p-2 rounded-lg border border-border/50 bg-muted/20">
+                                <p className="font-bold text-foreground">Menos maduro</p>
+                                <p className="text-[10px] text-muted-foreground">Mais firme / consumo na semana</p>
+                              </div>
+                              <div className="p-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10">
+                                <p className="font-bold text-emerald-700 dark:text-emerald-300">Maduro</p>
+                                <p className="text-[10px] text-muted-foreground">Ponto ideal / consumo em 1-2 dias</p>
+                              </div>
+                              <div className="p-2 rounded-lg border border-border/50 bg-muted/20">
+                                <p className="font-bold text-foreground">Mais maduro</p>
+                                <p className="text-[10px] text-muted-foreground">Bem maduro / consumo imediato</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Motor de Desconto Progressivo (Gamificação - Compre Mais, Pague Menos) */}
+                  <div className="p-4 rounded-xl border border-border/50 bg-muted/15 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <BadgePercent className="size-4 text-emerald-600 dark:text-emerald-400" />
+                          <span>Desconto Progressivo (Compre Mais, Pague Menos)</span>
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Incentive pedidos maiores com checklist de faixas de desconto que se ativam dinamicamente.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={groceryProgressiveDiscountsEnabled}
+                        onCheckedChange={setGroceryProgressiveDiscountsEnabled}
+                      />
+                    </div>
+
+                    {groceryProgressiveDiscountsEnabled && (
+                      <div className="space-y-2.5 pt-2 border-t border-border/40">
+                        {groceryDiscountTiers.map((tier, idx) => (
+                          <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-background border border-border/50">
+                            <div className="w-24 space-y-0.5">
+                              <span className="text-[10px] text-muted-foreground block">Mínimo (un)</span>
+                              <Input
+                                type="number"
+                                min={2}
+                                value={tier.min_quantity}
+                                onChange={(e) => {
+                                  const val = Math.max(2, Number(e.target.value) || 2);
+                                  const updated = [...groceryDiscountTiers];
+                                  updated[idx] = { ...updated[idx], min_quantity: val };
+                                  setGroceryDiscountTiers(updated);
+                                }}
+                                className="h-9 rounded-lg text-xs bg-muted/20 font-mono"
+                              />
+                            </div>
+
+                            <div className="w-36 space-y-0.5">
+                              <span className="text-[10px] text-muted-foreground block">Tipo</span>
+                              <Select
+                                value={tier.discount_type}
+                                onValueChange={(v: "percentage" | "fixed_cents") => {
+                                  const updated = [...groceryDiscountTiers];
+                                  updated[idx] = { ...updated[idx], discount_type: v };
+                                  setGroceryDiscountTiers(updated);
+                                }}
+                              >
+                                <SelectTrigger className="h-9 rounded-lg text-xs bg-muted/20">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="percentage">Porcentagem (%)</SelectItem>
+                                  <SelectItem value="fixed_cents">Valor Fixo (R$)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex-1 space-y-0.5">
+                              <span className="text-[10px] text-muted-foreground block">
+                                {tier.discount_type === "percentage" ? "Desconto (%)" : "Desconto (R$)"}
+                              </span>
+                              {tier.discount_type === "percentage" ? (
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={90}
+                                  value={tier.discount_value}
+                                  onChange={(e) => {
+                                    const val = Number(e.target.value) || 0;
+                                    const updated = [...groceryDiscountTiers];
+                                    updated[idx] = { ...updated[idx], discount_value: val };
+                                    setGroceryDiscountTiers(updated);
+                                  }}
+                                  placeholder="10"
+                                  className="h-9 rounded-lg text-xs bg-muted/20 font-mono"
+                                />
+                              ) : (
+                                <CurrencyField
+                                  cents={tier.discount_value}
+                                  onChange={(val) => {
+                                    const updated = [...groceryDiscountTiers];
+                                    updated[idx] = { ...updated[idx], discount_value: val };
+                                    setGroceryDiscountTiers(updated);
+                                  }}
+                                  className="h-9 rounded-lg text-xs bg-muted/20 font-mono"
+                                />
+                              )}
+                            </div>
+
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setGroceryDiscountTiers(groceryDiscountTiers.filter((_, i) => i !== idx));
+                              }}
+                              className="size-8 rounded-lg text-muted-foreground hover:text-destructive shrink-0 mt-3"
+                              title="Remover faixa"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+
+                        {groceryDiscountTiers.length < 4 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const lastTier = groceryDiscountTiers[groceryDiscountTiers.length - 1];
+                              const nextMin = lastTier ? lastTier.min_quantity + 1 : 2;
+                              setGroceryDiscountTiers([
+                                ...groceryDiscountTiers,
+                                { min_quantity: nextMin, discount_type: "percentage", discount_value: 15 },
+                              ]);
+                            }}
+                            className="w-full h-8 rounded-lg text-xs font-semibold gap-1.5 border-dashed cursor-pointer"
+                          >
+                            <Plus className="size-3.5" />
+                            <span>Adicionar Nova Faixa de Desconto</span>
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Oferta Relâmpago / Order Bump no Checkout */}
+                  <div className="p-4 rounded-xl border border-border/50 bg-muted/15 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Zap className="size-4 text-amber-500 fill-amber-500" />
+                          <span>Oferta Relâmpago no Checkout (Order Bump / Venda Cruzada)</span>
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Exibe um card de produto complementar com desconto rápido antes de finalizar o pedido.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={groceryOrderBumpEnabled}
+                        onCheckedChange={setGroceryOrderBumpEnabled}
+                      />
+                    </div>
+
+                    {groceryOrderBumpEnabled && (
+                      <div className="space-y-3 pt-2 border-t border-border/40">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-foreground font-medium">Nome do Produto em Oferta *</Label>
+                            <Input
+                              value={groceryOrderBumpTitle}
+                              onChange={(e) => setGroceryOrderBumpTitle(e.target.value)}
+                              placeholder="Ex: Pizza Calabresa Artesanal ou Maçã Gala 1kg"
+                              className="h-11 rounded-xl text-xs bg-background"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-foreground font-medium">Selo / Chamada</Label>
+                            <Input
+                              value={groceryOrderBumpBadge}
+                              onChange={(e) => setGroceryOrderBumpBadge(e.target.value)}
+                              placeholder="Ex: Oferta Relâmpago ou Aproveite Também"
+                              className="h-11 rounded-xl text-xs bg-background"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-foreground font-medium">Preço Promocional Especial (R$) *</Label>
+                            <CurrencyField
+                              cents={groceryOrderBumpSpecialPriceCents}
+                              onChange={setGroceryOrderBumpSpecialPriceCents}
+                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-foreground font-medium">Preço Original Riscado (R$)</Label>
+                            <CurrencyField
+                              cents={groceryOrderBumpOriginalPriceCents}
+                              onChange={setGroceryOrderBumpOriginalPriceCents}
+                              className="h-11 rounded-xl text-xs bg-background font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -7825,6 +8209,27 @@ function SpecializedClassifiedEditor({
                   maxInstallments,
                   cardInterestFree,
                   acceptsCash,
+                  groceryFreshPricing: grocerySupportsFreshPricing ? {
+                    supports_fresh_pricing: true,
+                    default_pricing_mode: groceryDefaultPricingMode,
+                    avg_piece_weight_grams: groceryAvgPieceWeightGrams,
+                    price_per_kg_cents: groceryPricePerKgCents || (priceCents > 0 ? priceCents * 2 : 990),
+                    price_per_unit_cents: priceCents,
+                  } : undefined,
+                  groceryRipenessConfig: groceryRipenessEnabled ? {
+                    enabled: true,
+                    stages: groceryRipenessStages,
+                    default_stage: "maduro",
+                  } : undefined,
+                  progressiveDiscountTiers: groceryProgressiveDiscountsEnabled && groceryDiscountTiers.length > 0 ? groceryDiscountTiers : undefined,
+                  orderBumpOffer: groceryOrderBumpEnabled && groceryOrderBumpTitle.trim() ? {
+                    enabled: true,
+                    mode: "manual",
+                    target_title: groceryOrderBumpTitle.trim(),
+                    special_price_cents: groceryOrderBumpSpecialPriceCents,
+                    original_price_cents: groceryOrderBumpOriginalPriceCents,
+                    badge_text: groceryOrderBumpBadge || "Oferta Relâmpago",
+                  } : undefined,
                 }}
                 isOwner={false}
               />
