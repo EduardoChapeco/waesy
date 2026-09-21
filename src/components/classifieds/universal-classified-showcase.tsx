@@ -449,7 +449,13 @@ export function UniversalClassifiedShowcase({
     if (classified?.status === "active") list.push("Disponível");
     if (classified?.status === "reserved") list.push("Reservado");
 
-    if (classified?.category === "real_estate") {
+    if (niche.id === "hospitality_stay") {
+      list.push("Temporada");
+      if (classified?.attributes?.property_type) list.push(classified.attributes.property_type);
+    } else if (niche.id === "travel") {
+      list.push("Viagem");
+      if (classified?.attributes?.duration_days) list.push(`${classified.attributes.duration_days} Dias`);
+    } else if (classified?.category === "real_estate") {
       if (classified.deal_type === "venda" || classified.dealType === "venda") list.push("Venda");
       else list.push("Aluguel");
       if (classified.attributes?.property_type) list.push(classified.attributes.property_type);
@@ -459,12 +465,6 @@ export function UniversalClassifiedShowcase({
       if (classified.attributes?.year) list.push(String(classified.attributes.year));
       if (classified.attributes?.transmission) list.push(classified.attributes.transmission);
       if (classified.attributes?.fuel) list.push(classified.attributes.fuel);
-    } else if (niche.id === "hospitality_stay") {
-      list.push("Temporada");
-      if (classified?.attributes?.property_type) list.push(classified.attributes.property_type);
-    } else if (niche.id === "travel") {
-      list.push("Viagem");
-      if (classified?.attributes?.duration_days) list.push(`${classified.attributes.duration_days} Dias`);
     } else if (classified?.category === "service") {
       list.push("Serviço");
     } else if (classified?.category === "job") {
@@ -488,16 +488,53 @@ export function UniversalClassifiedShowcase({
     const cards: Array<{ icon: any; label: string; value: string }> = [];
     if (!classified) return cards;
 
-    if (classified.category === "real_estate") {
+    if (niche.id === "hospitality_stay") {
+      if (classified.attributes?.property_type) {
+        cards.push({ icon: HomeIcon, label: "Tipo", value: classified.attributes.property_type });
+      }
+      const maxGuests = classified.attributes?.max_guests || classified.max_guests;
+      if (maxGuests) {
+        cards.push({ icon: Users, label: "Capacidade", value: `Até ${maxGuests} hóspede${maxGuests > 1 ? "s" : ""}` });
+      }
+      const bedrooms = classified.attributes?.bedrooms || classified.bedrooms;
+      if (bedrooms) {
+        cards.push({ icon: Bed, label: "Quartos", value: `${bedrooms} quarto${bedrooms > 1 ? "s" : ""}` });
+      }
+      const bathrooms = classified.attributes?.bathrooms || classified.bathrooms;
+      if (bathrooms) {
+        cards.push({ icon: Bath, label: "Banheiros", value: `${bathrooms} banheiro${bathrooms > 1 ? "s" : ""}` });
+      }
+      if (classified.attributes?.checkin_time) {
+        cards.push({ icon: Clock, label: "Check-in", value: `A partir de ${classified.attributes.checkin_time}` });
+      }
+      if (classified.attributes?.checkout_time) {
+        cards.push({ icon: Clock, label: "Check-out", value: `Até ${classified.attributes.checkout_time}` });
+      }
+    } else if (niche.id === "travel") {
+      if (classified.attributes?.duration_days) {
+        cards.push({ icon: Calendar, label: "Duração", value: `${classified.attributes.duration_days} Dias` });
+      }
+      if (classified.attributes?.destination_city) {
+        cards.push({ icon: MapPin, label: "Destino", value: classified.attributes.destination_city });
+      }
+      if (classified.attributes?.hotel_included !== undefined) {
+        cards.push({ icon: ShieldCheck, label: "Hospedagem", value: classified.attributes.hotel_included ? "Inclusa" : "À parte" });
+      }
+      if (classified.attributes?.transport_type) {
+        cards.push({ icon: CheckCircle2, label: "Transporte", value: String(classified.attributes.transport_type) });
+      }
+    } else if (classified.category === "real_estate") {
       if (classified.area_sqm) {
         cards.push({ icon: Ruler, label: "Área útil", value: `${classified.area_sqm} m²` });
       }
-      if (classified.bedrooms) {
+      const bedrooms = classified.bedrooms || classified.attributes?.bedrooms;
+      if (bedrooms) {
         const suites = classified.attributes?.suites ? ` (${classified.attributes.suites} suíte${classified.attributes.suites > 1 ? "s" : ""})` : "";
-        cards.push({ icon: Bed, label: "Quartos", value: `${classified.bedrooms}${suites}` });
+        cards.push({ icon: Bed, label: "Quartos", value: `${bedrooms}${suites}` });
       }
-      if (classified.bathrooms) {
-        cards.push({ icon: Bath, label: "Banheiros", value: String(classified.bathrooms) });
+      const bathrooms = classified.bathrooms || classified.attributes?.bathrooms;
+      if (bathrooms) {
+        cards.push({ icon: Bath, label: "Banheiros", value: String(bathrooms) });
       }
       if (classified.parking_spots) {
         cards.push({ icon: CarFront, label: "Vagas", value: String(classified.parking_spots) });
@@ -570,32 +607,6 @@ export function UniversalClassifiedShowcase({
         cards.push({ icon: TagIcon, label: "Versão", value: classified.attributes.version });
       }
       cards.push({ icon: ShieldCheck, label: "Acesso", value: "Download Imediato" });
-    } else if (niche.id === "hospitality_stay") {
-      if (classified.attributes?.max_guests) {
-        cards.push({ icon: Users, label: "Capacidade", value: `Até ${classified.attributes.max_guests} hóspedes` });
-      }
-      if (classified.attributes?.checkin_time) {
-        cards.push({ icon: Clock, label: "Check-in", value: `A partir de ${classified.attributes.checkin_time}` });
-      }
-      if (classified.attributes?.checkout_time) {
-        cards.push({ icon: Clock, label: "Check-out", value: `Até ${classified.attributes.checkout_time}` });
-      }
-      if (classified.bedrooms) {
-        cards.push({ icon: Bed, label: "Quartos", value: `${classified.bedrooms} quarto(s)` });
-      }
-    } else if (niche.id === "travel") {
-      if (classified.attributes?.duration_days) {
-        cards.push({ icon: Calendar, label: "Duração", value: `${classified.attributes.duration_days} Dias` });
-      }
-      if (classified.attributes?.destination_city) {
-        cards.push({ icon: MapPin, label: "Destino", value: classified.attributes.destination_city });
-      }
-      if (classified.attributes?.hotel_included !== undefined) {
-        cards.push({ icon: ShieldCheck, label: "Hospedagem", value: classified.attributes.hotel_included ? "Inclusa" : "À parte" });
-      }
-      if (classified.attributes?.transport_type) {
-        cards.push({ icon: CheckCircle2, label: "Transporte", value: String(classified.attributes.transport_type) });
-      }
     } else if (isBusiness) {
       if (attrs.monthly_revenue_cents || attrs.monthly_revenue_masked) {
         cards.push({
@@ -1453,7 +1464,7 @@ export function UniversalClassifiedShowcase({
                 )}
 
                 {/* Custos e Encargos (Aluguel, Condomínio, IPTU) */}
-                {classified?.category === "real_estate" && (condoCents > 0 || iptuCents > 0) && (
+                {classified?.category === "real_estate" && niche.id !== "hospitality_stay" && (condoCents > 0 || iptuCents > 0) && (
                   <div className="rounded-xl border border-border/30 bg-card p-4 space-y-3">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
                       Composição de Valores & Custos
@@ -2168,7 +2179,7 @@ export function UniversalClassifiedShowcase({
               )}
 
               {/* Tabela Resumo de Custos (Quando aplicável) */}
-              {classified?.category === "real_estate" && totalMonthlyCents > priceCents && (
+              {classified?.category === "real_estate" && niche.id !== "hospitality_stay" && totalMonthlyCents > priceCents && (
                 <div className="rounded-xl bg-muted/20 p-3.5 space-y-2 text-xs">
                   <div className="flex items-center justify-between text-muted-foreground">
                     <span>Aluguel:</span>
@@ -2204,7 +2215,7 @@ export function UniversalClassifiedShowcase({
                 </Button>
 
                 {/* Botões Secundários — CTAs derivados por nicho via semantics.ts */}
-                <div className="grid grid-cols-2 gap-2">
+                <div className={`grid ${niche.secondaryActionLabel && (classified?.contact_whatsapp || classified?.whatsapp) ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
                   {/* CTA Secundário Canônico por Nicho */}
                   {niche.secondaryActionLabel && (
                     <Button
