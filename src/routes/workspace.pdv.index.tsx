@@ -230,25 +230,23 @@ export const Route = createFileRoute("/workspace/pdv/")({
  head: () => ({ meta: [{ title: "Frente de Caixa (PDV) Pro | Waesy" }] }),
  loader: async () => {
    try {
- const activeRegister = await getActiveRegister();
- if (!activeRegister) {
- throw new Error("CAIXA_FECHADO");
- }
+     const activeRegister = await getActiveRegister().catch(() => null);
 
- if (activeRegister.isExpired) {
- throw new Error("CAIXA_EXPIRADO");
- }
+     const [catalog, priceTables, store] = await Promise.all([
+       listAdminProducts().catch(() => []),
+       listPriceTables().catch(() => []),
+       getStoreSettings().catch(() => null),
+     ]);
 
- const [catalog, priceTables, store] = await Promise.all([
- listAdminProducts().catch(() => []),
- listPriceTables().catch(() => []),
- getStoreSettings().catch(() => null),
- ]);
-
- return { activeRegister, catalog: catalog || [], priceTables: priceTables || [], store };
+     return {
+       activeRegister: activeRegister || null,
+       catalog: catalog || [],
+       priceTables: priceTables || [],
+       store: store || null,
+     };
    } catch (err) {
      console.error("[loader:workspace.pdv.index] Unhandled loader error:", err);
-     return { activeRegister: null, catalog: null, priceTables: null, store: null };
+     return { activeRegister: null, catalog: [], priceTables: [], store: null };
    }
  },
  errorComponent: ({ error }) => {
@@ -311,30 +309,31 @@ interface SplitPayment {
 }
 
 function PdvTerminal() {
- const { activeRegister, catalog, priceTables, store } = ((Route.useLoaderData?.() as any) || {});
- const search = Route.useSearch() as { mesa?: string; orderId?: string };
- const semantics = useMemo(() => getNicheSemantics(store), [store]);
- const availableModes = useMemo(
- () =>
- semantics.posServiceModes && semantics.posServiceModes.length > 0
- ? semantics.posServiceModes
- : [
- { id: "counter", label: "Balcão (Takeout)", placeholder: "Nome do Cliente" },
- { id: "table", label: "Mesa / Salão", placeholder: "Nº da Mesa" },
- { id: "delivery", label: "Delivery", placeholder: "Endereço / Telefone" },
- ],
- [semantics],
- );
+  const { activeRegister, catalog = [], priceTables = [], store } = ((Route.useLoaderData?.() as any) || {});
+  const search = Route.useSearch() as { mesa?: string; orderId?: string };
+  const semantics = useMemo(() => getNicheSemantics(store), [store]);
+  const availableModes = useMemo(
+    () =>
+      semantics.posServiceModes && semantics.posServiceModes.length > 0
+        ? semantics.posServiceModes
+        : [
+            { id: "counter", label: "Balcão (Takeout)", placeholder: "Nome do Cliente" },
+            { id: "table", label: "Mesa / Salão", placeholder: "Nº da Mesa" },
+            { id: "delivery", label: "Delivery", placeholder: "Endereço / Telefone" },
+          ],
+    [semantics],
+  );
 
- const [cart, setCart] = useState<CartItem[]>([]);
- const [searchQuery, setSearchQuery] = useState("");
- const [selectedCategory, setSelectedCategory] = useState<string>("all");
- const [serviceMode, setServiceMode] = useState<string>(() => (search.mesa ? "table" : (availableModes[0]?.id || "counter")));
- const [tableOrComandaNumber, setTableOrComandaNumber] = useState(search.mesa || "");
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [serviceMode, setServiceMode] = useState<string>(() => (search.mesa ? "table" : (availableModes[0]?.id || "counter")));
+  const [tableOrComandaNumber, setTableOrComandaNumber] = useState(search.mesa || "");
 
- const [isProcessing, setIsProcessing] = useState(false);
- const [checkoutOpen, setCheckoutOpen] = useState(false);
- const [modifiersModalOpen, setModifiersModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [mobileTicketOpen, setMobileTicketOpen] = useState(false);
+  const [modifiersModalOpen, setModifiersModalOpen] = useState(false);
  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
  const [isTourOpen, setIsTourOpen] = useState(false);
   const [contractSigningInfo, setContractSigningInfo] = useState<{ contractId: string; title: string; signingUrl: string; whatsappLink: string | null } | null>(null);
@@ -409,7 +408,7 @@ function PdvTerminal() {
  // Categorias extraídas dos produtos
  const categories = useMemo(() => {
  const set = new Set<string>();
- catalog.forEach((p: any) => {
+ (catalog || []).forEach((p: any) => {
  if (p.category?.name) set.add(p.category.name);
  else if (p.category_name) set.add(p.category_name);
  });
@@ -419,7 +418,7 @@ function PdvTerminal() {
  // Lista achatada de produtos
  const flatProducts = useMemo(() => {
  const flat: any[] = [];
- catalog.forEach((p: any) => {
+ (catalog || []).forEach((p: any) => {
  const variants = p.product_variants || p.variants || [];
  if (variants.length > 0) {
  variants.forEach((v: any) => {
@@ -434,6 +433,20 @@ function PdvTerminal() {
  });
  return flat;
  }, [catalog]);
+
+ // Contagem O(1) de produtos por categoria
+ const categoryCounts = useMemo(() => {
+ const map = new Map<string, number>();
+ flatProducts.forEach((item: any) => {
+ const catName = item.product.category?.name || item.product.category_name;
+ if (catName) {
+ map.set(catName, (map.get(catName) || 0) + 1);
+ }
+ });
+ return map;
+ }, [flatProducts]);
+
+ const cartItemCount = useMemo(() => cart.reduce((acc, i) => acc + i.qty, 0), [cart]);
 
  // Filtro por busca e categoria
  const filteredProducts = useMemo(() => {
@@ -584,6 +597,7 @@ function PdvTerminal() {
  const remainingToPay = Math.max(0, cartTotal - totalPaidSoFar);
 
  const handleOpenCheckout = () => {
+   setMobileTicketOpen(false);
    setSplitPayments([]);
    setSplitCount(1);
    setPaymentAmountInput((cartTotal / 100).toFixed(2).replace(".", ","));
@@ -789,6 +803,7 @@ function PdvTerminal() {
 
  toast.success(`Itens enviados para a cozinha na Mesa ${tableOrComandaNumber}!`);
  setCart([]);
+ setMobileTicketOpen(false);
  } catch (err: any) {
  toast.error(err.message || "Erro ao lançar itens na mesa.");
  } finally {
@@ -870,6 +885,186 @@ function PdvTerminal() {
     printThermalReceipt(receiptData, paperWidth);
     toast.success("Conferência cega enviada para impressão térmica!");
   };
+
+  if (!activeRegister) {
+    return <QuickOpenRegisterInlineCard />;
+  }
+
+  if (activeRegister.isExpired) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center w-full px-4 sm:px-0 animate-in fade-in duration-200">
+        <div className="w-full max-w-md p-6 sm:p-10 bg-card sm:rounded-3xl sm:border border-border/60 sm:shadow-sm space-y-6 text-center">
+          <div className="size-14 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+            <Clock className="size-7" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-foreground">Turno Expirado (+24h)</h2>
+            <p className="text-muted-foreground text-xs">
+              Este caixa está aberto há mais de 24 horas. Feche o turno atual para auditar os valores e continuar operando.
+            </p>
+          </div>
+          <Button size="lg" className="w-full text-xs font-bold rounded-xl h-11" asChild>
+            <Link to="/workspace/financeiro/caixa">Ir para Fechamento de Turno</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const renderTicketBody = () => (
+    <div className="flex flex-col h-full bg-card min-h-0">
+      {/* Header do Ticket */}
+      <div className="p-4 border-b border-border/70 flex items-center justify-between bg-muted/20 shrink-0">
+        <div className="flex items-center gap-2">
+          <ShoppingCart className="size-4 text-primary" />
+          <div>
+            <h2 className="text-xs font-bold text-foreground">Ticket de Venda</h2>
+            <p className="text-[10px] text-muted-foreground">
+              {serviceMode === "takeout"
+                ? "Balcão"
+                : `${serviceMode.toUpperCase()}: ${tableOrComandaNumber || "Sem nº"}`}
+            </p>
+          </div>
+        </div>
+        {cart.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCart([])}
+            className="h-8 px-2.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+          >
+            Limpar
+          </Button>
+        )}
+      </div>
+
+      {/* Lista de Itens do Ticket */}
+      <ScrollArea className="flex-1 p-3">
+        {cart.length === 0 ? (
+          <div className="py-24 text-center text-muted-foreground space-y-2">
+            <ShoppingCart className="size-10 opacity-20 mx-auto" />
+            <p className="text-xs font-bold text-foreground">Ticket Vazio</p>
+            <p className="text-[11px] opacity-70">Toque nos produtos ao lado para adicionar</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {cart.map((item) => (
+              <div
+                key={item.id}
+                className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-2 text-xs"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 truncate">
+                    <span className="font-bold text-foreground">{item.product.title}</span>
+                    {item.variant.sku && item.variant.sku !== "DEFAULT" && (
+                      <p className="text-[10px] text-muted-foreground font-mono">
+                        {item.variant.sku}
+                      </p>
+                    )}
+                    {item.selectedModifiers.length > 0 && (
+                      <p className="text-[10px] text-primary font-medium mt-0.5">
+                        + {item.selectedModifiers.map((m) => m.title).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                  <span className="font-bold text-foreground font-mono">
+                    {formatMoney(item.unitPriceCents * item.qty)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-1 bg-background border border-border rounded-xl p-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-9 sm:size-8 rounded-lg cursor-pointer"
+                      onClick={() => updateQty(item.id, -1)}
+                    >
+                      <Minus className="size-3.5" />
+                    </Button>
+                    <span className="w-8 text-center font-bold font-mono text-xs">{item.qty}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-9 sm:size-8 rounded-lg cursor-pointer"
+                      onClick={() => updateQty(item.id, 1)}
+                    >
+                      <Plus className="size-3.5" />
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
+                    onClick={() => removeItem(item.id)}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </ScrollArea>
+
+      {/* Resumo Financeiro & Botão de Cobrança */}
+      <div className="p-4 border-t border-border/70 space-y-3 bg-muted/20 shrink-0">
+        <div className="space-y-1.5 text-xs">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span>Subtotal</span>
+            <span className="font-mono">{formatMoney(cartSubtotal)}</span>
+          </div>
+          {discountCents > 0 && (
+            <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+              <span>Desconto</span>
+              <span className="font-mono">-{formatMoney(discountCents)}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-base font-black text-foreground pt-1.5 border-t border-border/40">
+            <span>Total a Cobrar</span>
+            <span className="font-mono text-lg">{formatMoney(cartTotal)}</span>
+          </div>
+        </div>
+
+        {serviceMode === "table" && tableOrComandaNumber ? (
+          <div className="space-y-2">
+            <Button
+              size="lg"
+              onClick={handleSendItemsToTable}
+              disabled={cart.length === 0 || isProcessing}
+              className="w-full h-12 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white gap-2 cursor-pointer shadow-md"
+            >
+              <Utensils className="size-4" />
+              <span>Enviar para a Cozinha (Mesa {tableOrComandaNumber})</span>
+              <span className="font-mono ml-auto text-sm">{formatMoney(cartTotal)}</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenCheckout}
+              disabled={cart.length === 0}
+              className="w-full h-9 rounded-xl font-bold text-xs gap-1.5 cursor-pointer"
+            >
+              <CreditCard className="size-3.5" />
+              <span>Receber / Cobrar no Balcão [F4]</span>
+            </Button>
+          </div>
+        ) : (
+          <Button
+            size="lg"
+            onClick={handleOpenCheckout}
+            disabled={cart.length === 0}
+            className="w-full h-12 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-md"
+          >
+            <CreditCard className="size-4" />
+            <span>Cobrar [F4]</span>
+            <span className="font-mono ml-auto text-sm">{formatMoney(cartTotal)}</span>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
 
  return (
  <div className="flex flex-col h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] overflow-hidden bg-background rounded-2xl border border-border/80 shadow-xs">
@@ -1059,9 +1254,7 @@ function PdvTerminal() {
  Todos ({flatProducts.length})
  </button>
  {categories.map((cat) => {
- const count = flatProducts.filter(
- (p) => p.product.category?.name === cat || p.product.category_name === cat,
- ).length;
+ const count = categoryCounts.get(cat) || 0;
  return (
  <button
  key={cat}
@@ -1157,158 +1350,9 @@ function PdvTerminal() {
  </div>
  </div>
 
- {/* ── COLUNA DIREITA: PAINEL TÁTIL DO TICKET / CARRINHO ── */}
- <div className="w-80 lg:w-96 flex flex-col h-full bg-card shrink-0">
- {/* Header do Ticket */}
- <div className="p-4 border-b border-border/70 flex items-center justify-between bg-muted/20">
- <div className="flex items-center gap-2">
- <ShoppingCart className="size-4 text-primary" />
- <div>
- <h2 className="text-xs font-bold text-foreground">Ticket de Venda</h2>
- <p className="text-[10px] text-muted-foreground">
- {serviceMode === "takeout"
- ? "Balcão"
- : `${serviceMode.toUpperCase()}: ${tableOrComandaNumber || "Sem nº"}`}
- </p>
- </div>
- </div>
- {cart.length > 0 && (
- <Button
- variant="ghost"
- size="sm"
- onClick={() => setCart([])}
- className="h-8 px-2.5 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
- >
- Limpar
- </Button>
- )}
- </div>
-
- {/* Lista de Itens do Ticket */}
- <ScrollArea className="flex-1 p-3">
- {cart.length === 0 ? (
- <div className="py-24 text-center text-muted-foreground space-y-2">
- <ShoppingCart className="size-10 opacity-20 mx-auto" />
- <p className="text-xs font-bold text-foreground">Ticket Vazio</p>
- <p className="text-[11px] opacity-70">Toque nos produtos ao lado para adicionar</p>
- </div>
- ) : (
- <div className="space-y-2.5">
- {cart.map((item) => (
- <div
- key={item.id}
- className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-2 text-xs"
- >
- <div className="flex items-start justify-between gap-2">
- <div className="flex-1 truncate">
- <span className="font-bold text-foreground">{item.product.title}</span>
- {item.variant.sku && item.variant.sku !== "DEFAULT" && (
- <p className="text-[10px] text-muted-foreground font-mono">
- {item.variant.sku}
- </p>
- )}
- {item.selectedModifiers.length > 0 && (
- <p className="text-[10px] text-primary font-medium mt-0.5">
- + {item.selectedModifiers.map((m) => m.title).join(", ")}
- </p>
- )}
- </div>
- <span className="font-bold text-foreground font-mono">
- {formatMoney(item.unitPriceCents * item.qty)}
- </span>
- </div>
-
- <div className="flex items-center justify-between pt-1">
- <div className="flex items-center gap-1 bg-background border border-border rounded-xl p-0.5">
- <Button
- variant="ghost"
- size="icon"
- className="size-9 sm:size-8 rounded-lg cursor-pointer"
- onClick={() => updateQty(item.id, -1)}
- >
- <Minus className="size-3.5" />
- </Button>
- <span className="w-8 text-center font-bold font-mono text-xs">{item.qty}</span>
- <Button
- variant="ghost"
- size="icon"
- className="size-9 sm:size-8 rounded-lg cursor-pointer"
- onClick={() => updateQty(item.id, 1)}
- >
- <Plus className="size-3.5" />
- </Button>
- </div>
-
- <Button
- variant="ghost"
- size="icon"
- className="size-9 sm:size-8 rounded-lg text-destructive hover:bg-destructive/10 cursor-pointer"
- onClick={() => removeItem(item.id)}
- >
- <X className="size-4" />
- </Button>
- </div>
- </div>
- ))}
- </div>
- )}
- </ScrollArea>
-
- {/* Resumo Financeiro & Botão de Cobrança */}
- <div className="p-4 border-t border-border/70 space-y-3 bg-muted/20 shrink-0">
- <div className="space-y-1.5 text-xs">
- <div className="flex items-center justify-between text-muted-foreground">
- <span>Subtotal</span>
- <span className="font-mono">{formatMoney(cartSubtotal)}</span>
- </div>
- {discountCents > 0 && (
- <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold">
- <span>Desconto</span>
- <span className="font-mono">-{formatMoney(discountCents)}</span>
- </div>
- )}
- <div className="flex items-center justify-between text-base font-black text-foreground pt-1.5 border-t border-border/40">
- <span>Total a Cobrar</span>
- <span className="font-mono text-lg">{formatMoney(cartTotal)}</span>
- </div>
- </div>
-
- {serviceMode === "table" && tableOrComandaNumber ? (
- <div className="space-y-2">
- <Button
- size="lg"
- onClick={handleSendItemsToTable}
- disabled={cart.length === 0 || isProcessing}
- className="w-full h-12 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white gap-2 cursor-pointer shadow-md"
- >
- <Utensils className="size-4" />
- <span>Enviar para a Cozinha (Mesa {tableOrComandaNumber})</span>
- <span className="font-mono ml-auto text-sm">{formatMoney(cartTotal)}</span>
- </Button>
- <Button
- variant="outline"
- size="sm"
- onClick={handleOpenCheckout}
- disabled={cart.length === 0}
- className="w-full h-9 rounded-xl font-bold text-xs gap-1.5"
- >
- <CreditCard className="size-3.5" />
- <span>Receber / Cobrar no Balcão [F4]</span>
- </Button>
- </div>
- ) : (
- <Button
- size="lg"
- onClick={handleOpenCheckout}
- disabled={cart.length === 0}
- className="w-full h-12 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-md"
- >
- <CreditCard className="size-4" />
- <span>Cobrar [F4]</span>
- <span className="font-mono ml-auto text-sm">{formatMoney(cartTotal)}</span>
- </Button>
- )}
- </div>
+ {/* ── COLUNA DIREITA: PAINEL TÁTIL DO TICKET / CARRINHO (DESKTOP) ── */}
+ <div className="hidden lg:flex lg:w-80 xl:w-96 flex-col h-full bg-card shrink-0">
+ {renderTicketBody()}
  </div>
  </div>
 
@@ -1754,6 +1798,44 @@ function PdvTerminal() {
         isOpen={isTourOpen}
         onOpenChange={setIsTourOpen}
       />
+
+      {/* ── BARRA FLUTUANTE MOBILE (THUMB ZONE) ── */}
+      {cart.length > 0 && (
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-2.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
+          <div className="flex items-center gap-2.5 min-w-0 pl-1">
+            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <ShoppingCart className="size-4" />
+            </div>
+            <div className="truncate">
+              <span className="text-xs font-bold text-foreground block truncate">
+                {cartItemCount} {cartItemCount === 1 ? "item" : "itens"} no Ticket
+              </span>
+              <span className="text-xs font-black font-mono text-primary">
+                {formatMoney(cartTotal)}
+              </span>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => setMobileTicketOpen(true)}
+            className="h-10 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground shrink-0 gap-1.5 shadow-xs cursor-pointer"
+          >
+            <span>Ver Ticket / Cobrar</span>
+            <ArrowUpRight className="size-3.5" />
+          </Button>
+        </div>
+      )}
+
+      {/* ── SHEET DESLIZANTE DO TICKET MOBILE ── */}
+      <Sheet open={mobileTicketOpen} onOpenChange={setMobileTicketOpen}>
+        <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col rounded-t-3xl border-t border-border bg-card">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Ticket de Venda</SheetTitle>
+            <SheetDescription>Itens e finalização do pedido</SheetDescription>
+          </SheetHeader>
+          {renderTicketBody()}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

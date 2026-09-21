@@ -48,11 +48,11 @@ export const Route = createFileRoute("/workspace/marketing/hotpages")({
  const initialModule = (store?.settings?.segment || store?.segment || store?.type || "home") as HotpageModule;
  const hotpages = await listHotpages({ data: { module: initialModule } }).catch(() => []);
  return { hotpages, session, store, initialModule };
-   } catch (err) {
-     console.error("[loader:workspace.marketing.hotpages] Unhandled loader error:", err);
-     return { hotpages: null, session: null, store: null, initialModule: null };
-   }
- },
+    } catch (err) {
+      console.error("[loader:workspace.marketing.hotpages] Unhandled loader error:", err);
+      return { hotpages: [], session: null, store: null, initialModule: "home" };
+    }
+  },
  component: WorkspaceStoreHotpagesPage,
 });
 
@@ -75,6 +75,8 @@ function WorkspaceStoreHotpagesPage() {
  const [bgOverlayOpacity, setBgOverlayOpacity] = useState(40);
  const [showTitle, setShowTitle] = useState(true);
  const [showBadge, setShowBadge] = useState(true);
+ const [showShadow, setShowShadow] = useState(false);
+ const [textColor, setTextColor] = useState("");
 
  const isPlatformAdmin = session?.role === "platform_admin";
 
@@ -98,11 +100,13 @@ function WorkspaceStoreHotpagesPage() {
  setBgMediaType("none");
  setBgMediaUrl("");
  setBgTexture("none");
- setBgOverlayOpacity(40);
- setShowTitle(true);
- setShowBadge(true);
- setIsModalOpen(true);
- };
+    setBgOverlayOpacity(40);
+    setShowTitle(true);
+    setShowBadge(true);
+    setShowShadow(false);
+    setTextColor("");
+    setIsModalOpen(true);
+  };
 
  const handleOpenEdit = (h: HotpageDTO) => {
  setEditingId(h.id);
@@ -114,11 +118,13 @@ function WorkspaceStoreHotpagesPage() {
  setBgMediaType(h.bg_media_type || "none");
  setBgMediaUrl(h.bg_media_url || "");
  setBgTexture(h.bg_texture || "none");
- setBgOverlayOpacity(h.bg_overlay_opacity ?? 40);
- setShowTitle(h.show_title !== false);
- setShowBadge(h.show_badge !== false);
- setIsModalOpen(true);
- };
+    setBgOverlayOpacity(h.bg_overlay_opacity ?? 40);
+    setShowTitle(h.show_title !== false);
+    setShowBadge(h.show_badge !== false);
+    setShowShadow(h.show_shadow === true);
+    setTextColor(h.text_color || "");
+    setIsModalOpen(true);
+  };
 
  const handleSave = async () => {
  if (!title.trim()) {
@@ -138,14 +144,16 @@ function WorkspaceStoreHotpagesPage() {
  bg_media_type: bgMediaType,
  bg_media_url: bgMediaUrl || undefined,
  bg_texture: bgTexture,
- bg_overlay_opacity: bgOverlayOpacity,
- show_title: showTitle,
- show_badge: showBadge,
- module,
- is_active: true,
- sort_order: 0,
- },
- });
+        bg_overlay_opacity: bgOverlayOpacity,
+        show_title: showTitle,
+        show_badge: showBadge,
+        show_shadow: showShadow,
+        text_color: textColor.trim() || undefined,
+        module,
+        is_active: true,
+        sort_order: 0,
+      },
+    });
 
  toast.success(editingId ? "Destaque atualizado!" : "Destaque criado com sucesso!");
  setIsModalOpen(false);
@@ -248,15 +256,17 @@ function WorkspaceStoreHotpagesPage() {
 
  {/* Mini Preview do Chip */}
  <div className="pt-2">
- <DynamicMediaChip
- label={h.title}
- badge={h.badge_label || undefined}
- bg_media_type={h.bg_media_type || undefined}
- bg_media_url={h.bg_media_url || undefined}
- bg_texture={h.bg_texture as any || undefined}
- bg_overlay_opacity={h.bg_overlay_opacity ?? undefined}
- to={h.target_route || undefined}
- />
+                <DynamicMediaChip
+                  label={h.title}
+                  badge={h.badge_label || undefined}
+                  bg_media_type={h.bg_media_type || undefined}
+                  bg_media_url={h.bg_media_url || undefined}
+                  bg_texture={h.bg_texture as any || undefined}
+                  bg_overlay_opacity={h.bg_overlay_opacity ?? undefined}
+                  show_shadow={h.show_shadow}
+                  text_color={h.text_color}
+                  to={h.target_route || undefined}
+                />
  </div>
  </div>
 
@@ -292,14 +302,16 @@ function WorkspaceStoreHotpagesPage() {
  {/* Live Preview */}
  <div className="space-y-1.5 p-3 rounded-2xl bg-muted/20 border border-border/50">
  <span className="text-[11px] font-bold text-muted-foreground">Pré-Visualização em Tempo Real</span>
- <DynamicMediaChip
- label={title || "Nome do Destaque"}
- badge={badgeLabel || undefined}
- bg_media_type={bgMediaType}
- bg_media_url={bgMediaUrl || undefined}
- bg_texture={bgTexture as any}
- bg_overlay_opacity={bgOverlayOpacity}
- />
+              <DynamicMediaChip
+                label={title || "Nome do Destaque"}
+                badge={badgeLabel || undefined}
+                bg_media_type={bgMediaType}
+                bg_media_url={bgMediaUrl || undefined}
+                bg_texture={bgTexture as any}
+                bg_overlay_opacity={bgOverlayOpacity}
+                show_shadow={showShadow}
+                text_color={textColor || undefined}
+              />
  </div>
 
  <div className="space-y-2">
@@ -417,11 +429,35 @@ function WorkspaceStoreHotpagesPage() {
  <Label className="text-xs sm:text-sm font-semibold">Exibir Título</Label>
  <Switch checked={showTitle} onCheckedChange={setShowTitle} />
  </div>
- <div className="flex items-center justify-between">
- <Label className="text-xs sm:text-sm font-semibold">Exibir Badge</Label>
- <Switch checked={showBadge} onCheckedChange={setShowBadge} />
- </div>
- </div>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs sm:text-sm font-semibold">Exibir Badge</Label>
+              <Switch checked={showBadge} onCheckedChange={setShowBadge} />
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <div>
+                <Label className="text-xs sm:text-sm font-semibold">Sombra no Card / Texto</Label>
+                <p className="text-[11px] text-muted-foreground">Realça contraste sobre imagens claras</p>
+              </div>
+              <Switch checked={showShadow} onCheckedChange={setShowShadow} />
+            </div>
+            <div className="space-y-1.5 pt-1">
+              <Label className="text-xs sm:text-sm font-semibold">Cor do Texto (Opcional)</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={textColor}
+                  onChange={(e) => setTextColor(e.target.value)}
+                  placeholder="Ex: #FFFFFF ou #000000"
+                  className="rounded-xl text-sm h-11 bg-background font-mono"
+                />
+                {textColor && (
+                  <div
+                    className="size-9 rounded-xl border border-border shrink-0 shadow-xs"
+                    style={{ backgroundColor: textColor }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
 
  <div className="pt-5 flex items-center justify-end gap-2.5">
  <Button

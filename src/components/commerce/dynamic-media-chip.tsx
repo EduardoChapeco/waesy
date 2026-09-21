@@ -32,6 +32,8 @@ export interface DynamicMediaChipProps {
  bg_overlay_opacity?: number | null; // 0 to 100
  bg_texture?: MediaChipTexture | null;
  texture?: MediaChipTexture | null;
+ show_shadow?: boolean | null;
+ text_color?: string | null;
 
  size?: "sm" | "md" | "lg";
  className?: string;
@@ -59,6 +61,8 @@ export function DynamicMediaChip({
  bg_overlay_opacity = 35,
  bg_texture: textureProp = "none",
  texture,
+ show_shadow = false,
+ text_color,
  size = "md",
  className = "",
  ariaLabel,
@@ -104,6 +108,8 @@ export function DynamicMediaChip({
  const content = (
  <div
  className={`relative overflow-hidden inline-flex items-center gap-2 sm:gap-3 border transition-all select-none group cursor-pointer shrink-0 max-w-full active:scale-[0.98] ${heightClasses} ${
+ show_shadow ? "shadow-md hover:shadow-lg" : "shadow-xs"
+ } ${
  isActive
  ? "border-foreground ring-2 ring-foreground/10 font-bold"
  : "border-border hover:border-foreground/30 hover:bg-muted/60"
@@ -181,12 +187,17 @@ export function DynamicMediaChip({
  {/* Label de Texto com Contraste Automático */}
  <span
  className={`font-bold truncate tracking-tight transition-colors min-w-0 ${
- hasMedia
+ show_shadow ? "drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]" : ""
+ } ${
+ text_color
+ ? ""
+ : hasMedia
  ? "text-white drop-shadow-sm group-hover:text-amber-200"
  : isActive
  ? "text-background"
  : "text-foreground"
  }`}
+ style={text_color ? { color: text_color } : undefined}
  >
  {label}
  </span>
