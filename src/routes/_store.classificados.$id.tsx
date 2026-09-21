@@ -1359,9 +1359,10 @@ const handleDownloadDigitalFile = async () => {
     classified?.attributes?.template_style === "conveniencia" ||
     classified?.category === "mercado" ||
     classified?.attributes?.niche === "mercado" ||
+    classified?.attributes?.grocery_department ||
     classified?.category === "food" ||
     classified?.attributes?.niche === "gastronomia" ||
-    (classified?.title && /drink|whisky|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo/i.test(classified.title))
+    (classified?.title && /drink|whisky|cerveja|refrigerante|energético|vinho|vodka|gin|suco|água mineral|conveniência|fardo|picanha|filé|costela|alcatra|queijo|presunto/i.test(classified.title))
   );
 
   if (isConvenienceProduct) {

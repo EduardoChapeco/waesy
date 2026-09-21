@@ -825,3 +825,164 @@ export const CANONICAL_COMMERCIAL_POINT_TYPES = [
   "Operação 100% Digital / Sem Ponto Físico",
 ];
 
+// ─── 8. MERCADO, CONVENIÊNCIA, CARNES & PERECÍVEIS ─────────────────────────────
+
+export interface GroceryDepartment {
+  id: string;
+  label: string;
+  iconName: string;
+  badge: string;
+  suggestedUnits: string[];
+  subCategories: string[];
+  defaultTemperature?: string;
+  supportsPrepOptions?: boolean;
+}
+
+export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
+  {
+    id: "acougue_carnes",
+    label: "Açougue & Carnes Frescas",
+    iconName: "Flame",
+    badge: "Açougue",
+    suggestedUnits: ["kg", "g", "bandeja", "peça"],
+    subCategories: ["Bovinos (Bifes e Peças)", "Bovino Moído", "Suínos & Costela", "Aves & Frango", "Peixes & Frutos do Mar", "Linguiças & Churrasco", "Carnes Especiais & Cortes Nobres"],
+    defaultTemperature: "resfriado",
+    supportsPrepOptions: true,
+  },
+  {
+    id: "hortifruti",
+    label: "Hortifrúti & Feira Fresca",
+    iconName: "Apple",
+    badge: "Hortifrúti",
+    suggestedUnits: ["kg", "un", "g", "bandeja", "maço"],
+    subCategories: ["Frutas Frescas", "Legumes", "Verduras & Folhagens", "Temperos & Ervas", "Orgânicos Certificados", "Ovos & Granja"],
+    defaultTemperature: "ambiente",
+  },
+  {
+    id: "padaria_confeitaria",
+    label: "Padaria & Confeitaria",
+    iconName: "Croissant",
+    badge: "Padaria",
+    suggestedUnits: ["un", "kg", "pct", "bandeja"],
+    subCategories: ["Pães do Dia (Francês, Ciabatta)", "Pães de Forma & Embalados", "Bolos & Tortas", "Salgados & Lanches", "Torradas & Biscoitos Artesanais"],
+    defaultTemperature: "ambiente",
+    supportsPrepOptions: true,
+  },
+  {
+    id: "frios_laticinios",
+    label: "Frios, Queijos & Laticínios",
+    iconName: "Milk",
+    badge: "Frios & Queijos",
+    suggestedUnits: ["g", "kg", "un", "bandeja", "pct"],
+    subCategories: ["Queijos (Mussarela, Prato, Especiais)", "Presuntos & Embutidos Fatiados", "Leites & Bebidas Lácteas", "Iogurtes & Sobremesas", "Manteigas & Requeijão"],
+    defaultTemperature: "resfriado",
+    supportsPrepOptions: true,
+  },
+  {
+    id: "bebidas_adega",
+    label: "Bebidas, Cervejas & Adega",
+    iconName: "Wine",
+    badge: "Bebidas",
+    suggestedUnits: ["un", "L", "ml", "fardo", "pack", "garrafa"],
+    subCategories: ["Cervejas & Chopps", "Destilados & Whiskeys", "Vinhos & Espumantes", "Refrigerantes & Sucos", "Energéticos & Isotônicos", "Água Mineral & Gelo"],
+    defaultTemperature: "gelada",
+  },
+  {
+    id: "mercearia_basicos",
+    label: "Mercearia & Alimentos Básicos",
+    iconName: "Package",
+    badge: "Mercearia",
+    suggestedUnits: ["un", "kg", "pct", "cx"],
+    subCategories: ["Arroz, Feijão & Grãos", "Óleos, Azeites & Vinagres", "Massas, Molhos & Extratos", "Farinhas & Misturas", "Café, Chá, Açúcar & Adoçantes", "Enlatados & Conservas"],
+    defaultTemperature: "ambiente",
+  },
+  {
+    id: "bomboniere_snacks",
+    label: "Bomboniere, Chocolates & Snacks",
+    iconName: "Candy",
+    badge: "Bomboniere",
+    suggestedUnits: ["un", "pct", "cx", "display"],
+    subCategories: ["Chocolates & Bombons", "Salgadinhos & Batatas Chips", "Balas, Gomas & Pirulitos", "Biscoitos, Bolachas & Wafers", "Barras de Cereal & Castanhas"],
+    defaultTemperature: "ambiente",
+  },
+  {
+    id: "congelados",
+    label: "Congelados & Pratos Prontos",
+    iconName: "Snowflake",
+    badge: "Congelados",
+    suggestedUnits: ["un", "pct", "cx", "kg"],
+    subCategories: ["Pizzas & Lasanhas", "Hambúrgueres & Empanados", "Batatas Congeladas", "Sorvetes & Picolés", "Gelo em Cubo / Escama"],
+    defaultTemperature: "congelado",
+  },
+  {
+    id: "higiene_perfumaria",
+    label: "Higiene Pessoal & Perfumaria",
+    iconName: "Sparkles",
+    badge: "Higiene",
+    suggestedUnits: ["un", "pct", "kit"],
+    subCategories: ["Sabonetes & Banho", "Shampoos & Condicionadores", "Higiene Bucal", "Desodorantes", "Fraldas & Cuidados com Bebê"],
+    defaultTemperature: "ambiente",
+  },
+  {
+    id: "limpeza_casa",
+    label: "Limpeza & Cuidados com a Casa",
+    iconName: "Home",
+    badge: "Limpeza",
+    suggestedUnits: ["un", "L", "ml", "kg", "pct"],
+    subCategories: ["Lava Roupas & Amaciantes", "Detergentes & Desengordurantes", "Desinfetantes & Cloro", "Papéis Higiênicos & Guardanapos", "Sacos de Lixo & Descartáveis"],
+    defaultTemperature: "ambiente",
+  },
+  {
+    id: "conveniencia_tabacaria",
+    label: "Conveniência Rápida & Tabacaria",
+    iconName: "Zap",
+    badge: "Conveniência",
+    suggestedUnits: ["un", "pct", "pack"],
+    subCategories: ["Gelo & Carvão para Churrasco", "Sedas, Isqueiros & Tabacaria", "Snacks Rápidos de Balcão", "Copos & Descartáveis para Festas"],
+    defaultTemperature: "ambiente",
+  },
+];
+
+export const CANONICAL_UNIT_TYPES = [
+  { id: "un", label: "Unidade (un)" },
+  { id: "kg", label: "Quilo (kg)" },
+  { id: "g", label: "Gramas (g)" },
+  { id: "L", label: "Litros (L)" },
+  { id: "ml", label: "Mililitros (ml)" },
+  { id: "fardo", label: "Fardo / Pack" },
+  { id: "pct", label: "Pacote (pct)" },
+  { id: "bandeja", label: "Bandeja" },
+  { id: "cx", label: "Caixa (cx)" },
+] as const;
+
+export const CANONICAL_STORAGE_TEMPERATURES = [
+  { id: "ambiente", label: "Ambiente / Seco", icon: "☀️" },
+  { id: "gelada", label: "Gelada / Imediata", icon: "🧊" },
+  { id: "resfriado", label: "Resfriado (0°C a 4°C)", icon: "🥩" },
+  { id: "congelado", label: "Congelado (-18°C)", icon: "❄️" },
+] as const;
+
+export const CANONICAL_MEAT_CUT_OPTIONS = [
+  "Peça inteira",
+  "Bifes finos",
+  "Bifes médios",
+  "Bifes grossos",
+  "Moído 1x",
+  "Moído 2x",
+  "Em cubos / estrogonofe",
+  "Iscas / tiras",
+  "Desossado",
+  "Com osso",
+  "Limpo sem gordura",
+  "Com capa de gordura",
+] as const;
+
+export const CANONICAL_BAKERY_PREP_OPTIONS = [
+  "Inteiro",
+  "Fatiado na hora",
+  "Aquecido",
+  "Pedaço",
+  "Bandeja fechada",
+] as const;
+
+

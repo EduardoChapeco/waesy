@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-r
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -70,6 +70,11 @@ import {
  CANONICAL_INVESTMENT_MODELS,
  CANONICAL_PROJECT_STAGES,
  CANONICAL_USE_OF_FUNDS,
+ CANONICAL_GROCERY_DEPARTMENTS,
+ CANONICAL_UNIT_TYPES,
+ CANONICAL_STORAGE_TEMPERATURES,
+ CANONICAL_MEAT_CUT_OPTIONS,
+ CANONICAL_BAKERY_PREP_OPTIONS,
 } from "@/lib/classifieds/canonical-taxonomy";
 import {
  CANONICAL_EDUCATION_LEVELS,
@@ -1383,6 +1388,53 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.food_delivery_modes || ["delivery_proprio", "retirada_balcao"]
   );
 
+  // Specialized: Mercado, Perecíveis & Conveniência
+  const [groceryDepartment, setGroceryDepartment] = useState<string>(
+    initialData?.attributes?.grocery_department || "bebidas_adega"
+  );
+  const [grocerySubCategory, setGrocerySubCategory] = useState<string>(
+    initialData?.attributes?.sub_category || ""
+  );
+  const [groceryUnitType, setGroceryUnitType] = useState<string>(
+    initialData?.attributes?.unit_type || "un"
+  );
+  const [groceryEstimatedWeightPerUnit, setGroceryEstimatedWeightPerUnit] = useState<string>(
+    initialData?.attributes?.estimated_weight_per_unit || ""
+  );
+  const [groceryTemperature, setGroceryTemperature] = useState<string>(
+    initialData?.attributes?.temperature || initialData?.attributes?.storage_temp || "ambiente"
+  );
+  const [groceryBrand, setGroceryBrand] = useState<string>(
+    initialData?.attributes?.brand || initialData?.attributes?.manufacturer || ""
+  );
+  const [groceryBarcodeEan, setGroceryBarcodeEan] = useState<string>(
+    initialData?.attributes?.barcode_ean || initialData?.attributes?.ean || ""
+  );
+  const [groceryIngredients, setGroceryIngredients] = useState<string>(
+    initialData?.attributes?.ingredients || ""
+  );
+  const [groceryIsAlcoholic, setGroceryIsAlcoholic] = useState<boolean>(
+    initialData?.attributes?.is_alcoholic ?? false
+  );
+  const [groceryContainsGluten, setGroceryContainsGluten] = useState<boolean | null>(
+    initialData?.attributes?.contains_gluten ?? null
+  );
+  const [groceryContainsLactose, setGroceryContainsLactose] = useState<boolean | null>(
+    initialData?.attributes?.contains_lactose ?? null
+  );
+  const [groceryIsOrganic, setGroceryIsOrganic] = useState<boolean>(
+    initialData?.attributes?.is_organic ?? false
+  );
+  const [groceryPrepOptions, setGroceryPrepOptions] = useState<string[]>(
+    Array.isArray(initialData?.attributes?.prep_options) ? initialData.attributes.prep_options : []
+  );
+  const [groceryDeliveryEstimate, setGroceryDeliveryEstimate] = useState<string>(
+    initialData?.attributes?.delivery_estimate || "30 a 45 min"
+  );
+  const [groceryDeliveryFeeCents, setGroceryDeliveryFeeCents] = useState<number>(
+    Number(initialData?.attributes?.delivery_fee_cents) || 500
+  );
+
   // Specialized: Serviços Especializados & Conselhos
   const [serviceSubNiche, setServiceSubNiche] = useState<string>(
     initialData?.attributes?.service_subniche || "advocacia"
@@ -1776,6 +1828,23 @@ function SpecializedClassifiedEditor({
       if (initialData.attributes.food_prep_time_minutes) setFoodPrepTime(initialData.attributes.food_prep_time_minutes);
       if (Array.isArray(initialData.attributes.food_delivery_modes)) setFoodDeliveryModes(initialData.attributes.food_delivery_modes);
 
+      // Mercado, Perecíveis & Conveniência
+      if (initialData.attributes.grocery_department) setGroceryDepartment(initialData.attributes.grocery_department);
+      if (initialData.attributes.sub_category) setGrocerySubCategory(initialData.attributes.sub_category);
+      if (initialData.attributes.unit_type) setGroceryUnitType(initialData.attributes.unit_type);
+      if (initialData.attributes.estimated_weight_per_unit) setGroceryEstimatedWeightPerUnit(initialData.attributes.estimated_weight_per_unit);
+      if (initialData.attributes.temperature || initialData.attributes.storage_temp) setGroceryTemperature(initialData.attributes.temperature || initialData.attributes.storage_temp);
+      if (initialData.attributes.brand || initialData.attributes.manufacturer) setGroceryBrand(initialData.attributes.brand || initialData.attributes.manufacturer);
+      if (initialData.attributes.barcode_ean || initialData.attributes.ean) setGroceryBarcodeEan(initialData.attributes.barcode_ean || initialData.attributes.ean);
+      if (initialData.attributes.ingredients) setGroceryIngredients(initialData.attributes.ingredients);
+      if (initialData.attributes.is_alcoholic !== undefined) setGroceryIsAlcoholic(!!initialData.attributes.is_alcoholic);
+      if (initialData.attributes.contains_gluten !== undefined) setGroceryContainsGluten(initialData.attributes.contains_gluten);
+      if (initialData.attributes.contains_lactose !== undefined) setGroceryContainsLactose(initialData.attributes.contains_lactose);
+      if (initialData.attributes.is_organic !== undefined) setGroceryIsOrganic(!!initialData.attributes.is_organic);
+      if (Array.isArray(initialData.attributes.prep_options)) setGroceryPrepOptions(initialData.attributes.prep_options);
+      if (initialData.attributes.delivery_estimate) setGroceryDeliveryEstimate(initialData.attributes.delivery_estimate);
+      if (initialData.attributes.delivery_fee_cents !== undefined) setGroceryDeliveryFeeCents(Number(initialData.attributes.delivery_fee_cents));
+
       // Serviços Especializados
       if (initialData.attributes.service_subniche) setServiceSubNiche(initialData.attributes.service_subniche);
       if (initialData.attributes.professional_council) setServiceProfessionalCouncil(initialData.attributes.professional_council);
@@ -2142,6 +2211,26 @@ function SpecializedClassifiedEditor({
         attributes.food_subniche = foodSubNiche;
         attributes.food_prep_time_minutes = foodPrepTime;
         attributes.food_delivery_modes = foodDeliveryModes;
+      } else if (niche.id === "mercado") {
+        attributes.niche = "mercado";
+        attributes.template_style = "conveniencia";
+        attributes.grocery_department = groceryDepartment;
+        attributes.sub_category = grocerySubCategory;
+        attributes.unit_type = groceryUnitType;
+        attributes.estimated_weight_per_unit = groceryEstimatedWeightPerUnit;
+        attributes.temperature = groceryTemperature;
+        attributes.storage_temp = groceryTemperature;
+        attributes.brand = groceryBrand;
+        attributes.manufacturer = groceryBrand;
+        attributes.barcode_ean = groceryBarcodeEan;
+        attributes.ingredients = groceryIngredients;
+        attributes.is_alcoholic = groceryIsAlcoholic;
+        attributes.contains_gluten = groceryContainsGluten;
+        attributes.contains_lactose = groceryContainsLactose;
+        attributes.is_organic = groceryIsOrganic;
+        attributes.prep_options = groceryPrepOptions;
+        attributes.delivery_estimate = groceryDeliveryEstimate;
+        attributes.delivery_fee_cents = groceryDeliveryFeeCents;
       } else if (niche.id === "negocio") {
         attributes.niche = "business";
         attributes.is_business_sale = true;
@@ -2657,7 +2746,7 @@ function SpecializedClassifiedEditor({
         iptu_cents: reIptuCents,
         furnished: reFurnished,
         // Veículos
-        brand: vehicleBrand,
+        brand: niche.id === "mercado" ? groceryBrand : vehicleBrand,
         model: vehicleModel,
         version: vehicleVersion,
         year_fab: vehicleYearFab,
@@ -2680,6 +2769,23 @@ function SpecializedClassifiedEditor({
         food_subniche: foodSubNiche,
         food_prep_time_minutes: foodPrepTime,
         food_delivery_modes: foodDeliveryModes,
+        // Mercado & Conveniência
+        grocery_department: groceryDepartment,
+        sub_category: grocerySubCategory,
+        unit_type: groceryUnitType,
+        estimated_weight_per_unit: groceryEstimatedWeightPerUnit,
+        temperature: groceryTemperature,
+        storage_temp: groceryTemperature,
+        manufacturer: groceryBrand,
+        barcode_ean: groceryBarcodeEan,
+        ingredients: groceryIngredients,
+        is_alcoholic: groceryIsAlcoholic,
+        contains_gluten: groceryContainsGluten,
+        contains_lactose: groceryContainsLactose,
+        is_organic: groceryIsOrganic,
+        prep_options: groceryPrepOptions,
+        delivery_estimate: groceryDeliveryEstimate,
+        delivery_fee_cents: groceryDeliveryFeeCents,
         // Negócios
         is_business_sale: niche.id === "negocio",
         business_type: businessType,
@@ -5147,6 +5253,310 @@ function SpecializedClassifiedEditor({
                 </div>
               )}
 
+              {/* Mercado, Perecíveis, Açougue & Conveniência */}
+              {niche.id === "mercado" && (
+                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-5 border border-border/60 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <StoreIcon className="size-4 text-primary" />
+                      <span>2. Parâmetros de Mercado, Perecíveis & Conveniência</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                      Varejo Alimentar
+                    </Badge>
+                  </div>
+
+                  {/* Seleção de Departamento de Supermercado / Mercearia */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-semibold flex items-center justify-between">
+                      <span>Departamento do Produto *</span>
+                      <span className="text-[10px] text-muted-foreground font-normal">Selecione para ajustar atributos</span>
+                    </Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
+                      {CANONICAL_GROCERY_DEPARTMENTS.map((dept) => {
+                        const isSelected = groceryDepartment === dept.id;
+                        return (
+                          <button
+                            key={dept.id}
+                            type="button"
+                            onClick={() => {
+                              setGroceryDepartment(dept.id);
+                              if (dept.defaultTemperature) {
+                                setGroceryTemperature(dept.defaultTemperature);
+                              }
+                              if (dept.subCategories.length > 0) {
+                                setGrocerySubCategory(dept.subCategories[0]);
+                              }
+                            }}
+                            className={cn(
+                              "p-2 rounded-xl text-xs font-medium text-left border cursor-pointer transition-all flex flex-col gap-0.5",
+                              isSelected
+                                ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                                : "bg-background text-foreground/80 border-border/70 hover:bg-muted/30"
+                            )}
+                          >
+                            <span className="truncate">{dept.label}</span>
+                            <span className={cn("text-[10px] truncate", isSelected ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                              {dept.badge}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Sub-categoria contextual do departamento */}
+                  {(() => {
+                    const currentDept = CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment);
+                    if (!currentDept || currentDept.subCategories.length === 0) return null;
+                    return (
+                      <div className="space-y-1.5 p-3 rounded-xl bg-muted/20 border border-border/40">
+                        <Label className="text-xs font-semibold text-foreground">
+                          Sub-categoria em {currentDept.label}:
+                        </Label>
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {currentDept.subCategories.map((sub) => {
+                            const isSelected = grocerySubCategory === sub;
+                            return (
+                              <button
+                                key={sub}
+                                type="button"
+                                onClick={() => setGrocerySubCategory(sub)}
+                                className={cn(
+                                  "px-2.5 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-all",
+                                  isSelected
+                                    ? "bg-primary/15 border-primary text-primary font-bold"
+                                    : "bg-background border-border/60 text-foreground/80 hover:bg-muted/40"
+                                )}
+                              >
+                                {sub}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Unidade de Medida & Fracionamento */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-semibold">Unidade de Medida / Precificação *</Label>
+                      <div className="flex flex-wrap gap-1">
+                        {CANONICAL_UNIT_TYPES.map((u) => {
+                          const isSelected = groceryUnitType === u.id;
+                          return (
+                            <button
+                              key={u.id}
+                              type="button"
+                              onClick={() => setGroceryUnitType(u.id)}
+                              className={cn(
+                                "px-2 py-1 rounded-lg text-xs font-medium border cursor-pointer transition-all",
+                                isSelected
+                                  ? "bg-primary text-primary-foreground border-primary font-bold"
+                                  : "bg-background text-foreground/80 border-border/60 hover:bg-muted/40"
+                              )}
+                            >
+                              {u.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {(groceryUnitType === "kg" || groceryUnitType === "g" || groceryDepartment === "acougue_carnes" || groceryDepartment === "hortifruti") && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-foreground font-semibold">
+                          Peso Médio Estimado por Peça (Opcional)
+                        </Label>
+                        <Input
+                          value={groceryEstimatedWeightPerUnit}
+                          onChange={(e) => setGroceryEstimatedWeightPerUnit(e.target.value)}
+                          placeholder="Ex: ~1.2kg por peça ou ~500g a bandeja"
+                          className="h-11 rounded-xl text-xs bg-background"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opções de Corte / Manipulação para Açougue ou Padaria */}
+                  {(groceryDepartment === "acougue_carnes" || groceryDepartment === "padaria_confeitaria" || groceryDepartment === "frios_laticinios") && (
+                    <div className="space-y-2 p-3.5 rounded-xl border border-border/50 bg-muted/15">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-semibold text-foreground">
+                          Opções de Corte / Preparo para o Cliente
+                        </Label>
+                        <span className="text-[10px] text-muted-foreground">
+                          {groceryPrepOptions.length} selecionada(s)
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(groceryDepartment === "acougue_carnes" ? CANONICAL_MEAT_CUT_OPTIONS : CANONICAL_BAKERY_PREP_OPTIONS).map((opt) => {
+                          const isSelected = groceryPrepOptions.includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setGroceryPrepOptions(groceryPrepOptions.filter((o) => o !== opt));
+                                } else {
+                                  setGroceryPrepOptions([...groceryPrepOptions, opt]);
+                                }
+                              }}
+                              className={cn(
+                                "px-2.5 py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-all",
+                                isSelected
+                                  ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
+                                  : "bg-background text-muted-foreground border-border/60 hover:text-foreground hover:bg-muted/40"
+                              )}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Marca / Fabricante & Código EAN */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-semibold">Marca / Fabricante</Label>
+                      <Input
+                        value={groceryBrand}
+                        onChange={(e) => setGroceryBrand(e.target.value)}
+                        placeholder="Ex: Ambev, Nestlé, Seara, Friboi, Wickbold..."
+                        className="h-11 rounded-xl text-xs bg-background"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-semibold">Código de Barras (EAN / GTIN)</Label>
+                      <Input
+                        value={groceryBarcodeEan}
+                        onChange={(e) => setGroceryBarcodeEan(e.target.value)}
+                        placeholder="Ex: 7891991010832 (Opcional)"
+                        className="h-11 rounded-xl text-xs bg-background font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Temperatura de Armazenamento / Conservação */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground font-semibold">
+                      Conservação / Temperatura
+                    </Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {CANONICAL_STORAGE_TEMPERATURES.map((temp) => {
+                        const isSelected = groceryTemperature === temp.id;
+                        return (
+                          <button
+                            key={temp.id}
+                            type="button"
+                            onClick={() => setGroceryTemperature(temp.id)}
+                            className={cn(
+                              "p-2.5 rounded-xl border text-center transition-all cursor-pointer text-xs flex items-center justify-center gap-1.5 min-h-[44px]",
+                              isSelected
+                                ? "border-primary bg-primary/10 text-primary font-bold"
+                                : "border-border/60 bg-background text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            <span>{temp.icon}</span>
+                            <span className="truncate">{temp.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Selos de Saúde, Alérgenos & Restrições */}
+                  <div className="p-3.5 rounded-xl border border-border/50 bg-muted/20 space-y-3">
+                    <Label className="text-xs font-semibold text-foreground block">
+                      Selos de Saúde, Alérgenos & Restrições
+                    </Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div
+                        onClick={() => setGroceryIsAlcoholic(!groceryIsAlcoholic)}
+                        className={cn(
+                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-[44px]",
+                          groceryIsAlcoholic ? "border-rose-500 bg-rose-500/10 text-rose-700 dark:text-rose-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
+                        )}
+                      >
+                        <Checkbox checked={groceryIsAlcoholic} />
+                        <span>🔞 Alcoólico (+18)</span>
+                      </div>
+
+                      <div
+                        onClick={() => setGroceryContainsGluten(groceryContainsGluten === false ? true : false)}
+                        className={cn(
+                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-[44px]",
+                          groceryContainsGluten === false ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
+                        )}
+                      >
+                        <Checkbox checked={groceryContainsGluten === false} />
+                        <span>🌾 Sem Glúten</span>
+                      </div>
+
+                      <div
+                        onClick={() => setGroceryContainsLactose(groceryContainsLactose === false ? true : false)}
+                        className={cn(
+                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-[44px]",
+                          groceryContainsLactose === false ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
+                        )}
+                      >
+                        <Checkbox checked={groceryContainsLactose === false} />
+                        <span>🥛 Sem Lactose</span>
+                      </div>
+
+                      <div
+                        onClick={() => setGroceryIsOrganic(!groceryIsOrganic)}
+                        className={cn(
+                          "flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer min-h-[44px]",
+                          groceryIsOrganic ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold" : "border-border/60 bg-background text-muted-foreground"
+                        )}
+                      >
+                        <Checkbox checked={groceryIsOrganic} />
+                        <span>🌱 Orgânico</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ingredientes / Composição */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-foreground font-semibold">
+                      Ingredientes / Informações do Rótulo (Opcional)
+                    </Label>
+                    <Textarea
+                      value={groceryIngredients}
+                      onChange={(e) => setGroceryIngredients(e.target.value)}
+                      placeholder="Ex: Malte, lúpulo, água mineral e levedura. Alérgicos: contém derivados de cevada."
+                      className="text-xs bg-background min-h-[60px] rounded-xl"
+                    />
+                  </div>
+
+                  {/* Parâmetros de Entrega Local da Loja */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-semibold">Tempo Estimado de Entrega</Label>
+                      <Input
+                        value={groceryDeliveryEstimate}
+                        onChange={(e) => setGroceryDeliveryEstimate(e.target.value)}
+                        placeholder="Ex: 30 a 45 min"
+                        className="h-11 rounded-xl text-xs bg-background"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-foreground font-semibold">Taxa Inicial de Entrega (R$)</Label>
+                      <CurrencyField
+                        cents={groceryDeliveryFeeCents}
+                        onChange={setGroceryDeliveryFeeCents}
+                        className="h-11 rounded-xl text-xs bg-background"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Negócios */}
               {niche.id === "negocio" && (
                 <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-5 border border-border/60 shadow-2xs">
@@ -7371,6 +7781,51 @@ function SpecializedClassifiedEditor({
             <div className="max-h-[85vh] overflow-y-auto">
               <EditorialShowcaseView
                 classified={livePreviewClassified}
+                isOwner={false}
+              />
+            </div>
+          </div>
+        ) : niche.id === "mercado" || templateStyle === "conveniencia" ? (
+          <div className="bg-card rounded-2xl overflow-hidden border border-border/60 shadow-2xs">
+            <div className="bg-muted/40 px-4 py-2 flex items-center justify-between text-xs border-b border-border/40">
+              <span className="font-semibold flex items-center gap-1.5 text-muted-foreground">
+                <Eye className="size-3.5 text-primary" />
+                Prévia ao vivo · Mercado & Perecíveis
+              </span>
+            </div>
+            <div className="max-h-[85vh] overflow-y-auto">
+              <ConvenienceShowcaseView
+                previewData={{
+                  title: title || "Produto de Mercado / Conveniência",
+                  description: content,
+                  priceCents: priceCents || 0,
+                  images: images,
+                  locationName: locationName || (city ? `${city} - ${state}` : "São Miguel do Oeste - SC"),
+                  whatsapp: contactWhatsapp || whatsapp,
+                  storeName: "Sua Loja",
+                  volume,
+                  unitType: groceryUnitType,
+                  estimatedWeightPerUnit: groceryEstimatedWeightPerUnit,
+                  department: CANONICAL_GROCERY_DEPARTMENTS.find((d) => d.id === groceryDepartment)?.label || "Mercado & Varejo",
+                  subCategory: grocerySubCategory,
+                  temperature: groceryTemperature,
+                  isAlcoholic: groceryIsAlcoholic,
+                  containsGluten: groceryContainsGluten,
+                  containsLactose: groceryContainsLactose,
+                  isOrganic: groceryIsOrganic,
+                  brand: groceryBrand,
+                  barcodeEan: groceryBarcodeEan,
+                  ingredients: groceryIngredients,
+                  prepOptions: groceryPrepOptions,
+                  deliveryEstimate: groceryDeliveryEstimate,
+                  deliveryFeeCents: groceryDeliveryFeeCents,
+                  acceptsPix,
+                  pixDiscountPercent,
+                  acceptsCard,
+                  maxInstallments,
+                  cardInterestFree,
+                  acceptsCash,
+                }}
                 isOwner={false}
               />
             </div>
