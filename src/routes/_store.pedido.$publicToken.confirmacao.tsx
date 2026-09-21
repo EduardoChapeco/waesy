@@ -167,6 +167,7 @@ function ConfirmationPage() {
  const discount = order.discount_cents || 0;
  const total = order.total_cents || Math.max(0, subtotal + shipping - discount);
  const storeSettings = order?.stores?.settings || {};
+ const bankInfo = storeSettings.payment_settings?.bank_transfer || storeSettings.bank_transfer || null;
  const pixKey =
  storeSettings.payment_settings?.pix_key ||
  storeSettings.pix_key ||
@@ -188,10 +189,7 @@ function ConfirmationPage() {
  <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-6 md:py-12">
  <div className="mx-auto max-w-3xl space-y-8">
  <div className="flex flex-col items-center text-center">
- <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-success/15">
- <CheckCircle2 className="size-10 text-success" aria-hidden />
- </div>
- <PageHeader title="Pedido Realizado com Sucesso!" />
+ <PageHeader title="Pedido Realizado com Sucesso" />
  <p className="mt-2 text-sm text-muted-foreground">
  Código do pedido:{" "}
  <span className="font-mono font-medium text-foreground">{order.public_token}</span>
@@ -202,11 +200,11 @@ function ConfirmationPage() {
  <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/80 shadow-xs space-y-4">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
- Acompanhamento ao Vivo
+ Acompanhamento do Pedido
  </span>
- <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 animate-pulse">
- <span className="size-1.5 rounded-full bg-primary" />
- Atualizando em tempo real
+ <span className="text-[11px] font-medium text-primary flex items-center gap-1.5">
+ <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+ Tempo real
  </span>
  </div>
 
@@ -336,26 +334,63 @@ function ConfirmationPage() {
  </div>
  ) : (
  <div className="space-y-3 text-sm">
+ {bankInfo && (bankInfo.bank_name || bankInfo.account) ? (
+ <>
  <p className="text-muted-foreground">
- Faça uma transferência ou depósito para os dados bancários abaixo:
+ Faça uma transferência ou depósito para a conta oficial da loja:
  </p>
- <div className="bg-muted p-4 space-y-1 font-mono text-xs">
+ <div className="bg-muted/40 p-4 rounded-xl space-y-1 font-mono text-xs border border-border/60">
+ {bankInfo.bank_name && (
  <p>
- <strong>Banco:</strong> Itaú (341)
+ <strong>Banco:</strong> {bankInfo.bank_name}
  </p>
+ )}
+ {bankInfo.agency && (
  <p>
- <strong>Agência:</strong> 0123
+ <strong>Agência:</strong> {bankInfo.agency}
  </p>
+ )}
+ {bankInfo.account && (
  <p>
- <strong>Conta Corrente:</strong> 45678-9
+ <strong>Conta:</strong> {bankInfo.account}
  </p>
+ )}
+ {bankInfo.holder_name && (
  <p>
- <strong>Favorecido:</strong> Waesy Tecnologia LTDA
+ <strong>Favorecido:</strong> {bankInfo.holder_name}
  </p>
+ )}
+ {bankInfo.document && (
  <p>
- <strong>CNPJ:</strong> 00.000.000/0001-00
+ <strong>CNPJ/CPF:</strong> {bankInfo.document}
  </p>
+ )}
  </div>
+ </>
+ ) : (
+ <div className="p-4 rounded-xl bg-muted/30 border border-border/50 text-xs text-muted-foreground space-y-2">
+ <p className="font-medium text-foreground">
+ Dados bancários para transferência:
+ </p>
+ <p>
+ Solicite os dados bancários atualizados diretamente ao lojista para realizar o pagamento.
+ </p>
+ {whatsappPhone && (
+ <Button
+ size="sm"
+ variant="outline"
+ className="rounded-xl text-xs h-9"
+ onClick={() => {
+ const msg = `Olá! Gostaria dos dados bancários para pagar o pedido #${order.public_token?.slice(0, 8).toUpperCase()}`;
+ window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+ }}
+ >
+ <MessageCircle className="size-3.5 mr-1.5" />
+ Solicitar Dados Bancários
+ </Button>
+ )}
+ </div>
+ )}
  </div>
  )}
 
@@ -491,16 +526,11 @@ function ConfirmationPage() {
   {/* Card de Contrato Digital do Pedido */}
   <div className="border border-border/80 bg-card rounded-2xl p-5 sm:p-6 space-y-4 shadow-2xs">
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2.5">
-        <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-          <ShieldCheck className="size-5" />
-        </div>
-        <div>
-          <h3 className="text-sm font-bold text-foreground">Contrato Digital do Pedido</h3>
-          <p className="text-xs text-muted-foreground">Documento com validade jurídica nacional e hash SHA-256</p>
-        </div>
+      <div className="space-y-0.5">
+        <h3 className="text-sm font-bold text-foreground">Contrato Digital do Pedido</h3>
+        <p className="text-xs text-muted-foreground">Documento com validade jurídica nacional e hash SHA-256</p>
       </div>
-      <span className="text-[10px] font-mono uppercase font-semibold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+      <span className="text-[10px] font-mono uppercase font-semibold text-emerald-600 dark:text-emerald-400">
         Lei 14.063/2020
       </span>
     </div>

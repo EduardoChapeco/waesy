@@ -3,7 +3,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { PageHeader } from "@/components/commerce/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
  Sheet,
@@ -50,7 +49,7 @@ import {
   updateOrderShippingQuote,
 } from "@/services/order.functions";
 import { approvePayment, rejectPayment } from "@/services/payment.functions";
-import { getDeliveryProofsByOrderId, type DeliveryProof } from "@/services/dispatch.functions";
+import { getDeliveryProofsByOrderId, createDispatch, type DeliveryProof } from "@/services/dispatch.functions";
 import {
   emitNFeInvoice,
   getOrderInvoice,
@@ -142,6 +141,14 @@ function AdminOrderDetailPage() {
     trackingUrl: "",
   });
   const [isSavingTracking, setIsSavingTracking] = useState(false);
+
+  // MotoLink 1-Click Dispatch State
+  const [motolinkSheetOpen, setMotolinkSheetOpen] = useState(false);
+  const [motolinkCourierName, setMotolinkCourierName] = useState("");
+  const [motolinkCourierPhone, setMotolinkCourierPhone] = useState("");
+  const [motolinkFeeReais, setMotolinkFeeReais] = useState<string>("");
+  const [isCreatingDispatch, setIsCreatingDispatch] = useState(false);
+  const [createdDispatchResult, setCreatedDispatchResult] = useState<any>(null);
 
   if (!order) {
     return (
@@ -299,30 +306,64 @@ function AdminOrderDetailPage() {
     }
   };
 
- const handleSaveTracking = async (e: React.FormEvent) => {
- e.preventDefault();
- setIsSavingTracking(true);
- try {
- await updateOrderShipment({
- data: {
- orderId: order.id,
- trackingCode: trackingForm.trackingCode,
- carrierName: trackingForm.carrierName,
- trackingUrl: trackingForm.trackingUrl || undefined,
- newStatus: order.status === "processing" ? "shipped" : undefined,
- },
- });
- toast.success("Rastreamento do pedido atualizado!");
- setTrackingModalOpen(false);
- router.invalidate();
- } catch (err: unknown) {
- toast.error(
- (err instanceof Error ? err.message : String(err)) || "Erro ao salvar rastreamento",
- );
- } finally {
- setIsSavingTracking(false);
- }
- };
+  const handleSaveTracking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingTracking(true);
+    try {
+      await updateOrderShipment({
+        data: {
+          orderId: order.id,
+          trackingCode: trackingForm.trackingCode,
+          carrierName: trackingForm.carrierName,
+          trackingUrl: trackingForm.trackingUrl || undefined,
+        },
+      });
+      toast.success("Código de rastreio salvo com sucesso!");
+      setTrackingModalOpen(false);
+      await router.invalidate();
+    } catch {
+      toast.error("Erro ao salvar rastreamento.");
+    } finally {
+      setIsSavingTracking(false);
+    }
+  };
+
+  // Despacho 1-Clique com MotoLink
+  const handleCreateMotoLinkDispatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!order?.id || !motolinkCourierName.trim()) return;
+    setIsCreatingDispatch(true);
+    try {
+      const addr = order.shipping_address;
+      const formattedAddress = addr
+        ? `${addr.street || ""}, ${addr.number || "S/N"}${addr.complement ? ` - ${addr.complement}` : ""}${addr.neighborhood ? ` (${addr.neighborhood})` : ""}, ${addr.city || ""}`
+        : "Endereço cadastrado no pedido";
+      const feeCents = motolinkFeeReais
+        ? Math.round(parseFloat(motolinkFeeReais.replace(",", ".")) * 100)
+        : (order.shipping_cents || 0);
+
+      const res = await createDispatch({
+        data: {
+          orderId: order.id,
+          orderNumber: order.public_token?.slice(0, 8).toUpperCase() || "PEDIDO",
+          courierName: motolinkCourierName.trim(),
+          courierPhone: motolinkCourierPhone.trim() || undefined,
+          deliveryAddress: formattedAddress,
+          recipientName: order.customer_snapshot?.name || "Cliente",
+          recipientPhone: order.customer_snapshot?.phone || undefined,
+          deliveryFeeCents: feeCents,
+        },
+      });
+
+      setCreatedDispatchResult(res);
+      toast.success("Despacho MotoLink criado com sucesso!");
+      await router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao criar despacho MotoLink.");
+    } finally {
+      setIsCreatingDispatch(false);
+    }
+  };
 
  const handleSaveQuote = async (e: React.FormEvent) => {
  e.preventDefault();
@@ -741,15 +782,12 @@ function AdminOrderDetailPage() {
     )}
   </div>
 
- {/* Status & Actions */}
- <div className=" p-6 bg-card text-card-foreground ">
- <h3 className="font-semibold text-lg mb-4 text-foreground">Status</h3>
- <Badge
- variant={getStatusLabel(order.status).variant}
- className="text-[11px] py-1 mb-4 flex justify-center"
- >
- {getStatusLabel(order.status).label}
- </Badge>
+        {/* Status & Actions */}
+        <div className=" p-6 bg-card text-card-foreground ">
+          <h3 className="font-semibold text-lg mb-2 text-foreground">Status</h3>
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-4">
+            {getStatusLabel(order.status).label}
+          </p>
 
  {order.status === "awaiting_shipping_quote" && (
  <div className="space-y-4 mb-4 p-4 border border-warning/50 bg-warning/10 rounded-xl">
@@ -910,34 +948,181 @@ function AdminOrderDetailPage() {
  )}
 
  {/* Rastreamento & Logística */}
- <div className="border-t pt-4 mt-6 space-y-3">
- <div className="flex items-center justify-between">
- <span className="font-semibold text-sm flex items-center gap-1.5">
- <Truck className="h-4 w-4 text-primary" /> Logística e Rastreio
- </span>
- <Sheet open={trackingModalOpen} onOpenChange={setTrackingModalOpen}>
- <SheetTrigger asChild>
- <Button
- variant="outline"
- size="sm"
- onClick={() =>
- setTrackingForm({
- trackingCode: "",
- carrierName: "Transportadora",
- trackingUrl: "",
- })
- }
- >
- Novo Envio (Pacote)
- </Button>
- </SheetTrigger>
- <SheetContent>
- <SheetHeader>
- <SheetTitle>Informar Código de Rastreio</SheetTitle>
- <SheetDescription>
- Insira os dados da transportadora para enviar ao cliente.
- </SheetDescription>
- </SheetHeader>
+  <div className="border-t pt-4 mt-6 space-y-3">
+  <div className="flex items-center justify-between">
+  <span className="font-semibold text-sm flex items-center gap-1.5">
+  <Truck className="h-4 w-4 text-primary" /> Logística e Rastreio
+  </span>
+  <div className="flex items-center gap-2">
+  {order.shipping_method === "delivery" && (
+    <Sheet open={motolinkSheetOpen} onOpenChange={(open) => {
+      setMotolinkSheetOpen(open);
+      if (open) {
+        setCreatedDispatchResult(null);
+        if (order.shipping_cents) {
+          setMotolinkFeeReais((order.shipping_cents / 100).toFixed(2));
+        }
+      }
+    }}>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="font-bold text-xs rounded-xl"
+        >
+          Despachar MotoLink
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="sm:max-w-md overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Despacho MotoLink</SheetTitle>
+          <SheetDescription>
+            Aloque um entregador parceiro com PIN de 4 dígitos e link seguro de navegação.
+          </SheetDescription>
+        </SheetHeader>
+
+        {createdDispatchResult ? (
+          <div className="space-y-4 py-4">
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 space-y-2">
+              <p className="font-bold text-sm">Despacho Criado com Sucesso!</p>
+              <p className="text-xs">
+                O entregador parceiro deve solicitar o código PIN ao cliente para validar a entrega.
+              </p>
+              <div className="pt-2 flex items-center justify-between border-t border-emerald-500/20">
+                <span className="text-xs uppercase font-mono font-semibold">PIN de Confirmação:</span>
+                <span className="text-lg font-black font-mono tracking-widest bg-background/80 px-3 py-1 rounded-lg">
+                  {createdDispatchResult.pin_code}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 space-y-2 text-xs">
+              <p className="text-muted-foreground font-medium">Link do Entregador:</p>
+              <p className="font-mono text-[11px] break-all bg-background p-2 rounded-lg border">
+                {`${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`}
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 text-xs rounded-xl"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`);
+                  toast.success("Link copiado para a área de transferência!");
+                }}
+              >
+                Copiar Link
+              </Button>
+              {motolinkCourierPhone && (
+                <Button
+                  className="flex-1 text-xs font-bold rounded-xl"
+                  onClick={() => {
+                    const cleanPhone = motolinkCourierPhone.replace(/\D/g, "");
+                    const linkUrl = `${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`;
+                    const msg = `Olá ${motolinkCourierName}! Você tem uma nova entrega da Waesy.\nPedido: #${order.public_token?.slice(0, 8).toUpperCase()}\nEndereço: ${createdDispatchResult.delivery_address}\n\nAcesse os detalhes e navegação aqui: ${linkUrl}`;
+                    window.open(`https://wa.me/55${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+                  }}
+                >
+                  Enviar no WhatsApp
+                </Button>
+              )}
+            </div>
+            <Button
+              variant="secondary"
+              className="w-full text-xs rounded-xl"
+              onClick={() => setMotolinkSheetOpen(false)}
+            >
+              Concluir
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleCreateMotoLinkDispatch} className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground">Nome do Entregador / Parceiro</label>
+              <input
+                type="text"
+                required
+                placeholder="Ex: Lucas Motoboy, MotoLink Express"
+                value={motolinkCourierName}
+                onChange={(e) => setMotolinkCourierName(e.target.value)}
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground">WhatsApp do Entregador (opcional)</label>
+              <input
+                type="tel"
+                placeholder="(00) 00000-0000"
+                value={motolinkCourierPhone}
+                onChange={(e) => setMotolinkCourierPhone(e.target.value)}
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground">Taxa Repassada ao Entregador (R$)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={motolinkFeeReais}
+                onChange={(e) => setMotolinkFeeReais(e.target.value)}
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Frete pago pelo cliente: {formatMoney(order.shipping_cents || 0)} (imutável)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/50 text-xs space-y-1">
+              <p className="font-semibold text-foreground">Destinatário:</p>
+              <p className="text-muted-foreground">{order.customer_snapshot?.name || "Consumidor Final"}</p>
+              <p className="text-muted-foreground truncate">
+                {order.shipping_address
+                  ? `${order.shipping_address.street || ""}, ${order.shipping_address.number || "S/N"} - ${order.shipping_address.city || ""}`
+                  : "Endereço cadastrado no checkout"}
+              </p>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isCreatingDispatch || !motolinkCourierName.trim()}
+              className="w-full font-bold text-xs rounded-xl h-11"
+            >
+              {isCreatingDispatch ? "Gerando Despacho..." : "Gerar Despacho & Link do Entregador"}
+            </Button>
+          </form>
+        )}
+      </SheetContent>
+    </Sheet>
+  )}
+
+  <Sheet open={trackingModalOpen} onOpenChange={setTrackingModalOpen}>
+  <SheetTrigger asChild>
+  <Button
+  variant="outline"
+  size="sm"
+  className="font-bold text-xs rounded-xl"
+  onClick={() =>
+  setTrackingForm({
+  trackingCode: "",
+  carrierName: "Transportadora",
+  trackingUrl: "",
+  })
+  }
+  >
+  Novo Envio (Pacote)
+  </Button>
+  </SheetTrigger>
+  <SheetContent>
+  <SheetHeader>
+  <SheetTitle>Informar Código de Rastreio</SheetTitle>
+  <SheetDescription>
+  Insira os dados da transportadora para enviar ao cliente.
+  </SheetDescription>
+  </SheetHeader>
  <form onSubmit={handleSaveTracking} className="space-y-4 py-4">
  <div className="space-y-2">
  <label className="text-sm font-medium">Transportadora</label>
@@ -982,6 +1167,7 @@ function AdminOrderDetailPage() {
  </form>
  </SheetContent>
  </Sheet>
+ </div>
  </div>
 
  {order.shipments && order.shipments.length > 0 ? (

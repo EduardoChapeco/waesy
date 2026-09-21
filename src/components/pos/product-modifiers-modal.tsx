@@ -8,7 +8,6 @@ import {
  SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Utensils, Check, Plus, Loader2, AlertCircle, Compass, Layers, ShoppingBag } from 'lucide-react';
@@ -151,10 +150,6 @@ export function ProductModifiersModal({
  side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-xl w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-0 overflow-hidden bg-card flex flex-col"
  >
  <SheetHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 text-left space-y-1">
- <div className="flex items-center gap-2">
- <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
- <IconComponent className="size-4" />
- </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground">
  {product.title || product.name}
@@ -162,7 +157,6 @@ export function ProductModifiersModal({
  <SheetDescription className="text-xs text-muted-foreground">
  {semantics.modifierModalSubtitle}
  </SheetDescription>
- </div>
  </div>
  </SheetHeader>
 
