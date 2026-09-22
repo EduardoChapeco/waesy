@@ -386,7 +386,7 @@ function AdminAppointmentsPage() {
  </div>
 
  <div className="p-3.5 rounded-2xl bg-card flex items-center gap-3">
- <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+ <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <CheckCircle2 className="size-5" />
  </div>
  <div>
@@ -396,7 +396,7 @@ function AdminAppointmentsPage() {
  </div>
 
  <div className="col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-card flex items-center gap-3">
- <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+ <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <DollarSign className="size-5" />
  </div>
  <div>

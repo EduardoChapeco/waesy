@@ -444,7 +444,7 @@ export default function WorkspaceDashboardPage() {
  className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all group flex flex-col justify-between"
  >
  <div className="flex items-center justify-between">
- <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+ <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
  <DollarSign className="size-5" />
  </div>
  <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -462,7 +462,7 @@ export default function WorkspaceDashboardPage() {
  className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all group flex flex-col justify-between"
  >
  <div className="flex items-center justify-between">
- <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+ <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
  <Package className="size-5" />
  </div>
  <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -510,7 +510,7 @@ export default function WorkspaceDashboardPage() {
  className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 text-xs hover:border-primary/40 transition-colors"
  >
  <div className="flex items-center gap-3">
- <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+ <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
  <CheckCircle2 className="size-4" />
  </div>
  <div>
@@ -613,7 +613,7 @@ export default function WorkspaceDashboardPage() {
  to="/workspace/financeiro/caixa"
  className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
  >
- <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
+ <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
  <DollarSign className="size-4" />
  </div>
  <div>
@@ -627,7 +627,7 @@ export default function WorkspaceDashboardPage() {
  to="/workspace/configuracoes/equipe"
  className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
  >
- <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-3">
+ <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
  <Users className="size-4" />
  </div>
  <div>
@@ -641,7 +641,7 @@ export default function WorkspaceDashboardPage() {
  to={semantics.nicheId === "tourism" ? "/workspace/turismo/embarques" : "/workspace/estoque"}
  className="p-3.5 rounded-2xl bg-muted/20 hover:bg-muted/40 border border-border/40 transition-all text-left group flex flex-col justify-between"
  >
- <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-3">
+ <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
  {semantics.nicheId === "tourism" ? <Bus className="size-4" /> : <Package className="size-4" />}
  </div>
  <div>

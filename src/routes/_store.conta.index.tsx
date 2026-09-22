@@ -355,7 +355,7 @@ function AccountDashboardPage() {
           className="p-3 sm:p-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 group cursor-pointer"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Handshake className="size-4" />
             </div>
             <div className="min-w-0">
@@ -371,7 +371,7 @@ function AccountDashboardPage() {
           className="p-3 sm:p-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 group cursor-pointer"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Bookmark className="size-4" />
             </div>
             <div className="min-w-0">

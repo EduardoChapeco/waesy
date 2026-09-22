@@ -119,11 +119,14 @@ function NegociacoesPage() {
   const { data: profile } = useQuery({
     queryKey: ["current-user-profile"],
     queryFn: () => getProfile(),
+    retry: 0,
   });
 
-  const { data: deals, isLoading } = useQuery({
+  const { data: deals, isLoading, isError, error } = useQuery({
     queryKey: ["user-deals"],
     queryFn: () => getDealsByUser(),
+    retry: 0,
+    staleTime: 30_000,
   });
 
   const respondMutation = useMutation({
@@ -285,8 +288,14 @@ function NegociacoesPage() {
       {/* ── Lista de Negociações ── */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
-          <Loader2 className="size-6 animate-spin text-primary" />
-          <p className="text-xs">Carregando negociações e reservas...</p>
+          <Loader2 className="size-5 animate-spin" />
+          <p className="text-xs">Carregando...</p>
+        </div>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+          <p className="text-sm font-medium text-foreground">Não foi possível carregar as negociações</p>
+          <p className="text-xs text-muted-foreground font-mono">{(error as any)?.message || "Erro desconhecido"}</p>
+          <Button variant="outline" size="sm" className="rounded-xl h-9 text-xs" onClick={() => window.location.reload()}>Tentar novamente</Button>
         </div>
       ) : filteredDeals.length > 0 ? (
         <div className="space-y-4">

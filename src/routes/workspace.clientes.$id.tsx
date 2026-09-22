@@ -796,8 +796,8 @@ function CustomerDetailPage() {
               {allPax.map((pax: any, idx: number) => (
                 <div key={idx} className="p-4 rounded-2xl bg-card border border-border/60 space-y-2">
                   <div className="flex items-center gap-3">
-                    <div className="size-9 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
-                      <Users2 className="size-4 text-violet-500" />
+                    <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Users2 className="size-4 text-primary" />
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-bold text-sm text-foreground truncate">{pax.full_name}</h4>

@@ -249,7 +249,7 @@ export default function WorkspaceMarketingPixelsPage() {
         <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
             <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <GoogleLogo size={20} weight="bold" />
               </div>
               <div>
@@ -533,7 +533,7 @@ export default function WorkspaceMarketingPixelsPage() {
         <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-border/40">
             <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <Globe className="size-5" />
               </div>
               <div>

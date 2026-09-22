@@ -185,8 +185,8 @@ function ConfigParceirosPage() {
           </div>
 
           <div className="bg-surface-paper rounded-2xl p-5 flex flex-col items-start gap-4 border border-border/70 shadow-xs">
-            <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <Users className="size-5 text-emerald-500" />
+            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Users className="size-5 text-primary" />
             </div>
             <div className="w-full">
               <h2 className="font-semibold text-foreground">Minhas Comissões de Afiliado</h2>

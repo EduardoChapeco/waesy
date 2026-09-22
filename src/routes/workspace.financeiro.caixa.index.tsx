@@ -870,7 +870,7 @@ function CashRegisterManagerPage() {
  <SheetContent side="right" className="sm:max-w-xl w-full flex flex-col p-0 gap-0 overflow-hidden bg-card border-l border-border">
  <SheetHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
  <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+ <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
  <Play className="size-4.5" />
  </div>
  <div>

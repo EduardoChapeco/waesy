@@ -769,7 +769,7 @@ const handleDownloadDigitalFile = async () => {
                 Identifique-se para reservar
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Para solicitar sua reserva com garantias e acompanhamento oficial, faça login na sua conta Waesy.
+                Para solicitar sua reserva, faça login na sua conta Waesy.
               </DialogDescription>
             </div>
             <Button
