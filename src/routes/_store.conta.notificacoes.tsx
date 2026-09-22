@@ -274,7 +274,7 @@ function NotificationsPage() {
           {/* Coluna Direita: Painel de Leitura & Ação no Desktop (7 colunas no Desktop) */}
           <div className="hidden lg:block lg:col-span-7 lg:sticky lg:top-24">
             {activeNotification ? (
-              <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-6 shadow-xs animate-in fade-in duration-200">
+              <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-6 animate-in fade-in duration-200">
                 {/* Cabeçalho do Leitor */}
                 <div className="flex items-start justify-between gap-4 border-b border-border/40 pb-5">
                   <div className="flex items-center gap-3.5">
@@ -330,7 +330,7 @@ function NotificationsPage() {
                       <Button
                         type="button"
                         onClick={() => handleNotificationAction(activeNotification)}
-                        className="rounded-xl font-bold text-xs gap-1.5 h-10 px-5 cursor-pointer shadow-xs"
+                        className="rounded-xl font-bold text-xs gap-1.5 h-10 px-5 cursor-pointer"
                       >
                         <span>Abrir Conteúdo</span>
                         <ExternalLink className="size-3.5" />

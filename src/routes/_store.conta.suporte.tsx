@@ -75,57 +75,73 @@ function CustomerSupportPage() {
  };
 
  return (
- <div className="space-y-6 flex flex-col h-[70vh]">
- <div className="flex-1 bg-card rounded-xl overflow-hidden flex flex-col md:flex-row">
- {/* Ticket List - Responsive hide when a ticket is selected on mobile */}
- <div
- className={`w-full md:w-80 border-r bg-muted/10 flex flex-col ${selectedTicketId ? "hidden md:flex" : "flex"}`}
- >
- <div className="p-4 border-b font-medium flex items-center justify-between">
- Meus Chamados
- </div>
- <div className="flex-1 overflow-y-auto no-scrollbar">
- {tickets.length === 0 ? (
- <div className="text-sm text-muted-foreground text-center mt-10 p-4">
- Você ainda não possui nenhum atendimento aberto.
- </div>
- ) : (
- <div className="divide-y">
- {tickets.map((t: any) => (
- <button
- key={t.id}
- onClick={() => setSelectedTicketId(t.id)}
- className={`w-full text-left p-4 hover:bg-muted/50 transition-colors ${selectedTicketId === t.id ? "bg-muted border-l border-l-primary" : "border-l border-l-transparent"}`}
- >
- <div className="flex justify-between items-start mb-1">
- <span className="font-medium text-sm truncate pr-2">{t.subject}</span>
- </div>
- <div className="flex justify-between items-center mt-2">
- <span className="text-[10px] text-muted-foreground">
- {formatDate(t.updated_at)}
- </span>
- {t.status === "open" && (
- <Badge variant="secondary" className="text-[10px]">
- Aguardando Loja
- </Badge>
- )}
- {t.status === "waiting_customer" && (
- <Badge variant="destructive" className="text-[10px]">
- Sua Vez
- </Badge>
- )}
- {t.status === "closed" && (
- <Badge variant="outline" className="text-[10px]">
- Resolvido
- </Badge>
- )}
- </div>
- </button>
- ))}
- </div>
- )}
- </div>
- </div>
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 flex flex-col h-[calc(100vh-10rem)] min-h-[550px]">
+      {/* ── 1. Clean Minimalist Header ── */}
+      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Atendimento & Suporte
+          </h1>
+          {Array.isArray(tickets) && tickets.length > 0 && (
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+              {tickets.length}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 bg-card rounded-2xl border border-border/60 overflow-hidden flex flex-col md:flex-row">
+        {/* Ticket List - Responsive hide when a ticket is selected on mobile */}
+        <div
+          className={`w-full md:w-80 border-r border-border/40 bg-muted/5 flex flex-col ${selectedTicketId ? "hidden md:flex" : "flex"}`}
+        >
+          <div className="p-3.5 border-b border-border/40 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+            Chamados Abertos
+          </div>
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            {tickets.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center mt-10 p-4">
+                Você ainda não possui nenhum atendimento aberto.
+              </div>
+            ) : (
+              <div className="divide-y divide-border/20">
+                {tickets.map((t: any) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedTicketId(t.id)}
+                    className={`w-full text-left p-3.5 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer ${
+                      selectedTicketId === t.id ? "bg-muted/60 border-l-2 border-l-primary" : "border-l-2 border-l-transparent"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="font-semibold text-xs text-foreground truncate pr-2">{t.subject}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-1.5">
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatDate(t.updated_at)}
+                      </span>
+                      {t.status === "open" && (
+                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
+                          Aguardando Loja
+                        </Badge>
+                      )}
+                      {t.status === "waiting_customer" && (
+                        <Badge variant="destructive" className="text-[9px] px-1.5 py-0 font-bold">
+                          Sua Vez
+                        </Badge>
+                      )}
+                      {t.status === "closed" && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                          Resolvido
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
  {/* Chat Area */}
  <div

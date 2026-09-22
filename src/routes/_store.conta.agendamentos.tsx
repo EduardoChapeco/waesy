@@ -271,7 +271,7 @@ function CustomerAgendaPage() {
  size="sm"
  className="rounded-xl text-xs font-semibold h-8 text-muted-foreground hover:text-foreground cursor-pointer"
  >
- <Link to="/mercado">
+ <Link to="/c/$storeSlug" params={{ storeSlug: appt.stores.slug }}>
  Ver Loja ↗
  </Link>
  </Button>

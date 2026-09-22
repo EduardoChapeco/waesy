@@ -17,10 +17,10 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     expect(niche.id).toBe("travel");
     expect(niche.shortLabel).toBe("Viagens");
     expect(niche.priceSuffix).toBe(" por pessoa");
-    expect(niche.primaryActionLabel).toBe("Reservar Vagas / Cotação");
+    expect(niche.primaryActionLabel).toBe("Reservar Vagas");
 
     const badges = getSemanticBadges(classified);
-    expect(badges.some((b) => b.label === "Roteiro Verificado")).toBe(true);
+    expect(badges.some((b) => b.label === "Roteiro")).toBe(true);
   });
 
   it("resolve corretamente o nicho de Aluguel de Equipamentos (Eventos & Obras)", () => {
@@ -51,7 +51,7 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     const niche = resolveClassifiedNiche(classified);
     expect(niche.id).toBe("donation");
     expect(niche.priceSuffix).toBe(" (Gratuito)");
-    expect(niche.primaryActionLabel).toBe("Solicitar Doação / Retirada");
+    expect(niche.primaryActionLabel).toBe("Solicitar Doação");
     expect(niche.allowEscrowGuarantee).toBe(false);
   });
 
@@ -85,8 +85,8 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
 
     const niche = resolveClassifiedNiche(classified);
     expect(niche.id).toBe("digital");
-    expect(niche.shortLabel).toBe("Digital / Download");
-    expect(niche.primaryActionLabel).toBe("Comprar & Baixar Arquivo");
+    expect(niche.shortLabel).toBe("Digital");
+    expect(niche.primaryActionLabel).toBe("Baixar Arquivo");
     expect(niche.showDeliveryBadges).toBe(false);
   });
 
@@ -106,7 +106,7 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     expect(niche.id).toBe("subscription");
     expect(niche.shortLabel).toBe("Assinatura");
     expect(niche.priceSuffix).toBe("/mês");
-    expect(niche.primaryActionLabel).toBe("Assinar Plano Mensal");
+    expect(niche.primaryActionLabel).toBe("Assinar Plano");
   });
 
   it("resolve corretamente o nicho de Vaga de Emprego", () => {
@@ -123,8 +123,8 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
 
     const niche = resolveClassifiedNiche(classified);
     expect(niche.id).toBe("job");
-    expect(niche.shortLabel).toBe("Vaga / Emprego");
-    expect(niche.primaryActionLabel).toBe("Candidatar-se à Vaga");
+    expect(niche.shortLabel).toBe("Vagas");
+    expect(niche.primaryActionLabel).toBe("Candidatar-se");
     expect(niche.allowEscrowGuarantee).toBe(false);
   });
 
@@ -142,7 +142,7 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     const niche = resolveClassifiedNiche(classified);
     expect(niche.id).toBe("donation");
     expect(niche.shortLabel).toBe("Doações");
-    expect(niche.primaryActionLabel).toBe("Solicitar Doação / Retirada");
+    expect(niche.primaryActionLabel).toBe("Solicitar Doação");
     expect(niche.allowEscrowGuarantee).toBe(false);
   });
 });

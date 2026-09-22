@@ -24,19 +24,23 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
  const location = useLocation();
  const mainRef = useRef<HTMLElement>(null);
 
- // Check if current page is full-screen standalone auth page
- const isAuthPage =
- location.pathname.startsWith("/entrar") ||
- location.pathname.startsWith("/cadastro") ||
- location.pathname.startsWith("/recuperar-senha");
+  // Check if current page is full-screen standalone auth page, landing form, or mobile customer portal
+  const isStandalonePage =
+    location.pathname.startsWith("/entrar") ||
+    location.pathname.startsWith("/cadastro") ||
+    location.pathname.startsWith("/recuperar-senha") ||
+    location.pathname.startsWith("/f/") ||
+    location.pathname.startsWith("/m/") ||
+    location.pathname.startsWith("/assinar/") ||
+    location.pathname.startsWith("/proposta/");
 
- if (isAuthPage) {
- return (
- <div className="min-h-screen w-full bg-background text-foreground flex flex-col overflow-x-hidden">
- {children}
- </div>
- );
- }
+  if (isStandalonePage) {
+    return (
+      <div className="min-h-screen w-full bg-background text-foreground flex flex-col overflow-x-hidden">
+        {children}
+      </div>
+    );
+  }
 
  const contextConfig = resolveContextNavigation(location.pathname, session);
  const isFullBleedPage =
@@ -141,12 +145,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           ref={mainRef}
           className={`flex-1 flex flex-col min-w-0 h-full w-full max-w-full overflow-y-auto no-scrollbar overflow-x-hidden ${
             isFeedPage || isCleanMobileAppPage
-              ? "px-1 sm:px-4 py-1 sm:py-2.5 pb-24 md:pb-8"
+              ? "px-[1px] sm:px-4 py-1 sm:py-2.5 pb-24 md:pb-8"
               : isFormPage
-              ? "px-1 sm:px-6 py-1 sm:py-3 pb-20 md:pb-8"
+              ? "px-[1px] sm:px-6 py-1 sm:py-3 pb-20 md:pb-8"
               : isDetailPage
-              ? "px-1 sm:px-6 py-1 sm:py-2 pb-24 md:pb-8"
-              : "px-1 sm:px-6 py-1 sm:py-2.5 pb-24 md:pb-8"
+              ? "px-[1px] sm:px-6 py-1 sm:py-2 pb-24 md:pb-8"
+              : "px-[1px] sm:px-6 py-1 sm:py-2.5 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${

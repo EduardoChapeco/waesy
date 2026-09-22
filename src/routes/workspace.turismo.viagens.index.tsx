@@ -163,7 +163,23 @@ export default function WorkspaceTripsListPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <div className="flex items-center justify-end px-1">
+      <div className="flex items-center justify-between px-1 flex-wrap gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            to="/workspace/turismo/cotacoes"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 transition-colors border border-primary/20"
+          >
+            <Clock className="size-3.5" />
+            <span>Central de Cotações & Leads</span>
+          </Link>
+          <Link
+            to="/workspace/turismo/aereos"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/50"
+          >
+            <Plane className="size-3.5" />
+            <span>Malha Aérea & PNR</span>
+          </Link>
+        </div>
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
       </div>
 

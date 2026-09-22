@@ -328,7 +328,7 @@ export function UniversalClassifiedShowcase({
   const tradeNotes = attrs.trade_notes || "";
   const acceptsFinancing = !!attrs.accepts_financing;
   const financingNotes = attrs.financing_notes || "";
-  const cancellationPolicy = attrs.cancellation_policy || "flexible";
+  const cancellationPolicy = attrs.cancellation_policy || null;
 
   // Custos Imobiliários
   const condoCents = Number(classified?.attributes?.condo_cents) || 0;
@@ -724,20 +724,83 @@ export function UniversalClassifiedShowcase({
     return [];
   }, [classified]);
 
-  // 10.1 Abas Canônicas de Divulgação Progressiva (Heurística 2)
+  // 10.1 Inteligência de Abas: Só exibe abas que tenham dados reais cadastrados
+  const hasDetailedSpecs = useMemo(() => {
+    if (classified?.attributes) {
+      const excludeKeys = [
+        "condo_cents", "iptu_cents", "property_type", "furnished", "year", "transmission", "fuel", "mileage",
+        "regime", "workplace_model", "experience_level", "education_level", "modality", "estimated_time",
+        "warranty_days", "file_format", "file_size_bytes", "version", "max_guests", "checkin_time",
+        "checkout_time", "duration_days", "destination_city", "hotel_included", "transport_type",
+        "brand", "warranty", "delivery_available", "amenities", "features", "departure_options",
+        "house_rules", "max_installments", "cleaning_fee_cents", "bedrooms", "bathrooms", "suites",
+        "garage_spots", "accepts_pix", "pix_discount_percent", "accepts_card", "card_interest_free",
+        "accepts_boleto", "boleto_due_days", "accepts_boleto_installments", "max_boleto_installments",
+        "boleto_min_down_payment_cents", "boleto_notes", "accepts_carne", "max_carne_installments",
+        "carne_grace_days", "carne_min_down_payment_cents", "carne_notes", "accepts_cash",
+        "accepts_trade", "trade_notes", "accepts_financing", "financing_notes", "cancellation_policy",
+        "niche", "template_style", "is_business_sale", "is_free_donation", "is_confidential", "requires_nda"
+      ];
+      const extra = Object.entries(classified.attributes).filter(
+        ([k, v]) => !excludeKeys.includes(k) && v !== null && v !== undefined && v !== "" && (Array.isArray(v) ? v.length > 0 : true)
+      );
+      if (extra.length > 0) return true;
+    }
+    if ((condoCents > 0 || iptuCents > 0) && classified?.category === "real_estate" && niche.id !== "hospitality_stay") return true;
+    if (isBusiness && (attrs.area_sqm || attrs.monthly_rent_cents || attrs.commercial_point_type)) return true;
+    if (niche.id === "vehicle" && (attrs.color || attrs.doors || attrs.plate_end || attrs.chassi_status)) return true;
+    return false;
+  }, [classified?.attributes, condoCents, iptuCents, classified?.category, niche.id, isBusiness, attrs]);
+
+  const hasBusinessData = useMemo(() => {
+    if (!isBusiness) return false;
+    return Boolean(
+      attrs.annual_revenue_cents ||
+      attrs.net_margin_percent ||
+      attrs.business_type ||
+      attrs.commercial_point_type ||
+      attrs.inventory_value_cents ||
+      isInvestmentOpportunity
+    );
+  }, [isBusiness, attrs, isInvestmentOpportunity]);
+
+  const hasRulesData = useMemo(() => {
+    if (niche.id === "hospitality_stay") {
+      return houseRules.length > 0;
+    }
+    if (niche.id === "travel") {
+      return departureOptions.length > 0;
+    }
+    return Boolean(
+      houseRules.length > 0 ||
+      departureOptions.length > 0 ||
+      attrs?.warranty ||
+      attrs?.warranty_days
+    );
+  }, [niche.id, houseRules.length, departureOptions.length, attrs]);
+
   const availableTabs = useMemo(() => {
     const list: Array<{ id: "overview" | "specs" | "business" | "policies"; label: string }> = [
       { id: "overview", label: "Visão Geral" },
-      { id: "specs", label: "Especificações" },
     ];
-    if (isBusiness) {
-      list.push({ id: "business", label: "Negócio & Viabilidade" });
+    if (hasDetailedSpecs) {
+      list.push({ id: "specs", label: "Especificações" });
     }
-    if (houseRules.length > 0 || departureOptions.length > 0 || attrs?.warranty || attrs?.warranty_days) {
-      list.push({ id: "policies", label: "Políticas & Regras" });
+    if (hasBusinessData) {
+      list.push({ id: "business", label: "Negócio" });
+    }
+    if (hasRulesData) {
+      list.push({ id: "policies", label: "Regras" });
     }
     return list;
-  }, [isBusiness, houseRules.length, departureOptions.length, attrs]);
+  }, [hasDetailedSpecs, hasBusinessData, hasRulesData]);
+
+  // Fallback defensivo caso a aba atual não exista mais no conjunto disponível
+  useEffect(() => {
+    if (!availableTabs.some((t) => t.id === activeTab)) {
+      setActiveTab("overview");
+    }
+  }, [availableTabs, activeTab]);
 
   // 11. CTA Primário Derivado por Nicho
   const primaryCta = useMemo(() => {
@@ -812,7 +875,7 @@ export function UniversalClassifiedShowcase({
     }
     if (onDirectBuy && priceCents > 0) {
       return {
-        label: isBuyingDirect ? "Processando..." : "Comprar com Garantia",
+        label: isBuyingDirect ? "Processando..." : "Comprar Agora",
         action: () => onDirectBuy?.(),
       };
     }
@@ -861,18 +924,6 @@ export function UniversalClassifiedShowcase({
         </Button>
 
         <div className="flex items-center gap-2">
-          {isOwner && onEdit && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-              className="h-8 px-2.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5 border-border/60 bg-background/60 hover:bg-muted cursor-pointer"
-            >
-              <Edit3 className="size-3.5" />
-              <span>Editar</span>
-            </Button>
-          )}
-
           {onOpenCompanion && (
             <Button
               variant="outline"
@@ -882,6 +933,19 @@ export function UniversalClassifiedShowcase({
             >
               <Smartphone className="size-3.5 text-primary" />
               <span>Guia Digital 9:16</span>
+            </Button>
+          )}
+
+          {isOwner && onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              title="Editar anúncio"
+              aria-label="Editar anúncio"
+              className="h-9 w-9 p-0 rounded-xl border border-border/50 bg-background hover:bg-muted/50 text-foreground flex items-center justify-center cursor-pointer transition-all active:scale-95"
+            >
+              <Edit3 className="size-4 text-foreground" />
             </Button>
           )}
 
@@ -1162,39 +1226,41 @@ export function UniversalClassifiedShowcase({
               </div>
             </div>
 
-            {/* Divulgação Progressiva: Barra de Abas Horizontais (Heurística 2) */}
-            <div className="flex items-center gap-1.5 border-b border-border/40 pb-2 overflow-x-auto no-scrollbar pt-1">
-              {availableTabs.map((tab) => {
-                const isSelected = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      "h-9 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0",
-                      isSelected
-                        ? "bg-foreground text-background shadow-xs font-bold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Divulgação Progressiva: Barra de Abas Horizontais (Oculta se houver apenas Visão Geral) */}
+            {availableTabs.length > 1 && (
+              <div className="flex items-center gap-1.5 border-b border-border/40 pb-2 overflow-x-auto no-scrollbar pt-1">
+                {availableTabs.map((tab) => {
+                  const isSelected = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={cn(
+                        "h-9 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0",
+                        isSelected
+                          ? "bg-foreground text-background shadow-xs font-bold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      )}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* ABA: VISÃO GERAL */}
             {activeTab === "overview" && (
               <div className="space-y-6 animate-in fade-in-50 duration-150">
-                {/* Destaques Principais (4 Minicards Clean) */}
+                {/* Destaques Principais (Grid Dinâmico Clean) */}
                 {techCards.length > 0 && (
                   <div className="space-y-2.5">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
                       Destaques
                     </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                      {techCards.slice(0, 4).map((card, idx) => {
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+                      {techCards.map((card, idx) => {
                         const IconComponent = card.icon;
                         return (
                           <div
@@ -1455,17 +1521,6 @@ export function UniversalClassifiedShowcase({
                     )}
                   </div>
                 </div>
-
-                {/* Selo de Garantia de Custódia Waesy */}
-                <div className="rounded-xl border border-border/30 bg-muted/10 p-3.5 flex items-start gap-3 text-xs text-muted-foreground">
-                  <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <strong className="text-foreground block text-xs">Proteção e Custódia Waesy</strong>
-                    <p className="text-[11px] leading-relaxed">
-                      Negociações realizadas na plataforma contam com proteção de valores em conta garantia até a confirmação de entrega do item ou cumprimento dos termos acordados.
-                    </p>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -1592,7 +1647,13 @@ export function UniversalClassifiedShowcase({
                     "warranty_days", "file_format", "file_size_bytes", "version", "max_guests", "checkin_time",
                     "checkout_time", "duration_days", "destination_city", "hotel_included", "transport_type",
                     "brand", "warranty", "delivery_available", "amenities", "features", "departure_options",
-                    "house_rules", "max_installments"
+                    "house_rules", "max_installments", "cleaning_fee_cents", "bedrooms", "bathrooms", "suites",
+                    "garage_spots", "accepts_pix", "pix_discount_percent", "accepts_card", "card_interest_free",
+                    "accepts_boleto", "boleto_due_days", "accepts_boleto_installments", "max_boleto_installments",
+                    "boleto_min_down_payment_cents", "boleto_notes", "accepts_carne", "max_carne_installments",
+                    "carne_grace_days", "carne_min_down_payment_cents", "carne_notes", "accepts_cash",
+                    "accepts_trade", "trade_notes", "accepts_financing", "financing_notes", "cancellation_policy",
+                    "niche", "template_style", "is_business_sale", "is_free_donation", "is_confidential", "requires_nda"
                   ];
                   const extraAttributes = Object.entries(classified.attributes).filter(
                     ([k, v]) => !excludeKeys.includes(k) && v !== null && v !== undefined && v !== "" && (Array.isArray(v) ? v.length > 0 : true)
@@ -2066,16 +2127,6 @@ export function UniversalClassifiedShowcase({
                     </strong>
                   </div>
                 </div>
-
-                {/* Termos de Garantia e Custódia */}
-                <div className="rounded-xl border border-border/30 bg-card p-4 space-y-2 text-xs">
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
-                    Garantia e Custódia de Pagamento
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed text-[11px]">
-                    Toda transação realizada por meio da Waesy conta com mediação e custódia segura. O valor pago fica resguardado até a entrega do item ou confirmação dos serviços acordados entre as partes.
-                  </p>
-                </div>
               </div>
             )}
           </div>
@@ -2347,34 +2398,6 @@ export function UniversalClassifiedShowcase({
                     </Button>
                   )}
                 </div>
-
-                {/* Proteção Waesy (Escrow) — apenas para nichos com allowEscrowGuarantee */}
-                {niche.allowEscrowGuarantee && !isDonation && priceCents > 0 && (
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs">
-                    <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-300 block">
-                        Proteção Waesy disponível
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">
-                        Pagamento em custódia até confirmar recebimento
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Botão de Edição Rápida para o Dono do Anúncio */}
-                {isOwner && onEdit && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onEdit}
-                    className="w-full h-11 rounded-xl text-xs font-bold border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 flex items-center justify-center gap-2 cursor-pointer transition-all"
-                  >
-                    <Edit3 className="size-4 text-amber-600" />
-                    <span>Editar Anúncio no CMS</span>
-                  </Button>
-                )}
               </div>
 
               {/* Microcopy de Confiança (Estilo Airbnb) */}

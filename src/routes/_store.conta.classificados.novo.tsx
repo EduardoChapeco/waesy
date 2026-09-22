@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
@@ -38,6 +38,7 @@ import { CityCombobox, type StructuredLocationValue } from "@/components/ui/city
 import { upsertClassified, getPublicClassifiedById, refineClassifiedWithAI } from "@/services/classifieds.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { getProfile } from "@/services/auth.functions";
+import { listStoreLeadForms } from "@/services/lead-forms.functions";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
 import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/services/market-intelligence.functions";
 import { lookupCnpj } from "@/services/public-apis.functions";
@@ -995,6 +996,18 @@ function SpecializedClassifiedEditor({
  const [whatsapp, setWhatsapp] = useState("");
  const [images, setImages] = useState<string[]>([]);
  const [activePreviewImage, setActivePreviewImage] = useState(0);
+
+  // Vínculo com Formulário de Captura de Leads / Landing Page
+  const [selectedFormId, setSelectedFormId] = useState<string | null>(
+    initialData?.form_id || initialData?.attributes?.form_id || null
+  );
+
+  const effectiveStoreId = selectedStoreId || userStores[0]?.id || null;
+  const { data: storeForms = [] } = useQuery({
+    queryKey: ["store-lead-forms-selector", effectiveStoreId],
+    queryFn: () => listStoreLeadForms({ data: { storeId: effectiveStoreId } }),
+    enabled: !!effectiveStoreId,
+  });
 
   // Template de Exibição (Padrão Comercial vs Vitrine Imersiva / Glamour)
   const [templateStyle, setTemplateStyle] = useState<"standard" | "editorial" | "conveniencia">(
@@ -2483,6 +2496,7 @@ function SpecializedClassifiedEditor({
           hide_location: hideLocation,
           images: images,
           attributes,
+          form_id: selectedFormId || undefined,
           status: "active",
         },
       });
@@ -8078,7 +8092,7 @@ function SpecializedClassifiedEditor({
                         <Input
                           value={financingNotes}
                           onChange={(e) => setFinancingNotes(e.target.value)}
-                          placeholder="Ex: Santander, BV, Bradesco ou consórcio contemplado"
+                          placeholder="Ex: Financiamento bancário ou consórcio contemplado"
                           className="h-9 text-xs"
                         />
                       </div>
@@ -8183,6 +8197,84 @@ function SpecializedClassifiedEditor({
 								/>
  </div>
  </div>
+
+              {/* ── Formulário de Captura de Leads / Landing Page Vinculada ── */}
+              <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                    <FileText className="size-4 text-primary shrink-0" />
+                    <span>Captura de Leads & Landing Page (Opcional)</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
+                    Campanhas Ads & CRM
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Vincule um formulário personalizado para captar contatos qualificados diretamente no seu CRM do Workspace com Registro Rápido e redirecionamento WhatsApp.
+                </p>
+
+                {storeForms.length > 0 ? (
+                  <div className="space-y-2">
+                    <Select
+                      value={selectedFormId || "none"}
+                      onValueChange={(val) => setSelectedFormId(val === "none" ? null : val)}
+                    >
+                      <SelectTrigger className="h-11 rounded-xl text-xs bg-background">
+                        <SelectValue placeholder="Selecione um formulário de captura..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhum (anúncio sem formulário direto)</SelectItem>
+                        {storeForms.map((f: any) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.title} ({f.slug}) • {f.submissions_count || 0} leads
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {selectedFormId && (
+                        <Link
+                          to="/f/$slug"
+                          params={{ slug: storeForms.find((f: any) => f.id === selectedFormId)?.slug || selectedFormId }}
+                          target="_blank"
+                          className="text-[11px] text-primary hover:underline flex items-center gap-1 font-medium"
+                        >
+                          <Eye className="size-3" />
+                          <span>Ver landing page do formulário</span>
+                        </Link>
+                      )}
+                      <Link
+                        to="/workspace/marketing/formularios"
+                        className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 ml-auto"
+                      >
+                        <Plus className="size-3" />
+                        <span>Gerenciar Formulários no Workspace</span>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Input
+                      type="text"
+                      value={selectedFormId || ""}
+                      onChange={(e) => setSelectedFormId(e.target.value.trim() || null)}
+                      placeholder="ID ou Slug do formulário (ex: cotacao-cancun ou UUID)"
+                      className="w-full h-11 px-3 rounded-xl border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>Cole o slug ou UUID do formulário</span>
+                      <Link
+                        to="/workspace/marketing/formularios"
+                        className="text-primary hover:underline flex items-center gap-1 font-medium"
+                      >
+                        <Plus className="size-3" />
+                        <span>Criar no Workspace</span>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* ── Seção 6: Agente Vendedor (SDR) — Configuração ── */}
               <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.03] p-4 sm:p-5 space-y-4">

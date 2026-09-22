@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Handshake,
+  Compass,
   MessageSquare,
   CheckCircle2,
   XCircle,
@@ -12,23 +13,17 @@ import {
   FileSignature,
   Loader2,
   Tag,
-  User,
-  ShieldAlert,
   Calendar,
   MapPin,
   ExternalLink,
   Users,
   Smartphone,
-  CheckSquare,
-  PackageCheck,
-  Link as LinkIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getDealsByUser, respondToDealProposal } from "@/services/deals.functions";
 import { getProfile } from "@/services/auth.functions";
 import { generateContractFromDeal } from "@/services/contracts.functions";
-import { createStoreCarne } from "@/services/receivables.functions";
 import { DealDeliveryTrackingCard } from "@/components/commercial/deal-delivery-tracking-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,22 +44,21 @@ import {
 } from "@/components/documents/digital-companion-card";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
-import React from "react";
 
 export const Route = createFileRoute("/_store/conta/negociacoes")({
- head: () => ({ meta: [{ title: "Minhas Negociações & Reservas | Waesy" }] }),
- component: NegociacoesPage,
+  head: () => ({ meta: [{ title: "Minhas Negociações | Waesy" }] }),
+  component: NegociacoesPage,
 });
 
 const STATUS_CONFIG: Record<
- string,
- { label: string; variant: "default" | "secondary" | "outline" | "destructive" }
+  string,
+  { label: string; variant: "default" | "secondary" | "outline" | "destructive" }
 > = {
- negotiating: { label: "Em Negociação", variant: "secondary" },
- accepted: { label: "Aceita / Confirmada", variant: "default" },
- rejected: { label: "Recusada", variant: "destructive" },
- cancelled: { label: "Cancelada", variant: "outline" },
- completed: { label: "Concluída", variant: "default" },
+  negotiating: { label: "Em Negociação", variant: "secondary" },
+  accepted: { label: "Confirmada", variant: "default" },
+  rejected: { label: "Recusada", variant: "destructive" },
+  cancelled: { label: "Cancelada", variant: "outline" },
+  completed: { label: "Concluída", variant: "default" },
 };
 
 // Timeline de Progresso do Deal (Nielsen Norman: visibilidade do status do sistema)
@@ -114,37 +108,37 @@ function DealTimeline({ status }: { status: string }) {
 }
 
 function NegociacoesPage() {
- const queryClient = useQueryClient();
- const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
- const [counterPriceCents, setCounterPriceCents] = useState<number | undefined>(undefined);
- const [counterMessage, setCounterMessage] = useState("");
- const [activeTab, setActiveTab] = useState<"all" | "purchases" | "sales" | "bookings">("all");
- const [generatingContractId, setGeneratingContractId] = useState<string | null>(null);
- const [selectedCompanionDeal, setSelectedCompanionDeal] = useState<any | null>(null);
+  const queryClient = useQueryClient();
+  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+  const [counterPriceCents, setCounterPriceCents] = useState<number | undefined>(undefined);
+  const [counterMessage, setCounterMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "purchases" | "sales" | "bookings">("all");
+  const [generatingContractId, setGeneratingContractId] = useState<string | null>(null);
+  const [selectedCompanionDeal, setSelectedCompanionDeal] = useState<any | null>(null);
 
- const { data: profile } = useQuery({
-   queryKey: ["current-user-profile"],
-   queryFn: () => getProfile(),
- });
+  const { data: profile } = useQuery({
+    queryKey: ["current-user-profile"],
+    queryFn: () => getProfile(),
+  });
 
- const { data: deals, isLoading } = useQuery({
- queryKey: ["user-deals"],
- queryFn: () => getDealsByUser(),
- });
+  const { data: deals, isLoading } = useQuery({
+    queryKey: ["user-deals"],
+    queryFn: () => getDealsByUser(),
+  });
 
- const respondMutation = useMutation({
- mutationFn: respondToDealProposal,
- onSuccess: () => {
- queryClient.invalidateQueries({ queryKey: ["user-deals"] });
- toast.success("Resposta enviada com sucesso!");
- setSelectedDealId(null);
- setCounterPriceCents(undefined);
- setCounterMessage("");
- },
- onError: (err: any) => {
- toast.error(err?.message || "Erro ao responder proposta.");
- },
- });
+  const respondMutation = useMutation({
+    mutationFn: respondToDealProposal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-deals"] });
+      toast.success("Resposta enviada com sucesso!");
+      setSelectedDealId(null);
+      setCounterPriceCents(undefined);
+      setCounterMessage("");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao responder proposta.");
+    },
+  });
 
   const handleAction = (dealId: string, action: "accept" | "reject" | "counter_proposal" | "complete" | "cancel") => {
     if (action === "counter_proposal") {
@@ -171,36 +165,36 @@ function NegociacoesPage() {
     }
   };
 
- const handleGenerateContract = async (dealId: string) => {
- try {
- setGeneratingContractId(dealId);
- const res: any = await generateContractFromDeal({ data: { dealId } });
- if (res?.signingUrl || res?.signUrl || res?.contract) {
- toast.success("Contrato gerado com sucesso!");
- const targetUrl = res.signingUrl || res.signUrl;
- if (targetUrl) {
- window.open(targetUrl, "_blank");
- }
- }
- } catch (err: any) {
- toast.error(err?.message || "Erro ao gerar contrato digital.");
- } finally {
- setGeneratingContractId(null);
- }
- };
+  const handleGenerateContract = async (dealId: string) => {
+    try {
+      setGeneratingContractId(dealId);
+      const res: any = await generateContractFromDeal({ data: { dealId } });
+      if (res?.signingUrl || res?.signUrl || res?.contract) {
+        toast.success("Contrato gerado com sucesso!");
+        const targetUrl = res.signingUrl || res.signUrl;
+        if (targetUrl) {
+          window.open(targetUrl, "_blank");
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao gerar contrato digital.");
+    } finally {
+      setGeneratingContractId(null);
+    }
+  };
 
- const filteredDeals = (deals || []).filter((deal: any) => {
-   if (activeTab === "purchases") {
-     return deal.buyer_id === profile?.id;
-   }
-   if (activeTab === "sales") {
-     return deal.seller_id === profile?.id;
-   }
-   if (activeTab === "bookings") {
-     return deal.is_direct_booking || deal.deal_type === "rental" || deal.start_date;
-   }
-   return true;
- });
+  const filteredDeals = (deals || []).filter((deal: any) => {
+    if (activeTab === "purchases") {
+      return deal.buyer_id === profile?.id;
+    }
+    if (activeTab === "sales") {
+      return deal.seller_id === profile?.id;
+    }
+    if (activeTab === "bookings") {
+      return deal.is_direct_booking || deal.deal_type === "rental" || deal.start_date;
+    }
+    return true;
+  });
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-5 pb-24 px-0 sm:px-4 md:px-0">
@@ -217,17 +211,30 @@ function NegociacoesPage() {
           )}
         </div>
 
-        <Button
-          asChild
-          size="sm"
-          variant="outline"
-          className="rounded-xl h-9 px-3.5 text-xs font-semibold cursor-pointer hover:bg-muted"
-        >
-          <Link to="/classificados">Explorar Anúncios</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            size="sm"
+            variant="default"
+            className="rounded-xl h-9 px-3 text-xs font-bold gap-1.5 cursor-pointer bg-primary text-primary-foreground shadow-xs"
+          >
+            <Link to="/conta/viagens">
+              <Compass className="size-3.5" />
+              <span>Minhas Viagens</span>
+            </Link>
+          </Button>
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="rounded-xl h-9 px-3.5 text-xs font-semibold cursor-pointer hover:bg-muted"
+          >
+            <Link to="/classificados">Explorar Anúncios</Link>
+          </Button>
+        </div>
       </div>
 
-      {/* ── 2. Toolbar: Abas Rápidas em Trilho Horizontal sem Quebra (Anti-Wrapping & Anti-Overflow) ── */}
+      {/* ── 2. Toolbar: Abas Rápidas em Trilho Horizontal ── */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full">
         <button
           type="button"
@@ -275,361 +282,361 @@ function NegociacoesPage() {
         </button>
       </div>
 
- {/* ── Lista de Negociações ─────────────────────────────────── */}
- {isLoading ? (
- <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
- <Loader2 className="size-6 animate-spin text-primary" />
- <p className="text-xs">Carregando negociações e reservas...</p>
- </div>
- ) : filteredDeals.length > 0 ? (
- <div className="space-y-4">
- {filteredDeals.map((deal: any) => {
- const status = STATUS_CONFIG[deal.status] || { label: deal.status, variant: "outline" };
- const isNegotiating = deal.status === "negotiating";
- const isAccepted = deal.status === "accepted";
- const isCountering = selectedDealId === deal.id;
- const isRental = deal.is_direct_booking || deal.deal_type === "rental" || deal.start_date;
+      {/* ── Lista de Negociações ── */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
+          <Loader2 className="size-6 animate-spin text-primary" />
+          <p className="text-xs">Carregando negociações e reservas...</p>
+        </div>
+      ) : filteredDeals.length > 0 ? (
+        <div className="space-y-4">
+          {filteredDeals.map((deal: any) => {
+            const status = STATUS_CONFIG[deal.status] || { label: deal.status, variant: "outline" };
+            const isNegotiating = deal.status === "negotiating";
+            const isAccepted = deal.status === "accepted";
+            const isCountering = selectedDealId === deal.id;
+            const isRental = deal.is_direct_booking || deal.deal_type === "rental" || deal.start_date;
 
- return (
- <div
- key={deal.id}
- className=" bg-card rounded-2xl p-5 space-y-4"
- >
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
- <div className="space-y-1">
- <div className="flex items-center gap-2">
- <Badge
- variant={status.variant}
- className="text-[10px] font-bold uppercase tracking-wider"
- >
- {status.label}
- </Badge>
- {deal.is_direct_booking && (
- <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30">
- Reserva Direta
- </Badge>
- )}
- <span className="text-xs text-muted-foreground">
- {formatDate(deal.updated_at)}
- </span>
- </div>
+            return (
+              <div
+                key={deal.id}
+                className="bg-card rounded-2xl p-5 space-y-4 border border-border/60"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={status.variant}
+                        className="text-[10px] font-bold uppercase tracking-wider"
+                      >
+                        {status.label}
+                      </Badge>
+                      {deal.is_direct_booking && (
+                        <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30">
+                          Reserva Direta
+                        </Badge>
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(deal.updated_at)}
+                      </span>
+                    </div>
 
- <h2 className="text-base font-bold text-foreground">
- {deal.classified?.title || "Negociação / Reserva"}
- </h2>
- </div>
+                    <h2 className="text-base font-bold text-foreground">
+                      {deal.classified?.title || "Negociação / Reserva"}
+                    </h2>
+                  </div>
 
- <div className="text-right sm:text-right">
- <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
- {isRental ? "Total da Estadia" : "Valor Acordado"}
- </span>
- <span className="text-xl font-black text-primary font-mono">
- {formatMoney(deal.total_price_cents || deal.proposed_price_cents)}
- </span>
- </div>
- </div>
+                  <div className="text-right sm:text-right">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+                      {isRental ? "Total da Estadia" : "Valor Acordado"}
+                    </span>
+                    <span className="text-xl font-black text-primary font-mono">
+                      {formatMoney(deal.total_price_cents || deal.proposed_price_cents)}
+                    </span>
+                  </div>
+                </div>
 
-  {/* ── Timeline de Progresso do Deal ── */}
-  {["negotiating", "accepted", "confirmed", "completed"].includes(deal.status) && (
-    <div className="px-0.5">
-      <DealTimeline status={deal.status} />
-    </div>
-  )}
+                {/* Timeline de Progresso do Deal */}
+                {["negotiating", "accepted", "confirmed", "completed"].includes(deal.status) && (
+                  <div className="px-0.5">
+                    <DealTimeline status={deal.status} />
+                  </div>
+                )}
 
- {/* Detalhes da Reserva / Proposta */}
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-muted/20 p-3.5 rounded-xl ">
- <div>
- <span className="text-muted-foreground block text-[10px]">Comprador / Hóspede</span>
- <span className="font-semibold">{deal.buyer?.full_name || "Membro"}</span>
- </div>
- <div>
- <span className="text-muted-foreground block text-[10px]">Anunciante / Anfitrião</span>
- <span className="font-semibold">{deal.seller?.full_name || "Membro"}</span>
- </div>
- <div>
- <span className="text-muted-foreground block text-[10px]">
- {isRental ? "Período & Diárias" : "Condições"}
- </span>
- <span className="font-semibold">
- {isRental && deal.start_date && deal.end_date
- ? `${formatDate(deal.start_date).split(" ")[0]} até ${formatDate(deal.end_date).split(" ")[0]} (${deal.nights_count || 1} noites)`
- : deal.installments_count > 1
- ? `${deal.installments_count}x parcelas`
- : "À vista"}
- </span>
- </div>
- </div>
+                {/* Detalhes da Reserva / Proposta */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-muted/20 p-3.5 rounded-xl">
+                  <div>
+                    <span className="text-muted-foreground block text-[10px]">Comprador / Hóspede</span>
+                    <span className="font-semibold">{deal.buyer?.full_name || "Membro"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[10px]">Anunciante / Anfitrião</span>
+                    <span className="font-semibold">{deal.seller?.full_name || "Membro"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-[10px]">
+                      {isRental ? "Período & Diárias" : "Condições"}
+                    </span>
+                    <span className="font-semibold">
+                      {isRental && deal.start_date && deal.end_date
+                        ? `${formatDate(deal.start_date).split(" ")[0]} até ${formatDate(deal.end_date).split(" ")[0]} (${deal.nights_count || 1} noites)`
+                        : deal.installments_count > 1
+                        ? `${deal.installments_count}x parcelas`
+                        : "À vista"}
+                    </span>
+                  </div>
+                </div>
 
- {/* Informações Extras de Locação por Temporada */}
- {isRental && (
- <div className="p-3 rounded-xl bg-background text-xs space-y-2">
- <div className="flex flex-wrap items-center justify-between gap-2">
- <div className="flex items-center gap-2 text-foreground font-semibold">
- <Calendar className="size-4 text-primary shrink-0" />
- <span>Check-in: {deal.start_date ? formatDate(deal.start_date).split(" ")[0] : "A definir"}</span>
- <span>•</span>
- <span>Check-out: {deal.end_date ? formatDate(deal.end_date).split(" ")[0] : "A definir"}</span>
- </div>
- {deal.guests_count && (
- <span className="flex items-center gap-1 text-muted-foreground font-medium">
- <Users className="size-3.5" />
- <span>{deal.guests_count} hóspede(s)</span>
- </span>
- )}
- </div>
+                {/* Informações Extras de Locação por Temporada */}
+                {isRental && (
+                  <div className="p-3 rounded-xl bg-background text-xs space-y-2 border border-border/40">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-foreground font-semibold">
+                        <Calendar className="size-4 text-primary shrink-0" />
+                        <span>Check-in: {deal.start_date ? formatDate(deal.start_date).split(" ")[0] : "A definir"}</span>
+                        <span>•</span>
+                        <span>Check-out: {deal.end_date ? formatDate(deal.end_date).split(" ")[0] : "A definir"}</span>
+                      </div>
+                      {deal.guests_count && (
+                        <span className="flex items-center gap-1 text-muted-foreground font-medium">
+                          <Users className="size-3.5" />
+                          <span>{deal.guests_count} hóspede(s)</span>
+                        </span>
+                      )}
+                    </div>
 
- {isAccepted && deal.classified?.location_name && (
- <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
- <div className="flex items-center gap-1.5 text-foreground font-medium">
- <MapPin className="size-4 text-emerald-600 shrink-0" />
- <span>{deal.classified.location_name}</span>
- </div>
- <a
- href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(deal.classified.location_name)}`}
- target="_blank"
- rel="noreferrer"
- className="inline-flex items-center gap-1 text-xs text-primary font-bold hover:underline"
- >
- <span>Abrir no Google Maps</span>
- <ExternalLink className="size-3" />
- </a>
- </div>
- )}
- </div>
- )}
+                    {isAccepted && deal.classified?.location_name && (
+                      <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-border/40">
+                        <div className="flex items-center gap-1.5 text-foreground font-medium">
+                          <MapPin className="size-4 text-emerald-600 shrink-0" />
+                          <span>{deal.classified.location_name}</span>
+                        </div>
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(deal.classified.location_name)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary font-bold hover:underline"
+                        >
+                          <span>Abrir no Google Maps</span>
+                          <ExternalLink className="size-3" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
 
- {deal.terms && (
- <p className="text-xs text-foreground/80 bg-background p-3 rounded-xl leading-relaxed">
- <strong className="text-foreground">Termos:</strong> {deal.terms}
- </p>
- )}
+                {deal.terms && (
+                  <p className="text-xs text-foreground/80 bg-background p-3 rounded-xl leading-relaxed border border-border/40">
+                    <strong className="text-foreground">Termos:</strong> {deal.terms}
+                  </p>
+                )}
 
- {/* Ações de Negociação */}
- {isNegotiating && !isCountering && (
- <div className="flex flex-wrap items-center gap-2 pt-1">
- {deal.seller_id === profile?.id ? (
- <>
- <Button
- size="sm"
- onClick={() => handleAction(deal.id, "accept")}
- disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
- >
- <CheckCircle2 className="size-3.5" />
- <span>Aceitar Proposta</span>
- </Button>
+                {/* Ações de Negociação */}
+                {isNegotiating && !isCountering && (
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {deal.seller_id === profile?.id ? (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleAction(deal.id, "accept")}
+                          disabled={respondMutation.isPending}
+                          className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                        >
+                          <CheckCircle2 className="size-3.5" />
+                          <span>Aceitar Proposta</span>
+                        </Button>
 
- <Button
- size="sm"
- variant="outline"
- onClick={() => setSelectedDealId(deal.id)}
- disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
- >
- <DollarSign className="size-3.5 text-primary" />
- <span>Fazer Contraproposta</span>
- </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedDealId(deal.id)}
+                          disabled={respondMutation.isPending}
+                          className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                        >
+                          <DollarSign className="size-3.5 text-primary" />
+                          <span>Fazer Contraproposta</span>
+                        </Button>
 
- <Button
- size="sm"
- variant="ghost"
- onClick={() => handleAction(deal.id, "reject")}
- disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
- >
- <XCircle className="size-3.5" />
- <span>Recusar</span>
- </Button>
- </>
- ) : deal.buyer_id === profile?.id ? (
- <div className="flex items-center gap-2 flex-wrap">
- <span className="text-xs text-muted-foreground flex items-center gap-1.5">
- <Clock className="size-3.5 text-amber-500" />
- Proposta enviada ao anunciante. Aguardando resposta.
- </span>
- <Button
- size="sm"
- variant="ghost"
- onClick={() => handleAction(deal.id, "cancel")}
- disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
- >
- <XCircle className="size-3.5" />
- <span>Cancelar Proposta</span>
- </Button>
- </div>
- ) : (
- <Button
- size="sm"
- onClick={() => handleAction(deal.id, "accept")}
- disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
- >
- <CheckCircle2 className="size-3.5" />
- <span>Aceitar Proposta</span>
- </Button>
- )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleAction(deal.id, "reject")}
+                          disabled={respondMutation.isPending}
+                          className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+                        >
+                          <XCircle className="size-3.5" />
+                          <span>Recusar</span>
+                        </Button>
+                      </>
+                    ) : deal.buyer_id === profile?.id ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <Clock className="size-3.5 text-amber-500" />
+                          Proposta enviada ao anunciante. Aguardando resposta.
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleAction(deal.id, "cancel")}
+                          disabled={respondMutation.isPending}
+                          className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+                        >
+                          <XCircle className="size-3.5" />
+                          <span>Cancelar Proposta</span>
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => handleAction(deal.id, "accept")}
+                        disabled={respondMutation.isPending}
+                        className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                      >
+                        <CheckCircle2 className="size-3.5" />
+                        <span>Aceitar Proposta</span>
+                      </Button>
+                    )}
 
- <Button
- asChild
- size="sm"
- variant="outline"
- className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer ml-auto"
- >
- <Link to="/conta/conversas">
- <MessageSquare className="size-3.5 text-primary" />
- <span>Abrir Chat</span>
- </Link>
- </Button>
- </div>
- )}
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer ml-auto"
+                    >
+                      <Link to="/conta/conversas">
+                        <MessageSquare className="size-3.5 text-primary" />
+                        <span>Abrir Chat</span>
+                      </Link>
+                    </Button>
+                  </div>
+                )}
 
- {/* Form de Contraproposta */}
- {isCountering && (
- <div className="border border-primary/30 bg-primary/5 rounded-xl p-4 space-y-3">
- <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
- Enviar Contraproposta
- </h3>
+                {/* Form de Contraproposta */}
+                {isCountering && (
+                  <div className="border border-primary/30 bg-primary/5 rounded-xl p-4 space-y-3">
+                    <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                      Enviar Contraproposta
+                    </h3>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- <div className="space-y-1">
- <label className="text-[11px] font-medium text-foreground">
- Novo Valor (R$)
- </label>
- <CurrencyField
- value={counterPriceCents}
- onChange={setCounterPriceCents}
- placeholder="0,00"
- className="h-9 rounded-xl text-xs bg-background"
- />
- </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          Novo Valor (R$)
+                        </label>
+                        <CurrencyField
+                          value={counterPriceCents}
+                          onChange={setCounterPriceCents}
+                          placeholder="0,00"
+                          className="h-9 rounded-xl text-xs bg-background"
+                        />
+                      </div>
 
- <div className="space-y-1">
- <label className="text-[11px] font-medium text-foreground">
- Mensagem / Justificativa
- </label>
- <Input
- value={counterMessage}
- onChange={(e) => setCounterMessage(e.target.value)}
- placeholder="Ex: Consigo fechar por esse valor com retirada hoje..."
- className="h-9 rounded-xl text-xs bg-background"
- />
- </div>
- </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-foreground">
+                          Mensagem / Justificativa
+                        </label>
+                        <Input
+                          value={counterMessage}
+                          onChange={(e) => setCounterMessage(e.target.value)}
+                          placeholder="Ex: Consigo fechar por esse valor com retirada hoje..."
+                          className="h-9 rounded-xl text-xs bg-background"
+                        />
+                      </div>
+                    </div>
 
- <div className="flex items-center gap-2 pt-1">
- <Button
- size="sm"
- onClick={() => handleAction(deal.id, "counter_proposal")}
- disabled={respondMutation.isPending}
- className="rounded-xl text-xs font-bold gap-1.5"
- >
- {respondMutation.isPending ? (
- <Loader2 className="size-3.5 animate-spin" />
- ) : (
- <ArrowRight className="size-3.5" />
- )}
- <span>Enviar Contraproposta</span>
- </Button>
+                    <div className="flex items-center gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        onClick={() => handleAction(deal.id, "counter_proposal")}
+                        disabled={respondMutation.isPending}
+                        className="rounded-xl text-xs font-bold gap-1.5"
+                      >
+                        {respondMutation.isPending ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <ArrowRight className="size-3.5" />
+                        )}
+                        <span>Enviar Contraproposta</span>
+                      </Button>
 
- <Button
- size="sm"
- variant="ghost"
- onClick={() => setSelectedDealId(null)}
- className="rounded-xl text-xs"
- >
- Cancelar
- </Button>
- </div>
- </div>
- )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setSelectedDealId(null)}
+                        className="rounded-xl text-xs"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
- {/* Se houver despacho de entrega por motoboy ativo */}
- <DealDeliveryTrackingCard dealId={deal.id} />
+                {/* Se houver despacho de entrega por motoboy ativo */}
+                <DealDeliveryTrackingCard dealId={deal.id} />
 
- {/* Se a proposta foi aceita */}
- {isAccepted && (
- <div className="border border-emerald-500/30 bg-emerald-500/5 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
- <div className="flex items-center gap-2">
- <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
- <div>
- <p className="text-xs font-bold text-foreground">
- {isRental ? "Reserva Ativa & Confirmada!" : "Negociação Concluída com Sucesso!"}
- </p>
- <p className="text-[11px] text-muted-foreground">
- {isRental
- ? "Os dados do imóvel e as datas estão registrados na sua agenda."
- : "O acordo foi formalizado entre as partes na plataforma Waesy."}
- </p>
- </div>
- </div>
+                {/* Se a proposta foi aceita */}
+                {isAccepted && (
+                  <div className="border border-emerald-500/30 bg-emerald-500/5 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold text-foreground">
+                          {isRental ? "Reserva Ativa & Confirmada!" : "Negociação Concluída com Sucesso!"}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {isRental
+                            ? "Os dados do imóvel e as datas estão registrados na sua agenda."
+                            : "O acordo foi formalizado entre as partes na plataforma Waesy."}
+                        </p>
+                      </div>
+                    </div>
 
- {deal.classified && (
- <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
- <Button
- asChild
- size="sm"
- variant="outline"
- className="rounded-xl text-xs font-bold shrink-0"
- >
- <Link to="/classificados/$id" params={{ id: deal.classified.id }}>
- <Tag className="size-3.5 mr-1.5" />
- <span>Ver Anúncio</span>
- </Link>
- </Button>
- <Button
- type="button"
- size="sm"
- variant="outline"
- disabled={generatingContractId === deal.id}
- onClick={() => handleGenerateContract(deal.id)}
- className="rounded-xl text-xs font-bold shrink-0 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs gap-1.5"
- >
- {generatingContractId === deal.id ? (
- <Loader2 className="size-3.5 animate-spin" />
- ) : (
- <FileSignature className="size-3.5" />
- )}
- <span>
- {generatingContractId === deal.id
- ? "Gerando..."
- : isRental
- ? "Gerar Contrato de Locação"
- : "Gerar Contrato Digital"}
- </span>
- </Button>
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => setSelectedCompanionDeal(deal)}
- className="rounded-xl text-xs font-bold shrink-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer shadow-2xs gap-1.5"
- title="Visualizar Cartão Digital de Acompanhamento 9:16 e mensagem para WhatsApp"
- >
- <Smartphone className="size-3.5" />
- <span>{isRental ? "Guia do Imóvel 9:16" : "Cartão 9:16"}</span>
- </Button>
-  {!isRental && deal.status === "accepted" && (
-    <Button
-      type="button"
-      size="sm"
-      onClick={() => handleAction(deal.id, "complete")}
-      disabled={respondMutation.isPending}
-      className="rounded-xl text-xs font-bold shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
-      title="Confirmar que o item foi recebido e liberar o pagamento para o vendedor"
-    >
-      <CheckCircle2 className="size-3.5" />
-      <span>Confirmar Recebimento</span>
-    </Button>
-  )}
- </div>
- )}
- </div>
- )}
- </div>
- );
- })}
- </div>
+                    {deal.classified && (
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs font-bold shrink-0"
+                        >
+                          <Link to="/classificados/$id" params={{ id: deal.classified.id }}>
+                            <Tag className="size-3.5 mr-1.5" />
+                            <span>Ver Anúncio</span>
+                          </Link>
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={generatingContractId === deal.id}
+                          onClick={() => handleGenerateContract(deal.id)}
+                          className="rounded-xl text-xs font-bold shrink-0 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs gap-1.5"
+                        >
+                          {generatingContractId === deal.id ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <FileSignature className="size-3.5" />
+                          )}
+                          <span>
+                            {generatingContractId === deal.id
+                              ? "Gerando..."
+                              : isRental
+                              ? "Gerar Contrato de Locação"
+                              : "Gerar Contrato Digital"}
+                          </span>
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedCompanionDeal(deal)}
+                          className="rounded-xl text-xs font-bold shrink-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer shadow-2xs gap-1.5"
+                          title="Visualizar Guia Digital 9:16"
+                        >
+                          <Smartphone className="size-3.5" />
+                          <span>{isRental ? "Guia do Imóvel 9:16" : "Cartão 9:16"}</span>
+                        </Button>
+                        {!isRental && deal.status === "accepted" && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => handleAction(deal.id, "complete")}
+                            disabled={respondMutation.isPending}
+                            className="rounded-xl text-xs font-bold shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+                            title="Confirmar que o item foi recebido e liberar o pagamento para o vendedor"
+                          >
+                            <CheckCircle2 className="size-3.5" />
+                            <span>Confirmar Recebimento</span>
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       ) : (
         <div className="border border-border/70 bg-card rounded-2xl p-6 sm:p-12 text-center space-y-3.5 shadow-xs max-w-xl mx-auto w-full">
           <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
@@ -668,8 +675,8 @@ function NegociacoesPage() {
           )}
         </DialogContent>
       </Dialog>
- </div>
- );
+    </div>
+  );
 }
 
 function getDealCompanionData(deal: any) {

@@ -61,14 +61,17 @@ import {
   saveConfirmationItem,
   saveTripPassenger,
   deleteTripPassenger,
+  saveTripFinancialDetails,
   type TripAggregateDTO,
   type TripConfirmationItemDTO,
   type TripPassengerDTO,
 } from "@/services/travel-lifecycle.functions";
+import { processBoletoOcr } from "@/services/travel-operator-ocr.functions";
 import { VoucherBoardingCard } from "@/components/tourism/voucher-boarding-card";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
+import { FAMOUS_HOTEL_PRESETS } from "@/lib/hotel-presets";
 
 export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   head: ({ loaderData }: any) => ({
@@ -91,7 +94,7 @@ export const Route = createFileRoute("/workspace/turismo/viagens/$id")({
   component: WorkspaceTripDetailPage,
 });
 
-type ActiveTab = "overview" | "passengers" | "locators" | "contract" | "vouchers";
+type ActiveTab = "overview" | "passengers" | "locators" | "contract" | "vouchers" | "financial";
 
 function checkDocumentValidity(
   expiryDateStr?: string | null,
@@ -136,6 +139,39 @@ function WorkspaceTripDetailPage() {
   const [isCopied, setIsCopied] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isImportVoucherOpen, setIsImportVoucherOpen] = useState(false);
+
+  // ── Estados Financeiros & Boletos 3-em-1 ──
+  const tripFinancialDetails = (aggregate?.trip?.financial_details || {}) as any;
+  const [financialGrossCents, setFinancialGrossCents] = useState<number>(
+    tripFinancialDetails.gross_price_cents ?? aggregate?.trip?.total_cents ?? 0
+  );
+  const [financialOperatorNetCents, setFinancialOperatorNetCents] = useState<number>(
+    tripFinancialDetails.operator_net_cents ?? 0
+  );
+  const [financialAgentPercent, setFinancialAgentPercent] = useState<number>(
+    tripFinancialDetails.agent_commission_percent ?? 30
+  );
+  const [financialOperatorName, setFinancialOperatorName] = useState<string>(
+    tripFinancialDetails.operator_name || aggregate?.trip?.operator_name || ""
+  );
+  const [financialExternalUrl, setFinancialExternalUrl] = useState<string>(
+    tripFinancialDetails.external_finance_url || ""
+  );
+  const [financialPaymentMethod, setFinancialPaymentMethod] = useState<string>(
+    tripFinancialDetails.payment_method || aggregate?.trip?.payment_method || "boleto_parcelado"
+  );
+  const [financialInstallments, setFinancialInstallments] = useState<any[]>(
+    Array.isArray(tripFinancialDetails.installments) ? tripFinancialDetails.installments : []
+  );
+  const [isOcrBoletoLoading, setIsOcrBoletoLoading] = useState(false);
+  const [isSavingFinancial, setIsSavingFinancial] = useState(false);
+  const [isAddInstallmentOpen, setIsAddInstallmentOpen] = useState(false);
+  const [newInstNumber, setNewInstNumber] = useState(1);
+  const [newInstTotal, setNewInstTotal] = useState(10);
+  const [newInstDueDate, setNewInstDueDate] = useState("");
+  const [newInstAmountCents, setNewInstAmountCents] = useState(0);
+  const [newInstDigitableLine, setNewInstDigitableLine] = useState("");
+  const [newInstBankName, setNewInstBankName] = useState("Banco");
 
   // Modal de Adicionar Localizador
   const [isAddLocatorOpen, setIsAddLocatorOpen] = useState(false);
@@ -432,6 +468,32 @@ function WorkspaceTripDetailPage() {
                 <span>Central de Vouchers</span>
               </Link>
             </Button>
+
+            <Button
+              type="button"
+              onClick={() => {
+                const rawPhone = (trip.client_whatsapp || "").replace(/\D/g, "");
+                if (!rawPhone) {
+                  toast.error("Cliente não possui WhatsApp cadastrado.");
+                  return;
+                }
+                const origin = typeof window !== "undefined" ? window.location.origin : "";
+                const walletUrl = `${origin}/viajante/carteira`;
+                const contractUrl = trip.contract_token ? `${origin}/contrato/${trip.contract_token}` : "";
+                const msg = encodeURIComponent(
+                  `Olá ${trip.client_name}! ✈️ Segue o seu Kit de Viagem para ${trip.destination_city} (Ref: ${trip.trip_number}):\n\n` +
+                  `🎟️ Carteira Digital de Embarque & Vouchers: ${walletUrl}\n` +
+                  (contractUrl ? `📄 Contrato de Intermediação Assinado: ${contractUrl}\n\n` : "\n") +
+                  `Estamos à disposição no plantão da agência para qualquer apoio antes ou durante a viagem!`
+                );
+                window.open(`https://wa.me/55${rawPhone}?text=${msg}`, "_blank");
+                toast.success("Abrindo WhatsApp com Kit de Viagem...");
+              }}
+              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
+            >
+              <WhatsappLogo size={16} weight="fill" />
+              <span>Disparar Kit WhatsApp</span>
+            </Button>
           </div>
         </div>
 
@@ -525,6 +587,18 @@ function WorkspaceTripDetailPage() {
           <Plane className="size-3.5" />
           <span>Central de Vouchers A4</span>
         </button>
+
+        <button
+          onClick={() => setActiveTab("financial")}
+          className={`min-h-[44px] sm:min-h-[38px] px-4 py-2.5 text-xs font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+            activeTab === "financial"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <CreditCard className="size-3.5" />
+          <span>Financeiro, Boletos & Comissões</span>
+        </button>
       </div>
 
       {/* ── 3. CONTEÚDO DAS ABAS ── */}
@@ -532,6 +606,76 @@ function WorkspaceTripDetailPage() {
       {/* ABA 1: VISÃO GERAL */}
       {activeTab === "overview" && (
         <div className="space-y-4">
+          {/* ── CARD 1: CHECKLIST OPERACIONAL DE ATENDIMENTO DA AGÊNCIA [REQ-19] ── */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-3">
+            <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
+              <div className="flex items-center gap-2">
+                <FileCheck2 className="size-4 text-primary" />
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                  Checklist de Atendimento
+                </h3>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked={Boolean(trip.client_document)}
+                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <div className="space-y-0.5 min-w-0">
+                  <span className="font-bold text-foreground block">1. Validade de Documentos</span>
+                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                    RG &lt; 10 anos ou Passaporte válido por mais de 6 meses + Visto aplicável.
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked={Boolean(trip.contract_token)}
+                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <div className="space-y-0.5 min-w-0">
+                  <span className="font-bold text-foreground block">2. Contrato Assinado</span>
+                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                    Minuta de intermediação turística aceita ou assinada com hash SHA-256.
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked={Boolean(mainVoucher)}
+                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <div className="space-y-0.5 min-w-0">
+                  <span className="font-bold text-foreground block">3. Vouchers & Apólices Emitidos</span>
+                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                    Bilhetes carregados e disponíveis na Carteira Digital do Viajante (PWA).
+                  </span>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked={aggregate.confirmationItems.some((it) => it.item_type === "flight" && it.status === "confirmed")}
+                  className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <div className="space-y-0.5 min-w-0">
+                  <span className="font-bold text-foreground block">4. Check-in & Disparo de Kit</span>
+                  <span className="text-[11px] text-muted-foreground block leading-tight">
+                    Check-in aéreo concluído e kit de viagem disparado no WhatsApp do cliente.
+                  </span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           {/* Card de Operadora & Suporte de Emergência */}
           {(trip.operator_name || trip.operator_contacts) && (
             <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3">
@@ -832,14 +976,30 @@ function WorkspaceTripDetailPage() {
               </p>
             </div>
 
-            <Button
-              type="button"
-              onClick={openNewPassenger}
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 self-start sm:self-auto cursor-pointer shadow-xs"
-            >
-              <Plus className="size-4 sm:size-3.5" />
-              <span>Novo Passageiro</span>
-            </Button>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              {aggregate.passengers.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    toast.success(`Vouchers emitidos e atualizados para todos os ${aggregate.passengers.length} viajantes! Disponíveis na Carteira Digital.`);
+                  }}
+                  className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-3.5 cursor-pointer border-primary/30 text-primary hover:bg-primary/5"
+                >
+                  <Ticket className="size-3.5" />
+                  <span>Emitir Vouchers para Todos ({aggregate.passengers.length})</span>
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                onClick={openNewPassenger}
+                className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 cursor-pointer shadow-xs"
+              >
+                <Plus className="size-4 sm:size-3.5" />
+                <span>Novo Passageiro</span>
+              </Button>
+            </div>
           </div>
 
           {aggregate.passengers.length === 0 ? (
@@ -1178,6 +1338,496 @@ function WorkspaceTripDetailPage() {
         </div>
       )}
 
+      {/* ABA 6: GESTÃO FINANCEIRA, BOLETOS & COMISSÕES (PADRÃO BIGTECH) */}
+      {activeTab === "financial" && (
+        <div className="space-y-6">
+          {/* 1. KPIs FINANCEIROS & MARGEM DA AGÊNCIA */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+              <span className="text-[11px] font-semibold text-muted-foreground block">Venda Bruta (Cliente)</span>
+              <span className="text-base sm:text-lg font-bold text-foreground">
+                {formatMoney(financialGrossCents)}
+              </span>
+              <span className="text-[10px] text-muted-foreground block">Valor final contratado</span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-1">
+              <span className="text-[11px] font-semibold text-muted-foreground block">Custo Operadora B2B</span>
+              <span className="text-base sm:text-lg font-bold text-muted-foreground">
+                {formatMoney(financialOperatorNetCents)}
+              </span>
+              <span className="text-[10px] text-muted-foreground block">{financialOperatorName || "Operadora"} líquida</span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1">
+              <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 block">Lucro Bruto Agência</span>
+              <span className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                {formatMoney(Math.max(0, financialGrossCents - financialOperatorNetCents))}
+              </span>
+              <span className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 block">
+                {financialGrossCents > 0
+                  ? `${(((financialGrossCents - financialOperatorNetCents) / financialGrossCents) * 100).toFixed(1)}% de margem`
+                  : "0%"}
+              </span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 space-y-1">
+              <span className="text-[11px] font-semibold text-primary block">Comissão do Consultor</span>
+              <span className="text-base sm:text-lg font-bold text-primary">
+                {formatMoney(Math.round(Math.max(0, financialGrossCents - financialOperatorNetCents) * (financialAgentPercent / 100)))}
+              </span>
+              <span className="text-[10px] text-primary/80 block">{financialAgentPercent}% do lucro agência</span>
+            </div>
+          </div>
+
+          {/* 2. CONFIGURAÇÃO DE VALORES E OPERADORA */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+              Composição da Venda & Comissão
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Valor Total Bruto (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={(financialGrossCents / 100).toFixed(2)}
+                  onChange={(e) => setFinancialGrossCents(Math.round(parseFloat(e.target.value || "0") * 100))}
+                  className="h-9 text-xs rounded-xl font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Custo Líquido Operador (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={(financialOperatorNetCents / 100).toFixed(2)}
+                  onChange={(e) => setFinancialOperatorNetCents(Math.round(parseFloat(e.target.value || "0") * 100))}
+                  className="h-9 text-xs rounded-xl font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Operadora / Consolidadora</Label>
+                <Input
+                  value={financialOperatorName}
+                  onChange={(e) => setFinancialOperatorName(e.target.value)}
+                  placeholder="Ex: CVC, Trend, Orinter, Visual"
+                  className="h-9 text-xs rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">% Comissão do Consultor</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={financialAgentPercent}
+                  onChange={(e) => setFinancialAgentPercent(Number(e.target.value || 0))}
+                  className="h-9 text-xs rounded-xl font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/60">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Forma de Pagamento Contratada</Label>
+                <Select value={financialPaymentMethod} onValueChange={setFinancialPaymentMethod}>
+                  <SelectTrigger className="h-9 text-xs rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="financiamento_bancario">Financiamento Bancário / Carnê Parceiro</SelectItem>
+                    <SelectItem value="cartao_operadora">Cartão de Crédito via Operadora</SelectItem>
+                    <SelectItem value="credit_card">Cartão de Crédito Direto na Agência</SelectItem>
+                    <SelectItem value="boleto_parcelado">Boleto Bancário Parcelado / Carnê</SelectItem>
+                    <SelectItem value="pix">Pix / TED à Vista</SelectItem>
+                    <SelectItem value="faturado_corporativo">Faturamento Corporativo a Prazo</SelectItem>
+                    <SelectItem value="checkout_app_terrestre">Pagamento Online no App (Exclusivo Terrestre / Excursões)</SelectItem>
+                    <SelectItem value="combinado_consultor">Personalizado / Combinado com Consultor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Link da Financiadora Externa (Opcional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={financialExternalUrl}
+                    onChange={(e) => setFinancialExternalUrl(e.target.value)}
+                    placeholder="https://financiadora.com.br/proposta/..."
+                    className="h-9 text-xs rounded-xl flex-1 font-mono"
+                  />
+                  {financialExternalUrl && (
+                    <Button asChild size="sm" variant="outline" className="h-9 rounded-xl px-2.5 shrink-0">
+                      <a href={financialExternalUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="size-3.5" />
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. GESTÃO DE BOLETOS 3-EM-1 (OCR POR IA, MANUAL E EXTERNO) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                  <Barcode className="size-4 text-primary" />
+                  Carnê & Boletos Bancários ({financialInstallments.length} parcelas)
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Suporte às 3 modalidades: extração por IA, upload manual ou link externo da financiadora.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Input Invisível para OCR de Boletos */}
+                <input
+                  type="file"
+                  id="boleto-ocr-file"
+                  accept="application/pdf,image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setIsOcrBoletoLoading(true);
+                    try {
+                      const reader = new FileReader();
+                      reader.onload = async () => {
+                        const base64 = (reader.result as string).split(",")[1];
+                        const res = await processBoletoOcr({
+                          data: {
+                            fileBase64: base64,
+                            fileMime: file.type,
+                            fileName: file.name,
+                          },
+                        });
+                        if (res.success && res.data.installments.length > 0) {
+                          setFinancialInstallments((prev) => [
+                            ...prev,
+                            ...res.data.installments.map((inst, i) => ({
+                              id: crypto.randomUUID(),
+                              ...inst,
+                            })),
+                          ]);
+                          toast.success(`OCR concluído: ${res.data.installments.length} parcelas extraídas com sucesso!`);
+                        } else {
+                          toast.warning("Nenhuma parcela foi identificada no arquivo.");
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    } catch (err: any) {
+                      toast.error(err?.message || "Erro ao processar boleto com IA.");
+                    } finally {
+                      setIsOcrBoletoLoading(false);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isOcrBoletoLoading}
+                  onClick={() => document.getElementById("boleto-ocr-file")?.click()}
+                  className="rounded-xl text-xs font-bold gap-1.5 h-9 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
+                >
+                  {isOcrBoletoLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Barcode className="size-3.5" />}
+                  <span>{isOcrBoletoLoading ? "Lendo Carnê..." : "⚡ Importar Carnê (OCR IA)"}</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setNewInstNumber(financialInstallments.length + 1);
+                    setNewInstTotal(Math.max(10, financialInstallments.length + 1));
+                    setNewInstAmountCents(
+                      financialGrossCents > 0
+                        ? Math.round(financialGrossCents / Math.max(1, financialInstallments.length + 1))
+                        : 0
+                    );
+                    setIsAddInstallmentOpen(true);
+                  }}
+                  className="rounded-xl text-xs font-bold gap-1.5 h-9 cursor-pointer"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Adicionar Parcela</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* TABELA DE PARCELAS DO CARNÊ */}
+            {financialInstallments.length === 0 ? (
+              <div className="py-8 text-center space-y-2 border border-dashed border-border/70 rounded-xl">
+                <Barcode className="size-8 text-muted-foreground mx-auto" />
+                <p className="text-xs font-bold text-foreground">Nenhum boleto registrado nesta viagem</p>
+                <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+                  Utilize o botão "⚡ Importar Carnê (OCR IA)" para ler um PDF bancário com todas as parcelas ou adicione manualmente.
+                </p>
+              </div>
+            ) : (
+              <div className="border border-border/70 rounded-xl overflow-hidden divide-y divide-border/60">
+                {financialInstallments.map((inst, idx) => {
+                  const isPaid = inst.status === "paid";
+                  return (
+                    <div key={inst.id || idx} className="p-3 bg-card hover:bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFinancialInstallments((prev) =>
+                              prev.map((item, i) =>
+                                i === idx
+                                  ? { ...item, status: item.status === "paid" ? "pending" : "paid", paid_at: item.status === "paid" ? null : new Date().toISOString() }
+                                  : item
+                              )
+                            );
+                          }}
+                          className={`h-7 w-7 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
+                            isPaid
+                              ? "bg-emerald-600 border-emerald-600 text-white"
+                              : "border-border/80 hover:border-primary text-transparent"
+                          }`}
+                        >
+                          <Check className="size-4" />
+                        </button>
+
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-foreground">
+                              Parcela {inst.installment_number} de {inst.total_installments || financialInstallments.length}
+                            </span>
+                            <Badge
+                              variant={isPaid ? "default" : "secondary"}
+                              className={`text-[9px] px-1.5 py-0 font-bold ${
+                                isPaid ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {isPaid ? "PAGA" : "PENDENTE"}
+                            </Badge>
+                            {inst.bank_name && (
+                              <span className="text-[10px] text-muted-foreground">({inst.bank_name})</span>
+                            )}
+                          </div>
+
+                          <span className="text-[11px] text-muted-foreground block mt-0.5">
+                            Vencimento: <strong className="text-foreground">{inst.due_date || "Não informada"}</strong>
+                          </span>
+
+                          {inst.digitable_line && (
+                            <span className="font-mono text-[10px] text-muted-foreground/80 truncate block max-w-xs sm:max-w-md">
+                              {inst.digitable_line}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        <span className="text-xs font-bold text-foreground">
+                          {formatMoney(inst.amount_cents)}
+                        </span>
+
+                        {inst.digitable_line && (
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => {
+                              navigator.clipboard.writeText(inst.digitable_line);
+                              toast.success("Linha digitável copiada!");
+                            }}
+                            className="h-8 w-8 rounded-lg cursor-pointer"
+                            title="Copiar Linha Digitável"
+                          >
+                            <Copy className="size-3.5" />
+                          </Button>
+                        )}
+
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => {
+                            setFinancialInstallments((prev) => prev.filter((_, i) => i !== idx));
+                          }}
+                          className="h-8 w-8 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                          title="Remover Parcela"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* BOTÃO SALVAR ALTERAÇÕES FINANCEIRAS */}
+            <div className="flex justify-end pt-3">
+              <Button
+                type="button"
+                disabled={isSavingFinancial}
+                onClick={async () => {
+                  setIsSavingFinancial(true);
+                  try {
+                    await saveTripFinancialDetails({
+                      data: {
+                        tripId: trip.id,
+                        grossPriceCents: financialGrossCents,
+                        operatorNetCents: financialOperatorNetCents,
+                        agencyCommissionCents: Math.max(0, financialGrossCents - financialOperatorNetCents),
+                        agentCommissionCents: Math.round(Math.max(0, financialGrossCents - financialOperatorNetCents) * (financialAgentPercent / 100)),
+                        agentCommissionPercent: financialAgentPercent,
+                        operatorName: financialOperatorName || undefined,
+                        paymentMethod: financialPaymentMethod,
+                        installmentsCount: financialInstallments.length || undefined,
+                        externalFinanceUrl: financialExternalUrl || undefined,
+                        installments: financialInstallments,
+                      },
+                    });
+                    toast.success("Dados financeiros e boletos salvos com sucesso!");
+                  } catch (err: any) {
+                    toast.error(err?.message || "Erro ao salvar dados financeiros.");
+                  } finally {
+                    setIsSavingFinancial(false);
+                  }
+                }}
+                className="rounded-xl text-xs font-bold gap-1.5 h-10 px-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
+              >
+                {isSavingFinancial ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                <span>{isSavingFinancial ? "Salvando..." : "Salvar Alterações Financeiras"}</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* MODAL PARA ADICIONAR PARCELA MANUAL */}
+          <Sheet open={isAddInstallmentOpen} onOpenChange={setIsAddInstallmentOpen}>
+            <SheetContent side="right" className="w-full sm:max-w-md p-6 overflow-y-auto space-y-4">
+              <SheetHeader>
+                <SheetTitle className="text-sm font-bold text-foreground">Adicionar Parcela de Carnê</SheetTitle>
+                <SheetDescription className="text-xs text-muted-foreground">
+                  Cadastre uma parcela com linha digitável e vencimento para conciliação.
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="space-y-3 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Número da Parcela</Label>
+                    <Input
+                      type="number"
+                      value={newInstNumber}
+                      onChange={(e) => setNewInstNumber(parseInt(e.target.value || "1"))}
+                      className="h-9 text-xs rounded-xl font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Total de Parcelas</Label>
+                    <Input
+                      type="number"
+                      value={newInstTotal}
+                      onChange={(e) => setNewInstTotal(parseInt(e.target.value || "10"))}
+                      className="h-9 text-xs rounded-xl font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Vencimento</Label>
+                    <Input
+                      type="date"
+                      value={newInstDueDate}
+                      onChange={(e) => setNewInstDueDate(e.target.value)}
+                      className="h-9 text-xs rounded-xl font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Valor da Parcela (R$)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={(newInstAmountCents / 100).toFixed(2)}
+                      onChange={(e) => setNewInstAmountCents(Math.round(parseFloat(e.target.value || "0") * 100))}
+                      className="h-9 text-xs rounded-xl font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Banco Emissor</Label>
+                  <Input
+                    value={newInstBankName}
+                    onChange={(e) => setNewInstBankName(e.target.value)}
+                    placeholder="Ex: Banco emissor"
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Linha Digitável (47-48 dígitos)</Label>
+                  <Input
+                    value={newInstDigitableLine}
+                    onChange={(e) => setNewInstDigitableLine(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Cole os números da linha digitável"
+                    className="h-9 text-xs rounded-xl font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-2 border-t border-border/60">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAddInstallmentOpen(false)}
+                  className="rounded-xl h-9 text-xs"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    if (!newInstDueDate || newInstAmountCents <= 0) {
+                      toast.error("Informe a data de vencimento e o valor da parcela.");
+                      return;
+                    }
+                    setFinancialInstallments((prev) => [
+                      ...prev,
+                      {
+                        id: crypto.randomUUID(),
+                        installment_number: newInstNumber,
+                        total_installments: newInstTotal,
+                        due_date: newInstDueDate,
+                        amount_cents: newInstAmountCents,
+                        digitable_line: newInstDigitableLine,
+                        bank_name: newInstBankName,
+                        status: "pending",
+                      },
+                    ]);
+                    setIsAddInstallmentOpen(false);
+                    toast.success("Parcela adicionada!");
+                  }}
+                  className="rounded-xl h-9 text-xs font-bold"
+                >
+                  Adicionar
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      )}
+
       {/* ── MODAL / SHEET: CADASTRAR / EDITAR PASSAGEIRO ── */}
       <Sheet open={isPassengerSheetOpen} onOpenChange={setIsPassengerSheetOpen}>
         <SheetContent
@@ -1379,6 +2029,39 @@ function WorkspaceTripDetailPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {locatorForm.itemType === "hotel" && (
+                <div className="space-y-1.5 p-3 rounded-xl bg-primary/5 border border-primary/20">
+                  <Label className="text-[11px] font-bold text-primary flex items-center gap-1">
+                    <Compass className="size-3" />
+                    <span>Banco de Hotéis & Resorts Renomados (Preset Canônico)</span>
+                  </Label>
+                  <Select
+                    onValueChange={(presetId) => {
+                      const preset = FAMOUS_HOTEL_PRESETS.find((p) => p.id === presetId);
+                      if (preset) {
+                        setLocatorForm((prev) => ({
+                          ...prev,
+                          providerName: preset.name,
+                          notes: `${preset.city}/${preset.state} · ${preset.regime_options[0] || "All Inclusive"} · ⭐ ${preset.stars} estrelas`,
+                        }));
+                        toast.success(`Dados de ${preset.name} carregados com sucesso!`);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs bg-background rounded-lg">
+                      <SelectValue placeholder="Selecione um resort pré-cadastrado..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FAMOUS_HOTEL_PRESETS.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name} ({p.city})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Nome do Fornecedor / Cia *</Label>

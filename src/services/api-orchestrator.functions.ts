@@ -515,6 +515,9 @@ export interface UnifiedAiCallOptions {
   systemInstruction?: string;
   userPrompt?: string;
   prompt?: string;
+  feature?: string;
+  fileBase64?: string;
+  fileMime?: string;
   responseFormat?: "json_object" | "text";
   expectJson?: boolean;
   jsonMode?: boolean;
@@ -547,7 +550,13 @@ export async function executeUnifiedAiCall(options: UnifiedAiCallOptions): Promi
   const userPrompt = options.userPrompt || options.prompt || "";
   const isJson = options.responseFormat === "json_object" || options.expectJson === true || options.jsonMode === true;
   const preferred = options.preferredProvider || options.preferProvider;
-  const images = options.images || [];
+  const images = [...(options.images || [])];
+  if (options.fileBase64 && images.length === 0) {
+    images.push({
+      mimeType: options.fileMime || "image/jpeg",
+      base64: options.fileBase64,
+    });
+  }
 
   const providersToTry: ApiProvider[] = [];
   if (preferred) {

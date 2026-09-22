@@ -47,67 +47,67 @@ export const Route = createFileRoute("/workspace/marketing/anuncios/novo")({
 });
 
 const AD_FORMATS = [
- {
- id: "post_patrocinado",
- title: "Post Patrocinado no Feed",
- desc: "Aparece intercalado no feed principal da comunidade com badge 'Patrocinado'.",
- reachMultiplier: 1.0,
- aspect: 1,
- aspectLabel: "1:1 Quadrado",
- },
- {
- id: "banner_destaque",
- title: "Banner de Destaque no Mercado",
- desc: "Posição de topo com alta visibilidade para quem busca produtos e marcas.",
- reachMultiplier: 1.4,
- aspect: 21 / 9,
- aspectLabel: "21:9 Panorâmico",
- },
- {
- id: "story_patrocinado",
- title: "Story / Moment Patrocinado",
- desc: "Aparece na barra de stories com link direto para o produto ou evento.",
- reachMultiplier: 1.2,
- aspect: 9 / 16,
- aspectLabel: "9:16 Vertical",
- },
- {
- id: "stories_sponsor",
- title: "Stories Patrocinados Imersivos",
- desc: "Story imersivo na barra superior com botão direto para WhatsApp ou Vitrine.",
- reachMultiplier: 1.8,
- aspect: 9 / 16,
- aspectLabel: "9:16 Vertical",
- },
- {
- id: "busca_topo",
- title: "Destaque no Topo da Busca",
- desc: "Exibido prioritariamente quando alguém pesquisa palavras-chave relacionadas.",
- reachMultiplier: 1.8,
- aspect: 1,
- aspectLabel: "1:1 Quadrado",
- },
+  {
+    id: "post_patrocinado",
+    title: "Post no Feed",
+    desc: "Aparece intercalado no feed principal.",
+    reachMultiplier: 1.0,
+    aspect: 1,
+    aspectLabel: "1:1",
+  },
+  {
+    id: "banner_destaque",
+    title: "Banner",
+    desc: "Posição de topo com alta visibilidade.",
+    reachMultiplier: 1.4,
+    aspect: 21 / 9,
+    aspectLabel: "21:9",
+  },
+  {
+    id: "story_patrocinado",
+    title: "Stories",
+    desc: "Aparece na barra de stories com link direto.",
+    reachMultiplier: 1.2,
+    aspect: 9 / 16,
+    aspectLabel: "9:16",
+  },
+  {
+    id: "stories_sponsor",
+    title: "Stories Imersivos",
+    desc: "Formato imersivo com direcionamento direto.",
+    reachMultiplier: 1.8,
+    aspect: 9 / 16,
+    aspectLabel: "9:16",
+  },
+  {
+    id: "busca_topo",
+    title: "Topo da Busca",
+    desc: "Prioridade na pesquisa por termos relacionados.",
+    reachMultiplier: 1.8,
+    aspect: 1,
+    aspectLabel: "1:1",
+  },
 ] as const;
 
 const AD_OBJECTIVES = [
- {
- id: "whatsapp_leads",
- title: "Conversas no WhatsApp",
- desc: "Direciona cliques diretamente para o atendimento no WhatsApp da sua loja.",
- icon: MessageCircle,
- },
- {
- id: "direct_sales",
- title: "Vendas Diretas no App",
- desc: "Abre a página do produto com checkout rápido em 1 clique.",
- icon: ShoppingBag,
- },
- {
- id: "brand_awareness",
- title: "Visitas na Vitrine & Perfil",
- desc: "Gera tráfego direto para a vitrine e catálogo completo do seu negócio.",
- icon: Target,
- },
+  {
+    id: "whatsapp_leads",
+    title: "WhatsApp",
+    desc: "Direciona clientes para atendimento direto no WhatsApp.",
+    icon: MessageCircle,
+  },
+  {
+    id: "direct_sales",
+    title: "Vendas Diretas",
+    desc: "Abre a página do produto com checkout direto.",
+    icon: ShoppingBag,
+  },
+  {
+    id: "brand_awareness",
+    title: "Visitas na Vitrine",
+    desc: "Gera tráfego direto para a vitrine e catálogo da loja.",
+    icon: Target,
+  },
 ] as const;
 
 function NovoAnuncioPage() {

@@ -983,7 +983,7 @@ function ProductContent({
 
                 {/* Pill contador de fotos no Mobile */}
                 {product.media.length > 1 && (
-                  <div className="sm:hidden absolute bottom-3 right-3 bg-background/90 backdrop-blur-md text-foreground text-[11px] font-mono font-bold px-2.5 py-1 rounded-full border border-border/40 shadow-xs">
+                  <div className="sm:hidden absolute bottom-3 right-3 bg-background text-foreground text-[11px] font-mono font-bold px-2.5 py-1 rounded-full border border-border/60">
                     {product.media.findIndex((m: any) => m.id === activeMedia?.id) + 1 || 1} / {product.media.length}
                   </div>
                 )}
@@ -1907,7 +1907,7 @@ function ProductContent({
       </div>
 
       {/* ── Mobile Sticky Buy Bar (Thumb Zone) ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border/60 shadow-lg px-3.5 py-2.5 flex items-center justify-between gap-3 select-none pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/60 px-3.5 py-2.5 flex items-center justify-between gap-3 select-none pb-safe" style={{paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))'}}>
         {/* Seletor de Quantidade Mobile */}
         <div className="flex items-center rounded-xl bg-secondary/80 border border-border/60 h-11 px-1 shrink-0">
           <button

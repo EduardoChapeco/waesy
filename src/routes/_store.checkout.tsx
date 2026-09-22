@@ -13,6 +13,7 @@ import {
  applyCouponToCart,
  updateCartContact,
 } from "@/services/cart.functions";
+import { useCartContext } from "@/lib/cart-context";
 import { checkGiftCardBalance } from "@/services/giftcard.functions";
 import { processCheckout, getStoreCheckoutConfig, type CheckoutDynamicConfig } from "@/services/checkout.functions";
 import {
@@ -146,6 +147,7 @@ export function CheckoutPage() {
   } = ((Route.useLoaderData?.() as any) || {});
   const navigate = useNavigate();
   const router = useRouter();
+  const { refreshCart } = useCartContext();
 
   const [cart, setCart] = useState(initialCart);
   const [activeStep, setActiveStep] = useState(1);
@@ -627,6 +629,10 @@ export function CheckoutPage() {
  },
  });
 
+ if ((res as any)?.status === "error") {
+ throw new Error((res as any)?.message || "Não foi possível finalizar o pedido.");
+ }
+
  if (
  formData.shippingMethod !== "manual_quote" &&
  formData.paymentMethod !== "manual" &&
@@ -647,6 +653,7 @@ export function CheckoutPage() {
  }
 
  toast.success("Pedido realizado com sucesso!");
+ await refreshCart().catch(() => {});
 
  const remainingCarts = globalCarts.filter((c: any) => c.id !== cart.id);
  if (remainingCarts.length > 0) {
@@ -682,9 +689,9 @@ export function CheckoutPage() {
  { number: 4, label: "Revisão", isReady: true },
  ];
 
- if (!cart.items || cart.items.length === 0) {
- return (
- <div className="w-full max-w-xl mx-auto py-16 text-center space-y-6 px-0 sm:px-4">
+  if (!cart.items || cart.items.length === 0) {
+    return (
+      <div className="w-full max-w-5xl mx-auto py-16 text-center space-y-6 px-0 sm:px-4">
  <div className="size-16 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
  <ShoppingBag className="size-8 stroke-[1.5]" />
  </div>
@@ -702,7 +709,7 @@ export function CheckoutPage() {
  }
 
   return (
-  <div className="w-full max-w-5xl mx-auto pb-32 sm:pb-16 space-y-6 px-3 sm:px-0 pt-4 sm:pt-0">
+    <div className="w-full max-w-5xl mx-auto pb-32 sm:pb-16 space-y-6 px-0 sm:px-4 md:px-0 pt-4 sm:pt-0">
   {/* ── Sub-Header Clean (Silêncio Operacional) ── */}
  <div className="flex items-center justify-between gap-4 pb-2 ">
  <div className="flex items-center gap-2.5">
@@ -1793,9 +1800,9 @@ export function CheckoutPage() {
  </div>
  </div>
 
- <div className="pt-3 hidden sm:flex flex-col sm:flex-row items-center justify-between gap-3">
-                <Button
-                  variant="outline"
+        <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <Button
+            variant="outline"
                   onClick={() => setActiveStep(3)}
                   disabled={isSubmitting}
                   className="rounded-xl px-5 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm"
@@ -1921,24 +1928,56 @@ export function CheckoutPage() {
  )}
 
  <div className="flex justify-between text-muted-foreground">
- <span>Frete / Entrega</span>
- <span className="font-mono">
- {formData.shippingMethod === "pickup"
- ? "Grátis"
- : cart.shippingCents > 0
- ? formatMoney(cart.shippingCents)
- : "A calcular"}
- </span>
- </div>
+                <span>Frete / Entrega</span>
+                <span className="font-mono">
+                  {formData.shippingMethod === "pickup"
+                    ? "Grátis"
+                    : cart.shippingCents > 0
+                    ? formatMoney(cart.shippingCents)
+                    : "A calcular"}
+                </span>
+              </div>
 
- <div className="pt-2 flex justify-between items-baseline text-base font-bold text-foreground">
- <span>Total</span>
- <span className="font-mono text-lg font-black">{formatMoney(checkoutTotalCents)}</span>
+              <div className="pt-2 flex justify-between items-baseline text-base font-bold text-foreground">
+                <span>Total</span>
+                <span className="font-mono text-lg font-black">{formatMoney(checkoutTotalCents)}</span>
+              </div>
+            </div>
+          </Surface>
+        </div>
+      </div>
+
+ {/* ── BARRA FIXA MOBILE NA THUMB ZONE (ETAPA 4) ── */}
+ {activeStep === 4 && (
+ <div
+   className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/60 z-40 sm:hidden"
+   style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)", padding: "12px 16px" }}
+ >
+   <div
+     className="flex items-center justify-between gap-3 max-w-lg mx-auto"
+     style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+   >
+   <div className="flex flex-col">
+   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Total</span>
+   <span className="text-base font-black font-mono text-foreground leading-tight">{formatMoney(checkoutTotalCents)}</span>
+   </div>
+   <Button
+   onClick={handleSubmitOrder}
+   disabled={isSubmitting}
+   className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground font-bold text-xs cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+   >
+   {isSubmitting ? (
+   <>
+   <Loader2 size={16} className="animate-spin" />
+   <span>Processando...</span>
+   </>
+   ) : (
+   <span>Finalizar Pedido</span>
+   )}
+   </Button>
+   </div>
  </div>
- </div>
- </Surface>
- </div>
- </div>
+ )}
  </div>
  );
 }

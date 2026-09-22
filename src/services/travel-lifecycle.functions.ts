@@ -120,208 +120,326 @@ export interface TripAggregateDTO {
 // ─── 1. Conversão Atômica de Proposta em Viagem/Reserva ─────────────────────────
 
 export const convertProposalToTrip = createServerFn({ method: "POST" })
- .validator(
- z.object({
- proposalId: z.string().uuid("ID de proposta inválido"),
- storeId: z.string().uuid().optional(),
- })
- )
- .handler(async ({ data }): Promise<{
- success: boolean;
- tripId: string;
- tripNumber: string;
- contractId?: string;
- voucherId?: string;
- voucherToken?: string;
- departureId?: string;
- }> => {
- const supabase = getServerClient();
- const identity = await getServerIdentity().catch(() => null);
- let effectiveStoreId = data.storeId || identity?.store_id;
-	if (!effectiveStoreId) {
-		const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
-		effectiveStoreId = firstStore?.id;
-	}
+  .validator(
+    z.object({
+      proposalId: z.string().min(1, "ID de proposta inválido"),
+      storeId: z.string().uuid().optional(),
+      leadPassenger: z
+        .object({
+          name: z.string().optional(),
+          document: z.string().optional(),
+          birthDate: z.string().optional(),
+          phone: z.string().optional(),
+          email: z.string().optional(),
+        })
+        .optional(),
+      additionalPassengers: z
+        .array(
+          z.object({
+            name: z.string(),
+            document: z.string().optional(),
+            birthDate: z.string().optional(),
+          })
+        )
+        .optional(),
+      paymentDetails: z
+        .object({
+          paymentMode: z.enum(["deposit", "full"]).optional(),
+          paymentMethod: z.enum(["pix", "card"]).optional(),
+          cardInstallments: z.number().optional(),
+          totalCents: z.number().optional(),
+          chargeCents: z.number().optional(),
+          depositCents: z.number().optional(),
+          remainingCents: z.number().optional(),
+        })
+        .optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<{
+    success: boolean;
+    tripId: string;
+    tripNumber: string;
+    contractId?: string;
+    voucherId?: string;
+    voucherToken?: string;
+    departureId?: string;
+  }> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+    let effectiveStoreId = data.storeId || identity?.store_id;
+    if (!effectiveStoreId) {
+      const { data: firstStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
+      effectiveStoreId = firstStore?.id;
+    }
 
- // 1. Tentar executar a Stored Procedure atômica
- const { data: rpcRes, error: rpcErr } = await supabase.rpc(
- "convert_proposal_to_trip_native" as never,
- {
- p_proposal_id: data.proposalId,
- p_store_id: effectiveStoreId,
- } as never
- );
+    // 1. Tentar executar a Stored Procedure atômica se não houver passageiros customizados
+    if (!data.leadPassenger && !data.additionalPassengers) {
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc(
+        "convert_proposal_to_trip_native" as never,
+        {
+          p_proposal_id: data.proposalId,
+          p_store_id: effectiveStoreId,
+        } as never
+      );
 
- if (!rpcErr && rpcRes && (rpcRes as any).trip_id) {
- const resObj = rpcRes as any;
- return {
- success: true,
- tripId: resObj.trip_id,
- tripNumber: resObj.trip_number,
- contractId: resObj.contract_id,
- voucherId: resObj.voucher_id,
- voucherToken: resObj.voucher_token,
- };
- }
+      if (!rpcErr && rpcRes && (rpcRes as any).trip_id) {
+        const resObj = rpcRes as any;
+        return {
+          success: true,
+          tripId: resObj.trip_id,
+          tripNumber: resObj.trip_number,
+          contractId: resObj.contract_id,
+          voucherId: resObj.voucher_id,
+          voucherToken: resObj.voucher_token,
+        };
+      }
+    }
 
- // 2. Fallback de transação relacional garantido (Zero Mocks / Resiliência Defensiva)
- const { data: quote, error: quoteErr } = await supabase
- .from("quotes")
- .select("*")
- .eq("id", data.proposalId)
- .single();
+    // 2. Transação relacional robusta (Zero Mocks / Resiliência Defensiva)
+    let quote: any = null;
+    let meta: Record<string, any> = {};
 
- if (quoteErr || !quote) {
- throw new Error("Proposta comercial não encontrada: " + (quoteErr?.message || ""));
- }
+    // 2.1 Buscar primeiro em travel_proposals
+    try {
+      const { data: tpRow } = await supabase
+        .from("travel_proposals")
+        .select("*")
+        .or(`id.eq.${data.proposalId},public_token.eq.${data.proposalId}`)
+        .maybeSingle();
+      if (tpRow) {
+        quote = {
+          id: tpRow.id,
+          quote_number: tpRow.proposal_number || tpRow.public_token,
+          guest_name: tpRow.client_name,
+          guest_phone: tpRow.client_whatsapp,
+          guest_email: tpRow.client_email,
+          total_cents: tpRow.pricing?.total_price_cents || tpRow.total_price_cents,
+          internal_notes: tpRow.title,
+          observations: tpRow.special_notes,
+        };
+        meta = {
+          title: tpRow.title,
+          destination_city: tpRow.destination_city,
+          travel_start_date: tpRow.travel_start_date,
+          travel_end_date: tpRow.travel_end_date,
+          adults_count: tpRow.adults_count,
+          children_count: tpRow.children_count,
+          flights: tpRow.flights || [],
+          hotels: tpRow.hotels || [],
+          transfers: tpRow.transfers || [],
+          tours: tpRow.tours || [],
+          itinerary: tpRow.itinerary || [],
+          rooms: tpRow.rooms || [],
+          includes: tpRow.includes || [],
+          excludes: tpRow.excludes || [],
+          client_document: tpRow.client_document,
+          cover_image_url: tpRow.cover_image_url,
+        };
+      }
+    } catch (_) {}
 
- let meta: Record<string, any> = {};
- try {
- if (quote.conditions) meta = JSON.parse(quote.conditions);
- } catch (_) {}
+    // 2.2 Fallback em quotes
+    if (!quote) {
+      const { data: qRow, error: quoteErr } = await supabase
+        .from("quotes")
+        .select("*")
+        .eq("id", data.proposalId)
+        .maybeSingle();
 
- const tripNumber = `TRIP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
- const voucherCode = `VOUCH-${Math.floor(100000 + Math.random() * 900000)}`;
- const voucherToken = "vch_" + Math.random().toString(36).substring(2, 12);
- const contractToken = "ctr_" + Math.random().toString(36).substring(2, 12);
+      if (qRow) {
+        quote = qRow;
+        try {
+          if (qRow.conditions) meta = JSON.parse(qRow.conditions);
+        } catch (_) {}
+      } else if (quoteErr) {
+        throw new Error("Proposta comercial não encontrada: " + quoteErr.message);
+      }
+    }
 
- const totalCents = quote.total_cents || (meta.pricing?.total_price_cents) || 0;
+    if (!quote) {
+      throw new Error("Proposta comercial não localizada para conversão.");
+    }
 
- // Inserir tourism_trips
- const { data: newTrip, error: tripInsertErr } = await supabase
- .from("tourism_trips")
- .insert({
- store_id: effectiveStoreId,
- created_by_profile_id: identity?.id || null,
- proposal_id: data.proposalId,
- customer_id: quote.crm_customer_id || null,
- trip_number: tripNumber,
- title: quote.internal_notes || meta.title || `Viagem: ${meta.destination_city || "Pacote"}`,
- destination_city: meta.destination_city || "Destino",
- travel_start_date: meta.travel_start_date || null,
- travel_end_date: meta.travel_end_date || null,
- adults_count: meta.adults_count || 1,
- children_count: meta.children_count || 0,
- currency: meta.currency || "BRL",
- total_cents: totalCents,
- status: "confirmed",
- client_name: quote.guest_name || meta.client_name || "Passageiro Principal",
- client_whatsapp: quote.guest_phone || meta.client_whatsapp || "",
- client_email: quote.guest_email || meta.client_email || null,
- client_document: meta.client_document || null,
- cover_image_url: meta.cover_image_url || null,
- flights: meta.flights || [],
- hotels: meta.hotels || [],
- transfers: meta.transfers || [],
- tours: meta.tours || [],
- insurance: meta.insurance || {},
- itinerary: meta.itinerary || [],
- rooms: meta.rooms || [],
- includes: meta.includes || [],
- notes: quote.observations || null,
- })
- .select()
- .single();
+    const tripNumber = `TRIP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const voucherCode = `VOUCH-${Math.floor(100000 + Math.random() * 900000)}`;
+    const voucherToken = "vch_" + Math.random().toString(36).substring(2, 12);
+    const contractToken = "ctr_" + Math.random().toString(36).substring(2, 12);
 
- if (tripInsertErr || !newTrip) {
- throw new Error("Erro ao criar registro da viagem: " + (tripInsertErr?.message || ""));
- }
+    const totalCents = data.paymentDetails?.totalCents || quote.total_cents || (meta.pricing?.total_price_cents) || 0;
 
- const tripId = newTrip.id;
+    const leadName = data.leadPassenger?.name || quote.guest_name || meta.client_name || "Passageiro Principal";
+    const leadDoc = data.leadPassenger?.document || meta.client_document || null;
+    const leadPhone = data.leadPassenger?.phone || quote.guest_phone || meta.client_whatsapp || "";
+    const leadEmail = data.leadPassenger?.email || quote.guest_email || meta.client_email || null;
 
- // Inserir passageiro principal
- await supabase.from("trip_passengers").insert({
- trip_id: tripId,
- store_id: effectiveStoreId,
- full_name: quote.guest_name || meta.client_name || "Passageiro Principal",
- document: meta.client_document || null,
- email: quote.guest_email || meta.client_email || null,
- phone: quote.guest_phone || meta.client_whatsapp || null,
- is_lead_passenger: true,
- });
+    // Inserir tourism_trips com status 'in_progress' para conferência do consultor no Kanban
+    const { data: newTrip, error: tripInsertErr } = await supabase
+      .from("tourism_trips")
+      .insert({
+        store_id: effectiveStoreId,
+        created_by_profile_id: identity?.id || null,
+        proposal_id: data.proposalId,
+        customer_id: quote.crm_customer_id || null,
+        trip_number: tripNumber,
+        title: quote.internal_notes || meta.title || `Viagem: ${meta.destination_city || "Pacote"}`,
+        destination_city: meta.destination_city || "Destino",
+        travel_start_date: meta.travel_start_date || null,
+        travel_end_date: meta.travel_end_date || null,
+        adults_count: meta.adults_count || 1,
+        children_count: meta.children_count || 0,
+        currency: meta.currency || "BRL",
+        total_cents: totalCents,
+        status: "in_progress",
+        client_name: leadName,
+        client_whatsapp: leadPhone,
+        client_email: leadEmail,
+        client_document: leadDoc,
+        cover_image_url: meta.cover_image_url || null,
+        flights: meta.flights || [],
+        hotels: meta.hotels || [],
+        transfers: meta.transfers || [],
+        tours: meta.tours || [],
+        insurance: meta.insurance || {},
+        itinerary: meta.itinerary || [],
+        rooms: meta.rooms || [],
+        includes: meta.includes || [],
+        financial_details: data.paymentDetails || null,
+        notes: quote.observations || null,
+      })
+      .select()
+      .single();
 
- // Inserir itens de confirmação de voos e hotéis
- const flightItems = (meta.flights || []).map((fl: any) => ({
- trip_id: tripId,
- store_id: effectiveStoreId,
- item_type: "flight",
- provider_name: fl.airline_name || "Cia Aérea",
- locator_code: fl.flight_number || `LOC-${Math.floor(1000 + Math.random() * 9000)}`,
- status: "confirmed",
- notes: `${fl.origin_iata || ""} → ${fl.destination_iata || ""}`,
- }));
+    if (tripInsertErr || !newTrip) {
+      throw new Error("Erro ao criar registro da viagem: " + (tripInsertErr?.message || ""));
+    }
 
- const hotelItems = (meta.hotels || []).map((ht: any) => ({
- trip_id: tripId,
- store_id: effectiveStoreId,
- item_type: "hotel",
- provider_name: ht.hotel_name || "Hotel & Resort",
- locator_code: `HTL-${Math.floor(10000 + Math.random() * 90000)}`,
- status: "confirmed",
- notes: `${ht.room_type || "Quarto Standard"} (${ht.nights_count || 1} noites)`,
- }));
+    const tripId = newTrip.id;
 
- const allItems = [...flightItems, ...hotelItems];
- if (allItems.length > 0) {
- await supabase.from("trip_confirmation_items").insert(allItems);
- }
+    // Inserir passageiro principal
+    await supabase.from("trip_passengers").insert({
+      trip_id: tripId,
+      store_id: effectiveStoreId,
+      full_name: leadName,
+      document: leadDoc,
+      birth_date: data.leadPassenger?.birthDate || null,
+      email: leadEmail,
+      phone: leadPhone,
+      is_lead_passenger: true,
+    });
 
- // Criar Contrato Digital em Rascunho
- const { data: contractRow } = await supabase
- .from("travel_contracts")
- .insert({
- store_id: effectiveStoreId,
- created_by_profile_id: identity?.id || null,
- public_token: contractToken,
- contract_title: `Contrato de Prestação de Serviços: ${meta.destination_city || "Turismo"}`,
- client_name: quote.guest_name || meta.client_name || "Contratante",
- client_document: meta.client_document || "000.000.000-00",
- client_email: quote.guest_email || meta.client_email || null,
- client_phone: quote.guest_phone || meta.client_whatsapp || "(00) 00000-0000",
- destination: meta.destination_city || "Destino",
- travel_start_date: meta.travel_start_date || null,
- travel_end_date: meta.travel_end_date || null,
- package_summary: `Viagem para ${meta.destination_city || "Destino"} · Total: ${(meta.adults_count || 1) + (meta.children_count || 0)} passageiro(s)`,
- total_value_cents: totalCents,
- payment_conditions: "Condições conforme aprovado na proposta comercial.",
- passengers: meta.rooms || [],
- clauses: [
- { title: "1. Objeto do Contrato", content: "A CONTRATADA compromete-se a intermediar os serviços de turismo contratados pelo CONTRATANTE." },
- { title: "2. Cancelamento e Reembolso", content: "As solicitações de cancelamento obedecem às regras das companhias aéreas e fornecedores hoteleiros." },
- ],
- signatures: [],
- status: "draft",
- })
- .select("id")
- .maybeSingle();
+    // Inserir acompanhantes adicionais no manifesto
+    if (Array.isArray(data.additionalPassengers) && data.additionalPassengers.length > 0) {
+      const extraPassengers = data.additionalPassengers
+        .filter((p) => p.name && p.name.trim().length > 0)
+        .map((p) => ({
+          trip_id: tripId,
+          store_id: effectiveStoreId,
+          full_name: p.name.trim(),
+          document: p.document?.trim() || null,
+          birth_date: p.birthDate || null,
+          is_lead_passenger: false,
+        }));
 
- // Criar Voucher Geral da Viagem
- const { data: voucherRow } = await supabase
- .from("tourism_vouchers")
- .insert({
- trip_id: tripId,
- store_id: effectiveStoreId,
- public_token: voucherToken,
- voucher_code: voucherCode,
- voucher_type: "general",
- template: "a4-boarding",
- destination: meta.destination_city || "Destino",
- cover_image_url: meta.cover_image_url || null,
- flights: meta.flights || [],
- hotels: meta.hotels || [],
- transfers: meta.transfers || [],
- tours: meta.tours || [],
- insurance: meta.insurance || {},
- passengers: [{ name: quote.guest_name || "Passageiro", document: meta.client_document || "" }],
- emergency_contacts: [{ name: "Plantão da Agência", phone: quote.guest_phone || "" }],
- observations: "Apresente este documento oficial com foto no balcão de check-in.",
- })
- .select("id")
- .maybeSingle();
+      if (extraPassengers.length > 0) {
+        await supabase.from("trip_passengers").insert(extraPassengers);
+      }
+    }
 
- // Atualizar status da proposta para aprovada
- await supabase.from("quotes").update({ status: "approved", updated_at: new Date().toISOString() }).eq("id", data.proposalId);
+    // Inserir itens de confirmação de voos e hotéis
+    const flightItems = (meta.flights || []).map((fl: any) => ({
+      trip_id: tripId,
+      store_id: effectiveStoreId,
+      item_type: "flight",
+      provider_name: fl.airline_name || "Cia Aérea",
+      locator_code: fl.flight_number || `LOC-${Math.floor(1000 + Math.random() * 9000)}`,
+      status: "pending",
+      notes: `${fl.origin_iata || ""} → ${fl.destination_iata || ""}`,
+    }));
 
+    const hotelItems = (meta.hotels || []).map((ht: any) => ({
+      trip_id: tripId,
+      store_id: effectiveStoreId,
+      item_type: "hotel",
+      provider_name: ht.hotel_name || "Hotel & Resort",
+      locator_code: `HTL-${Math.floor(10000 + Math.random() * 90000)}`,
+      status: "pending",
+      notes: `${ht.room_type || "Quarto Standard"} (${ht.nights_count || 1} noites)`,
+    }));
+
+    const allItems = [...flightItems, ...hotelItems];
+    if (allItems.length > 0) {
+      await supabase.from("trip_confirmation_items").insert(allItems);
+    }
+
+    // Criar Contrato Digital em Rascunho para posterior curadoria do operador
+    const allManifestPassengers = [
+      { name: leadName, document: leadDoc || "" },
+      ...(data.additionalPassengers || []).map((p) => ({ name: p.name, document: p.document || "" })),
+    ];
+
+    const { data: contractRow } = await supabase
+      .from("travel_contracts")
+      .insert({
+        store_id: effectiveStoreId,
+        created_by_profile_id: identity?.id || null,
+        public_token: contractToken,
+        contract_title: `Contrato de Prestação de Serviços: ${meta.destination_city || "Turismo"}`,
+        client_name: leadName,
+        client_document: leadDoc || "000.000.000-00",
+        client_email: leadEmail,
+        client_phone: leadPhone || "(00) 00000-0000",
+        destination: meta.destination_city || "Destino",
+        travel_start_date: meta.travel_start_date || null,
+        travel_end_date: meta.travel_end_date || null,
+        package_summary: `Viagem para ${meta.destination_city || "Destino"} · Total: ${allManifestPassengers.length} passageiro(s)`,
+        total_value_cents: totalCents,
+        payment_conditions: (data.paymentDetails as any)?.paymentConditionsText
+          ? (data.paymentDetails as any).paymentConditionsText
+          : (data.paymentDetails as any)?.paymentMode === "external_financing"
+          ? `Financiamento bancário/externo acordado no backoffice. Valor total: ${((totalCents || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
+          : (data.paymentDetails as any)?.paymentMode === "in_app" || (data.paymentDetails as any)?.trip_type === "bus" || (data.paymentDetails as any)?.trip_type === "terrestrial"
+          ? `Pagamento direto via app (${(data.paymentDetails as any)?.method || "Pix/Cartão"}). Valor: ${((totalCents || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`
+          : (data.paymentDetails as any)?.paidCents && (data.paymentDetails as any)?.remainingCents
+          ? `Pagamento/entrada de ${(((data.paymentDetails as any).paidCents || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} realizado. Saldo de ${(((data.paymentDetails as any).remainingCents || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} a quitar conforme acordado.`
+          : "Condições comerciais registradas conforme proposta da agência.",
+        passengers: allManifestPassengers,
+        clauses: [
+          { title: "1. Objeto do Contrato", content: "A CONTRATADA compromete-se a intermediar os serviços de turismo contratados pelo CONTRATANTE." },
+          { title: "2. Cancelamento e Reembolso", content: "As solicitações de cancelamento obedecem às regras das companhias aéreas e fornecedores hoteleiros." },
+        ],
+        signatures: [],
+        status: "draft",
+      })
+      .select("id")
+      .maybeSingle();
+
+    // Criar Voucher de Embarque em Análise
+    const { data: voucherRow } = await supabase
+      .from("tourism_vouchers")
+      .insert({
+        trip_id: tripId,
+        store_id: effectiveStoreId,
+        public_token: voucherToken,
+        voucher_code: voucherCode,
+        voucher_type: "general",
+        template: "a4-boarding",
+        destination: meta.destination_city || "Destino",
+        cover_image_url: meta.cover_image_url || null,
+        flights: meta.flights || [],
+        hotels: meta.hotels || [],
+        transfers: meta.transfers || [],
+        tours: meta.tours || [],
+        insurance: meta.insurance || {},
+        passengers: allManifestPassengers,
+        emergency_contacts: [{ name: "Plantão da Agência", phone: leadPhone || "" }],
+        observations: "Reserva registrada. Apresente este documento oficial com foto no balcão de check-in.",
+      })
+      .select("id")
+      .maybeSingle();
+
+    // Atualizar status bilateralmente em quotes e travel_proposals
+    await supabase.from("quotes").update({ status: "approved", updated_at: new Date().toISOString() }).eq("id", data.proposalId);
+    await supabase.from("travel_proposals").update({ status: "approved", updated_at: new Date().toISOString() }).or(`id.eq.${data.proposalId},public_token.eq.${data.proposalId}`);
  // 3. Conexão Sistêmica: Promover Lead a Ganho no Funil Comercial & Garantir Cliente na Carteira
  const leadId = meta.lead_id;
  if (leadId) {
@@ -1919,5 +2037,86 @@ export const submitTravelerRegistrationForm = createServerFn({ method: "POST" })
       message: "Ficha cadastral persistida com sucesso!",
     };
   });
+
+// ─── 14. Gestão Financeira 3-em-1 (Boletos, Financiamento e Comissões) ───────
+
+export const SaveTripFinancialInputSchema = z.object({
+  tripId: z.string().uuid(),
+  grossPriceCents: z.number().int().nonnegative().optional(),
+  operatorNetCents: z.number().int().nonnegative().optional(),
+  agencyCommissionCents: z.number().int().nonnegative().optional(),
+  agentCommissionCents: z.number().int().nonnegative().optional(),
+  agentCommissionPercent: z.number().min(0).max(100).optional(),
+  operatorName: z.string().optional().nullable(),
+  paymentMethod: z.string().optional().nullable(),
+  installmentsCount: z.number().int().min(1).max(36).optional(),
+  externalFinanceUrl: z.string().optional().nullable(),
+  installments: z.array(z.object({
+    id: z.string().optional(),
+    installment_number: z.number().int(),
+    total_installments: z.number().int(),
+    due_date: z.string(),
+    amount_cents: z.number().int(),
+    digitable_line: z.string().optional(),
+    barcode: z.string().optional(),
+    bank_name: z.string().optional(),
+    pdf_url: z.string().optional(),
+    status: z.enum(["pending", "paid", "overdue"]).default("pending"),
+    paid_at: z.string().optional().nullable(),
+  })).optional(),
+});
+
+export const saveTripFinancialDetails = createServerFn({ method: "POST" })
+  .validator(SaveTripFinancialInputSchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    const { data: trip, error: fetchErr } = await supabase
+      .from("tourism_trips")
+      .select("id, store_id, financial_details, total_cents, operator_name, payment_method, installments_count")
+      .eq("id", data.tripId)
+      .single();
+
+    if (fetchErr || !trip) {
+      throw new Error("Viagem não encontrada.");
+    }
+
+    const currentDetails = (trip.financial_details || {}) as Record<string, any>;
+    const updatedDetails = {
+      ...currentDetails,
+      gross_price_cents: data.grossPriceCents ?? currentDetails.gross_price_cents ?? trip.total_cents,
+      operator_net_cents: data.operatorNetCents ?? currentDetails.operator_net_cents ?? 0,
+      agency_commission_cents: data.agencyCommissionCents ?? ((data.grossPriceCents ?? trip.total_cents) - (data.operatorNetCents ?? 0)),
+      agent_commission_cents: data.agentCommissionCents ?? currentDetails.agent_commission_cents ?? 0,
+      agent_commission_percent: data.agentCommissionPercent ?? currentDetails.agent_commission_percent ?? 0,
+      operator_name: data.operatorName ?? trip.operator_name ?? currentDetails.operator_name,
+      payment_method: data.paymentMethod ?? trip.payment_method ?? currentDetails.payment_method,
+      installments_count: data.installmentsCount ?? trip.installments_count ?? currentDetails.installments_count,
+      external_finance_url: data.externalFinanceUrl ?? currentDetails.external_finance_url,
+      installments: data.installments ?? currentDetails.installments ?? [],
+      updated_at: new Date().toISOString(),
+    };
+
+    const updatePayload: Record<string, any> = {
+      financial_details: updatedDetails,
+      total_cents: data.grossPriceCents ?? trip.total_cents,
+      operator_name: data.operatorName ?? trip.operator_name,
+      payment_method: data.paymentMethod ?? trip.payment_method,
+      installments_count: data.installmentsCount ?? trip.installments_count,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: updateErr } = await supabase
+      .from("tourism_trips")
+      .update(updatePayload)
+      .eq("id", data.tripId);
+
+    if (updateErr) {
+      throw new Error(`Erro ao salvar dados financeiros da viagem: ${updateErr.message}`);
+    }
+
+    return { success: true, message: "Dados financeiros e boletos atualizados com sucesso!" };
+  });
+
 
 

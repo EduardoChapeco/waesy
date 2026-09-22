@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Users, Plane, ShieldCheck, MessageCircle, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Users, Plane, ShieldCheck, MessageCircle, Loader2, Sparkles } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { registerClassifiedLead } from "@/services/company-mvp.functions";
+import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
+import { type DepartureOption } from "@/lib/classifieds/canonical-airports";
 
 interface TravelBookingDossierModalProps {
   open: boolean;
@@ -22,32 +25,87 @@ export function TravelBookingDossierModal({
   classified,
 }: TravelBookingDossierModalProps) {
   const attrs = classified?.attributes || {};
-  const [departureDate, setDepartureDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
-  const [adultsCount, setAdultsCount] = useState("2");
-  const [childrenCount, setChildrenCount] = useState("0");
-  const [passengerNames, setPassengerNames] = useState("");
+  const departureOptions: DepartureOption[] = Array.isArray(attrs?.departure_options)
+    ? attrs.departure_options
+    : [];
+
+  const [dateMode, setDateMode] = useState<"confirmed" | "flexible">(
+    departureOptions.length > 0 ? "confirmed" : "flexible"
+  );
+  const [selectedDepartureId, setSelectedDepartureId] = useState<string>(
+    departureOptions[0]?.id || ""
+  );
+  const [departureDate, setDepartureDate] = useState(attrs?.departure_date || "");
+  const [returnDate, setReturnDate] = useState(attrs?.return_date || "");
+  const [flexiblePeriodText, setFlexiblePeriodText] = useState("");
+  const [flexibleDaysPlusMinus, setFlexibleDaysPlusMinus] = useState(true);
+
+  const [adultsCount, setAdultsCount] = useState<number>(2);
+  const [childrenCount, setChildrenCount] = useState<number>(0);
+  const [childrenAges, setChildrenAges] = useState<string[]>([]);
+
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [passengerNames, setPassengerNames] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Perguntas Customizadas (Estilo Meta Ads / Anunciante)
   const [customAnswers, setCustomAnswers] = useState<Record<string, any>>({});
-  const customFields: any[] = classified?.store?.custom_inquiry_fields || [];
+  
+  const customLeadQuestions: any[] = [
+    ...(Array.isArray(attrs?.lead_form_questions) ? attrs.lead_form_questions : []),
+    ...(Array.isArray(classified?.store?.custom_inquiry_fields) ? classified.store.custom_inquiry_fields : []),
+  ].filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
 
   const priceCents = Number(classified?.price_cents || 0);
+  const transportType = attrs?.flight_details?.transport_type || attrs?.transport_type || "airplane";
+  const isAirplane = transportType === "airplane" || transportType === "aereo";
+
+  const handleChildrenCountChange = (count: number) => {
+    const validCount = Math.max(0, Math.min(10, count));
+    setChildrenCount(validCount);
+    setChildrenAges((prev) => {
+      const next = [...prev];
+      if (validCount > next.length) {
+        for (let i = next.length; i < validCount; i++) {
+          next.push("");
+        }
+      } else {
+        next.length = validCount;
+      }
+      return next;
+    });
+  };
+
+  const handleChildAgeChange = (index: number, val: string) => {
+    setChildrenAges((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!customerName.trim() || !customerPhone.trim()) {
-      toast.error("Por favor, preencha seu nome e telefone para contato.");
+      toast.error("Por favor, preencha seu nome completo e WhatsApp.");
       return;
     }
 
-    for (const field of customFields) {
+    if (childrenCount > 0) {
+      const missingAge = childrenAges.some((age) => !age || age.trim() === "");
+      if (missingAge) {
+        toast.error("Por favor, informe a idade de todas as crianças para cálculo da tarifa aérea.");
+        return;
+      }
+    }
+
+    for (const field of customLeadQuestions) {
       if (field.required) {
         const val = customAnswers[field.id];
-        if (val === undefined || val === null || val === "" || (field.type === "checkbox" && !val)) {
+        if (val === undefined || val === null || val === "" || (field.type === "boolean" && !val)) {
           toast.error(`Por favor, responda o campo obrigatório: "${field.label}"`);
           return;
         }
@@ -57,47 +115,96 @@ export function TravelBookingDossierModal({
     setIsSubmitting(true);
 
     try {
-      const customAnswerText = customFields
+      // 1. Resumo das datas e período
+      let periodSummary = "";
+      if (dateMode === "confirmed" && selectedDepartureId) {
+        const selected = departureOptions.find((d) => d.id === selectedDepartureId);
+        if (selected) {
+          periodSummary = `📅 *Saída Confirmada:* ${selected.label} (${selected.departure_date} até ${selected.return_date || "retorno"}${selected.departure_time ? ` às ${selected.departure_time}` : ""})`;
+        }
+      } else if (flexiblePeriodText.trim()) {
+        periodSummary = `📅 *Período de Interesse:* ${flexiblePeriodText.trim()} ${flexibleDaysPlusMinus ? "(Flexibilidade +/- 3 dias)" : ""}`;
+      } else if (departureDate) {
+        periodSummary = `📅 *Datas Pretendidas:* ${departureDate} até ${returnDate || "a definir"}`;
+      }
+
+      // 2. Resumo das crianças e idades
+      const childrenSummary = childrenCount > 0
+        ? `👶 *Crianças (${childrenCount}):* Idades: ${childrenAges.map((a) => `${a} ano(s)`).join(", ")}`
+        : "";
+
+      // 3. Respostas das perguntas personalizadas (Meta Ads style)
+      const customAnswerLines = customLeadQuestions
         .map((f: any) => {
           const ans = customAnswers[f.id];
           if (ans === undefined || ans === "" || ans === null) return null;
-          return `📌 *${f.label}:* ${f.type === "checkbox" ? (ans ? "Sim" : "Não") : ans}`;
+          return `📌 *${f.label}:* ${f.type === "boolean" ? (ans ? "Sim" : "Não") : ans}`;
         })
         .filter(Boolean);
 
       const summaryMessage = [
-        `🌴 *Solicitação de Reserva / Proposta de Viagem*`,
+        `✈️ *Solicitação de Cotação de Viagem*`,
         `📦 *Pacote:* ${classified.title}`,
-        `💰 *Valor Estimado:* ${formatMoney(priceCents)}`,
+        priceCents > 0 ? `💰 *Valor de Referência:* ${formatMoney(priceCents)}` : "",
         `👤 *Cliente:* ${customerName.trim()} (${customerPhone.trim()})`,
-        `👥 *Viajantes:* ${adultsCount} Adulto(s) ${Number(childrenCount) > 0 ? `+ ${childrenCount} Criança(s)` : ""}`,
-        departureDate ? `📅 *Período:* ${departureDate} até ${returnDate || "a definir"}` : "",
+        `👥 *Viajantes:* ${adultsCount} Adulto(s) ${childrenCount > 0 ? `+ ${childrenCount} Criança(s)` : ""}`,
+        childrenSummary,
+        periodSummary,
         passengerNames.trim() ? `📝 *Passageiros:* ${passengerNames.trim()}` : "",
         specialRequests.trim() ? `✨ *Preferências:* ${specialRequests.trim()}` : "",
-        ...customAnswerText,
+        ...customAnswerLines,
       ]
         .filter(Boolean)
         .join("\n");
 
-      // 1. Gravar atomicamente na tabela deals via BFF
+      // 4. Gravar atomicamente na tabela deals via BFF (Universal CRM) e em travel_quotes (Turismo CRM)
       if (classified?.id) {
-        await registerClassifiedLead({
-          data: {
-            classifiedId: classified.id,
-            buyerName: customerName.trim(),
-            buyerPhone: customerPhone.trim(),
-            proposedPriceCents: priceCents,
-            message: summaryMessage,
-          },
-        }).catch((err) => {
-          console.warn("[TravelBookingDossierModal] Aviso ao registrar lead assíncrono:", err);
+        await Promise.allSettled([
+          registerClassifiedLead({
+            data: {
+              classifiedId: classified.id,
+              buyerName: customerName.trim(),
+              buyerPhone: customerPhone.trim(),
+              proposedPriceCents: priceCents,
+              message: summaryMessage,
+            },
+          }),
+          createAgencyTravelQuote({
+            data: {
+              contact_name: customerName.trim(),
+              contact_whatsapp: customerPhone.trim(),
+              origin_city: classified.city || "Chapecó",
+              origin_iata: attrs?.flight_details?.departure_iata || null,
+              destination_city: attrs?.destination_city || classified.title || "Destino Turístico",
+              destination_iata: attrs?.flight_details?.arrival_iata || null,
+              departure_date: selectedDepartureId
+                ? departureOptions.find((d) => d.id === selectedDepartureId)?.departure_date || departureDate || null
+                : departureDate || null,
+              return_date: returnDate || null,
+              adults_count: adultsCount,
+              children_count: childrenCount,
+              children_ages: childrenAges.map((a) => parseInt(a, 10) || 0),
+              flexible_dates: dateMode === "flexible",
+              trip_type:
+                attrs?.flight_details?.transport_type === "bus"
+                  ? "bus"
+                  : attrs?.flight_details?.transport_type === "cruise"
+                  ? "cruise"
+                  : "air_package",
+              quote_amount_cents: priceCents || null,
+              special_notes: summaryMessage,
+              status: "new",
+            },
+          }),
+        ]).catch((err) => {
+          console.warn("[TravelBookingDossierModal] Aviso ao registrar lead no CRM:", err);
         });
       }
 
-      toast.success("Dossiê gerado com sucesso! Abrindo atendimento...");
+      toast.success("Dossiê de cotação gerado com sucesso! Abrindo WhatsApp...");
       onOpenChange(false);
 
-      // 2. Abertura do WhatsApp com a proposta completa
+      // 5. Abertura do WhatsApp com a proposta completa e rastreável
       const targetPhone = classified?.contact_whatsapp || classified?.whatsapp || classified?.profiles?.phone;
       if (targetPhone) {
         await trackAndOpenWhatsApp(targetPhone, summaryMessage, {
@@ -115,17 +222,19 @@ export function TravelBookingDossierModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-5 sm:p-6 rounded-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-1 pb-2 border-b border-border/40">
-          <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
-            <Plane className="size-4" />
-            <span>Reserva e Proposta</span>
+      <DialogContent className="sm:max-w-xl p-5 sm:p-6 rounded-2xl max-h-[92vh] overflow-y-auto">
+        <DialogHeader className="space-y-1 pb-3 border-b border-border/40">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider text-primary border-primary/25 bg-primary/10">
+              {isAirplane ? "Cotação Aérea Sob Medida" : "Dossiê de Interesse"}
+            </Badge>
           </div>
-          <DialogTitle className="text-lg font-bold text-foreground">
-            Solicitar Proposta
+          <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Plane className="size-5 text-primary" />
+            <span>Solicitar Cotação do Pacote</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Preencha seus dados para receber o retorno do anunciante.
+            Informe a quantidade de passageiros, idades das crianças e datas pretendidas para receber a melhor tarifa disponível.
           </DialogDescription>
         </DialogHeader>
 
@@ -139,7 +248,7 @@ export function TravelBookingDossierModal({
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Ex: Carlos Eduardo"
                 required
-                className="h-10 rounded-xl text-xs bg-background"
+                className="h-10 rounded-xl text-xs bg-background font-medium"
               />
             </div>
 
@@ -150,123 +259,215 @@ export function TravelBookingDossierModal({
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 placeholder="(49) 99999-8877"
                 required
-                className="h-10 rounded-xl text-xs bg-background"
+                className="h-10 rounded-xl text-xs bg-background font-medium font-mono"
               />
             </div>
           </div>
 
-          {/* Datas Desejadas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Calendar className="size-3.5 text-primary" />
-                <span>Data de Embarque</span>
-              </Label>
-              <Input
-                type="date"
-                value={departureDate}
-                onChange={(e) => setDepartureDate(e.target.value)}
-                className="h-10 rounded-xl text-xs bg-background font-mono"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Calendar className="size-3.5 text-primary" />
-                <span>Data de Retorno</span>
-              </Label>
-              <Input
-                type="date"
-                value={returnDate}
-                onChange={(e) => setReturnDate(e.target.value)}
-                className="h-10 rounded-xl text-xs bg-background font-mono"
-              />
-            </div>
-          </div>
-
-          {/* Quantidade de Passageiros */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          {/* Quantidade de Passageiros (Adultos e Crianças) */}
+          <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Users className="size-3.5 text-primary" />
-                <span>Adultos</span>
+                <span>Passageiros & Viajantes</span>
               </Label>
-              <Input
-                type="number"
-                min={1}
-                max={20}
-                value={adultsCount}
-                onChange={(e) => setAdultsCount(e.target.value)}
-                className="h-10 rounded-xl text-xs bg-background font-mono"
-              />
+              <span className="text-[11px] font-mono text-muted-foreground">
+                Total: {adultsCount + childrenCount} viajante(s)
+              </span>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">Crianças / Bebês</Label>
-              <Input
-                type="number"
-                min={0}
-                max={10}
-                value={childrenCount}
-                onChange={(e) => setChildrenCount(e.target.value)}
-                className="h-10 rounded-xl text-xs bg-background font-mono"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground font-medium">Adultos (+12 anos)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={adultsCount}
+                    onChange={(e) => setAdultsCount(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground font-medium">Crianças e Bebês (0 a 11 anos)</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={10}
+                    value={childrenCount}
+                    onChange={(e) => handleChildrenCountChange(parseInt(e.target.value) || 0)}
+                    className="h-10 rounded-xl text-xs bg-background font-mono font-bold"
+                  />
+                </div>
+              </div>
             </div>
+
+            {/* Inputs Dinâmicos para a Idade de Cada Criança */}
+            {childrenCount > 0 && (
+              <div className="pt-2 border-t border-border/40 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-foreground">
+                    Idade de Cada Criança (Cia aérea e hotel diferenciam colo 0-23m e 2-11 anos):
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Array.from({ length: childrenCount }).map((_, idx) => (
+                    <div key={idx} className="space-y-1">
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        Criança {idx + 1}:
+                      </span>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={17}
+                        value={childrenAges[idx] ?? ""}
+                        onChange={(e) => handleChildAgeChange(idx, e.target.value)}
+                        placeholder="Ex: 4 anos"
+                        required
+                        className="h-9 rounded-xl text-xs bg-background font-mono"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Nomes dos Passageiros */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-foreground">
-              Nome dos Passageiros
-            </Label>
-            <Input
-              value={passengerNames}
-              onChange={(e) => setPassengerNames(e.target.value)}
-              placeholder="Ex: Maria Silva, Lucas Silva (8 anos)..."
-              className="h-10 rounded-xl text-xs bg-background"
-            />
+          {/* Período de Interesse ou Saída Confirmada */}
+          <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Calendar className="size-3.5 text-primary" />
+                <span>Datas e Período de Interesse</span>
+              </Label>
+              {departureOptions.length > 0 && (
+                <div className="flex items-center gap-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setDateMode("confirmed")}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                      dateMode === "confirmed"
+                        ? "bg-primary text-primary-foreground shadow-2xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Saída Confirmada
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDateMode("flexible")}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                      dateMode === "flexible"
+                        ? "bg-primary text-primary-foreground shadow-2xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Período Livre
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {dateMode === "confirmed" && departureOptions.length > 0 ? (
+              <div className="space-y-1.5">
+                <Label className="text-[11px] text-muted-foreground font-medium">Selecione uma saída confirmada do pacote:</Label>
+                <select
+                  value={selectedDepartureId}
+                  onChange={(e) => setSelectedDepartureId(e.target.value)}
+                  className="w-full h-10 rounded-xl text-xs bg-background border border-border px-3 font-medium text-foreground"
+                >
+                  {departureOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label} — Saída {opt.departure_date} ({opt.status === "confirmed" ? "Confirmada" : "Prevista"})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <div className="space-y-1">
+                  <Label className="text-[11px] text-muted-foreground font-medium">
+                    Mês, Temporada ou Período Pretendido:
+                  </Label>
+                  <Input
+                    value={flexiblePeriodText}
+                    onChange={(e) => setFlexiblePeriodText(e.target.value)}
+                    placeholder="Ex: Julho de 2027, Segunda quinzena, Férias escolares..."
+                    className="h-10 rounded-xl text-xs bg-background font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Data Inicial (Opcional)</Label>
+                    <Input
+                      type="date"
+                      value={departureDate}
+                      onChange={(e) => setDepartureDate(e.target.value)}
+                      className="h-9 rounded-xl text-xs bg-background font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-muted-foreground">Data Final (Opcional)</Label>
+                    <Input
+                      type="date"
+                      value={returnDate}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                      className="h-9 rounded-xl text-xs bg-background font-mono"
+                    />
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer pt-1">
+                  <input
+                    type="checkbox"
+                    checked={flexibleDaysPlusMinus}
+                    onChange={(e) => setFlexibleDaysPlusMinus(e.target.checked)}
+                    className="size-4 rounded accent-primary"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    Tenho flexibilidade de 3 a 5 dias para encontrar melhores tarifas de voo
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
 
-          {/* Observações / Preferências */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-foreground">
-              Preferências Especiais ou Dúvidas
-            </Label>
-            <Textarea
-              value={specialRequests}
-              onChange={(e) => setSpecialRequests(e.target.value)}
-              placeholder="Ex: Preferência por quarto com cama king, transfer privativo, dieta vegetariana..."
-              rows={2}
-              className="rounded-xl text-xs bg-background resize-none leading-relaxed"
-            />
-          </div>
-
-          {/* Perguntas Personalizadas da Agência / Empresa */}
-          {customFields.length > 0 && (
-            <div className="space-y-3 pt-2 pb-1 border-t border-border/40">
+          {/* Perguntas Personalizadas (Estilo Meta Ads) */}
+          {customLeadQuestions.length > 0 && (
+            <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/[0.03] space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold text-foreground">
-                  Perguntas Específicas da Agência
+                <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-primary" />
+                  <span>Perguntas da Agência (Formulário de Interesse)</span>
                 </Label>
-                <span className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded font-medium">
-                  Configurado pela loja
+                <span className="text-[10px] font-mono text-primary font-bold">
+                  Personalizado
                 </span>
               </div>
-              {customFields.map((field: any) => (
+
+              {customLeadQuestions.map((field: any) => (
                 <div key={field.id} className="space-y-1">
                   <Label className="text-xs font-medium text-foreground flex items-center gap-1">
                     <span>{field.label}</span>
                     {field.required && <span className="text-rose-500 font-bold">*</span>}
                   </Label>
-                  {field.type === "textarea" ? (
-                    <Textarea
+                  {field.type === "select" && Array.isArray(field.options) ? (
+                    <select
                       value={customAnswers[field.id] || ""}
                       onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
-                      placeholder="Sua resposta..."
-                      rows={2}
-                      className="rounded-xl text-xs bg-background resize-none leading-relaxed"
-                    />
-                  ) : field.type === "checkbox" ? (
+                      className="w-full h-9 rounded-xl text-xs bg-background border border-border px-3 font-medium text-foreground"
+                    >
+                      <option value="">Selecione...</option>
+                      {field.options.map((opt: string, i: number) => (
+                        <option key={i} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  ) : field.type === "boolean" ? (
                     <label className="flex items-center gap-2 cursor-pointer pt-0.5">
                       <input
                         type="checkbox"
@@ -274,14 +475,14 @@ export function TravelBookingDossierModal({
                         onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.checked }))}
                         className="size-4 rounded accent-primary"
                       />
-                      <span className="text-xs text-muted-foreground">{field.label}</span>
+                      <span className="text-xs text-muted-foreground">{field.placeholder || "Sim, confirmo"}</span>
                     </label>
                   ) : (
                     <Input
                       type="text"
                       value={customAnswers[field.id] || ""}
                       onChange={(e) => setCustomAnswers((prev) => ({ ...prev, [field.id]: e.target.value }))}
-                      placeholder="Sua resposta..."
+                      placeholder={field.placeholder || "Sua resposta..."}
                       className="h-9 rounded-xl text-xs bg-background"
                     />
                   )}
@@ -289,6 +490,20 @@ export function TravelBookingDossierModal({
               ))}
             </div>
           )}
+
+          {/* Preferências / Observações */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-foreground">
+              Preferências ou Dúvidas Adicionais
+            </Label>
+            <Textarea
+              value={specialRequests}
+              onChange={(e) => setSpecialRequests(e.target.value)}
+              placeholder="Ex: Preferência por voo matutino, quarto conjugado, transfer privativo, etc..."
+              rows={2}
+              className="rounded-xl text-xs bg-background resize-none leading-relaxed text-xs"
+            />
+          </div>
 
           {/* Resumo do Valor */}
           {priceCents > 0 && (
@@ -302,24 +517,24 @@ export function TravelBookingDossierModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-11 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm"
+            className="w-full h-12 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-md cursor-pointer"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                <span>Registrando Dossiê...</span>
+                <span>Registrando Cotação...</span>
               </>
             ) : (
               <>
                 <MessageCircle className="size-4" />
-                <span>Confirmar & Abrir no WhatsApp</span>
+                <span>Enviar Solicitação de Cotação via WhatsApp</span>
               </>
             )}
           </Button>
 
           <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
             <ShieldCheck className="size-3.5 text-emerald-600" />
-            <span>Seus dados são protegidos e salvos na sua conta Waesy.</span>
+            <span>Seu lead é registrado no CRM da agência e enviado direto para atendimento.</span>
           </p>
         </form>
       </DialogContent>

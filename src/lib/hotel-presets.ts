@@ -44,8 +44,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Meia Pensão", "Café da Manhã"],
  description:
  "Um dos resorts de luxo mais exclusivos da América do Sul. Localizado na praia protegida de Muro Alto, conta com bangalôs com piscinas privativas sobre espelhos d'água e o refinado Spa L'Occitane.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80"],
  website: "https://www.nannai.com.br",
  phone: "(81) 3552-0100",
  internal_rating: 4.9,
@@ -71,7 +71,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 120,
  daily_rate_reference_cents: 385000,
  amenities: ["Piscina Privativa", "Vista Frente Mar", "Banheira de Hidro", "Cafeteira Nespresso", "Smart TV 65", "Adega de Vinhos", "Amenities L'Occitane"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
  },
  {
  id: "rc_nannai_bangalo_premium",
@@ -84,7 +84,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 64,
  daily_rate_reference_cents: 245000,
  amenities: ["Piscina Privativa", "Deck Panorâmico", "Ar-condicionado Split", "Frigobar Completo", "Varanda com Rede"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
  },
  {
  id: "rc_nannai_apto_luxo",
@@ -97,7 +97,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 45,
  daily_rate_reference_cents: 165000,
  amenities: ["Varanda com Rede", "Smart TV 55", "Wi-Fi 500Mbps", "Cofre Digital", "Secador de Cabelo Profissional"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {
@@ -137,8 +137,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Eleito repetidamente um dos melhores resorts All Inclusive do mundo. Estrutura completa de frente para o mar cortada pelo Rio Maragogi, com gastronomia e bebidas premium 24 horas por dia.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"],
  website: "https://www.salinas.com.br/maragogi",
  phone: "(82) 3296-3000",
  internal_rating: 4.9,
@@ -164,7 +164,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 37,
  daily_rate_reference_cents: 220000,
  amenities: ["Vista Frente Mar", "Ar Split", "Smart TV", "Frigobar Reposto Diariamente", "Varanda com Rede"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80",
  },
  {
  id: "rc_salinas_standard",
@@ -177,7 +177,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 29,
  daily_rate_reference_cents: 175000,
  amenities: ["Ar Condicionado", "Frigobar Incluso", "Wi-Fi Grátis", "Cofre", "Varanda"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {
@@ -218,8 +218,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Resort pé na areia na paradisíaca praia de Pratagy, rodeado pela Mata Atlântica e pelo Rio Meirim. Possui o Pratagy Acqua Park, um dos maiores parques aquáticos integrados da região.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1561501900-3701fa6a0864?auto=format&fit=crop&w=1200&q=80"],
  website: "https://www.pratagy.com.br",
  phone: "(82) 4009-7400",
  internal_rating: 4.7,
@@ -245,7 +245,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 32,
  daily_rate_reference_cents: 145000,
  amenities: ["Ar Split", "Smart TV", "Frigobar Completo", "Varanda", "Wi-Fi"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {
@@ -283,8 +283,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Café da Manhã"],
  description:
  "Eleito o Melhor Hotel do Mundo pelo TripAdvisor Travellers' Choice. Uma verdadeira viagem à França imperial com arquitetura clássica, lustres de cristal, móveis talhados à mão e atendimento impecável.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80"],
  website: "https://collinedefrance.com.br",
  phone: "(54) 3286-4404",
  internal_rating: 5.0,
@@ -310,7 +310,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 50,
  daily_rate_reference_cents: 290000,
  amenities: ["Lareira Ecológica", "Banheira Vitoriana", "Piso Térmico no Banheiro", "Cafeteira Nespresso", "Smart TV 65"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {
@@ -347,8 +347,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Café da Manhã", "Meia Pensão"],
  description:
  "O único hotel localizado dentro do Parque Nacional do Iguaçu. Hospedar-se aqui garante acesso exclusivo às cataratas em horários silenciosos, antes da abertura e após o fechamento do parque.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1589556264800-08ae9e129a8c?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1589556264800-08ae9e129a8c?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80"],
  website: "https://www.belmond.com/hotel-das-cataratas",
  phone: "(45) 2102-7000",
  internal_rating: 4.9,
@@ -374,7 +374,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 38,
  daily_rate_reference_cents: 320000,
  amenities: ["Acesso Exclusivo ao Parque", "Pinturas Murais", "Banheiro em Mármore", "Amenities Granado Brasil"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {
@@ -413,8 +413,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Resort 5 estrelas All Inclusive situado no litoral norte baiano. Conta com complexo aquático com piscinas de borda infinita, campo de golfe profissional e projeto de proteção às tartarugas marinhas.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80"],
  website: "https://www.iberostar.com",
  phone: "(71) 3676-4300",
  internal_rating: 4.8,
@@ -440,7 +440,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 46,
  daily_rate_reference_cents: 210000,
  amenities: ["Vista Frente Mar", "Room Service", "Minibar Reposto Diariamente", "Smart TV", "Banheira"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {
@@ -481,8 +481,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["All Inclusive"],
  description:
  "Resort 5 estrelas caribenho com experiência Rock Star completa. Possui praias privativas com enseadas naturais para mergulho com snorkel, parque aquático Rockaway Bay e spa de renome mundial.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80"],
  website: "https://www.hardrockhotelrivieramaya.com",
  phone: "+52 984 875 1100",
  internal_rating: 4.8,
@@ -508,7 +508,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 45,
  daily_rate_reference_cents: 260000,
  amenities: ["Banheira de Hidro Dupla", "Varanda com Rede", "Dispenser de Bebidas Premium", "Smart TV 55"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {
@@ -549,8 +549,8 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  regime_options: ["Café da Manhã"],
  description:
  "Pousada ícone de Fernando de Noronha, situada sob a imponência do Morro do Pico. Conhecida mundialmente pelo seu Festival Gastronômico, piscina de borda infinita e integração com o meio ambiente.",
- cover_photo_url: "",
- photos: [],
+ cover_photo_url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80",
+ photos: ["https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80","https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"],
  website: "https://www.pousadazemaria.com.br",
  phone: "(81) 3619-1258",
  internal_rating: 4.9,
@@ -576,7 +576,7 @@ export const FAMOUS_HOTEL_PRESETS: HotelPreset[] = [
  size_m2: 52,
  daily_rate_reference_cents: 340000,
  amenities: ["Hidromassagem Externa no Deck", "Vista Morro do Pico", "Ar Split", "Smart TV", "Cafeteira"],
- cover_photo_url: "",
+ cover_photo_url: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=1200&q=80",
  },
  ],
  policies: {

@@ -67,7 +67,7 @@ export default function ContaLojasPage() {
           )}
         </div>
 
-        <Button asChild size="sm" className="rounded-xl h-8 px-3.5 text-xs font-semibold gap-1.5 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer">
+        <Button asChild size="sm" className="rounded-xl h-8 px-3.5 text-xs font-semibold gap-1.5 bg-foreground text-background hover:bg-foreground/90 shrink-0 cursor-pointer">
           <Link to="/criar-negocio">
             <Plus className="size-3.5" />
             <span>Nova Loja</span>
@@ -75,9 +75,9 @@ export default function ContaLojasPage() {
         </Button>
       </div>
 
- {/* ── Grid de Lojas / Empty State ── */}
- {stores.length === 0 ? (
- <Card className="w-full max-w-xl mx-auto p-5 sm:p-12 text-center rounded-2xl shadow-xs border border-dashed border-border/80 bg-card space-y-4 my-6">
+      {/* ── Grid de Lojas / Empty State ── */}
+      {stores.length === 0 ? (
+        <Card className="w-full p-5 sm:p-12 text-center rounded-2xl border border-dashed border-border/80 bg-card space-y-4 my-4">
  <div className="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
  <Store className="size-8" />
  </div>

@@ -211,259 +211,361 @@ function SavedItemsPage() {
         )}
       </div>
 
-      {/* ── 3. Grid de Itens Salvos ── */}
+      {/* ── 3. Itens Salvos: Universal Dual Design (Mobile WhatsApp/Apple HIG List vs Desktop Grid) ── */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2.5">
           <Loader2 className="size-6 animate-spin text-primary" />
           <p className="text-xs font-medium">Carregando itens salvos...</p>
         </div>
       ) : filteredFavorites && filteredFavorites.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 w-full">
-          {filteredFavorites.map((fav: any) => {
-            const item = fav.details;
-            if (!item) return null;
+        <>
+          {/* ── MOBILE: WhatsApp / Apple HIG List Pattern ── */}
+          <div className="block sm:hidden divide-y divide-border/20 rounded-2xl bg-card border border-border/40 overflow-hidden shadow-xs">
+            {filteredFavorites.map((fav: any) => {
+              const item = fav.details;
+              if (!item) return null;
 
-            if (fav.entity_type === "classified") {
-              const cover =
-                (item.images && item.images.length > 0 ? item.images[0] : null) ||
-                (item.media && item.media.length > 0 ? item.media[0] : null);
+              let cover: string | null = null;
+              let title = "";
+              let subtitle = "";
+              let badgeLabel = "";
+              let priceLabel = "";
+              let targetUrl = "";
+
+              if (fav.entity_type === "classified") {
+                cover =
+                  (item.images && item.images.length > 0 ? item.images[0] : null) ||
+                  (item.media && item.media.length > 0 ? item.media[0] : null);
+                title = item.title || "Anúncio";
+                subtitle = item.location_name || item.content || "";
+                badgeLabel = "Classificado";
+                priceLabel = item.price_cents ? formatMoney(item.price_cents) : "A Combinar";
+                targetUrl = `/classificados/${item.id}`;
+              } else if (fav.entity_type === "product") {
+                const isService = item.is_service === true;
+                cover = item.images && item.images.length > 0 ? item.images[0] : null;
+                title = item.name || "Produto";
+                subtitle = isService && item.duration_minutes ? `${item.duration_minutes} min` : item.description || "";
+                badgeLabel = isService ? "Serviço" : "Produto";
+                priceLabel = formatMoney(item.price_cents);
+                targetUrl = isService ? `/agendar/${item.id}` : `/produto/${item.slug || item.id}`;
+              } else if (fav.entity_type === "event") {
+                cover = item.cover_image || null;
+                title = item.title || "Evento";
+                subtitle = item.location_name || (item.event_date ? new Date(item.event_date).toLocaleDateString("pt-BR") : "");
+                badgeLabel = "Evento";
+                priceLabel = item.price_cents ? formatMoney(item.price_cents) : "Ingressos";
+                targetUrl = `/evento/${item.id}`;
+              }
 
               return (
                 <div
-                  key={fav.id}
-                  className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                  key={`mobile-${fav.id}`}
+                  className="flex items-center gap-3 p-3.5 hover:bg-muted/40 active:bg-muted/60 transition-colors"
                 >
-                  <div>
-                    <div className="relative aspect-video bg-muted overflow-hidden">
-                      {cover ? (
-                        <img src={cover} alt={item.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
-                          <Tag className="size-8 stroke-[1.5]" />
-                        </div>
-                      )}
-                      <Badge className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold rounded-full">
-                        Classificado
-                      </Badge>
-                    </div>
+                  {/* Thumbnail Quadrada Ergonômica */}
+                  <div className="size-16 rounded-xl bg-muted border border-border/40 overflow-hidden shrink-0 flex items-center justify-center relative">
+                    {cover ? (
+                      <img src={cover} alt={title} className="size-full object-cover" />
+                    ) : (
+                      <Bookmark className="size-6 text-muted-foreground/40" />
+                    )}
+                  </div>
 
-                    <div className="p-3.5 space-y-1.5">
-                      <h3 className="text-sm font-bold text-foreground line-clamp-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {item.content}
+                  {/* Informações Centrais */}
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="text-[9px] uppercase font-bold px-1.5 py-0 rounded-md">
+                        {badgeLabel}
+                      </Badge>
+                      <span className="text-xs font-bold text-foreground truncate">{title}</span>
+                    </div>
+                    {subtitle && (
+                      <p className="text-[11px] text-muted-foreground line-clamp-1">
+                        {subtitle}
                       </p>
-                      <div className="pt-1.5 flex items-baseline justify-between">
-                        <span className="text-sm sm:text-base font-black text-primary font-mono">
-                          {item.price_cents ? formatMoney(item.price_cents) : "A Combinar"}
-                        </span>
-                        {item.location_name && (
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-[130px]">
-                            <MapPin className="size-3 text-primary shrink-0" />
-                            {item.location_name}
-                          </span>
-                        )}
-                      </div>
+                    )}
+                    <div className="pt-0.5">
+                      <span className="text-xs font-black text-primary font-mono">{priceLabel}</span>
                     </div>
                   </div>
 
-                  <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
+                  {/* Ações Diretas */}
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
                       asChild
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                      size="icon"
+                      variant="ghost"
+                      className="size-9 rounded-xl hover:bg-muted cursor-pointer"
+                      title="Acessar"
                     >
-                      <Link to="/classificados/$id" params={{ id: item.id }}>
-                        <ExternalLink className="size-3.5 mr-1.5" />
-                        <span>Ver Anúncio</span>
+                      <Link to={targetUrl}>
+                        <ExternalLink className="size-4 text-muted-foreground" />
                       </Link>
                     </Button>
-
                     <Button
                       size="icon"
                       variant="ghost"
                       onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                      className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
-                      title="Remover dos salvos"
+                      className="size-9 rounded-xl text-destructive hover:bg-destructive/10 cursor-pointer"
+                      title="Remover"
                     >
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
                 </div>
               );
-            }
+            })}
+          </div>
 
-            if (fav.entity_type === "product") {
-              const isService = item.is_service === true;
-              const cover = item.images && item.images.length > 0 ? item.images[0] : null;
+          {/* ── DESKTOP: Clean Expansive Grid ── */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 w-full">
+            {filteredFavorites.map((fav: any) => {
+              const item = fav.details;
+              if (!item) return null;
 
-              return (
-                <div
-                  key={fav.id}
-                  className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="relative aspect-video bg-muted overflow-hidden">
-                      {cover ? (
-                        <img src={cover} alt={item.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
-                          {isService ? (
-                            <Scissors className="size-8 stroke-[1.5]" />
-                          ) : (
-                            <ShoppingBag className="size-8 stroke-[1.5]" />
+              if (fav.entity_type === "classified") {
+                const cover =
+                  (item.images && item.images.length > 0 ? item.images[0] : null) ||
+                  (item.media && item.media.length > 0 ? item.media[0] : null);
+
+                return (
+                  <div
+                    key={fav.id}
+                    className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="relative aspect-video bg-muted overflow-hidden">
+                        {cover ? (
+                          <img src={cover} alt={item.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
+                            <Tag className="size-8 stroke-[1.5]" />
+                          </div>
+                        )}
+                        <Badge className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold rounded-full">
+                          Classificado
+                        </Badge>
+                      </div>
+
+                      <div className="p-3.5 space-y-1.5">
+                        <h3 className="text-sm font-bold text-foreground line-clamp-1">
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {item.content}
+                        </p>
+                        <div className="pt-1.5 flex items-baseline justify-between">
+                          <span className="text-sm sm:text-base font-black text-primary font-mono">
+                            {item.price_cents ? formatMoney(item.price_cents) : "A Combinar"}
+                          </span>
+                          {item.location_name && (
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-[130px]">
+                              <MapPin className="size-3 text-primary shrink-0" />
+                              {item.location_name}
+                            </span>
                           )}
                         </div>
-                      )}
-                      <Badge
-                        variant={isService ? "default" : "secondary"}
-                        className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold rounded-full"
-                      >
-                        {isService ? "Serviço" : "Produto"}
-                      </Badge>
-                    </div>
-
-                    <div className="p-3.5 space-y-1.5">
-                      <h3 className="text-sm font-bold text-foreground line-clamp-1">
-                        {item.name}
-                      </h3>
-                      {isService && item.duration_minutes && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
-                          <Clock className="size-3 text-primary" />
-                          {item.duration_minutes} min
-                        </p>
-                      )}
-                      <div className="pt-1.5 flex items-baseline justify-between">
-                        <span className="text-sm sm:text-base font-black text-primary font-mono">
-                          {formatMoney(item.price_cents)}
-                        </span>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
-                    {isService ? (
+                    <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
                       <Button
                         asChild
                         size="sm"
                         variant="outline"
                         className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
                       >
-                        <Link to="/agendar/$id" params={{ id: item.id }}>
+                        <Link to="/classificados/$id" params={{ id: item.id }}>
                           <ExternalLink className="size-3.5 mr-1.5" />
-                          <span>Agendar Horário</span>
+                          <span>Ver Anúncio</span>
                         </Link>
                       </Button>
-                    ) : (
+
                       <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
+                        className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        title="Remover dos salvos"
                       >
-                        <Link to="/produto/$slug" params={{ slug: item.slug || item.id }}>
-                          <ExternalLink className="size-3.5 mr-1.5" />
-                          <span>Ver Produto</span>
-                        </Link>
+                        <Trash2 className="size-4" />
                       </Button>
-                    )}
-
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                      className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
-                      title="Remover dos salvos"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            }
-
-            if (fav.entity_type === "event") {
-              return (
-                <div
-                  key={fav.id}
-                  className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="relative aspect-video bg-muted overflow-hidden">
-                      {item.cover_image ? (
-                        <img
-                          src={item.cover_image}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
-                          <Calendar className="size-8 stroke-[1.5]" />
-                        </div>
-                      )}
-                      <Badge
-                        variant="outline"
-                        className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold bg-background rounded-full"
-                      >
-                        Evento
-                      </Badge>
                     </div>
+                  </div>
+                );
+              }
 
-                    <div className="p-3.5 space-y-1.5">
-                      <h3 className="text-sm font-bold text-foreground line-clamp-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {item.description}
-                      </p>
-                      <div className="pt-1.5 flex items-baseline justify-between">
-                        <span className="text-xs font-semibold text-primary">
-                          {new Date(item.event_date).toLocaleDateString("pt-BR")}
-                        </span>
-                        {item.location_name && (
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-[130px]">
-                            <MapPin className="size-3 text-primary shrink-0" />
-                            {item.location_name}
-                          </span>
+              if (fav.entity_type === "product") {
+                const isService = item.is_service === true;
+                const cover = item.images && item.images.length > 0 ? item.images[0] : null;
+
+                return (
+                  <div
+                    key={fav.id}
+                    className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="relative aspect-video bg-muted overflow-hidden">
+                        {cover ? (
+                          <img src={cover} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
+                            {isService ? (
+                              <Scissors className="size-8 stroke-[1.5]" />
+                            ) : (
+                              <ShoppingBag className="size-8 stroke-[1.5]" />
+                            )}
+                          </div>
                         )}
+                        <Badge
+                          variant={isService ? "default" : "secondary"}
+                          className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold rounded-full"
+                        >
+                          {isService ? "Serviço" : "Produto"}
+                        </Badge>
+                      </div>
+
+                      <div className="p-3.5 space-y-1.5">
+                        <h3 className="text-sm font-bold text-foreground line-clamp-1">
+                          {item.name}
+                        </h3>
+                        {isService && item.duration_minutes && (
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+                            <Clock className="size-3 text-primary" />
+                            {item.duration_minutes} min
+                          </p>
+                        )}
+                        <div className="pt-1.5 flex items-baseline justify-between">
+                          <span className="text-sm sm:text-base font-black text-primary font-mono">
+                            {formatMoney(item.price_cents)}
+                          </span>
+                        </div>
                       </div>
                     </div>
+
+                    <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
+                      {isService ? (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                        >
+                          <Link to="/agendar/$id" params={{ id: item.id }}>
+                            <ExternalLink className="size-3.5 mr-1.5" />
+                            <span>Agendar Horário</span>
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                        >
+                          <Link to="/produto/$slug" params={{ slug: item.slug || item.id }}>
+                            <ExternalLink className="size-3.5 mr-1.5" />
+                            <span>Ver Produto</span>
+                          </Link>
+                        </Button>
+                      )}
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
+                        className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        title="Remover dos salvos"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
                   </div>
+                );
+              }
 
-                  <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
-                    >
-                      <Link to="/evento/$id" params={{ id: item.id }}>
-                        <ExternalLink className="size-3.5 mr-1.5" />
-                        <span>Ver Ingressos</span>
-                      </Link>
-                    </Button>
+              if (fav.entity_type === "event") {
+                return (
+                  <div
+                    key={fav.id}
+                    className="bg-card rounded-2xl overflow-hidden border border-border/70 shadow-xs hover:border-foreground/20 hover:shadow-sm transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="relative aspect-video bg-muted overflow-hidden">
+                        {item.cover_image ? (
+                          <img
+                            src={item.cover_image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/60">
+                            <Calendar className="size-8 stroke-[1.5]" />
+                          </div>
+                        )}
+                        <Badge
+                          variant="outline"
+                          className="absolute top-2.5 left-2.5 text-[10px] uppercase font-bold bg-background rounded-full"
+                        >
+                          Evento
+                        </Badge>
+                      </div>
 
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
-                      className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
-                      title="Remover dos salvos"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                      <div className="p-3.5 space-y-1.5">
+                        <h3 className="text-sm font-bold text-foreground line-clamp-1">
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                          {item.description}
+                        </p>
+                        <div className="pt-1.5 flex items-baseline justify-between">
+                          <span className="text-xs font-semibold text-primary">
+                            {new Date(item.event_date).toLocaleDateString("pt-BR")}
+                          </span>
+                          {item.location_name && (
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-1 truncate max-w-[130px]">
+                              <MapPin className="size-3 text-primary shrink-0" />
+                              {item.location_name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 bg-muted/20 flex items-center justify-between gap-2 border-t border-border/40">
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl text-xs h-10 flex-1 font-semibold cursor-pointer"
+                      >
+                        <Link to="/evento/$id" params={{ id: item.id }}>
+                          <ExternalLink className="size-3.5 mr-1.5" />
+                          <span>Ver Ingressos</span>
+                        </Link>
+                      </Button>
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemove(fav.entity_type, fav.entity_id)}
+                        className="rounded-xl size-10 text-destructive hover:bg-destructive/10 cursor-pointer shrink-0"
+                        title="Remover dos salvos"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              );
-            }
+                );
+              }
 
-            return null;
-          })}
-        </div>
+              return null;
+            })}
+          </div>
+        </>
       ) : (
-        <div className="border border-border/70 bg-card rounded-2xl p-6 sm:p-12 text-center space-y-3.5 shadow-xs max-w-xl mx-auto w-full">
+        <div className="border border-border/70 bg-card rounded-2xl p-6 sm:p-12 text-center space-y-3.5 shadow-xs w-full">
           <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Bookmark className="size-6" />
           </div>

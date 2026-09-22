@@ -195,7 +195,7 @@ function CustomerConversationsIndexPage() {
           <Button
             size="sm"
             onClick={() => setNewChatOpen(true)}
-            className="rounded-xl text-xs font-bold h-9 px-3.5 gap-1.5 cursor-pointer shadow-xs active:scale-95"
+            className="rounded-xl text-xs font-bold h-9 px-3.5 gap-1.5 cursor-pointer active:scale-95"
           >
             <Plus className="size-4 stroke-[2.5]" />
             <span>Nova Conversa</span>
@@ -268,7 +268,7 @@ function CustomerConversationsIndexPage() {
           <Button
             size="sm"
             onClick={() => setNewChatOpen(true)}
-            className="rounded-xl h-10 px-5 text-xs font-bold mt-2 shadow-xs cursor-pointer"
+            className="rounded-xl h-10 px-5 text-xs font-bold mt-2 cursor-pointer"
           >
             Iniciar Conversa
           </Button>

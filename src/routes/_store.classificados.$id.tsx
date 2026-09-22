@@ -467,7 +467,10 @@ function ClassifiedDetailPage() {
     ? selectedDeparture.price_override_cents
     : (classified?.price_cents || 0);
 
-  const travelTotalCents = effectiveTravelUnitPriceCents * travelPassengers;
+  const travelPricingMode = classified?.attributes?.pricing_mode || classified?.attributes?.travel?.pricing_mode || "total_package";
+  const isPerPerson = travelPricingMode === "per_person";
+
+  const travelTotalCents = isPerPerson ? effectiveTravelUnitPriceCents * travelPassengers : effectiveTravelUnitPriceCents;
   const maxInstallments = Math.max(1, Number(classified?.attributes?.max_installments) || 12);
   const travelInstallmentCents = Math.round(travelTotalCents / maxInstallments);
 
@@ -657,7 +660,7 @@ function ClassifiedDetailPage() {
   const handleDirectBuy = async () => {
     if (!classified) return;
     if (viewerContext === "anonymous") {
-      toast.info("Identifique-se para comprar com garantia e custódia segura.");
+      toast.info("Identifique-se para continuar a compra com segurança.");
       navigate({
         to: "/entrar",
         search: { returnUrl: `/classificados/${classified.id}` },
@@ -674,11 +677,11 @@ function ClassifiedDetailPage() {
           totalPriceCents: classified.price_cents || 0,
           dealType: classified.category === "real_estate" ? "rental" : "sale",
           isDirectBooking: true,
-          terms: "Compra direta com garantia pelo valor integral anunciado.",
+          terms: "Compra direta pelo valor integral anunciado.",
         },
       });
 
-      toast.success("Compra com garantia iniciada! Acompanhe a custódia e entrega em Minhas Negociações.");
+      toast.success("Compra iniciada! Acompanhe o pedido em Minhas Negociações.");
       navigate({ to: "/conta/negociacoes" });
     } catch (err: any) {
       console.error("Erro ao comprar direto:", err);
@@ -923,18 +926,37 @@ const handleDownloadDigitalFile = async () => {
 
               {/* Resumo Financeiro Transparente */}
               <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-2 text-xs">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Valor por pessoa</span>
-                  <span className="font-mono font-medium text-foreground">
-                    {formatMoney(effectiveTravelUnitPriceCents)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Viajantes</span>
-                  <span className="font-mono font-medium text-foreground">
-                    × {travelPassengers}
-                  </span>
-                </div>
+                {isPerPerson ? (
+                  <>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Valor por pessoa</span>
+                      <span className="font-mono font-medium text-foreground">
+                        {formatMoney(effectiveTravelUnitPriceCents)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Viajantes</span>
+                      <span className="font-mono font-medium text-foreground">
+                        × {travelPassengers}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Valor Base do Pacote</span>
+                      <span className="font-mono font-medium text-foreground">
+                        {formatMoney(effectiveTravelUnitPriceCents)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Viajantes Inclusos</span>
+                      <span className="font-mono font-medium text-foreground">
+                        {travelPassengers} {travelPassengers === 1 ? "passageiro" : "passageiros"}
+                      </span>
+                    </div>
+                  </>
+                )}
                 <div className="pt-2 border-t border-border/40 flex justify-between items-baseline font-bold text-sm text-foreground">
                   <div>
                     <span>Total do Pacote</span>
@@ -1392,7 +1414,11 @@ const handleDownloadDigitalFile = async () => {
           }
         />
         {classified?.ai_agent_enabled && (
-          <AiSdrChat classifiedId={classified.id} storeName={classified.store_name} />
+          <AiSdrChat
+            classifiedId={classified.id}
+            storeName={classified.store_name || undefined}
+            sellerName={classified.profiles?.full_name || (classified as any).author_profile?.full_name || undefined}
+          />
         )}
       </>
     );
@@ -1439,7 +1465,11 @@ const handleDownloadDigitalFile = async () => {
         {renderBookingDialog()}
         {renderProposalDialog()}
         {classified?.ai_agent_enabled && (
-          <AiSdrChat classifiedId={classified.id} storeName={classified.store_name} />
+          <AiSdrChat
+            classifiedId={classified.id}
+            storeName={classified.store_name || undefined}
+            sellerName={classified.profiles?.full_name || (classified as any).author_profile?.full_name || undefined}
+          />
         )}
       </>
     );
@@ -1493,7 +1523,11 @@ const handleDownloadDigitalFile = async () => {
       {renderProposalDialog()}
       {renderCompanionDialog()}
       {classified?.ai_agent_enabled && (
-        <AiSdrChat classifiedId={classified.id} storeName={classified.store_name} />
+        <AiSdrChat
+          classifiedId={classified.id}
+          storeName={classified.store_name || undefined}
+          sellerName={classified.profiles?.full_name || (classified as any).author_profile?.full_name || undefined}
+        />
       )}
     </>
   );
@@ -1536,14 +1570,7 @@ function buildClassifiedCompanionData(classified: any): DigitalCompanionCardProp
     },
   ];
 
-  const rules: CompanionRuleItem[] = [
-    {
-      title: "Intermediação Segura Waesy",
-      description: "Pagamentos e propostas são protegidos com custódia e garantia de entrega pela plataforma.",
-      badge: "Garantia",
-      highlight: true,
-    },
-  ];
+  const rules: CompanionRuleItem[] = [];
 
   const sellerPhone =
     classified?.contact_whatsapp ||

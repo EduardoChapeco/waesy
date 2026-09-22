@@ -1084,5 +1084,30 @@ export function calculateProgressiveDiscount(
   };
 }
 
+// ─── 16. VIAGENS, PACOTES & LEADS DINÂMICOS (BIGTECH AIR & TRAVEL) ─────────────
 
+export type TravelPricingMode = "total_package" | "per_person";
 
+export interface CustomLeadFormField {
+  id: string;
+  label: string;
+  type: "text" | "select" | "boolean";
+  options?: string[];
+  required?: boolean;
+  placeholder?: string;
+}
+
+export interface TravelLeadPayload {
+  adultsCount: number;
+  childrenCount: number;
+  childrenAges: string[];
+  departureDate?: string;
+  returnDate?: string;
+  flexiblePeriodText?: string;
+  isFlexibleDates?: boolean;
+  passengerNames?: string;
+  specialRequests?: string;
+  customAnswers?: Record<string, any>;
+  customerName: string;
+  customerPhone: string;
+}

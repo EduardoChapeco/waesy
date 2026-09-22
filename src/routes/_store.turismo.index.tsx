@@ -1,31 +1,22 @@
-import { Tag } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
- Compass,
- MapPin,
- Star,
- AirplaneTilt,
- ForkKnife,
- Buildings,
- Mountains,
- ArrowRight,
- ShieldCheck,
- CalendarDots,
- Users,
- SuitcaseSimple,
- Ticket,
+  Compass,
+  MapPin,
+  AirplaneTilt,
+  ArrowRight,
+  GridFour,
+  Rows,
+  SquaresFour,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { SlimActionBanner } from "@/components/commerce/slim-action-banner";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
+  DiscoveryControlBar,
+  type FilterChipOption,
 } from "@/components/commerce/discovery-control-bar";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
@@ -33,313 +24,508 @@ import { listPublicTourism } from "@/services/tourism.functions";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { TravelQuoteModal } from "@/components/tourism/travel-quote-modal";
-import { resolveNicheDepartments } from "@/lib/niche-helpers";
+import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/_store/turismo/")({
- head: () => ({
- meta: [
- { title: "Turismo, Viagens & Lazer Regional" },
- {
- name: "description",
- content:
- "Descubra os melhores passeios, pousadas de charme, ecoturismo, cachoeiras e pacotes de viagens com saída da sua região.",
- },
- ],
- }),
- loader: async () => {
-   try {
- const [banners, hotpages, tourismItems] = await Promise.all([
- listActiveBanners({ data: { placement: "turismo" } }).catch(() => []),
- listHotpages({ data: { module: "turismo" } }).catch(() => []),
- listPublicTourism().catch(() => []),
- ]);
+  head: () => ({
+    meta: [
+      { title: "Turismo & Viagens | Waesy" },
+      {
+        name: "description",
+        content: "Pacotes de viagens, hospedagens e experiências regionais.",
+      },
+    ],
+  }),
+  loader: async () => {
+    try {
+      const [banners, hotpages, tourismItems] = await Promise.all([
+        listActiveBanners({ data: { placement: "turismo" } }).catch(() => []),
+        listHotpages({ data: { module: "turismo" } }).catch(() => []),
+        listPublicTourism().catch(() => []),
+      ]);
 
- return { banners, hotpages, tourismItems };
-   } catch (err) {
-     console.error("[loader:_store.turismo.index] Unhandled error:", err);
-     return { banners: [], hotpages: [], tourismItems: [] };
-   }
- },
- component: TourismMasterPage,
+      return { banners, hotpages, tourismItems };
+    } catch (err) {
+      console.error("[loader:_store.turismo.index] Unhandled error:", err);
+      return { banners: [], hotpages: [], tourismItems: [] };
+    }
+  },
+  component: TourismMasterPage,
 });
 
+export type TourismLayoutMode = "cards" | "compact" | "rails";
+
 const CATEGORY_CHIPS: FilterChipOption[] = [
- { id: "todos", label: "Tudo", emoji: "✈️", icon: Tag },
- { id: "pacotes", label: "Pacotes & Voos", emoji: "🏖️", icon: AirplaneTilt },
- { id: "hospedagens", label: "Cabanas & Pousadas", emoji: "🏡", icon: Buildings },
- { id: "passeios", label: "Passeios & Lazer", emoji: "🚤", icon: Mountains },
- { id: "cruzeiros", label: "Cruzeiros Marítimos", emoji: "🚢", icon: SuitcaseSimple },
- { id: "vistos", label: "Visto Americano", emoji: "🛂", icon: ShieldCheck },
- { id: "agencias", label: "Agências & Guias", emoji: "🧭", icon: Compass },
+  { id: "todos", label: "Tudo" },
+  { id: "pacotes", label: "Pacotes" },
+  { id: "hospedagens", label: "Hospedagens" },
+  { id: "passeios", label: "Passeios" },
+  { id: "cruzeiros", label: "Cruzeiros" },
+  { id: "vistos", label: "Vistos" },
+  { id: "agencias", label: "Agências" },
+];
+
+const REGIONAL_AIRPORTS = [
+  { id: "todos", label: "Todas as Saídas" },
+  { id: "XAP", label: "Chapecó" },
+  { id: "FLN", label: "Florianópolis" },
+  { id: "CWB", label: "Curitiba" },
+  { id: "POA", label: "Porto Alegre" },
+  { id: "NVT", label: "Navegantes" },
+  { id: "GRU", label: "São Paulo" },
 ];
 
 function TourismMasterPage() {
- const { banners = [], hotpages = [], tourismItems: initialItems = [] } = ((Route.useLoaderData() as any) || {});
- const [selectedCategory, setSelectedCategory] = useState("todos");
- const [viewMode, setViewMode] = useState<ViewModeType>("grid");
- const [search, setSearch] = useState("");
- const [selectedDepartureAirport, setSelectedDepartureAirport] = useState<string>("todos");
- const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
- const [quoteDestination, setQuoteDestination] = useState("");
+  const { banners = [], hotpages = [], tourismItems: initialItems = [] } = ((Route.useLoaderData() as any) || {});
+  const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [layoutMode, setLayoutMode] = useState<TourismLayoutMode>("cards");
+  const [search, setSearch] = useState("");
+  const [selectedAirport, setSelectedAirport] = useState<string>("todos");
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [quoteDestination, setQuoteDestination] = useState("");
 
- const { data: items } = useQuery({
- queryKey: ["tourism-list", selectedCategory, search],
- queryFn: () =>
- listPublicTourism({
- data: {
- category: selectedCategory !== "todos" ? selectedCategory : undefined,
- search: search || undefined,
- },
- }),
- initialData: initialItems,
- });
+  const { data: items } = useQuery({
+    queryKey: ["tourism-list", selectedCategory, search],
+    queryFn: () =>
+      listPublicTourism({
+        data: {
+          category: selectedCategory !== "todos" ? selectedCategory : undefined,
+          search: search || undefined,
+        },
+      }),
+    initialData: initialItems,
+  });
 
- const tourismList: any[] = items || [];
+  const rawList: any[] = items || [];
+  const isLoading = !items && initialItems.length === 0;
 
- // Agrupamento por Categoria para Modo Feed
- const tourismByCategory = useMemo(() => {
- const map = new Map<string, typeof tourismList>();
- tourismList.forEach((item) => {
- const cat = item.category || "passeios";
- if (!map.has(cat)) map.set(cat, []);
- map.get(cat)!.push(item);
- });
- return Array.from(map.entries()).map(([catKey, catItems]) => {
- const chip = CATEGORY_CHIPS.find((c) => c.id === catKey);
- return {
- categoryKey: catKey,
- categoryName: chip?.label || "Experiências em Destaque",
- items: catItems,
- };
- });
- }, [tourismList]);
+  const tourismList = useMemo(() => {
+    return rawList.filter((item) => {
+      if (selectedAirport !== "todos") {
+        const itemDep = (item.departure_airport || item.departure_city || "").toUpperCase();
+        if (!itemDep.includes(selectedAirport.toUpperCase())) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [rawList, selectedAirport]);
 
- const handleOpenQuote = (destination = "") => {
- setQuoteDestination(destination);
- setIsQuoteModalOpen(true);
- };
+  const tourismByCategory = useMemo(() => {
+    const map = new Map<string, typeof tourismList>();
+    tourismList.forEach((item) => {
+      const cat = item.category || "pacotes";
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat)!.push(item);
+    });
+    return Array.from(map.entries()).map(([catKey, catItems]) => {
+      const chip = CATEGORY_CHIPS.find((c) => c.id === catKey);
+      return {
+        categoryKey: catKey,
+        categoryName: chip?.label || "Destaques",
+        items: catItems,
+      };
+    });
+  }, [tourismList]);
 
- return (
- <div className="w-full space-y-6 pb-20">
- {/* ── 1. Top Banners Promocionais ── */}
- {banners && banners.length > 0 && (
- <BannerHeroCarousel banners={banners} className="w-full" />
- )}
+  const handleOpenQuote = (destination = "") => {
+    setQuoteDestination(destination);
+    setIsQuoteModalOpen(true);
+  };
 
- {/* ── 2. Stories Rápidos de Roteiros, Hotéis & Experiências ── */}
- <ContextualStoriesRail niche="turismo" className="py-1" />
+  return (
+    <div className="w-full space-y-6 pb-24 px-0 sm:px-4 md:px-0">
+      {/* Banners */}
+      {banners && banners.length > 0 && (
+        <BannerHeroCarousel banners={banners} className="w-full" />
+      )}
 
- {/* ── 2.5. Banner Fino Dinâmico (Renderiza SOMENTE se cadastrado no Admin Master) ── */}
- {banners?.some((b: any) => (b as any).format === "slim") && (
- <SlimActionBanner
- banner={banners?.find((b: any) => (b as any).format === "slim")}
- onCtaClick={() => handleOpenQuote()}
- />
- )}
+      {/* Stories */}
+      <ContextualStoriesRail niche="turismo" className="py-1" />
 
- {/* ── 3. Hotpages Contextuais de Turismo ── */}
- {hotpages && hotpages.length > 0 && (
- <section aria-label="Coleções Turísticas">
- <HotpagesRail
- hotpages={hotpages}
- activeSlug={selectedCategory}
- onSelect={(slug) => setSelectedCategory(slug)}
- />
- </section>
- )}
+      {/* Banner Fino */}
+      {banners?.some((b: any) => (b as any).format === "slim") && (
+        <SlimActionBanner
+          banner={banners?.find((b: any) => (b as any).format === "slim")}
+          onCtaClick={() => handleOpenQuote()}
+        />
+      )}
 
- {/* ── 4. Discovery Control Bar com Chips de Turismo ── */}
- <DiscoveryControlBar
- search={search}
- onSearchChange={setSearch}
- searchPlaceholder="Buscar destinos, pousadas, vinícolas, roteiros..."
- categories={CATEGORY_CHIPS}
- activeCategory={selectedCategory}
- onSelectCategory={(id) => setSelectedCategory(id)}
- viewMode={viewMode}
- onViewModeChange={setViewMode}
- />
+      {/* Coleções */}
+      {hotpages && hotpages.length > 0 && (
+        <section aria-label="Coleções">
+          <HotpagesRail
+            hotpages={hotpages}
+            activeSlug={selectedCategory}
+            onSelect={(slug) => setSelectedCategory(slug)}
+          />
+        </section>
+      )}
 
- {/* ── 5. Modo Feed / Modo Grade de Turismo com Mídia Full Bleed ── */}
- {viewMode === "grid" ? (
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
- {tourismList.map((item) => (
- <div
- key={item.id}
- className="rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group"
- >
- {/* Mídia Full Bleed 100% de ponta a ponta */}
- <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
- {item.cover_image ? (
- <img
- src={item.cover_image}
- alt={item.title}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
- loading="lazy"
- />
- ) : (
- <div className="size-full flex items-center justify-center text-muted-foreground">
- <AirplaneTilt size={36} />
- </div>
- )}
- {item.badge_label && (
- <div className="absolute top-3 left-3">
- <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[10px] uppercase font-bold ">
- {item.badge_label}
- </Badge>
- </div>
- )}
- </div>
+      {/* Barra de Busca e Categorias */}
+      <DiscoveryControlBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Buscar destinos ou roteiros..."
+        categories={CATEGORY_CHIPS}
+        activeCategory={selectedCategory}
+        onSelectCategory={(id) => setSelectedCategory(id)}
+      />
 
- {/* Corpo com Padding Interno */}
- <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
- <div className="space-y-1.5">
- <div className="flex items-center justify-between gap-1 text-xs text-muted-foreground font-semibold">
- <span className="flex items-center gap-1 truncate">
- <MapPin size={13} className="text-primary shrink-0" />
- <span className="truncate">{item.location_name || "Regional"}</span>
- </span>
- {item.rating && (
- <span className="flex items-center gap-1 font-bold text-foreground">
- <Star size={13} weight="fill" className="text-amber-400" />
- <span>{item.rating.toFixed(1)}</span>
- </span>
- )}
- </div>
+      {/* Filtro de Saída e Alternador de Layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 pb-2 border-b border-border/60">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <span className="text-xs text-muted-foreground font-medium shrink-0 mr-1">
+            Saída:
+          </span>
+          {REGIONAL_AIRPORTS.map((air) => {
+            const isActive = selectedAirport === air.id;
+            return (
+              <button
+                key={air.id}
+                type="button"
+                onClick={() => setSelectedAirport(air.id)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-foreground text-background"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {air.label}
+              </button>
+            );
+          })}
+        </div>
 
- <h3 className="font-bold text-base text-foreground group-hover:text-primary transition-colors line-clamp-1">
- {item.title}
- </h3>
+        <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg shrink-0 border border-border/40">
+          <button
+            type="button"
+            onClick={() => setLayoutMode("cards")}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              layoutMode === "cards"
+                ? "bg-card text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <SquaresFour size={14} />
+            <span>Cartões</span>
+          </button>
 
- {item.subtitle && (
- <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
- {item.subtitle}
- </p>
- )}
- </div>
+          <button
+            type="button"
+            onClick={() => setLayoutMode("compact")}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              layoutMode === "compact"
+                ? "bg-card text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <GridFour size={14} />
+            <span>Compacto</span>
+          </button>
 
- <div className="pt-3 flex items-center justify-between gap-2">
- <div>
- <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
- A partir de
- </span>
- <span className="text-base font-black font-mono text-foreground">
- {item.price_display || "Consulte"}
- </span>
- </div>
+          <button
+            type="button"
+            onClick={() => setLayoutMode("rails")}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+              layoutMode === "rails"
+                ? "bg-card text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Rows size={14} />
+            <span>Trilhos</span>
+          </button>
+        </div>
+      </div>
 
- <div className="flex items-center gap-2">
- <Button
- size="sm"
- variant="outline"
- onClick={() => handleOpenQuote(item.title)}
- className="rounded-xl font-bold text-xs h-9 px-3"
- >
- Cotar
- </Button>
+      {/* Grid de Destinos */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-2xl border border-border/60 bg-card overflow-hidden animate-pulse">
+              <div className="aspect-[16/10] w-full bg-muted" />
+              <div className="p-5 space-y-3">
+                <div className="h-3 w-24 bg-muted rounded-full" />
+                <div className="h-4 w-4/5 bg-muted rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : tourismList.length === 0 ? (
+        <div className="rounded-2xl border border-border/60 p-12 text-center bg-card space-y-2">
+          <p className="text-sm font-semibold text-foreground">Nenhum resultado encontrado</p>
+          <p className="text-xs text-muted-foreground">
+            Ajuste os filtros de saída ou busque por outro termo.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSelectedAirport("todos");
+              setSelectedCategory("todos");
+              setSearch("");
+            }}
+            className="mt-3 rounded-lg text-xs"
+          >
+            Limpar filtros
+          </Button>
+        </div>
+      ) : layoutMode === "cards" ? (
+        /* MODO 1: CARTÕES LIMPOS */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {tourismList.map((item) => {
+            const maxInstallments = item.attributes?.max_installments || item.max_installments || 12;
+            const priceCents = item.price_cents || 0;
+            const installmentCents = priceCents > 0 ? Math.round(priceCents / maxInstallments) : 0;
+            const mealPlan = item.attributes?.meal_plan || item.meal_plan || null;
+            const durationDays = item.duration_days || item.attributes?.duration_days || null;
 
- <Button
- asChild
- size="sm"
- className="rounded-xl font-bold text-xs h-9 px-4"
- >
- <Link to="/turismo/$id" params={{ id: item.id }}>
- <span>Ver Roteiro</span>
- <ArrowRight size={14} weight="bold" className="ml-1" />
- </Link>
- </Button>
- </div>
- </div>
- </div>
- </div>
- ))}
- </div>
- ) : (
- /* MODO FEED COM TRILHOS HORIZONTAIS */
- <div className="space-y-8">
- {tourismByCategory.map(({ categoryKey, categoryName, items: catItems }) => (
- <HorizontalRail
- key={categoryKey}
- title={categoryName}
- hideHeader={true}
- badge={`${catItems.length} ${catItems.length === 1 ? "roteiro" : "roteiros"}`}
- actionLabel="Ver todos"
- onAction={() => {
- setSelectedCategory(categoryKey);
- setViewMode("grid");
- }}
- >
- {catItems.map((item) => (
- <div
- key={item.id}
- className="min-w-[280px] sm:min-w-[320px] max-w-[340px] rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between shrink-0 group"
- >
- <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
- {item.cover_image && (
- <img
- src={item.cover_image}
- alt={item.title}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
- loading="lazy"
- />
- )}
- {item.badge_label && (
- <div className="absolute top-2.5 left-2.5">
- <Badge className="bg-background/90 text-foreground font-mono text-[9px] uppercase font-bold">
- {item.badge_label}
- </Badge>
- </div>
- )}
- </div>
+            return (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between group"
+              >
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                  {item.cover_image ? (
+                    <img
+                      src={item.cover_image}
+                      alt={item.title}
+                      className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="size-full flex items-center justify-center bg-muted text-muted-foreground">
+                      <AirplaneTilt size={32} className="opacity-40" />
+                    </div>
+                  )}
 
- <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
- <div>
- <span className="text-[11px] text-muted-foreground font-semibold truncate block">
- {item.location_name || "Regional"}
- </span>
- <h4 className="font-bold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
- {item.title}
- </h4>
- </div>
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                    {mealPlan && (
+                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-0.5 rounded-md border border-border/40">
+                        {mealPlan}
+                      </span>
+                    )}
+                    {durationDays && (
+                      <span className="bg-background/90 text-foreground text-[10px] font-medium px-2 py-0.5 rounded-md border border-border/40">
+                        {durationDays} dias
+                      </span>
+                    )}
+                  </div>
+                </div>
 
- <div className="pt-2 flex items-center justify-between gap-2">
-										<span className="font-black font-mono text-sm text-foreground">
-											{item.price_display || "Consulte"}
-										</span>
-										<div className="flex items-center gap-1.5">
-											<Button
-												size="sm"
-												variant="outline"
-												onClick={() => handleOpenQuote(item.title)}
-												className="h-9 px-3 rounded-xl font-bold text-xs"
-											>
-												Cotar
-											</Button>
-											<Button
-												asChild
-												size="sm"
-												className="h-9 px-3 rounded-xl font-bold text-xs"
-											>
-												<Link to="/turismo/$id" params={{ id: item.id }}>
-													Ver
-												</Link>
-											</Button>
-										</div>
-									</div>
- </div>
- </div>
- ))}
- </HorizontalRail>
- ))}
- </div>
- )}
+                <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-1 text-xs text-muted-foreground">
+                      <span>{item.location_name || item.destination_city || "Regional"}</span>
+                      {item.departure_city && (
+                        <span className="text-[10px] text-muted-foreground">
+                          Saída: {item.departure_city}
+                        </span>
+                      )}
+                    </div>
 
- {/* Modal / Wizard de Cotação CVC */}
- <TravelQuoteModal
- open={isQuoteModalOpen}
- onOpenChange={setIsQuoteModalOpen}
- defaultDestination={quoteDestination}
- />
- </div>
- );
+                    <h3 className="font-bold text-base text-foreground line-clamp-1">
+                      {item.title}
+                    </h3>
+
+                    {item.subtitle && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {item.subtitle}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="pt-3 border-t border-border/40 flex items-end justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block font-mono">
+                        A partir de
+                      </span>
+                      <span className="text-base font-bold font-mono text-foreground block">
+                        {item.price_display || (priceCents > 0 ? formatMoney(priceCents) : "Consulte")}
+                      </span>
+                      {installmentCents > 0 && (
+                        <span className="text-[11px] text-muted-foreground block">
+                          em até {maxInstallments}x de {formatMoney(installmentCents)}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenQuote(item.title)}
+                        className="rounded-xl text-xs h-8 px-3 font-medium"
+                      >
+                        Cotar
+                      </Button>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="rounded-xl text-xs h-8 px-3.5 font-medium"
+                      >
+                        <Link to="/turismo/$id" params={{ id: item.id }}>
+                          <span>Ver</span>
+                          <ArrowRight size={12} className="ml-1" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : layoutMode === "compact" ? (
+        /* MODO 2: COMPACTO */
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {tourismList.map((item) => {
+            const priceCents = item.price_cents || 0;
+            return (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between group"
+              >
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                  {item.cover_image ? (
+                    <img
+                      src={item.cover_image}
+                      alt={item.title}
+                      className="size-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="size-full flex items-center justify-center bg-muted">
+                      <AirplaneTilt size={20} className="opacity-40" />
+                    </div>
+                  )}
+                  {item.departure_city && (
+                    <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-1.5 py-0.5 rounded text-foreground font-medium">
+                      {item.departure_city}
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-3 space-y-2 flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] text-muted-foreground block truncate">
+                      {item.location_name || "Regional"}
+                    </span>
+                    <h4 className="font-semibold text-xs text-foreground line-clamp-1">
+                      {item.title}
+                    </h4>
+                  </div>
+
+                  <div className="pt-1 flex items-center justify-between gap-1">
+                    <span className="font-mono text-xs font-bold text-foreground truncate">
+                      {item.price_display || (priceCents > 0 ? formatMoney(priceCents) : "Consulte")}
+                    </span>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-[11px] rounded-lg font-medium"
+                    >
+                      <Link to="/turismo/$id" params={{ id: item.id }}>
+                        Ver
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* MODO 3: TRILHOS */
+        <div className="space-y-8">
+          {tourismByCategory.map(({ categoryKey, categoryName, items: catItems }) => (
+            <section key={categoryKey} aria-label={categoryName}>
+              <HorizontalRail
+                title={categoryName}
+                hideHeader={true}
+                badge={`${catItems.length} opções`}
+                actionLabel="Ver todos"
+                onAction={() => {
+                  setSelectedCategory(categoryKey);
+                  setLayoutMode("cards");
+                }}
+              >
+                {catItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="min-w-[280px] sm:min-w-[320px] max-w-[340px] rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between shrink-0"
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                      {item.cover_image ? (
+                        <img
+                          src={item.cover_image}
+                          alt={item.title}
+                          className="size-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="size-full flex items-center justify-center bg-muted">
+                          <AirplaneTilt size={24} className="opacity-40" />
+                        </div>
+                      )}
+                      {item.departure_city && (
+                        <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-2 py-0.5 rounded text-foreground font-medium">
+                          {item.departure_city}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[11px] text-muted-foreground block truncate">
+                          {item.location_name || "Regional"}
+                        </span>
+                        <h4 className="font-semibold text-sm text-foreground line-clamp-1">
+                          {item.title}
+                        </h4>
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-between gap-2">
+                        <span className="font-mono text-sm font-bold text-foreground">
+                          {item.price_display || (item.price_cents ? formatMoney(item.price_cents) : "Consulte")}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenQuote(item.title)}
+                            className="h-8 px-3 rounded-lg text-xs font-medium"
+                          >
+                            Cotar
+                          </Button>
+                          <Button
+                            asChild
+                            size="sm"
+                            className="h-8 px-3 rounded-lg text-xs font-medium"
+                          >
+                            <Link to="/turismo/$id" params={{ id: item.id }}>
+                              Ver
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </HorizontalRail>
+            </section>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de Cotação */}
+      <TravelQuoteModal
+        open={isQuoteModalOpen}
+        onOpenChange={setIsQuoteModalOpen}
+        defaultDestination={quoteDestination}
+      />
+    </div>
+  );
 }

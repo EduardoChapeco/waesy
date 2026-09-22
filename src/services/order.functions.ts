@@ -377,7 +377,7 @@ export const getCustomerOrder = createServerFn({ method: "GET" })
  `
  id, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
  customer_snapshot, shipping_method, shipping_address, created_at,
- order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options ),
+ order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options, notes ),
  payments ( id, method, status, amount_cents, receipt_url, receipt_status )
  `,
  )

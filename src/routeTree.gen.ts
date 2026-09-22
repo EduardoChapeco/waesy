@@ -169,6 +169,7 @@ import { Route as StoreEmpregosIdRouteImport } from './routes/_store.empregos.$i
 import { Route as StoreEntregaTokenRouteImport } from './routes/_store.entrega.$token'
 import { Route as StoreEntregadorCadastroRouteImport } from './routes/_store.entregador.cadastro'
 import { Route as StoreEventoIdRouteImport } from './routes/_store.evento.$id'
+import { Route as StoreFSlugRouteImport } from './routes/_store.f.$slug'
 import { Route as StoreGiftCardClaimTokenRouteImport } from './routes/_store.gift-card.$claimToken'
 import { Route as StoreLojaSlugRouteImport } from './routes/_store.loja.$slug'
 import { Route as StoreMembroIdRouteImport } from './routes/_store.membro.$id'
@@ -270,6 +271,7 @@ import { Route as WorkspaceMarketingCarrinhosRouteImport } from './routes/worksp
 import { Route as WorkspaceMarketingConcursosRouteImport } from './routes/workspace.marketing.concursos'
 import { Route as WorkspaceMarketingEncartesRouteImport } from './routes/workspace.marketing.encartes'
 import { Route as WorkspaceMarketingFidelidadeRouteImport } from './routes/workspace.marketing.fidelidade'
+import { Route as WorkspaceMarketingFormulariosRouteImport } from './routes/workspace.marketing.formularios'
 import { Route as WorkspaceMarketingGiftCardsRouteImport } from './routes/workspace.marketing.gift-cards'
 import { Route as WorkspaceMarketingHotpagesRouteImport } from './routes/workspace.marketing.hotpages'
 import { Route as WorkspaceMarketingPatrocinadoresRouteImport } from './routes/workspace.marketing.patrocinadores'
@@ -1168,6 +1170,11 @@ const StoreEventoIdRoute = StoreEventoIdRouteImport.update({
   path: '/evento/$id',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreFSlugRoute = StoreFSlugRouteImport.update({
+  id: '/f/$slug',
+  path: '/f/$slug',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreGiftCardClaimTokenRoute = StoreGiftCardClaimTokenRouteImport.update({
   id: '/gift-card/$claimToken',
   path: '/gift-card/$claimToken',
@@ -1714,6 +1721,12 @@ const WorkspaceMarketingFidelidadeRoute =
   WorkspaceMarketingFidelidadeRouteImport.update({
     id: '/marketing/fidelidade',
     path: '/marketing/fidelidade',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceMarketingFormulariosRoute =
+  WorkspaceMarketingFormulariosRouteImport.update({
+    id: '/marketing/formularios',
+    path: '/marketing/formularios',
     getParentRoute: () => WorkspaceRoute,
   } as any)
 const WorkspaceMarketingGiftCardsRoute =
@@ -2408,6 +2421,7 @@ export interface FileRoutesByFullPath {
   '/entrega/$token': typeof StoreEntregaTokenRoute
   '/entregador/cadastro': typeof StoreEntregadorCadastroRoute
   '/evento/$id': typeof StoreEventoIdRoute
+  '/f/$slug': typeof StoreFSlugRoute
   '/gift-card/$claimToken': typeof StoreGiftCardClaimTokenRoute
   '/loja/$slug': typeof StoreLojaSlugRouteWithChildren
   '/membro/$id': typeof StoreMembroIdRoute
@@ -2492,6 +2506,7 @@ export interface FileRoutesByFullPath {
   '/workspace/marketing/concursos': typeof WorkspaceMarketingConcursosRoute
   '/workspace/marketing/encartes': typeof WorkspaceMarketingEncartesRoute
   '/workspace/marketing/fidelidade': typeof WorkspaceMarketingFidelidadeRoute
+  '/workspace/marketing/formularios': typeof WorkspaceMarketingFormulariosRoute
   '/workspace/marketing/gift-cards': typeof WorkspaceMarketingGiftCardsRoute
   '/workspace/marketing/hotpages': typeof WorkspaceMarketingHotpagesRoute
   '/workspace/marketing/patrocinadores': typeof WorkspaceMarketingPatrocinadoresRoute
@@ -2757,6 +2772,7 @@ export interface FileRoutesByTo {
   '/entrega/$token': typeof StoreEntregaTokenRoute
   '/entregador/cadastro': typeof StoreEntregadorCadastroRoute
   '/evento/$id': typeof StoreEventoIdRoute
+  '/f/$slug': typeof StoreFSlugRoute
   '/gift-card/$claimToken': typeof StoreGiftCardClaimTokenRoute
   '/loja/$slug': typeof StoreLojaSlugRouteWithChildren
   '/membro/$id': typeof StoreMembroIdRoute
@@ -2841,6 +2857,7 @@ export interface FileRoutesByTo {
   '/workspace/marketing/concursos': typeof WorkspaceMarketingConcursosRoute
   '/workspace/marketing/encartes': typeof WorkspaceMarketingEncartesRoute
   '/workspace/marketing/fidelidade': typeof WorkspaceMarketingFidelidadeRoute
+  '/workspace/marketing/formularios': typeof WorkspaceMarketingFormulariosRoute
   '/workspace/marketing/gift-cards': typeof WorkspaceMarketingGiftCardsRoute
   '/workspace/marketing/hotpages': typeof WorkspaceMarketingHotpagesRoute
   '/workspace/marketing/patrocinadores': typeof WorkspaceMarketingPatrocinadoresRoute
@@ -3115,6 +3132,7 @@ export interface FileRoutesById {
   '/_store/entrega/$token': typeof StoreEntregaTokenRoute
   '/_store/entregador/cadastro': typeof StoreEntregadorCadastroRoute
   '/_store/evento/$id': typeof StoreEventoIdRoute
+  '/_store/f/$slug': typeof StoreFSlugRoute
   '/_store/gift-card/$claimToken': typeof StoreGiftCardClaimTokenRoute
   '/_store/loja/$slug': typeof StoreLojaSlugRouteWithChildren
   '/_store/membro/$id': typeof StoreMembroIdRoute
@@ -3199,6 +3217,7 @@ export interface FileRoutesById {
   '/workspace/marketing/concursos': typeof WorkspaceMarketingConcursosRoute
   '/workspace/marketing/encartes': typeof WorkspaceMarketingEncartesRoute
   '/workspace/marketing/fidelidade': typeof WorkspaceMarketingFidelidadeRoute
+  '/workspace/marketing/formularios': typeof WorkspaceMarketingFormulariosRoute
   '/workspace/marketing/gift-cards': typeof WorkspaceMarketingGiftCardsRoute
   '/workspace/marketing/hotpages': typeof WorkspaceMarketingHotpagesRoute
   '/workspace/marketing/patrocinadores': typeof WorkspaceMarketingPatrocinadoresRoute
@@ -3473,6 +3492,7 @@ export interface FileRouteTypes {
     | '/entrega/$token'
     | '/entregador/cadastro'
     | '/evento/$id'
+    | '/f/$slug'
     | '/gift-card/$claimToken'
     | '/loja/$slug'
     | '/membro/$id'
@@ -3557,6 +3577,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/concursos'
     | '/workspace/marketing/encartes'
     | '/workspace/marketing/fidelidade'
+    | '/workspace/marketing/formularios'
     | '/workspace/marketing/gift-cards'
     | '/workspace/marketing/hotpages'
     | '/workspace/marketing/patrocinadores'
@@ -3822,6 +3843,7 @@ export interface FileRouteTypes {
     | '/entrega/$token'
     | '/entregador/cadastro'
     | '/evento/$id'
+    | '/f/$slug'
     | '/gift-card/$claimToken'
     | '/loja/$slug'
     | '/membro/$id'
@@ -3906,6 +3928,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/concursos'
     | '/workspace/marketing/encartes'
     | '/workspace/marketing/fidelidade'
+    | '/workspace/marketing/formularios'
     | '/workspace/marketing/gift-cards'
     | '/workspace/marketing/hotpages'
     | '/workspace/marketing/patrocinadores'
@@ -4179,6 +4202,7 @@ export interface FileRouteTypes {
     | '/_store/entrega/$token'
     | '/_store/entregador/cadastro'
     | '/_store/evento/$id'
+    | '/_store/f/$slug'
     | '/_store/gift-card/$claimToken'
     | '/_store/loja/$slug'
     | '/_store/membro/$id'
@@ -4263,6 +4287,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/concursos'
     | '/workspace/marketing/encartes'
     | '/workspace/marketing/fidelidade'
+    | '/workspace/marketing/formularios'
     | '/workspace/marketing/gift-cards'
     | '/workspace/marketing/hotpages'
     | '/workspace/marketing/patrocinadores'
@@ -5543,6 +5568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreEventoIdRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/f/$slug': {
+      id: '/_store/f/$slug'
+      path: '/f/$slug'
+      fullPath: '/f/$slug'
+      preLoaderRoute: typeof StoreFSlugRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/gift-card/$claimToken': {
       id: '/_store/gift-card/$claimToken'
       path: '/gift-card/$claimToken'
@@ -6248,6 +6280,13 @@ declare module '@tanstack/react-router' {
       path: '/marketing/fidelidade'
       fullPath: '/workspace/marketing/fidelidade'
       preLoaderRoute: typeof WorkspaceMarketingFidelidadeRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/marketing/formularios': {
+      id: '/workspace/marketing/formularios'
+      path: '/marketing/formularios'
+      fullPath: '/workspace/marketing/formularios'
+      preLoaderRoute: typeof WorkspaceMarketingFormulariosRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/marketing/gift-cards': {
@@ -7138,6 +7177,7 @@ interface StoreRouteChildren {
   StoreEntregaTokenRoute: typeof StoreEntregaTokenRoute
   StoreEntregadorCadastroRoute: typeof StoreEntregadorCadastroRoute
   StoreEventoIdRoute: typeof StoreEventoIdRoute
+  StoreFSlugRoute: typeof StoreFSlugRoute
   StoreGiftCardClaimTokenRoute: typeof StoreGiftCardClaimTokenRoute
   StoreLojaSlugRoute: typeof StoreLojaSlugRouteWithChildren
   StoreMembroIdRoute: typeof StoreMembroIdRoute
@@ -7219,6 +7259,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreEntregaTokenRoute: StoreEntregaTokenRoute,
   StoreEntregadorCadastroRoute: StoreEntregadorCadastroRoute,
   StoreEventoIdRoute: StoreEventoIdRoute,
+  StoreFSlugRoute: StoreFSlugRoute,
   StoreGiftCardClaimTokenRoute: StoreGiftCardClaimTokenRoute,
   StoreLojaSlugRoute: StoreLojaSlugRouteWithChildren,
   StoreMembroIdRoute: StoreMembroIdRoute,
@@ -7453,6 +7494,7 @@ interface WorkspaceRouteChildren {
   WorkspaceMarketingConcursosRoute: typeof WorkspaceMarketingConcursosRoute
   WorkspaceMarketingEncartesRoute: typeof WorkspaceMarketingEncartesRoute
   WorkspaceMarketingFidelidadeRoute: typeof WorkspaceMarketingFidelidadeRoute
+  WorkspaceMarketingFormulariosRoute: typeof WorkspaceMarketingFormulariosRoute
   WorkspaceMarketingGiftCardsRoute: typeof WorkspaceMarketingGiftCardsRoute
   WorkspaceMarketingHotpagesRoute: typeof WorkspaceMarketingHotpagesRoute
   WorkspaceMarketingPatrocinadoresRoute: typeof WorkspaceMarketingPatrocinadoresRoute
@@ -7611,6 +7653,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceMarketingConcursosRoute: WorkspaceMarketingConcursosRoute,
   WorkspaceMarketingEncartesRoute: WorkspaceMarketingEncartesRoute,
   WorkspaceMarketingFidelidadeRoute: WorkspaceMarketingFidelidadeRoute,
+  WorkspaceMarketingFormulariosRoute: WorkspaceMarketingFormulariosRoute,
   WorkspaceMarketingGiftCardsRoute: WorkspaceMarketingGiftCardsRoute,
   WorkspaceMarketingHotpagesRoute: WorkspaceMarketingHotpagesRoute,
   WorkspaceMarketingPatrocinadoresRoute: WorkspaceMarketingPatrocinadoresRoute,

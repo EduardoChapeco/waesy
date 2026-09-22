@@ -222,7 +222,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
               </div>
 
               <Button type="submit" disabled={isPending} className="w-full h-11 rounded-xl text-xs font-bold mt-4">
-                {isPending ? "Ativando Terminal..." : "Criar Subpainel & Gerar Token"}
+                {isPending ? "Ativando..." : "Criar Subpainel"}
               </Button>
             </form>
           </SheetContent>

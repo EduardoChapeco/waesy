@@ -265,7 +265,7 @@ export function SquadsWorkspacePage() {
               return (
                 <div
                   key={squad.id}
-                  className="bg-card border border-border/50 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-6"
+                  className="bg-card border border-border/60 rounded-2xl p-6 flex flex-col justify-between space-y-6"
                 >
                   {/* Topo do Card do Squad */}
                   <div>
@@ -365,7 +365,7 @@ export function SquadsWorkspacePage() {
                             type="button"
                             onClick={() => handleApproveRun(squad.latest_run!.id)}
                             disabled={actionLoading === `approve-${squad.latest_run.id}`}
-                            className="h-11 px-4 inline-flex items-center gap-1.5 rounded-xl text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shadow-xs shrink-0 min-h-[44px]"
+                            className="h-11 px-4 inline-flex items-center gap-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shrink-0 min-h-[44px]"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {actionLoading === `approve-${squad.latest_run.id}`

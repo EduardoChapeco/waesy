@@ -154,12 +154,14 @@ function ConfirmationPage() {
  }
 
  const paymentMethod = order.payment_method || order.payments?.[0]?.method || "pix";
- const rawItems = order.items_snapshot || order.order_items || [];
- const items = rawItems.map((item: any) => ({
- productName: item.product_title || item.productName || item.title || "Produto",
- priceCents: item.unit_price_cents || item.price_snapshot_cents || item.priceCents || 0,
- quantity: item.qty || item.quantity || 1,
- }));
+  const rawItems = order.items_snapshot || order.order_items || [];
+  const items = rawItems.map((item: any) => ({
+    productName: item.product_title || item.productName || item.title || "Produto",
+    priceCents: item.unit_price_cents || item.price_snapshot_cents || item.priceCents || 0,
+    quantity: item.qty || item.quantity || 1,
+    notes: item.notes || null,
+    selectedOptions: item.selected_options || item.options || null,
+  }));
  const subtotal =
  order.subtotal_cents ||
  items.reduce((acc: number, item: any) => acc + item.priceCents * item.quantity, 0);
@@ -417,11 +419,32 @@ function ConfirmationPage() {
  <li key={idx} className="flex justify-between py-3 text-sm">
  <div className="flex flex-col">
  <div className="flex items-center">
- <span className="font-medium text-foreground">{item.quantity}x</span>
- <span className="ml-3 text-muted-foreground">{item.productName}</span>
+ <span className="font-bold text-foreground">{item.quantity}x</span>
+ <span className="ml-3 font-medium text-foreground">{item.productName}</span>
  </div>
+ {item.selectedOptions && (
+ <div className="ml-7 flex flex-wrap gap-1 mt-1">
+ {(Array.isArray(item.selectedOptions)
+ ? item.selectedOptions
+ : typeof item.selectedOptions === "object"
+ ? Object.values(item.selectedOptions)
+ : []
+ ).map((opt: any, oIdx: number) => {
+ const label = typeof opt === "string" ? opt : opt?.label || opt?.name;
+ if (!label) return null;
+ return (
+ <span
+ key={oIdx}
+ className="text-[10px] font-bold bg-muted/70 text-foreground/80 border border-border/60 px-1.5 py-0.5 rounded-md"
+ >
+ + {label}
+ </span>
+ );
+ })}
+ </div>
+ )}
  {item.notes && (
- <span className="ml-7 text-xs text-muted-foreground italic mt-0.5">
+ <span className="ml-7 text-xs text-amber-700 dark:text-amber-400 font-medium mt-1 inline-block">
  Obs: {item.notes}
  </span>
  )}

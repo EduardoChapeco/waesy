@@ -41,7 +41,7 @@ import {
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/empregos/candidatos")({
- head: () => ({ meta: [{ title: "Gestão de Candidaturas & RH | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Gestão de Candidaturas | Workspace" }] }),
  loader: async () => {
    try {
  const apps = await listStoreJobApplications();

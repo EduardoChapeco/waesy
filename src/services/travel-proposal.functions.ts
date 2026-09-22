@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { sendWhatsAppNotification } from "./integrations.functions";
+import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // ─── Tipos e Contratos de Domínio ─────────────────────────────────────────────
 
@@ -149,11 +150,34 @@ export interface TravelProposalDTO {
   includes: string[];
   excludes: string[];
   pricing: PricingBreakdownDTO;
+  options?: TravelProposalOptionDTO[];
+  ai_sales_advisor_enabled?: boolean;
+  ai_sales_advisor_prompt?: string | null;
   special_notes?: string | null;
   status: ProposalStatus;
   valid_until?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface TravelProposalOptionDTO {
+  id: string;
+  name: string;
+  badge?: string;
+  hotel_name?: string;
+  hotel_stars?: number;
+  room_type?: string;
+  meal_plan?: string;
+  airline?: string;
+  flights?: FlightSegmentDTO[];
+  hotels?: HotelDTO[];
+  itinerary?: ItineraryDayDTO[];
+  transfers?: TransferDTO[];
+  tours?: any[];
+  includes?: string[];
+  excludes?: string[];
+  pricing: PricingBreakdownDTO;
+  is_recommended?: boolean;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -282,6 +306,13 @@ function rowToProposalDTO(row: any, storeRow?: any): TravelProposalDTO {
     includes,
     excludes,
     pricing: defaultPricing,
+    options: Array.isArray(row.options) && row.options.length > 0
+      ? row.options
+      : Array.isArray(meta.options) && meta.options.length > 0
+        ? meta.options
+        : [],
+    ai_sales_advisor_enabled: row.ai_sales_advisor_enabled ?? meta.ai_sales_advisor_enabled ?? true,
+    ai_sales_advisor_prompt: row.ai_sales_advisor_prompt || meta.ai_sales_advisor_prompt || null,
     special_notes: row.special_notes || meta.special_notes || null,
     status: (row.status === "approved" ? "approved"
       : row.status === "rejected" ? "rejected"
@@ -1055,3 +1086,76 @@ export const generateProposalCoverAI = createServerFn({ method: "POST" })
     }
     return { url };
   });
+
+// ─── 10. Consultor de Vendas / SDR de IA da Proposta (BFF) ──────────────────
+
+export const AskProposalSalesAdvisorInputSchema = z.object({
+  token: z.string().min(1),
+  question: z.string().min(1),
+  currentOptionId: z.string().optional(),
+  conversationHistory: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string(),
+  })).optional().default([]),
+});
+
+export const askProposalSalesAdvisorAI = createServerFn({ method: "POST" })
+  .validator(AskProposalSalesAdvisorInputSchema)
+  .handler(async ({ data }): Promise<{ reply: string }> => {
+    const proposal = await getPublicTravelProposalByToken({ data: { token: data.token } });
+    if (!proposal) {
+      throw new Error("Proposta não encontrada.");
+    }
+
+    const optionsSummary = (proposal.options && proposal.options.length > 0)
+      ? proposal.options.map((opt, idx) => `
+Opção ${idx + 1}: ${opt.name} ${opt.is_recommended ? "(RECOMENDADA PELA AGÊNCIA)" : ""}
+- Hotel: ${opt.hotel_name || opt.hotels?.[0]?.hotel_name || "Hotel Selecionado"} (${opt.meal_plan || "Regime informado"})
+- Aéreo: ${opt.airline || opt.flights?.[0]?.airline || "Voo Incluso"}
+- Valor Total: R$ ${((opt.pricing?.total_price_cents || 0) / 100).toFixed(2)} (${opt.pricing?.installments_options?.[1]?.installments_count || 10}x de R$ ${(((opt.pricing?.installments_options?.[1]?.installment_value_cents || 0) / 100).toFixed(2))})
+- Inclusões: ${(opt.includes || []).join(", ")}
+`).join("\n")
+      : `
+Opção Única:
+- Destino: ${proposal.destination_city}
+- Datas: ${proposal.travel_start_date || "A definir"} a ${proposal.travel_end_date || "A definir"}
+- Hotel: ${proposal.hotels?.[0]?.hotel_name || "Hotel Exclusivo"} (${proposal.hotels?.[0]?.board_basis || "Café da manhã"})
+- Valor: R$ ${((proposal.pricing?.total_price_cents || 0) / 100).toFixed(2)}
+- Inclusões: ${(proposal.includes || []).join(", ")}
+`;
+
+    const systemPrompt = `Você é o Consultor Comercial e Especialista de Viagens (SDR / Sales Advisor) da agência de viagens "${proposal.agency_name}".
+O cliente "${proposal.client_name}" está visualizando uma proposta comercial interativa para o destino "${proposal.destination_city}".
+
+DADOS DA PROPOSTA COTADA:
+${optionsSummary}
+Viajantes: ${proposal.adults_count} adultos, ${proposal.children_count} crianças.
+Políticas e Termos: ${proposal.pricing.payment_terms || "Sob consulta"}
+WhatsApp do Agente Humano: ${proposal.agency_whatsapp}
+
+DIRETRIZES FUNDAMENTAIS DO CONSULTOR:
+1. Seja caloroso, empático, altamente informado e focado em encantar o cliente e ajudá-lo a tomar a melhor decisão.
+2. Destaque os pontos fortes de cada opção (ex: localização do hotel, comodidades como piscina/pé na areia, regime de alimentação, horários dos voos).
+3. Se o cliente perguntar sobre a diferença entre as opções, compare-as com clareza, destacando custo-benefício.
+4. Se o cliente perguntar sobre o destino (melhores praias, passeios recomendados, gastronomia, clima na data da viagem), forneça dicas autênticas e valiosas de quem conhece o destino.
+5. Seja transparente quanto ao que está incluso e o que não está.
+6. Nunca invente dados que contradigam o valor cotado ou voos da proposta.
+7. Finalize encorajando o cliente a garantir a vaga ou tirar dúvidas finais pelo WhatsApp da agência (${proposal.agency_whatsapp}).
+Mantenha a resposta concisa, bem formatada com tópicos e agradável de ler em smartphones.`;
+
+    const historyMessages = data.conversationHistory.map((m) => `${m.role === "user" ? "Viajante" : "Consultor"}: ${m.content}`).join("\n");
+    const userPrompt = `${historyMessages ? `${historyMessages}\n` : ""}Viajante: ${data.question}`;
+
+    const aiResponse = await executeUnifiedAiCall({
+      preferredProvider: "gemini",
+      feature: "proposal_sales_advisor",
+      systemPrompt,
+      userPrompt,
+      temperature: 0.4,
+    });
+
+    return {
+      reply: aiResponse.text || "Estou à disposição para tirar qualquer dúvida sobre esta viagem incrível!",
+    };
+  });
+

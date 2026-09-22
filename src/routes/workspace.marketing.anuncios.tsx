@@ -85,11 +85,11 @@ export const Route = createFileRoute("/workspace/marketing/anuncios")({
 });
 
 const FORMAT_LABELS: Record<string, string> = {
-  post_patrocinado: "Post Patrocinado",
-  banner_destaque: "Banner de Destaque",
-  story_patrocinado: "Story Patrocinado",
-  stories_sponsor: "Stories Imersivo",
-  busca_topo: "Destaque na Busca",
+  post_patrocinado: "Post no Feed",
+  banner_destaque: "Banner",
+  story_patrocinado: "Stories",
+  stories_sponsor: "Stories Imersivos",
+  busca_topo: "Topo da Busca",
 };
 
 const QUICK_FORMATS = [

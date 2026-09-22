@@ -70,11 +70,11 @@ function WorkspaceNovaMateriaPage() {
  }
  };
 
- const addSection = (type: "paragraph" | "heading" | "quote") => {
+ const addSection = (type: "paragraph" | "heading" | "quote" | "gallery") => {
  setSections([...sections, { type, content: "" }]);
  };
 
- const updateSectionContent = (index: number, content: string, caption?: string) => {
+ const updateSectionContent = (index: number, content: string | string[], caption?: string) => {
  const updated = [...sections];
  updated[index] = { ...updated[index], content, caption };
  setSections(updated);
@@ -427,6 +427,16 @@ function WorkspaceNovaMateriaPage() {
  <Quote className="size-3" />
  Citação
  </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => addSection("gallery")}
+ className="h-8 text-xs font-bold gap-1 rounded-xl"
+ >
+ <Image className="size-3" />
+ Foto
+ </Button>
  </div>
  </div>
 
@@ -441,6 +451,7 @@ function WorkspaceNovaMateriaPage() {
  {section.type === "paragraph" && "Parágrafo"}
  {section.type === "heading" && "Subtítulo de Seção"}
  {section.type === "quote" && "Citação / Aspas"}
+ {section.type === "gallery" && "Foto / Imagem"}
  </span>
  {sections.length > 1 && (
  <button
@@ -457,7 +468,7 @@ function WorkspaceNovaMateriaPage() {
  {section.type === "heading" ? (
  <Input
  placeholder="Digite o subtítulo da seção..."
- value={section.content}
+ value={typeof section.content === "string" ? section.content : ""}
  onChange={(e) => updateSectionContent(idx, e.target.value)}
  className="rounded-lg font-bold text-sm h-10"
  />
@@ -465,7 +476,7 @@ function WorkspaceNovaMateriaPage() {
  <div className="space-y-2">
  <textarea
  placeholder="Texto da declaração ou citação..."
- value={section.content}
+ value={typeof section.content === "string" ? section.content : ""}
  onChange={(e) => updateSectionContent(idx, e.target.value, section.caption)}
  rows={2}
  className="w-full p-2.5 rounded-lg border border-border/60 bg-card text-xs italic resize-none focus:outline-none focus:border-primary"
@@ -477,10 +488,26 @@ function WorkspaceNovaMateriaPage() {
  className="rounded-lg text-xs h-8"
  />
  </div>
+ ) : section.type === "gallery" ? (
+ <div className="space-y-2">
+ <ImageUpload
+ value={typeof section.content === "string" ? section.content : ""}
+ onChange={(url) => updateSectionContent(idx, url, section.caption)}
+ aspectPreset="widescreen"
+ bucket="cms-media"
+ helperText="Upload ou recorte da imagem (16:9 / 4:3)"
+ />
+ <Input
+ placeholder="Legenda da foto / Crédito (ex: Foto: Divulgação / Acervo)"
+ value={section.caption || ""}
+ onChange={(e) => updateSectionContent(idx, section.content, e.target.value)}
+ className="rounded-lg text-xs h-8"
+ />
+ </div>
  ) : (
  <textarea
  placeholder="Escreva o parágrafo..."
- value={section.content}
+ value={typeof section.content === "string" ? section.content : ""}
  onChange={(e) => updateSectionContent(idx, e.target.value)}
  rows={4}
  className="w-full p-3 rounded-lg border border-border/60 bg-card text-xs font-normal leading-relaxed resize-none focus:outline-none focus:border-primary"

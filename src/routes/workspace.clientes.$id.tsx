@@ -422,8 +422,8 @@ function CustomerDetailPage() {
             <span>Preferências</span>
           </TabsTrigger>
           <TabsTrigger value="passes" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
-            <QrCode className="size-3.5 text-emerald-500" />
-            <span>Passes Wallet ({data.walletPasses?.length || 0})</span>
+            <QrCode className="size-3.5 text-primary" />
+            <span>Documentos Digitais ({data.walletPasses?.length || 0})</span>
           </TabsTrigger>
           <TabsTrigger value="acompanhantes" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Users2 className="size-3.5 text-violet-500" />
@@ -740,16 +740,16 @@ function CustomerDetailPage() {
           </div>
         </TabsContent>
 
-        {/* ── Aba: Passes Apple Wallet ── */}
+        {/* ── Aba: Documentos Digitais ── */}
         <TabsContent value="passes" className="space-y-4">
           {(data.walletPasses?.length || 0) === 0 ? (
             <div className="bg-card rounded-2xl border border-border/60 p-8 text-center space-y-3">
               <div className="size-12 rounded-2xl bg-muted mx-auto flex items-center justify-center">
                 <QrCode className="size-6 text-muted-foreground" />
               </div>
-              <h3 className="text-sm font-bold text-foreground">Nenhum passe Apple Wallet ativo</h3>
+              <h3 className="text-sm font-bold text-foreground">Nenhum documento digital ativo</h3>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Cartões de embarque, vouchers de hotel, cartões de fidelidade e ingressos com QR Code dinâmico aparecem aqui para o passageiro sincronizar no iPhone ou Apple Watch.
+                Cartões de embarque, vouchers de hotel, cartões de fidelidade e ingressos com QR Code aparecem aqui para consulta e embarque do passageiro.
               </p>
             </div>
           ) : (
@@ -763,13 +763,13 @@ function CustomerDetailPage() {
                     <Badge variant="secondary" className="text-[10px] uppercase font-bold">
                       {pass.pass_type || "Cartão Digital"}
                     </Badge>
-                    <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                    <Badge variant="outline" className="text-[10px] font-mono">
                       {pass.status || "Ativo"}
                     </Badge>
                   </div>
                   <div>
                     <h4 className="font-bold text-sm text-foreground">{pass.title || "Passe Digital"}</h4>
-                    <p className="text-xs text-muted-foreground">{pass.description || "Apple Wallet Compatible"}</p>
+                    <p className="text-xs text-muted-foreground">{pass.description || "Documento Digital"}</p>
                   </div>
                   <div className="p-3 bg-card/80 border border-border/40 rounded-xl flex items-center justify-between font-mono text-[11px]">
                     <span className="text-muted-foreground">Serial:</span>

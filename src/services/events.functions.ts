@@ -1466,3 +1466,92 @@ export const getEventAuditLogs = createServerFn({ method: "GET" })
     return logs || [];
   });
 
+// ---------------------------------------------------------------------------
+// CUSTOMER TICKETS — Área Pessoal /conta/ingressos
+// ---------------------------------------------------------------------------
+
+/**
+ * Lista os ingressos de eventos comprados pelo usuário autenticado.
+ * Usa fallback defensivo para compatibilidade com diferentes schemas.
+ */
+export const listCustomerEventTickets = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { getSSRClient } = await import("@/lib/server-access");
+    const ssrClient = await getSSRClient();
+    const {
+      data: { user },
+    } = await ssrClient.auth.getUser();
+
+    if (!user) return [];
+
+    // Busca pedidos com itens de ingresso
+    const { data: orders, error } = await ssrClient
+      .from("orders")
+      .select(
+        `id, status, created_at, total_cents,
+        order_items(id, item_type, product_title, quantity, unit_price_cents, metadata)`
+      )
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[events.functions] listCustomerEventTickets error:", error.message);
+      return [];
+    }
+
+    const ticketOrders = (orders || []).filter((o: any) =>
+      o.order_items?.some(
+        (i: any) =>
+          i.item_type === "ticket" ||
+          i.item_type === "event" ||
+          i.product_title?.toLowerCase().includes("ingresso")
+      )
+    );
+
+    return ticketOrders.map((order: any) => {
+      const ticketItem = order.order_items?.find(
+        (i: any) =>
+          i.item_type === "ticket" ||
+          i.item_type === "event" ||
+          i.product_title?.toLowerCase().includes("ingresso")
+      );
+      const meta = ticketItem?.metadata || {};
+      return {
+        id: ticketItem?.id || order.id,
+        orderId: order.id,
+        eventTitle: ticketItem?.product_title || meta.event_title || "Ingresso",
+        eventDate: meta.event_date || null,
+        eventLocation: meta.event_location || meta.venue || null,
+        lotName: meta.lot_name || meta.batch || null,
+        quantity: ticketItem?.quantity || 1,
+        priceCents: order.total_cents,
+        status: order.status as string,
+        qrHash: meta.qr_hash || meta.qr_code || `W${order.id.slice(0, 8).toUpperCase()}`,
+        coverUrl: meta.event_cover_url || null,
+        isUsed: meta.is_used === true || order.status === "delivered",
+        accessCode: meta.access_code || order.id.slice(0, 8).toUpperCase(),
+        createdAt: order.created_at,
+      };
+    });
+  } catch (e) {
+    console.warn("[events.functions] listCustomerEventTickets fallback:", e);
+    return [];
+  }
+});
+
+export type CustomerEventTicketDTO = {
+  id: string;
+  orderId: string;
+  eventTitle: string;
+  eventDate: string | null;
+  eventLocation: string | null;
+  lotName: string | null;
+  quantity: number;
+  priceCents: number;
+  status: string;
+  qrHash: string;
+  coverUrl: string | null;
+  isUsed: boolean;
+  accessCode: string;
+  createdAt: string;
+};

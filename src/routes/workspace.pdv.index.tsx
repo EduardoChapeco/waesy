@@ -1542,7 +1542,7 @@ function PdvTerminal() {
  disabled={isProcessing || (splitPayments.length === 0 && !paymentAmountInput)}
  className="h-11 px-6 rounded-xl font-bold text-xs bg-primary text-primary-foreground"
  >
- {isProcessing ? "Concluindo Venda..." : "Confirmar & Emitir Recibo"}
+ {isProcessing ? "Concluindo..." : "Confirmar Venda"}
  </Button>
  </DialogFooter>
  </DialogContent>
@@ -1552,7 +1552,7 @@ function PdvTerminal() {
  <Dialog open={receiptModalOpen} onOpenChange={setReceiptModalOpen}>
  <DialogContent className="sm:max-w-md w-full p-6 rounded-2xl bg-card border border-border space-y-4">
  <div className="text-center space-y-2">
- <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+ <div className="size-12 rounded-full bg-muted text-foreground border border-border/60 flex items-center justify-center mx-auto">
  <CheckCircle2 className="size-6" />
  </div>
  <DialogTitle className="text-lg font-bold text-foreground">

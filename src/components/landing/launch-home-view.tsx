@@ -152,7 +152,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 pb-28">
-      {/* ── HEADER SUPERIOR ELEGANTE (APPLE HIG) COM BOTÃO DE LOGIN EM DESTAQUE ── */}
+      {/* ── HEADER SUPERIOR ELEGANTE (APPLE HIG) ── */}
       <header className="sticky top-0 z-40 w-full bg-background/85 backdrop-blur-md border-b border-border/70">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo Waesy */}
@@ -172,7 +172,6 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
 
           {/* Ações do Topo */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Link direto para a vitrine comunitária preservada */}
             <Button
               asChild
               variant="ghost"
@@ -185,7 +184,6 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               </Link>
             </Button>
 
-            {/* Botão de Login Exigido */}
             <Button
               asChild
               variant="outline"
@@ -211,30 +209,14 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
         </div>
       </header>
 
-      {/* ── CORPO PRINCIPAL DA LANDING PAGE ── */}
+      {/* ── CORPO PRINCIPAL ── */}
       <main className="max-w-5xl mx-auto px-4 pt-6 sm:pt-10 space-y-10 sm:space-y-14 flex-1">
-        {/* Banner Informativo Discreto de Acesso à Vitrine */}
-        <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-2.5 flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Sparkles className="size-3.5 text-primary shrink-0" />
-            <span>
-              Bem-vindo ao portal de lançamento oficial do <strong>Circuito Internacional 2027</strong>!
-            </span>
-          </div>
-          <Link
-            to="/explorar"
-            className="font-bold text-primary hover:underline whitespace-nowrap inline-flex items-center gap-1 text-xs shrink-0"
-          >
-            <span>Ver Vitrine Comercial</span>
-            <ChevronRight className="size-3" />
-          </Link>
-        </div>
 
         {/* 1. HERO SECTION */}
-        <section className="text-center space-y-4 max-w-2xl mx-auto pt-2">
+        <section className="text-center space-y-5 max-w-2xl mx-auto pt-2">
           <Badge
             variant="outline"
-            className="rounded-full bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3.5 py-1 inline-flex items-center gap-1.5 shadow-2xs"
+            className="rounded-full bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3.5 py-1 inline-flex items-center gap-1.5 shadow-2xs animate-pulse"
           >
             <Sparkles className="size-3.5" />
             <span>{settings.hero_badge}</span>
@@ -244,11 +226,29 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             {settings.hero_title}
           </h1>
 
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
             {settings.hero_subtitle}
           </p>
 
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          {/* Contador de Fundadores */}
+          <div className="flex items-center justify-center gap-6 py-1">
+            <div className="text-center">
+              <div className="text-2xl font-black text-foreground font-mono">2027</div>
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Circuito</div>
+            </div>
+            <div className="w-px h-8 bg-border/60" />
+            <div className="text-center">
+              <div className="text-2xl font-black text-primary font-mono">100%</div>
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Gratuito</div>
+            </div>
+            <div className="w-px h-8 bg-border/60" />
+            <div className="text-center">
+              <div className="text-2xl font-black text-foreground font-mono">2&nbsp;<span className="text-primary">cidades</span></div>
+              <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Chapecó &amp; SMO</div>
+            </div>
+          </div>
+
+          <div className="pt-1 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button
               size="lg"
               onClick={() => setIsSheetOpen(true)}
@@ -264,7 +264,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               className="w-full sm:w-auto h-12 rounded-2xl text-xs sm:text-sm font-semibold border-border/80 px-5 gap-1.5"
             >
               <a href="#circuito-2027">
-                <span>Ver Programação & Benefícios</span>
+                <span>Ver Programação &amp; Benefícios</span>
                 <ChevronRight className="size-4 text-muted-foreground" />
               </a>
             </Button>
@@ -415,37 +415,42 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
                 title: "Turismo & Roteiros",
                 desc: "Pacotes, passagens e reservas de viagens locais",
                 icon: Compass,
+                to: "/turismo",
               },
               {
                 title: "Comércio & PDV",
                 desc: "Vendas ágeis no balcão e vitrine online integrada",
                 icon: Store,
+                to: "/explorar",
               },
               {
                 title: "Agenda & Serviços",
                 desc: "Agendamentos diretos e lembretes por WhatsApp",
                 icon: CalendarDays,
+                to: "/agenda",
               },
               {
                 title: "Classificados & Vagas",
                 desc: "Imóveis, veículos, oportunidades e classificados",
                 icon: ShieldCheck,
+                to: "/classificados",
               },
             ].map((nicho, idx) => (
-              <div
+              <Link
                 key={idx}
-                className="rounded-2xl border border-border/80 bg-card p-4 space-y-2 text-center flex flex-col items-center justify-center"
+                to={nicho.to as any}
+                className="rounded-2xl border border-border/80 bg-card p-4 space-y-2 text-center flex flex-col items-center justify-center hover:border-primary/40 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer group"
               >
-                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                   <nicho.icon className="size-5" />
                 </div>
-                <h4 className="text-xs font-bold text-foreground leading-tight">
+                <h4 className="text-xs font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
                   {nicho.title}
                 </h4>
                 <p className="text-[11px] text-muted-foreground leading-snug">
                   {nicho.desc}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

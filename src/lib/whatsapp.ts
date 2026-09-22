@@ -259,3 +259,109 @@ export function buildStructuredOrderWhatsAppMessage(params: StructuredOrderWhats
  return lines.join("\n");
 }
 
+/**
+ * Gera mensagem profissional para envio da Proposta de Viagem Interativa
+ */
+export function buildProposalWhatsAppMessage({
+  clientName,
+  destinationCity,
+  agencyName,
+  proposalUrl,
+  optionsCount = 1,
+}: {
+  clientName: string;
+  destinationCity: string;
+  agencyName: string;
+  proposalUrl: string;
+  optionsCount?: number;
+}): string {
+  const lines: string[] = [
+    `✈️ *Proposta de Viagem Exclusiva · ${destinationCity}*`,
+    `Olá, *${clientName}*! Preparamos seu roteiro personalizado com muito carinho pela *${agencyName}*.`,
+    "",
+    optionsCount > 1
+      ? `📋 Incluímos *${optionsCount} opções de cotação* comparativas com voos, hospedagem e valores para você escolher a melhor alternativa.`
+      : `📋 Seu roteiro detalhado com malha aérea, hotel selecionado e condições especiais já está pronto!`,
+    "",
+    `🔗 *Acesse sua proposta interativa:*`,
+    proposalUrl,
+    "",
+    `🤖 Dentro da proposta você conta com nosso *Consultor Inteligente* para tirar dúvidas instantâneas, além de poder confirmar sua reserva diretamente!`,
+  ];
+  return lines.join("\n");
+}
+
+/**
+ * Gera mensagem oficial para Assinatura do Contrato Digital de Viagem
+ */
+export function buildContractWhatsAppMessage({
+  clientName,
+  destinationCity,
+  agencyName,
+  contractUrl,
+}: {
+  clientName: string;
+  destinationCity: string;
+  agencyName: string;
+  contractUrl: string;
+}): string {
+  const lines: string[] = [
+    `📝 *Contrato de Prestação de Serviços Turísticos · ${destinationCity}*`,
+    `Olá, *${clientName}*! Seu contrato com a *${agencyName}* está pronto para assinatura digital.`,
+    "",
+    `🔒 O processo é 100% eletrônico, seguro e com validade jurídica nacional (ICP-Brasil / MP 2.200-2).`,
+    "",
+    `✍️ *Assine agora em seu celular:*`,
+    contractUrl,
+    "",
+    `Após a assinatura, você receberá a via com certificado de autenticidade e hash criptográfico SHA-256.`,
+  ];
+  return lines.join("\n");
+}
+
+/**
+ * Gera mensagem de lembrete de parcela de Carnê / Boleto
+ */
+export function buildBoletoCarnesWhatsAppMessage({
+  clientName,
+  destinationCity,
+  installmentNumber,
+  totalInstallments,
+  dueDate,
+  amountFormatted,
+  digitableLine,
+  carnesUrl,
+}: {
+  clientName: string;
+  destinationCity: string;
+  installmentNumber: number;
+  totalInstallments: number;
+  dueDate: string;
+  amountFormatted: string;
+  digitableLine?: string;
+  carnesUrl?: string;
+}): string {
+  const lines: string[] = [
+    `🎫 *Lembrete de Carnê de Viagem · ${destinationCity}*`,
+    `Olá, *${clientName}*! Seguem os dados para pagamento da sua parcela:`,
+    "",
+    `📌 *Parcela:* ${installmentNumber} de ${totalInstallments}`,
+    `📅 *Vencimento:* ${dueDate}`,
+    `💰 *Valor:* ${amountFormatted}`,
+  ];
+
+  if (digitableLine) {
+    lines.push("");
+    lines.push(`🔢 *Linha Digitável (Copie e Cole no App do seu Banco):*`);
+    lines.push(`\`${digitableLine}\``);
+  }
+
+  if (carnesUrl) {
+    lines.push("");
+    lines.push(`📱 *Acompanhe suas parcelas no app:* ${carnesUrl}`);
+  }
+
+  return lines.join("\n");
+}
+
+

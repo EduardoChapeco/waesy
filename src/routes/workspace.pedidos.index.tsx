@@ -460,11 +460,11 @@ function AdminOrdersPage() {
  asChild
  variant="outline"
  size="icon"
- className="size-9 rounded-xl shrink-0 text-emerald-600 hover:bg-emerald-500/10"
- title="WhatsApp do Passageiro"
+ className="size-9 rounded-xl shrink-0"
+ title="WhatsApp do Cliente"
  >
  <a
- href={`https://wa.me/55${customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${order.customer_snapshot?.name}, confirmamos o recebimento da sua reserva #${order.public_token} na Excelência Tour!`)}`}
+ href={`https://wa.me/55${customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${order.customer_snapshot?.name || ""}, confirmamos o recebimento do seu pedido #${order.public_token}!`)}`}
  target="_blank"
  rel="noopener noreferrer"
  >

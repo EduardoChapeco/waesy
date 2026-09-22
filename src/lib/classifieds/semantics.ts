@@ -38,6 +38,16 @@ import {
   Download,
   DownloadCloud,
   FileArchive,
+  Gauge,
+  Coins,
+  TrendingUp,
+  ShieldAlert,
+  Sparkles,
+  Store,
+  Flame,
+  Apple,
+  Bath,
+  Fuel,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import {
@@ -88,30 +98,30 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "hospitality_stay",
     canonicalCategory: "real_estate",
     dealType: "temporada",
-    title: "Hospedagem & Temporada",
+    title: "Hospedagem",
     shortLabel: "Hospedagem",
-    subtitle: "Chalés, Cabanas, Casas de Campo & Studios",
+    subtitle: "Chalés, cabanas, sítios e casas de temporada",
     icon: Key,
-    badge: "Temporada & Diárias",
+    badge: "Temporada",
     priceSuffix: "/diária",
     primaryActionLabel: "Reservar Diárias",
-    secondaryActionLabel: "Consultar Datas com Anfitrião",
+    secondaryActionLabel: "Consultar Datas",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   real_estate_sale: {
     id: "real_estate_sale",
     canonicalCategory: "real_estate",
     dealType: "venda",
-    title: "Imóvel à Venda",
+    title: "Imóveis",
     shortLabel: "Venda Imóvel",
-    subtitle: "Casas, Apartamentos, Terrenos & Galpões",
+    subtitle: "Casas, apartamentos, terrenos e galpões",
     icon: Home,
-    badge: "Imóvel à Venda",
+    badge: "Venda",
     priceSuffix: "",
-    primaryActionLabel: "Agendar Visita Presencial",
-    secondaryActionLabel: "Fazer Proposta Formal",
+    primaryActionLabel: "Agendar Visita",
+    secondaryActionLabel: "Fazer Proposta",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
     allowEscrowGuarantee: false,
@@ -120,14 +130,14 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     id: "real_estate_rent",
     canonicalCategory: "real_estate",
     dealType: "aluguel",
-    title: "Imóvel para Alugar",
+    title: "Locação",
     shortLabel: "Locação Mensal",
-    subtitle: "Apartamentos, Casas & Salas Corporativas",
+    subtitle: "Apartamentos, casas e salas corporativas",
     icon: Building,
-    badge: "Locação Mensal",
+    badge: "Locação",
     priceSuffix: "/mês",
-    primaryActionLabel: "Agendar Visita ao Imóvel",
-    secondaryActionLabel: "Enviar Proposta de Locação",
+    primaryActionLabel: "Agendar Visita",
+    secondaryActionLabel: "Enviar Proposta",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
     allowEscrowGuarantee: false,
@@ -140,13 +150,13 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     shortLabel: "Veículos",
     subtitle: "Carros, motos, caminhões e náutica",
     icon: Car,
-    badge: "Veículo Verificado",
+    badge: "Veículo",
     priceSuffix: "",
-    primaryActionLabel: "Agendar Test Drive & Vistoria",
+    primaryActionLabel: "Agendar Test Drive",
     secondaryActionLabel: "Simular Financiamento",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   goods: {
     id: "goods",
@@ -154,15 +164,15 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     dealType: "venda",
     title: "Desapego",
     shortLabel: "Desapego",
-    subtitle: "Eletrônicos, móveis, ferramentas e usados",
+    subtitle: "Eletrônicos, móveis, ferramentas e itens em geral",
     icon: Tag,
-    badge: "Desapego Regional",
+    badge: "Desapego",
     priceSuffix: "",
-    primaryActionLabel: "Comprar com Segurança",
-    secondaryActionLabel: "Fazer Oferta ao Vendedor",
+    primaryActionLabel: "Comprar",
+    secondaryActionLabel: "Fazer Proposta",
     showDeliveryBadges: true,
     showTechnicalSpecs: false,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   service: {
     id: "service",
@@ -170,12 +180,12 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     dealType: "servico",
     title: "Serviços",
     shortLabel: "Serviços",
-    subtitle: "Profissionais para pessoas físicas e empresas (CNPJ)",
+    subtitle: "Profissionais para pessoas físicas e empresas",
     icon: Wrench,
-    badge: "Serviço Verificado",
+    badge: "Serviço",
     priceSuffix: " a partir de",
-    primaryActionLabel: "Solicitar Orçamento Gratuito",
-    secondaryActionLabel: "Chamar no WhatsApp",
+    primaryActionLabel: "Solicitar Orçamento",
+    secondaryActionLabel: "WhatsApp",
     showDeliveryBadges: false,
     showTechnicalSpecs: false,
     allowEscrowGuarantee: false,
@@ -186,15 +196,15 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     dealType: "venda",
     title: "Agronegócio",
     shortLabel: "Agro",
-    subtitle: "Tratores, implementos, insumos e rural",
+    subtitle: "Tratores, implementos, insumos e produção rural",
     icon: Tractor,
-    badge: "Agro Regional",
+    badge: "Agro",
     priceSuffix: "",
-    primaryActionLabel: "Agendar Vistoria no Campo",
-    secondaryActionLabel: "Fazer Proposta de Safra",
+    primaryActionLabel: "Agendar Vistoria",
+    secondaryActionLabel: "Fazer Proposta",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   travel: {
     id: "travel",
@@ -204,13 +214,13 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     shortLabel: "Viagens",
     subtitle: "Pacotes, resorts, passeios guiados e excursões",
     icon: Plane,
-    badge: "Roteiro Verificado",
+    badge: "Roteiro",
     priceSuffix: " por pessoa",
-    primaryActionLabel: "Reservar Vagas / Cotação",
-    secondaryActionLabel: "Chamar Agência no WhatsApp",
+    primaryActionLabel: "Reservar Vagas",
+    secondaryActionLabel: "Consultar Roteiro",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   equipment: {
     id: "equipment",
@@ -218,15 +228,15 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     dealType: "aluguel",
     title: "Equipamentos",
     shortLabel: "Equipamentos",
-    subtitle: "Locação de som, luz, máquinas e ferramentas",
+    subtitle: "Locação de som, iluminação, máquinas e ferramentas",
     icon: Layers,
-    badge: "Equipamento para Locação",
+    badge: "Locação",
     priceSuffix: "/diária",
     primaryActionLabel: "Reservar Equipamento",
-    secondaryActionLabel: "Consultar Datas com Lojista",
+    secondaryActionLabel: "Consultar Datas",
     showDeliveryBadges: true,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   donation: {
     id: "donation",
@@ -236,10 +246,10 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     shortLabel: "Doações",
     subtitle: "Itens gratuitos para a comunidade local",
     icon: HeartHandshake,
-    badge: "Doação Gratuita (R$ 0)",
+    badge: "Gratuito",
     priceSuffix: " (Gratuito)",
-    primaryActionLabel: "Solicitar Doação / Retirada",
-    secondaryActionLabel: "Combinar Retirada com Doador",
+    primaryActionLabel: "Solicitar Doação",
+    secondaryActionLabel: "Combinar Retirada",
     showDeliveryBadges: true,
     showTechnicalSpecs: false,
     allowEscrowGuarantee: false,
@@ -252,13 +262,13 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     shortLabel: "Gastronomia",
     subtitle: "Pratos, doces, bebidas e marmitas",
     icon: Utensils,
-    badge: "Gastronomia Artesanal",
+    badge: "Gastronomia",
     priceSuffix: "",
-    primaryActionLabel: "Comprar / Fazer Pedido",
-    secondaryActionLabel: "Tirar Dúvida do Cardápio",
+    primaryActionLabel: "Fazer Pedido",
+    secondaryActionLabel: "Tirar Dúvida",
     showDeliveryBadges: true,
     showTechnicalSpecs: false,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   pharmacy: {
     id: "pharmacy",
@@ -266,15 +276,15 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     dealType: "venda",
     title: "Farmácia",
     shortLabel: "Farmácia",
-    subtitle: "Medicamentos, suplementos e cosméticos",
+    subtitle: "Medicamentos, suplementos e cuidados pessoais",
     icon: Package,
-    badge: "Saúde & Bem-Estar",
+    badge: "Saúde",
     priceSuffix: "",
-    primaryActionLabel: "Comprar Item de Farmácia",
-    secondaryActionLabel: "Dúvida com Farmacêutico/Lojista",
+    primaryActionLabel: "Comprar",
+    secondaryActionLabel: "Tirar Dúvida",
     showDeliveryBadges: true,
     showTechnicalSpecs: false,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   market: {
     id: "market",
@@ -284,13 +294,13 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     shortLabel: "Mercado",
     subtitle: "Alimentos frescos, bebidas e essenciais",
     icon: Package,
-    badge: "Itens de Mercado",
+    badge: "Mercado",
     priceSuffix: "",
-    primaryActionLabel: "Adicionar à Cesta de Mercado",
-    secondaryActionLabel: "Consultar Disponibilidade",
+    primaryActionLabel: "Adicionar à Cesta",
+    secondaryActionLabel: "Disponibilidade",
     showDeliveryBadges: true,
     showTechnicalSpecs: false,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
 
   business: {
@@ -299,60 +309,60 @@ export const NICHE_DEFINITIONS: Record<ClassifiedNicheId, ClassifiedNicheDefinit
     dealType: "venda",
     title: "Negócios",
     shortLabel: "Negócios",
-    subtitle: "Empresas em operação, pontos comerciais e busca de investidores",
+    subtitle: "Empresas em operação, pontos comerciais e cotas",
     icon: Briefcase,
-    badge: "Oportunidade Comercial",
-    priceSuffix: " valor do negócio",
-    primaryActionLabel: "Tenho Interesse no Negócio",
-    secondaryActionLabel: "Falar com o Empreendedor",
+    badge: "Negócios",
+    priceSuffix: "",
+    primaryActionLabel: "Tenho Interesse",
+    secondaryActionLabel: "Falar com Dono",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
 
   digital: {
     id: "digital",
     canonicalCategory: "sale",
     dealType: "venda",
-    title: "Produto Digital & Download",
-    shortLabel: "Digital / Download",
-    subtitle: "E-books, Cursos, Modelos, Templates & Softwares",
+    title: "Produtos Digitais",
+    shortLabel: "Digital",
+    subtitle: "E-books, cursos, arquivos e templates",
     icon: DownloadCloud,
-    badge: "Download Instantâneo",
+    badge: "Download",
     priceSuffix: "",
-    primaryActionLabel: "Comprar & Baixar Arquivo",
-    secondaryActionLabel: "Tirar Dúvidas com o Autor",
+    primaryActionLabel: "Baixar Arquivo",
+    secondaryActionLabel: "Tirar Dúvida",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   subscription: {
     id: "subscription",
     canonicalCategory: "service",
     dealType: "servico",
-    title: "Clube & Assinatura Recorrente",
+    title: "Assinaturas",
     shortLabel: "Assinatura",
-    subtitle: "Planos Mensais, Assinaturas de Serviços & Benefícios Recorrentes",
+    subtitle: "Planos mensais e benefícios recorrentes",
     icon: RefreshCw,
-    badge: "Cobrança Recorrente",
+    badge: "Recorrente",
     priceSuffix: "/mês",
-    primaryActionLabel: "Assinar Plano Mensal",
-    secondaryActionLabel: "Consultar Benefícios do Clube",
+    primaryActionLabel: "Assinar Plano",
+    secondaryActionLabel: "Ver Benefícios",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
-    allowEscrowGuarantee: true,
+    allowEscrowGuarantee: false,
   },
   job: {
     id: "job",
     canonicalCategory: "job",
     dealType: "servico",
-    title: "Vaga de Emprego & Oportunidade",
-    shortLabel: "Vaga / Emprego",
-    subtitle: "Processo Seletivo & Recrutamento Regional",
+    title: "Vagas de Emprego",
+    shortLabel: "Vagas",
+    subtitle: "Processos seletivos e oportunidades locais",
     icon: Briefcase,
     badge: "Vaga Aberta",
     priceSuffix: "",
-    primaryActionLabel: "Candidatar-se à Vaga",
+    primaryActionLabel: "Candidatar-se",
     secondaryActionLabel: "Falar com Recrutador",
     showDeliveryBadges: false,
     showTechnicalSpecs: true,
@@ -797,11 +807,45 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       });
     }
 
+    const baths = classified.bathrooms || attrs.bathrooms;
+    if (baths) {
+      cards.push({
+        title: "Banheiros",
+        value: `${baths} Banheiro${baths > 1 ? "s" : ""}`,
+        icon: Bath,
+      });
+    }
+
+    const spots = classified.garage_spots || attrs.garages || attrs.garage_spots;
+    if (spots) {
+      cards.push({
+        title: "Garagem",
+        value: `${spots} Vaga${spots > 1 ? "s" : ""}`,
+        icon: Car,
+      });
+    }
+
     if (classified.area_sqm) {
       cards.push({
         title: "Área Útil",
         value: `${classified.area_sqm} m²`,
         icon: Layers,
+      });
+    }
+
+    if (attrs.condo_fee_cents) {
+      cards.push({
+        title: "Condomínio",
+        value: formatMoney(attrs.condo_fee_cents),
+        icon: Building,
+      });
+    }
+
+    if (attrs.iptu_cents) {
+      cards.push({
+        title: "IPTU",
+        value: formatMoney(attrs.iptu_cents),
+        icon: FileCheck,
       });
     } else if (attrs.accepts_financing) {
       cards.push({
@@ -833,6 +877,30 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
         title: "Quilometragem",
         value: `${Number(attrs.mileage_km).toLocaleString("pt-BR")} km`,
         icon: Clock,
+      });
+    }
+
+    if (attrs.transmission) {
+      cards.push({
+        title: "Câmbio",
+        value: attrs.transmission === "automatic" || attrs.transmission === "automatica" ? "Automático" : attrs.transmission === "manual" ? "Manual" : String(attrs.transmission),
+        icon: Gauge,
+      });
+    }
+
+    if (attrs.fuel) {
+      cards.push({
+        title: "Combustível",
+        value: attrs.fuel === "flex" ? "Flex" : attrs.fuel === "diesel" ? "Diesel" : attrs.fuel === "eletrico" ? "Elétrico" : attrs.fuel === "hibrido" ? "Híbrido" : String(attrs.fuel),
+        icon: Fuel,
+      });
+    }
+
+    if (attrs.fipe_price_cents) {
+      cards.push({
+        title: "Tabela Fipe",
+        value: formatMoney(attrs.fipe_price_cents),
+        icon: Coins,
       });
     }
 
@@ -1068,6 +1136,164 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
     }
   }
 
+  // Nicho: Agronegócio & Maquinário
+  else if (niche.id === "agri") {
+    cards.push({
+      title: "Segmento",
+      value: "Agronegócio",
+      icon: Tractor,
+    });
+
+    const hours = attrs.hours_used || attrs.horimetro;
+    if (hours) {
+      cards.push({
+        title: "Horímetro",
+        value: `${Number(hours).toLocaleString("pt-BR")} Horas`,
+        icon: Clock,
+      });
+    }
+
+    if (attrs.traction || attrs.tracao) {
+      cards.push({
+        title: "Tração",
+        value: attrs.traction === "4x4" || attrs.tracao === "4x4" ? "Tração 4x4" : attrs.traction === "4x2" || attrs.tracao === "4x2" ? "Tração 4x2" : String(attrs.traction || attrs.tracao),
+        icon: Gauge,
+      });
+    }
+
+    if (attrs.year_fab) {
+      cards.push({
+        title: "Ano",
+        value: String(attrs.year_fab),
+        icon: Calendar,
+      });
+    }
+
+    if (attrs.implement_type || attrs.subniche) {
+      cards.push({
+        title: "Implemento",
+        value: String(attrs.implement_type || attrs.subniche),
+        icon: Layers,
+      });
+    }
+
+    if (attrs.cautelar_aprovada) {
+      cards.push({
+        title: "Laudo",
+        value: "Vistoria no Campo",
+        icon: ShieldCheck,
+      });
+    }
+  }
+
+  // Nicho: Negócios & Ponto Comercial
+  else if (niche.id === "business") {
+    cards.push({
+      title: "Modalidade",
+      value: "Ponto Comercial",
+      icon: Building,
+    });
+
+    if (attrs.monthly_revenue_cents) {
+      cards.push({
+        title: "Faturamento",
+        value: `${formatMoney(attrs.monthly_revenue_cents)}/mês`,
+        icon: TrendingUp,
+      });
+    }
+
+    if (attrs.ebitda_cents || attrs.net_margin_pct) {
+      cards.push({
+        title: "Resultado",
+        value: attrs.net_margin_pct ? `${attrs.net_margin_pct}% Margem` : formatMoney(attrs.ebitda_cents),
+        icon: Coins,
+      });
+    }
+
+    const employees = attrs.employees_count || attrs.employees_range;
+    if (employees) {
+      cards.push({
+        title: "Equipe",
+        value: `${employees} Pessoas`,
+        icon: Users,
+      });
+    }
+
+    if (attrs.point_time_years) {
+      cards.push({
+        title: "Tempo no Ponto",
+        value: `${attrs.point_time_years} Anos`,
+        icon: Clock,
+      });
+    }
+
+    if (attrs.cnpj_audited) {
+      cards.push({
+        title: "Segurança",
+        value: "CNPJ Auditado",
+        icon: ShieldCheck,
+      });
+    }
+  }
+
+  // Nicho: Mercado & Açougue & Hortifruti
+  else if (niche.id === "market") {
+    cards.push({
+      title: "Origem",
+      value: attrs.origin || "Mercado Regional",
+      icon: Store,
+    });
+
+    if (attrs.grocery_department || attrs.department) {
+      cards.push({
+        title: "Setor",
+        value: String(attrs.grocery_department || attrs.department),
+        icon: Layers,
+      });
+    }
+
+    if (attrs.ripeness_stage) {
+      cards.push({
+        title: "Ponto",
+        value: attrs.ripeness_stage === "ready" ? "Pronto para Consumo" : attrs.ripeness_stage === "firm" ? "Firme / Durável" : attrs.ripeness_stage,
+        icon: Apple,
+      });
+    }
+
+    if (attrs.meat_cut) {
+      cards.push({
+        title: "Corte",
+        value: String(attrs.meat_cut),
+        icon: Flame,
+      });
+    }
+  }
+
+  // Nicho: Farmácia & Bem-Estar
+  else if (niche.id === "pharmacy") {
+    cards.push({
+      title: "Classificação",
+      value: "Saúde & Bem-Estar",
+      icon: ShieldCheck,
+    });
+
+    if (attrs.subniche) {
+      cards.push({
+        title: "Linha",
+        value: String(attrs.subniche),
+        icon: Layers,
+      });
+    }
+
+    if (attrs.retention_prescription !== undefined) {
+      cards.push({
+        title: "Prescrição",
+        value: attrs.retention_prescription ? "Exige Receita" : "Venda Livre",
+        icon: FileCheck,
+      });
+    }
+  }
+
   // Nicho: Alimentação / Gastronomia
   else if (niche.id === "food") {
     if (attrs.meal_type) {
@@ -1103,6 +1329,14 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
       icon: Package,
     });
 
+    if (attrs.brand) {
+      cards.push({
+        title: "Marca",
+        value: String(attrs.brand),
+        icon: Tag,
+      });
+    }
+
     const deliveryMode = attrs.delivery_mode;
     if (deliveryMode) {
       cards.push({
@@ -1117,6 +1351,14 @@ export function getClassifiedFeatureCards(classified: any): ClassifiedFeatureCar
         title: "Procedência",
         value: "Com Nota Fiscal",
         icon: FileCheck,
+      });
+    }
+
+    if (attrs.warranty_months) {
+      cards.push({
+        title: "Garantia",
+        value: `${attrs.warranty_months} Meses`,
+        icon: ShieldCheck,
       });
     }
 
@@ -1651,7 +1893,7 @@ export function getClassifiedPrimaryCtaLabel(classified: any): string {
   if (niche.id === "job") return "Candidatar-se à Vaga";
   if (niche.id === "service") return "Solicitar Orçamento";
   if (niche.id === "equipment") return "Solicitar Locação";
-  if (niche.id === "digital") return "Comprar & Baixar";
+  if (niche.id === "digital") return "Baixar Arquivo";
   if (niche.id === "subscription") return "Assinar Plano";
   if (niche.id === "donation" || attrs.is_donation) return "Solicitar Doação";
   if (niche.id === "business") return "Solicitar Dossiê Executivo";

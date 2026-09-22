@@ -409,7 +409,7 @@ export function AgencyClausesEditorModal({
  className="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
  >
  <FileUp className="size-4" />
- <span>Processar Texto & Gerar Cláusulas</span>
+ <span>Processar Cláusulas</span>
  </Button>
  </TabsContent>
  </Tabs>

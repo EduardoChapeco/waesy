@@ -70,6 +70,7 @@ import {
   GraduationCap,
   Crown,
   Bed,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,7 @@ import {
 } from "@/lib/classifieds/canonical-hiring";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { FavoriteButton } from "@/components/common/favorite-button";
+import { LeadFormModal } from "@/components/leads/lead-form-modal";
 import {
   resolveClassifiedNiche,
   getClassifiedFeatureCards,
@@ -112,6 +114,7 @@ import {
 } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
 import { TravelBookingDossierModal } from "./travel-booking-dossier-modal";
+import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
 
 
 export interface EditorialShowcaseViewProps {
@@ -147,6 +150,8 @@ export function EditorialShowcaseView({
   const [activeStoryModal, setActiveStoryModal] = useState<any | null>(null);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [isBookingDossierOpen, setIsBookingDossierOpen] = useState(false);
+  const [isLeadFormModalOpen, setIsLeadFormModalOpen] = useState(false);
+  const [isPromoFlyerOpen, setIsPromoFlyerOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isInstallmentsModalOpen, setIsInstallmentsModalOpen] = useState(false);
   const [selectedDepartureId, setSelectedDepartureId] = useState<string | null>(null);
@@ -163,6 +168,12 @@ export function EditorialShowcaseView({
     (Array.isArray(classified?.photos) && classified.photos.length > 0 ? classified.photos : null) ||
     (Array.isArray(classified?.media) && classified.media.length > 0 ? classified.media : null) ||
     [];
+
+  const feedImages: string[] =
+    (Array.isArray(classified?.attributes?.feed_images) && classified.attributes.feed_images.length > 0 ? classified.attributes.feed_images : null) ||
+    (Array.isArray(classified?.attributes?.travel?.feed_images) && classified.attributes.travel.feed_images.length > 0 ? classified.attributes.travel.feed_images : null) ||
+    (Array.isArray(classified?.feed_images) && classified.feed_images.length > 0 ? classified.feed_images : null) ||
+    images;
 
   // ── Atalhos de Teclado Desktop para Galeria & Modal Ampliado ─────────────
   React.useEffect(() => {
@@ -221,6 +232,50 @@ export function EditorialShowcaseView({
   const nicheId = String(attrs.niche || nicheDef.id || "goods").toLowerCase();
   const isTravel = nicheId === "travel" || nicheId.includes("viag") || nicheId.includes("tour") || classified?.category === "travel";
   const isHospitality = nicheId === "hospitality_stay" || nicheId.includes("hosped") || nicheId.includes("temporada");
+
+  // Inclusões dinâmicas para o flyer promocional
+  const travelPromoInclusions = React.useMemo(() => {
+    const list: string[] = [];
+    const flight = attrs.flight_details;
+    if (flight?.departure_iata || flight?.arrival_iata || flight?.transport_type === "airplane" || isTravel) {
+      const origin = flight?.departure_iata ? `desde ${flight.departure_iata}` : "";
+      list.push(`Aéreos ${origin}`.trim());
+    }
+
+    if (attrs.meal_plan) {
+      if (attrs.meal_plan === "all_inclusive") list.push("Hospedagem All Inclusive");
+      else if (attrs.meal_plan === "cafe") list.push("Hospedagem com café");
+      else if (attrs.meal_plan === "meia_pensao") list.push("Hospedagem meia pensão");
+      else if (attrs.meal_plan === "completa") list.push("Hospedagem pensão completa");
+      else list.push(`Hospedagem (${attrs.meal_plan})`);
+    } else {
+      list.push("Hospedagem inclusa");
+    }
+
+    const bioBullets: string[] = Array.isArray(attrs.bio_bullets) ? attrs.bio_bullets : [];
+    let addedTransfer = false;
+    let addedTour = false;
+    bioBullets.forEach((bullet) => {
+      const b = String(bullet).trim();
+      if (!b) return;
+      const lower = b.toLowerCase();
+      if ((lower.includes("traslado") || lower.includes("transfer")) && !addedTransfer) {
+        list.push(b);
+        addedTransfer = true;
+      } else if ((lower.includes("passeio") || lower.includes("ingresso") || lower.includes("park") || lower.includes("guia")) && !addedTour) {
+        list.push(b);
+        addedTour = true;
+      } else if (list.length < 4 && !list.includes(b)) {
+        list.push(b);
+      }
+    });
+
+    if (!addedTransfer && list.length < 4) {
+      list.push("Traslados ao aeroporto");
+    }
+
+    return list.slice(0, 4);
+  }, [attrs.flight_details, attrs.meal_plan, attrs.bio_bullets, isTravel]);
   const isGoods = nicheId === "goods" || nicheId.includes("goods") || nicheId.includes("desapego") || attrs.desapego_subcategory || (!isTravel && !isHospitality && !nicheId.includes("veic") && !nicheId.includes("imov") && !nicheId.includes("serv") && !nicheId.includes("vaga") && !nicheId.includes("food") && !nicheId.includes("doacao") && !nicheId.includes("digit") && !nicheId.includes("assinatura") && !nicheId.includes("equip"));
 
   // ── Modalidade de Preço & Dinamismo ──────────────────────────────────────────
@@ -408,6 +463,9 @@ export function EditorialShowcaseView({
 
   // ── Labels das 4 Abas Semânticas ──────────────────────────────────────────
   const getTabLabels = () => {
+    if (isTravel) {
+      return { tab2: "Hospedagem & Resort", tab3: "Roteiro Dia a Dia", tab4: "Condições & Embarque" };
+    }
     if (nicheId.includes("alim") || nicheId.includes("gastro")) {
       return { tab2: "Cardápio", tab3: "Detalhes", tab4: "Retirada & Pagto" };
     }
@@ -449,14 +507,14 @@ export function EditorialShowcaseView({
   // ── CTA Text do Botão Primário Dinâmico ─────────────────────────────────────
   const getPrimaryCtaLabel = () => {
     if (isTravel) {
+      if (transportType === "airplane" || transportType === "aereo") return "Solicitar Cotação Aérea";
       if (transportType === "bus" || transportType === "terrestre") return "Reservar Pacote Terrestre";
-      if (transportType === "airplane" || transportType === "aereo") return "Reservar Pacote Aéreo";
-      if (transportType === "cruise" || transportType === "cruzeiro") return "Reservar Cruzeiro";
-      if (transportType === "combo" || transportType === "misto") return "Reservar Pacote Multimodal";
+      if (transportType === "cruise" || transportType === "cruzeiro") return "Solicitar Cotação Cruzeiro";
+      if (transportType === "combo" || transportType === "misto") return "Solicitar Cotação Multimodal";
       if (transportType === "train" || transportType === "ferrovia") return "Reservar Roteiro Ferroviário";
       if (transportType === "car" || transportType === "rodoviario") return "Reservar Pacote Rodoviário";
-      if (transportType === "hotel_only") return "Reservar Pacote de Hospedagem";
-      return "Reservar Pacote de Viagem";
+      if (transportType === "hotel_only") return "Consultar Disponibilidade";
+      return "Solicitar Cotação de Viagem";
     }
     return getClassifiedPrimaryCtaLabel(classified);
   };
@@ -487,6 +545,16 @@ export function EditorialShowcaseView({
       } catch {}
     }
 
+    if (classified?.lead_form || classified?.form_id) {
+      setIsLeadFormModalOpen(true);
+      return;
+    }
+
+    if (isTravel && (transportType === "airplane" || transportType === "aereo" || transportType === "cruise" || transportType === "combo")) {
+      setIsBookingDossierOpen(true);
+      return;
+    }
+
     if (onOpenBookingModal) {
       onOpenBookingModal(selectedDeparture || undefined);
       return;
@@ -500,6 +568,8 @@ export function EditorialShowcaseView({
       handleWhatsAppDirect();
     }
   };
+
+  const handlePrimaryCtaClick = handleOpenAction;
 
   const handleWhatsAppDirect = async () => {
     if (!classified?.contact_whatsapp && !classified?.whatsapp) return;
@@ -615,6 +685,19 @@ export function EditorialShowcaseView({
             </button>
           )}
 
+          {/* Gerador de Flyer Story (Apenas Viagem / Turismo) */}
+          {isTravel && (
+            <button
+              type="button"
+              onClick={() => setIsPromoFlyerOpen(true)}
+              className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors active:scale-95 cursor-pointer"
+              title="Gerar Story 9:16 com IA"
+              aria-label="Gerar Story 9:16"
+            >
+              <Sparkles className="size-4.5" />
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleShare}
@@ -634,7 +717,27 @@ export function EditorialShowcaseView({
         </div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-6 animate-in fade-in duration-200">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pt-2 sm:pt-4 space-y-4 animate-in fade-in duration-200">
+
+        {/* ── Banner Canônico de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
+        {isOwner && (
+          <div className="mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 shadow-2xs">
+            <div className="flex items-center gap-2.5 text-xs font-medium">
+              <span className="flex size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span>
+                <strong>Modo Proprietário:</strong> Você é o autor deste anúncio. Edições feitas no formulário são sincronizadas em tempo real.
+              </span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleEditClick}
+              className="h-7 text-xs px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer shrink-0"
+            >
+              <Edit3 className="size-3.5 mr-1" /> Editar Anúncio
+            </Button>
+          </div>
+        )}
 
         {/* ── Desktop Contextual Header / Breadcrumbs (Apenas Desktop) ── */}
         <div className="hidden md:flex items-center justify-between py-2 border-b border-border/40">
@@ -671,6 +774,19 @@ export function EditorialShowcaseView({
               >
                 <Smartphone className="size-3.5" />
                 <span>Guia 9:16</span>
+              </Button>
+            )}
+            {isTravel && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPromoFlyerOpen(true)}
+                className="h-8 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer shadow-2xs"
+                title="Gerar Flyer / Story Promocional 9:16 com IA"
+              >
+                <Sparkles className="size-3.5" />
+                <span>Gerar Story 9:16</span>
               </Button>
             )}
             <Button
@@ -723,10 +839,10 @@ export function EditorialShowcaseView({
                   </button>
                 </div>
 
-                {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal */}
+                {/* Miniaturas de Acesso Rápido com Alternância Fiel da Foto Principal (Até 10 fotos no Topo sem espaço vazio) */}
                 {images.length > 1 && (
-                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                    {images.slice(0, 6).map((img, idx) => {
+                  <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full">
+                    {images.slice(0, images.length > 10 ? 9 : 10).map((img, idx) => {
                       const isActive = activeImageIndex === idx;
                       return (
                         <button
@@ -734,7 +850,7 @@ export function EditorialShowcaseView({
                           type="button"
                           onClick={() => setActiveImageIndex(idx)}
                           className={cn(
-                            "relative size-16 sm:size-18 rounded-xl overflow-hidden border bg-muted shrink-0 group cursor-pointer transition-all",
+                            "relative aspect-square h-14 sm:h-16 rounded-xl overflow-hidden border bg-muted shrink-0 flex-1 min-w-[52px] max-w-[76px] group cursor-pointer transition-all",
                             isActive
                               ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
                               : "border-border/50 hover:border-primary/50 opacity-80 hover:opacity-100"
@@ -745,13 +861,13 @@ export function EditorialShowcaseView({
                         </button>
                       );
                     })}
-                    {images.length > 6 && (
+                    {images.length > 10 && (
                       <button
                         type="button"
                         onClick={() => setActiveTab("grid")}
-                        className="size-16 sm:size-18 rounded-xl border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 transition-colors"
+                        className="aspect-square h-14 sm:h-16 rounded-xl border border-dashed border-border/70 flex flex-col items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary text-xs font-bold shrink-0 flex-1 min-w-[52px] max-w-[76px] transition-colors"
                       >
-                        <span>+{images.length - 6}</span>
+                        <span>+{images.length - 9}</span>
                         <span className="text-[10px] font-normal">fotos</span>
                       </button>
                     )}
@@ -897,65 +1013,75 @@ export function EditorialShowcaseView({
               type="button"
               onClick={() => setActiveTab("grid")}
               className={cn(
-                "py-3 flex items-center justify-center border-b-2 transition-colors",
+                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "grid"
-                  ? "border-foreground text-foreground"
+                  ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
-              aria-label="Galeria de Fotos"
+              aria-label="Fotos"
             >
-              <Grid className="size-5" />
+              <Grid className="size-4.5" />
+              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight">Fotos</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("resort")}
               className={cn(
-                "py-3 flex items-center justify-center border-b-2 transition-colors",
+                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "resort"
-                  ? "border-foreground text-foreground"
+                  ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
               aria-label={tabLabels.tab2}
             >
-              <Building2 className="size-5" />
+              <Building2 className="size-4.5" />
+              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
+                {isTravel ? "Hospedagem" : tabLabels.tab2}
+              </span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("itinerary")}
               className={cn(
-                "py-3 flex items-center justify-center border-b-2 transition-colors",
+                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "itinerary"
-                  ? "border-foreground text-foreground"
+                  ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
               aria-label={tabLabels.tab3}
             >
-              <Calendar className="size-5" />
+              <Calendar className="size-4.5" />
+              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
+                {isTravel ? "Roteiro" : tabLabels.tab3}
+              </span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("explore")}
               className={cn(
-                "py-3 flex items-center justify-center border-b-2 transition-colors",
+                "py-2.5 flex flex-col items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer",
                 activeTab === "explore"
-                  ? "border-foreground text-foreground"
+                  ? "border-foreground text-foreground font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
               aria-label={tabLabels.tab4}
             >
-              <Compass className="size-5" />
+              <Compass className="size-4.5" />
+              <span className="text-[10.5px] sm:text-xs font-semibold tracking-tight truncate max-w-[72px] sm:max-w-none">
+                {isTravel ? "Condições" : tabLabels.tab4}
+              </span>
             </button>
           </div>
 
-          {/* ── Aba 1: Grid de Fotos ── */}
+          {/* ── Aba 1: Grid de Fotos (Até 12 Fotos Exclusivas do Feed) ── */}
           {activeTab === "grid" && (
             <div className="pt-3">
-              {images.length > 0 ? (
+              {feedImages.length > 0 ? (
                 <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">
-                  {images.map((img, i) => (
+                  {feedImages.slice(0, 12).map((img, i) => (
                     <button
                       key={i}
                       type="button"
@@ -964,7 +1090,7 @@ export function EditorialShowcaseView({
                     >
                       <img
                         src={img}
-                        alt={`Foto ${i + 1}`}
+                        alt={`Foto do Feed ${i + 1}`}
                         className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -2503,7 +2629,7 @@ export function EditorialShowcaseView({
           {/* Lado Direito: Botão Primário Responsivo */}
           <Button
             type="button"
-            onClick={() => setIsContactModalOpen(true)}
+            onClick={handlePrimaryCtaClick}
             className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight shadow-md active:scale-95 transition-all shrink-0 cursor-pointer"
           >
             {getPrimaryCtaLabel()}
@@ -2877,6 +3003,38 @@ export function EditorialShowcaseView({
         onOpenChange={setIsBookingDossierOpen}
         classified={classified}
       />
+
+      {/* ── Modal do Gerador de Flyers / Stories Promocionais ── */}
+      <TravelPromoFlyerModal
+        isOpen={isPromoFlyerOpen}
+        onClose={() => setIsPromoFlyerOpen(false)}
+        destinationTitle={classified.title || attrs.destination_city || "Destino Turístico"}
+        destinationCity={attrs.destination_city || attrs.destination}
+        datesText={attrs.dates_text}
+        inclusions={travelPromoInclusions}
+        priceCents={classified.price_cents}
+        installments={maxInstallments}
+        backgroundImageUrl={images[0]}
+        storeName={classified.stores?.name || classified.store_name || "Waesy Turismo"}
+      />
+
+      {/* ── Modal Universal de Captura de Leads / Landing ── */}
+      {(classified?.lead_form || classified?.form_id) && (
+        <LeadFormModal
+          formSlug={classified.lead_form?.slug || null}
+          formId={classified.form_id || null}
+          initialForm={classified.lead_form || null}
+          classifiedId={classified.id}
+          classifiedTitle={classified.title}
+          isOpen={isLeadFormModalOpen}
+          onOpenChange={setIsLeadFormModalOpen}
+          triggerScrollPct={
+            classified.lead_form?.trigger_mode === "scroll_50"
+              ? (classified.lead_form.scroll_trigger_pct || 50)
+              : null
+          }
+        />
+      )}
     </div>
   );
 }

@@ -281,7 +281,7 @@ function ResolutionDrawer({
               onClick={handleResolve}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Finalizando..." : "Concluir Troca & Gerar Resolução"}
+              {isSubmitting ? "Finalizando..." : "Concluir Troca"}
             </Button>
           </div>
         </div>

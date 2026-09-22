@@ -132,20 +132,23 @@ export function FounderSignupSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-[2rem] max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="rounded-t-[2rem] max-w-lg mx-auto p-6 space-y-5 border-t border-border/80 shadow-2xl max-h-[92vh] overflow-y-auto"
       >
         <SheetHeader className="text-left space-y-2">
           <div className="flex items-center justify-between">
             <Badge
               variant="outline"
-              className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] font-bold gap-1 px-2.5 py-0.5"
+              className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] font-bold gap-1 px-2.5 py-0.5 animate-pulse"
             >
               <Sparkles className="size-3" />
               <span>Membro Fundador 2027</span>
             </Badge>
-            <span className="text-[11px] text-muted-foreground font-mono font-medium">
-              Vagas Limitadas
-            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] text-muted-foreground font-mono font-medium">
+                Vagas Abertas
+              </span>
+            </div>
           </div>
           <SheetTitle className="text-xl font-bold text-foreground">
             Entre na Lista de Fundadores
@@ -201,47 +204,76 @@ export function FounderSignupSheet({
               type="text"
               value={businessIdentifier}
               onChange={(e) => setBusinessIdentifier(e.target.value)}
-              placeholder="Ex: 00.000.000/0001-00 ou @sualoja ou Padaria Central"
+              placeholder="Ex: 00.000.000/0001-00 ou @sualoja"
               className="h-11 rounded-xl text-xs bg-muted/20 border-border"
             />
-            <p className="text-[10px] text-muted-foreground">
-              Se você inserir o CNPJ, buscamos as informações e a logo oficiais automaticamente.
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+              <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
+              CNPJ? Buscamos logo e dados oficiais automaticamente.
             </p>
           </div>
 
-          {/* Campo Cidade */}
+          {/* Campo Cidade — chips rápidos */}
           <div className="space-y-1.5">
             <Label className="text-xs font-bold flex items-center gap-1.5 text-foreground">
               <MapPin className="size-3.5 text-primary" />
               <span>Cidade de Atuação</span>
             </Label>
-            <Input
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Ex: Chapecó - SC ou São Miguel do Oeste - SC"
-              className="h-11 rounded-xl text-xs bg-muted/20 border-border"
-            />
+            <div className="flex items-center gap-2 flex-wrap">
+              {["Chapecó - SC", "São Miguel do Oeste - SC", "Outra cidade"].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCity(c === "Outra cidade" ? "" : c)}
+                  className={`text-[11px] font-semibold px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                    city === c
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted/30 text-muted-foreground border-border/60 hover:border-primary/40"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            {(city === "" || !["Chapecó - SC", "São Miguel do Oeste - SC"].includes(city)) && (
+              <Input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Ex: Pinhalzinho - SC"
+                className="h-10 rounded-xl text-xs bg-muted/20 border-border mt-1.5"
+              />
+            )}
           </div>
 
           {/* Benefício em Destaque */}
-          <div className="rounded-xl bg-muted/30 border border-border/80 p-3 flex items-start gap-2.5">
-            <Ticket className="size-4 text-primary shrink-0 mt-0.5" />
-            <div className="text-[11px] leading-snug">
-              <strong className="text-foreground block font-semibold">
-                Número da Sorte Automático
+          <div className="rounded-xl bg-gradient-to-r from-primary/5 via-primary/8 to-amber-500/5 border border-primary/20 p-3.5 space-y-2">
+            <div className="flex items-center gap-2">
+              <Ticket className="size-4 text-primary shrink-0" />
+              <strong className="text-xs text-foreground font-bold">
+                Benefícios exclusivos de Fundador
               </strong>
-              <span className="text-muted-foreground">
-                Ao se inscrever, você recebe imediatamente um ticket de confirmação para concorrer a viagens o ano inteiro em 2027.
-              </span>
             </div>
+            <ul className="space-y-1 text-[11px] text-muted-foreground pl-1">
+              {[
+                "Número da sorte automático para viagens em 2027",
+                "Perfil digital verificado na plataforma Waesy",
+                "Acesso antecipado aos workshops e conexões regionais",
+                "Chances duplicadas nos sorteios mensais",
+              ].map((b, i) => (
+                <li key={i} className="flex items-start gap-1.5">
+                  <CheckCircle2 className="size-3 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Botão de Envio */}
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full h-12 rounded-xl text-sm font-bold gap-2 cursor-pointer shadow-md bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg transition-all"
           >
             {isSubmitting ? (
               <>
@@ -255,6 +287,10 @@ export function FounderSignupSheet({
               </>
             )}
           </Button>
+
+          <p className="text-center text-[10px] text-muted-foreground">
+            Gratuito • Sem spam • Dados protegidos pela LGPD
+          </p>
         </form>
       </SheetContent>
     </Sheet>

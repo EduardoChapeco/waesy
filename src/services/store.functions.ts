@@ -38,6 +38,7 @@ export async function _getStoreSettings() {
  type: settings.type || settings.segment || null,
  niche: settings.niche || settings.segment || null,
  order_types: settings.order_types || { delivery: true, takeout: true, dine_in: true },
+ tourism_layout_mode: settings.tourism_layout_mode || "air_cover",
  };
 }
 

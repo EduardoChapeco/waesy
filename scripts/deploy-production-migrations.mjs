@@ -43,6 +43,7 @@ const migrationsToApply = [
   "supabase/migrations/20261027000000_hotpages_and_banners_clean_overlays_and_shadows.sql",
   "supabase/migrations/20261109000000_launch_leads_and_founder_landing.sql",
   "supabase/migrations/20261110000000_hotpages_show_shadow_and_text_color.sql",
+  "supabase/migrations/20261111000000_universal_lead_forms_engine.sql",
 ];
 
 async function run() {

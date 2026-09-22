@@ -462,16 +462,12 @@ export default function LoyaltyDashboardPage() {
  </div>
  </div>
 
- {/* Badges de Compatibilidade */}
- <div className="flex items-center justify-center gap-4 text-[11px] font-bold text-muted-foreground pt-1">
- <span className="flex items-center gap-1">
- <Smartphone className="size-3.5 text-emerald-500" /> Apple Wallet
- </span>
- <span>•</span>
- <span className="flex items-center gap-1">
- <Smartphone className="size-3.5 text-primary" /> Google Wallet
- </span>
- </div>
+  {/* Compatibilidade de Carteira Digital */}
+  <div className="flex items-center justify-center gap-4 text-[11px] font-semibold text-muted-foreground pt-1">
+  <span className="flex items-center gap-1.5">
+  <Smartphone className="size-3.5 text-foreground" /> Carteira Digital & QR Code
+  </span>
+  </div>
  </div>
  </div>
  </div>

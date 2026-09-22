@@ -98,7 +98,7 @@ function MemberMetricsPage() {
  <Button
  asChild
  size="sm"
- className="rounded-xl font-bold text-xs h-9 bg-primary text-primary-foreground gap-1.5 shadow-xs"
+ className="rounded-xl font-bold text-xs h-9 bg-primary text-primary-foreground gap-1.5"
  >
  <Link to="/mural">
  <Plus className="size-3.5" />
@@ -111,7 +111,7 @@ function MemberMetricsPage() {
  {/* ── 1. Visão Geral dos Principais KPIs (Estilo Instagram Professional Dashboard) ── */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
  {/* Contas Alcançadas */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5 shadow-2xs">
+ <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Alcance Total</span>
  <div className="size-7 rounded-xl bg-info/10 text-info flex items-center justify-center">
@@ -128,7 +128,7 @@ function MemberMetricsPage() {
  </div>
 
  {/* Taxa de Engajamento */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5 shadow-2xs">
+ <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Taxa de Engajamento</span>
  <div className="size-7 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
@@ -144,7 +144,7 @@ function MemberMetricsPage() {
  </div>
 
  {/* Reações e Curtidas Reais */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5 shadow-2xs">
+ <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Curtidas Reais</span>
  <div className="size-7 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
@@ -160,7 +160,7 @@ function MemberMetricsPage() {
  </div>
 
  {/* Comunidade / Seguidores */}
- <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5 shadow-2xs">
+ <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1.5">
  <div className="flex items-center justify-between text-muted-foreground">
  <span className="text-xs font-bold">Seguidores</span>
  <div className="size-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">

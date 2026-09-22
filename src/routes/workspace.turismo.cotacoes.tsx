@@ -36,6 +36,7 @@ import { listDestinations } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { QuotationBuilderSheet } from "@/components/tourism/quotation-builder-sheet";
+import { processOperatorQuoteOcr } from "@/services/travel-operator-ocr.functions";
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 
@@ -100,6 +101,7 @@ export default function AgencyQuotesPage() {
  const [tripTypeFilter, setTripTypeFilter] = useState("all");
  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
  const [viewMode, setViewMode] = useState<"kanban" | "grid">("kanban");
+ const [isOcrLoading, setIsOcrLoading] = useState(false);
 
  // Modais
  const [isNewSheetOpen, setIsNewSheetOpen] = useState(Boolean(searchParams?.leadName || searchParams?.clientId));
@@ -282,8 +284,8 @@ export default function AgencyQuotesPage() {
           }}
         />
 
-        {/* ── 4. Alternador de Visualização: Funil Kanban vs Grade ── */}
-        <div className="flex items-center justify-between gap-2 px-1">
+        {/* ── 4. Alternador de Visualização: Funil Kanban vs Grade + Importar OCR ── */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-xl border border-border/40">
             <button
               type="button"
@@ -310,9 +312,59 @@ export default function AgencyQuotesPage() {
               <span>Grade de Cards</span>
             </button>
           </div>
-          <span className="text-xs text-muted-foreground font-mono">
-            {filteredQuotes.length} cotações encontradas
-          </span>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              id="quote-ocr-file-input"
+              accept="application/pdf,image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setIsOcrLoading(true);
+                try {
+                  const reader = new FileReader();
+                  reader.onload = async () => {
+                    const base64 = (reader.result as string).split(",")[1];
+                    const res = await processOperatorQuoteOcr({
+                      data: {
+                        fileBase64: base64,
+                        fileMime: file.type,
+                        fileName: file.name,
+                      },
+                    });
+                    if (res.success && res.data) {
+                      toast.success(`Cotação da ${res.data.operator_name} para ${res.data.destination} extraída com sucesso!`);
+                      setIsNewSheetOpen(true);
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                } catch (err: any) {
+                  toast.error(err?.message || "Erro ao processar cotação.");
+                } finally {
+                  setIsOcrLoading(false);
+                  e.target.value = "";
+                }
+              }}
+            />
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isOcrLoading}
+              onClick={() => document.getElementById("quote-ocr-file-input")?.click()}
+              className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 cursor-pointer"
+            >
+              <FileText size={14} />
+              <span>{isOcrLoading ? "Lendo..." : "⚡ Importar Operadora (OCR)"}</span>
+            </Button>
+
+            <span className="text-xs text-muted-foreground font-mono hidden sm:inline">
+              {filteredQuotes.length} cotações encontradas
+            </span>
+          </div>
         </div>
 
         {/* ── 5. Conteúdo: Funil Kanban ou Lista ── */}
@@ -402,7 +454,16 @@ export default function AgencyQuotesPage() {
 
                               <div className="text-[11px] text-muted-foreground flex items-center gap-2 font-mono">
                                 <Users size={11} className="shrink-0" />
-                                <span>{q.adults_count} ad{q.children_count > 0 ? `, ${q.children_count} ch` : ""}</span>
+                                <span>
+                                  {q.adults_count} ad
+                                  {q.children_count > 0
+                                    ? `, ${q.children_count} ch${
+                                        Array.isArray(q.children_ages) && q.children_ages.length > 0
+                                          ? ` (${q.children_ages.join(", ")}a)`
+                                          : ""
+                                      }`
+                                    : ""}
+                                </span>
                                 <span>•</span>
                                 <span className="capitalize">{q.budget_tier}</span>
                               </div>
@@ -594,7 +655,11 @@ export default function AgencyQuotesPage() {
  <span>•</span>
  <span>
  {q.children_count > 0
- ? `${q.children_count} ${q.children_count === 1 ? "Criança" : "Crianças"}`
+ ? `${q.children_count} ${q.children_count === 1 ? "Criança" : "Crianças"}${
+ Array.isArray(q.children_ages) && q.children_ages.length > 0
+ ? ` (${q.children_ages.join(", ")} anos)`
+ : ""
+ }`
  : "Sem crianças"}
  </span>
  <span>•</span>
@@ -734,17 +799,47 @@ export default function AgencyQuotesPage() {
          </div>
          <div>
            <span className="text-[10px] uppercase font-bold text-muted-foreground block">Passageiros</span>
-           <strong className="text-foreground text-sm font-semibold">{managingQuote?.adults_count || 1} adultos {managingQuote?.children_count ? `+ ${managingQuote.children_count} crianças` : ""}</strong>
+           <strong className="text-foreground text-sm font-semibold">
+             {managingQuote?.adults_count || 1} adultos {managingQuote?.children_count ? `+ ${managingQuote.children_count} crianças` : ""}
+             {Array.isArray(managingQuote?.children_ages) && managingQuote.children_ages.length > 0
+               ? ` (${managingQuote.children_ages.join(", ")} anos)`
+               : ""}
+           </strong>
          </div>
          <div>
            <span className="text-[10px] uppercase font-bold text-muted-foreground block">WhatsApp / Contato</span>
-           <strong className="text-foreground text-sm font-mono font-medium">{managingQuote?.contact_whatsapp || "Não informado"}</strong>
+           <div className="flex items-center gap-2 mt-0.5">
+             <strong className="text-foreground text-sm font-mono font-medium">{managingQuote?.contact_whatsapp || "Não informado"}</strong>
+             {managingQuote?.contact_whatsapp && (
+               <button
+                 type="button"
+                 onClick={() => {
+                   const cleanPhone = (managingQuote.contact_whatsapp || "").replace(/\D/g, "");
+                   window.open(`https://wa.me/55${cleanPhone}?text=${encodeURIComponent(`Olá ${managingQuote.contact_name}! Sou da agência de turismo no Waesy. Recebi sua solicitação para ${managingQuote.destination_city} e preparei opções personalizadas!`)}`, "_blank");
+                 }}
+                 className="p-1 rounded-md text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+                 title="Abrir WhatsApp do Cliente"
+               >
+                 <WhatsappLogo size={16} weight="fill" />
+               </button>
+             )}
+           </div>
          </div>
          <div>
            <span className="text-[10px] uppercase font-bold text-muted-foreground block">Data de Solicitação</span>
            <strong className="text-foreground text-sm font-medium">{managingQuote?.created_at ? formatDate(managingQuote.created_at) : "Recente"}</strong>
          </div>
        </div>
+
+       {managingQuote?.special_notes && (
+         <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-1.5">
+           <span className="text-[10px] uppercase font-bold text-muted-foreground block flex items-center gap-1.5">
+             <FileText size={12} className="text-primary" />
+             <span>Dossiê Completo da Cotação</span>
+           </span>
+           <pre className="text-xs font-sans text-foreground whitespace-pre-wrap leading-relaxed">{managingQuote.special_notes}</pre>
+         </div>
+       )}
 
        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
          <div className="space-y-1.5">

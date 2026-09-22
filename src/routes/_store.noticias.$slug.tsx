@@ -264,21 +264,38 @@ function NoticiaDetailPage() {
                     </blockquote>
                   )}
 
-                  {section.type === "gallery" && Array.isArray(section.content) && (
-                    <div className="grid grid-cols-2 gap-3 my-4">
-                      {section.content.map((imgUrl: string, i: number) => (
-                        <div
-                          key={i}
-                          className="aspect-4/3 rounded-2xl overflow-hidden bg-muted"
-                        >
+                  {section.type === "gallery" && (
+                    <figure className="my-6 space-y-2">
+                      {Array.isArray(section.content) ? (
+                        <div className={`grid gap-3 ${section.content.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
+                          {section.content.map((imgUrl: string, i: number) => (
+                            <div
+                              key={i}
+                              className="aspect-16/9 rounded-2xl overflow-hidden bg-muted border border-border/40"
+                            >
+                              <img
+                                src={imgUrl}
+                                alt={section.caption || "Foto da matéria"}
+                                className="size-full object-cover hover:scale-102 transition-transform"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : section.content ? (
+                        <div className="aspect-16/9 rounded-2xl overflow-hidden bg-muted border border-border/40">
                           <img
-                            src={imgUrl}
-                            alt="Galeria"
-                            className="size-full object-cover hover:scale-105 transition-transform"
+                            src={String(section.content)}
+                            alt={section.caption || "Foto da matéria"}
+                            className="size-full object-cover"
                           />
                         </div>
-                      ))}
-                    </div>
+                      ) : null}
+                      {section.caption && (
+                        <figcaption className="text-xs text-muted-foreground italic text-center font-sans">
+                          {section.caption}
+                        </figcaption>
+                      )}
+                    </figure>
                   )}
 
                   {showMidSponsor && (

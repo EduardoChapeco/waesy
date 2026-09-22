@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
+import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
 
 function isVideoUrl(url?: string | null): boolean {
   if (!url) return false;
@@ -345,6 +346,8 @@ function ClassificadosIndex() {
             const isPaused = ad.status === "paused";
             const thumbUrl = ad.images?.[0] || null;
             const isVideo = isVideoUrl(thumbUrl);
+            const niche = resolveClassifiedNiche(ad);
+            const NicheIcon = niche.icon;
 
             return (
               <div
@@ -384,9 +387,16 @@ function ClassificadosIndex() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] text-muted-foreground">
-                        {CATEGORY_LABELS[ad.category] || ad.category}
+                      <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                        <NicheIcon className="size-3 text-muted-foreground/70" />
+                        {niche.shortLabel}
                       </span>
+                      {ad.ai_agent_enabled && (
+                        <Badge variant="outline" className="text-[9px] font-mono px-1.5 py-0 gap-1 border-primary/30 text-primary bg-primary/5">
+                          <Sparkles className="size-2.5" />
+                          SDR Ativo
+                        </Badge>
+                      )}
                       {ad.location_city && (
                         <>
                           <span className="text-[10px] text-muted-foreground/40">·</span>

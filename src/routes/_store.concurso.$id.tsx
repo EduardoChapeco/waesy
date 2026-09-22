@@ -371,7 +371,7 @@ function ConcursoDetailPage() {
               ) : (
                 <Ticket className="size-4" />
               )}
-              <span>Confirmar & Emitir Cupom</span>
+              <span>Confirmar Participação</span>
             </Button>
           </DialogFooter>
         </DialogContent>

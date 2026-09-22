@@ -138,7 +138,24 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
           }
         }
       } catch (storeErr) {
-        console.warn("[classifieds] error fetching store data:", storeErr);
+        console.warn("[classifieds] Erro ao buscar store associada:", storeErr);
+      }
+    }
+
+    // Busca lead_form vinculado ao anúncio se existir
+    if (classifiedData.form_id) {
+      try {
+        const { data: formData } = await supabase
+          .from("lead_forms")
+          .select("id, title, slug, headline, subheadline, submit_button_text, after_submit_action, trigger_mode, scroll_trigger_pct")
+          .eq("id", classifiedData.form_id)
+          .eq("status", "active")
+          .maybeSingle();
+        if (formData) {
+          classifiedData.lead_form = formData;
+        }
+      } catch (fErr) {
+        console.warn("[classifieds] Erro ao carregar lead_form vinculado:", fErr);
       }
     }
 
@@ -345,6 +362,7 @@ const upsertClassifiedInput = z.object({
  content: z.string().min(10, "Descrição deve ter no mínimo 10 caracteres"),
  price_cents: z.coerce.number().int().min(0).nullable().optional(),
  images: z.array(z.string()).optional().default([]),
+ feed_images: z.array(z.string()).optional().default([]),
  whatsapp: z.string().nullable().optional(),
  contact_whatsapp: z.string().nullable().optional(),
  location_name: z.string().nullable().optional(),
@@ -367,6 +385,7 @@ const upsertClassifiedInput = z.object({
  delivery_type: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both"]).optional(),
  ai_instructions: z.string().optional(),
  ai_agent_enabled: z.boolean().optional(),
+ form_id: z.string().uuid().nullable().optional(),
 });
 
 export const upsertClassified = createServerFn({ method: "POST" })
@@ -387,6 +406,7 @@ export const upsertClassified = createServerFn({ method: "POST" })
  title: rest.title,
  content: rest.content,
  category: rest.category,
+ form_id: rest.form_id || rest.attributes?.form_id || null,
  deal_type: rest.deal_type || rest.attributes?.deal_type || (rest.category === "real_estate" ? "venda" : "venda"),
  property_type: rest.property_type || rest.attributes?.property_type || null,
  bedrooms: rest.bedrooms ?? rest.attributes?.bedrooms ?? null,
@@ -431,6 +451,9 @@ export const upsertClassified = createServerFn({ method: "POST" })
  negotiable: rest.negotiable ?? true,
   attributes: {
     ...(rest.attributes || {}),
+    feed_images: Array.isArray(rest.feed_images) && rest.feed_images.length > 0
+      ? rest.feed_images
+      : (Array.isArray(rest.attributes?.feed_images) ? rest.attributes.feed_images : []),
     hide_location: rest.hide_location !== undefined ? rest.hide_location : (rest.attributes?.hide_location ?? false),
     location_privacy: rest.location_privacy || rest.attributes?.location_privacy || "full",
     pricing_model: rest.pricing_model || rest.attributes?.pricing_model || "one_time",
@@ -458,11 +481,46 @@ export const upsertClassified = createServerFn({ method: "POST" })
   let savedRecord: any = null;
 
   if (isUpdating) {
+    // Busca o anúncio existente para validar autoridade
+    const { data: existingAd, error: fetchErr } = await supabase
+      .from("classifieds")
+      .select("id, author_profile_id, store_id")
+      .eq("id", id)
+      .single();
+
+    if (fetchErr || !existingAd) {
+      throw new Error("Anúncio não encontrado para edição.");
+    }
+
+    const isAuthor = existingAd.author_profile_id === identity.id;
+    let isStoreManager = false;
+
+    if (!isAuthor && existingAd.store_id) {
+      const { data: storeMember } = await supabase
+        .from("store_members")
+        .select("id")
+        .eq("store_id", existingAd.store_id)
+        .eq("profile_id", identity.id)
+        .maybeSingle();
+
+      const { data: storeOwner } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("id", existingAd.store_id)
+        .eq("owner_profile_id", identity.id)
+        .maybeSingle();
+
+      isStoreManager = !!storeMember || !!storeOwner;
+    }
+
+    if (!isAuthor && !isStoreManager) {
+      throw new Error("Você não tem permissão para editar este anúncio.");
+    }
+
     const { data, error } = await supabase
       .from("classifieds")
       .update(payload)
       .eq("id", id)
-      .eq("author_profile_id", identity.id)
       .select()
       .single();
 
@@ -471,6 +529,26 @@ export const upsertClassified = createServerFn({ method: "POST" })
       throw new Error(error.message || "Falha ao atualizar anúncio.");
     }
     savedRecord = data;
+
+    // Auditoria Forense Imutável (Regra de Governança BigTech)
+    try {
+      await supabase.from("audit_logs").insert({
+        store_id: savedRecord.store_id || null,
+        user_id: identity.id,
+        action: "classified.update",
+        entity_type: "classified",
+        entity_id: savedRecord.id,
+        payload_snapshot: {
+          title: savedRecord.title,
+          category: savedRecord.category,
+          price_cents: savedRecord.price_cents,
+          status: savedRecord.status,
+          updated_at: new Date().toISOString(),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[audit_logs] Falha ao gravar log de atualização de anúncio:", logErr);
+    }
   } else {
     const { data, error } = await supabase
       .from("classifieds")
@@ -483,6 +561,26 @@ export const upsertClassified = createServerFn({ method: "POST" })
       throw new Error(error.message || "Falha ao salvar anúncio.");
     }
     savedRecord = data;
+
+    // Auditoria Forense Imutável na Criação
+    try {
+      await supabase.from("audit_logs").insert({
+        store_id: savedRecord.store_id || null,
+        user_id: identity.id,
+        action: "classified.create",
+        entity_type: "classified",
+        entity_id: savedRecord.id,
+        payload_snapshot: {
+          title: savedRecord.title,
+          category: savedRecord.category,
+          price_cents: savedRecord.price_cents,
+          status: savedRecord.status,
+          created_at: new Date().toISOString(),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[audit_logs] Falha ao gravar log de criação de anúncio:", logErr);
+    }
   }
 
   // Telemetria invisível de histórico de rotatividade de ponto comercial (Fase 4 Master Plan)
