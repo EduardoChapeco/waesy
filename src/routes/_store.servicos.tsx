@@ -36,7 +36,7 @@ import { ContextualStoriesRail } from "@/components/stories/contextual-stories-r
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { RequestQuoteModal } from "@/components/commerce/request-quote-modal";
 import { ServicePackagesRail } from "@/components/commerce/service-packages-rail";
-import { DiscoveryControlBar } from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
@@ -195,10 +195,11 @@ function ServicosVerticalPage() {
   const marketplaceFeed = loaderData.marketplaceFeed || { sections: [], allProducts: [] };
   const packages = loaderData.packages || [];
   const search = Route.useSearch();
- const navigate = useNavigate({ from: Route.fullPath });
+  const navigate = useNavigate({ from: Route.fullPath });
 
- const [activeCategory, setActiveCategory] = useState(search.categoria || "todos");
- const [searchTerm, setSearchTerm] = useState(search.q || "");
+  const [activeCategory, setActiveCategory] = useState(search.categoria || "todos");
+  const [searchTerm, setSearchTerm] = useState(search.q || "");
+  const [viewMode, setViewMode] = useState<ViewModeType>("grid");
 
  // Modal de orçamento
  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
@@ -306,21 +307,120 @@ function ServicosVerticalPage() {
  <ModularSurfaceFeed sections={marketplaceFeed.sections} />
  )}
 
- {/* ── 4. Discovery Control Bar (Busca + Categorias) ── */}
- <DiscoveryControlBar
- search={searchTerm}
- onSearchChange={setSearchTerm}
- searchPlaceholder="Buscar eletricistas, pedreiros, arquitetos, advogados, oficinas..."
- categories={SERVICE_CATEGORIES.map((c) => ({
- id: c.id,
- label: c.name,
- icon: c.icon,
- }))}
- activeCategory={activeCategory}
- onSelectCategory={handleCategoryChange}
- />
+ {/* ── 4. Discovery Control Bar (Busca + Categorias + Modos) ── */}
+      <DiscoveryControlBar
+        search={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar eletricistas, pedreiros, arquitetos, advogados, oficinas..."
+        categories={SERVICE_CATEGORIES.map((c) => ({
+          id: c.id,
+          label: c.name,
+          icon: c.icon,
+        }))}
+        activeCategory={activeCategory}
+        onSelectCategory={handleCategoryChange}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        allowedViewModes={["feed", "grid", "list"]}
+      />
 
- {/* ── 4. Lista de Prestadores & Empresas ── */}
+      {/* ── 5. Renderização Conforme o Modo de Visualização ── */}
+      {viewMode === "feed" ? (
+        <div className="space-y-8">
+          {serviceStores.length > 0 ? (
+            <div className="space-y-8">
+              {(() => {
+                const grouped = serviceStores.reduce((acc: Record<string, typeof serviceStores>, store: any) => {
+                  const key = store.category || store.type || "Prestadores de Serviços";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(store);
+                  return acc;
+                }, {});
+
+                return Object.entries(grouped).map(([groupName, stores]: [string, any]) => (
+                  <HorizontalRail
+                    key={groupName}
+                    title={groupName}
+                    hideHeader={false}
+                    actionLabel="Ver grade"
+                    onAction={() => setViewMode("grid")}
+                  >
+                    {stores.map((store: any) => (
+                      <div key={store.id} className="w-64 sm:w-72 shrink-0">
+                        <StoreCard {...store} />
+                      </div>
+                    ))}
+                  </HorizontalRail>
+                ));
+              })()}
+            </div>
+          ) : (
+            <div className="py-12 text-center bg-card rounded-2xl p-6">
+              <EmptyState
+                title="Nenhum prestador encontrado"
+                description="Tente selecionar outra categoria ou busque por termos mais amplos."
+              />
+            </div>
+          )}
+        </div>
+      ) : viewMode === "list" ? (
+        <section aria-label="Lista de Prestadores">
+          {serviceStores.length === 0 ? (
+            <div className="py-12 text-center bg-card rounded-2xl p-6">
+              <EmptyState
+                title="Nenhum prestador encontrado"
+                description="Tente selecionar outra categoria ou busque por termos mais amplos."
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {serviceStores.map((store: any) => (
+                <div
+                  key={store.id}
+                  className="p-4 rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="size-12 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center font-bold text-primary text-lg">
+                      {store.logo_url ? (
+                        <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
+                      ) : (
+                        store.name.charAt(0)
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Link to="/diretorio/$id" params={{ id: store.id }} className="font-bold text-sm text-foreground hover:underline truncate">
+                          {store.name}
+                        </Link>
+                        <Badge variant="outline" className="text-[10px] uppercase font-semibold bg-primary/10 text-primary border-primary/20 shrink-0">
+                          Verificado
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                        {store.description || "Prestador de serviços especializado."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                    <Button
+                      onClick={() => handleOpenQuote(store)}
+                      size="sm"
+                      className="flex-1 sm:flex-initial bg-primary text-primary-foreground font-bold text-xs h-9 rounded-xl"
+                    >
+                      Pedir Orçamento
+                    </Button>
+                    <Button asChild variant="outline" size="sm" className="h-9 px-3 text-xs rounded-xl font-semibold">
+                      <Link to="/diretorio/$id" params={{ id: store.id }}>
+                        Perfil
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
  <section aria-label="Profissionais & Empresas Verificadas">
  {serviceStores.length === 0 ? (
  <div className="py-12 text-center bg-card rounded-2xl p-6 ">
@@ -345,7 +445,7 @@ function ServicosVerticalPage() {
  store.name.charAt(0)
  )}
  </div>
- <Badge variant="outline" className="text-[10px] uppercase font-semibold bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+ <Badge variant="outline" className="text-[10px] uppercase font-semibold bg-primary/10 text-primary border-primary/20">
  Verificado
  </Badge>
  </div>
@@ -380,14 +480,15 @@ function ServicosVerticalPage() {
                 </Link>
               </Button>
             </div>
- </div>
- ))}
- </div>
- )}
- </section>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+)}
 
- {/* Modal de Orçamento Conectado */}
- {selectedProvider && (
+      {/* Modal de Orçamento Conectado */}
+      {selectedProvider && (
  <RequestQuoteModal
  isOpen={isQuoteModalOpen}
  onClose={() => {

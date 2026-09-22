@@ -233,17 +233,49 @@ function BelezaVerticalPage() {
  onViewModeChange={handleViewModeChange}
  />
 
- {/* ── 5. Renderização do Feed Modular ou Grade Filtrada ── */}
- {viewMode === "feed" ? (
- <div className="space-y-8">
- {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 ? (
- <ModularSurfaceFeed sections={marketplaceFeed.sections} />
- ) : (
- <div className="py-12 text-center text-xs text-muted-foreground">
- Nenhuma seção ativa no momento.
- </div>
- )}
- </div>
+      {/* ── 5. Renderização do Feed Modular ou Grade Filtrada ── */}
+      {viewMode === "feed" ? (
+        <div className="space-y-8">
+          {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 && (
+            <ModularSurfaceFeed sections={marketplaceFeed.sections} />
+          )}
+
+          {filteredProducts.length > 0 ? (
+            <div className="space-y-8">
+              {(() => {
+                const grouped = filteredProducts.reduce((acc: Record<string, typeof filteredProducts>, prod: any) => {
+                  const key = prod.category_name || prod.category || prod.store_name || "Destaques de Beleza";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(prod);
+                  return acc;
+                }, {});
+
+                return Object.entries(grouped).map(([groupName, prods]: [string, any]) => (
+                  <HorizontalRail
+                    key={groupName}
+                    title={groupName}
+                    hideHeader={false}
+                    actionLabel="Ver grade"
+                    onAction={() => handleViewModeChange("grid")}
+                  >
+                    {prods.map((prod: any) => (
+                      <div key={prod.id} className="w-56 sm:w-64 shrink-0">
+                        <GroceryProductCard product={prod} viewMode="grid" />
+                      </div>
+                    ))}
+                  </HorizontalRail>
+                ));
+              })()}
+            </div>
+          ) : (
+            <div className="py-12 text-center bg-card rounded-2xl p-6">
+              <EmptyState
+                title="Nenhum produto de beleza encontrado"
+                description="Tente selecionar outro departamento ou busque por marcas e cosméticos específicos."
+              />
+            </div>
+          )}
+        </div>
  ) : (
  <section aria-label="Vitrine de Produtos">
  {filteredProducts.length === 0 ? (

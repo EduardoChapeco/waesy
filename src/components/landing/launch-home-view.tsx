@@ -210,10 +210,10 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
       </header>
 
       {/* ── CORPO PRINCIPAL ── */}
-      <main className="max-w-5xl mx-auto px-4 pt-6 sm:pt-10 space-y-10 sm:space-y-14 flex-1">
+      <main className="max-w-5xl mx-auto px-3 sm:px-4 pt-4 sm:pt-10 space-y-8 sm:space-y-14 flex-1">
 
         {/* 1. HERO SECTION */}
-        <section className="text-center space-y-5 max-w-2xl mx-auto pt-2">
+        <section className="text-center space-y-4 sm:space-y-5 max-w-2xl mx-auto pt-1 sm:pt-2">
           <Badge
             variant="outline"
             className="rounded-full bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3.5 py-1 inline-flex items-center gap-1.5 shadow-2xs animate-pulse"
@@ -222,11 +222,11 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             <span>{settings.hero_badge}</span>
           </Badge>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground tracking-tight leading-tight sm:leading-tight">
+          <h1 className="text-2xl sm:text-5xl font-extrabold text-foreground tracking-tight leading-snug sm:leading-tight">
             {settings.hero_title}
           </h1>
 
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
+          <p className="text-xs sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
             {settings.hero_subtitle}
           </p>
 
@@ -279,7 +279,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
         {/* 3. SEÇÃO CIRCUITO INTERNACIONAL WAESY 2027 */}
         <section
           id="circuito-2027"
-          className="rounded-3xl border border-border/80 bg-gradient-to-b from-muted/30 to-muted/10 p-6 sm:p-10 space-y-6"
+          className="rounded-3xl border border-border/80 bg-gradient-to-b from-muted/30 to-muted/10 p-4 sm:p-10 space-y-6"
         >
           <div className="space-y-2 text-center sm:text-left">
             <div className="inline-flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">

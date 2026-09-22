@@ -201,11 +201,43 @@ function EletronicosVerticalPage() {
  {/* ── 5. Grade / Feed de Produtos de Tecnologia ── */}
  {viewMode === "feed" ? (
  <div className="space-y-8">
- {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 ? (
+ {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 && (
  <ModularSurfaceFeed sections={marketplaceFeed.sections} />
+ )}
+
+ {allProducts.length > 0 ? (
+ <div className="space-y-8">
+ {(() => {
+ const grouped = allProducts.reduce((acc: Record<string, typeof allProducts>, prod: any) => {
+ const key = prod.category_name || prod.category || prod.store_name || "Tecnologia em Destaque";
+ if (!acc[key]) acc[key] = [];
+ acc[key].push(prod);
+ return acc;
+ }, {});
+
+ return Object.entries(grouped).map(([groupName, prods]: [string, any]) => (
+ <HorizontalRail
+ key={groupName}
+ title={groupName}
+ hideHeader={false}
+ actionLabel="Ver grade"
+ onAction={() => handleViewModeChange("grid")}
+ >
+ {prods.map((prod: any) => (
+ <div key={prod.id} className="w-56 sm:w-64 shrink-0">
+ <GroceryProductCard product={prod} viewMode="grid" />
+ </div>
+ ))}
+ </HorizontalRail>
+ ));
+ })()}
+ </div>
  ) : (
- <div className="py-12 text-center text-xs text-muted-foreground">
- Nenhuma seção ativa no momento.
+ <div className="py-12 text-center bg-card rounded-2xl p-6">
+ <EmptyState
+ title="Nenhum produto eletrônico encontrado"
+ description="Tente ajustar os termos de busca ou navegue pelos departamentos acima."
+ />
  </div>
  )}
  </div>

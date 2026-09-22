@@ -73,10 +73,10 @@ function FeedPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
-      {/* ─── Feed Container Central (Largura Padrão Editorial) ───────────── */}
-      <div className="max-w-2xl mx-auto px-0.5 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
+      {/* ─── Feed Container Central (Largura Padrão Editorial & Padrão 1px Mobile) ───────────── */}
+      <div className="max-w-2xl mx-auto px-0 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
         {/* ── 1. Menu de Abas Canônicas (Apple HIG) ───────────────────────── */}
-        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar px-1 sm:px-0">
+        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar px-0">
           <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-2xl border border-border/40 w-full sm:w-auto overflow-x-auto no-scrollbar">
             {FEED_TABS.map((tab) => {
               const isActive = activeTab === tab.id;

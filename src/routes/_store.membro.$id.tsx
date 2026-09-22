@@ -744,108 +744,108 @@ export function MemberPublicProfileView({
  )}
  </div>
 
- {/* Ações Minimalistas em Pílulas */}
- <div className="flex flex-wrap items-center gap-2">
- {isOwner ? (
- <>
- <Button
- asChild
- size="sm"
- variant="outline"
- className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
- >
- <Link to="/conta/metricas">
- <Activity className="size-3.5 text-muted-foreground" />
- <span>Painel de Insights</span>
- </Link>
- </Button>
- <Button
- size="sm"
- variant="outline"
- className="h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
- onClick={() => setEditingSection("availability")}
- >
- <span>Disponibilidade</span>
- </Button>
- {isCreator ? (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="hidden sm:inline-flex h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 cursor-pointer"
-                    >
-                      <Link to="/conta/perfil" search={{ tab: "criador" }}>
-                        <Layers className="size-3.5 text-primary" />
-                        <span>Editar Vitrine da Marca</span>
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="hidden sm:inline-flex h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 cursor-pointer"
-                    >
-                      <Link to="/conta/perfil" search={{ tab: "dados" }}>
-                        <Edit3 className="size-3.5" />
-                        <span>Editar Perfil</span>
-                      </Link>
-                    </Button>
+          {/* Ações Minimalistas em Linha Compacta (Scroll Horizontal no Mobile sem quebras) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full sm:flex-wrap">
+            {isOwner ? (
+              <>
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                >
+                  <Link to="/conta/metricas">
+                    <Activity className="size-3.5 text-muted-foreground" />
+                    <span>Painel de Insights</span>
+                  </Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  onClick={() => setEditingSection("availability")}
+                >
+                  <span>Disponibilidade</span>
+                </Button>
+                {isCreator ? (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 cursor-pointer"
+                  >
+                    <Link to="/conta/perfil" search={{ tab: "criador" }}>
+                      <Layers className="size-3.5 text-primary" />
+                      <span>Editar Vitrine</span>
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 cursor-pointer"
+                  >
+                    <Link to="/conta/perfil" search={{ tab: "dados" }}>
+                      <Edit3 className="size-3.5" />
+                      <span>Editar Perfil</span>
+                    </Link>
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  className={cn(
+                    "h-8 px-4 rounded-xl font-bold text-xs gap-1.5 shrink-0 cursor-pointer transition-all",
+                    isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground shadow-xs"
                   )}
- </>
- ) : (
- <>
- <Button
- size="sm"
- className={cn(
- "h-9 px-5 rounded-xl font-bold text-xs gap-1.5 cursor-pointer transition-all",
- isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground shadow-xs"
- )}
- onClick={handleToggleFollow}
- disabled={isFollowLoading}
- >
- {isFollowing ? (
- <>
- <Check className="size-3.5" />
- <span>Seguindo</span>
- </>
- ) : (
- <>
- <Plus className="size-3.5" />
- <span>Seguir</span>
- </>
- )}
- </Button>
- {profile.phone && (
- <Button
- asChild
- size="sm"
- variant="outline"
- className="h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
- >
- <a
- href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
- target="_blank"
- rel="noopener noreferrer"
- >
- <MessageCircle className="size-3.5 text-emerald-500" />
- <span>Mensagem</span>
- </a>
- </Button>
- )}
- <Button
- size="sm"
- variant="outline"
- className="h-9 size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40"
- onClick={handleShare}
- aria-label="Compartilhar Perfil"
- >
- <Share2 className="size-4" />
- </Button>
- </>
- )}
- </div>
- </div>
+                  onClick={handleToggleFollow}
+                  disabled={isFollowLoading}
+                >
+                  {isFollowing ? (
+                    <>
+                      <Check className="size-3.5" />
+                      <span>Seguindo</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="size-3.5" />
+                      <span>Seguir</span>
+                    </>
+                  )}
+                </Button>
+                {profile.phone && (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  >
+                    <a
+                      href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="size-3.5 text-emerald-500" />
+                      <span>Mensagem</span>
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 size-8 p-0 rounded-xl shrink-0 text-muted-foreground hover:text-foreground border border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer"
+                  onClick={handleShare}
+                  aria-label="Compartilhar Perfil"
+                >
+                  <Share2 className="size-3.5" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
 
  {/* Bio / Descrição Formatada com Limite & Expansão */}
  {(profile.bio || profile.headline) && (
@@ -935,25 +935,25 @@ export function MemberPublicProfileView({
  </div>
  )}
 
- {/* Botões Normais Clean (sem imagem de fundo, minimalistas padrão Apple/Clean) */}
- {profile.biolinks.some((b: any) => !b.imageUrl) && (
- <div className="flex flex-wrap gap-2 pt-0.5">
- {profile.biolinks.filter((b: any) => !b.imageUrl).map((link: any, idx: number) => (
- <a
- key={link.id || idx}
- href={link.url}
- target="_blank"
- rel="noopener noreferrer"
- className="inline-flex items-center gap-2 h-9 px-4 rounded-xl text-xs font-semibold bg-transparent hover:bg-muted/40 text-foreground border border-border/50 transition-all hover:border-border cursor-pointer"
- >
- <span>{link.label || link.title || link.url}</span>
- <ExternalLink className="size-3 text-muted-foreground" />
- </a>
- ))}
- </div>
- )}
- </div>
- )}
+  {/* Botões Normais Clean (sem imagem de fundo, minimalistas padrão Apple/Clean) */}
+  {profile.biolinks.some((b: any) => !b.imageUrl) && (
+    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full sm:flex-wrap">
+      {profile.biolinks.filter((b: any) => !b.imageUrl).map((link: any, idx: number) => (
+        <a
+          key={link.id || idx}
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-semibold shrink-0 bg-transparent hover:bg-muted/40 text-foreground border border-border/50 transition-all hover:border-border cursor-pointer"
+        >
+          <span>{link.label || link.title || link.url}</span>
+          <ExternalLink className="size-3 text-muted-foreground" />
+        </a>
+      ))}
+    </div>
+  )}
+  </div>
+)}
 
  {/* Mini-Banner de Destaque Delicado & Proporcional (16:9 Fiel ao Recorte) */}
  {profile.featured_banner_url && (

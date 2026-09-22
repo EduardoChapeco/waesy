@@ -170,73 +170,33 @@ function TourismMasterPage() {
         categories={CATEGORY_CHIPS}
         activeCategory={selectedCategory}
         onSelectCategory={(id) => setSelectedCategory(id)}
+        viewMode={layoutMode === "rails" ? "feed" : layoutMode === "compact" ? "list" : "grid"}
+        onViewModeChange={(m) => setLayoutMode(m === "feed" ? "rails" : m === "list" ? "compact" : "cards")}
+        allowedViewModes={["feed", "grid", "list"]}
       />
 
-      {/* Filtro de Saída e Alternador de Layout */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 pb-2 border-b border-border/60">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-          <span className="text-xs text-muted-foreground font-medium shrink-0 mr-1">
-            Saída:
-          </span>
-          {REGIONAL_AIRPORTS.map((air) => {
-            const isActive = selectedAirport === air.id;
-            return (
-              <button
-                key={air.id}
-                type="button"
-                onClick={() => setSelectedAirport(air.id)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-foreground text-background"
-                    : "bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {air.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg shrink-0 border border-border/40">
-          <button
-            type="button"
-            onClick={() => setLayoutMode("cards")}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-              layoutMode === "cards"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <SquaresFour size={14} />
-            <span>Cartões</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setLayoutMode("compact")}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-              layoutMode === "compact"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <GridFour size={14} />
-            <span>Compacto</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setLayoutMode("rails")}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-              layoutMode === "rails"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Rows size={14} />
-            <span>Trilhos</span>
-          </button>
-        </div>
+      {/* Filtro de Saída por Aeroporto Regional */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-border/40">
+        <span className="text-xs text-muted-foreground font-medium shrink-0 mr-1">
+          Saída:
+        </span>
+        {REGIONAL_AIRPORTS.map((air) => {
+          const isActive = selectedAirport === air.id;
+          return (
+            <button
+              key={air.id}
+              type="button"
+              onClick={() => setSelectedAirport(air.id)}
+              className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                isActive
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {air.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Grid de Destinos */}

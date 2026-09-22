@@ -301,11 +301,11 @@ function DirectoryBusinessCard({
             </Badge>
           </div>
 
-          {/* Badge de Verificado no Topo Direito */}
+          {/* Badge de Verificado no Topo Direito (Clean Paradigma) */}
           {item.is_verified && (
             <div className="absolute top-2.5 right-2.5">
-              <Badge className="bg-emerald-500/90 text-white backdrop-blur-md text-[10px] font-black px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-xs">
-                <ShieldCheck size={12} weight="bold" />
+              <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[10px] font-bold px-2 py-0.5 rounded-lg border border-border/40 flex items-center gap-1 shadow-2xs">
+                <ShieldCheck size={12} weight="bold" className="text-primary" />
                 <span>Verificado</span>
               </Badge>
             </div>

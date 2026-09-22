@@ -29,6 +29,7 @@ import {
   Truck,
   CreditCard,
   ArrowsLeftRight,
+  Rows,
   SquaresFour,
   ListDashes,
   Flame,
@@ -660,8 +661,22 @@ function ClassifiedsMasterPage() {
               )}
             </Button>
 
-            {/* Toggles de Visualização (Grid vs. Lista) */}
+            {/* Toggles de Visualização (Feed vs. Grade vs. Lista) */}
             <div className="flex items-center p-1 rounded-xl bg-muted/40 border border-border/50 shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("feed")}
+                className={cn(
+                  "p-1.5 sm:p-2 rounded-lg text-xs transition-all cursor-pointer",
+                  viewMode === "feed"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Modo Feed / Trilhos"
+                aria-label="Feed"
+              >
+                <Rows size={16} weight={viewMode === "feed" ? "fill" : "bold"} />
+              </button>
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
@@ -1370,19 +1385,34 @@ function ClassifiedsMasterPage() {
         ) : viewMode === "feed" ? (
           /* ── MODO FEED (Trilhos Horizontais de Categorias com Cards Amplos) ── */
           <section className="space-y-10">
-            {["real_estate", "vehicle", "business", "sale", "service", "donation"].map((catKey) => {
-              const catItems = filtered.filter((i: any) => i.category === catKey);
+            {(selectedCategory === "todos"
+              ? ["travel", "real_estate", "vehicle", "business", "food", "sale", "service", "digital", "donation"]
+              : [selectedCategory]
+            ).map((catKey) => {
+              const catItems = filtered.filter((i: any) => {
+                if (i.category === catKey) return true;
+                if (catKey === "travel" && (i.category === "viagem" || i.category === "tourism" || i.attributes?.niche_category === "travel")) return true;
+                if (catKey === "food" && (i.category === "gastronomia" || i.attributes?.niche_category === "food")) return true;
+                if (catKey === "digital" && (i.is_digital || i.attributes?.is_digital)) return true;
+                return false;
+              });
               if (catItems.length === 0) return null;
 
               const catTitle =
-                catKey === "real_estate"
+                catKey === "travel"
+                  ? "Viagens & Turismo"
+                  : catKey === "real_estate"
                   ? "Imóveis"
                   : catKey === "vehicle"
                   ? "Veículos"
                   : catKey === "business"
                   ? "Negócios"
+                  : catKey === "food"
+                  ? "Gastronomia & Restaurantes"
                   : catKey === "sale"
                   ? "Desapego"
+                  : catKey === "digital"
+                  ? "Produtos Digitais"
                   : catKey === "donation"
                   ? "Doações"
                   : "Serviços";

@@ -339,37 +339,58 @@ function SupermarketMasterPage() {
  <ModularSurfaceFeed sections={feed.sections} />
  )}
 
- {/* Gôndola de Produtos Multi-Supermercados */}
- <div className="space-y-4 pt-4 ">
- 
+      {/* Corredores e Gôndolas com Trilhos Horizontais de Produtos */}
+      <div className="space-y-6 pt-2">
+        {displayedProducts.length > 0 ? (
+          <div className="space-y-8">
+            {(() => {
+              const grouped = displayedProducts.reduce((acc: Record<string, typeof displayedProducts>, prod) => {
+                const key = (prod as any).category_name || (prod as any).category || (prod as any).store_name || "Destaques do Mercado";
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(prod);
+                return acc;
+              }, {});
 
- {displayedProducts.length > 0 ? (
- <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
- {displayedProducts.map((prod) => (
- <GroceryProductCard key={prod.id} product={prod} />
- ))}
- </div>
- ) : (
- <div className="py-16 text-center space-y-3 bg-muted/10 rounded-2xl border-0 p-8">
- <EmptyState title="Nenhum produto encontrado neste corredor ou supermercado." />
- <div className="pt-2">
- <Button
- size="sm"
- variant="outline"
- onClick={() => {
- setLocalSearch("");
- setSelectedDietary("todos");
- setSelectedStore("todos");
- handleSelectDepartment("todos");
- }}
- className="rounded-xl font-bold text-xs"
- >
- Ver todos os supermercados
- </Button>
- </div>
- </div>
- )}
- </div>
+              return Object.entries(grouped).map(([groupName, prods]) => (
+                <HorizontalRail
+                  key={groupName}
+                  title={groupName}
+                  hideHeader={false}
+                  actionLabel="Ver grade"
+                  onAction={() => {
+                    handleViewModeChange("grid");
+                  }}
+                >
+                  {prods.map((prod) => (
+                    <div key={prod.id} className="w-56 sm:w-64 shrink-0">
+                      <GroceryProductCard product={prod} viewMode="grid" />
+                    </div>
+                  ))}
+                </HorizontalRail>
+              ));
+            })()}
+          </div>
+        ) : (
+          <div className="py-16 text-center space-y-3 bg-muted/10 rounded-2xl border-0 p-8">
+            <EmptyState title="Nenhum produto encontrado neste corredor ou supermercado." />
+            <div className="pt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setLocalSearch("");
+                  setSelectedDietary("todos");
+                  setSelectedStore("todos");
+                  handleSelectDepartment("todos");
+                }}
+                className="rounded-xl font-bold text-xs"
+              >
+                Ver todos os supermercados
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
  </div>
  )}
 

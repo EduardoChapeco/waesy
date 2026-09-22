@@ -129,7 +129,7 @@ function JobsMasterPage() {
   }, [jobsList]);
 
  return (
- <div className="w-full space-y-6 pb-20">
+ <div className="w-full space-y-6 pb-20 px-0 sm:px-4 md:px-0">
  {/* ── 1. Banners Contextuais de Empregos ── */}
  {banners && banners.length > 0 && (
  <BannerHeroCarousel banners={banners} className="w-full" />

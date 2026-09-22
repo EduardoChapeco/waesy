@@ -119,7 +119,7 @@ export function NoticiasFeedPage() {
   const gridArticles = articles.slice(1);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 space-y-6 pb-20">
+    <div className="w-full max-w-4xl mx-auto px-0 sm:px-4 space-y-6 pb-20">
       {/* ── 1. Top Banners de Notícias ── */}
       {banners && banners.length > 0 && (
         <section aria-label="Banners e Anúncios">

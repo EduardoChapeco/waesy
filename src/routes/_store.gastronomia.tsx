@@ -166,7 +166,7 @@ function GastronomiaVerticalPage() {
  }, [marketplaceFeed]);
 
  return (
- <div className="w-full space-y-6 pb-20">
+ <div className="w-full space-y-6 pb-20 px-0 sm:px-4 md:px-0">
  {/* ── 1. Banners de Gastronomia ── */}
  {banners && banners.length > 0 && (
  <section aria-label="Banners de Gastronomia">
@@ -199,16 +199,37 @@ function GastronomiaVerticalPage() {
       {/* ── 4. Renderização do Feed Modular ou Grade Filtrada ── */}
       {viewMode === "feed" ? (
         <div className="space-y-6 sm:space-y-8">
-          {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 ? (
+          {marketplaceFeed?.sections && marketplaceFeed.sections.length > 0 && (
             <ModularSurfaceFeed sections={marketplaceFeed.sections} />
-          ) : allProducts.length > 0 ? (
-            <section aria-label="Pratos & Lanches da Gastronomia" className="w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                {allProducts.map((product: any) => (
-                  <GroceryProductCard key={product.id} product={product} viewMode="grid" />
-                ))}
-              </div>
-            </section>
+          )}
+
+          {allProducts.length > 0 ? (
+            <div className="space-y-8">
+              {(() => {
+                const grouped = allProducts.reduce((acc: Record<string, typeof allProducts>, prod: any) => {
+                  const key = prod.category_name || prod.category || prod.store_name || "Cardápio em Destaque";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(prod);
+                  return acc;
+                }, {});
+
+                return Object.entries(grouped).map(([groupName, prods]: [string, any]) => (
+                  <HorizontalRail
+                    key={groupName}
+                    title={groupName}
+                    hideHeader={false}
+                    actionLabel="Ver grade"
+                    onAction={() => handleViewModeChange("grid")}
+                  >
+                    {prods.map((product: any) => (
+                      <div key={product.id} className="w-56 sm:w-64 shrink-0">
+                        <GroceryProductCard product={product} viewMode="grid" />
+                      </div>
+                    ))}
+                  </HorizontalRail>
+                ));
+              })()}
+            </div>
           ) : (
             <div className="py-12 text-center text-xs text-muted-foreground">
               Nenhum restaurante ou prato disponível no momento.
@@ -250,7 +271,7 @@ function GastronomiaVerticalPage() {
                 {cartItemsCount} {cartItemsCount === 1 ? "item adicionado" : "itens adicionados"}
               </span>
               <span className="text-sm font-black font-mono">
-                {formatMoney(cartTotalCents / 100)}
+                {formatMoney(cartTotalCents)}
               </span>
             </div>
           </div>

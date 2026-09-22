@@ -65,17 +65,17 @@ export function FounderSmartphoneMockup({
   const cleanWa = whatsapp.replace(/\D/g, "");
 
   return (
-    <div className="w-full max-w-sm mx-auto animate-in zoom-in-95 duration-500">
-      {/* Moldura do Smartphone Apple */}
-      <div className="relative rounded-[2.5rem] border-[6px] border-neutral-900 bg-card shadow-2xl overflow-hidden ring-1 ring-border/80">
-        {/* Dynamic Island / Notch */}
-        <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-neutral-900 rounded-full z-30 flex items-center justify-between px-2.5">
+    <div className="w-full max-w-lg sm:max-w-sm mx-auto animate-in zoom-in-95 duration-500">
+      {/* Moldura do Smartphone Adaptativa: Card fluido no Mobile, Bezel Apple no Desktop */}
+      <div className="relative rounded-2xl sm:rounded-[2.5rem] border border-border/80 sm:border-[6px] sm:border-neutral-900 bg-card shadow-md sm:shadow-2xl overflow-hidden ring-0 sm:ring-1 sm:ring-border/80">
+        {/* Dynamic Island / Notch — Apenas Desktop/Tablet */}
+        <div className="hidden sm:flex absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-neutral-900 rounded-full z-30 items-center justify-between px-2.5">
           <div className="size-2 rounded-full bg-neutral-800" />
           <div className="size-1.5 rounded-full bg-sky-500/40" />
         </div>
 
-        {/* Barra de Status */}
-        <div className="pt-2 px-6 pb-2 flex items-center justify-between text-[11px] font-bold text-muted-foreground z-20 relative bg-background/80 backdrop-blur-xs">
+        {/* Barra de Status — Apenas Desktop/Tablet */}
+        <div className="hidden sm:flex pt-2 px-6 pb-2 items-center justify-between text-[11px] font-bold text-muted-foreground z-20 relative bg-background/80 backdrop-blur-xs">
           <span>09:41</span>
           <div className="flex items-center gap-1.5 text-[10px]">
             <span>5G</span>
@@ -84,7 +84,7 @@ export function FounderSmartphoneMockup({
         </div>
 
         {/* Conteúdo do Perfil da Empresa */}
-        <div className="px-4 pt-2 pb-6 space-y-4 max-h-[580px] overflow-y-auto scrollbar-none text-left">
+        <div className="p-3.5 sm:px-4 sm:pt-2 sm:pb-6 space-y-4 max-h-none sm:max-h-[580px] overflow-y-visible sm:overflow-y-auto scrollbar-none text-left">
           {/* Topo do Perfil com Avatar e Capa Compacta */}
           <div className="flex items-center gap-3">
             <div className="size-16 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/5 to-muted border border-border flex items-center justify-center font-bold text-xl text-primary shrink-0 shadow-xs uppercase">
@@ -232,8 +232,8 @@ export function FounderSmartphoneMockup({
           )}
         </div>
 
-        {/* Barra inferior do celular */}
-        <div className="py-2 flex justify-center bg-background/80 border-t border-border/40">
+        {/* Barra inferior do celular — Apenas Desktop/Tablet */}
+        <div className="hidden sm:flex py-2 justify-center bg-background/80 border-t border-border/40">
           <div className="w-28 h-1 bg-muted-foreground/30 rounded-full" />
         </div>
       </div>

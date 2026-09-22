@@ -511,12 +511,12 @@ export function CanonicalStoreProfileView({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full">
             <Button
               asChild
               size="sm"
               variant="default"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 bg-amber-600 hover:bg-amber-700 text-white cursor-pointer shadow-xs"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 bg-amber-600 hover:bg-amber-700 text-white cursor-pointer shadow-xs"
             >
               <Link to="/workspace" search={{ storeId: store.id }}>
                 <Store className="size-3.5" />
@@ -528,7 +528,7 @@ export function CanonicalStoreProfileView({
               asChild
               size="sm"
               variant="outline"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
             >
               <Link to="/workspace/marketing/brand-kit" search={{ storeId: store.id }}>
                 <Camera className="size-3.5" />
@@ -540,7 +540,7 @@ export function CanonicalStoreProfileView({
               asChild
               size="sm"
               variant="outline"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
             >
               <Link to="/portal-completo">
                 <Award className="size-3.5 text-amber-500" />
@@ -552,7 +552,7 @@ export function CanonicalStoreProfileView({
               size="sm"
               variant="outline"
               onClick={() => setIsSocialStudioOpen(true)}
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
             >
               <Sparkles className="size-3.5 text-amber-500" />
               <span>Social Studio</span>
@@ -697,45 +697,22 @@ export function CanonicalStoreProfileView({
                 )}
               </div>
 
-              {/* Informações úteis em texto limpo — Sem cards de fundo pesados */}
+              {/* Informações úteis em texto limpo — Categoria e Localização concisas */}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground pt-0.5">
                 <span className="font-semibold text-foreground/90">
                   {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa")}
                 </span>
-                <span className="text-muted-foreground/40">•</span>
-                <span
-                  className={cn(
-                    "font-medium",
-                    openStatus?.isOpenNow
-                      ? "text-emerald-600 dark:text-emerald-400 font-semibold"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  {openStatus ? openStatus.text : "Horários sob consulta"}
-                </span>
-                {orderTypes.delivery && (
+                {(store.city || store.state) && (
                   <>
                     <span className="text-muted-foreground/40">•</span>
-                    <span>Delivery</span>
-                  </>
-                )}
-                {orderTypes.takeout && (
-                  <>
-                    <span className="text-muted-foreground/40">•</span>
-                    <span>Retirada</span>
-                  </>
-                )}
-                {orderTypes.dine_in && (
-                  <>
-                    <span className="text-muted-foreground/40">•</span>
-                    <span>No Local</span>
+                    <span>{[store.city, store.state || "SC"].filter(Boolean).join(" - ")}</span>
                   </>
                 )}
               </div>
             </div>
 
-            {/* Ações de Conversão Rápidas */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Ações de Conversão Rápidas — Escala Compacta h-8 em Linha Única */}
+            <div className="flex items-center gap-2 w-full sm:w-auto pt-1 sm:pt-0">
               {whatsappNumber && (
                 <Button
                   onClick={() =>
@@ -749,9 +726,9 @@ export function CanonicalStoreProfileView({
                       customMessage: `Olá! Vi o perfil oficial de ${store.name || store.business_name} no Waesy e gostaria de mais informações.`,
                     })
                   }
-                  className="h-9 px-4 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-xs transition-transform active:scale-98"
+                  className="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer shadow-2xs transition-transform active:scale-98"
                 >
-                  <WhatsappLogo size={16} weight="bold" />
+                  <WhatsappLogo size={15} weight="bold" />
                   <span>WhatsApp</span>
                 </Button>
               )}
@@ -760,9 +737,9 @@ export function CanonicalStoreProfileView({
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                    className="flex-1 sm:flex-initial h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                   >
-                    <PaperPlaneTilt size={14} weight="bold" className="text-muted-foreground" />
+                    <PaperPlaneTilt size={13} weight="bold" className="text-muted-foreground" />
                     <span>Orçamento</span>
                   </Button>
                 </DialogTrigger>
@@ -863,7 +840,7 @@ export function CanonicalStoreProfileView({
               <Button
                 variant="outline"
                 onClick={handleShare}
-                className="h-9 px-3.5 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer text-muted-foreground hover:text-foreground"
+                className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer text-muted-foreground hover:text-foreground shrink-0"
               >
                 <Share2 className="size-3.5" />
                 <span>Compartilhar</span>
@@ -984,52 +961,6 @@ export function CanonicalStoreProfileView({
               );
             })()}
 
-            {/* Modal de Horários Semanal */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:underline cursor-pointer"
-                >
-                  <Clock className="size-3.5 text-primary" />
-                  <span>Ver Horários</span>
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5">
-                <DialogHeader className="pb-2">
-                  <DialogTitle className="text-base font-bold flex items-center gap-2">
-                    <Clock className="size-4 text-primary" />
-                    <span>Grade Semanal de Horários</span>
-                  </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground">
-                    Horários de funcionamento de {store.name || store.business_name}.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-2 py-2">
-                  {WEEKDAYS_ORDER.map(({ key, label }) => {
-                    const day = weeklySchedule[key];
-                    const isOpen = day?.open && day.intervals && day.intervals.length > 0;
-                    return (
-                      <div
-                        key={key}
-                        className={cn(
-                          "flex items-center justify-between p-2.5 rounded-xl text-xs",
-                          isOpen ? "bg-muted/30" : "bg-muted/10 opacity-60"
-                        )}
-                      >
-                        <span className="font-semibold text-foreground">{label}</span>
-                        <span className="font-mono text-muted-foreground">
-                          {isOpen
-                            ? day.intervals.map((inv) => `${inv.from} às ${inv.to}`).join(" • ")
-                            : "Fechado"}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </div>
