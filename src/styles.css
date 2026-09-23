@@ -294,6 +294,25 @@
     text-decoration: none;
   }
 
+  /* Prevenção universal de auto-zoom e salto de layout no mobile (< 16px causa zoom indesejado) */
+  @media (max-width: 639px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Elimina o flash cinza de toque nativo no mobile (iOS/Android WebKit) */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Otimização de renderização e balanceamento tipográfico nativo contra linhas órfãs */
+  h1, h2, h3, h4, .text-balance {
+    text-wrap: balance;
+  }
+
   /* Seleção de texto */
   ::selection {
     background-color: var(--color-primary);

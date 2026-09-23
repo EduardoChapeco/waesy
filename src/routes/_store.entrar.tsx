@@ -462,9 +462,7 @@ function StepByStepAuthPage() {
  {brand?.logo_url ? (
  <img src={brand.logo_url} alt="Logo" className="h-10 w-auto object-contain" />
  ) : (
- <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-xl">
- J
- </div>
+ <div className="size-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-xl">{brand?.platform_name?.charAt(0) || "W"}</div>
  )}
  </div>
 
@@ -534,7 +532,7 @@ function StepByStepAuthPage() {
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
  placeholder="seu@email.com"
- className="pl-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -595,7 +593,7 @@ function StepByStepAuthPage() {
  value={portalSlug}
  onChange={(e) => setPortalSlug(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))}
  placeholder="minhaloja"
- className="pl-8 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-8 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -648,7 +646,7 @@ function StepByStepAuthPage() {
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
  placeholder="seu@email.com ou @usuario"
- className="pl-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -692,7 +690,7 @@ function StepByStepAuthPage() {
  value={password}
  onChange={(e) => setPassword(e.target.value)}
  placeholder="••••••••"
- className="pl-10 pr-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 pr-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  <button
  type="button"
@@ -767,7 +765,7 @@ function StepByStepAuthPage() {
  value={password}
  onChange={(e) => setPassword(e.target.value)}
  placeholder="Sua senha secreta"
- className="pl-10 pr-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 pr-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  <button
  type="button"
@@ -817,7 +815,7 @@ function StepByStepAuthPage() {
  value={identifier}
  onChange={(e) => setIdentifier(e.target.value)}
  placeholder="seuemail@exemplo.com"
- className="pl-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -893,7 +891,7 @@ function StepByStepAuthPage() {
  value={fullName}
  onChange={(e) => setFullName(e.target.value)}
  placeholder="Seu nome completo"
- className="pl-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -934,7 +932,7 @@ function StepByStepAuthPage() {
  value={password}
  onChange={(e) => setPassword(e.target.value)}
  placeholder="Crie sua senha segura"
- className="pl-10 pr-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 pr-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  <button
  type="button"
@@ -1024,7 +1022,7 @@ function StepByStepAuthPage() {
  value={forgotEmail}
  onChange={(e) => setForgotEmail(e.target.value)}
  placeholder="seu@email.com"
- className="pl-10 h-11 rounded-xl text-xs bg-muted/30 border-border/70 focus:border-primary"
+ className="pl-10 h-11 rounded-xl text-base sm:text-xs bg-muted/30 border-border/70 focus:border-primary"
  />
  </div>
  </div>
@@ -1102,3 +1100,4 @@ function StepByStepAuthPage() {
  </main>
  );
 }
+
