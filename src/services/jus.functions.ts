@@ -7,6 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { harvestAndPersistDataJudProcess, parseCnjNumber } from "./mining/datajud-harvester";
 
 // ============================================================
 // Schemas
@@ -737,5 +738,29 @@ export const getLawsuitDeadlinesDigest = createServerFn({ method: "GET" }).handl
  };
 });
 
+/**
+ * 22. Harvester DataJud CNJ: Mineração e sincronização de processo por número unificado CNJ
+ */
+export const harvestDataJudProcessFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      process_number: z.string().min(14, "Número de processo CNJ obrigatório"),
+      store_id: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
 
+    const result = await harvestAndPersistDataJudProcess({
+      processNumber: data.process_number,
+      storeId: data.store_id,
+      profileId: identity?.id || undefined,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || "Falha ao minerar processo no DataJud");
+    }
+
+    return result;
+  });
 

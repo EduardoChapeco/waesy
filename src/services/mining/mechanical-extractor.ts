@@ -10,6 +10,7 @@
  */
 
 import { getRandomUserAgent, cleanHtmlText } from "@/lib/mining/scraper-utils";
+export { cleanHtmlText };
 
 export interface MechanicalExtractionResult {
   title: string;
@@ -23,7 +24,16 @@ export interface MechanicalExtractionResult {
   wordCount: number;
   paragraphCount: number;
   method: "json_ld" | "css_selector" | "readability" | "opengraph";
-  contentType: "noticia" | "artigo" | "blog_post" | "educacao" | "eventos" | "portal_municipal" | "portais_publicos";
+  contentType: "noticia" | "artigo" | "blog_post" | "educacao" | "eventos" | "portal_municipal" | "portais_publicos" | "receitas" | "empresas" | "processos";
+  recipeData?: {
+    ingredients: string[];
+    instructions: string[];
+    prepTimeMinutes?: number;
+    cookTimeMinutes?: number;
+    totalTimeMinutes?: number;
+    servings?: string;
+    calories?: string;
+  };
   eventData?: {
     startDate?: string;
     endDate?: string;
@@ -32,6 +42,8 @@ export interface MechanicalExtractionResult {
     priceMin?: number;
     priceMax?: number;
     ticketUrl?: string;
+    isFree?: boolean;
+    organizerName?: string;
   };
   municipalData?: {
     editalNumber?: string;
@@ -463,7 +475,68 @@ export async function extractContentMechanically(url: string, htmlContent?: stri
   // 1. Obter HTML (se não fornecido)
   const html = htmlContent || (await fetchHtmlWithStealth(url));
 
-  // 2. Camada 1: JSON-LD Schema.org
+  // 1.5. Extratores Especializados Schema.org (Receitas & Eventos) — Zero Tokens de IA
+  try {
+    const { extractRecipeFromJsonLd, extractEventFromJsonLd } = await import("./specialized-extractors");
+    const recipe = extractRecipeFromJsonLd(html, url);
+    if (recipe && recipe.ingredients.length > 0) {
+      return {
+        title: recipe.title,
+        lead: recipe.description || `Receita de ${recipe.title} com ${recipe.ingredients.length} ingredientes`,
+        bodyMarkdown: recipe.formattedMarkdown,
+        bodyText: `${recipe.title}. ${recipe.description || ""} Ingredientes: ${recipe.ingredients.join(", ")}. Modo de preparo: ${recipe.instructions.join(" ")}`,
+        author: recipe.author,
+        publishedAt: new Date().toISOString(),
+        coverImageUrl: recipe.coverImageUrl,
+        galleryImages: recipe.coverImageUrl ? [recipe.coverImageUrl] : [],
+        wordCount: recipe.formattedMarkdown.split(/\s+/).filter(Boolean).length,
+        paragraphCount: recipe.instructions.length + 2,
+        method: "json_ld",
+        contentType: "receitas",
+        recipeData: {
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          prepTimeMinutes: recipe.prepTimeMinutes,
+          cookTimeMinutes: recipe.cookTimeMinutes,
+          totalTimeMinutes: recipe.totalTimeMinutes,
+          servings: recipe.servings,
+          calories: recipe.calories,
+        },
+      };
+    }
+
+    const event = extractEventFromJsonLd(html, url);
+    if (event && event.title) {
+      return {
+        title: event.title,
+        lead: event.description.slice(0, 350),
+        bodyMarkdown: event.formattedMarkdown,
+        bodyText: `${event.title}. ${event.description}. Local: ${event.venueName || ""} ${event.city || ""}`,
+        publishedAt: event.startDate,
+        coverImageUrl: event.coverImageUrl,
+        galleryImages: event.coverImageUrl ? [event.coverImageUrl] : [],
+        wordCount: event.formattedMarkdown.split(/\s+/).filter(Boolean).length,
+        paragraphCount: 4,
+        method: "json_ld",
+        contentType: "eventos",
+        eventData: {
+          startDate: event.startDate,
+          endDate: event.endDate,
+          venue: event.venueName,
+          location: event.address || event.city,
+          priceMin: event.priceMinCents ? event.priceMinCents / 100 : undefined,
+          priceMax: event.priceMaxCents ? event.priceMaxCents / 100 : undefined,
+          ticketUrl: event.ticketUrl,
+          isFree: event.isFree,
+          organizerName: event.organizerName,
+        },
+      };
+    }
+  } catch {
+    // Continua para extração padrão se falhar
+  }
+
+  // 2. Camada 1: JSON-LD Schema.org Padrão (NewsArticle / Article)
   const jsonLdResult = extractFromJsonLd(html, url);
   if (jsonLdResult && jsonLdResult.title && jsonLdResult.wordCount && jsonLdResult.wordCount >= 80) {
     const rawCover = jsonLdResult.coverImageUrl;

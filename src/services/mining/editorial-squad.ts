@@ -67,6 +67,17 @@ export async function curateWithEditorialSquad(params: {
   tone?: string;
 }): Promise<CuratedArticleOutput> {
   const city = getDefaultCity(params.city);
+  // OpenSquad Token Economy: Comprime o texto extraído para os fatos essenciais (máx. 1.800 caracteres / ~350 palavras)
+  const compressedText = params.rawText
+    .split(/\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 20)
+    .slice(0, 6)
+    .join("\n\n")
+    .slice(0, 1800);
+
+  const tokensSavedEstimate = Math.max(0, Math.round((params.rawText.length - compressedText.length) / 4));
+
   const userPrompt = `Analise a matéria jornalística bruta abaixo, aplique o processo de curadoria dos 5 especialistas e estruture a versão final para publicação mobile.
 
 Origem: ${params.sourceName} (${params.sourceUrl})
@@ -76,8 +87,8 @@ Tom Solicitado: ${params.tone || "editorial_clean"}
 Título Original:
 ${params.rawTitle}
 
-Texto Bruto Extraído:
-${params.rawText.slice(0, 10000)}
+Texto Essencial Extraído:
+${compressedText}
 
 Formate o resultado rigorosamente no JSON:
 {

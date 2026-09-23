@@ -1,3 +1,5 @@
+import { TokenEconomyBanner, DataJudMiningPanel, PlacesMiningPanel, SpecializedUrlMiningPanel } from "./advanced-mining-tabs";
+import { Scale, MapPin, Utensils, Zap } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -444,7 +446,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           storeId: batchImportTargetStoreId.trim(),
         },
       });
-      toast.success(res.message);
+      toast.success(`${res.importedCount || 0} produtos importados com sucesso!`);
       setIsBatchImportModalOpen(false);
       setSelectedProductIds([]);
       setBatchImportTargetStoreId("");
@@ -553,13 +555,13 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
   ) => {
     setIsRunningScraper(scraperType);
     try {
-      const res = await runScraperFn({
+      const res = (await runScraperFn({
         data: {
           scraperType,
           targetUrl: extraParams?.targetUrl,
           cnpj: extraParams?.cnpj,
         },
-      });
+      })) as any;
 
       if (res.success) {
         toast.success(res.message);
@@ -694,6 +696,9 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
         </div>
       </div>
 
+      {/* Banner de Economia de Tokens de IA */}
+      <TokenEconomyBanner />
+
       {/* KPI Cards — Clean Paradigm */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Card 1: Fila */}
@@ -731,7 +736,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             <Package className="w-3.5 h-3.5 text-muted-foreground" />
           </div>
           <div className="text-xl font-semibold text-foreground">
-            {minedProductsTotal > 0 ? minedProductsTotal : (stats?.minedArticles.total ?? 0)}
+            {minedProductsTotal > 0 ? minedProductsTotal : (stats?.minedArticles?.total ?? 0)}
           </div>
           <div className="text-[11px] text-muted-foreground truncate">
             Radar multiloja ativo
@@ -810,7 +815,36 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <TabsTrigger value="audit" className="rounded-lg text-xs font-normal py-2 px-3">
             Logs de Auditoria
           </TabsTrigger>
+          <TabsTrigger value="datajud" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+            <Scale className="w-3.5 h-3.5" />
+            Processos CNJ
+          </TabsTrigger>
+          <TabsTrigger value="places" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+            <MapPin className="w-3.5 h-3.5" />
+            Empresas (Places)
+          </TabsTrigger>
+          <TabsTrigger value="specialized" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
+            <Utensils className="w-3.5 h-3.5" />
+            Receitas & Eventos
+          </TabsTrigger>
+
         </TabsList>
+
+        
+        {/* TAB DATAJUD */}
+        <TabsContent value="datajud" className="space-y-4">
+          <DataJudMiningPanel />
+        </TabsContent>
+
+        {/* TAB PLACES */}
+        <TabsContent value="places" className="space-y-4">
+          <PlacesMiningPanel />
+        </TabsContent>
+
+        {/* TAB SPECIALIZED (RECEITAS & EVENTOS) */}
+        <TabsContent value="specialized" className="space-y-4">
+          <SpecializedUrlMiningPanel />
+        </TabsContent>
 
         {/* TAB 1: VISÃO GERAL */}
         <TabsContent value="overview" className="space-y-4">
