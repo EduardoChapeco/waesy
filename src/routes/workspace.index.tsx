@@ -271,9 +271,9 @@ export default function WorkspaceDashboardPage() {
  const catalogDetails = getCatalogCardDetails();
 
  return (
- <div className="w-full max-w-7xl mx-auto space-y-6 animate-in fade-in duration-200">
+ <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in duration-200">
  {/* ── 1. Top Header com Identificação do Negócio ── */}
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-card border border-border/60">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-card border border-border/60">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
  <span className="text-xs font-semibold text-muted-foreground">
@@ -289,7 +289,7 @@ export default function WorkspaceDashboardPage() {
  </div>
 
  {/* Quick Top Actions Contextuais */}
- <div className="flex flex-wrap items-center gap-2">
+ <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar">
  {/* Chave de Operação Instantânea "Loja Aberta / Pausada" */}
  <button
  type="button"
@@ -361,7 +361,7 @@ export default function WorkspaceDashboardPage() {
  </div>
 
  {/* ── 2. Destaque de Faturamento Mensal Real ── */}
- <div className="p-6 rounded-2xl bg-foreground text-background flex flex-col md:flex-row md:items-center justify-between gap-6">
+ <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-foreground text-background flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
  <div className="space-y-1">
  <span className="text-xs font-semibold uppercase tracking-wider opacity-70">
  Faturamento do Mês
@@ -402,7 +402,7 @@ export default function WorkspaceDashboardPage() {
  </div>
 
  {/* ── 3. Grid Tático de 4 Métricas Reais ── */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
  <Link
  to={getOrdersDestination() as any}
  className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all group flex flex-col justify-between"
@@ -562,7 +562,7 @@ export default function WorkspaceDashboardPage() {
  </div>
 
  {/* ── 5. Departamentos Corporativos Universais (Visão 360° da Empresa) ── */}
- <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
+ <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border/80 space-y-3 sm:space-y-4">
  <div className="flex items-center justify-between">
  <div className="space-y-0.5">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -575,7 +575,7 @@ export default function WorkspaceDashboardPage() {
  </div>
  </div>
 
- <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">
+ <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 pt-1 sm:pt-2">
  {/* 1. Vitrine & Marketing */}
  <Link
  to="/workspace/marketing/banners"
@@ -672,7 +672,7 @@ export default function WorkspaceDashboardPage() {
 
  {/* ── 5. Diretrizes Operacionais de Alta Eficiência (Específicas por Nicho) ── */}
  {semantics.operationalTips && semantics.operationalTips.length > 0 && (
- <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3">
+ <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-card border border-border/70 space-y-2.5 sm:space-y-3">
  <div className="flex items-center gap-2">
  <span className="text-xs font-bold text-foreground">
  Boas Práticas Operacionais • {semantics.name}
