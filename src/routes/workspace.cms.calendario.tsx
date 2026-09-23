@@ -42,7 +42,7 @@ export const Route = createFileRoute("/workspace/cms/calendario")({
  return await listScheduledPosts();
    } catch (err) {
      console.error("[loader:workspace.cms.calendario] Unhandled loader error:", err);
-     return {} as any;
+     return null as any;
     }
  },
  component: CalendarioEditorialPage,
@@ -80,7 +80,7 @@ const TYPE_CONFIG: Record<
 
 function CalendarioEditorialPage() {
  const initialPosts = Route.useLoaderData();
- const [posts, setPosts] = useState<ScheduledPost[]>(initialPosts);
+ const [posts, setPosts] = useState<ScheduledPost[]>(Array.isArray(initialPosts) ? initialPosts : []);
  const [isOpen, setIsOpen] = useState(false);
  const [isSubmitting, setIsSubmitting] = useState(false);
 

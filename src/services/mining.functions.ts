@@ -25,6 +25,24 @@ import {
 import { curateWithEditorialSquad } from "./mining/editorial-squad";
 import { fetchPncpContracts, convertPncpToExtractionResult } from "./mining/pncp-extractor";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import { executeContinuousCrawl } from "@/lib/mining/continuous-crawler.engine";
+import { parseFeed } from "@/lib/mining/rss-ingester.engine";
+import { fetchAllMarketIndicators } from "@/lib/mining/market-data-miner.engine";
+import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
+import {
+  extractDomain,
+  isDomainInCooldown,
+  setDomainCooldown,
+  clearDomainCooldown,
+} from "@/lib/mining/scraper-utils";
+import type {
+  MiningStats,
+  CrawlQueueItem,
+  IndexedBusiness,
+  ScraperAuditLogEntry,
+  RssFeed as RssFeedContract,
+  EconomicIndicator,
+} from "@/types/mining";
 
 // ============================================================
 // Constantes: Token Burn Rates para Scraping
@@ -1841,6 +1859,1459 @@ export const listPncpContractsAction = createServerFn({ method: "GET" })
 // Exportações de retrocompatibilidade
 export const createRssFeed = upsertRssFeed;
 export const addCrawlQueue = addUrlToCrawlQueue;
+
+// ============================================================
+// 19. Funções Unificadas de Mineração, Crawling e Enriquecimento Cadastral
+// ============================================================
+
+/**
+ * Retorna as estatísticas consolidadas da infraestrutura de mineração
+ */
+export const getMiningStatsFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<MiningStats> => {
+    const supabase = getServerClient();
+
+    const [
+      crawlQueueRes,
+      businessesRes,
+      rssRes,
+      auditRes,
+      lastAuditRes,
+      minedRes,
+    ] = await Promise.all([
+      supabase.from("crawl_queue").select("status"),
+      supabase.from("directory_listings").select("id, cnpj, data_quality_score"),
+      supabase.from("rss_feeds").select("id, is_active"),
+      supabase.from("scraper_audit_log").select("id, status"),
+      supabase
+        .from("scraper_audit_log")
+        .select("created_at")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("mined_articles").select("status"),
+    ]);
+
+    const queueItems = crawlQueueRes.data || [];
+    const queueStats = {
+      total: queueItems.length,
+      pending: queueItems.filter((i) => i.status === "pending").length,
+      processing: queueItems.filter((i) => i.status === "processing").length,
+      completed: queueItems.filter((i) => i.status === "completed").length,
+      failed: queueItems.filter((i) => i.status === "failed").length,
+    };
+
+    const businesses = businessesRes.data || [];
+    const businessesStats = {
+      total: businesses.length,
+      withCnpj: businesses.filter((b) => Boolean(b.cnpj)).length,
+      highQuality: businesses.filter((b) => (b.data_quality_score || 0) >= 70).length,
+    };
+
+    const feeds = rssRes.data || [];
+    const feedsStats = {
+      total: feeds.length,
+      active: feeds.filter((f) => f.is_active).length,
+    };
+
+    const audits = auditRes.data || [];
+    const successfulAudits = audits.filter((a) => a.status === "success" || !a.status).length;
+    const successRate = audits.length > 0 ? Math.round((successfulAudits / audits.length) * 100) : 100;
+
+    const minedArticles = minedRes.data || [];
+    const minedStats = {
+      total: minedArticles.length,
+      pendingReview: minedArticles.filter((m) => m.status === "pending_review").length,
+      published: minedArticles.filter((m) => m.status === "published").length,
+    };
+
+    return {
+      crawlQueue: queueStats,
+      indexedBusinesses: businessesStats,
+      rssFeeds: feedsStats,
+      scraperAudit: {
+        totalRuns: audits.length,
+        lastRunAt: lastAuditRes.data?.created_at || null,
+        successRatePercent: successRate,
+      },
+      economicIndicators: {
+        totalAvailable: 10,
+        lastUpdated: new Date().toISOString(),
+      },
+    };
+  }
+);
+
+/**
+ * Lista itens da fila de exploração (crawl_queue)
+ */
+export const getCrawlQueueFn = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      status: z.enum(["all", "pending", "processing", "completed", "failed"]).optional(),
+      limit: z.number().default(50),
+      offset: z.number().default(0),
+    })
+  )
+  .handler(async ({ data }): Promise<any> => {
+    const supabase = getServerClient();
+    let query = supabase
+      .from("crawl_queue")
+      .select("*", { count: "exact" })
+      .order("priority", { ascending: false })
+      .order("created_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+
+    if (data.status && data.status !== "all") {
+      query = query.eq("status", data.status);
+    }
+
+    const { data: rows, count, error } = await query;
+    if (error) {
+      console.error("[MiningBFF] Erro ao carregar crawl_queue:", error);
+      return { items: [], total: 0 };
+    }
+
+    return {
+      items: (rows as unknown as CrawlQueueItem[]) || [],
+      total: count || 0,
+    };
+  });
+
+/**
+ * Lista empresas mineradas e indexadas no Diretório Canônico (Single Source of Truth)
+ */
+export const getIndexedBusinessesFn = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      search: z.string().optional(),
+      city: z.string().optional(),
+      limit: z.number().default(50),
+      offset: z.number().default(0),
+    })
+  )
+  .handler(async ({ data }): Promise<any> => {
+    const supabase = getServerClient();
+    let query = supabase
+      .from("directory_listings")
+      .select("*", { count: "exact" })
+      .order("data_quality_score", { ascending: false })
+      .order("created_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+
+    if (data.search) {
+      query = query.or(`business_name.ilike.%${data.search}%,description.ilike.%${data.search}%`);
+    }
+
+    if (data.city) {
+      query = query.ilike("city", `%${data.city}%`);
+    }
+
+    const { data: rows, count, error } = await query;
+    if (error) {
+      console.error("[MiningBFF] Erro ao carregar directory_listings:", error);
+      return { items: [], total: 0 };
+    }
+
+    const mapped: IndexedBusiness[] = ((rows as any[]) || []).map((row) => ({
+      id: row.id,
+      external_id: row.external_id || `dir-${row.id}`,
+      source: row.source || (row.is_crawled ? "crawler" : "directory"),
+      name: row.business_name || row.name || "Empresa",
+      description: row.description,
+      category: row.category,
+      address: row.address,
+      city: row.city,
+      state: row.state,
+      neighborhood: row.neighborhood,
+      lat: row.latitude,
+      lng: row.longitude,
+      phone: row.contact_phone || row.contact_whatsapp,
+      website: row.website_url,
+      cnpj: row.cnpj,
+      rating: row.rating,
+      reviews_count: row.reviews_count,
+      price_level: row.price_level,
+      hours: row.working_hours,
+      photos: row.photos,
+      delivery: row.delivery,
+      scraper_source: row.scraper_source,
+      data_quality_score: row.data_quality_score ?? 50,
+      last_validated_at: row.last_validated_at,
+      metadata: row.metadata,
+      indexed_at: row.created_at,
+      created_at: row.created_at,
+    }));
+
+    return {
+      items: mapped,
+      total: count || 0,
+    };
+  });
+
+/**
+ * Consulta histórico de auditoria de scrapers
+ */
+export const getScraperAuditLogsFn = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      limit: z.number().default(50),
+    })
+  )
+  .handler(async ({ data }): Promise<any> => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("scraper_audit_log")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+
+    if (error) {
+      console.error("[MiningBFF] Erro ao carregar scraper_audit_log:", error);
+      return [];
+    }
+
+    return (rows as unknown as ScraperAuditLogEntry[]) || [];
+  });
+
+/**
+ * Lista feeds RSS cadastrados
+ */
+export const getRssFeedsFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<RssFeedContract[]> => {
+    const supabase = getServerClient();
+    const { data: rows, error } = await supabase
+      .from("rss_feeds")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[MiningBFF] Erro ao carregar rss_feeds:", error);
+      return [];
+    }
+
+    return (rows as unknown as RssFeedContract[]) || [];
+  }
+);
+
+/**
+ * Obtém os indicadores de mercado do Banco Central em tempo real
+ */
+export const getMarketIndicatorsFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<EconomicIndicator[]> => {
+    return await fetchAllMarketIndicators();
+  }
+);
+
+/**
+ * Executa um scraper ou crawler de forma transacional e grava auditoria
+ */
+export const runScraperFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      scraperType: z.enum(["continuous-crawler", "rss-fetcher", "market-data", "cnpj-enrichment"]),
+      targetUrl: z.string().optional(),
+      cnpj: z.string().optional(),
+    })
+  )
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      success: boolean;
+      message: string;
+      itemsProcessed: number;
+      durationMs: number;
+      payload?: unknown;
+    }> => {
+      const startTime = Date.now();
+      const supabase = getServerClient();
+
+      try {
+        switch (data.scraperType) {
+          case "continuous-crawler": {
+            let urlToCrawl = data.targetUrl;
+            let queueItemId: string | null = null;
+            let queueItemAttempts = 0;
+
+            if (!urlToCrawl) {
+              const nowIso = new Date().toISOString();
+              const { data: nextItem } = await supabase
+                .from("crawl_queue")
+                .select("id, url, attempts, domain")
+                .eq("status", "pending")
+                .lte("scheduled_for", nowIso)
+                .order("priority", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (nextItem) {
+                // Checa cooldown do domínio antes de processar
+                const d = nextItem.domain || extractDomain(nextItem.url);
+                const cooldown = isDomainInCooldown(d);
+                if (cooldown.inCooldown) {
+                  // Reagenda o item para depois do cooldown
+                  const newSchedule = new Date(Date.now() + cooldown.remainingSeconds * 1000).toISOString();
+                  await supabase
+                    .from("crawl_queue")
+                    .update({
+                      scheduled_for: newSchedule,
+                      cooldown_until: newSchedule,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq("id", nextItem.id);
+
+                  return {
+                    success: false,
+                    message: `Domínio "${d}" em pausa anti-ban por mais ${cooldown.remainingSeconds}s (${cooldown.reason}). Fila postergada.`,
+                    itemsProcessed: 0,
+                    durationMs: Date.now() - startTime,
+                  };
+                }
+
+                urlToCrawl = nextItem.url;
+                queueItemId = nextItem.id;
+                queueItemAttempts = nextItem.attempts || 0;
+                await supabase
+                  .from("crawl_queue")
+                  .update({
+                    status: "processing",
+                    last_attempt_at: nowIso,
+                    attempts: queueItemAttempts + 1,
+                    updated_at: nowIso,
+                  })
+                  .eq("id", queueItemId);
+              }
+            }
+
+            if (!urlToCrawl) {
+              return {
+                success: true,
+                message: "Nenhuma URL pendente pronta na fila para rastrear.",
+                itemsProcessed: 0,
+                durationMs: Date.now() - startTime,
+              };
+            }
+
+            let pageData;
+            try {
+              pageData = await executeContinuousCrawl(urlToCrawl, queueItemAttempts + 1);
+            } catch (crawlErr) {
+              const errMsg = crawlErr instanceof Error ? crawlErr.message : String(crawlErr);
+              const domain = extractDomain(urlToCrawl);
+              const isCooldownErr = errMsg.includes("DOMAIN_COOLDOWN");
+              const is429 = errMsg.includes("429");
+              const is403 = errMsg.includes("403");
+
+              const cooldownMs = is429 ? 15 * 60 * 1000 : is403 ? 30 * 60 * 1000 : 5 * 60 * 1000;
+              setDomainCooldown(
+                domain,
+                cooldownMs,
+                is429 ? "rate_limit_429" : is403 ? "cloudflare_403" : "crawl_exception"
+              );
+
+              if (queueItemId) {
+                const nextStatus = queueItemAttempts + 1 >= 5 ? "failed" : "pending";
+                await supabase
+                  .from("crawl_queue")
+                  .update({
+                    status: nextStatus,
+                    last_error: errMsg,
+                    is_blocked: is403 || isCooldownErr,
+                    cooldown_until: new Date(Date.now() + cooldownMs).toISOString(),
+                    scheduled_for: new Date(Date.now() + cooldownMs).toISOString(),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", queueItemId);
+              }
+
+              await supabase.from("scraper_audit_log").insert({
+                scraper_name: "continuous-crawler",
+                action: "crawl_error",
+                target_table: "crawl_queue",
+                records_affected: 0,
+                duration_ms: Date.now() - startTime,
+                error_message: errMsg,
+                result_summary: { url: urlToCrawl, domain, attempts: queueItemAttempts + 1 },
+              });
+
+              return {
+                success: false,
+                message: `Erro ao rastrear ${urlToCrawl}: ${errMsg}`,
+                itemsProcessed: 0,
+                durationMs: Date.now() - startTime,
+              };
+            }
+
+            // Tratamento explícito quando o scraper retorna success === false (sem throw)
+            if (!pageData.success) {
+              const domain = pageData.domain || extractDomain(urlToCrawl);
+              const is429 = pageData.rateLimited || pageData.httpStatus === 429;
+              const is403 = pageData.isBlocked || pageData.httpStatus === 403;
+              const cooldownMs = is429 ? 15 * 60 * 1000 : is403 ? 30 * 60 * 1000 : 10 * 60 * 1000;
+
+              setDomainCooldown(
+                domain,
+                cooldownMs,
+                is429 ? "rate_limit_429" : is403 ? "cloudflare_403" : "scrape_failure",
+                pageData.httpStatus
+              );
+
+              if (queueItemId) {
+                const nextStatus = queueItemAttempts + 1 >= 5 ? "failed" : "pending";
+                await supabase
+                  .from("crawl_queue")
+                  .update({
+                    status: nextStatus,
+                    last_error: pageData.error,
+                    last_http_status: pageData.httpStatus,
+                    is_blocked: pageData.isBlocked ?? false,
+                    cooldown_until: new Date(Date.now() + cooldownMs).toISOString(),
+                    scheduled_for: new Date(Date.now() + cooldownMs).toISOString(),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", queueItemId);
+              }
+
+              // Grava também na tabela de cooldowns persistente
+              await supabase.from("domain_cooldowns").upsert({
+                domain,
+                reason: is429 ? "rate_limit_429" : is403 ? "cloudflare_403" : "scrape_failure",
+                http_status: pageData.httpStatus,
+                cooldown_until: new Date(Date.now() + cooldownMs).toISOString(),
+                last_error: pageData.error,
+                updated_at: new Date().toISOString(),
+              });
+
+              await supabase.from("scraper_audit_log").insert({
+                scraper_name: "continuous-crawler",
+                action: "scrape_failure",
+                target_table: "crawl_queue",
+                records_affected: 0,
+                duration_ms: Date.now() - startTime,
+                error_message: pageData.error,
+                result_summary: {
+                  url: pageData.url,
+                  domain,
+                  httpStatus: pageData.httpStatus,
+                  isBlocked: pageData.isBlocked,
+                  rateLimited: pageData.rateLimited,
+                  cooldownMinutes: Math.round(cooldownMs / 60000),
+                },
+              });
+
+              return {
+                success: false,
+                message: `Falha na raspagem de ${urlToCrawl} (HTTP ${pageData.httpStatus}): ${pageData.error}. Domínio em cooldown de ${Math.round(cooldownMs / 60000)}m.`,
+                itemsProcessed: 0,
+                durationMs: Date.now() - startTime,
+              };
+            }
+
+            // Limpa cooldown prévio do domínio se o scraping teve sucesso
+            clearDomainCooldown(pageData.domain);
+
+            // Grava cache com status HTTP real
+            await supabase.from("crawl_cache").upsert({
+              url: pageData.url,
+              domain: pageData.domain,
+              status_code: pageData.httpStatus || 200,
+              content_hash: pageData.contentHash,
+              html_content: pageData.cleanText.substring(0, 5000),
+              extracted_open_graph: pageData.openGraph,
+              extracted_json_ld: pageData.jsonLd,
+              response_time_ms: Date.now() - startTime,
+              crawled_at: new Date().toISOString(),
+            });
+
+            // Enfileira novos links encontrados com DEDUPLICAÇÃO
+            if (pageData.links.length > 0) {
+              const newItems = pageData.links.slice(0, 10).map((link) => ({
+                url: link,
+                domain: extractDomain(link),
+                parent_url: pageData.url,
+                status: "pending",
+                priority: 3,
+                depth: 1,
+              }));
+
+              await supabase
+                .from("crawl_queue")
+                .upsert(newItems, { onConflict: "url", ignoreDuplicates: true });
+            }
+
+            // Atualiza status do item da fila para concluído
+            if (queueItemId) {
+              await supabase
+                .from("crawl_queue")
+                .update({
+                  status: "completed",
+                  last_http_status: pageData.httpStatus || 200,
+                  is_blocked: false,
+                  extracted_data: {
+                    title: pageData.title,
+                    stats: pageData.stats,
+                    classification: pageData.classification,
+                  },
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", queueItemId);
+            }
+
+            const entityType = pageData.classification?.entityType || "news";
+
+            // 1. ROTEAMENTO: PRODUTOS & INTELIGÊNCIA GLOBAL DE PREÇOS
+            if (entityType === "product" || pageData.extractedProduct) {
+              const prod = pageData.extractedProduct || {
+                title: pageData.title,
+                priceCents: 0,
+                currency: "BRL",
+                availability: "in_stock" as const,
+              };
+
+              if (prod.title && prod.title.length > 2) {
+                await supabase.from("mined_products").upsert(
+                  {
+                    source_url: pageData.url,
+                    source_domain: pageData.domain,
+                    title: prod.title,
+                    description: prod.description || pageData.openGraph.description,
+                    brand: prod.brand,
+                    sku: prod.sku,
+                    price_cents: prod.priceCents,
+                    compare_at_cents: prod.compareAtCents,
+                    currency: prod.currency || "BRL",
+                    image_url: prod.imageUrl || pageData.openGraph.image,
+                    availability: prod.availability || "in_stock",
+                    category: prod.category || pageData.classification?.signals?.[0],
+                    price_history: [{ date: new Date().toISOString(), price_cents: prod.priceCents }],
+                    quality_score: prod.priceCents > 0 ? 85 : 60,
+                    status: "pending_review",
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: "source_url" }
+                );
+              }
+            }
+
+            // 2. ROTEAMENTO: EMPRESAS & DIRETÓRIO COMERCIAL (SSoT)
+            if (entityType === "business" || pageData.extractedBusiness) {
+              const biz = pageData.extractedBusiness;
+              const businessName = biz?.name || pageData.openGraph.siteName || pageData.title;
+              if (businessName && businessName.length > 2) {
+                // Síntese de Tom de Voz da Marca via AI Orchestrator
+                let brandTone = "Profissional & Confiável";
+                if (pageData.cleanText.length > 200) {
+                  try {
+                    const aiTonePrompt = `Analise o texto institucional desta empresa e retorne em no máximo 3 palavras o Tom de Voz da marca (ex: 'Premium & Exclusivo', 'Jovem & Dinâmico', 'Acolhedor & Artesanal', 'Técnico & Preciso').\nTexto: ${pageData.cleanText.slice(0, 800)}`;
+                    const toneRes = await executeUnifiedAiCall({
+                      prompt: aiTonePrompt,
+                      temperature: 0.3,
+                      maxTokens: 30,
+                    });
+                    if (toneRes?.text) {
+                      brandTone = toneRes.text.replace(/["\n]/g, "").trim().slice(0, 50);
+                    }
+                  } catch {
+                    // Mantém tom padrão defensivamente
+                  }
+                }
+
+                const qualityScore = Math.min(
+                  100,
+                  Math.max(
+                    50,
+                    (biz?.cnpj ? 30 : 0) +
+                      (biz?.phones?.length ? 20 : 0) +
+                      (pageData.openGraph.image ? 20 : 0) +
+                      (biz?.description ? 15 : 0) +
+                      (biz?.socialLinks && Object.keys(biz.socialLinks).length > 0 ? 15 : 0)
+                  )
+                );
+
+                await supabase.from("directory_listings").upsert(
+                  {
+                    external_id: `crawl-${pageData.domain}`,
+                    source: "crawl",
+                    business_name: businessName,
+                    description:
+                      biz?.description || pageData.openGraph.description || pageData.cleanText.slice(0, 300),
+                    cnpj: biz?.cnpj,
+                    contact_phone: biz?.phones?.[0],
+                    contact_email: biz?.emails?.[0],
+                    address: biz?.address,
+                    city: biz?.city,
+                    state: biz?.state,
+                    website: pageData.url,
+                    instagram_url: biz?.socialLinks?.instagram,
+                    whatsapp_url: biz?.socialLinks?.whatsapp,
+                    data_quality_score: qualityScore,
+                    is_crawled: true,
+                    last_validated_at: new Date().toISOString(),
+                    metadata: {
+                      brand_tone: brandTone,
+                      extracted_at: new Date().toISOString(),
+                      social_links: biz?.socialLinks || {},
+                    },
+                  },
+                  { onConflict: "external_id" }
+                );
+              }
+            }
+
+            // 3. ROTEAMENTO: ESTEIRA EDITORIAL / NOTÍCIAS
+            if (entityType === "news" || (!pageData.extractedProduct && !pageData.extractedBusiness)) {
+              if (pageData.title && pageData.cleanText.length > 50) {
+                const qualityScore = Math.min(
+                  100,
+                  Math.max(
+                    40,
+                    Math.round(
+                      (pageData.stats.wordCount > 150 ? 50 : 25) +
+                        (pageData.openGraph.image ? 25 : 0) +
+                        (pageData.openGraph.description ? 25 : 0)
+                    )
+                  )
+                );
+
+                await supabase.from("mined_articles").insert({
+                  source_url: pageData.url,
+                  source_domain: pageData.domain,
+                  source_type: "crawl",
+                  raw_title: pageData.title,
+                  raw_description: pageData.openGraph.description,
+                  ai_structured_title: pageData.title,
+                  ai_suggested_cover_url: pageData.openGraph.image,
+                  ai_summary: pageData.openGraph.description || pageData.cleanText.substring(0, 300),
+                  extracted_markdown: pageData.cleanText.substring(0, 10000),
+                  quality_score: qualityScore,
+                  status: "pending_review",
+                  has_cover_image: Boolean(pageData.openGraph.image),
+                  word_count: pageData.stats.wordCount,
+                  crawl_queue_id: queueItemId || undefined,
+                });
+              }
+            }
+
+            const durationMs = Date.now() - startTime;
+            await supabase.from("scraper_audit_log").insert({
+              scraper_name: "continuous-crawler",
+              action: "crawl",
+              target_table: "crawl_cache",
+              records_affected: 1,
+              duration_ms: durationMs,
+              result_summary: {
+                title: pageData.title,
+                entityType,
+                linksDiscovered: pageData.links.length,
+                strategy: pageData.strategyUsed,
+              },
+            });
+
+            return {
+              success: true,
+              message: `URL ${pageData.url} rastreada com sucesso: "${pageData.title}" [${entityType.toUpperCase()}] (${pageData.links.length} novos links descobertos)`,
+              itemsProcessed: 1,
+              durationMs,
+              payload: pageData,
+            };
+          }
+
+          case "rss-fetcher": {
+            let feeds = [];
+            if (data.targetUrl) {
+              feeds = [{ feed_url: data.targetUrl, name: "Feed Manual" }];
+            } else {
+              const { data: dbFeeds } = await supabase
+                .from("rss_feeds")
+                .select("id, feed_url, name")
+                .eq("is_active", true)
+                .limit(5);
+              feeds = dbFeeds || [];
+            }
+
+            if (feeds.length === 0) {
+              return {
+                success: true,
+                message: "Nenhum feed RSS ativo cadastrado.",
+                itemsProcessed: 0,
+                durationMs: Date.now() - startTime,
+              };
+            }
+
+            let totalItemsQueued = 0;
+            for (const feed of feeds) {
+              try {
+                const parsed = await parseFeed(feed.feed_url);
+                if (parsed.items.length > 0) {
+                  const queueInserts = parsed.items.slice(0, 15).map((item) => ({
+                    url: item.link,
+                    domain: extractDomain(item.link),
+                    discovered_via: "rss",
+                    entity_type: "news",
+                    status: "pending",
+                    priority: 7,
+                    extracted_data: {
+                      title: item.title,
+                      description: item.description,
+                      publishedAt: item.publishedAt,
+                      imageUrl: item.imageUrl,
+                    },
+                  }));
+
+                  await supabase
+                    .from("crawl_queue")
+                    .upsert(queueInserts, { onConflict: "url", ignoreDuplicates: true });
+
+                  // Alimenta esteira editorial intermediária para curadoria (apenas links novos)
+                  const minedInserts = parsed.items.slice(0, 15).map((item) => ({
+                    source_url: item.link,
+                    source_domain: extractDomain(item.link),
+                    source_type: "rss" as const,
+                    raw_title: item.title,
+                    raw_description: item.description,
+                    ai_structured_title: item.title,
+                    ai_suggested_cover_url: item.imageUrl,
+                    ai_summary: item.description,
+                    extracted_markdown: item.contentEncoded || item.description,
+                    quality_score: 75,
+                    status: "pending_review" as const,
+                    has_cover_image: Boolean(item.imageUrl),
+                  }));
+
+                  // Insere ignorando duplicatas de source_url
+                  for (const m of minedInserts) {
+                    const { data: existing } = await supabase
+                      .from("mined_articles")
+                      .select("id")
+                      .eq("source_url", m.source_url)
+                      .maybeSingle();
+
+                    if (!existing) {
+                      await supabase.from("mined_articles").insert(m);
+                    }
+                  }
+                  totalItemsQueued += queueInserts.length;
+                }
+              } catch (err) {
+                console.warn(`[MiningBFF] Erro ao processar feed ${feed.feed_url}:`, err);
+              }
+            }
+
+            const durationMs = Date.now() - startTime;
+            await supabase.from("scraper_audit_log").insert({
+              scraper_name: "rss-fetcher",
+              action: "fetch_feeds",
+              target_table: "crawl_queue",
+              records_affected: totalItemsQueued,
+              duration_ms: durationMs,
+            });
+
+            return {
+              success: true,
+              message: `Feeds processados. ${totalItemsQueued} novos artigos enfileirados na crawl_queue.`,
+              itemsProcessed: totalItemsQueued,
+              durationMs,
+            };
+          }
+
+          case "market-data": {
+            const indicators = await fetchAllMarketIndicators();
+            const durationMs = Date.now() - startTime;
+
+            await supabase.from("scraper_audit_log").insert({
+              scraper_name: "market-data-miner",
+              action: "fetch_bcb_indicators",
+              records_affected: indicators.length,
+              duration_ms: durationMs,
+              result_summary: { indicatorsCount: indicators.length },
+            });
+
+            return {
+              success: true,
+              message: `${indicators.length} indicadores econômicos do Banco Central minerados com sucesso.`,
+              itemsProcessed: indicators.length,
+              durationMs,
+              payload: indicators,
+            };
+          }
+
+          case "cnpj-enrichment": {
+            const cnpjToEnrich = data.cnpj;
+            if (!cnpjToEnrich) {
+              return {
+                success: false,
+                message: "CNPJ não informado para enriquecimento.",
+                itemsProcessed: 0,
+                durationMs: Date.now() - startTime,
+              };
+            }
+
+            const enriched = await enrichCnpj(cnpjToEnrich);
+            if (!enriched) {
+              return {
+                success: false,
+                message: `Não foi possível encontrar dados oficiais para o CNPJ ${cnpjToEnrich}.`,
+                itemsProcessed: 0,
+                durationMs: Date.now() - startTime,
+              };
+            }
+
+            // Upsert na tabela canônica directory_listings (Single Source of Truth)
+            await supabase.from("directory_listings").upsert({
+              external_id: `cnpj-${enriched.cnpj}`,
+              source: enriched.source,
+              business_name: enriched.nome_fantasia || enriched.razao_social,
+              cnpj: enriched.cnpj,
+              description: `Atividade Principal: ${enriched.cnae_principal?.descricao || 'Comércio/Serviços'}`,
+              category: enriched.cnae_principal?.descricao || "Empresa",
+              address: `${enriched.endereco?.logradouro || ''}, ${enriched.endereco?.numero || 'S/N'}`.trim(),
+              city: enriched.endereco?.municipio,
+              state: enriched.endereco?.uf,
+              neighborhood: enriched.endereco?.bairro,
+              contact_phone: enriched.telefones?.[0],
+              data_quality_score: enriched.dataQualityScore,
+              is_crawled: true,
+              last_validated_at: new Date().toISOString(),
+              status: "active",
+              metadata: {
+                socios: enriched.socios,
+                capital_social: enriched.capital_social,
+                cnae_principal: enriched.cnae_principal,
+                situacao: enriched.situacao_cadastral,
+              },
+            });
+
+            const durationMs = Date.now() - startTime;
+            await supabase.from("scraper_audit_log").insert({
+              scraper_name: "cnpj-enrichment",
+              action: "enrich_cnpj",
+              target_table: "directory_listings",
+              records_affected: 1,
+              duration_ms: durationMs,
+              result_summary: {
+                razao_social: enriched.razao_social,
+                score: enriched.dataQualityScore,
+              },
+            });
+
+            return {
+              success: true,
+              message: `Empresa "${enriched.razao_social}" enriquecida com score de ${enriched.dataQualityScore}%.`,
+              itemsProcessed: 1,
+              durationMs,
+              payload: enriched,
+            };
+          }
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        await supabase.from("scraper_audit_log").insert({
+          scraper_name: data.scraperType,
+          action: "error",
+          error_message: errorMsg,
+          duration_ms: Date.now() - startTime,
+        });
+
+        return {
+          success: false,
+          message: `Erro na execução do minerador: ${errorMsg}`,
+          itemsProcessed: 0,
+          durationMs: Date.now() - startTime,
+        };
+      }
+    }
+  );
+
+/**
+ * Adiciona uma URL/domínio como seed e enfileira na crawl_queue
+ */
+export const addCrawlSeedFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      name: z.string().min(2),
+      url: z.string().url(),
+      category: z.string().default("general"),
+      region: z.string().optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {
+    const supabase = getServerClient();
+    const domain = extractDomain(data.url);
+
+    // Insere semente
+    await supabase.from("crawl_seeds").insert({
+      name: data.name,
+      seed_url: data.url,
+      domain,
+      category: data.category,
+      region: data.region,
+      priority: 8,
+    });
+
+    // Enfileira imediatamente
+    await supabase.from("crawl_queue").insert({
+      url: data.url,
+      domain,
+      discovered_via: "seed",
+      priority: 8,
+      status: "pending",
+    });
+
+    return {
+      success: true,
+      message: `Domínio ${domain} adicionado como semente e enfileirado para crawling.`,
+    };
+  });
+
+/**
+ * Cadastra um novo feed RSS
+ */
+export const addRssFeedFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      name: z.string().min(2),
+      feedUrl: z.string().url(),
+      websiteUrl: z.string().optional(),
+      category: z.string().default("news"),
+      region: z.string().optional(),
+    })
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {
+    const supabase = getServerClient();
+
+    await supabase.from("rss_feeds").insert({
+      name: data.name,
+      feed_url: data.feedUrl,
+      website_url: data.websiteUrl,
+      category: data.category,
+      region: data.region,
+      is_active: true,
+    });
+
+    return {
+      success: true,
+      message: `Feed RSS "${data.name}" cadastrado com sucesso.`,
+    };
+  });
+
+/**
+ * Geração em lote de Ghost Stores para empresas mineradas com score superior
+ */
+export const generateGhostStoresFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      minScore: z.number().int().min(50).max(100).default(80),
+      limit: z.number().int().min(1).max(200).default(50),
+    })
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; createdCount: number; message: string }> => {
+    const identity = await getServerIdentity();
+    await requireAdmin();
+    const supabase = getServerClient();
+
+    // 1. Tenta executar via stored procedure atômica
+    const rpcRes = await supabase.rpc("generate_ghost_stores_from_high_score_listings", {
+      p_min_score: data.minScore,
+      p_limit: data.limit,
+    });
+
+    if (!rpcRes.error && rpcRes.data?.success) {
+      return {
+        success: true,
+        createdCount: rpcRes.data.created_count || 0,
+        message: `${rpcRes.data.created_count || 0} Ghost Store(s) gerada(s) com sucesso a partir de listagens com score >= ${data.minScore}%.`,
+      };
+    }
+
+    // 2. Fallback defensivo caso migration ainda não tenha sido aplicada no banco
+    const { data: listings } = await supabase
+      .from("directory_listings")
+      .select("id, business_name, cnpj, cnae, contact_phone, city, state, address, description, avatar_url, banner_url, photos, data_quality_score, crawl_score, working_hours, scraper_source")
+      .gte("data_quality_score", data.minScore)
+      .is("ghost_store_id", null)
+      .is("store_id", null)
+      .not("business_name", "is", null)
+      .limit(data.limit);
+
+    if (!listings || listings.length === 0) {
+      return {
+        success: true,
+        createdCount: 0,
+        message: "Nenhuma empresa elegível encontrada com score >= " + data.minScore + "% para geração de Ghost Store.",
+      };
+    }
+
+    const { data: defaultOrg } = await supabase.from("organizations").select("id").limit(1).maybeSingle();
+    let createdCount = 0;
+
+    for (const dl of listings) {
+      const baseSlug = (dl.business_name || "empresa")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+
+      const { data: store, error: insertErr } = await supabase
+        .from("stores")
+        .insert({
+          organization_id: defaultOrg?.id || "00000000-0000-0000-0000-000000000001",
+          name: dl.business_name,
+          slug: uniqueSlug,
+          is_ghost: true,
+          source_listing_id: dl.id,
+          claim_status: "unclaimed",
+          settings: {
+            is_ghost: true,
+            claimed: false,
+            cnpj: dl.cnpj,
+            phone: dl.contact_phone,
+            city: dl.city,
+            state: dl.state,
+            address: dl.address,
+            description: dl.description,
+            avatar_url: dl.avatar_url,
+            banner_url: dl.banner_url,
+            photos: dl.photos,
+            quality_score: dl.data_quality_score,
+            source: dl.scraper_source || "crawled_directory",
+          },
+        })
+        .select("id")
+        .single();
+
+      if (!insertErr && store?.id) {
+        await supabase
+          .from("directory_listings")
+          .update({ ghost_store_id: store.id })
+          .eq("id", dl.id);
+        createdCount++;
+      }
+    }
+
+    return {
+      success: true,
+      createdCount,
+      message: `${createdCount} Ghost Store(s) gerada(s) com sucesso.`,
+    };
+  });
+
+/**
+ * Métricas de Ghost Stores e Oportunidades de Claim
+ */
+export const getGhostStoreMetricsFn = createServerFn({ method: "GET" })
+  .handler(async (): Promise<{
+    totalGhostStores: number;
+    claimedGhostStores: number;
+    pendingClaims: number;
+    eligibleListings: number;
+  }> => {
+    const supabase = getServerClient();
+
+    const [
+      { count: totalGhost },
+      { count: claimedGhost },
+      { count: pendingClaims },
+      { count: eligibleListings },
+    ] = await Promise.all([
+      supabase.from("stores").select("id", { count: "exact", head: true }).eq("is_ghost", true),
+      supabase.from("stores").select("id", { count: "exact", head: true }).eq("claim_status", "claimed"),
+      supabase.from("claim_profiles").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("directory_listings").select("id", { count: "exact", head: true }).gte("data_quality_score", 80).is("ghost_store_id", null),
+    ]);
+
+    return {
+      totalGhostStores: totalGhost || 0,
+      claimedGhostStores: claimedGhost || 0,
+      pendingClaims: pendingClaims || 0,
+      eligibleListings: eligibleListings || 0,
+    };
+  });
+
+/**
+ * Despacho Central de Execução de Rotinas Agendadas (pg_cron / webhook)
+ */
+export const dispatchScheduledMiningJobFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      jobType: z.enum(["market-data", "rss-fetcher", "cnpj-enrichment", "continuous-crawler"]),
+    })
+  )
+  .handler(async ({ data }): Promise<{ success: boolean; result: any }> => {
+    const supabase = getServerClient();
+    const startTime = Date.now();
+
+    let jobResult: any = null;
+
+    if (data.jobType === "market-data") {
+      const indicators = await fetchAllMarketIndicators();
+      jobResult = { count: indicators.length };
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "market-data",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        items_processed: indicators.length,
+        items_inserted: indicators.length,
+        metadata: { indicators_count: indicators.length, source: "bcb_sgs_cron" },
+      });
+    } else if (data.jobType === "rss-fetcher") {
+      const { data: feeds } = await supabase.from("rss_feeds").select("*").eq("is_active", true).limit(10);
+      let totalParsed = 0;
+      if (feeds && feeds.length > 0) {
+        for (const feed of feeds) {
+          try {
+            const parsed = await parseFeed(feed.feed_url);
+            totalParsed += parsed.items.length;
+          } catch {}
+        }
+      }
+      jobResult = { feedsProcessed: feeds?.length || 0, itemsFound: totalParsed };
+      await supabase.from("scraper_audit_log").insert({
+        scraper_name: "rss-fetcher",
+        status: "success",
+        duration_ms: Date.now() - startTime,
+        items_processed: feeds?.length || 0,
+        items_inserted: totalParsed,
+        metadata: { source: "rss_ingester_cron" },
+      });
+    }
+
+    await supabase
+      .from("mining_schedules")
+      .update({ last_run_at: new Date().toISOString() })
+      .eq("job_type", data.jobType);
+
+    return {
+      success: true,
+      result: jobResult,
+    };
+  });
+
+/**
+ * Consulta a Base Global de Produtos Minerados (mined_products)
+ */
+export const getMinedProductsFn = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      search: z.string().optional(),
+      domain: z.string().optional(),
+      status: z.enum(["pending_review", "approved", "rejected", "synced"]).optional(),
+      limit: z.number().default(20),
+      offset: z.number().default(0),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    let query = supabase
+      .from("mined_products")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+
+    if (data.search && data.search.trim().length > 0) {
+      query = query.ilike("title", `%${data.search.trim()}%`);
+    }
+
+    if (data.domain) {
+      query = query.eq("source_domain", data.domain);
+    }
+
+    if (data.status) {
+      query = query.eq("status", data.status);
+    }
+
+    const { data: rows, count, error } = await query;
+    if (error) {
+      console.error("[MiningBFF] Erro ao carregar mined_products:", error);
+      return { products: [], total: 0 };
+    }
+
+    return { products: rows || [], total: count || 0 };
+  });
+
+/**
+ * Radar & Inteligência de Preços Globais (Benchmark Multi-Domínio)
+ */
+export const getGlobalPriceBenchmarkFn = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().min(2),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const cleanQuery = data.query.trim();
+
+    const { data: products, error } = await supabase
+      .from("mined_products")
+      .select("id, title, price_cents, compare_at_cents, source_domain, source_url, image_url, availability, updated_at")
+      .ilike("title", `%${cleanQuery}%`)
+      .gt("price_cents", 0)
+      .order("price_cents", { ascending: true })
+      .limit(30);
+
+    if (error || !products || products.length === 0) {
+      return {
+        query: cleanQuery,
+        matchesCount: 0,
+        minPriceCents: 0,
+        maxPriceCents: 0,
+        averagePriceCents: 0,
+        benchmarkSpreadPercent: 0,
+        offers: [],
+      };
+    }
+
+    const prices = products.map((p) => p.price_cents);
+    const minPriceCents = Math.min(...prices);
+    const maxPriceCents = Math.max(...prices);
+    const averagePriceCents = Math.round(prices.reduce((acc, p) => acc + p, 0) / prices.length);
+    const spreadPercent = minPriceCents > 0 ? Math.round(((maxPriceCents - minPriceCents) / minPriceCents) * 100) : 0;
+
+    return {
+      query: cleanQuery,
+      matchesCount: products.length,
+      minPriceCents,
+      maxPriceCents,
+      averagePriceCents,
+      benchmarkSpreadPercent: spreadPercent,
+      offers: products,
+    };
+  });
+
+/**
+ * Telemetria de Cooldowns de Domínios Ativos
+ */
+export const getDomainCooldownsFn = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const { data: rows } = await supabase
+    .from("domain_cooldowns")
+    .select("*")
+    .gt("cooldown_until", new Date().toISOString())
+    .order("cooldown_until", { ascending: true });
+
+  return { cooldowns: rows || [] };
+});
+
+/**
+ * Limpeza manual de cooldown de domínio para administradores
+ */
+export const resetDomainCooldownFn = createServerFn({ method: "POST" })
+  .validator(z.object({ domain: z.string() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const cleanDomain = data.domain.toLowerCase().trim();
+    clearDomainCooldown(cleanDomain);
+
+    await supabase.from("domain_cooldowns").delete().eq("domain", cleanDomain);
+
+    return { success: true, message: `Cooldown do domínio ${cleanDomain} resetado com sucesso.` };
+  });
+
+/**
+ * Atualização / Edição de Produto Minerado (CRUD Bilateral)
+ */
+export const updateMinedProductFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string(),
+      title: z.string().min(2).optional(),
+      description: z.string().optional(),
+      price_cents: z.number().int().min(0).optional(),
+      compare_at_cents: z.number().int().min(0).nullable().optional(),
+      image_url: z.string().url().nullable().optional(),
+      category: z.string().optional(),
+      availability: z.string().optional(),
+      status: z.enum(["pending_review", "approved", "rejected", "synced"]).optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const updatePayload: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.title !== undefined) updatePayload.title = data.title.trim();
+    if (data.description !== undefined) updatePayload.description = data.description?.trim() || null;
+    if (data.price_cents !== undefined) updatePayload.price_cents = data.price_cents;
+    if (data.compare_at_cents !== undefined) updatePayload.compare_at_cents = data.compare_at_cents;
+    if (data.image_url !== undefined) updatePayload.image_url = data.image_url;
+    if (data.category !== undefined) updatePayload.category = data.category;
+    if (data.availability !== undefined) updatePayload.availability = data.availability;
+    if (data.status !== undefined) updatePayload.status = data.status;
+
+    const { data: updated, error } = await supabase
+      .from("mined_products")
+      .update(updatePayload)
+      .eq("id", data.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[updateMinedProductFn] Erro ao atualizar produto minerado:", error);
+      throw new Error(`Falha ao atualizar produto minerado: ${error.message}`);
+    }
+
+    return { success: true, product: updated };
+  });
+
+/**
+ * Exclusão de Produto Minerado
+ */
+export const deleteMinedProductFn = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { error } = await supabase.from("mined_products").delete().eq("id", data.id);
+
+    if (error) {
+      console.error("[deleteMinedProductFn] Erro ao excluir produto minerado:", error);
+      throw new Error(`Falha ao excluir produto minerado: ${error.message}`);
+    }
+
+    return { success: true, message: "Produto minerado removido com sucesso." };
+  });
+
+/**
+ * Importação 1-Toque de Produto Minerado para o Catálogo Oficial da Loja (tabela products)
+ */
+export const importMinedProductToStoreFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      minedProductId: z.string(),
+      storeId: z.string().uuid(),
+      customTitle: z.string().optional(),
+      customPriceCents: z.number().int().min(0).optional(),
+      categoryId: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity().catch(() => null);
+
+    // 1. Obter o produto minerado
+    const { data: mined, error: minedErr } = await supabase
+      .from("mined_products")
+      .select("*")
+      .eq("id", data.minedProductId)
+      .single();
+
+    if (minedErr || !mined) {
+      throw new Error("Produto minerado não encontrado para importação.");
+    }
+
+    // 2. Gerar slug limpo para o produto
+    const rawTitle = data.customTitle?.trim() || mined.title;
+    const baseSlug = rawTitle
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+    const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 7)}`;
+
+    const priceCents = data.customPriceCents ?? mined.price_cents ?? 0;
+    const compareAtCents = mined.compare_at_cents ?? null;
+
+    // 3. Inserir produto no catálogo oficial
+    const productPayload = {
+      store_id: data.storeId,
+      title: rawTitle,
+      slug: uniqueSlug,
+      description: mined.description || `Produto importado automaticamente de ${mined.source_domain}`,
+      price_cents: priceCents,
+      compare_at_cents: compareAtCents,
+      status: "published",
+      brand: mined.source_domain || null,
+      attributes: {
+        imported_from_mining: true,
+        source_url: mined.source_url,
+        source_domain: mined.source_domain,
+        mined_product_id: mined.id,
+        imported_by: identity?.id || null,
+        imported_at: new Date().toISOString(),
+      },
+    };
+
+    const { data: newProduct, error: prodErr } = await supabase
+      .from("products")
+      .insert(productPayload)
+      .select("id, title, slug, price_cents, status")
+      .single();
+
+    if (prodErr || !newProduct) {
+      console.error("[importMinedProductToStoreFn] Erro ao inserir produto oficial:", prodErr);
+      throw new Error(`Falha ao criar produto no catálogo: ${prodErr?.message || "Erro desconhecido"}`);
+    }
+
+    // 4. Se tiver imagem, vincular à tabela product_media
+    if (mined.image_url) {
+      try {
+        await supabase.from("product_media").insert({
+          product_id: newProduct.id,
+          url: mined.image_url,
+          sort_order: 0,
+        });
+      } catch (mediaErr: any) {
+        console.warn("[importMinedProductToStoreFn] Aviso ao vincular product_media:", mediaErr?.message);
+      }
+    }
+
+    // 5. Atualizar status do produto minerado para 'synced'
+    await supabase
+      .from("mined_products")
+      .update({
+        status: "synced",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", mined.id);
+
+    return {
+      success: true,
+      productId: newProduct.id,
+      product: newProduct,
+      message: `"${rawTitle}" foi importado com sucesso para o catálogo da sua loja!`,
+    };
+  });
+
+/**
+ * Importação em Lote de Produtos Minerados para uma Loja
+ */
+export const batchImportMinedProductsFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      minedProductIds: z.array(z.string()).min(1),
+      storeId: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    let successCount = 0;
+    const errors: string[] = [];
+
+    for (const minedId of data.minedProductIds) {
+      try {
+        await importMinedProductToStoreFn({
+          data: {
+            minedProductId: minedId,
+            storeId: data.storeId,
+          },
+        });
+        successCount++;
+      } catch (e: any) {
+        errors.push(e?.message || `Falha no item ${minedId}`);
+      }
+    }
+
+    return {
+      success: successCount > 0,
+      importedCount: successCount,
+      totalRequested: data.minedProductIds.length,
+      errors: errors.length > 0 ? errors : undefined,
+    };
+  });
 
 
 

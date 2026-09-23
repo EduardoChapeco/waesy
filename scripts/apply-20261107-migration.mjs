@@ -1,0 +1,74 @@
+import postgres from "postgres";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const secretsPath = path.resolve(__dirname, "../.env.secrets");
+let dbPassword = process.env.SUPABASE_DB_PASSWORD || "";
+if (fs.existsSync(secretsPath)) {
+  const content = fs.readFileSync(secretsPath, "utf8");
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("SUPABASE_DB_PASSWORD=")) {
+      dbPassword = trimmed.replace("SUPABASE_DB_PASSWORD=", "").replace(/["']/g, "").trim();
+    }
+  }
+}
+
+if (!dbPassword) {
+  dbPassword = "EEaR6399!@#2026";
+}
+
+const sqlPath = path.resolve(__dirname, "../supabase/migrations/20261107000000_eventos_credenciais_assimilation.sql");
+const sqlContent = fs.readFileSync(sqlPath, "utf8");
+
+const configs = [
+  {
+    host: "aws-0-sa-east-1.pooler.supabase.com",
+    port: 6543,
+    database: "postgres",
+    username: "postgres.jfuebqmltksyznovhlwa",
+    password: dbPassword,
+  },
+  {
+    host: "aws-0-sa-east-1.pooler.supabase.com",
+    port: 5432,
+    database: "postgres",
+    username: "postgres.jfuebqmltksyznovhlwa",
+    password: dbPassword,
+  },
+];
+
+async function run() {
+  let success = false;
+  for (const cfg of configs) {
+    console.log(`Tentando conectar em ${cfg.host}:${cfg.port}...`);
+    try {
+      const sql = postgres({
+        ...cfg,
+        ssl: "require",
+        connect_timeout: 15,
+        max: 1,
+      });
+
+      console.log("Executando migração 20261107000000 no Supabase...");
+      await sql.unsafe(sqlContent);
+      console.log("Migração 20261107000000 aplicada com sucesso no Supabase!");
+      await sql.end();
+      success = true;
+      break;
+    } catch (err) {
+      console.error(`Falha ao conectar via ${cfg.host}:${cfg.port}:`, err.message);
+    }
+  }
+
+  if (!success) {
+    console.error("Não foi possível aplicar a migração em nenhuma das portas configuradas.");
+    process.exit(1);
+  }
+}
+
+run();

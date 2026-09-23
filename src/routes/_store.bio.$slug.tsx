@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+﻿import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { User2, ExternalLink, MessageCircle, QrCode, Copy, Check, Link as LinkIcon, Instagram, Youtube, Linkedin, Twitter, Mail, Send, Plane, Compass, FileCheck, ShieldCheck, Ship, GraduationCap, Briefcase, Heart, Layers, Clock, MapPin, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_store/bio/$slug")({
       return res;
     } catch (err) {
       console.error("[loader:_store.bio.$slug] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
  head: ({ loaderData }) => {

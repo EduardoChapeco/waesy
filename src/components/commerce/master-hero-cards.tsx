@@ -117,7 +117,7 @@ export function MasterHeroCards({
  return {
  id: hp.id,
  slug: hp.slug,
- to: hp.target_route || defaultMatch?.to || `/${cleanSlug}`,
+ to: (hp.target_route && hp.target_route !== "null" && hp.target_route.startsWith("/")) ? hp.target_route : (defaultMatch?.to || `/${cleanSlug}`),
  title: hp.title,
  coverUrl:
  hp.cover_image_url ||
@@ -179,7 +179,7 @@ export function MasterHeroCards({
  id: hp.id,
  slug: hp.slug,
  label: hp.title,
- to: hp.target_route || defaultMatch?.to || `/${cleanSlug}`,
+ to: (hp.target_route && hp.target_route !== "null" && hp.target_route.startsWith("/")) ? hp.target_route : (defaultMatch?.to || `/${cleanSlug}`),
  icon: defaultMatch?.icon || Compass,
  icon_url: hp.custom_icon_url || hp.icon_url || undefined,
  emoji: (hp as any).emoji || defaultMatch?.emoji || undefined,

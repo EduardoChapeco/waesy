@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { PLATFORM_LOCATION } from "@/lib/brand.config";
 import {
  ArrowLeft,
  Loader2,
@@ -173,7 +174,7 @@ function NovoOrcamentoTravelosPage() {
 
  // Origem & Destino Canônico
  const [selectedCanonicalDest, setSelectedCanonicalDest] = useState<CanonicalDestination | null>(null);
- const [originCity, setOriginCity] = useState("Chapecó");
+ const [originCity, setOriginCity] = useState(PLATFORM_LOCATION.defaultCity);
  const [originIata, setOriginIata] = useState("XAP");
  const [destinationIata, setDestinationIata] = useState("");
 

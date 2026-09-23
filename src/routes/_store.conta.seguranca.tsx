@@ -119,9 +119,9 @@ function SecurityAndDevicesPage() {
           size="sm"
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="rounded-xl text-xs font-semibold h-8 px-3.5 gap-1.5 cursor-pointer"
+          className="rounded-xl text-xs sm:text-sm font-semibold h-10 sm:h-11 px-3.5 sm:px-4 gap-2 cursor-pointer border-border/70 bg-card hover:bg-muted/50 shadow-2xs active:scale-98"
         >
-          <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`size-4 ${isRefreshing ? "animate-spin" : ""}`} />
           <span>Atualizar</span>
         </Button>
       </div>
@@ -193,7 +193,7 @@ function SecurityAndDevicesPage() {
         size="sm"
         disabled={loadingDeviceId === device.id}
         onClick={() => handleTrustDevice(device.id)}
-        className="h-8 text-xs rounded-lg gap-1.5"
+        className="h-9 px-3 text-xs font-semibold rounded-xl gap-1.5 shadow-2xs cursor-pointer active:scale-98"
       >
         <CheckCircle2 className="size-3.5" strokeWidth={1.75} />
         Confiar
@@ -205,7 +205,7 @@ function SecurityAndDevicesPage() {
       size="sm"
       disabled={loadingDeviceId === device.id}
       onClick={() => handleRevokeDevice(device.id)}
-      className="h-8 text-xs rounded-lg gap-1.5 text-destructive hover:bg-destructive/10"
+      className="h-9 px-3 text-xs font-semibold rounded-xl gap-1.5 text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
     >
       <Trash2 className="size-3.5" strokeWidth={1.75} />
       Desconectar

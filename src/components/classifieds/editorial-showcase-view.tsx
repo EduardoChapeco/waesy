@@ -817,7 +817,7 @@ export function EditorialShowcaseView({
             {/* ── Galeria Editorial Proporcional (Hero Natural 16:10 + Miniaturas) ── */}
             {images.length > 0 && (
               <div className="w-full space-y-2">
-                <div className="relative -mx-1 sm:mx-0 w-[calc(100%+8px)] sm:w-full aspect-[16/10] rounded-none sm:rounded-2xl overflow-hidden bg-muted/30 border-y sm:border border-border/40 group">
+                <div className="relative w-full aspect-[16/10] rounded-xl sm:rounded-2xl overflow-hidden bg-muted/30 border border-border/40 group">
                   <img
                     src={images[activeImageIndex] || images[0]}
                     alt={classified.title}
@@ -983,7 +983,7 @@ export function EditorialShowcaseView({
 
         {/* ── Destaques Visuais ── */}
         {storyHighlights.length > 0 && (
-          <div className="flex items-center gap-3.5 overflow-x-auto no-scrollbar py-2 -mx-1 px-1">
+          <div className="flex items-center gap-3.5 overflow-x-auto no-scrollbar py-2">
             {storyHighlights.map((hl: any, index: number) => (
               <button
                 key={hl.id || index}

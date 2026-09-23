@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   listPublicArticles,
   listPublicNewsSponsors,
@@ -31,6 +32,8 @@ import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { HitsLeadCard } from "@/components/commerce/hits-lead-card";
 import { NewsCard } from "@/components/news/news-card";
 import { NewsSponsorBanner } from "@/components/news/news-sponsor-banner";
+import { EconomicIndicatorsBar } from "@/components/news/economic-indicators-bar";
+import { getMarketIndicatorsFn } from "@/services/mining.functions";
 
 export const Route = createFileRoute("/_store/noticias/")({
   head: () => ({
@@ -44,16 +47,17 @@ export const Route = createFileRoute("/_store/noticias/")({
   }),
   loader: async () => {
     try {
-      const [articles, banners, hotpages, sponsors] = await Promise.all([
+      const [articles, banners, hotpages, sponsors, indicators] = await Promise.all([
         listPublicArticles({ data: { limit: 40 } }).catch(() => []),
         listActiveBanners({ data: { placement: "noticias" } }).catch(() => []),
         listHotpages({ data: { module: "noticias" } }).catch(() => []),
         listPublicNewsSponsors({ data: { limit: 12 } }).catch(() => []),
+        getMarketIndicatorsFn().catch(() => []),
       ]);
-      return { articles, banners, hotpages, sponsors };
+      return { articles, banners, hotpages, sponsors, indicators: indicators || [] };
     } catch (err) {
       console.error("[loader:_store.noticias.index] Unhandled error:", err);
-      return { articles: [], banners: [], hotpages: [], sponsors: [] };
+      return { articles: [], banners: [], hotpages: [], sponsors: [], indicators: [] };
     }
   },
   component: NoticiasFeedPage,
@@ -76,6 +80,7 @@ export function NoticiasFeedPage() {
     banners = [],
     hotpages = [],
     sponsors = [],
+    indicators = [],
   } = ((Route.useLoaderData?.() as any) || {});
   const [articles, setArticles] = useState<NewsArticleDTO[]>(initialArticles || []);
   const [selectedCategory, setSelectedCategory] = useState("todas");
@@ -119,7 +124,7 @@ export function NoticiasFeedPage() {
   const gridArticles = articles.slice(1);
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-0 sm:px-4 space-y-6 pb-20">
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-20">
       {/* ── 1. Top Banners de Notícias ── */}
       {banners && banners.length > 0 && (
         <section aria-label="Banners e Anúncios">
@@ -149,39 +154,26 @@ export function NoticiasFeedPage() {
       </div>
 
       <section aria-label="Editorias de Notícias" className="space-y-2">
-        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2 pt-1 w-full px-0.5 focus:outline-none">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full px-0.5 focus:outline-none">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.id;
-            const Icon = cat.icon || NewspaperClipping;
 
             return (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => handleFilterCategory(cat.id)}
-                className={`inline-flex items-center gap-3 px-5 h-14 rounded-2xl border transition-all select-none group cursor-pointer shrink-0 active:scale-[0.98] ${
+                className={cn(
+                  "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
                   isSelected
-                    ? "bg-primary/10 text-primary border-primary/30 font-bold"
-                    : "bg-card text-foreground border-border hover:bg-muted/70 hover:border-foreground/20"
-                }`}
+                    ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                    : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
+                )}
               >
-                <div className="relative size-8 sm:size-9 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                  {cat.emoji ? (
-                    <span className="text-xl sm:text-2xl leading-none">{cat.emoji}</span>
-                  ) : (
-                    <Icon
-                      size={24}
-                      weight="bold"
-                      className={isSelected ? "text-primary" : "text-foreground"}
-                    />
-                  )}
-                </div>
-
-                <span
-                  className={`text-sm font-bold whitespace-nowrap ${
-                    isSelected ? "text-primary" : "text-foreground"
-                  }`}
-                >
+                {cat.emoji && (
+                  <span className="text-sm leading-none shrink-0">{cat.emoji}</span>
+                )}
+                <span className="whitespace-nowrap">
                   {cat.label}
                 </span>
               </button>
@@ -189,6 +181,11 @@ export function NoticiasFeedPage() {
           })}
         </div>
       </section>
+
+      {/* ── 3. Indicadores Financeiros do Banco Central em Tempo Real ── */}
+      {indicators && indicators.length > 0 && (
+        <EconomicIndicatorsBar indicators={indicators} />
+      )}
 
       {/* ── 3.5. Hotpages & Coleções Visuais de Notícias ── */}
       {hotpages && hotpages.length > 0 && (

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/_store/conta/pedidos/$id")({
       };
     } catch (err) {
       console.error("[loader:_store.conta.pedidos.$id] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: CustomerOrderDetailPage,

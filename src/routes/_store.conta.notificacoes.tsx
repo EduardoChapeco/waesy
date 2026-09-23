@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/conta/notificacoes")({
   head: () => ({
-    meta: [{ title: "Central de Notificações | Waesy" }],
+    meta: [{ title: "Notificações | Waesy" }],
   }),
   loader: async () => {
     try {
@@ -44,11 +44,11 @@ export const Route = createFileRoute("/_store/conta/notificacoes")({
 });
 
 const CATEGORY_TABS = [
-  { id: "all", label: "Todas Notificações" },
-  { id: "interaction", label: "Interações & Leads" },
-  { id: "promotion", label: "Ofertas & Promoções" },
-  { id: "opportunity", label: "Vagas & Oportunidades" },
-  { id: "system", label: "Avisos do Sistema" },
+  { id: "all", label: "Todas" },
+  { id: "interaction", label: "Mensagens" },
+  { id: "promotion", label: "Ofertas" },
+  { id: "opportunity", label: "Vagas" },
+  { id: "system", label: "Sistema" },
 ];
 
 function NotificationsPage() {
@@ -150,7 +150,7 @@ function NotificationsPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-2">
@@ -178,16 +178,16 @@ function NotificationsPage() {
             size="sm"
             onClick={() => markAllMutation.mutate()}
             disabled={markAllMutation.isPending}
-            className="rounded-xl font-semibold text-xs gap-1.5 h-8 px-3.5 cursor-pointer"
+            className="h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs sm:text-sm gap-1.5 cursor-pointer shadow-2xs active:scale-98"
           >
-            <CheckCheck className="size-3.5 text-primary" />
+            <CheckCheck className="size-4 text-primary" />
             <span>Marcar lidas</span>
           </Button>
         )}
       </div>
 
-      {/* ── 2. Tabs / Filtros Horizontais ── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+      {/* ── 2. Tabs / Filtros Horizontais (Padrão Botão Grande) ── */}
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar">
         {CATEGORY_TABS.map((tab) => {
           const isActive = activeCategory === tab.id;
           return (
@@ -196,10 +196,10 @@ function NotificationsPage() {
               type="button"
               onClick={() => setActiveCategory(tab.id)}
               className={cn(
-                "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border",
+                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center select-none active:scale-98 shadow-2xs",
                 isActive
-                  ? "bg-primary/10 text-primary border-primary/20 font-bold"
-                  : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent"
+                  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
               )}
             >
               {tab.label}

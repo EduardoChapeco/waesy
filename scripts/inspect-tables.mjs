@@ -11,8 +11,8 @@ const sql = postgres({
 });
 
 async function run() {
-  const tables = await sql`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND (table_name ILIKE '%store%' OR table_name ILIKE '%member%' OR table_name ILIKE '%user%')`;
-  console.log('tables:', tables.map(t => t.table_name));
+  const cols = await sql`SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'workspace_members'`;
+  console.log('WM COLS:', cols.map(c => c.column_name));
   await sql.end();
 }
 run();

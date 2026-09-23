@@ -22,6 +22,7 @@ import { listUserFavorites, toggleFavorite } from "@/services/favorites.function
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/_store/conta/salvos")({
@@ -170,7 +171,7 @@ function SavedItemsPage() {
         ) : (
           <>
             {/* Trilho com scroll horizontal para não empilhar linhas no mobile */}
-            <div className="flex-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <div className="flex-1 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
               {TYPE_TABS.map((tab) => {
                 const isActive = selectedType === tab.id;
                 return (
@@ -178,28 +179,30 @@ function SavedItemsPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setSelectedType(tab.id)}
-                    className={`h-9 px-3.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
+                    className={cn(
+                      "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
                       isActive
-                        ? "bg-primary/10 text-primary border-primary/20 font-bold"
-                        : "bg-transparent text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/50"
-                    }`}
+                        ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                        : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
+                    )}
                   >
-                    {tab.icon && <tab.icon className="size-3.5 shrink-0" strokeWidth={1.75} />}
+                    {tab.icon && <tab.icon className="size-4 shrink-0" strokeWidth={1.75} />}
                     <span>{tab.label}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Botão de busca fixo na extrema direita (NÃO tem scroll horizontal) */}
+            {/* Botão de busca fixo na extrema direita (Padrão Botão Grande) */}
             <Button
               type="button"
               variant="outline"
               size="icon"
               onClick={() => setIsSearchOpen(true)}
-              className={`size-9 rounded-full shrink-0 border-border/70 bg-card hover:bg-muted/40 cursor-pointer relative ${
+              className={cn(
+                "h-10 sm:h-11 w-10 sm:w-11 rounded-xl shrink-0 border-border/70 bg-card hover:bg-muted/50 cursor-pointer relative shadow-2xs active:scale-95",
                 searchQuery ? "border-primary text-primary" : ""
-              }`}
+              )}
               title="Buscar em itens salvos"
             >
               <Search className="size-4" />

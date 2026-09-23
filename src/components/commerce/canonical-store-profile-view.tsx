@@ -83,7 +83,8 @@ import { getOpenStatus, formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { addToCart } from "@/services/cart.functions";
-import { requestDirectoryQuote } from "@/services/directory.functions";
+import { requestDirectoryQuote, updateDirectoryListingFn } from "@/services/directory.functions";
+import { importMinedProductToStoreFn } from "@/services/mining.functions";
 import { participateInRaffle } from "@/services/invite.functions";
 import { upsertStorePageSection, saveStorePageSectionsOrder } from "@/services/store.functions";
 import { useCartContext } from "@/lib/cart-context";
@@ -196,6 +197,73 @@ export function CanonicalStoreProfileView({
   const [quoteMessage, setQuoteMessage] = useState("");
   const [hasQuoted, setHasQuoted] = useState(false);
   const [isSendingQuote, setIsSendingQuote] = useState(false);
+
+  // Modal de Edição Rápida da Empresa (Modo Proprietário — Bilateral CRUD)
+  const [isEditCompanyModalOpen, setIsEditCompanyModalOpen] = useState(false);
+  const [editCompanyName, setEditCompanyName] = useState(store?.name || store?.business_name || "");
+  const [editCompanyCategory, setEditCompanyCategory] = useState(store?.category || store?.type || "servicos");
+  const [editCompanyDescription, setEditCompanyDescription] = useState(store?.description || store?.settings?.bio || "");
+  const [editCompanyAddress, setEditCompanyAddress] = useState(store?.address || "");
+  const [editCompanyCity, setEditCompanyCity] = useState(store?.city || "São Miguel do Oeste");
+  const [editCompanyPhone, setEditCompanyPhone] = useState(store?.phone || store?.contact_phone || "");
+  const [editCompanyWhatsapp, setEditCompanyWhatsapp] = useState(store?.contact_whatsapp || store?.whatsapp || store?.phone || "");
+  const [editCompanyEmail, setEditCompanyEmail] = useState(store?.email || store?.contact_email || "");
+  const [editCompanyWebsite, setEditCompanyWebsite] = useState(store?.website_url || store?.website || "");
+  const [editCompanyHours, setEditCompanyHours] = useState("Seg a Sex: 08:00 - 18:00");
+  const [editCompanySpecialties, setEditCompanySpecialties] = useState(
+    Array.isArray(store?.specialties || store?.settings?.specialties)
+      ? (store?.specialties || store?.settings?.specialties).join(", ")
+      : ""
+  );
+  const [isSavingCompany, setIsSavingCompany] = useState(false);
+
+  const handleSaveCompanyQuickEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingCompany(true);
+    try {
+      const res = await updateDirectoryListingFn({
+        data: {
+          id: store.id,
+          businessName: editCompanyName,
+          category: editCompanyCategory,
+          description: editCompanyDescription,
+          address: editCompanyAddress,
+          city: editCompanyCity,
+          contactPhone: editCompanyPhone,
+          contactWhatsapp: editCompanyWhatsapp,
+          contactEmail: editCompanyEmail,
+          websiteUrl: editCompanyWebsite,
+          workingHours: editCompanyHours,
+        },
+      });
+      toast.success(res.message);
+      setIsEditCompanyModalOpen(false);
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao salvar alterações na empresa.");
+    } finally {
+      setIsSavingCompany(false);
+    }
+  };
+
+  const handleImportMinedProduct = async (p: any) => {
+    try {
+      const res = await importMinedProductToStoreFn({
+        data: {
+          minedProductId: p.id,
+          storeId: store.id,
+        },
+      });
+      toast.success(res.message);
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao importar produto para a loja.");
+    }
+  };
 
   // Concursos de Sorte
   const [selectedConcurso, setSelectedConcurso] = useState<any | null>(null);
@@ -461,7 +529,7 @@ export function CanonicalStoreProfileView({
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 md:pb-12 animate-in fade-in duration-200">
       {/* ── 1. TOP BAR CANÔNICA (PADRÃO PERFIL DE MEMBRO) — Renderizada apenas no Mobile onde a TopBar global é ocultada ── */}
-      <div className="-mx-4 -mt-4 sm:mx-0 sm:mt-0 px-4 py-2.5 bg-background/95 backdrop-blur-md sticky top-0 z-40 border-b border-border/40 flex items-center justify-between sm:hidden">
+      <div className="px-4 py-2.5 bg-background/95 backdrop-blur-md sticky top-0 z-40 border-b border-border/40 flex items-center justify-between sm:hidden">
         {/* Esquerda: Botão Voltar */}
         <Link
           to={backUrl}
@@ -490,6 +558,42 @@ export function CanonicalStoreProfileView({
           </Button>
         </div>
       </div>
+
+      {/* ── BANNER DE REIVINDICAÇÃO DE NEGÓCIO (GHOST TENANTS / CLAIMING) ── */}
+      {!isOwner && Boolean(store?.is_ghost || settings?.is_ghost) && (
+        <div className="rounded-2xl bg-muted/40 border border-border/70 p-3.5 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <ShieldCheck className="size-5" />
+            </div>
+            <div>
+              <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <span>Você é proprietário(a) desta empresa?</span>
+                <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5 border-primary/30 text-primary">
+                  Página Verificada
+                </Badge>
+              </div>
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                Reivindique o perfil oficial gratuitamente para gerenciar cardápio, produtos, pedidos e horário de atendimento.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="h-9 sm:h-10 px-4 rounded-xl font-medium text-xs sm:text-sm shrink-0 w-full sm:w-auto cursor-pointer"
+          >
+            <Link
+              to="/claim/reivindicar/$entityId"
+              params={{ entityId: store?.slug || store?.id || "" }}
+            >
+              Reivindicar Negócio
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {/* ── BARRA DO PROPRIETÁRIO (ADMIN BAR SECUNDÁRIA — REGRA 23 & MASTER PROMPT V5) ── */}
       {isOwner && (
@@ -546,6 +650,16 @@ export function CanonicalStoreProfileView({
                 <Award className="size-3.5 text-amber-500" />
                 <span>Gestão Pro</span>
               </Link>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsEditCompanyModalOpen(true)}
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+            >
+              <Edit3 className="size-3.5 text-amber-500" />
+              <span>Editar Empresa</span>
             </Button>
 
             <Button
@@ -1559,60 +1673,140 @@ export function CanonicalStoreProfileView({
 
               {/* Grade de Produtos / Cardápio */}
               {filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredProducts.map((p: any) => {
-                    const priceCents = p.price_cents || p.price || 0;
-                    const imageUrl = p.images?.[0] || p.image_url || null;
+                <div>
+                  {/* Visualização Mobile: WhatsApp Minimalist List (Alta Densidade, 44px Touch Targets) */}
+                  <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+                    {filteredProducts.map((p: any) => {
+                      const priceCents = p.price_cents || p.price || 0;
+                      const imageUrl = p.images?.[0] || p.image_url || null;
 
-                    return (
-                      <div
-                        key={p.id}
-                        className="flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs group"
-                      >
-                        <div className="flex items-start gap-3 p-4">
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug">
-                              {p.title}
-                            </h3>
-                            {p.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                {p.description}
-                              </p>
+                      return (
+                        <div key={p.id} className="p-3 flex items-center justify-between gap-3">
+                          <div className="size-12 rounded-xl bg-muted/20 border border-border/40 overflow-hidden shrink-0 flex items-center justify-center">
+                            {imageUrl ? (
+                              <img src={imageUrl} alt={p.title} className="size-full object-cover" loading="lazy" />
+                            ) : (
+                              <Package className="size-5 text-muted-foreground/40" />
                             )}
-                            <div className="pt-2">
-                              <span className="text-sm font-black text-foreground font-mono">
-                                {formatMoney(priceCents)}
-                              </span>
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4 className="text-xs font-bold text-foreground line-clamp-1 leading-tight">{p.title}</h4>
+                              {p.is_mined && (
+                                <span className="text-[9px] font-mono px-1 py-0 rounded border border-border/60 text-muted-foreground">
+                                  Web
+                                </span>
+                              )}
+                            </div>
+                            {p.description && (
+                              <p className="text-[11px] text-muted-foreground line-clamp-1">{p.description}</p>
+                            )}
+                            <div className="text-xs font-black font-mono text-foreground">
+                              {formatMoney(priceCents)}
                             </div>
                           </div>
 
-                          {/* Foto 1:1 do Produto */}
-                          {imageUrl && (
-                            <div className="size-20 sm:size-24 rounded-xl overflow-hidden bg-muted/30 shrink-0">
-                              <img
-                                src={imageUrl}
-                                alt={p.title}
-                                className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                loading="lazy"
-                              />
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {p.is_mined && isOwner && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleImportMinedProduct(p)}
+                                className="h-10 px-2 rounded-xl text-xs font-semibold gap-1 border-primary/30 text-primary cursor-pointer"
+                                title="Importar para o Catálogo Oficial"
+                              >
+                                <Plus className="size-3.5" />
+                                <span className="text-[10px]">Importar</span>
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddToCart(p)}
+                              className="h-10 px-3 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1 cursor-pointer"
+                            >
+                              <Plus className="size-3.5" />
+                              <span>Adicionar</span>
+                            </Button>
+                          </div>
                         </div>
+                      );
+                    })}
+                  </div>
 
-                        {/* Botão de Adição com Touch Target 44px */}
-                        <div className="p-3 pt-0 flex justify-end">
-                          <Button
-                            size="sm"
-                            onClick={() => handleAddToCart(p)}
-                            className="rounded-xl h-10 px-4 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer w-full sm:w-auto"
-                          >
-                            <Plus className="size-3.5" />
-                            <span>Adicionar</span>
-                          </Button>
+                  {/* Visualização Desktop: Grid de Cards */}
+                  <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredProducts.map((p: any) => {
+                      const priceCents = p.price_cents || p.price || 0;
+                      const imageUrl = p.images?.[0] || p.image_url || null;
+
+                      return (
+                        <div
+                          key={p.id}
+                          className="flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs group"
+                        >
+                          <div className="flex items-start gap-3 p-4">
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug">
+                                  {p.title}
+                                </h3>
+                                {p.is_mined && (
+                                  <Badge variant="outline" className="text-[9px] font-mono py-0 px-1 border-border/70">
+                                    Catálogo Web
+                                  </Badge>
+                                )}
+                              </div>
+                              {p.description && (
+                                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                  {p.description}
+                                </p>
+                              )}
+                              <div className="pt-2">
+                                <span className="text-sm font-black text-foreground font-mono">
+                                  {formatMoney(priceCents)}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Foto 1:1 do Produto */}
+                            {imageUrl && (
+                              <div className="size-20 sm:size-24 rounded-xl overflow-hidden bg-muted/30 shrink-0">
+                                <img
+                                  src={imageUrl}
+                                  alt={p.title}
+                                  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Botões de Ação com Touch Target 44px */}
+                          <div className="p-3 pt-0 flex items-center justify-end gap-2">
+                            {p.is_mined && isOwner && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleImportMinedProduct(p)}
+                                className="rounded-xl h-10 px-3 font-semibold text-xs border-primary/30 text-primary gap-1 cursor-pointer"
+                              >
+                                <Plus className="size-3.5" />
+                                <span>Importar</span>
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddToCart(p)}
+                              className="rounded-xl h-10 px-4 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer w-full sm:w-auto"
+                            >
+                              <Plus className="size-3.5" />
+                              <span>Adicionar</span>
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               ) : catalog.length > 0 ? (
                 <div className="py-16 text-center space-y-2 bg-muted/20 rounded-2xl p-6">
@@ -2187,6 +2381,136 @@ export function CanonicalStoreProfileView({
           }}
         />
       )}
+
+      {/* ── MODAL DE EDIÇÃO RÁPIDA DA EMPRESA (MODO PROPRIETÁRIO) ── */}
+      <Dialog open={isEditCompanyModalOpen} onOpenChange={setIsEditCompanyModalOpen}>
+        <DialogContent className="sm:max-w-lg rounded-2xl max-h-[90vh] overflow-y-auto">
+          <form onSubmit={handleSaveCompanyQuickEdit} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-base font-semibold">Editar Informações da Empresa</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Atualize dados de atendimento, horários, endereço e canais de contato.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3 py-1">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Nome Comercial</label>
+                <Input
+                  value={editCompanyName}
+                  onChange={(e) => setEditCompanyName(e.target.value)}
+                  placeholder="Nome da sua empresa..."
+                  required
+                  className="h-9 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">WhatsApp de Atendimento</label>
+                  <Input
+                    value={editCompanyWhatsapp}
+                    onChange={(e) => setEditCompanyWhatsapp(e.target.value)}
+                    placeholder="(49) 99999-9999"
+                    className="h-9 rounded-xl text-xs font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Telefone Fixo / Comercial</label>
+                  <Input
+                    value={editCompanyPhone}
+                    onChange={(e) => setEditCompanyPhone(e.target.value)}
+                    placeholder="(49) 3622-0000"
+                    className="h-9 rounded-xl text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">E-mail Comercial</label>
+                  <Input
+                    type="email"
+                    value={editCompanyEmail}
+                    onChange={(e) => setEditCompanyEmail(e.target.value)}
+                    placeholder="contato@empresa.com.br"
+                    className="h-9 rounded-xl text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Website Oficial</label>
+                  <Input
+                    value={editCompanyWebsite}
+                    onChange={(e) => setEditCompanyWebsite(e.target.value)}
+                    placeholder="https://suaempresa.com.br"
+                    className="h-9 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Horários de Atendimento</label>
+                <Input
+                  value={editCompanyHours}
+                  onChange={(e) => setEditCompanyHours(e.target.value)}
+                  placeholder="Ex: Seg a Sex: 08:00 - 18:00 | Sáb: 08:00 - 12:00"
+                  className="h-9 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs font-medium text-foreground">Endereço Completo</label>
+                  <Input
+                    value={editCompanyAddress}
+                    onChange={(e) => setEditCompanyAddress(e.target.value)}
+                    placeholder="Rua, número, bairro..."
+                    className="h-9 rounded-xl text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-foreground">Cidade</label>
+                  <Input
+                    value={editCompanyCity}
+                    onChange={(e) => setEditCompanyCity(e.target.value)}
+                    placeholder="Cidade"
+                    className="h-9 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Sobre a Empresa (Biografia / Descrição)</label>
+                <textarea
+                  value={editCompanyDescription}
+                  onChange={(e) => setEditCompanyDescription(e.target.value)}
+                  rows={3}
+                  placeholder="Apresente sua empresa aos clientes locais..."
+                  className="w-full rounded-xl text-xs bg-background border border-border/60 p-2.5 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsEditCompanyModalOpen(false)}
+                className="rounded-xl text-xs"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSavingCompany}
+                className="rounded-xl text-xs font-medium"
+              >
+                {isSavingCompany ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

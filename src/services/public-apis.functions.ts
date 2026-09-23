@@ -9,6 +9,7 @@ import {
   validateBirthDate,
 } from "@/lib/document-validator";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 
 export interface ResolvedAddressDTO {
   cep: string;
@@ -49,6 +50,9 @@ export interface CnpjCompanyDTO {
     latitude?: number | null;
     longitude?: number | null;
   };
+  socios?: Array<{ nome: string; qualificacao?: string; cpf_cnpj_socio?: string }>;
+  dataQualityScore?: number;
+  source?: string;
 }
 
 export interface PublicApiGovernanceDTO {
@@ -254,141 +258,61 @@ export async function internalLookupCnpj(cnpj: string): Promise<CnpjCompanyDTO> 
     throw new Error("CNPJ inválido (dígitos verificadores incorretos).");
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 6000);
+  const enriched = await enrichCnpj(clean);
+  if (!enriched) {
+    throw new Error("CNPJ não localizado na base pública da Receita Federal ou serviços indisponíveis.");
+  }
 
-    let brasilApiError: Error | null = null;
+  const street = enriched.endereco?.logradouro || "";
+  const number = enriched.endereco?.numero || "S/N";
+  const neighborhood = enriched.endereco?.bairro || "";
+  const city = enriched.endereco?.municipio || "";
+  const state = (enriched.endereco?.uf || "").toUpperCase();
+  const zipCode = (enriched.endereco?.cep || "").replace(/\D/g, "");
 
-    // 1. Tentar BrasilAPI v1
+  let geo: { lat: number; lng: number } | null = null;
+  if (street && city) {
     try {
-      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`, {
-        signal: controller.signal,
-        headers: { Accept: "application/json" },
-      });
-
-      if (res.ok) {
-        clearTimeout(timeoutId);
-        const data = await res.json();
-
-        const street = [data.descricao_tipo_de_logradouro, data.logradouro]
-          .filter(Boolean)
-          .join(" ")
-          .trim();
-        const number = String(data.numero || "S/N").trim();
-        const complement = data.complemento || "";
-        const neighborhood = data.bairro || "";
-        const city = data.municipio || "";
-        const state = (data.uf || "").toUpperCase();
-        const zipCode = data.cep || "";
-
-        const geo = await forwardGeocodeInternal(
-          `${street} ${number}`,
-          neighborhood,
-          city,
-          state
-        );
-
-        return {
-          cnpj: clean,
-          corporateName: data.razao_social || "",
-          tradeName: data.nome_fantasia || data.razao_social || "",
-          registrationStatus: data.descricao_situacao_cadastral || "ATIVA",
-          openingDate: data.data_inicio_atividade || "",
-          mainCnae: {
-            code: data.cnae_fiscal,
-            description: data.cnae_fiscal_descricao || "Atividade comercial",
-          },
-          legalNature: data.natureza_juridica,
-          capitalSocial: data.capital_social ? Number(data.capital_social) : undefined,
-          phone: data.ddd_telefone_1 ? `(${data.ddd_telefone_1.slice(0, 2)}) ${data.ddd_telefone_1.slice(2)}` : undefined,
-          email: data.email || undefined,
-          address: {
-            street,
-            number,
-            complement,
-            neighborhood,
-            city,
-            state,
-            cep: zipCode,
-            latitude: geo?.lat || null,
-            longitude: geo?.lng || null,
-          },
-        };
-      }
-
-      if (res.status === 404) {
-        throw new Error("CNPJ não localizado na base pública da Receita Federal.");
-      }
-      brasilApiError = new Error(`BrasilAPI HTTP ${res.status}`);
-    } catch (err: any) {
-      if (err.message?.includes("não localizado")) throw err;
-      brasilApiError = err;
+      geo = await forwardGeocodeInternal(
+        `${street} ${number}`,
+        neighborhood,
+        city,
+        state
+      );
+    } catch {
+      // Degradação graciosa em caso de indisponibilidade de geocodificação
     }
+  }
 
-    // 2. Fallback Resiliente: ReceitaWS
-    try {
-      const fallbackRes = await fetch(`https://receitaws.com.br/v1/cnpj/${clean}`, {
-        headers: { Accept: "application/json" },
-        signal: AbortSignal.timeout(6000),
-      });
-
-      if (fallbackRes.ok) {
-        const data = await fallbackRes.json();
-        if (data.status === "ERROR") {
-          throw new Error(data.message || "CNPJ não localizado na Receita Federal.");
-        }
-
-        const street = String(data.logradouro || "").trim();
-        const number = String(data.numero || "S/N").trim();
-        const complement = String(data.complemento || "").trim();
-        const neighborhood = String(data.bairro || "").trim();
-        const city = String(data.municipio || "").trim();
-        const state = String(data.uf || "").toUpperCase();
-        const zipCode = String(data.cep || "").replace(/\D/g, "");
-
-        const geo = await forwardGeocodeInternal(
-          `${street} ${number}`,
-          neighborhood,
-          city,
-          state
-        );
-
-        return {
-          cnpj: clean,
-          corporateName: data.nome || "",
-          tradeName: data.fantasia || data.nome || "",
-          registrationStatus: data.situacao || "ATIVA",
-          openingDate: data.abertura || "",
-          mainCnae: {
-            code: data.atividade_principal?.[0]?.code || "",
-            description: data.atividade_principal?.[0]?.text || "Atividade comercial",
-          },
-          legalNature: data.natureza_juridica,
-          capitalSocial: data.capital_social ? parseFloat(data.capital_social.replace(/[^\d.-]/g, "")) : undefined,
-          phone: data.telefone ? String(data.telefone).split("/")[0]?.trim() : undefined,
-          email: data.email || undefined,
-          address: {
-            street,
-            number,
-            complement,
-            neighborhood,
-            city,
-            state,
-            cep: zipCode,
-            latitude: geo?.lat || null,
-            longitude: geo?.lng || null,
-          },
-        };
-      }
-    } catch (fallbackErr: any) {
-      if (fallbackErr.message?.includes("não localizado")) throw fallbackErr;
-    }
-
-    clearTimeout(timeoutId);
-    throw (
-      brasilApiError ||
-      new Error("Não foi possível consultar o CNPJ no momento. Verifique sua conexão.")
-    );
+  return {
+    cnpj: clean,
+    corporateName: enriched.razao_social,
+    tradeName: enriched.nome_fantasia || enriched.razao_social,
+    registrationStatus: enriched.situacao_cadastral || "ATIVA",
+    openingDate: enriched.data_inicio_atividade || "",
+    mainCnae: {
+      code: enriched.cnae_principal?.codigo || "",
+      description: enriched.cnae_principal?.descricao || "Atividade comercial",
+    },
+    legalNature: enriched.natureza_juridica,
+    capitalSocial: enriched.capital_social,
+    phone: enriched.telefones?.[0],
+    email: enriched.email,
+    address: {
+      street,
+      number,
+      complement: enriched.endereco?.complemento || "",
+      neighborhood,
+      city,
+      state,
+      cep: zipCode,
+      latitude: geo?.lat || null,
+      longitude: geo?.lng || null,
+    },
+    socios: enriched.socios,
+    dataQualityScore: enriched.dataQualityScore,
+    source: enriched.source,
+  };
 }
 
 export const lookupCnpj = createServerFn({ method: "POST" })

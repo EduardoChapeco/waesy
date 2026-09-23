@@ -50,6 +50,7 @@ import {
 import { getPostMediaSignedUrl } from "@/services/storage.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ProfessionalLicenseEditSheet } from "@/components/profile/professional-resume-editor";
 
 export type MembroSearchParams = {
  modo?: "social" | "profissional" | "comercial";
@@ -223,6 +224,7 @@ export function MemberPublicProfileView({
  | "experience"
  | "education"
  | "certification"
+ | "license"
  | "project"
  | "volunteering"
  | "causes"
@@ -330,6 +332,7 @@ export function MemberPublicProfileView({
  const experiences = (resumeData.experiences || []) as any[];
  const educations = (resumeData.educations || []) as any[];
  const certifications = (resumeData.certifications || []) as any[];
+ const licenses = (resumeData.licenses || []) as any[];
  const projects = (resumeData.projects || []) as any[];
  const volunteeringList = (resumeData.volunteering || []) as any[];
  const causes = (resumeData.causes || []) as string[];
@@ -1363,6 +1366,106 @@ export function MemberPublicProfileView({
  )}
  </div>
 
+ {/* ── 4.1 Registros Profissionais & Conselhos de Classe ── */}
+ <div className="pt-8 space-y-6">
+ <div className="flex items-center justify-between">
+ <div className="space-y-0.5">
+ <h2 className="text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
+ <ShieldCheck className="size-5 text-primary" />
+ <span>Registros Profissionais & Conselhos</span>
+ </h2>
+ <p className="text-xs text-muted-foreground">
+ Conselhos de classe oficiais (OAB, CRM, CREA, CRC, CRO, etc.), alvarás e carteiras validadas.
+ </p>
+ </div>
+ {isOwner && (
+ <Button
+ size="sm"
+ variant="ghost"
+ className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+ onClick={() => {
+ setActiveEditItem(null);
+ setEditingSection("license");
+ }}
+ aria-label="Adicionar Registro Profissional"
+ >
+ <Plus className="size-4" />
+ </Button>
+ )}
+ </div>
+
+ {licenses.length === 0 ? (
+ <p className="text-sm text-muted-foreground italic">
+ Nenhum conselho ou registro profissional cadastrado.
+ </p>
+ ) : (
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ {licenses.map((lic: any, index: number) => (
+ <div
+ key={lic.id || index}
+ className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
+ >
+ <div className="flex items-start gap-3 min-w-0">
+ <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+ <ShieldCheck className="size-5" />
+ </div>
+ <div className="space-y-1 min-w-0">
+ <div className="flex items-center gap-2 flex-wrap">
+ <Badge variant="outline" className="text-[10px] font-mono font-bold text-primary border-primary/30">
+ {lic.council}/{lic.uf || "BR"}
+ </Badge>
+ <h3 className="text-xs font-bold text-foreground font-mono">
+ {lic.register_number}
+ </h3>
+ </div>
+ {lic.specialty && (
+ <p className="text-xs text-foreground/80 font-medium truncate">
+ {lic.specialty}
+ </p>
+ )}
+ <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-0.5">
+ <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+ <Check className="size-3" />
+ <span>Ativo / Regular</span>
+ </span>
+ {lic.expiration_date && (
+ <span>Validade: {lic.expiration_date}</span>
+ )}
+ </div>
+ {lic.document_url && (
+ <a
+ href={lic.document_url}
+ target="_blank"
+ rel="noopener noreferrer"
+ className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-1"
+ >
+ <span>Ver Comprovante Anexo</span>
+ <ExternalLink className="size-3" />
+ </a>
+ )}
+ </div>
+ </div>
+
+ {isOwner && (
+ <Button
+ size="sm"
+ variant="ghost"
+ className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground shrink-0"
+ onClick={() => {
+ setActiveEditItem(lic);
+ setEditingSection("license");
+ }}
+ aria-label="Editar Registro Profissional"
+ >
+ <Edit3 className="size-3.5" />
+ </Button>
+ )}
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+
  {/* ── 5. Seção Projetos ── */}
  <div className="pt-8 space-y-6">
  <div className="flex items-center justify-between">
@@ -2261,6 +2364,29 @@ export function MemberPublicProfileView({
  saveResumeChanges({ ...resumeData, certifications: updated });
  }}
  isSaving={isSavingResume}
+ />
+
+ {/* Modal Registros Profissionais & Conselhos de Classe */}
+ <ProfessionalLicenseEditSheet
+ open={editingSection === "license"}
+ onOpenChange={(op) => {
+ if (!op) {
+ setEditingSection(null);
+ setActiveEditItem(null);
+ }
+ }}
+ item={activeEditItem}
+ onSave={(itemToSave, isDelete) => {
+ let updated = [...licenses];
+ if (isDelete && activeEditItem) {
+ updated = updated.filter((e) => e.id !== activeEditItem.id);
+ } else if (activeEditItem) {
+ updated = updated.map((e) => (e.id === activeEditItem.id ? itemToSave : e));
+ } else {
+ updated = [itemToSave, ...updated];
+ }
+ saveResumeChanges({ ...resumeData, licenses: updated });
+ }}
  />
 
  {/* Modal Projetos */}

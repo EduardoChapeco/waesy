@@ -73,16 +73,16 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; variant: "default" | "secondary" | "outline" | "destructive" }
+  { label: string; className: string }
 > = {
-  published: { label: "Publicado", variant: "default" },
-  active: { label: "Publicado", variant: "default" },
-  draft: { label: "Rascunho", variant: "secondary" },
-  paused: { label: "Pausado", variant: "outline" },
-  reserved: { label: "Reservado", variant: "secondary" },
-  negotiating: { label: "Negociando", variant: "secondary" },
-  completed: { label: "Finalizado", variant: "outline" },
-  archived: { label: "Arquivado", variant: "destructive" },
+  published: { label: "Publicado", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
+  active: { label: "Publicado", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
+  draft: { label: "Rascunho", className: "border-border/60 bg-muted/50 text-muted-foreground" },
+  paused: { label: "Pausado", className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
+  reserved: { label: "Reservado", className: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400" },
+  negotiating: { label: "Negociando", className: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400" },
+  completed: { label: "Finalizado", className: "border-border/60 bg-muted/40 text-muted-foreground" },
+  archived: { label: "Arquivado", className: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400" },
 };
 
 const BOOST_PLANS = [
@@ -274,7 +274,8 @@ function ClassificadosIndex() {
     }
   };
 
-  const filtered = (classifieds || []).filter((ad: any) => {
+  const safeClassifieds = Array.isArray(classifieds) ? classifieds : [];
+  const filtered = safeClassifieds.filter((ad: any) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
@@ -380,7 +381,7 @@ function ClassificadosIndex() {
                             DESTAQUE
                           </Badge>
                         )}
-                        <Badge variant={statusConf.variant} className="text-[9px] font-mono px-1.5 py-0">
+                        <Badge variant="outline" className={cn("text-[9px] font-mono px-1.5 py-0", statusConf.className)}>
                           {statusConf.label}
                         </Badge>
                       </div>

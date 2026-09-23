@@ -6,6 +6,7 @@ import { Storefront, MagnifyingGlass, SquaresFour, ListDashes, Truck, Flame, Arr
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/commerce/product-card";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
@@ -456,28 +457,29 @@ function DedicatedHotpageView() {
  {/* ── 2. CORPO SOBREPOSTO COM CANTOS ARREDONDADOS (FOLHA / CARD FLUTUANTE) ── */}
       <div className="relative z-20 -mt-8 rounded-t-[32px] bg-background px-0 sm:px-4 md:px-0 pt-6 pb-12 space-y-6 max-w-7xl mx-auto">
  
- {/* ── 2.1. Sub-abas de Navegação por Nicho (Dinâmicas por Módulo) ── */}
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
- {activeChips.map((chip) => {
- const Icon = chip.icon;
- const isSelected = selectedSubCategory === chip.id;
- return (
- <button
- key={chip.id}
- type="button"
- onClick={() => setSelectedSubCategory(chip.id)}
- className={`flex items-center gap-2 h-9 px-4 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
- isSelected
- ? "bg-foreground text-background"
- : "bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted"
- }`}
- >
- <Icon size={14} weight={isSelected ? "bold" : "regular"} />
- <span>{chip.label}</span>
- </button>
- );
- })}
- </div>
+        {/* ── 2.1. Sub-abas de Navegação por Nicho (Padrão Botão Grande) ── */}
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
+          {activeChips.map((chip) => {
+            const Icon = chip.icon;
+            const isSelected = selectedSubCategory === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setSelectedSubCategory(chip.id)}
+                className={cn(
+                  "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                  isSelected
+                    ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                    : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
+                )}
+              >
+                <Icon size={16} weight={isSelected ? "bold" : "regular"} />
+                <span>{chip.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
  {/* ── 2.2. Barra de Busca e Filtros Rápidos (Ordenar, Preço, Tempo, Desconto) ── */}
  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">

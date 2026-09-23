@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/state/states";
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_store/colecao/$slug")({
       return getCollectionBySlug({ data: { slug: params.slug } });
     } catch (err) {
       console.error("[loader:_store.colecao.$slug] Unhandled error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   head: ({ loaderData }) => {

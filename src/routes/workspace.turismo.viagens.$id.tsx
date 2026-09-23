@@ -479,7 +479,7 @@ function WorkspaceTripDetailPage() {
                 }
                 const origin = typeof window !== "undefined" ? window.location.origin : "";
                 const walletUrl = `${origin}/viajante/carteira`;
-                const contractUrl = trip.contract_token ? `${origin}/contrato/${trip.contract_token}` : "";
+                const contractUrl = (trip as any).contract_token ? `${origin}/contrato/${(trip as any).contract_token}` : "";
                 const msg = encodeURIComponent(
                   `Olá ${trip.client_name}! ✈️ Segue o seu Kit de Viagem para ${trip.destination_city} (Ref: ${trip.trip_number}):\n\n` +
                   `🎟️ Carteira Digital de Embarque & Vouchers: ${walletUrl}\n` +
@@ -635,7 +635,7 @@ function WorkspaceTripDetailPage() {
               <label className="flex items-start gap-2.5 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
                 <input
                   type="checkbox"
-                  defaultChecked={Boolean(trip.contract_token)}
+                  defaultChecked={Boolean((trip as any).contract_token)}
                   className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-0.5 min-w-0">
@@ -2030,7 +2030,7 @@ function WorkspaceTripDetailPage() {
                 </Select>
               </div>
 
-              {locatorForm.itemType === "hotel" && (
+              {(locatorForm.itemType as string) === "hotel" && (
                 <div className="space-y-1.5 p-3 rounded-xl bg-primary/5 border border-primary/20">
                   <Label className="text-[11px] font-bold text-primary flex items-center gap-1">
                     <Compass className="size-3" />

@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getServerClient } from '@/lib/supabase';
-import { getServerIdentity, assertStoreAccess } from '@/lib/server-access';
+import { getServerIdentity, assertStoreAccess, requireAdmin } from '@/lib/server-access';
 import type { 
   ClaimProfile, 
   ClaimIntelligence, 
@@ -129,7 +129,7 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
     // 1. Busca loja se existir (por ID ou Slug)
     let storeQuery = db
       .from('stores')
-      .select('id, name, slug, phone, email, address, city, state, description, logo_url');
+      .select('id, name, slug, is_ghost, settings, created_at');
     
     if (isUuid) {
       storeQuery = storeQuery.eq('id', entityId);
@@ -139,6 +139,7 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
     const { data: store } = await storeQuery.maybeSingle();
 
     if (store) {
+      const settings = (store.settings || {}) as Record<string, any>;
       const { data: intel } = await db
         .from('claim_intelligence')
         .select('*')
@@ -149,21 +150,22 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
         id: store.id,
         name: store.name,
         slug: store.slug,
-        document: null,
-        phone: store.phone,
-        email: store.email,
-        address: store.address,
-        city: store.city || 'São Miguel do Oeste',
-        state: store.state || 'SC',
-        description: store.description,
-        logoUrl: store.logo_url,
+        document: settings.cnpj || null,
+        phone: settings.phone || null,
+        email: settings.email || null,
+        address: settings.address || null,
+        city: settings.city || 'São Miguel do Oeste',
+        state: settings.state || 'SC',
+        description: settings.description || null,
+        logoUrl: settings.avatar_url || settings.logo_url || null,
         type: 'store' as const,
+        isGhost: Boolean(store.is_ghost || settings.is_ghost),
         intelligence: intel || {
-          visibility_score: 85,
-          reputation_score: 92,
+          visibility_score: settings.quality_score || 85,
+          reputation_score: 90,
           market_share_percent: 18.4,
           rank_state: 1,
-          verified_claims: 12,
+          verified_claims: store.is_ghost ? 0 : 12,
           solved_rate: 98,
           avg_reply_hours: 1.8,
           competitors: [],
@@ -172,7 +174,45 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
       };
     }
 
-    // 2. Busca empresa se existir (apenas se for UUID)
+    // 2. Busca em directory_listings
+    let dlQuery = db.from('directory_listings').select('*');
+    if (isUuid) {
+      dlQuery = dlQuery.eq('id', entityId);
+    } else {
+      dlQuery = dlQuery.ilike('business_name', entityId.replace(/-/g, ' '));
+    }
+    const { data: listing } = await dlQuery.maybeSingle();
+
+    if (listing) {
+      return {
+        id: listing.id,
+        name: listing.business_name || 'Empresa',
+        slug: null,
+        document: listing.cnpj || null,
+        phone: listing.contact_phone || null,
+        email: listing.contact_email || null,
+        address: listing.address || null,
+        city: listing.city || 'São Miguel do Oeste',
+        state: listing.state || 'SC',
+        description: listing.description || null,
+        logoUrl: listing.avatar_url || null,
+        type: 'company' as const,
+        isGhost: Boolean(listing.ghost_store_id),
+        intelligence: {
+          visibility_score: listing.crawl_score || 80,
+          reputation_score: listing.data_quality_score || 85,
+          market_share_percent: 15.0,
+          rank_state: 1,
+          verified_claims: 0,
+          solved_rate: 95,
+          avg_reply_hours: 2.0,
+          competitors: [],
+          sentiment: { positive: 90, neutral: 8, negative: 2 },
+        },
+      };
+    }
+
+    // 3. Busca empresa se existir (apenas se for UUID)
     if (isUuid) {
       const { data: company } = await db
         .from('companies')
@@ -200,6 +240,7 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
           description: company.description,
           logoUrl: company.logo_url,
           type: 'company' as const,
+          isGhost: false,
           intelligence: intel || {
             visibility_score: 80,
             reputation_score: 88,
@@ -229,6 +270,7 @@ export const getEntityForClaim = createServerFn({ method: 'GET' })
       description: null,
       logoUrl: null,
       type: 'company' as const,
+      isGhost: false,
       intelligence: {
         visibility_score: 65,
         reputation_score: 75,
@@ -428,4 +470,50 @@ export const escalateClaimToLegal = createServerFn({ method: 'POST' })
     }
 
     return { success: true };
+  });
+
+// 8. Aprovar Reivindicação de Negócio (Claim Profile)
+export const approveClaimProfileFn = createServerFn({ method: "POST" })
+  .validator(z.object({ claimId: z.string().uuid() }))
+  .handler(async ({ data }): Promise<{ success: boolean; message: string }> => {
+    const identity = await getServerIdentity();
+    await requireAdmin();
+    const db = getServerClient();
+
+    // 1. Tenta stored procedure atômica
+    const rpcRes = await db.rpc("approve_ghost_store_claim", {
+      p_claim_id: data.claimId,
+      p_approver_id: identity.id,
+    });
+
+    if (!rpcRes.error && rpcRes.data?.success) {
+      return {
+        success: true,
+        message: "Reivindicação aprovada com sucesso. Loja transferida para o titular.",
+      };
+    }
+
+    // 2. Fallback defensivo
+    const { data: claim, error: claimErr } = await db
+      .from("claim_profiles")
+      .select("*")
+      .eq("id", data.claimId)
+      .single();
+
+    if (claimErr || !claim) throw new Error("Reivindicação não encontrada.");
+
+    await db.from("stores").update({
+      is_ghost: false,
+      claimed_at: new Date().toISOString(),
+      claimed_by: identity.id,
+      claim_status: "claimed",
+    }).eq("id", claim.store_id);
+
+    await db.from("claim_profiles").update({
+      status: "approved",
+      verified_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", data.claimId);
+
+    return { success: true, message: "Reivindicação aprovada com sucesso." };
   });

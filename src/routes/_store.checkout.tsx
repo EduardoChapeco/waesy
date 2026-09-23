@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -441,7 +441,7 @@ export function CheckoutPage() {
  const match = paymentMethods.find((p: any) => p.id === formData.paymentMethodId);
  if (match) return match as ManualPaymentOption;
  }
- return {} as any;
+ return null as any;
     };
 
  const paymentSettings = storeProfile?.settings?.payment_settings || {};

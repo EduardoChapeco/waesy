@@ -19,6 +19,7 @@ import { listStorePublicSponsors } from "@/services/news.functions";
 import { getPublicClassifieds } from "@/services/classifieds.functions";
 import { getStoreConcursos } from "@/services/invite.functions";
 import { getStorePublicProfileWithSections } from "@/services/store.functions";
+import { getMinedProductsFn } from "@/services/mining.functions";
 import { CanonicalStoreProfileView } from "@/components/commerce/canonical-store-profile-view";
 
 export const Route = createFileRoute("/_store/diretorio/$id")({
@@ -58,9 +59,15 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
       }
 
       const targetStore = listing.store_id || listing.id;
+      const listingDomain = ((listing as any).website || (listing as any).domain || "")
+        .replace(/^https?:\/\//, "")
+        .replace(/\/.*$/, "")
+        .replace("www.", "")
+        .toLowerCase();
 
       const [
         catalogRes,
+        minedRes,
         jobsRes,
         hotpagesRes,
         bannersRes,
@@ -77,6 +84,14 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
         getStorePublicCatalog({ data: targetStore ? { storeId: targetStore } : undefined }).catch(
           () => null
         ),
+        listingDomain
+          ? getMinedProductsFn({
+              data: {
+                domain: listingDomain,
+                limit: 30,
+              },
+            }).catch(() => ({ products: [], total: 0 }))
+          : Promise.resolve({ products: [], total: 0 }),
         listPublicJobs({ data: {} }).catch(() => null),
         listHotpages({ data: { module: "home" } }).catch(() => []),
         listActiveBanners({ data: { placement: "store" } }).catch(() => []),
@@ -132,9 +147,24 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
         is_classified: true,
       }));
 
+      const minedProducts = (minedRes?.products || []).map((item: any) => ({
+        id: item.id,
+        name: item.title,
+        title: item.title,
+        description: item.description || `Produto minerado de ${item.source_domain}`,
+        content: item.description,
+        price_cents: item.price_cents,
+        price: item.price_cents ? item.price_cents / 100 : 0,
+        image_url: item.image_url,
+        images: item.image_url ? [item.image_url] : [],
+        category: item.category || "Catálogo",
+        source_url: item.source_url,
+        is_mined: true,
+      }));
+
       const finalCatalog = (catalogRes?.products && catalogRes.products.length > 0)
         ? catalogRes.products
-        : classifiedProducts;
+        : (classifiedProducts.length > 0 ? classifiedProducts : minedProducts);
 
       // Unificar avaliações legadas e avaliações auditadas de deals
       const publicReviews = Array.isArray(reviewsRes) ? reviewsRes : [];

@@ -144,76 +144,76 @@ function AccountDashboardPage() {
 
   const ACCOUNT_GROUPS: AccountGroup[] = [
     {
-      title: "Comunicação & Negociações",
+      title: "Comunicação",
       items: [
         {
           to: "/conta/notificacoes",
-          label: "Central de Notificações",
+          label: "Notificações",
           icon: Bell,
           badge: unreadNotifsCount > 0 ? `${unreadNotifsCount} nova${unreadNotifsCount > 1 ? "s" : ""}` : null,
           badgeVariant: "default",
         },
-        { to: "/conta/conversas", label: "Mensagens & Chat", icon: MessageCircle },
-        { to: "/conta/negociacoes", label: "Negociações & Propostas", icon: Handshake },
-        { to: "/conta/trocas", label: "Trocas & Permutas", icon: RefreshCw },
+        { to: "/conta/conversas", label: "Mensagens", icon: MessageCircle },
+        { to: "/conta/negociacoes", label: "Negociações", icon: Handshake },
+        { to: "/conta/trocas", label: "Trocas", icon: RefreshCw },
       ],
     },
     {
-      title: "Compras, Serviços & Viagens",
+      title: "Atividades",
       items: [
         {
           to: "/conta/pedidos",
-          label: "Meus Pedidos",
+          label: "Pedidos",
           icon: ShoppingBag,
           badge: orders.length > 0 ? `${orders.length}` : null,
           badgeVariant: "secondary",
         },
-        { to: "/conta/agendamentos", label: "Agendamentos & Reservas", icon: Calendar },
-        { to: "/conta/ingressos", label: "Ingressos de Eventos", icon: Ticket },
-        { to: "/conta/viagens", label: "Minhas Viagens & Roteiros", icon: Plane },
-        { to: "/conta/pacotes", label: "Pacotes Turísticos", icon: Ticket },
-        { to: "/conta/enderecos", label: "Endereços de Entrega", icon: MapPin },
-        { to: "/conta/salvos", label: "Itens Salvos & Favoritos", icon: Bookmark },
-        { to: "/conta/mobilidade", label: "Mobilidade & Corridas", icon: Car },
+        { to: "/conta/agendamentos", label: "Agendamentos", icon: Calendar },
+        { to: "/conta/ingressos", label: "Ingressos", icon: Ticket },
+        { to: "/conta/viagens", label: "Viagens", icon: Plane },
+        { to: "/conta/pacotes", label: "Pacotes", icon: Ticket },
+        { to: "/conta/enderecos", label: "Endereços", icon: MapPin },
+        { to: "/conta/salvos", label: "Favoritos", icon: Bookmark },
+        { to: "/conta/mobilidade", label: "Mobilidade", icon: Car },
       ],
     },
     {
-      title: "Anúncios & Oportunidades",
+      title: "Oportunidades",
       items: [
-        { to: "/conta/classificados", label: "Meus Anúncios", icon: Layers },
-        { to: "/conta/criadores", label: "Criadores & Parcerias", icon: Sparkles },
-        { to: "/conta/comissoes", label: "Comissões & Afiliados", icon: Coins },
-        { to: "/conta/candidaturas", label: "Minhas Candidaturas", icon: Briefcase },
+        { to: "/conta/classificados", label: "Anúncios", icon: Layers },
+        { to: "/conta/criadores", label: "Parcerias", icon: Sparkles },
+        { to: "/conta/comissoes", label: "Afiliados", icon: Coins },
+        { to: "/conta/candidaturas", label: "Candidaturas", icon: Briefcase },
       ],
     },
     {
-      title: "Financeiro & Benefícios",
+      title: "Financeiro",
       items: [
-        { to: "/conta/financas", label: "Carteira & Finanças", icon: Wallet },
-        { to: "/conta/carnes", label: "Carnês Digitais", icon: CreditCard },
-        { to: "/conta/pagamentos", label: "Cartões & Pagamentos", icon: CreditCard },
-        { to: "/conta/creditos", label: "Créditos & Saldo", icon: Coins },
-        { to: "/conta/tokens", label: "Tokens Waesy", icon: Coins },
-        { to: "/conta/gift-cards", label: "Gift Cards", icon: Gift },
-        { to: "/conta/concursos", label: "Sorteios & Cupons", icon: Ticket },
+        { to: "/conta/financas", label: "Carteira", icon: Wallet },
+        { to: "/conta/carnes", label: "Carnês", icon: CreditCard },
+        { to: "/conta/pagamentos", label: "Pagamentos", icon: CreditCard },
+        { to: "/conta/creditos", label: "Créditos", icon: Coins },
+        { to: "/conta/tokens", label: "Tokens", icon: Coins },
+        { to: "/conta/gift-cards", label: "Cartão Presente", icon: Gift },
+        { to: "/conta/concursos", label: "Cupons", icon: Ticket },
         { to: "/convite", label: "Membro Fundador", icon: Trophy },
       ],
     },
     {
-      title: "Empresa & Gestão",
+      title: "Empresas",
       items: [
-        { to: "/conta/empresa", label: "Minha Empresa", icon: Store },
-        { to: "/conta/colaborador", label: "Colaborador & Equipe", icon: Users },
-        { to: "/conta/contratos", label: "Contratos Digitais", icon: FileText },
-        { to: "/conta/verificacao", label: "Verificação de Identidade (KYC)", icon: ShieldCheck },
+        { to: "/conta/empresa", label: "Empresa", icon: Store },
+        { to: "/conta/colaborador", label: "Equipe", icon: Users },
+        { to: "/conta/contratos", label: "Contratos", icon: FileText },
+        { to: "/conta/verificacao", label: "Verificação", icon: ShieldCheck },
       ],
     },
     {
-      title: "Segurança & Suporte",
+      title: "Segurança",
       items: [
-        { to: "/conta/seguranca", label: "Segurança & Acesso", icon: Lock },
-        { to: "/conta/avaliacoes", label: "Minhas Avaliações", icon: Star },
-        { to: "/conta/suporte", label: "Ajuda & Suporte Técnico", icon: HelpCircle },
+        { to: "/conta/seguranca", label: "Acesso", icon: Lock },
+        { to: "/conta/avaliacoes", label: "Avaliações", icon: Star },
+        { to: "/conta/suporte", label: "Atendimento", icon: HelpCircle },
       ],
     },
   ];
@@ -254,7 +254,7 @@ function AccountDashboardPage() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
       <div className="bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-4 min-w-0">
@@ -281,15 +281,15 @@ function AccountDashboardPage() {
 
         <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
           {isMasterAdmin && (
-            <Button asChild size="sm" variant="default" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground gap-1.5 shadow-xs">
+            <Button asChild size="sm" variant="default" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-bold bg-primary text-primary-foreground gap-2 shadow-2xs cursor-pointer active:scale-98">
               <Link to="/admin-master">
-                <Shield className="size-3.5" />
+                <Shield className="size-4" />
                 <span>Admin Master</span>
               </Link>
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-9 font-semibold hover:bg-muted cursor-pointer">
+          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer shadow-2xs active:scale-98">
             <Link to="/conta/perfil">Editar Perfil</Link>
           </Button>
 
@@ -298,9 +298,9 @@ function AccountDashboardPage() {
             disabled={isLoggingOut}
             variant="ghost"
             size="sm"
-            className="rounded-xl text-xs h-9 font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+            className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3 sm:px-3.5 font-semibold text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
           >
-            <LogOut className="size-3.5 mr-1" />
+            <LogOut className="size-4 mr-1.5" />
             <span>Sair</span>
           </Button>
         </div>
@@ -389,14 +389,14 @@ function AccountDashboardPage() {
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/40 bg-muted/20">
             <div className="flex items-center gap-2">
               <Building2 className="size-4 text-primary" />
-              <h2 className="text-sm font-bold text-foreground tracking-tight">Meus Negócios & Empresas</h2>
+              <h2 className="text-sm font-bold text-foreground tracking-tight">Meus Negócios</h2>
               <Badge variant="secondary" className="text-[10px] font-mono">
                 {stores.length}
               </Badge>
             </div>
-            <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs font-semibold h-8 text-primary hover:bg-primary/10 cursor-pointer">
+            <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs sm:text-sm font-semibold h-10 px-3.5 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs active:scale-98">
               <Link to="/criar-negocio">
-                <Plus className="size-3.5 mr-1" />
+                <Plus className="size-4 mr-1.5" />
                 <span>Nova Loja</span>
               </Link>
             </Button>
@@ -431,7 +431,7 @@ function AccountDashboardPage() {
                   <Button
                     onClick={() => handleOpenWorkspace(storeId)}
                     size="sm"
-                    className="h-8.5 px-3.5 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-xs shrink-0"
+                    className="h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-2xs shrink-0 active:scale-98"
                   >
                     <span>Entrar</span>
                     <ArrowRight className="size-3.5" />
@@ -445,20 +445,20 @@ function AccountDashboardPage() {
 
       {/* ── 2.1 CONVERSÃO PARA CONTA PRO (Ponte de Conversão) ── */}
       {stores.length === 0 && (
-        <div className="bg-card rounded-2xl border border-primary/20 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-primary" />
-              <h2 className="text-sm font-bold text-foreground">Transforme sua Conta em Perfil Pro</h2>
+        <div className="bg-card rounded-2xl border border-border/60 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Store className="size-5" />
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-lg">
-              Crie sua loja oficial no Workspace para gerenciar catálogo, vendas, pedidos e telemetria SimLabs com 50.000 tokens de IA inclusos.
-            </p>
+            <div>
+              <h2 className="text-sm font-bold text-foreground">Abrir Empresa no Waesy</h2>
+              <p className="text-xs text-muted-foreground">Gerencie catálogo, vendas e operação completa no Workspace.</p>
+            </div>
           </div>
-          <Button asChild size="sm" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-4 shrink-0 shadow-xs cursor-pointer">
+          <Button asChild size="sm" className="rounded-xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground h-10 sm:h-11 px-4 sm:px-5 shrink-0 shadow-2xs cursor-pointer active:scale-98">
             <Link to="/criar-negocio">
-              <Store className="size-3.5 mr-1.5" />
-              <span>Criar Empresa Pro</span>
+              <span>Criar Empresa</span>
+              <ArrowRight className="size-4 ml-1.5" />
             </Link>
           </Button>
         </div>

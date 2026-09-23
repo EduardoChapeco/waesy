@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
 import { z } from "zod";
+import { getServerClient } from "@/lib/supabase";
+import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
+import { getServerIdentity } from "@/lib/server-access";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 // ---------------------------------------------------------------------------
@@ -763,8 +764,8 @@ export const getAvailablePartnerStores = createServerFn({ method: "GET" }).handl
       slug: s.slug,
       logoUrl: s.logo_url || null,
       bannerUrl: s.banner_url || null,
-      city: s.city || "Chapecó",
-      state: s.state || "SC",
+      city: getDefaultCity(s.city),
+      state: getDefaultState(s.state),
       segment: s.segment || "Varejo",
       couponCode: `${s.slug.toUpperCase().substring(0, 6)}10`,
       discountPercent: 10,
@@ -1553,7 +1554,7 @@ export const getCreatorFullShowcaseData = createServerFn({ method: "GET" })
         slug: s.slug,
         logoUrl: s.logo_url || null,
         bannerUrl: s.banner_url || null,
-        city: s.city || "Chapecó",
+        city: getDefaultCity(s.city),
         state: s.state || "SC",
         segment: s.segment || "Varejo",
         couponCode: `${cleanHandle.toUpperCase().slice(0, 6)}10`,

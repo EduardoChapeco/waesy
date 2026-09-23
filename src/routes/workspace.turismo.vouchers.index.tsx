@@ -14,6 +14,7 @@ import {
   MapPin,
   CheckCircle2,
   Smartphone,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ import {
 } from "@/services/travel-vouchers.functions";
 import { VOUCHER_TYPE_LABELS, type VoucherType } from "@/types/travel-vouchers";
 import { TemplateVoucherA4 } from "@/components/tourism/vouchers/templates/template-voucher-a4";
+import { TemplateVoucherStory } from "@/components/tourism/vouchers/templates/template-voucher-story";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import {
   DigitalCompanionCard,
@@ -77,6 +79,7 @@ export default function WorkspaceVouchersPage() {
   const [creationType, setCreationType] = useState<VoucherType>("flight");
   const [previewVoucher, setPreviewVoucher] = useState<any | null>(null);
   const [companionModalVoucher, setCompanionModalVoucher] = useState<any | null>(null);
+  const [previewFormat, setPreviewFormat] = useState<"story" | "companion" | "a4">("story");
 
   const {
     data: vouchers = [],
@@ -433,30 +436,117 @@ export default function WorkspaceVouchersPage() {
           if (!open) setCompanionModalVoucher(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
           <DialogHeader className="sr-only">
-            <DialogTitle>Cartão Digital 9:16 de Acompanhamento</DialogTitle>
+            <DialogTitle>Visualizador de Voucher & Bilhete</DialogTitle>
           </DialogHeader>
+
           {companionModalVoucher && (
-            <div className="w-full">
-              <DigitalCompanionCard
-                niche="tourism"
-                title={
-                  companionModalVoucher.title ||
-                  (companionModalVoucher.voucher_type === "flight"
-                    ? `${companionModalVoucher.flight_data?.origin || "Origem"} ➔ ${companionModalVoucher.flight_data?.destination || "Destino"}`
-                    : companionModalVoucher.hotel_data?.hotelName || "Voucher de Viagem")
-                }
-                subtitle={companionModalVoucher.title}
-                code={companionModalVoucher.voucher_number}
-                companyName={store?.name || "Agência de Viagens"}
-                companyLogoUrl={store?.logo_url}
-                participantsLabel="Passageiro"
-                participants={[companionModalVoucher.passenger_name].filter(Boolean)}
-                sections={buildCompanionSections(companionModalVoucher)}
-                rules={buildCompanionRules(companionModalVoucher)}
-                emergencyContacts={buildCompanionContacts(companionModalVoucher, store)}
-              />
+            <div className="w-full space-y-4">
+              {/* Header do Modal com Seletor de Formato */}
+              <div className="flex items-center justify-between pb-3 border-b border-border/60 gap-3 flex-wrap">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Smartphone className="size-4 text-primary" />
+                    <span>Visualizador de Voucher Oficial</span>
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Alterne o formato entre Stories 9:16, Cartão Interativo e Folha A4
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-2xl border border-border/40">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={previewFormat === "story" ? "default" : "ghost"}
+                    onClick={() => setPreviewFormat("story")}
+                    className="h-8 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+                  >
+                    <Smartphone className="size-3.5" />
+                    <span>Story 9:16</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={previewFormat === "companion" ? "default" : "ghost"}
+                    onClick={() => setPreviewFormat("companion")}
+                    className="h-8 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+                  >
+                    <Layers className="size-3.5" />
+                    <span>Interativo</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={previewFormat === "a4" ? "default" : "ghost"}
+                    onClick={() => setPreviewFormat("a4")}
+                    className="h-8 rounded-xl text-xs font-bold gap-1 cursor-pointer"
+                  >
+                    <Download className="size-3.5" />
+                    <span>Padrão A4</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Renderização condicional por formato */}
+              {previewFormat === "story" && (
+                <div className="py-2 flex justify-center animate-in fade-in zoom-in-95 duration-200">
+                  <TemplateVoucherStory
+                    voucher={companionModalVoucher}
+                    agencyName={store?.name}
+                    agencySlug={store?.slug}
+                    agencyLogo={store?.logo_url}
+                  />
+                </div>
+              )}
+
+              {previewFormat === "companion" && (
+                <div className="animate-in fade-in duration-200">
+                  <DigitalCompanionCard
+                    niche="tourism"
+                    title={
+                      companionModalVoucher.title ||
+                      (companionModalVoucher.voucher_type === "flight"
+                        ? `${companionModalVoucher.flight_data?.origin || "Origem"} ➔ ${companionModalVoucher.flight_data?.destination || "Destino"}`
+                        : companionModalVoucher.hotel_data?.hotelName || "Voucher de Viagem")
+                    }
+                    subtitle={companionModalVoucher.title}
+                    code={companionModalVoucher.voucher_number}
+                    companyName={store?.name || "Agência de Viagens"}
+                    companyLogoUrl={store?.logo_url}
+                    participantsLabel="Passageiro"
+                    participants={[companionModalVoucher.passenger_name].filter(Boolean)}
+                    sections={buildCompanionSections(companionModalVoucher)}
+                    rules={buildCompanionRules(companionModalVoucher)}
+                    emergencyContacts={buildCompanionContacts(companionModalVoucher, store)}
+                  />
+                </div>
+              )}
+
+              {previewFormat === "a4" && (
+                <div className="py-2 flex flex-col items-center gap-4 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-end w-full">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => handleDownloadPdf(companionModalVoucher)}
+                      className="rounded-xl text-xs font-bold gap-1.5"
+                    >
+                      <Download className="size-3.5" />
+                      <span>Baixar PDF (A4)</span>
+                    </Button>
+                  </div>
+                  <div className="w-full overflow-x-auto p-4 bg-muted/30 rounded-2xl border border-border/40 flex justify-center">
+                    <div className="scale-75 sm:scale-85 md:scale-90 origin-top shadow-xl">
+                      <TemplateVoucherA4
+                        voucher={companionModalVoucher}
+                        agencyName={store?.name}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

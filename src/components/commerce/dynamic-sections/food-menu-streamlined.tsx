@@ -127,7 +127,7 @@ export function FoodMenuStreamlinedSection({
  </div>
 
  {/* ── 2. Barra de Categorias Horizontal (Pills de Navegação) ── */}
- <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 border-b border-border/40 flex items-center gap-1.5 overflow-x-auto no-scrollbar ">
+ <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md py-2 px-0 border-b border-border/40 flex items-center gap-1.5 overflow-x-auto no-scrollbar ">
  {displayCategories.map((cat) => {
  const isSelected = activeCategory === cat;
  return (

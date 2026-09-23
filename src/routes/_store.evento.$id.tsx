@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/_store/evento/$id")({
       };
     } catch (err) {
       console.error("[loader:_store.evento.$id] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: EventDetailPage,

@@ -89,6 +89,16 @@ export interface ResumeDataDTO {
  credential_id?: string;
  credential_url?: string;
  }>;
+ licenses?: Array<{
+ id: string;
+ council: string;
+ register_number: string;
+ uf?: string;
+ status?: string;
+ expiration_date?: string;
+ document_url?: string;
+ specialty?: string;
+ }>;
  projects?: Array<{
  id: string;
  title: string;
@@ -168,6 +178,7 @@ export function ProfessionalResumeEditor({
  | "experience"
  | "education"
  | "certification"
+ | "license"
  | "project"
  | "volunteering"
  | "causes"
@@ -218,6 +229,7 @@ export function ProfessionalResumeEditor({
 
  const experiences = resumeData.experiences || [];
  const certifications = resumeData.certifications || [];
+ const licenses = resumeData.licenses || [];
  const projects = resumeData.projects || [];
  const volunteering = resumeData.volunteering || [];
  const causes = resumeData.causes || [];
@@ -779,6 +791,103 @@ export function ProfessionalResumeEditor({
  )}
  </div>
 
+    {/* ── 7.1 Carteiras Profissionais & Alvarás Verificados (OAB, CRM, CREA, Alvarás) ── */}
+    <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
+      <div className="flex items-center justify-between pb-3 border-b border-border/40">
+        <div>
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <ShieldCheck className="size-4 text-primary" />
+            <span>Carteiras Profissionais & Alvarás ({licenses.length})</span>
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Registros de classe (OAB, CRM, CREA, CRC, CRO, etc.), alvarás e carteiras com comprovação.
+          </p>
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setActiveItem(null);
+            setActiveModal("license");
+          }}
+          className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
+        >
+          <Plus className="size-3.5" />
+          <span>Adicionar</span>
+        </Button>
+      </div>
+
+      {licenses.length === 0 ? (
+        <p className="text-xs text-muted-foreground italic py-3 text-center bg-muted/20 rounded-2xl">
+          Nenhuma carteira profissional ou alvará cadastrado.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {licenses.map((lic, idx) => (
+            <div
+              key={lic.id || idx}
+              className="p-4 rounded-2xl bg-muted/20 border border-border/40 flex items-start justify-between gap-3 hover:border-border transition-colors"
+            >
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                  <ShieldCheck className="size-5" />
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-[10px] font-mono font-bold text-primary border-primary/30">
+                      {lic.council}/{lic.uf || "BR"}
+                    </Badge>
+                    <h4 className="text-xs font-bold text-foreground font-mono">
+                      {lic.register_number}
+                    </h4>
+                  </div>
+                  {lic.specialty && (
+                    <p className="text-xs text-foreground/80 font-medium truncate">
+                      {lic.specialty}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-0.5">
+                    <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                      <CheckCircle2 className="size-3" />
+                      <span>Ativo</span>
+                    </span>
+                    {lic.expiration_date && (
+                      <span>Validade: {lic.expiration_date}</span>
+                    )}
+                  </div>
+                  {lic.document_url && (
+                    <a
+                      href={lic.document_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline pt-1"
+                    >
+                      <span>Ver Comprovante Anexo</span>
+                      <ExternalLink className="size-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setActiveItem(lic);
+                  setActiveModal("license");
+                }}
+                className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+              >
+                <Edit3 className="size-3.5" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
  {/* ── 8. Projetos & Portfólio (com Mídia & Recorte) ── */}
  <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
@@ -1121,6 +1230,26 @@ export function ProfessionalResumeEditor({
  onChange({ ...resumeData, certifications: updated });
  setActiveModal(null);
  toast.success(isDelete ? "Certificação removida!" : "Certificação salva com sucesso!");
+ }}
+ />
+
+ {/* 4.1 Modal Carteiras Profissionais & Alvarás */}
+ <ProfessionalLicenseEditSheet
+ open={activeModal === "license"}
+ onOpenChange={(op) => !op && setActiveModal(null)}
+ item={activeItem}
+ onSave={(itemToSave, isDelete) => {
+ let updated = [...licenses];
+ if (isDelete && activeItem) {
+ updated = updated.filter((l) => l.id !== activeItem.id);
+ } else if (activeItem) {
+ updated = updated.map((l) => (l.id === activeItem.id ? itemToSave : l));
+ } else {
+ updated = [itemToSave, ...updated];
+ }
+ onChange({ ...resumeData, licenses: updated });
+ setActiveModal(null);
+ toast.success(isDelete ? "Registro profissional removido!" : "Registro profissional salvo com sucesso!");
  }}
  />
 
@@ -1774,6 +1903,263 @@ function ExperienceEditSheet({
   );
 }
 
+const PROFESSIONAL_COUNCILS = [
+  { value: "OAB", label: "OAB — Ordem dos Advogados do Brasil" },
+  { value: "CRM", label: "CRM — Conselho Regional de Medicina" },
+  { value: "CRO", label: "CRO — Conselho Regional de Odontologia" },
+  { value: "CREA", label: "CREA — Conselho Regional de Engenharia e Agronomia" },
+  { value: "CAU", label: "CAU — Conselho de Arquitetura e Urbanismo" },
+  { value: "CRC", label: "CRC — Conselho Regional de Contabilidade" },
+  { value: "CRP", label: "CRP — Conselho Regional de Psicologia" },
+  { value: "CRF", label: "CRF — Conselho Regional de Farmácia" },
+  { value: "CRN", label: "CRN — Conselho Regional de Nutricionistas" },
+  { value: "COREN", label: "COREN — Conselho Regional de Enfermagem" },
+  { value: "CRECI", label: "CRECI — Conselho Regional de Corretores de Imóveis" },
+  { value: "CNH", label: "CNH — Carteira de Habilitação Profissional" },
+  { value: "Alvará", label: "Alvará de Funcionamento / Vigilância Sanitária" },
+  { value: "Outro", label: "Outro Registro Profissional" },
+];
+
+const BRAZIL_UFS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
+  "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+];
+
+export function ProfessionalLicenseEditSheet({
+  open,
+  onOpenChange,
+  item,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (op: boolean) => void;
+  item: any;
+  onSave: (item: any, isDelete?: boolean) => void;
+}) {
+  const [council, setCouncil] = useState(item?.council || "OAB");
+  const [customCouncil, setCustomCouncil] = useState("");
+  const [registerNumber, setRegisterNumber] = useState(item?.register_number || "");
+  const [uf, setUf] = useState(item?.uf || "SC");
+  const [specialty, setSpecialty] = useState(item?.specialty || "");
+  const [expirationDate, setExpirationDate] = useState(item?.expiration_date || "");
+  const [documentUrl, setDocumentUrl] = useState(item?.document_url || "");
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    if (open) {
+      setCouncil(item?.council || "OAB");
+      setCustomCouncil("");
+      setRegisterNumber(item?.register_number || "");
+      setUf(item?.uf || "SC");
+      setSpecialty(item?.specialty || "");
+      setExpirationDate(item?.expiration_date || "");
+      setDocumentUrl(item?.document_url || "");
+    }
+  }, [open, item]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingDoc(true);
+    try {
+      const { signedUrl, publicUrl } = await getPostMediaSignedUrl({
+        data: { fileName: `license_${Date.now()}_${file.name}`, contentType: file.type || "application/pdf" },
+      });
+      const res = await fetch(signedUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type || "application/pdf" },
+      });
+      if (!res.ok) throw new Error("Erro no upload");
+      setDocumentUrl(publicUrl);
+      toast.success("Documento comprobatório anexado!");
+    } catch {
+      toast.error("Falha no upload do documento comprobatório.");
+    } finally {
+      setIsUploadingDoc(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const effectiveCouncil = council === "Outro" ? (customCouncil.trim() || "Conselho") : council;
+    if (!registerNumber.trim()) {
+      toast.error("Informe o número do registro profissional ou alvará.");
+      return;
+    }
+
+    onSave({
+      id: item?.id || `lic_${Date.now()}`,
+      council: effectiveCouncil,
+      register_number: registerNumber.trim(),
+      uf,
+      specialty: specialty.trim() || undefined,
+      expiration_date: expirationDate.trim() || undefined,
+      document_url: documentUrl.trim() || undefined,
+      status: "ativo",
+    });
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col h-full bg-background border-l border-border">
+        <div className="p-6 pb-4 border-b border-border/40 shrink-0">
+          <SheetTitle className="text-base font-bold">
+            {item ? "Editar Carteira / Alvará" : "Nova Carteira Profissional ou Alvará"}
+          </SheetTitle>
+          <SheetDescription className="text-xs text-muted-foreground">
+            Cadastre seu número de OAB, CRM, CREA, CRC ou alvará com comprovação documental.
+          </SheetDescription>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
+          <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4 text-xs">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold">Conselho / Tipo de Registro *</Label>
+              <Select value={council} onValueChange={setCouncil}>
+                <SelectTrigger className="h-9 rounded-xl text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl max-h-60">
+                  {PROFESSIONAL_COUNCILS.map((c) => (
+                    <SelectItem key={c.value} value={c.value} className="text-xs">
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {council === "Outro" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">Nome do Conselho / Órgão Personalizado *</Label>
+                <Input
+                  value={customCouncil}
+                  onChange={(e) => setCustomCouncil(e.target.value)}
+                  placeholder="Ex: CRA, CRN, CFT, Alvará Municipal"
+                  className="h-9 rounded-xl text-xs"
+                  required
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2 space-y-1.5">
+                <Label className="text-xs font-bold">Número de Registro *</Label>
+                <Input
+                  value={registerNumber}
+                  onChange={(e) => setRegisterNumber(e.target.value)}
+                  placeholder="Ex: 58.123 ou 123456"
+                  className="h-9 rounded-xl text-xs font-mono font-bold"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">UF / Estado</Label>
+                <Select value={uf} onValueChange={setUf}>
+                  <SelectTrigger className="h-9 rounded-xl text-xs font-mono">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl max-h-48">
+                    {BRAZIL_UFS.map((u) => (
+                      <SelectItem key={u} value={u} className="text-xs font-mono">
+                        {u}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold">Especialidade / Ramo de Atuação</Label>
+              <Input
+                value={specialty}
+                onChange={(e) => setSpecialty(e.target.value)}
+                placeholder="Ex: Direito Imobiliário, Cardiologia Clínica, Perícia Contábil"
+                className="h-9 rounded-xl text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold">Data de Validade (se houver)</Label>
+              <Input
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                placeholder="Ex: 12/2028 ou Indeterminada"
+                className="h-9 rounded-xl text-xs"
+              />
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <Label className="text-xs font-bold">Comprovante / Carteira Digital (PDF ou Imagem)</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingDoc}
+                  className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                >
+                  <Upload className="size-3.5" />
+                  <span>{isUploadingDoc ? "Enviando..." : documentUrl ? "Alterar Arquivo" : "Anexar Comprovante"}</span>
+                </Button>
+                {documentUrl && (
+                  <a
+                    href={documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary font-bold hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Ver Anexo</span>
+                    <ExternalLink className="size-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-border/40 flex items-center justify-between shrink-0">
+            {item ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onSave(null, true)}
+                className="text-destructive text-xs hover:bg-destructive/10 rounded-xl"
+              >
+                <Trash2 className="size-3.5 mr-1" /> Excluir
+              </Button>
+            ) : <div />}
+
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} className="rounded-xl text-xs h-9">
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm" className="rounded-xl text-xs h-9 font-bold bg-primary text-primary-foreground">
+                Salvar Registro
+              </Button>
+            </div>
+          </div>
+        </form>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+
 /**
  * Modal de Formação Acadêmica
  */
@@ -2061,6 +2447,8 @@ function CertificationEditSheet({
  </Sheet>
  );
 }
+
+
 
 /**
  * Modal de Projetos & Portfólio (com Upload e Recorte)

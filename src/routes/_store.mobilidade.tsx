@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
@@ -66,7 +66,7 @@ export const Route = createFileRoute("/_store/mobilidade")({
     } catch (err) {
       if (isRedirect(err)) throw err;
       console.error("[loader:_store.mobilidade] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: MobilityPage,

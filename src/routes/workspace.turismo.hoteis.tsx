@@ -92,7 +92,7 @@ import { FAMOUS_HOTEL_PRESETS, RESORT_AMENITY_OPTIONS, type HotelPreset } from "
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/turismo/hoteis")({
- head: () => ({ meta: [{ title: "Banco de Hotéis & Resorts | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Hotéis | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const [hotels, destinations, store] = await Promise.all([
@@ -145,6 +145,9 @@ function WorkspaceHotelsPage() {
  address: string;
  airport_distance: string;
  google_maps_url: string;
+ location_lat: number | null;
+ location_lng: number | null;
+ max_installments: number;
  badges: string[];
  bio_bullets: string[];
  room_categories: HotelRoomCategory[];
@@ -167,6 +170,9 @@ function WorkspaceHotelsPage() {
  address: "",
  airport_distance: "",
  google_maps_url: "",
+ location_lat: null,
+ location_lng: null,
+ max_installments: 12,
  badges: ["Eco-friendly", "Pé na Areia"],
  bio_bullets: [
  "🌴 Paraíso ecológico beira-mar integrado à natureza",
@@ -276,6 +282,9 @@ function WorkspaceHotelsPage() {
  address: "",
  airport_distance: "",
  google_maps_url: "",
+ location_lat: null,
+ location_lng: null,
+ max_installments: 12,
  badges: ["Eco-friendly", "Pé na Areia"],
  bio_bullets: [
  "🌴 Paraíso ecológico beira-mar integrado à natureza",
@@ -333,6 +342,9 @@ function WorkspaceHotelsPage() {
  address: hotel.address || "",
  airport_distance: hotel.airport_distance || "",
  google_maps_url: hotel.google_maps_url || "",
+ location_lat: hotel.location_lat ?? null,
+ location_lng: hotel.location_lng ?? null,
+ max_installments: hotel.max_installments ?? 12,
  badges: hotel.badges || ["Eco-friendly", "Pé na Areia"],
  bio_bullets: hotel.bio_bullets || [],
  room_categories: hotel.room_categories || [],
@@ -386,6 +398,9 @@ function WorkspaceHotelsPage() {
  address: preset.address,
  airport_distance: preset.airport_distance,
  google_maps_url: preset.google_maps_url,
+ location_lat: null,
+ location_lng: null,
+ max_installments: 12,
  badges: preset.badges,
  bio_bullets: preset.bio_bullets,
  room_categories: preset.room_categories || [],
@@ -620,7 +635,7 @@ function WorkspaceHotelsPage() {
  return (
  <NicheOperationalGuard
  targetNiche="tourism"
- toolTitle="Banco de Hotéis & Resorts"
+ toolTitle="Hotéis e Resorts"
  toolDescription="Catálogo de hospedagens, redes hoteleiras e resorts com acomodações estruturadas, fotos, comodidades, políticas e tarifas base para pacotes e propostas."
  store={store}
  >
@@ -682,14 +697,14 @@ function WorkspaceHotelsPage() {
           onMetricsClick={() => setIsMetricsOpen(true)}
           metricsBadge={totalHotels > 0 ? `${totalHotels} Hotéis` : undefined}
           primaryAction={{
-            label: "Novo Hotel / Resort",
+            label: "Novo Hotel",
             icon: Plus,
             onClick: handleOpenCreate,
           }}
         />
 
         <WorkspaceDashboardSheet
-          title="Telemetria de Hospedagens & Resorts"
+          title="Telemetria de Hospedagens"
           open={isMetricsOpen}
           onOpenChange={setIsMetricsOpen}
           items={dashboardMetrics}
@@ -1433,7 +1448,63 @@ function WorkspaceHotelsPage() {
  />
  </div>
  </div>
- </TabsContent>
+ 
+            {/* Coordenadas GPS (wttr.in e Mapas Reais) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="space-y-1.5">
+                <Label className="font-semibold text-foreground">Latitude GPS (ex: -8.4988)</Label>
+                <Input
+                  type="number"
+                  step="any"
+                  value={formData.location_lat ?? ""}
+                  onChange={(e) => setFormData({ ...formData, location_lat: e.target.value ? parseFloat(e.target.value) : null })}
+                  placeholder="-8.4988000"
+                  className="h-10 rounded-xl bg-background font-mono text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="font-semibold text-foreground">Longitude GPS (ex: -34.9982)</Label>
+                <Input
+                  type="number"
+                  step="any"
+                  value={formData.location_lng ?? ""}
+                  onChange={(e) => setFormData({ ...formData, location_lng: e.target.value ? parseFloat(e.target.value) : null })}
+                  placeholder="-34.9982000"
+                  className="h-10 rounded-xl bg-background font-mono text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Parcelamento Máximo (1-24x) */}
+            <div className="space-y-2 p-3.5 rounded-xl bg-muted/20 border border-border/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="font-semibold text-foreground block">Parcelamento Máximo no Pacote</Label>
+                  <span className="text-[11px] text-muted-foreground">Configuração de parcelamento para a vitrine e propostas</span>
+                </div>
+                <span className="text-xs font-mono font-bold text-primary">{formData.max_installments}x sem juros</span>
+              </div>
+              <div className="flex items-center gap-3 pt-1">
+                <input
+                  type="range"
+                  min={1}
+                  max={24}
+                  value={formData.max_installments}
+                  onChange={(e) => setFormData({ ...formData, max_installments: parseInt(e.target.value, 10) || 12 })}
+                  className="w-full accent-primary h-2 bg-muted rounded-lg cursor-pointer"
+                />
+                <Input
+                  type="number"
+                  min={1}
+                  max={24}
+                  value={formData.max_installments}
+                  onChange={(e) => setFormData({ ...formData, max_installments: Math.min(24, Math.max(1, parseInt(e.target.value, 10) || 12)) })}
+                  className="w-16 h-9 text-center font-mono text-xs rounded-xl bg-background"
+                />
+              </div>
+            </div>
+          </TabsContent>
 
  {/* ── ABA 2: GALERIA DE FOTOS & CAPA ── */}
  <TabsContent value="galeria" className="space-y-4 m-0">

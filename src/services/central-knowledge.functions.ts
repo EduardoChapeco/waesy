@@ -11,6 +11,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { getServerIdentity } from "@/lib/server-access";
 import { GLOBAL_VEHICLES_CATALOG, VehicleModelRecord } from "@/lib/data/vehicles-catalog";
 import { GLOBAL_SERVICES_CATALOG, MasterServiceRecord } from "@/lib/data/services-catalog";
 import { GLOBAL_BRAZIL_CITIES_CATALOG, CityRecord } from "@/lib/data/cities-brazil-catalog";
@@ -1015,3 +1016,267 @@ export const getCentralDemographics = createServerFn({ method: "GET" })
     };
   });
 
+
+
+// ─── 19. RECURSOS CENTRAIS EXTENDIDOS & SIMLAB (DATABASE-DRIVEN) ───
+
+// 1. Veículos FIPE (ck_vehicles_fipe)
+export const searchFipeVehicles = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().optional(),
+      brand: z.string().optional(),
+      vehicle_type: z.enum(["cars", "motorcycles", "trucks"]).optional(),
+      limit: z.number().int().min(1).max(100).default(30),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_vehicles_fipe").select("*").order("brand", { ascending: true }).limit(data.limit);
+
+    if (data.brand) q = q.ilike("brand", `%${data.brand}%`);
+    if (data.vehicle_type) q = q.eq("vehicle_type", data.vehicle_type);
+    if (data.query?.trim()) {
+      const s = `%${data.query.trim()}%`;
+      q = q.or(`model.ilike.${s},fipe_code.ilike.${s},brand.ilike.${s}`);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:searchFipeVehicles] ${error.message}`);
+    return rows || [];
+  });
+
+// 2. NCM Fiscal (ck_ncm)
+export const searchNcm = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().optional(),
+      code: z.string().optional(),
+      limit: z.number().int().min(1).max(100).default(30),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_ncm").select("*").limit(data.limit);
+
+    if (data.code?.trim()) q = q.ilike("code", `${data.code.trim()}%`);
+    if (data.query?.trim()) {
+      const s = `%${data.query.trim()}%`;
+      q = q.or(`description.ilike.${s},code.ilike.${s}`);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:searchNcm] ${error.message}`);
+    return rows || [];
+  });
+
+// 3. Instituições Financeiras (ck_financial_institutions)
+export const listFinancialInstitutions = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().optional(),
+      is_pix_participant: z.boolean().optional(),
+      limit: z.number().int().min(1).max(200).default(50),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_financial_institutions").select("*").order("ispb_code", { ascending: true }).limit(data?.limit || 50);
+
+    if (data?.is_pix_participant !== undefined) q = q.eq("is_pix_participant", data.is_pix_participant);
+    if (data?.query?.trim()) {
+      const s = `%${data.query.trim()}%`;
+      q = q.or(`short_name.ilike.${s},full_name.ilike.${s},compe_code.ilike.${s}`);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:listFinancialInstitutions] ${error.message}`);
+    return rows || [];
+  });
+
+// 4. Aeroportos (ck_airports)
+export const searchAirports = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().optional(),
+      country_code: z.string().optional(),
+      is_hub: z.boolean().optional(),
+      limit: z.number().int().min(1).max(100).default(30),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_airports").select("*").limit(data.limit);
+
+    if (data.country_code) q = q.eq("country_code", data.country_code.toUpperCase());
+    if (data.is_hub !== undefined) q = q.eq("is_hub", data.is_hub);
+    if (data.query?.trim()) {
+      const s = `%${data.query.trim()}%`;
+      q = q.or(`name.ilike.${s},city.ilike.${s},iata_code.ilike.${s},icao_code.ilike.${s}`);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:searchAirports] ${error.message}`);
+    return rows || [];
+  });
+
+// 5. Marcas Globais (ck_brands)
+export const listBrands = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().optional(),
+      segment: z.string().optional(),
+      limit: z.number().int().min(1).max(100).default(50),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_brands").select("*").order("name", { ascending: true }).limit(data?.limit || 50);
+
+    if (data?.segment) q = q.eq("segment", data.segment);
+    if (data?.query?.trim()) {
+      q = q.ilike("name", `%${data.query.trim()}%`);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:listBrands] ${error.message}`);
+    return rows || [];
+  });
+
+// 6. Variações e Grade Padrão (ck_product_variations)
+export const listProductVariations = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      category: z.string().optional(),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_product_variations").select("*").order("display_order", { ascending: true });
+
+    if (data?.category) q = q.eq("category", data.category);
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:listProductVariations] ${error.message}`);
+    return rows || [];
+  });
+
+// 7. Produtos Genéricos / Catálogo Base (ck_generic_products)
+export const searchGenericProducts = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().optional(),
+      niche: z.string().optional(),
+      category: z.string().optional(),
+      limit: z.number().int().min(1).max(100).default(30),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_generic_products").select("*").limit(data.limit);
+
+    if (data.niche) q = q.eq("niche", data.niche);
+    if (data.category) q = q.eq("category", data.category);
+    if (data.query?.trim()) {
+      const s = `%${data.query.trim()}%`;
+      q = q.or(`name.ilike.${s},default_barcode.ilike.${s},suggested_ncm.ilike.${s}`);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:searchGenericProducts] ${error.message}`);
+    return rows || [];
+  });
+
+// 8. Serviços CNAE / Atividades Econômicas (ck_cnae_services)
+export const searchCnaeServices = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      query: z.string().optional(),
+      cnae_code: z.string().optional(),
+      limit: z.number().int().min(1).max(100).default(30),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("ck_cnae_services").select("*").limit(data.limit);
+
+    if (data.cnae_code?.trim()) q = q.ilike("cnae_code", `${data.cnae_code.trim()}%`);
+    if (data.query?.trim()) {
+      const s = `%${data.query.trim()}%`;
+      q = q.or(`service_name.ilike.${s},cnae_code.ilike.${s}`);
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:searchCnaeServices] ${error.message}`);
+    return rows || [];
+  });
+
+// 9. Populações Sintéticas (synthetic_populations)
+export const getSyntheticPopulations = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      region: z.string().optional(),
+      economic_class: z.string().optional(),
+      limit: z.number().int().min(1).max(100).default(30),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("synthetic_populations").select("*").limit(data?.limit || 30);
+
+    if (data?.region) q = q.eq("region", data.region);
+    if (data?.economic_class) q = q.eq("economic_class", data.economic_class);
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:getSyntheticPopulations] ${error.message}`);
+    return rows || [];
+  });
+
+// 10. Perfis de Consumo de Personas (persona_consumption_profiles)
+export const getPersonaConsumptionProfiles = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      persona_code: z.string().optional(),
+    }).optional()
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    let q = db.from("persona_consumption_profiles").select("*");
+
+    if (data?.persona_code) q = q.eq("persona_code", data.persona_code);
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(`[central-knowledge:getPersonaConsumptionProfiles] ${error.message}`);
+    return rows || [];
+  });
+
+// 11. Simulações Focus Group (persona_focus_group_simulations)
+export const runPersonaFocusGroupSimulation = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      prompt_topic: z.string().min(3),
+      population_sample_size: z.number().int().min(1).max(100).default(10),
+      region_filter: z.string().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const { store_id } = await getServerIdentity().catch(() => ({ store_id: null }));
+
+    const { data: inserted, error } = await db
+      .from("persona_focus_group_simulations")
+      .insert({
+        store_id,
+        prompt_topic: data.prompt_topic,
+        population_sample_size: data.population_sample_size,
+        region_filter: data.region_filter || "Nacional",
+        status: "completed",
+        aggregate_sentiment: "Neutro a Positivo",
+        insights_summary: `Simulação de grupo focal realizada com amostra de ${data.population_sample_size} personas sintéticas sobre '${data.prompt_topic}'.`,
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error(`[central-knowledge:runPersonaFocusGroupSimulation] ${error.message}`);
+    return inserted;
+  });

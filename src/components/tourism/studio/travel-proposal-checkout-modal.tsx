@@ -248,7 +248,7 @@ export function TravelProposalCheckoutModal({
                   <Label className="text-xs font-medium">WhatsApp para Notificações</Label>
                   <PhoneField
                     value={leadPhone}
-                    onChange={setLeadPhone}
+                    onChange={(val) => setLeadPhone(val || "")}
                     placeholder="(00) 00000-0000"
                     className="h-9 text-xs rounded-xl"
                   />

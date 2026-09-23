@@ -450,6 +450,16 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
  navIcon: "Sliders",
  },
  {
+ path: "/workspace/mining",
+ label: "Mineração & Crawlers",
+ description: "Hub de Crawlers, RSS e Mineração de Dados",
+ audience: "admin",
+ roles: STAFF_ALL,
+ phase: 1,
+ navGroup: "Inteligência",
+ navIcon: "Database",
+ },
+ {
  path: "/workspace/onboarding",
  label: "Onboarding",
  description: "Primeiros passos",

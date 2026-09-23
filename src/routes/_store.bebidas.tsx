@@ -184,7 +184,7 @@ function BebidasVerticalPage() {
  }, [marketplaceFeed]);
 
  return (
- <div className="w-full max-w-7xl mx-auto space-y-6 pb-6 overflow-x-hidden">
+ <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
  {/* ── 1. Banners de Bebidas ── */}
  {banners && banners.length > 0 && (
  <section aria-label="Banners de Bebidas">

@@ -207,6 +207,24 @@ export const chatWithSDR = createServerFn({ method: "POST" })
 
     const storeData: any = Array.isArray(classified.store) ? classified.store[0] : classified.store;
 
+    // Buscar produtos complementares da loja para cross-selling no SDR
+    let complementaryProducts: Array<{ title: string; price_cents: number; slug?: string }> = [];
+    if (classified.store_id) {
+      try {
+        const { data: prods } = await db
+          .from("products")
+          .select("title, price_cents, slug")
+          .eq("store_id", classified.store_id)
+          .eq("status", "published")
+          .limit(6);
+        if (prods && prods.length > 0) {
+          complementaryProducts = prods;
+        }
+      } catch (e) {
+        console.warn("[sdr] Erro ao buscar produtos complementares:", e);
+      }
+    }
+
     // 2. Sanitizar mensagens do usuário (anti-injection)
     const sanitizedMessages = messages.map((m) => ({
       role: m.role,
@@ -261,6 +279,12 @@ ${classified.ai_instructions
 
 ${storeData?.ai_knowledge_base
   ? `=== BASE INSTITUCIONAL DA LOJA ${storeData.name} ===\n${sanitizeForAI(storeData.ai_knowledge_base, 800)}`
+  : ""}
+
+${complementaryProducts.length > 0
+  ? `=== CATÁLOGO E PRODUTOS COMPLEMENTARES DA LOJA (Para Recomendação e Venda Cruzada) ===\n` +
+    complementaryProducts.map((p) => `- ${p.title}: R$ ${(p.price_cents / 100).toFixed(2)}${p.slug ? ` (/produto/${p.slug})` : ""}`).join("\n") +
+    `\nQuando oportuno, se o comprador perguntar sobre outros itens da loja ou demonstrar interesse em combos, mencione esses produtos complementares de forma natural para enriquecer a negociação.`
   : ""}`;
 
     // 4. Chamar LLM via motor unificado

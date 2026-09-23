@@ -111,6 +111,7 @@ import { Route as WorkspaceIndexRouteImport } from './routes/workspace.index'
 import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.automacoes'
 import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
+import { Route as WorkspaceMiningRouteImport } from './routes/workspace.mining'
 import { Route as WorkspaceNotificacoesRouteImport } from './routes/workspace.notificacoes'
 import { Route as WorkspaceQualidadeRouteImport } from './routes/workspace.qualidade'
 import { Route as WorkspaceRelatoriosRouteImport } from './routes/workspace.relatorios'
@@ -236,6 +237,7 @@ import { Route as WorkspaceConfiguracoesSessoesRouteImport } from './routes/work
 import { Route as WorkspaceContadorIndexRouteImport } from './routes/workspace.contador.index'
 import { Route as WorkspaceContratosIndexRouteImport } from './routes/workspace.contratos.index'
 import { Route as WorkspaceContratosNovoRouteImport } from './routes/workspace.contratos.novo'
+import { Route as WorkspaceCurriculoEditorRouteImport } from './routes/workspace.curriculo.editor'
 import { Route as WorkspaceDoacoesIndexRouteImport } from './routes/workspace.doacoes.index'
 import { Route as WorkspaceEmpregosCandidatosRouteImport } from './routes/workspace.empregos.candidatos'
 import { Route as WorkspaceEstoqueIndexRouteImport } from './routes/workspace.estoque.index'
@@ -877,6 +879,11 @@ const WorkspaceAvaliacoesRoute = WorkspaceAvaliacoesRouteImport.update({
 const WorkspaceComercialRoute = WorkspaceComercialRouteImport.update({
   id: '/comercial',
   path: '/comercial',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceMiningRoute = WorkspaceMiningRouteImport.update({
+  id: '/mining',
+  path: '/mining',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceNotificacoesRoute = WorkspaceNotificacoesRouteImport.update({
@@ -1522,6 +1529,12 @@ const WorkspaceContratosNovoRoute = WorkspaceContratosNovoRouteImport.update({
   path: '/contratos/novo',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceCurriculoEditorRoute =
+  WorkspaceCurriculoEditorRouteImport.update({
+    id: '/curriculo/editor',
+    path: '/curriculo/editor',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceDoacoesIndexRoute = WorkspaceDoacoesIndexRouteImport.update({
   id: '/doacoes/',
   path: '/doacoes/',
@@ -2366,6 +2379,7 @@ export interface FileRoutesByFullPath {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
@@ -2476,6 +2490,7 @@ export interface FileRoutesByFullPath {
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
+  '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
   '/workspace/estoque/alertas': typeof WorkspaceEstoqueAlertasRoute
   '/workspace/estoque/movimentos': typeof WorkspaceEstoqueMovimentosRoute
@@ -2716,6 +2731,7 @@ export interface FileRoutesByTo {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
@@ -2827,6 +2843,7 @@ export interface FileRoutesByTo {
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
+  '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
   '/workspace/estoque/alertas': typeof WorkspaceEstoqueAlertasRoute
   '/workspace/estoque/movimentos': typeof WorkspaceEstoqueMovimentosRoute
@@ -3076,6 +3093,7 @@ export interface FileRoutesById {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
@@ -3187,6 +3205,7 @@ export interface FileRoutesById {
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
+  '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
   '/workspace/estoque/alertas': typeof WorkspaceEstoqueAlertasRoute
   '/workspace/estoque/movimentos': typeof WorkspaceEstoqueMovimentosRoute
@@ -3437,6 +3456,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
     | '/workspace/relatorios'
@@ -3547,6 +3567,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
     | '/workspace/contratos/novo'
+    | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
     | '/workspace/estoque/alertas'
     | '/workspace/estoque/movimentos'
@@ -3787,6 +3808,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
     | '/workspace/relatorios'
@@ -3898,6 +3920,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
     | '/workspace/contratos/novo'
+    | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
     | '/workspace/estoque/alertas'
     | '/workspace/estoque/movimentos'
@@ -4146,6 +4169,7 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
     | '/workspace/relatorios'
@@ -4257,6 +4281,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
     | '/workspace/contratos/novo'
+    | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
     | '/workspace/estoque/alertas'
     | '/workspace/estoque/movimentos'
@@ -5162,6 +5187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceComercialRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/mining': {
+      id: '/workspace/mining'
+      path: '/mining'
+      fullPath: '/workspace/mining'
+      preLoaderRoute: typeof WorkspaceMiningRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/notificacoes': {
       id: '/workspace/notificacoes'
       path: '/notificacoes'
@@ -6035,6 +6067,13 @@ declare module '@tanstack/react-router' {
       path: '/contratos/novo'
       fullPath: '/workspace/contratos/novo'
       preLoaderRoute: typeof WorkspaceContratosNovoRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/curriculo/editor': {
+      id: '/workspace/curriculo/editor'
+      path: '/curriculo/editor'
+      fullPath: '/workspace/curriculo/editor'
+      preLoaderRoute: typeof WorkspaceCurriculoEditorRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/doacoes/': {
@@ -7435,6 +7474,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAutomacoesRoute: typeof WorkspaceAutomacoesRoute
   WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
+  WorkspaceMiningRoute: typeof WorkspaceMiningRoute
   WorkspaceNotificacoesRoute: typeof WorkspaceNotificacoesRoute
   WorkspaceQualidadeRoute: typeof WorkspaceQualidadeRoute
   WorkspaceRelatoriosRoute: typeof WorkspaceRelatoriosRouteWithChildren
@@ -7464,6 +7504,7 @@ interface WorkspaceRouteChildren {
   WorkspaceConfiguracoesPwaRoute: typeof WorkspaceConfiguracoesPwaRoute
   WorkspaceConfiguracoesSessoesRoute: typeof WorkspaceConfiguracoesSessoesRoute
   WorkspaceContratosNovoRoute: typeof WorkspaceContratosNovoRoute
+  WorkspaceCurriculoEditorRoute: typeof WorkspaceCurriculoEditorRoute
   WorkspaceEmpregosCandidatosRoute: typeof WorkspaceEmpregosCandidatosRoute
   WorkspaceEstoqueAlertasRoute: typeof WorkspaceEstoqueAlertasRoute
   WorkspaceEstoqueMovimentosRoute: typeof WorkspaceEstoqueMovimentosRoute
@@ -7590,6 +7631,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAutomacoesRoute: WorkspaceAutomacoesRoute,
   WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
+  WorkspaceMiningRoute: WorkspaceMiningRoute,
   WorkspaceNotificacoesRoute: WorkspaceNotificacoesRoute,
   WorkspaceQualidadeRoute: WorkspaceQualidadeRoute,
   WorkspaceRelatoriosRoute: WorkspaceRelatoriosRouteWithChildren,
@@ -7622,6 +7664,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceConfiguracoesPwaRoute: WorkspaceConfiguracoesPwaRoute,
   WorkspaceConfiguracoesSessoesRoute: WorkspaceConfiguracoesSessoesRoute,
   WorkspaceContratosNovoRoute: WorkspaceContratosNovoRoute,
+  WorkspaceCurriculoEditorRoute: WorkspaceCurriculoEditorRoute,
   WorkspaceEmpregosCandidatosRoute: WorkspaceEmpregosCandidatosRoute,
   WorkspaceEstoqueAlertasRoute: WorkspaceEstoqueAlertasRoute,
   WorkspaceEstoqueMovimentosRoute: WorkspaceEstoqueMovimentosRoute,

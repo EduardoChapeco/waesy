@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useRef, useEffect } from "react";
 
-import { validateTicketCheckin, getEventWithLots } from "@/services/events.functions";
+import { validateTicketCheckin, validateCredentialCheckin, getEventWithLots } from "@/services/events.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +69,54 @@ function EventCheckinPage() {
 
  setIsValidating(true);
  try {
+ // 1. Roteamento inteligente de credenciais de staff/vip/imprensa
+ if (code.toUpperCase().startsWith("CRED-")) {
+ const credRes = await validateCredentialCheckin({
+ data: {
+ eventId: event?.id || "",
+ qrCode: code,
+ },
+ });
+
+ if (credRes.alreadyCheckedIn) {
+ playWarningAlert();
+ if (navigator.vibrate) navigator.vibrate(300);
+ toast.warning(`Atenção: ${credRes.message}`);
+ setLastCheckin({
+ success: false,
+ name: credRes.credential?.nome_completo,
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} • ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
+ message: credRes.message || "Credencial já utilizada!",
+ timestamp: new Date(),
+ });
+ } else {
+ playCheckinSuccessSound();
+ if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+ toast.success(`Credencial validada: ${credRes.credential?.nome_completo}`);
+ setLastCheckin({
+ success: true,
+ name: credRes.credential?.nome_completo,
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} • ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
+ message: "Credencial Válida! Acesso Liberado.",
+ timestamp: new Date(),
+ });
+ setHistory((prev) => [
+ {
+ code,
+ name: credRes.credential?.nome_completo,
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()}`,
+ success: true,
+ time: new Date().toLocaleTimeString(),
+ },
+ ...prev.slice(0, 20),
+ ]);
+ setTicketCode("");
+ }
+ return;
+ }
+
+ // 2. Validação canônica de ingresso regular com fallback defensivo para credenciais avulsas
+ try {
  const res = await validateTicketCheckin({
  data: {
  eventId: event?.id || "",
@@ -99,10 +147,56 @@ function EventCheckinPage() {
  ]);
  setTicketCode("");
  }
+ } catch (ticketErr: any) {
+ // Fallback: tenta validar se o código pertence à tabela de credenciais
+ try {
+ const credRes = await validateCredentialCheckin({
+ data: {
+ eventId: event?.id || "",
+ qrCode: code,
+ },
+ });
+
+ if (credRes.alreadyCheckedIn) {
+ playWarningAlert();
+ toast.warning(credRes.message);
+ setLastCheckin({
+ success: false,
+ name: credRes.credential?.nome_completo,
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()}`,
+ message: credRes.message || "Credencial já utilizada!",
+ timestamp: new Date(),
+ });
+ } else {
+ playCheckinSuccessSound();
+ toast.success(`Credencial validada: ${credRes.credential?.nome_completo}`);
+ setLastCheckin({
+ success: true,
+ name: credRes.credential?.nome_completo,
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} • ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
+ message: "Credencial Válida! Acesso Liberado.",
+ timestamp: new Date(),
+ });
+ setHistory((prev) => [
+ {
+ code,
+ name: credRes.credential?.nome_completo,
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()}`,
+ success: true,
+ time: new Date().toLocaleTimeString(),
+ },
+ ...prev.slice(0, 20),
+ ]);
+ setTicketCode("");
+ }
+ } catch {
+ throw ticketErr;
+ }
+ }
  } catch (err: any) {
  playWarningAlert();
  if (navigator.vibrate) navigator.vibrate(300);
- const errMsg = err?.message || "Ingresso inválido ou não encontrado.";
+ const errMsg = err?.message || "Ingresso ou credencial inválida.";
  toast.error(errMsg);
  setLastCheckin({
  success: false,
@@ -283,7 +377,7 @@ function EventCheckinPage() {
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <QrCode className="size-5 text-primary" />
- <h2 className="text-sm font-bold text-foreground">Validar Ingresso / QR Code</h2>
+ <h2 className="text-sm font-bold text-foreground">Validar Ingresso / Credencial Staff</h2>
  </div>
  <Badge variant="outline" className="text-xs font-mono">
  Portaria 1
@@ -297,7 +391,7 @@ function EventCheckinPage() {
  autoFocus
  value={ticketCode}
  onChange={(e) => setTicketCode(e.target.value)}
- placeholder="Escaneie o QR Code ou digite o código do ingresso..."
+ placeholder="Escaneie o QR Code ou digite o código (Ingresso ou CRED-...)"
  className="pl-10 h-12 rounded-xl text-sm font-mono bg-background"
  disabled={isValidating}
  />

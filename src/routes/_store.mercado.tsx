@@ -6,6 +6,7 @@ import { Flame, Storefront, ForkKnife, Coffee, Heartbeat, Clock, ShieldCheck, Tr
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
@@ -256,17 +257,18 @@ function SupermarketMasterPage() {
  {/* ── 2. Stories Rápidos & Ofertas em Vídeo dos Mercados Parceiros ── */}
  <ContextualStoriesRail niche="mercado" className="py-1" />
 
- {/* ── 3. Seletor de Supermercados Parceiros (Multi-Store Filter) ── */}
+ {/* ── 3. Seletor de Supermercados Parceiros (Multi-Store Filter - Padrão Botão Grande) ── */}
  {availableStores.length > 0 && (
- <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 ">
+ <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
  <button
  type="button"
  onClick={() => setSelectedStore("todos")}
- className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+ className={cn(
+ "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
  selectedStore === "todos"
- ? "bg-primary/10 text-primary border border-primary/25 font-bold"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
- }`}
+ ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+ : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
+ )}
  >
  Todos os Mercados
  </button>
@@ -276,11 +278,12 @@ function SupermarketMasterPage() {
  key={store}
  type="button"
  onClick={() => setSelectedStore(store)}
- className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+ className={cn(
+ "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
  selectedStore === store
- ? "bg-primary/10 text-primary border border-primary/25 font-bold"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
- }`}
+ ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+ : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
+ )}
  >
  {store}
  </button>
@@ -308,8 +311,8 @@ function SupermarketMasterPage() {
  allowedViewModes={["feed", "grid", "list"]}
  />
 
- {/* ── 6. Filtros Especiais de Dieta & Estilo de Vida (Pills) ── */}
- <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 ">
+ {/* ── 6. Filtros Especiais de Dieta & Estilo de Vida (Padrão Botão Grande) ── */}
+ <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
  {DIETARY_FILTERS.map((f) => {
  const isSelected = selectedDietary === f.id;
  return (
@@ -317,11 +320,12 @@ function SupermarketMasterPage() {
  key={f.id}
  type="button"
  onClick={() => setSelectedDietary(f.id)}
- className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+ className={cn(
+ "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
  isSelected
- ? "bg-primary/10 text-primary border border-primary/25 font-bold"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted border border-border/40"
- }`}
+ ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+ : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
+ )}
  >
  <span>{f.label}</span>
  </button>

@@ -2,6 +2,7 @@ import { checkRateLimit } from "@/lib/rate-limiter";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
+import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 import { getCurrentIdentity } from "@/services/cart-helpers";
 import { getUserSession } from "@/services/auth.functions";
 
@@ -1686,8 +1687,8 @@ export const getPublicMemberProfile = createServerFn({ method: "GET" })
  slug: s.slug,
  logoUrl: s.logo_url || null,
             bannerUrl: s.settings?.bannerUrl || s.settings?.banner_url || null,
- city: s.city || "Chapecó",
- state: s.state || "SC",
+ city: getDefaultCity(s.city),
+  state: getDefaultState(s.state),
             segment: s.settings?.segment || s.settings?.niche || "Varejo",
  couponCode: `${(creatorProfile.handle || "WAESY").toUpperCase().slice(0, 6)}10`,
  discountPercent: 10,

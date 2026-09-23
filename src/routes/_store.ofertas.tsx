@@ -94,7 +94,7 @@ function OfertasPage() {
  const maxDiscount = dealsPage.maxDiscount || 0;
 
  return (
- <div className="w-full space-y-6 pb-20">
+ <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
  {/* ── 1. Hero Banner ── */}
  {banners && banners.length > 0 ? (
  <section aria-label="Banners de Ofertas">
@@ -157,7 +157,7 @@ function OfertasPage() {
 
  <nav
  aria-label="Filtrar ofertas por categoria"
- className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1"
+ className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 px-0"
  >
  {NICHE_CHIPS.map((chip) => (
  <button

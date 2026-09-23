@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { getCustomerCredits, requestRedemption } from "@/services/credits.functions";
 import { formatMoney } from "@/lib/money";
 import { useState } from "react";
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_store/conta/creditos")({
  );
    } catch (err) {
      console.error("[loader:_store.conta.creditos] Unhandled loader error:", err);
-     return {} as any;
+     return null as any;
     }
  },
  component: Page,

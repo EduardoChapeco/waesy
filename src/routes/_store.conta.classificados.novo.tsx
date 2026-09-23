@@ -601,6 +601,14 @@ function CreateTypePicker({
     );
   }, [searchFilter]);
 
+  const [scopeTab, setScopeTab] = useState<"all" | "personal" | "business">("all");
+
+  const visibleNiches = useMemo(() => {
+    if (scopeTab === "personal") return personalNiches;
+    if (scopeTab === "business") return businessNiches;
+    return [...personalNiches, ...businessNiches];
+  }, [scopeTab, personalNiches, businessNiches]);
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 pb-20 px-1 sm:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
@@ -609,224 +617,272 @@ function CreateTypePicker({
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Criar Anúncio
           </h1>
-          <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground">
+          <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground border-border/60">
             {NICHE_CARDS.length} Formatos
           </Badge>
         </div>
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer border-border/70">
           <Link to="/conta/classificados">Meus Anúncios</Link>
         </Button>
       </div>
 
-      {/* ── Motor de Intenção com IA ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/5 p-[1px]">
-        <div className="relative bg-background rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="flex-1 w-full relative">
-            <Wand2 className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary/70" />
-            <Input 
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value.slice(0, 250))}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleGenerateWithAi();
-                }
+      {/* ── Tabs Limpas no Topo (Apple HIG Segmented Control) ── */}
+      <div className="flex items-center gap-1 p-1 bg-muted/40 rounded-xl border border-border/50 max-w-md">
+        <button
+          type="button"
+          onClick={() => setScopeTab("all")}
+          className={cn(
+            "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+            scopeTab === "all"
+              ? "bg-background text-foreground shadow-xs border border-border/70"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          )}
+        >
+          Todos ({personalNiches.length + businessNiches.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setScopeTab("personal")}
+          className={cn(
+            "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+            scopeTab === "personal"
+              ? "bg-background text-foreground shadow-xs border border-border/70"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          )}
+        >
+          Pessoal ({personalNiches.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setScopeTab("business")}
+          className={cn(
+            "flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+            scopeTab === "business"
+              ? "bg-background text-foreground shadow-xs border border-border/70"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          )}
+        >
+          Negócios ({businessNiches.length})
+        </button>
+      </div>
+
+      {/* ── Ação Unificada: Busca & Criar com IA Adjacente (Sem Layout Shift) ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={searchFilter || aiPrompt}
+            onChange={(e) => {
+              setSearchFilter(e.target.value);
+              setAiPrompt(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleGenerateWithAi();
+              }
+            }}
+            placeholder="Busque categorias ou descreva seu anúncio (ex: iPhone 13 Pro 128GB)..."
+            className="pl-10 pr-16 h-11 rounded-xl text-xs sm:text-sm bg-card border-border/70 shadow-xs focus-visible:ring-1 focus-visible:ring-foreground/20"
+            id="ai-intent-input"
+          />
+          {(searchFilter || aiPrompt) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchFilter("");
+                setAiPrompt("");
               }}
-              placeholder="Ex: Quero vender meu iPhone 13 Pro 128GB usado por R$ 3.500" 
-              className="pl-10 h-11 rounded-lg text-sm border-none bg-muted/50 focus-visible:ring-1 focus-visible:ring-primary/50"
-              id="ai-intent-input"
-              maxLength={250}
-            />
-            {aiPrompt.length > 0 && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground tabular-nums">
-                {aiPrompt.length}/250
-              </span>
-            )}
-          </div>
-          <Button 
-            type="button" 
-            disabled={isAiGenerating}
-            onClick={handleGenerateWithAi}
-            className="w-full sm:w-auto h-11 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-95 cursor-pointer disabled:opacity-60"
-          >
-            {isAiGenerating ? (
-              <Loader2 className="size-4 mr-2 animate-spin" />
-            ) : (
-              <Wand2 className="size-4 mr-2" />
-            )}
-            {isAiGenerating ? "Gerando..." : "Criar com IA"}
-          </Button>
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer px-1.5 py-0.5"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
+        <Button
+          type="button"
+          disabled={isAiGenerating}
+          onClick={handleGenerateWithAi}
+          variant="outline"
+          className="h-11 px-4 rounded-xl font-semibold text-xs border border-border/80 text-foreground hover:bg-muted/40 transition-all cursor-pointer shrink-0"
+        >
+          {isAiGenerating ? (
+            <Loader2 className="size-4 mr-2 animate-spin" />
+          ) : (
+            <Wand2 className="size-4 mr-2 text-primary" />
+          )}
+          {isAiGenerating ? "Gerando..." : "Criar com IA"}
+        </Button>
+      </div>
+
+      {/* ── MOBILE: The WhatsApp List Pattern (Listas Verticais Limpas) ── */}
+      <div className="block sm:hidden space-y-1">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block px-1 py-1">
+          {scopeTab === "personal"
+            ? "Formatos para Você"
+            : scopeTab === "business"
+            ? "Formatos para Negócios"
+            : "Todos os Formatos"}
+        </span>
+        <div className="divide-y divide-border/20 rounded-2xl border border-border/50 bg-card overflow-hidden">
+          {visibleNiches.map((niche) => {
+            const Icon = niche.icon;
+            return (
+              <button
+                key={niche.id}
+                onClick={() => onSelect(niche.id)}
+                className="w-full flex items-center justify-between p-3.5 hover:bg-muted/30 active:bg-muted/50 transition-colors text-left cursor-pointer min-h-[56px]"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="size-11 rounded-full border border-border/60 flex items-center justify-center shrink-0 text-foreground bg-background">
+                    <Icon className="size-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-foreground truncate">
+                        {niche.title}
+                      </h3>
+                      <span className="text-[10px] font-medium text-muted-foreground border border-border/60 px-1.5 py-0.2 rounded-sm shrink-0">
+                        {niche.badge}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {niche.subtitle}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground shrink-0 ml-2" />
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="relative mt-6">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          value={searchFilter}
-          onChange={(e) => setSearchFilter(e.target.value)}
-          placeholder="Ou busque categorias manualmente (ex: Casa, Celular, Serviços)..."
-          className="pl-10 h-11 rounded-2xl text-xs sm:text-sm bg-card border-border/60 shadow-sm"
-        />
-        {searchFilter && (
-          <button
-            type="button"
-            onClick={() => setSearchFilter("")}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            Limpar
-          </button>
+      {/* ── DESKTOP: Trilho de Cards Refinado (Apple HIG Clean) ── */}
+      <div className="hidden sm:block space-y-6">
+        {/* Trilho Pessoal */}
+        {(scopeTab === "all" || scopeTab === "personal") && personalNiches.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                Para Você (Comunidade)
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleScroll("left")}
+                  className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+                  title="Rolar para a esquerda"
+                  aria-label="Rolar para esquerda"
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleScroll("right")}
+                  className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
+                  title="Rolar para a direita"
+                  aria-label="Rolar para direita"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative group/rail">
+              <div
+                ref={scrollContainerRef}
+                className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-0.5 scroll-smooth"
+              >
+                {personalNiches.map((niche) => {
+                  const Icon = niche.icon;
+                  return (
+                    <button
+                      key={niche.id}
+                      onClick={() => onSelect(niche.id)}
+                      className="w-[270px] min-w-[270px] h-[360px] shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-foreground/40 hover:shadow-sm transition-all duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="size-12 rounded-xl bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-all">
+                          <Icon className="size-6" />
+                        </div>
+                        <span className="text-[10px] font-semibold text-muted-foreground border border-border/60 px-2 py-0.5 rounded-md">
+                          {niche.badge}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 flex-1 flex flex-col justify-center mt-3">
+                        <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                          {niche.title}
+                        </h3>
+                        <p className="text-xs font-semibold text-foreground/80">
+                          {niche.subtitle}
+                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                          {niche.description}
+                        </p>
+                      </div>
+
+                      <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <span>Criar Anúncio</span>
+                        <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Trilho Negócios */}
+        {(scopeTab === "all" || scopeTab === "business") && businessNiches.length > 0 && (
+          <div className="space-y-3 pt-4 border-t border-border/30">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+              Para o Seu Negócio (Varejo & Serviços)
+            </span>
+
+            <div className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-0.5 scroll-smooth">
+              {businessNiches.map((niche) => {
+                const Icon = niche.icon;
+                return (
+                  <button
+                    key={niche.id}
+                    onClick={() => onSelect(niche.id)}
+                    className="w-[270px] min-w-[270px] h-[360px] shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-foreground/40 hover:shadow-sm transition-all duration-200 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="size-12 rounded-xl bg-muted/40 border border-border/70 flex items-center justify-center text-foreground group-hover:scale-105 transition-all">
+                        <Icon className="size-6" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground border border-border/60 px-2 py-0.5 rounded-md">
+                        {niche.badge}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5 flex-1 flex flex-col justify-center mt-3">
+                      <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                        {niche.title}
+                      </h3>
+                      <p className="text-xs font-semibold text-foreground/80">
+                        {niche.subtitle}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                        {niche.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+                      <span>Criar Anúncio</span>
+                      <ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         )}
       </div>
-
-      {/* ── 2. Trilho de Cards Verticais (Para Você / C2C) ── */}
-      {personalNiches.length > 0 && (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-            Para Você (Comunidade)
-          </span>
-          <div className="hidden md:flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => handleScroll("left")}
-              className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
-              title="Rolar para a esquerda"
-              aria-label="Rolar para esquerda"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleScroll("right")}
-              className="size-8 rounded-xl border border-border/70 bg-card hover:bg-muted flex items-center justify-center text-foreground transition-colors cursor-pointer"
-              title="Rolar para a direita"
-              aria-label="Rolar para direita"
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
-        </div>
-
-        <div className="relative group/rail">
-          {/* Trilho de Scroll Horizontal com Snap */}
-          <div
-            ref={scrollContainerRef}
-            className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-2 px-0.5 scroll-smooth"
-          >
-            {personalNiches.map((niche) => {
-              const Icon = niche.icon;
-              return (
-                <button
-                  key={niche.id}
-                  onClick={() => onSelect(niche.id)}
-                  className="w-[260px] sm:w-[280px] min-w-[260px] sm:min-w-[280px] h-[370px] sm:h-[390px] shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-primary/50 hover:shadow-lg transition-all duration-300 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
-                >
-                  {/* Gradiente Imersivo no Topo do Card */}
-                  <div
-                    className={`absolute top-0 inset-x-0 h-36 bg-gradient-to-b ${niche.gradient} opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`}
-                  />
-
-                  {/* Topo do Card: Ícone em Squircle + Badge */}
-                  <div className="relative z-10 flex items-start justify-between gap-2">
-                    <div className="size-13 rounded-2xl bg-background/90 backdrop-blur-md border border-border/70 shadow-xs flex items-center justify-center text-primary group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
-                      <Icon className="size-6" />
-                    </div>
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-background/80 backdrop-blur-md border border-border/60 text-foreground shrink-0"
-                    >
-                      {niche.badge}
-                    </Badge>
-                  </div>
-
-                  {/* Meio do Card: Tipografia e Descrição Vertical */}
-                  <div className="relative z-10 space-y-1.5 flex-1 flex flex-col justify-center mt-3">
-                    <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                      {niche.title}
-                    </h3>
-                    <p className="text-xs font-semibold text-primary/90">
-                      {niche.subtitle}
-                    </p>
-                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                      {niche.description}
-                    </p>
-                  </div>
-
-                  {/* Rodapé do Card: Ação com Seta Animada */}
-                  <div className="relative z-10 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                    <span>Criar Anúncio</span>
-                    <div className="size-7 rounded-full bg-muted/80 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:translate-x-1 transition-all">
-                      <ChevronRight className="size-4" />
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-      )}
-
-      {/* ── 2.5 Trilho de Cards Verticais (Para Negócios / B2C) ── */}
-      {businessNiches.length > 0 && (
-      <div className="space-y-3 pt-6 mt-6 border-t border-border/40">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-            Para o Seu Negócio (Varejo & Serviços)
-          </span>
-        </div>
-
-        <div className="relative group/rail2">
-          {/* Trilho de Scroll Horizontal com Snap */}
-          <div
-            className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-2 px-0.5 scroll-smooth"
-          >
-            {businessNiches.map((niche) => {
-              const Icon = niche.icon;
-              return (
-                <button
-                  key={niche.id}
-                  onClick={() => onSelect(niche.id)}
-                  className="w-[260px] sm:w-[280px] min-w-[260px] sm:min-w-[280px] h-[370px] sm:h-[390px] shrink-0 snap-start text-left relative rounded-2xl border border-border/60 bg-card hover:border-primary/50 hover:shadow-lg transition-all duration-300 p-5 flex flex-col justify-between overflow-hidden group cursor-pointer"
-                >
-                  <div
-                    className={`absolute top-0 inset-x-0 h-36 bg-gradient-to-b ${niche.gradient} opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`}
-                  />
-                  <div className="relative z-10 flex items-start justify-between gap-2">
-                    <div className="size-13 rounded-2xl bg-background/90 backdrop-blur-md border border-border/70 shadow-xs flex items-center justify-center text-primary group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
-                      <Icon className="size-6" />
-                    </div>
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-background/80 backdrop-blur-md border border-border/60 text-foreground shrink-0"
-                    >
-                      {niche.badge}
-                    </Badge>
-                  </div>
-                  <div className="relative z-10 space-y-1.5 flex-1 flex flex-col justify-center mt-3">
-                    <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                      {niche.title}
-                    </h3>
-                    <p className="text-xs font-semibold text-primary/90">
-                      {niche.subtitle}
-                    </p>
-                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
-                      {niche.description}
-                    </p>
-                  </div>
-                  <div className="relative z-10 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                    <span>Criar Anúncio</span>
-                    <div className="size-7 rounded-full bg-muted/80 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:translate-x-1 transition-all">
-                      <ChevronRight className="size-4" />
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-      )}
 
       {/* ── 3. Categorias Rápidas para Desapego ── */}
       <div className="space-y-2 pt-2 border-t border-border/40">
@@ -2059,6 +2115,14 @@ function SpecializedClassifiedEditor({
   };
 
   const handlePublish = async () => {
+    if (!userProfile?.id) {
+      toast.info("Identifique-se para publicar seu anúncio com segurança.");
+      navigate({
+        to: "/entrar",
+        search: { returnUrl: "/conta/classificados/novo" },
+      });
+      return;
+    }
     if (!title.trim() || title.length < 3) {
       toast.error("O título do anúncio deve ter pelo menos 3 caracteres.");
       return;
@@ -2524,7 +2588,15 @@ function SpecializedClassifiedEditor({
       }
     } catch (err: any) {
       console.error("Erro ao publicar classificado:", err);
-      toast.error(err?.message || "Erro ao publicar anúncio.");
+      if (err?.message === "Unauthorized") {
+        toast.info("Identifique-se para publicar seu anúncio.");
+        navigate({
+          to: "/entrar",
+          search: { returnUrl: "/conta/classificados/novo" },
+        });
+      } else {
+        toast.error(err?.message || "Erro ao publicar anúncio.");
+      }
     } finally {
       setIsSubmitting(false);
     }

@@ -367,7 +367,7 @@ export const lookupFounderTicket = createServerFn({ method: "POST" })
       dbQuery = dbQuery.ilike("ticket_number", `%${raw}%`);
     }
 
-    const { data: leads, error } = await dbQuery.limit(1);
+    const { data: leads, error } = await dbQuery.order("created_at", { ascending: false }).limit(1);
 
     if (error || !leads || leads.length === 0) {
       return { found: false, lead: null, companyDetails: null };

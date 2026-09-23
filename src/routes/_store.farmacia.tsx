@@ -189,7 +189,7 @@ function FarmaciaVerticalPage() {
  }, [marketplaceFeed]);
 
  return (
- <div className="w-full space-y-6 pb-20">
+ <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
  {/* ── 1. Banners de Farmácia & Saúde ── */}
  {banners && banners.length > 0 && (
  <section aria-label="Banners de Farmácia">

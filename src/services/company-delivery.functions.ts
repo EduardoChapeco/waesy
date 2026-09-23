@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { getServerClient } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
+import { getDefaultCity } from "@/lib/brand.config";
 
 // ============================================================
 // Schemas Zod
@@ -198,7 +199,7 @@ export const createDeliveryDispatch = createServerFn({ method: "POST" })
       customer_phone: data.customerPhone,
       delivery_address: data.deliveryAddress,
       delivery_neighborhood: data.deliveryNeighborhood || null,
-      delivery_city: data.deliveryCity || "Chapecó",
+      delivery_city: getDefaultCity(data.deliveryCity),
       delivery_fee_cents: data.deliveryFeeCents,
       order_amount_cents: data.orderAmountCents,
       payment_method: data.paymentMethod || "pix",

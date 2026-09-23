@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { ImageOff, ShoppingBag, ChevronRight, Star, Truck, ShieldCheck, Check, HelpCircle, MapPin, RotateCcw, BadgePercent, Play, MessageCircle, Mail, User, Info, Loader2, Layers, ChevronRight as ChevronIcon, ShieldAlert, Users, Scale, Clock, BellRing, Package, Minus, Plus } from 'lucide-react';
+import { ImageOff, ShoppingBag, TrendingUp, ChevronRight, Star, Truck, ShieldCheck, Check, HelpCircle, MapPin, RotateCcw, BadgePercent, Play, MessageCircle, Mail, User, Info, Loader2, Layers, ChevronRight as ChevronIcon, ShieldAlert, Users, Scale, Clock, BellRing, Package, Minus, Plus } from 'lucide-react';
 import { TagFraudDialog } from "@/components/commerce/tag-fraud-dialog";
 import { ProductWaitlistSheet } from "@/components/commerce/product-waitlist-sheet";
 
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { EmptyState, ErrorState } from "@/components/state/states";
 import { PriceDisplay } from "@/components/commerce/price-display";
 import { getProductBySlug } from "@/services/product.functions";
+import { getGlobalPriceBenchmarkFn } from "@/services/mining.functions";
 import type { ProductDetailDTO, ProductMediaDTO, VariantDTO } from "@/types/catalog";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
 import { ConvenienceShowcaseView } from "@/components/classifieds/convenience-showcase-view";

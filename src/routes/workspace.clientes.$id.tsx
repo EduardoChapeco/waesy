@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/workspace/clientes/$id")({
       return await getCustomer360({ data: { customerId: params.id } });
     } catch (err) {
       console.error("[loader:workspace.clientes.$id] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: CustomerDetailPage,

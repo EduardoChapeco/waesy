@@ -39,6 +39,7 @@ import { EventoLineup } from "@/components/eventos/evento-lineup";
 import { EventoParceiros } from "@/components/eventos/evento-parceiros";
 import { EventoDocumentos } from "@/components/eventos/evento-documentos";
 import { EventoAuditoria } from "@/components/eventos/evento-auditoria";
+import { EventoCredenciais } from "@/components/eventos/evento-credenciais";
 import { AlocarEquipeSheet } from "@/components/eventos/alocar-equipe-sheet";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -411,6 +412,10 @@ function SubPainelEventoPage() {
  <FileText className="size-3.5" />
  Alvarás & Legal
  </TabsTrigger>
+ <TabsTrigger value="credenciais" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
+ <QrCode className="size-3.5" />
+ Credenciais & Staff
+ </TabsTrigger>
  <TabsTrigger value="auditoria" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
  <ShieldCheck className="size-3.5" />
  Auditoria
@@ -653,6 +658,11 @@ function SubPainelEventoPage() {
         {/* ── Aba 12: Trilha de Auditoria & Segurança ── */}
         <TabsContent value="auditoria" className="space-y-4">
           <EventoAuditoria eventId={event.id} />
+        </TabsContent>
+
+        {/* ── Aba 13: Credenciais, Crachás & Staff (Persona Nexus) ── */}
+        <TabsContent value="credenciais" className="space-y-4">
+          <EventoCredenciais eventId={event.id} eventTitle={event.title} />
         </TabsContent>
       </Tabs>
 

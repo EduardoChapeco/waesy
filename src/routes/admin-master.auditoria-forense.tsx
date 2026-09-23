@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -254,37 +255,40 @@ function AdminMasterAuditoriaForensePage() {
 
       {/* ── Toolbar: Abas e Busca Unificada ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1">
           <button
             type="button"
             onClick={() => setActiveTab("ledger")}
-            className={`h-9 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            className={cn(
+              "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "ledger"
-                ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-                : "bg-card text-muted-foreground hover:text-foreground border-border/70"
-            }`}
+                ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+            )}
           >
             Ledger Criptográfico ({entries.length})
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("events")}
-            className={`h-9 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            className={cn(
+              "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "events"
-                ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-                : "bg-card text-muted-foreground hover:text-foreground border-border/70"
-            }`}
+                ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+            )}
           >
             Trilha Forense Geral ({forensicEvents?.length || 0})
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("defense")}
-            className={`h-9 px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            className={cn(
+              "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-98 shadow-2xs",
               activeTab === "defense"
-                ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-                : "bg-card text-muted-foreground hover:text-foreground border-border/70"
-            }`}
+                ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+            )}
           >
             Blindagem & Anti-DDoS
           </button>

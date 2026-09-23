@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { generateMatchTimeOffers } from "@/services/marketing.functions";
 import { useCartContext } from "@/lib/cart-context";
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_store/match-time")({
  return await generateMatchTimeOffers();
    } catch (err) {
      console.error("[loader:_store.match-time] Unhandled loader error:", err);
-     return {} as any;
+     return null as any;
     }
  },
  component: MatchTimePage,

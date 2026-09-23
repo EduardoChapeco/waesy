@@ -155,6 +155,9 @@ export interface HotelBankDTO {
  address?: string | null;
  airport_distance?: string | null;
  google_maps_url?: string | null;
+ location_lat?: number | null;
+ location_lng?: number | null;
+ max_installments?: number | null;
  room_categories?: HotelRoomCategory[];
  policies?: HotelPolicies;
  structure?: HotelStructure;
@@ -162,6 +165,29 @@ export interface HotelBankDTO {
  is_active: boolean;
  created_at: string;
  updated_at: string;
+}
+
+export interface HotelMediaDTO {
+ id: string;
+ hotel_id: string;
+ category: "facade" | "rooms" | "pool" | "leisure" | "gastronomy" | "spa" | "general";
+ media_type: "image" | "video" | "virtual_tour";
+ url: string;
+ caption?: string | null;
+ display_order: number;
+ is_featured: boolean;
+ created_at: string;
+}
+
+export interface HotelAmenityDTO {
+ id: string;
+ hotel_id: string;
+ amenity_key: string;
+ name: string;
+ category: string;
+ is_highlight: boolean;
+ is_paid: boolean;
+ created_at: string;
 }
 
 // ─── 1. SERVIÇOS DE DESTINOS TURÍSTICOS ──────────────────────────────────────
@@ -501,6 +527,9 @@ export const createHotel = createServerFn({ method: "POST" })
  address: z.string().optional().nullable(),
  airport_distance: z.string().optional().nullable(),
  google_maps_url: z.string().optional().nullable(),
+ location_lat: z.number().optional().nullable(),
+ location_lng: z.number().optional().nullable(),
+ max_installments: z.number().int().min(1).max(24).default(12),
  room_categories: z.array(z.any()).optional(),
  policies: z.record(z.any()).optional(),
  structure: z.record(z.any()).optional(),
@@ -535,6 +564,9 @@ export const createHotel = createServerFn({ method: "POST" })
  address: data.address?.trim() || null,
  airport_distance: data.airport_distance?.trim() || null,
  google_maps_url: data.google_maps_url?.trim() || null,
+ location_lat: data.location_lat ?? null,
+ location_lng: data.location_lng ?? null,
+ max_installments: data.max_installments ?? 12,
  room_categories: data.room_categories || [],
  policies: data.policies || {},
  structure: data.structure || {},
@@ -570,6 +602,9 @@ export const updateHotel = createServerFn({ method: "POST" })
  address: z.string().optional().nullable(),
  airport_distance: z.string().optional().nullable(),
  google_maps_url: z.string().optional().nullable(),
+ location_lat: z.number().optional().nullable(),
+ location_lng: z.number().optional().nullable(),
+ max_installments: z.number().int().min(1).max(24).optional(),
  room_categories: z.array(z.any()).optional(),
  policies: z.record(z.any()).optional(),
  structure: z.record(z.any()).optional(),
@@ -641,4 +676,152 @@ export const deleteHotel = createServerFn({ method: "POST" })
  if (error) throw new Error(error.message);
  return { success: true };
  });
+
+// ─── 3. HOTEL MEDIA & AMENITIES CRUD ──────────────────────────────────────────
+
+export const listHotelMedia = createServerFn({ method: "GET" })
+  .validator(z.object({ hotel_id: z.string().uuid() }))
+  .handler(async ({ data: { hotel_id } }) => {
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("hotel_media")
+      .select("*")
+      .eq("hotel_id", hotel_id)
+      .order("display_order", { ascending: true });
+
+    if (error) throw new Error(`[travel-catalog:listHotelMedia] ${error.message}`);
+    return (data || []) as HotelMediaDTO[];
+  });
+
+export const saveHotelMedia = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      hotel_id: z.string().uuid(),
+      category: z.enum(["facade", "rooms", "pool", "leisure", "gastronomy", "spa", "general"]).default("general"),
+      media_type: z.enum(["image", "video", "virtual_tour"]).default("image"),
+      url: z.string().url("URL de mídia inválida."),
+      caption: z.string().optional().nullable(),
+      display_order: z.number().int().default(0),
+      is_featured: z.boolean().default(false),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const { store_id } = await getServerIdentity();
+    if (!store_id) throw new Error("Nenhuma loja ativa selecionada.");
+
+    if (data.id) {
+      const { data: updated, error } = await db
+        .from("hotel_media")
+        .update({
+          category: data.category,
+          media_type: data.media_type,
+          url: data.url,
+          caption: data.caption ?? null,
+          display_order: data.display_order,
+          is_featured: data.is_featured,
+        })
+        .eq("id", data.id)
+        .eq("hotel_id", data.hotel_id)
+        .select()
+        .single();
+      if (error) throw new Error(`Erro ao atualizar mídia: ${error.message}`);
+      return updated as HotelMediaDTO;
+    } else {
+      const { data: inserted, error } = await db
+        .from("hotel_media")
+        .insert({
+          hotel_id: data.hotel_id,
+          category: data.category,
+          media_type: data.media_type,
+          url: data.url,
+          caption: data.caption ?? null,
+          display_order: data.display_order,
+          is_featured: data.is_featured,
+        })
+        .select()
+        .single();
+      if (error) throw new Error(`Erro ao inserir mídia: ${error.message}`);
+      return inserted as HotelMediaDTO;
+    }
+  });
+
+export const deleteHotelMedia = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid(), hotel_id: z.string().uuid() }))
+  .handler(async ({ data: { id, hotel_id } }) => {
+    const db = getServerClient();
+    const { store_id } = await getServerIdentity();
+    if (!store_id) throw new Error("Nenhuma loja ativa selecionada.");
+
+    const { error } = await db
+      .from("hotel_media")
+      .delete()
+      .eq("id", id)
+      .eq("hotel_id", hotel_id);
+
+    if (error) throw new Error(`Erro ao excluir mídia: ${error.message}`);
+    return { success: true };
+  });
+
+export const listHotelAmenities = createServerFn({ method: "GET" })
+  .validator(z.object({ hotel_id: z.string().uuid() }))
+  .handler(async ({ data: { hotel_id } }) => {
+    const db = getServerClient();
+    const { data, error } = await db
+      .from("hotel_amenities")
+      .select("*")
+      .eq("hotel_id", hotel_id)
+      .order("name", { ascending: true });
+
+    if (error) throw new Error(`[travel-catalog:listHotelAmenities] ${error.message}`);
+    return (data || []) as HotelAmenityDTO[];
+  });
+
+export const saveHotelAmenities = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      hotel_id: z.string().uuid(),
+      amenities: z.array(
+        z.object({
+          amenity_key: z.string().min(1),
+          name: z.string().min(1),
+          category: z.string().default("general"),
+          is_highlight: z.boolean().default(false),
+          is_paid: z.boolean().default(false),
+        })
+      ),
+    })
+  )
+  .handler(async ({ data: { hotel_id, amenities } }) => {
+    const db = getServerClient();
+    const { store_id } = await getServerIdentity();
+    if (!store_id) throw new Error("Nenhuma loja ativa selecionada.");
+
+    const { error: delErr } = await db
+      .from("hotel_amenities")
+      .delete()
+      .eq("hotel_id", hotel_id);
+
+    if (delErr) throw new Error(`Erro ao atualizar comodidades: ${delErr.message}`);
+
+    if (amenities.length === 0) return [];
+
+    const rows = amenities.map((a) => ({
+      hotel_id,
+      amenity_key: a.amenity_key,
+      name: a.name,
+      category: a.category,
+      is_highlight: a.is_highlight,
+      is_paid: a.is_paid,
+    }));
+
+    const { data: inserted, error: insErr } = await db
+      .from("hotel_amenities")
+      .insert(rows)
+      .select();
+
+    if (insErr) throw new Error(`Erro ao salvar comodidades: ${insErr.message}`);
+    return (inserted || []) as HotelAmenityDTO[];
+  });
 

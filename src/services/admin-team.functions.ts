@@ -271,3 +271,106 @@ export const removeTeamMember = createServerFn({ method: "POST" })
  throw new Error(e instanceof Error ? e.message : "Erro ao remover membro.");
  }
  });
+
+// ---------------------------------------------------------------------------
+// External Contractors & Freelancers (Terceirizados & Parceiros Externos)
+// ---------------------------------------------------------------------------
+
+export const listContractors = createServerFn({ method: "GET" }).handler(async () => {
+  const db = getServerClient();
+  const identity = await getServerIdentity();
+  assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+
+  const { data, error } = await db
+    .from("event_contractors")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .order("name", { ascending: true });
+
+  if (error) throw new Error("Erro ao listar terceirizados: " + error.message);
+  return data || [];
+});
+
+export const upsertContractor = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      name: z.string().min(2, "Nome é obrigatório"),
+      serviceCategory: z.enum([
+        "seguranca",
+        "limpeza",
+        "buffet",
+        "som_iluminacao",
+        "fotografia",
+        "cenografia",
+        "brigadistas",
+        "atendimento",
+        "outro",
+      ]).default("outro"),
+      documentNumber: z.string().optional().nullable(),
+      contactPhone: z.string().optional().nullable(),
+      contactEmail: z.string().optional().nullable(),
+      hourlyRateCents: z.number().int().min(0).default(0),
+      fixedFeeCents: z.number().int().min(0).default(0),
+      pixKey: z.string().optional().nullable(),
+      status: z.enum(["active", "inactive", "blocked"]).default("active"),
+      notes: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const payload: any = {
+      store_id: identity.store_id,
+      name: data.name.trim(),
+      service_category: data.serviceCategory,
+      document_number: data.documentNumber?.trim() || null,
+      contact_phone: data.contactPhone?.trim() || null,
+      contact_email: data.contactEmail?.trim() || null,
+      hourly_rate_cents: data.hourlyRateCents,
+      fixed_fee_cents: data.fixedFeeCents,
+      pix_key: data.pixKey?.trim() || null,
+      status: data.status,
+      metadata: data.notes ? { notes: data.notes.trim() } : {},
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { data: updated, error } = await db
+        .from("event_contractors")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", identity.store_id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar terceirizado: " + error.message);
+      return updated;
+    } else {
+      const { data: created, error } = await db
+        .from("event_contractors")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao cadastrar terceirizado: " + error.message);
+      return created;
+    }
+  });
+
+export const deleteContractor = createServerFn({ method: "POST" })
+  .validator(z.object({ contractorId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { error } = await db
+      .from("event_contractors")
+      .delete()
+      .eq("id", data.contractorId)
+      .eq("store_id", identity.store_id);
+
+    if (error) throw new Error("Erro ao remover terceirizado: " + error.message);
+    return { success: true };
+  });

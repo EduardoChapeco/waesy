@@ -1555,3 +1555,165 @@ export type CustomerEventTicketDTO = {
   accessCode: string;
   createdAt: string;
 };
+
+// ---------------------------------------------------------------------------
+// EVENT CREDENTIALS (Crachás com QR Code & Acesso de Staff/VIP/Imprensa)
+// ---------------------------------------------------------------------------
+
+export const listEventCredentials = createServerFn({ method: "GET" })
+  .validator(z.object({ eventId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data: credentials, error } = await supabase
+      .from("eventos_credenciais")
+      .select("*")
+      .eq("evento_id", data.eventId)
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error("Erro ao listar credenciais: " + error.message);
+    return credentials || [];
+  });
+
+export const upsertEventCredential = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid().optional(),
+      eventId: z.string().uuid(),
+      tipo: z.enum(["equipe", "terceiro", "patrocinador", "imprensa", "autoridade", "vip", "staff"]).default("staff"),
+      nome: z.string().min(2, "Nome é obrigatório"),
+      documento: z.string().optional().nullable(),
+      email: z.string().optional().nullable(),
+      telefone: z.string().optional().nullable(),
+      cargo: z.string().optional().nullable(),
+      empresaOrigem: z.string().optional().nullable(),
+      fotoUrl: z.string().optional().nullable(),
+      nivelAcesso: z.enum(["basico", "restrito", "vip", "total"]).default("basico"),
+      validoDe: z.string().optional().nullable(),
+      validoAte: z.string().optional().nullable(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const qrCode = data.id ? undefined : `CRED-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    const payload: any = {
+      evento_id: data.eventId,
+      store_id: identity.store_id,
+      tipo: data.tipo,
+      nome: data.nome.trim(),
+      documento: data.documento?.trim() || null,
+      email: data.email?.trim() || null,
+      telefone: data.telefone?.trim() || null,
+      cargo: data.cargo?.trim() || null,
+      empresa_origem: data.empresaOrigem?.trim() || null,
+      foto_url: data.fotoUrl?.trim() || null,
+      nivel_acesso: data.nivelAcesso,
+      valido_de: data.validoDe || null,
+      valido_ate: data.validoAte || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (qrCode) {
+      payload.qr_code = qrCode;
+    }
+
+    if (data.id) {
+      const { data: updated, error } = await supabase
+        .from("eventos_credenciais")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", identity.store_id)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao atualizar credencial: " + error.message);
+      return updated;
+    } else {
+      const { data: created, error } = await supabase
+        .from("eventos_credenciais")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw new Error("Erro ao emitir credencial: " + error.message);
+      return created;
+    }
+  });
+
+export const deleteEventCredential = createServerFn({ method: "POST" })
+  .validator(z.object({ credentialId: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { error } = await supabase
+      .from("eventos_credenciais")
+      .delete()
+      .eq("id", data.credentialId)
+      .eq("store_id", identity.store_id);
+
+    if (error) throw new Error("Erro ao revogar credencial: " + error.message);
+    return { success: true };
+  });
+
+export const validateCredentialCheckin = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      eventId: z.string().uuid(),
+      qrCode: z.string().min(1),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data: credential, error: findError } = await supabase
+      .from("eventos_credenciais")
+      .select("*")
+      .eq("evento_id", data.eventId)
+      .eq("qr_code", data.qrCode.trim())
+      .single();
+
+    if (findError || !credential) {
+      throw new Error("Credencial não encontrada ou código inválido.");
+    }
+
+    if (credential.status === "revogado" || credential.status === "suspenso") {
+      throw new Error(`Credencial ${credential.status.toUpperCase()}! Entrada negada.`);
+    }
+
+    if (credential.checkin_realizado) {
+      return {
+        alreadyCheckedIn: true,
+        credential,
+        message: `Check-in já realizado em ${new Date(credential.checkin_em).toLocaleTimeString("pt-BR")}`,
+      };
+    }
+
+    const { data: updated, error: updateError } = await supabase
+      .from("eventos_credenciais")
+      .update({
+        checkin_realizado: true,
+        checkin_em: new Date().toISOString(),
+        checkin_por: identity.id,
+      })
+      .eq("id", credential.id)
+      .select()
+      .single();
+
+    if (updateError) throw new Error("Falha ao registrar check-in: " + updateError.message);
+
+    return {
+      alreadyCheckedIn: false,
+      credential: updated,
+      message: `Acesso Liberado: ${updated.nome} [${updated.tipo.toUpperCase()}]`,
+    };
+  });
+

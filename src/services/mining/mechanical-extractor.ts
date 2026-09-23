@@ -9,6 +9,8 @@
  * 5. Camada 4: Algoritmo de Densidade Textual / Pure Readability (Fall-back universal)
  */
 
+import { getRandomUserAgent, cleanHtmlText } from "@/lib/mining/scraper-utils";
+
 export interface MechanicalExtractionResult {
   title: string;
   lead?: string;
@@ -40,29 +42,7 @@ export interface MechanicalExtractionResult {
   };
 }
 
-const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.4; rv:125.0) Gecko/20100101 Firefox/125.0",
-];
 
-function getRandomUserAgent(): string {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
-}
-
-function cleanHtmlText(html: string): string {
-  return html
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 /**
  * Normaliza e valida URLs de imagem, resolvendo links relativos

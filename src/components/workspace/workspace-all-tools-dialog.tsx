@@ -68,168 +68,168 @@ interface WorkspaceAllToolsDialogProps {
 }
 
 function getFrequentToolsForNiche(semantics: any) {
- if (semantics.nicheId === "tourism") {
- return [
- {
- title: semantics.catalogTitle || "Pacotes & Roteiros",
- path: "/workspace/catalogo/produtos",
- icon: Package,
- badge: "Roteiros",
- },
- {
- title: "Central de Cotações",
- path: "/workspace/turismo/cotacoes",
- icon: Plane,
- badge: "Leads",
- },
- {
- title: "Lâminas & Propostas",
- path: "/workspace/turismo/propostas",
- icon: FileSpreadsheet,
- badge: "Studio",
- },
- {
- title: "Clientes & Passageiros",
- path: "/workspace/clientes",
- icon: Users,
- badge: "CRM",
- },
- {
- title: "Financeiro & Caixa",
- path: "/workspace/financeiro/caixa",
- icon: DollarSign,
- badge: "Caixa",
- },
- {
- title: "Configurações da Agência",
- path: "/workspace/configuracoes",
- icon: Settings,
- badge: "Ajustes",
- },
- ];
- }
+  if (semantics.nicheId === "tourism") {
+    return [
+      {
+        title: semantics.catalogTitle || "Roteiros",
+        path: "/workspace/catalogo/produtos",
+        icon: Package,
+        badge: "Roteiros",
+      },
+      {
+        title: "Central de Cotações",
+        path: "/workspace/turismo/cotacoes",
+        icon: Plane,
+        badge: "Leads",
+      },
+      {
+        title: "Lâminas Studio",
+        path: "/workspace/turismo/propostas",
+        icon: FileSpreadsheet,
+        badge: "Studio",
+      },
+      {
+        title: "Passageiros",
+        path: "/workspace/clientes",
+        icon: Users,
+        badge: "CRM",
+      },
+      {
+        title: "Financeiro",
+        path: "/workspace/financeiro/caixa",
+        icon: DollarSign,
+        badge: "Caixa",
+      },
+      {
+        title: "Configurações",
+        path: "/workspace/configuracoes",
+        icon: Settings,
+        badge: "Ajustes",
+      },
+    ];
+  }
 
- if (semantics.nicheId === "services") {
- return [
- {
- title: semantics.catalogTitle || "Catálogo de Serviços",
- path: "/workspace/agenda/servicos",
- icon: Layers,
- badge: "Serviços",
- },
- {
- title: "Grade de Agendamentos",
- path: "/workspace/agenda",
- icon: Calendar,
- badge: "Agenda",
- },
- {
- title: "Orçamentos & Propostas",
- path: "/workspace/orcamentos",
- icon: FileSpreadsheet,
- badge: "Propostas",
- },
- {
- title: "Clientes & CRM",
- path: "/workspace/clientes",
- icon: Users,
- badge: "Contatos",
- },
- {
- title: "Financeiro & Caixa",
- path: "/workspace/financeiro/caixa",
- icon: DollarSign,
- badge: "Caixa",
- },
- {
- title: "Configurações",
- path: "/workspace/configuracoes",
- icon: Settings,
- badge: "Ajustes",
- },
- ];
- }
+  if (semantics.nicheId === "services") {
+    return [
+      {
+        title: semantics.catalogTitle || "Serviços",
+        path: "/workspace/agenda/servicos",
+        icon: Layers,
+        badge: "Serviços",
+      },
+      {
+        title: "Agendamentos",
+        path: "/workspace/agenda",
+        icon: Calendar,
+        badge: "Agenda",
+      },
+      {
+        title: "Orçamentos",
+        path: "/workspace/orcamentos",
+        icon: FileSpreadsheet,
+        badge: "Propostas",
+      },
+      {
+        title: "Clientes",
+        path: "/workspace/clientes",
+        icon: Users,
+        badge: "Contatos",
+      },
+      {
+        title: "Financeiro",
+        path: "/workspace/financeiro/caixa",
+        icon: DollarSign,
+        badge: "Caixa",
+      },
+      {
+        title: "Configurações",
+        path: "/workspace/configuracoes",
+        icon: Settings,
+        badge: "Ajustes",
+      },
+    ];
+  }
 
- if (semantics.nicheId === "gastronomy") {
- return [
- {
- title: "Cardápio & Itens",
- path: "/workspace/catalogo/produtos",
- icon: Package,
- badge: "Menu",
- },
- {
- title: "Gestor de Pedidos (KDS)",
- path: "/workspace/pedidos/gestor",
- icon: ClipboardList,
- badge: "Cozinha",
- },
- {
- title: "Salão & Comandas",
- path: "/workspace/pdv/comandas",
- icon: UtensilsCrossed,
- badge: "Mesas",
- },
- {
- title: "Frente de Caixa (PDV)",
- path: "/workspace/pdv",
- icon: Store,
- badge: "Balcão",
- },
- {
- title: "Financeiro & Caixa",
- path: "/workspace/financeiro/caixa",
- icon: DollarSign,
- badge: "Caixa",
- },
- {
- title: "Configurações da Loja",
- path: "/workspace/configuracoes",
- icon: Settings,
- badge: "Ajustes",
- },
- ];
- }
+  if (semantics.nicheId === "gastronomy") {
+    return [
+      {
+        title: "Cardápio",
+        path: "/workspace/catalogo/produtos",
+        icon: Package,
+        badge: "Menu",
+      },
+      {
+        title: "Gestor de Pedidos",
+        path: "/workspace/pedidos/gestor",
+        icon: ClipboardList,
+        badge: "Cozinha",
+      },
+      {
+        title: "Comandas",
+        path: "/workspace/pdv/comandas",
+        icon: UtensilsCrossed,
+        badge: "Mesas",
+      },
+      {
+        title: "Frente de Caixa",
+        path: "/workspace/pdv",
+        icon: Store,
+        badge: "Balcão",
+      },
+      {
+        title: "Financeiro",
+        path: "/workspace/financeiro/caixa",
+        icon: DollarSign,
+        badge: "Caixa",
+      },
+      {
+        title: "Configurações",
+        path: "/workspace/configuracoes",
+        icon: Settings,
+        badge: "Ajustes",
+      },
+    ];
+  }
 
- // Padrão: Varejo / Comércio Geral
- return [
- {
- title: semantics.catalogTitle || "Produtos & Estoque",
- path: "/workspace/catalogo/produtos",
- icon: Package,
- badge: "Catálogo",
- },
- {
- title: "Histórico de Vendas",
- path: "/workspace/pedidos",
- icon: ShoppingBag,
- badge: "Vendas",
- },
- {
- title: "Frente de Caixa (PDV)",
- path: "/workspace/pdv",
- icon: Store,
- badge: "Balcão",
- },
- {
- title: "Clientes & CRM",
- path: "/workspace/clientes",
- icon: Users,
- badge: "Contatos",
- },
- {
- title: "Financeiro & Caixa",
- path: "/workspace/financeiro/caixa",
- icon: DollarSign,
- badge: "Caixa",
- },
- {
- title: "Configurações da Loja",
- path: "/workspace/configuracoes",
- icon: Settings,
- badge: "Ajustes",
- },
- ];
+  // Padrão: Varejo / Comércio Geral
+  return [
+    {
+      title: semantics.catalogTitle || "Produtos",
+      path: "/workspace/catalogo/produtos",
+      icon: Package,
+      badge: "Catálogo",
+    },
+    {
+      title: "Histórico de Vendas",
+      path: "/workspace/pedidos",
+      icon: ShoppingBag,
+      badge: "Vendas",
+    },
+    {
+      title: "Frente de Caixa",
+      path: "/workspace/pdv",
+      icon: Store,
+      badge: "Balcão",
+    },
+    {
+      title: "Clientes",
+      path: "/workspace/clientes",
+      icon: Users,
+      badge: "Contatos",
+    },
+    {
+      title: "Financeiro",
+      path: "/workspace/financeiro/caixa",
+      icon: DollarSign,
+      badge: "Caixa",
+    },
+    {
+      title: "Configurações",
+      path: "/workspace/configuracoes",
+      icon: Settings,
+      badge: "Ajustes",
+    },
+  ];
 }
 
 interface SectorTool {
@@ -250,87 +250,90 @@ interface SectorGroup {
 const SECTOR_TOOL_GROUPS: SectorGroup[] = [
   {
     id: "commerce",
-    title: "Comércio & Vendas",
-    description: "Gestão do cardápio, estoque, PDV e despacho de pedidos",
+    title: "Comércio",
+    description: "Gestão de cardápio, estoque, PDV e despacho de pedidos",
     tools: [
-      { title: "Produtos & Variações", path: "/workspace/catalogo/produtos", icon: Package },
-      { title: "Categorias do Menu", path: "/workspace/catalogo/categorias", icon: Tags },
-      { title: "Adicionais & Opcionais", path: "/workspace/catalogo/atributos", icon: Boxes },
-      { title: "Coleções & Destaques", path: "/workspace/catalogo/colecoes", icon: Sliders },
-      { title: "Gestor de Pedidos (KDS)", path: "/workspace/pedidos/gestor", icon: ClipboardList },
+      { title: "Produtos", path: "/workspace/catalogo/produtos", icon: Package },
+      { title: "Categorias", path: "/workspace/catalogo/categorias", icon: Tags },
+      { title: "Adicionais", path: "/workspace/catalogo/atributos", icon: Boxes },
+      { title: "Coleções", path: "/workspace/catalogo/colecoes", icon: Sliders },
+      { title: "Gestor de Pedidos", path: "/workspace/pedidos/gestor", icon: ClipboardList },
       { title: "Histórico de Vendas", path: "/workspace/pedidos", icon: ShoppingBag },
-      { title: "Frente de Caixa (PDV)", path: "/workspace/pdv", icon: Store },
-      { title: "KDS Cozinha & Estações", path: "/workspace/pdv/cozinha", icon: ChefHat },
-      { title: "Reservas & Mapa do Salão", path: "/workspace/reservas", icon: Armchair },
-      { title: "Entregadores & Frota", path: "/workspace/pedidos/frota", icon: Truck },
-      { title: "Controle de Insumos & Estoque", path: "/workspace/estoque", icon: Boxes },
+      { title: "Frente de Caixa", path: "/workspace/pdv", icon: Store },
+      { title: "Cozinha KDS", path: "/workspace/pdv/cozinha", icon: ChefHat },
+      { title: "Reservas de Mesas", path: "/workspace/reservas", icon: Armchair },
+      { title: "Entregadores", path: "/workspace/pedidos/frota", icon: Truck },
+      { title: "Estoque", path: "/workspace/estoque", icon: Boxes },
       { title: "Alertas de Reposição", path: "/workspace/estoque/alertas", icon: Flame },
-      { title: "Trocas & Devoluções", path: "/workspace/pedidos/trocas", icon: Receipt },
-      { title: "Tabelas de Frete & Raio", path: "/workspace/logistica/tabelas", icon: Truck },
+      { title: "Trocas e Devoluções", path: "/workspace/pedidos/trocas", icon: Receipt },
+      { title: "Tabelas de Frete", path: "/workspace/logistica/tabelas", icon: Truck },
     ],
   },
   {
     id: "engagement",
-    title: "Engajamento & Clientes",
+    title: "Atendimento",
     description: "Atendimento multicanal, base de contatos e avaliações",
     tools: [
-      { title: "Caixa de Entrada / Chat", path: "/workspace/atendimento", icon: MessageSquare },
-      { title: "Central de Notificações", path: "/workspace/notificacoes", icon: Bell },
-      { title: "Base de Clientes (CRM)", path: "/workspace/clientes", icon: Users },
-      { title: "Avaliações & Reputação", path: "/workspace/avaliacoes", icon: Star },
-      { title: "Agenda de Atendimentos", path: "/workspace/agenda", icon: Calendar },
-      { title: "Orçamentos & Propostas", path: "/workspace/orcamentos", icon: FileSpreadsheet },
+      { title: "Central de Chat", path: "/workspace/atendimento", icon: MessageSquare },
+      { title: "Notificações", path: "/workspace/notificacoes", icon: Bell },
+      { title: "Clientes", path: "/workspace/clientes", icon: Users },
+      { title: "Avaliações", path: "/workspace/avaliacoes", icon: Star },
+      { title: "Agenda", path: "/workspace/agenda", icon: Calendar },
+      { title: "Orçamentos", path: "/workspace/orcamentos", icon: FileSpreadsheet },
     ],
   },
   {
     id: "marketing",
-    title: "Publicidade & Divulgação",
+    title: "Marketing",
     description: "Campanhas, biolinks, banners e ferramentas de conversão",
     tools: [
       { title: "Banners da Loja", path: "/workspace/marketing/banners", icon: Megaphone },
-      { title: "Hotpages & Biolinks", path: "/workspace/marketing/hotpages", icon: Globe },
-      { title: "Cupons & Promoções", path: "/workspace/marketing/promocoes", icon: Ticket },
-      { title: "Campanhas & Anúncios", path: "/workspace/marketing/anuncios", icon: Zap },
-      { title: "Compartilhamento & Redes", path: "/workspace/marketing/social", icon: Share2 },
-      { title: "Avaliações & Reputação", path: "/workspace/avaliacoes", icon: Star },
-      { title: "Notícias & Publicações", path: "/workspace/noticias", icon: Newspaper },
+      { title: "Hotpages e Biolinks", path: "/workspace/marketing/hotpages", icon: Globe },
+      { title: "Cupons e Promoções", path: "/workspace/marketing/promocoes", icon: Ticket },
+      { title: "Anúncios e Campanhas", path: "/workspace/marketing/anuncios", icon: Zap },
+      { title: "Redes Sociais", path: "/workspace/marketing/social", icon: Share2 },
+      { title: "Avaliações", path: "/workspace/avaliacoes", icon: Star },
+      { title: "Publicações", path: "/workspace/noticias", icon: Newspaper },
     ],
   },
   {
     id: "tourism",
-    title: "Turismo & Viagens",
+    title: "Turismo",
     description: "Cotações, estúdio de lâminas, contratos com assinatura digital e excursões",
     tools: [
       { title: "Central de Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
-      { title: "Lâminas & Propostas (Studio)", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
-      { title: "Contratos & Assinatura Digital", path: "/workspace/turismo/contratos", icon: FileText },
-      { title: "Grupos Terrestres & Ônibus (ANTT)", path: "/workspace/turismo/grupos", icon: Bus },
-      { title: "Passeios & Ingressos", path: "/workspace/eventos", icon: Calendar },
+      { title: "Lâminas Studio", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
+      { title: "Hotéis e Resorts", path: "/workspace/turismo/hoteis", icon: Building2 },
+      { title: "Destinos Turísticos", path: "/workspace/turismo/destinos", icon: Globe },
+      { title: "Contratos Digitais", path: "/workspace/turismo/contratos", icon: FileText },
+      { title: "Grupos Terrestres", path: "/workspace/turismo/grupos", icon: Bus },
+      { title: "Passeios e Ingressos", path: "/workspace/eventos", icon: Calendar },
     ],
   },
   {
     id: "analytics",
-    title: "Análises & Relatórios",
+    title: "Relatórios",
     description: "Indicadores de faturamento, vendas e fluxo de caixa",
     tools: [
-      { title: "Visão Geral de Desempenho", path: "/workspace", icon: BarChart3 },
-      { title: "Metas de Vendas & Forecast", path: "/workspace/relatorios/metas", icon: Target, badge: "Preditivo" },
-      { title: "Fluxo de Caixa & DRE", path: "/workspace/financeiro/caixa", icon: DollarSign },
-      { title: "Contas a Pagar & Despesas", path: "/workspace/financeiro/contas-pagar", icon: Receipt },
-      { title: "Relatórios & Métricas", path: "/workspace/relatorios", icon: Package },
-      { title: "Relatórios de Gastronomia", path: "/workspace/relatorios/gastronomia", icon: UtensilsCrossed },
-      { title: "Pagamentos & Repasses", path: "/workspace/financeiro/pagamentos", icon: Coins },
+      { title: "Visão Geral", path: "/workspace", icon: BarChart3 },
+      { title: "Metas de Vendas", path: "/workspace/relatorios/metas", icon: Target, badge: "Preditivo" },
+      { title: "Fluxo de Caixa", path: "/workspace/financeiro/caixa", icon: DollarSign },
+      { title: "Contas a Pagar", path: "/workspace/financeiro/contas-pagar", icon: Receipt },
+      { title: "Métricas Gerais", path: "/workspace/relatorios", icon: Package },
+      { title: "Relatórios Gastronômicos", path: "/workspace/relatorios/gastronomia", icon: UtensilsCrossed },
+      { title: "Pagamentos e Repasses", path: "/workspace/financeiro/pagamentos", icon: Coins },
     ],
   },
   {
     id: "management",
-    title: "Gerenciamento & Configurações",
+    title: "Configurações",
     description: "Operação da loja, horários, equipe e integrações",
     tools: [
-      { title: "Dados Gerais & Identidade", path: "/workspace/configuracoes", icon: Settings },
-      { title: "Tabelas de Frete & Entrega", path: "/workspace/logistica/tabelas", icon: Truck },
-      { title: "Equipe & Colaboradores", path: "/workspace/configuracoes/equipe", icon: Users },
-      { title: "Unidades & Filiais", path: "/workspace/lojas", icon: Building2 },
+      { title: "Identidade da Loja", path: "/workspace/configuracoes", icon: Settings },
+      { title: "Currículo Builder", path: "/workspace/curriculo/editor", icon: FileText, badge: "Office" },
+      { title: "Tabelas de Frete", path: "/workspace/logistica/tabelas", icon: Truck },
+      { title: "Equipe de Trabalho", path: "/workspace/configuracoes/equipe", icon: Users },
+      { title: "Unidades e Filiais", path: "/workspace/lojas", icon: Building2 },
       { title: "Central de Suporte", path: "/workspace/suporte", icon: HelpCircle },
     ],
   },

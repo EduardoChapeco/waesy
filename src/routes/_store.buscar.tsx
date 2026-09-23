@@ -76,134 +76,245 @@ function getTotalCount(result: FederatedSearchResponse | null): number {
 
 // ── Cards de resultado ─────────────────────────────────────────────────────
 
-function EventCard({ event }: { event: SearchResultEvent }) {
- const date = new Date(event.event_date);
- const formatted = date.toLocaleDateString("pt-BR", {
- day: "2-digit",
- month: "short",
- year: "numeric",
- });
- return (
- <Link
- to="/evento/$id"
- params={{ id: event.id }}
- className="flex items-stretch rounded-2xl bg-card hover:bg-muted/50 transition-colors overflow-hidden p-0 group"
- >
- <div className="relative w-20 sm:w-24 bg-muted shrink-0 overflow-hidden">
- {event.cover_image ? (
- <img
- src={event.cover_image}
- alt={event.title}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
- />
- ) : (
- <div className="size-full bg-muted flex items-center justify-center">
- <Calendar className="size-6 text-muted-foreground" />
- </div>
- )}
- </div>
- <div className="flex-1 min-w-0 p-3 space-y-1">
- <p className="font-semibold text-xs sm:text-sm text-foreground truncate group-hover:text-primary">
- {event.title}
- </p>
- <p className="text-xs text-muted-foreground">{formatted}</p>
- {event.location && (
- <p className="text-xs text-muted-foreground truncate">{event.location}</p>
- )}
- <Badge variant="secondary" className="mt-1 text-[10px] chip-status">
- {event.is_free ? "Gratuito" : "Pago"}
- </Badge>
- </div>
- <ChevronRight className="size-4 text-muted-foreground self-center mr-3 shrink-0" />
- </Link>
- );
+function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; isMobileList?: boolean }) {
+  const date = new Date(event.event_date);
+  const formatted = date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  if (isMobileList) {
+    return (
+      <Link
+        to="/evento/$id"
+        params={{ id: event.id }}
+        className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+      >
+        <div className="size-12 rounded-xl bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+          {event.cover_image ? (
+            <img src={event.cover_image} alt={event.title} className="size-full object-cover" />
+          ) : (
+            <Calendar className="size-5 text-muted-foreground/40" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+            {event.title}
+          </p>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+            <span>{formatted}</span>
+            {event.location && (
+              <>
+                <span>•</span>
+                <span className="truncate">{event.location}</span>
+              </>
+            )}
+          </div>
+          <span className="text-[10px] font-mono font-semibold text-muted-foreground">
+            {event.is_free ? "Gratuito" : "Ingresso"}
+          </span>
+        </div>
+        <ChevronRight className="size-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to="/evento/$id"
+      params={{ id: event.id }}
+      className="flex items-stretch rounded-2xl bg-card hover:bg-muted/50 transition-colors overflow-hidden p-0 group border border-border/60 shadow-2xs"
+    >
+      <div className="relative w-20 sm:w-24 bg-muted shrink-0 overflow-hidden">
+        {event.cover_image ? (
+          <img
+            src={event.cover_image}
+            alt={event.title}
+            className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="size-full bg-muted flex items-center justify-center">
+            <Calendar className="size-6 text-muted-foreground" />
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0 p-3 space-y-1">
+        <p className="font-semibold text-xs sm:text-sm text-foreground truncate group-hover:text-primary">
+          {event.title}
+        </p>
+        <p className="text-xs text-muted-foreground">{formatted}</p>
+        {event.location && (
+          <p className="text-xs text-muted-foreground truncate">{event.location}</p>
+        )}
+        <Badge variant="outline" className="mt-1 text-[10px] font-mono border-border/70 py-0 px-1.5">
+          {event.is_free ? "Gratuito" : "Pago"}
+        </Badge>
+      </div>
+      <ChevronRight className="size-4 text-muted-foreground self-center mr-3 shrink-0" />
+    </Link>
+  );
 }
 
-function ClassifiedCard({ classified }: { classified: SearchResultClassified }) {
- return (
- <Link
- to="/classificados/$id"
- params={{ id: classified.id }}
- className="flex items-stretch justify-between rounded-2xl bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 group"
- >
- <div className="relative w-24 sm:w-28 bg-muted shrink-0 overflow-hidden">
- {classified.images && classified.images[0] ? (
- <img
- src={classified.images[0]}
- alt={classified.title}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
- loading="lazy"
- />
- ) : (
- <div className="size-full flex items-center justify-center text-muted-foreground/30">
- <Tag size={24} />
- </div>
- )}
- </div>
+function ClassifiedCard({ classified, isMobileList = false }: { classified: SearchResultClassified; isMobileList?: boolean }) {
+  if (isMobileList) {
+    return (
+      <Link
+        to="/classificados/$id"
+        params={{ id: classified.id }}
+        className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+      >
+        <div className="size-12 rounded-xl bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+          {classified.images && classified.images[0] ? (
+            <img
+              src={classified.images[0]}
+              alt={classified.title}
+              className="size-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <Tag size={20} className="text-muted-foreground/40" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h4 className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+              {classified.title}
+            </h4>
+            {classified.category && (
+              <span className="text-[9px] font-mono uppercase px-1 py-0 rounded border border-border/60 text-muted-foreground">
+                {classified.category}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-mono font-black text-foreground text-xs">
+              {classified.price_cents ? formatMoney(classified.price_cents) : "A combinar"}
+            </span>
+            {classified.location_text && (
+              <>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-muted-foreground text-[11px] truncate">{classified.location_text}</span>
+              </>
+            )}
+          </div>
+        </div>
+        <ChevronRight className="size-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
+      </Link>
+    );
+  }
 
- <div className="flex-1 min-w-0 p-3 space-y-1">
- <div className="flex items-center gap-1.5 flex-wrap">
- {classified.category && (
- <Badge variant="outline" className="text-[9px] uppercase font-mono px-1.5 py-0">
- {classified.category}
- </Badge>
- )}
- {(classified as any).deal_type && (
- <span className="text-[10px] font-mono text-muted-foreground uppercase font-bold">
- • {(classified as any).deal_type}
- </span>
- )}
- </div>
+  return (
+    <Link
+      to="/classificados/$id"
+      params={{ id: classified.id }}
+      className="flex items-stretch justify-between rounded-2xl bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 group border border-border/60 shadow-2xs"
+    >
+      <div className="relative w-24 sm:w-28 bg-muted shrink-0 overflow-hidden">
+        {classified.images && classified.images[0] ? (
+          <img
+            src={classified.images[0]}
+            alt={classified.title}
+            className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+        ) : (
+          <div className="size-full flex items-center justify-center text-muted-foreground/30">
+            <Tag size={24} />
+          </div>
+        )}
+      </div>
 
- <h3 className="font-bold text-xs sm:text-sm text-foreground truncate group-hover:text-primary transition-colors">
- {classified.title}
- </h3>
+      <div className="flex-1 min-w-0 p-3 space-y-1">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {classified.category && (
+            <Badge variant="outline" className="text-[9px] uppercase font-mono px-1.5 py-0 border-border/70">
+              {classified.category}
+            </Badge>
+          )}
+          {(classified as any).deal_type && (
+            <span className="text-[10px] font-mono text-muted-foreground uppercase font-bold">
+              • {(classified as any).deal_type}
+            </span>
+          )}
+        </div>
 
- <div className="flex items-center gap-2 text-xs">
- <span className="font-mono font-black text-foreground text-sm">
- {classified.price_cents ? formatMoney(classified.price_cents) : "A combinar"}
- </span>
- {classified.location_text && (
- <>
- <span className="text-muted-foreground">•</span>
- <span className="text-muted-foreground truncate">{classified.location_text}</span>
- </>
- )}
- </div>
- </div>
- </Link>
- );
+        <h3 className="font-bold text-xs sm:text-sm text-foreground truncate group-hover:text-primary transition-colors">
+          {classified.title}
+        </h3>
+
+        <div className="flex items-center gap-2 text-xs">
+          <span className="font-mono font-black text-foreground text-sm">
+            {classified.price_cents ? formatMoney(classified.price_cents) : "A combinar"}
+          </span>
+          {classified.location_text && (
+            <>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground truncate">{classified.location_text}</span>
+            </>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
 }
 
-function StoreCard({ store }: { store: SearchResultStore }) {
- return (
- <Link
- to="/vendedora/$slug"
- params={{ slug: store.slug }}
- className="flex gap-3 p-3 rounded-2xl bg-card hover:bg-muted transition-colors group"
- >
- {store.logo_url ? (
- <img
- src={store.logo_url}
- alt={store.name}
- className="size-12 object-cover rounded-xl shrink-0"
- />
- ) : (
- <div className="size-12 bg-muted rounded-xl shrink-0 flex items-center justify-center">
- <Store className="size-5 text-muted-foreground" />
- </div>
- )}
- <div className="flex-1 min-w-0 self-center">
- <p className="font-semibold text-sm text-foreground group-hover:text-primary">
- {store.name}
- </p>
- {store.description && (
- <p className="text-xs text-muted-foreground truncate">{store.description}</p>
- )}
- </div>
- <ChevronRight className="size-4 text-muted-foreground self-center shrink-0" />
- </Link>
- );
+function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; isMobileList?: boolean }) {
+  if (isMobileList) {
+    return (
+      <Link
+        to="/vendedora/$slug"
+        params={{ slug: store.slug }}
+        className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+      >
+        <div className="size-11 rounded-xl bg-muted/20 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+          {store.logo_url ? (
+            <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
+          ) : (
+            <Store className="size-5 text-muted-foreground/50" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+            {store.name}
+          </p>
+          {store.description && (
+            <p className="text-[11px] text-muted-foreground truncate">{store.description}</p>
+          )}
+        </div>
+        <ChevronRight className="size-4 text-muted-foreground shrink-0 group-hover:translate-x-0.5 transition-transform" />
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to="/vendedora/$slug"
+      params={{ slug: store.slug }}
+      className="flex gap-3 p-3 rounded-2xl bg-card hover:bg-muted transition-colors group border border-border/60 shadow-2xs"
+    >
+      {store.logo_url ? (
+        <img
+          src={store.logo_url}
+          alt={store.name}
+          className="size-12 object-cover rounded-xl shrink-0"
+        />
+      ) : (
+        <div className="size-12 bg-muted rounded-xl shrink-0 flex items-center justify-center">
+          <Store className="size-5 text-muted-foreground" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0 self-center">
+        <p className="font-semibold text-sm text-foreground group-hover:text-primary">
+          {store.name}
+        </p>
+        {store.description && (
+          <p className="text-xs text-muted-foreground truncate">{store.description}</p>
+        )}
+      </div>
+      <ChevronRight className="size-4 text-muted-foreground self-center shrink-0" />
+    </Link>
+  );
 }
 
 function ResultSection({
@@ -661,70 +772,91 @@ function SearchPage() {
  </div>
  )}
 
- {/* Visualização Padrão em Grade/Lista quando viewMode !== "feed" */}
- {hasResults && viewMode !== "feed" && (
- <div className="space-y-6 pt-2">
- {/* Seção de Lojas */}
- <ResultSection
- title="Lojas & Comércios"
- count={filteredStores.length}
- icon={Store}
- >
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- {filteredStores.map((store) => (
- <StoreCard key={store.id} store={store} />
- ))}
- </div>
- </ResultSection>
+  {/* Visualização Padrão em Grade/Lista quando viewMode !== "feed" */}
+  {hasResults && viewMode !== "feed" && (
+    <div className="space-y-6 pt-2">
+      {/* Seção de Lojas */}
+      <ResultSection
+        title="Lojas & Comércios"
+        count={filteredStores.length}
+        icon={Store}
+      >
+        {/* Mobile: WhatsApp Minimalist List */}
+        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+          {filteredStores.map((store) => (
+            <StoreCard key={store.id} store={store} isMobileList />
+          ))}
+        </div>
+        {/* Desktop: Grid */}
+        <div className="hidden sm:grid sm:grid-cols-2 gap-2">
+          {filteredStores.map((store) => (
+            <StoreCard key={store.id} store={store} />
+          ))}
+        </div>
+      </ResultSection>
 
- {/* Seção de Produtos */}
- {filteredProducts.length > 0 && (
- <section className="mb-8 space-y-3">
- <div className="flex items-center gap-2">
- <ShoppingBag className="size-4 text-primary" />
- <h2 className="text-sm font-bold text-foreground">Produtos & Cardápio</h2>
- <Badge variant="secondary" className="text-[10px] font-mono">
- {filteredProducts.length}
- </Badge>
- </div>
- <ProductGrid
- result={{
- status: "ok",
- data: filteredProducts as any,
- total: filteredProducts.length,
- } as any}
- viewMode={viewMode === "list" ? "list" : "grid"}
- />
- </section>
- )}
+      {/* Seção de Produtos */}
+      {filteredProducts.length > 0 && (
+        <section className="mb-8 space-y-3">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="size-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">Produtos & Cardápio</h2>
+            <Badge variant="outline" className="text-[10px] font-mono border-border/70">
+              {filteredProducts.length}
+            </Badge>
+          </div>
+          <ProductGrid
+            result={{
+              status: "ok",
+              data: filteredProducts as any,
+              total: filteredProducts.length,
+            } as any}
+            viewMode={viewMode === "list" ? "list" : "grid"}
+          />
+        </section>
+      )}
 
- {/* Seção de Classificados */}
- <ResultSection
- title="Classificados & Anúncios"
- count={filteredClassifieds.length}
- icon={Tag}
- >
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
- {filteredClassifieds.map((classified) => (
- <ClassifiedCard key={classified.id} classified={classified} />
- ))}
- </div>
- </ResultSection>
+      {/* Seção de Classificados */}
+      <ResultSection
+        title="Classificados & Anúncios"
+        count={filteredClassifieds.length}
+        icon={Tag}
+      >
+        {/* Mobile: WhatsApp Minimalist List */}
+        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+          {filteredClassifieds.map((classified) => (
+            <ClassifiedCard key={classified.id} classified={classified} isMobileList />
+          ))}
+        </div>
+        {/* Desktop: Grid */}
+        <div className="hidden sm:grid sm:grid-cols-2 gap-3">
+          {filteredClassifieds.map((classified) => (
+            <ClassifiedCard key={classified.id} classified={classified} />
+          ))}
+        </div>
+      </ResultSection>
 
- {/* Seção de Eventos */}
- <ResultSection
- title="Eventos & Agenda Cultural"
- count={filteredEvents.length}
- icon={Calendar}
- >
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- {filteredEvents.map((event) => (
- <EventCard key={event.id} event={event} />
- ))}
- </div>
- </ResultSection>
- </div>
- )}
+      {/* Seção de Eventos */}
+      <ResultSection
+        title="Eventos & Agenda Cultural"
+        count={filteredEvents.length}
+        icon={Calendar}
+      >
+        {/* Mobile: WhatsApp Minimalist List */}
+        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+          {filteredEvents.map((event) => (
+            <EventCard key={event.id} event={event} isMobileList />
+          ))}
+        </div>
+        {/* Desktop: Grid */}
+        <div className="hidden sm:grid sm:grid-cols-2 gap-2">
+          {filteredEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      </ResultSection>
+    </div>
+  )}
  </div>
  );
 }

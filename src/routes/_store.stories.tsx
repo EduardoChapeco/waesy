@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
+﻿import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
 
 // Módulo Stories desativado no MVP — redireciona para Notícias
 export const Route = createFileRoute("/_store/stories")({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_store/stories")({
     } catch (err) {
       if (isRedirect(err)) throw err;
       console.error("[loader:_store.stories] Unhandled error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: () => null,

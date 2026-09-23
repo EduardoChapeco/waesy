@@ -28,6 +28,7 @@ import { DealDeliveryTrackingCard } from "@/components/commercial/deal-delivery-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { CurrencyField } from "@/components/ui/currency-field";
 import {
   Dialog,
@@ -237,49 +238,53 @@ function NegociacoesPage() {
         </div>
       </div>
 
-      {/* ── 2. Toolbar: Abas Rápidas em Trilho Horizontal ── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full">
+      {/* ── 2. Toolbar: Abas Rápidas em Trilho Horizontal (Padrão Botão Grande) ── */}
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full">
         <button
           type="button"
           onClick={() => setActiveTab("all")}
-          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+          className={cn(
+            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "all"
-              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-          }`}
+              ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+          )}
         >
           Todas ({deals?.length || 0})
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("purchases")}
-          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+          className={cn(
+            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "purchases"
-              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-          }`}
+              ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+          )}
         >
           Minhas Compras ({deals?.filter((d: any) => d.buyer_id === profile?.id).length || 0})
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("sales")}
-          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+          className={cn(
+            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "sales"
-              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-          }`}
+              ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+          )}
         >
           Meus Anúncios ({deals?.filter((d: any) => d.seller_id === profile?.id).length || 0})
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("bookings")}
-          className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+          className={cn(
+            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "bookings"
-              ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-          }`}
+              ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+              : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+          )}
         >
           Hospedagens & Diárias
         </button>

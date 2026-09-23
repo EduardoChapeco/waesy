@@ -5,6 +5,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getSSRClient } from "@/lib/supabase-ssr.server";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
+import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 
 function generateSlug(name: string): string {
   const base = name
@@ -34,6 +35,7 @@ export const FastRegisterCompanySchema = z.object({
   bannerUrl: z.string().optional(),
   website: z.string().optional(),
   instagram: z.string().optional(),
+  cnpj: z.string().optional(),
 });
 
 export const fastRegisterCompany = createServerFn({ method: "POST" })
@@ -64,6 +66,16 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       throw new Error("Sessão não autenticada. Acesse sua conta antes de cadastrar sua empresa.");
     }
 
+    // 0.0 Auto-enriquecimento nativo via motor CNPJ (se informado)
+    let enrichedData: any = null;
+    if (data.cnpj) {
+      try {
+        enrichedData = await enrichCnpj(data.cnpj);
+      } catch (e: any) {
+        console.warn("[fastRegisterCompany] Aviso de enriquecimento CNPJ:", e?.message);
+      }
+    }
+
     // 0.1 Garantir profile
     const { data: existingProfile } = await db
       .from("profiles")
@@ -81,10 +93,11 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
     }
 
     // 1. Criar Organização
-    const orgSlug = generateSlug(data.name) + "-" + Math.floor(1000 + Math.random() * 9000);
+    const resolvedName = enrichedData?.nome_fantasia || enrichedData?.razao_social || data.name;
+    const orgSlug = generateSlug(resolvedName) + "-" + Math.floor(1000 + Math.random() * 9000);
     const { data: org, error: orgError } = await db
       .from("organizations")
-      .insert({ name: data.name, slug: orgSlug })
+      .insert({ name: resolvedName, slug: orgSlug })
       .select("id")
       .single();
 
@@ -97,7 +110,7 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       category: data.category,
       segment: data.category,
       niche: data.category,
-      bio: data.bio || "",
+      bio: data.bio || (enrichedData?.cnae_principal?.descricao ? `Atividade: ${enrichedData.cnae_principal.descricao}` : ""),
       logoUrl: data.logoUrl || null,
       bannerUrl: data.bannerUrl || null,
       website: data.website || null,
@@ -106,17 +119,20 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       coverage_cities: [data.city],
       working_hours: null,
       created_via: "mvp_fast_onboarding",
+      cnae: enrichedData?.cnae_principal?.codigo || null,
+      socios: enrichedData?.socios || [],
     };
 
     // 3. Criar Loja
     const storePayload = {
       organization_id: org.id,
-      name: data.name,
+      name: resolvedName,
       slug: orgSlug,
-      city: data.city,
-      state: data.state || "SC",
-      address: data.address || data.city,
-      phone: data.phone,
+      city: enrichedData?.endereco?.municipio || data.city,
+      state: enrichedData?.endereco?.uf || data.state || "SC",
+      address: data.address || (enrichedData?.endereco?.logradouro ? `${enrichedData.endereco.logradouro}, ${enrichedData.endereco.numero || 'S/N'}` : data.city),
+      phone: enrichedData?.telefones?.[0] || data.phone,
+      cnpj: enrichedData?.cnpj || data.cnpj || null,
       logo_url: data.logoUrl || null,
       settings,
     };
@@ -145,25 +161,19 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       console.warn("[fastRegisterCompany] Aviso workspace_members:", e?.message);
     }
 
-    try {
-      await db.from("workspace_members").upsert(
-        {
-          profile_id: userId,
-          store_id: store.id,
-          role: "owner",
-        },
-        { onConflict: "profile_id,store_id" }
-      );
-    } catch (e: any) {
-      console.warn("[fastRegisterCompany] Aviso workspace_members:", e?.message);
-    }
-
-    // 5. Cadastrar no Guia / Diretório
+    // 5. Cadastrar no Guia / Diretório Oficial (Single Source of Truth)
     try {
       await db.from("directory_listings").insert({
         store_id: store.id,
         category: data.category,
-        address: data.address || data.city,
+        address: storePayload.address,
+        city: storePayload.city,
+        state: storePayload.state,
+        business_name: resolvedName,
+        cnpj: storePayload.cnpj,
+        data_quality_score: enrichedData?.dataQualityScore || 50,
+        is_crawled: false,
+        status: "active",
       });
     } catch (e: any) {
       console.warn("[fastRegisterCompany] Aviso directory_listings:", e?.message);

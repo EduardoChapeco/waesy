@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, Plus, Trash2, ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
+import { Users, Plus, Trash2, ShieldCheck, Clock, CheckCircle2, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,7 @@ import {
   listEventStaffAllocations,
   saveEventStaffAllocation,
 } from "@/services/events.functions";
+import { listContractors } from "@/services/admin-team.functions";
 
 interface AlocarEquipeSheetProps {
   eventId: string;
@@ -39,10 +40,12 @@ export function AlocarEquipeSheet({
   onOpenChange,
 }: AlocarEquipeSheetProps) {
   const [allocations, setAllocations] = useState<any[]>([]);
+  const [contractors, setContractors] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Form State
+  const [selectedContractorId, setSelectedContractorId] = useState("");
   const [roleTitle, setRoleTitle] = useState("");
   const [shiftName, setShiftName] = useState("manha");
   const [remunerationCents, setRemunerationCents] = useState(15000);
@@ -51,8 +54,12 @@ export function AlocarEquipeSheet({
   async function loadData() {
     setLoading(true);
     try {
-      const data = await listEventStaffAllocations({ data: { eventId } });
-      setAllocations(data || []);
+      const [allocData, contData] = await Promise.all([
+        listEventStaffAllocations({ data: { eventId } }).catch(() => []),
+        listContractors().catch(() => []),
+      ]);
+      setAllocations(allocData || []);
+      setContractors(contData || []);
     } catch (err) {
       console.error("Erro ao carregar escala da equipe:", err);
     } finally {
@@ -66,6 +73,31 @@ export function AlocarEquipeSheet({
     }
   }, [open, eventId]);
 
+  const handleContractorChange = (contractorId: string) => {
+    setSelectedContractorId(contractorId);
+    if (!contractorId) return;
+
+    const found = contractors.find((c) => c.id === contractorId);
+    if (found) {
+      if (!roleTitle) {
+        const categoryLabels: Record<string, string> = {
+          seguranca: "Segurança / Vigilante",
+          limpeza: "Equipe de Limpeza",
+          buffet: "Buffet / Gastronomia",
+          som_iluminacao: "Técnico de Som & Luz",
+          fotografia: "Fotógrafo / Videomaker",
+          cenografia: "Cenografia & Palco",
+          brigadistas: "Brigadista de Incêndio",
+          atendimento: "Recepcionista / Hostess",
+        };
+        setRoleTitle(categoryLabels[found.service_category] || found.name);
+      }
+      if (found.fixed_fee_cents && found.fixed_fee_cents > 0) {
+        setRemunerationCents(found.fixed_fee_cents);
+      }
+    }
+  };
+
   const handleAddAllocation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!roleTitle.trim()) {
@@ -78,7 +110,8 @@ export function AlocarEquipeSheet({
       await saveEventStaffAllocation({
         data: {
           eventId,
-          roleTitle,
+          contractorId: selectedContractorId || undefined,
+          roleTitle: roleTitle.trim(),
           shiftName,
           remunerationCents,
           isConfirmed: true,
@@ -87,6 +120,7 @@ export function AlocarEquipeSheet({
       });
 
       toast.success("Membro de equipe alocado com sucesso!");
+      setSelectedContractorId("");
       setRoleTitle("");
       setNotes("");
       await loadData();
@@ -106,14 +140,35 @@ export function AlocarEquipeSheet({
             <SheetTitle className="text-base font-bold">Escala de Equipe & Staff</SheetTitle>
           </div>
           <SheetDescription className="text-xs">
-            Alocação de coordenadores, seguranças, recepcionistas, caixas e técnicos de palco.
+            Alocação de coordenadores, seguranças, recepcionistas, caixas e parceiros terceirizados.
           </SheetDescription>
         </SheetHeader>
 
         <div className="py-5 space-y-6">
           {/* Formulário Rápido de Alocação */}
           <form onSubmit={handleAddAllocation} className="p-4 bg-muted/20 border border-border/60 rounded-2xl space-y-3.5">
-            <h4 className="text-xs font-bold text-foreground">Alocar Novo Colaborador / Posto</h4>
+            <h4 className="text-xs font-bold text-foreground">Alocar Novo Colaborador / Terceirizado</h4>
+
+            {contractors.length > 0 && (
+              <div className="space-y-1.5">
+                <Label htmlFor="staff-contractor" className="text-xs">
+                  Vincular Terceirizado Cadastrado (Opcional)
+                </Label>
+                <select
+                  id="staff-contractor"
+                  value={selectedContractorId}
+                  onChange={(e) => handleContractorChange(e.target.value)}
+                  className="w-full h-9 px-3 rounded-xl border border-border bg-background text-xs"
+                >
+                  <option value="">Nenhum (Posto Avulso / Equipe Direta)</option>
+                  {contractors.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} — {c.service_category} {c.fixed_fee_cents ? `(${formatMoney(c.fixed_fee_cents)})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="staff-role" className="text-xs">Função / Posto de Trabalho *</Label>

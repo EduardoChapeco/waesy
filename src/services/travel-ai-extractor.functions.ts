@@ -8,6 +8,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
+import { getDefaultCity } from "@/lib/brand.config";
 
 // ============================================================
 // Schemas e Contratos de Dados
@@ -224,7 +225,7 @@ Retorne ESTRITAMENTE um JSON minificado compatível com este formato:
       destination_city: extracted.destination_city || "Destino a Definir",
       destination_state: extracted.destination_state || null,
       destination_country: extracted.destination_country || "Brasil",
-      departure_city: extracted.departure_city || "Chapecó",
+      departure_city: getDefaultCity(extracted.departure_city),
       departure_iata: extracted.departure_iata || null,
       arrival_iata: extracted.arrival_iata || null,
       dates_text: extracted.dates_text || null,

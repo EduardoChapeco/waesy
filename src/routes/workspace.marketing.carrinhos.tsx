@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+﻿import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ShoppingCart, Mail, Phone, Clock, RefreshCw, Send, Ghost } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/workspace/marketing/carrinhos")({
  return await listAbandonedCarts();
    } catch (err) {
      console.error("[loader:workspace.marketing.carrinhos] Unhandled loader error:", err);
-     return {} as any;
+     return null as any;
     }
  },
  component: AbandonedCartsPage,

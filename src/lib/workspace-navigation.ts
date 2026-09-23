@@ -71,6 +71,7 @@ import {
   UserCheck,
   Lock,
   HandHeart,
+  Database,
 } from "lucide-react";
 
 export type NavItem = {
@@ -123,6 +124,7 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace/squads", label: "Squads Especializados", icon: Bot },
+    { path: "/workspace/mining", label: "Mineração & Crawlers", icon: Database },
     { path: "/workspace/simlab/focus-group", label: "SimLab Focus Group", icon: Users },
     { path: "/workspace/inteligencia/radar", label: "Radar de Mercado & DNA", icon: Target },
     { path: "/workspace/marketing/canvas-pecados", label: "Canvas dos 7 Pecados", icon: Flame },
@@ -674,7 +676,6 @@ export function resolveWorkspaceNavigation(
       GROUP_NEWS,
       GROUP_EDUCATION,
       GROUP_WHOLESALE,
-      GROUP_AGENTIC_INTELLIGENCE,
       GROUP_MARKETING_VITRINE,
       GROUP_LOGISTICS_EXPEDITION,
       GROUP_FINANCE_CLEAN,
@@ -1048,6 +1049,9 @@ export function resolveWorkspaceNavigation(
     }
     if (enabledModules.includes("education") && !finalGroups.some((g) => g.id === "education")) {
       finalGroups.splice(finalGroups.length - 2, 0, GROUP_EDUCATION);
+    }
+    if ((enabledModules.includes("mining") || enabledModules.includes("intelligence")) && !finalGroups.some((g) => g.id === "intelligence-squads")) {
+      finalGroups.splice(finalGroups.length - 2, 0, GROUP_AGENTIC_INTELLIGENCE);
     }
 
     resolvedGroups = finalGroups;

@@ -554,7 +554,7 @@ function EventosPage() {
   }, [selectedDateFilter, nextDays, availableMonths]);
 
   return (
-    <div className="w-full space-y-7 pb-20">
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-7 pb-24">
       {/* ── 1. Top Universal Banner Hero Carousel (Canônico & Editável no Admin) ── */}
       {displayBanners.length > 0 && (
         <section aria-label="Destaques & Banners de Eventos">

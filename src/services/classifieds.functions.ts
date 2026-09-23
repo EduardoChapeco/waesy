@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { requireAdmin } from "@/lib/server-access";
@@ -589,8 +590,8 @@ export const upsertClassified = createServerFn({ method: "POST" })
     if (address && address.trim()) {
       (async () => {
         try {
-          const city = savedRecord.city || "Chapecó";
-          const state = savedRecord.state || "SC";
+          const city = getDefaultCity(savedRecord.city);
+          const state = getDefaultState(savedRecord.state);
           const addressNorm = address.trim().toLowerCase();
 
           const { data: existingPoint } = await supabase
@@ -1916,7 +1917,7 @@ export const convertClassifiedToWorkspaceStore = createServerFn({ method: "POST"
         name: storeName,
         slug: uniqueSlug,
         cnpj: attrs.company_cnpj || null,
-        city: classified.location_name || attrs.city || "Chapecó",
+        city: getDefaultCity(classified.location_name || attrs.city),
         phone: classified.contact_whatsapp || classified.contact_phone || null,
         logo_url: classified.images?.[0] || null,
         banner_url: classified.images?.[1] || classified.images?.[0] || null,

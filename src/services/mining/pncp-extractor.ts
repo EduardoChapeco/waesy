@@ -1,3 +1,4 @@
+import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 /**
  * pncp-extractor.ts — Extrator Oficial de Editais e Compras Públicas (PNCP / Portal Municipal)
  * 
@@ -37,7 +38,7 @@ const pncpMemoryCache = new Map<string, { timestamp: number; data: PncpItemDTO[]
 const PNCP_CACHE_TTL_MS = 5 * 60 * 1000;
 
 export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promise<PncpItemDTO[]> {
-  const query = options.query || "Chapecó";
+  const query = options.query || getDefaultCity();
   const uf = options.uf || "SC";
   const limit = options.limit || 15;
 
@@ -112,7 +113,7 @@ export async function fetchPncpContracts(options: PncpSearchOptions = {}): Promi
 /**
  * Converte um edital do PNCP para o formato MechanicalExtractionResult unificado
  */
-export function convertPncpToExtractionResult(item: PncpItemDTO, city = "Chapecó", state = "SC"): MechanicalExtractionResult {
+export function convertPncpToExtractionResult(item: PncpItemDTO, city = getDefaultCity(), state = getDefaultState()): MechanicalExtractionResult {
   const valorFormatado = item.valorEstimado
     ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(item.valorEstimado)
     : "Não informado";

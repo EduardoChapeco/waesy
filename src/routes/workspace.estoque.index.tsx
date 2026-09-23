@@ -51,10 +51,10 @@ export const Route = createFileRoute("/workspace/estoque/")({
    try {
  const res = await getStockLevels({ data: {} }).catch(() => []);
  return res || [];
-   } catch (err) {
-     console.error("[loader:workspace.estoque.index] Unhandled loader error:", err);
-     return {} as any;
-    }
+    } catch (err) {
+      console.error("[loader:workspace.estoque.index] Unhandled loader error:", err);
+      return [] as any[];
+     }
  },
  component: AdminStockPage,
 });
@@ -62,7 +62,7 @@ export const Route = createFileRoute("/workspace/estoque/")({
 function AdminStockPage() {
  const initialStock = Route.useLoaderData();
  const router = useRouter();
- const [stock, setStock] = useState<any[]>(initialStock);
+  const [stock, setStock] = useState<any[]>(Array.isArray(initialStock) ? initialStock : []);
  const [search, setSearch] = useState("");
  const [statusTab, setStatusTab] = useState<string>("all");
  const [isUpdating, setIsUpdating] = useState(false);

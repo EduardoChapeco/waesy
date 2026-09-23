@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+﻿import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/workspace_/pedidos/$id/recibo")({
       return await getOrderForReceipt({ data: { id: params.id } });
     } catch (err) {
       console.error("[loader:workspace_.pedidos.$id.recibo] Unhandled error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: ReceiptPrintPage,

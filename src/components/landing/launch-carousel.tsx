@@ -53,7 +53,7 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
       {/* Trilho Horizontal com Snap Scroll */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0"
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 px-0"
       >
         {slides.map((slide) => (
           <div

@@ -25,6 +25,7 @@ import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { TravelQuoteModal } from "@/components/tourism/travel-quote-modal";
 import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/turismo/")({
   head: () => ({
@@ -134,7 +135,7 @@ function TourismMasterPage() {
   };
 
   return (
-    <div className="w-full space-y-6 pb-24 px-0 sm:px-4 md:px-0">
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
       {/* Banners */}
       {banners && banners.length > 0 && (
         <BannerHeroCarousel banners={banners} className="w-full" />
@@ -175,9 +176,9 @@ function TourismMasterPage() {
         allowedViewModes={["feed", "grid", "list"]}
       />
 
-      {/* Filtro de Saída por Aeroporto Regional */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-b border-border/40">
-        <span className="text-xs text-muted-foreground font-medium shrink-0 mr-1">
+      {/* Filtro de Saída por Aeroporto Regional (Padrão Botão Grande) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 border-b border-border/40">
+        <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1">
           Saída:
         </span>
         {REGIONAL_AIRPORTS.map((air) => {
@@ -187,11 +188,12 @@ function TourismMasterPage() {
               key={air.id}
               type="button"
               onClick={() => setSelectedAirport(air.id)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+              className={cn(
+                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
                 isActive
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
+                  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+              )}
             >
               {air.label}
             </button>

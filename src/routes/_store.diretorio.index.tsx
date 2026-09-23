@@ -180,42 +180,50 @@ function DirectoryPage() {
 
   {/* Seção Geral: Todas as Empresas da Região */}
   <div className="space-y-3 pt-3 border-t border-border/40">
- <div className="flex items-center justify-between">
- <h2 className="text-base font-bold text-foreground flex items-center gap-2">
- <Storefront size={18} weight="bold" className="text-primary" />
- <span>Todas as Empresas e Serviços da Região</span>
- </h2>
- </div>
+    <div className="flex items-center justify-between">
+      <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+        <Storefront size={18} weight="bold" className="text-primary" />
+        <span>Todas as Empresas e Serviços da Região</span>
+      </h2>
+    </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
- {filteredListings.map((item) => (
- <div key={item.id} className="h-full flex flex-col">
- <DirectoryBusinessCard item={item} />
- </div>
- ))}
- </div>
- </div>
+    {/* Mobile: WhatsApp Minimalist List */}
+    <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+      {filteredListings.map((item) => (
+        <DirectoryMobileWhatsAppItem key={item.id} item={item} />
+      ))}
+    </div>
 
- {filteredListings.length === 0 && !isLoading && (
- <div className="py-16 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
- <EmptyState title="Nenhuma empresa ou serviço encontrado nesta categoria." />
- <div className="pt-2">
- <Button
- size="sm"
- variant="outline"
- onClick={() => {
- setSelectedCategory("todos");
- setSearchQuery("");
- }}
- className="rounded-xl font-bold text-xs"
- >
- Ver todo o diretório
- </Button>
- </div>
- </div>
- )}
- </div>
- )}
+    {/* Desktop: Grid Canônico */}
+    <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+      {filteredListings.map((item) => (
+        <div key={item.id} className="h-full flex flex-col">
+          <DirectoryBusinessCard item={item} />
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {filteredListings.length === 0 && !isLoading && (
+    <div className="py-16 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
+      <EmptyState title="Nenhuma empresa ou serviço encontrado nesta categoria." />
+      <div className="pt-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setSelectedCategory("todos");
+            setSearchQuery("");
+          }}
+          className="rounded-xl font-bold text-xs"
+        >
+          Ver todo o diretório
+        </Button>
+      </div>
+    </div>
+  )}
+  </div>
+  )}
 
       {/* MODE 2: GRADE EXPANDIDA PADRONIZADA COM IMAGEM FULL SPLIT */}
       {viewMode === "grid" && (
@@ -225,13 +233,22 @@ function DirectoryPage() {
               <EmptyState title="Nenhuma empresa encontrada com estes filtros." />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
-              {filteredListings.map((item) => (
-                <div key={item.id} className="h-full flex flex-col">
-                  <DirectoryBusinessCard item={item} />
-                </div>
-              ))}
-            </div>
+            <>
+              {/* Mobile: WhatsApp Minimalist List */}
+              <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+                {filteredListings.map((item) => (
+                  <DirectoryMobileWhatsAppItem key={item.id} item={item} />
+                ))}
+              </div>
+              {/* Desktop: Grid Canônico */}
+              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
+                {filteredListings.map((item) => (
+                  <div key={item.id} className="h-full flex flex-col">
+                    <DirectoryBusinessCard item={item} />
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -244,14 +261,94 @@ function DirectoryPage() {
               <EmptyState title="Nenhuma empresa encontrada com estes filtros." />
             </div>
           ) : (
-            <div className="flex flex-col space-y-3 w-full">
-              {filteredListings.map((item) => (
-                <DirectoryListItem key={item.id} item={item} />
-              ))}
-            </div>
+            <>
+              {/* Mobile: WhatsApp Minimalist List */}
+              <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+                {filteredListings.map((item) => (
+                  <DirectoryMobileWhatsAppItem key={item.id} item={item} />
+                ))}
+              </div>
+              {/* Desktop: Split List */}
+              <div className="hidden sm:flex flex-col space-y-3 w-full">
+                {filteredListings.map((item) => (
+                  <DirectoryListItem key={item.id} item={item} />
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── COMPONENTE PADRONIZADO MOBILE: WHATSAPP MINIMALIST LIST (APPLE HIG) ─────────────────────────
+function DirectoryMobileWhatsAppItem({ item }: { item: DirectoryListingDTO }) {
+  const coverUrl = item.banner_url || item.avatar_url;
+  const categoryLabel = DIRECTORY_CATEGORIES.find((c) => c.id === item.category)?.label || item.category;
+  const whatsappNumber = (item.contact_whatsapp || item.contact_phone || "").replace(/\D/g, "");
+
+  return (
+    <div className="flex items-center justify-between gap-3 p-3 hover:bg-muted/10 transition-colors">
+      <Link
+        to="/diretorio/$id"
+        params={{ id: item.id }}
+        className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+      >
+        <div className="size-11 rounded-xl bg-muted/30 border border-border/40 overflow-hidden shrink-0 flex items-center justify-center">
+          {item.avatar_url || coverUrl ? (
+            <img src={item.avatar_url || coverUrl || ""} alt="" className="size-full object-cover" />
+          ) : (
+            <Briefcase className="size-5 text-muted-foreground/40" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-foreground truncate">{item.business_name}</h4>
+            {item.is_verified && (
+              <ShieldCheck size={13} weight="fill" className="text-foreground shrink-0" />
+            )}
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
+            <span>{categoryLabel}</span>
+            {item.address && (
+              <>
+                <span>•</span>
+                <span className="truncate">{item.address}</span>
+              </>
+            )}
+          </div>
+          {item.rating && (
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono mt-0.5">
+              <Star size={10} weight="fill" className="text-amber-500" />
+              <span className="font-semibold text-foreground">{Number(item.rating).toFixed(1)}</span>
+              {item.reviews_count > 0 && <span>({item.reviews_count})</span>}
+            </div>
+          )}
+        </div>
+      </Link>
+      <div className="flex items-center gap-1 shrink-0">
+        {whatsappNumber && (
+          <ProtectedContactButton
+            phone={whatsappNumber}
+            entityType="directory"
+            entityId={item.id}
+            entityTitle={item.business_name}
+            storeId={(item as any).store_id || null}
+            niche={item.category}
+            variant="ghost"
+            size="sm"
+            className="size-9 p-0 rounded-full hover:bg-muted/40 text-foreground"
+          />
+        )}
+        <Link
+          to="/diretorio/$id"
+          params={{ id: item.id }}
+          className="size-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+        >
+          <ArrowRight size={15} />
+        </Link>
+      </div>
     </div>
   );
 }
@@ -472,7 +569,7 @@ function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
  </h3>
 
  {item.is_verified && (
- <span className="text-emerald-600 flex items-center text-[10px] font-bold gap-0.5 shrink-0">
+ <span className="text-foreground flex items-center text-[10px] font-bold gap-0.5 shrink-0">
  <ShieldCheck size={14} weight="fill" />
  <span className="hidden sm:inline">Verificado</span>
  </span>

@@ -165,6 +165,7 @@ export const Route = createFileRoute("/_store/")({
       ]);
 
       return {
+        launchSettings: launchSettings || null,
         banners: banners || [],
         middleBanners: middleBanners || [],
         footerBanners: footerBanners || [],
@@ -180,6 +181,7 @@ export const Route = createFileRoute("/_store/")({
     } catch (err) {
       console.error("[loader:_store.index] Unhandled loader error:", err);
       return {
+        launchSettings: null,
         banners: [],
         middleBanners: [],
         footerBanners: [],

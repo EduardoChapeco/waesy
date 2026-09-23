@@ -381,7 +381,7 @@ function AgendaPadronizadaPage() {
   }, [filteredItems]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0 py-4">
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24 py-4">
       {/* ── 1. Banners de Destaque da Agenda (se cadastrados) ── */}
       {banners && banners.length > 0 && (
         <section aria-label="Destaques da Agenda">

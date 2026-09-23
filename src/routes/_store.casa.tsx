@@ -1,3 +1,4 @@
+import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
@@ -181,7 +182,7 @@ function CasaVerticalPage() {
  }, [marketplaceFeed]);
 
  return (
- <div className="w-full max-w-7xl mx-auto space-y-6 pb-6 overflow-x-hidden">
+ <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
  {/* ── 1. Banners ── */}
  {banners && banners.length > 0 && (
  <section aria-label="Banners para Casa">

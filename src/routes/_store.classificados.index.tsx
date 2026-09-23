@@ -607,9 +607,9 @@ function ClassifiedsMasterPage() {
   });
 
   return (
-    <div className="w-full space-y-4 pb-20">
+    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-4 pb-24">
         {/* ── NÍVEL 1 & NÍVEL 2: TOOLBAR CONSOLIDADA DE 2 NÍVEIS (APPLE & AIRBNB STANDARD) ── */}
-        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md -mx-1 px-1 sm:mx-0 sm:px-0 pt-1 pb-2 space-y-2 border-b border-border/40">
+        <div className="sticky top-0 lg:static z-20 bg-background/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none px-0 pt-1 pb-2 space-y-2 border-b border-border/40 lg:border-b-0">
           {/* NÍVEL 1: A Barra de Ação Principal (Tudo na mesma linha) */}
           <div className="flex items-center gap-2 w-full">
             {/* Search Input (Barra de busca ocupando a maior parte do espaço) */}
@@ -644,7 +644,7 @@ function ClassifiedsMasterPage() {
               variant="outline"
               onClick={() => setMobileFilterSheetOpen(true)}
               className={cn(
-                "h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl border border-border/70 text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
+                "h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
                 activeFiltersCount > 0
                   ? "bg-primary/10 border-primary/40 text-primary font-bold"
                   : "bg-card hover:bg-muted/50 text-foreground"
@@ -662,12 +662,12 @@ function ClassifiedsMasterPage() {
             </Button>
 
             {/* Toggles de Visualização (Feed vs. Grade vs. Lista) */}
-            <div className="flex items-center p-1 rounded-xl bg-muted/40 border border-border/50 shrink-0">
+            <div className="flex items-center p-1 rounded-xl bg-muted/40 border border-border/50 shrink-0 h-10 sm:h-11">
               <button
                 type="button"
                 onClick={() => setViewMode("feed")}
                 className={cn(
-                  "p-1.5 sm:p-2 rounded-lg text-xs transition-all cursor-pointer",
+                  "h-full px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "feed"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -681,7 +681,7 @@ function ClassifiedsMasterPage() {
                 type="button"
                 onClick={() => setViewMode("grid")}
                 className={cn(
-                  "p-1.5 sm:p-2 rounded-lg text-xs transition-all cursor-pointer",
+                  "h-full px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "grid"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -695,7 +695,7 @@ function ClassifiedsMasterPage() {
                 type="button"
                 onClick={() => setViewMode("list")}
                 className={cn(
-                  "p-1.5 sm:p-2 rounded-lg text-xs transition-all cursor-pointer",
+                  "h-full px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "list"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -706,9 +706,20 @@ function ClassifiedsMasterPage() {
                 <ListDashes size={16} weight={viewMode === "list" ? "fill" : "bold"} />
               </button>
             </div>
+
+            {/* Botão de Anunciar / Publicar (Acesso Direto ao Fluxo) */}
+            <Button
+              asChild
+              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-bold text-xs sm:text-sm shrink-0 flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
+            >
+              <Link to="/conta/classificados/novo">
+                <Plus size={16} weight="bold" />
+                <span className="hidden sm:inline">Anunciar</span>
+              </Link>
+            </Button>
           </div>
 
-          {/* NÍVEL 2: Navegação de Categorias (Clean Tabs Dinâmicas do CMS) */}
+          {/* NÍVEL 2: Navegação de Categorias (Clean Tabs Dinâmicas do CMS - Padrão Botão Grande) */}
           <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full focus:outline-none">
             {dynamicCategoryChips.map((cat) => {
               const isActive = selectedCategory === cat.id;
@@ -722,17 +733,17 @@ function ClassifiedsMasterPage() {
                     if (cat.id !== "real_estate") setSelectedDealType("todos");
                   }}
                   className={cn(
-                    "h-8 sm:h-9 px-3 sm:px-3.5 rounded-full text-xs font-medium shrink-0 flex items-center gap-1.5 transition-all cursor-pointer select-none",
+                    "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
                     isActive
-                      ? "bg-primary/10 text-primary border border-primary/30 font-bold shadow-2xs"
-                      : "bg-muted/40 hover:bg-muted/60 text-muted-foreground hover:text-foreground border border-border/40"
+                      ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                      : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
                   )}
                   style={(cat as any).textColor ? { color: (cat as any).textColor } : undefined}
                 >
                   {(cat as any).customIconUrl ? (
-                    <img src={(cat as any).customIconUrl} alt="" className="size-3.5 object-contain shrink-0" />
+                    <img src={(cat as any).customIconUrl} alt="" className="size-4 object-contain shrink-0" />
                   ) : Icon ? (
-                    <Icon className={cn("size-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/70")} />
+                    <Icon className={cn("size-4 shrink-0", isActive ? "text-background" : "text-muted-foreground/80 group-hover:text-foreground")} />
                   ) : null}
                   <span>{cat.label}</span>
                 </button>
@@ -1262,6 +1273,14 @@ function ClassifiedsMasterPage() {
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               Tente alterar os termos da busca ou selecionar outra categoria.
             </p>
+            <div className="pt-2">
+              <Button asChild size="sm" className="rounded-xl h-9 px-4 text-xs font-semibold gap-1.5 bg-foreground text-background hover:bg-foreground/90 cursor-pointer">
+                <Link to="/conta/classificados/novo">
+                  <Plus size={14} weight="bold" />
+                  <span>Publicar Anúncio</span>
+                </Link>
+              </Button>
+            </div>
           </div>
         ) : viewMode === "list" ? (
           /* ── MODO LISTA ── */
@@ -1300,7 +1319,7 @@ function ClassifiedsMasterPage() {
                         {itemNiche.shortLabel}
                       </Badge>
                       {(item.is_boosted || item.attributes?.is_boosted) && (
-                        <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+                        <Badge variant="outline" className="border-border/60 text-foreground font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-sm">
                           Destaque
                         </Badge>
                       )}
@@ -1358,7 +1377,7 @@ function ClassifiedsMasterPage() {
                                 classifiedTitle: item.title,
                               });
                             }}
-                            className="h-8 px-2.5 rounded-xl text-xs gap-1.5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            className="h-8 px-2.5 rounded-xl text-xs gap-1.5 text-foreground border-border/50 hover:bg-muted/40 cursor-pointer"
                           >
                             <WhatsappLogo size={15} weight="fill" />
                             <span className="hidden sm:inline">WhatsApp</span>
@@ -1511,7 +1530,7 @@ function ClassifiedsMasterPage() {
                                     classifiedTitle: item.title,
                                   });
                                 }}
-                                className="h-8 px-2.5 rounded-xl text-xs gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                                className="h-8 px-2.5 rounded-xl text-xs gap-1 text-foreground border-border/50 hover:bg-muted/40 cursor-pointer"
                                 title="Chamar no WhatsApp"
                               >
                                 <WhatsappLogo size={15} weight="fill" />

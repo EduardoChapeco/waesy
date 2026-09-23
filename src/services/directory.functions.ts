@@ -255,3 +255,99 @@ export const requestDirectoryQuote = createServerFn({ method: "POST" })
  message: "Solicitação de orçamento enviada com sucesso!",
  };
  });
+
+/**
+ * Atualização Rápida de Perfil Institucional no Diretório & Loja (Bilateral CRUD)
+ */
+export const updateDirectoryListingFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string(),
+      businessName: z.string().min(2, "Nome da empresa é obrigatório").optional(),
+      category: z.string().optional(),
+      description: z.string().optional(),
+      specialties: z.array(z.string()).optional(),
+      address: z.string().optional(),
+      city: z.string().optional(),
+      contactPhone: z.string().optional(),
+      contactWhatsapp: z.string().optional(),
+      contactEmail: z.string().optional(),
+      websiteUrl: z.string().optional(),
+      workingHours: z.string().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    // 1. Localizar o registro em directory_listings
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.id);
+    let query = supabase.from("directory_listings").select("*");
+    if (isUuid) {
+      query = query.or(`id.eq.${data.id},store_id.eq.${data.id}`);
+    } else {
+      query = query.eq("id", data.id);
+    }
+
+    const { data: listing } = await query.maybeSingle();
+
+    const updatePayload: Record<string, any> = {};
+    if (data.businessName !== undefined) updatePayload.business_name = data.businessName.trim();
+    if (data.category !== undefined) updatePayload.category = data.category.trim();
+    if (data.description !== undefined) updatePayload.description = data.description.trim();
+    if (data.specialties !== undefined) updatePayload.specialties = data.specialties;
+    if (data.address !== undefined) updatePayload.address = data.address.trim();
+    if (data.city !== undefined) updatePayload.city = data.city.trim();
+    if (data.contactPhone !== undefined) updatePayload.contact_phone = data.contactPhone.trim() || null;
+    if (data.contactWhatsapp !== undefined) updatePayload.contact_whatsapp = data.contactWhatsapp.trim() || null;
+    if (data.contactEmail !== undefined) updatePayload.contact_email = data.contactEmail.trim().toLowerCase() || null;
+    if (data.websiteUrl !== undefined) updatePayload.website_url = data.websiteUrl.trim() || null;
+    if (data.workingHours !== undefined) updatePayload.working_hours = data.workingHours.trim();
+
+    if (listing) {
+      const { error: updateErr } = await supabase
+        .from("directory_listings")
+        .update(updatePayload)
+        .eq("id", listing.id);
+
+      if (updateErr) {
+        console.error("[updateDirectoryListingFn] Erro ao atualizar directory_listings:", updateErr);
+        throw new Error("Erro ao salvar dados no diretório: " + updateErr.message);
+      }
+    }
+
+    // 2. Se houver vínculo com a tabela stores, sincronizar atomicamente
+    const targetStoreId = listing?.store_id || (isUuid ? data.id : null);
+    if (targetStoreId) {
+      const { data: storeRow } = await supabase
+        .from("stores")
+        .select("id, settings")
+        .eq("id", targetStoreId)
+        .maybeSingle();
+
+      if (storeRow) {
+        const storeSettings = (storeRow.settings as Record<string, any>) || {};
+        const storePayload: Record<string, any> = {
+          settings: {
+            ...storeSettings,
+            businessHours: data.workingHours !== undefined ? data.workingHours : storeSettings.businessHours,
+            specialties: data.specialties !== undefined ? data.specialties : storeSettings.specialties,
+            bio: data.description !== undefined ? data.description : storeSettings.bio,
+          },
+        };
+
+        if (data.businessName !== undefined) storePayload.name = data.businessName.trim();
+        if (data.address !== undefined) storePayload.address = data.address.trim();
+        if (data.city !== undefined) storePayload.city = data.city.trim();
+        if (data.contactPhone !== undefined) storePayload.phone = data.contactPhone.trim();
+        if (data.contactEmail !== undefined) storePayload.email = data.contactEmail.trim().toLowerCase();
+        if (data.description !== undefined) storePayload.description = data.description.trim();
+
+        await supabase.from("stores").update(storePayload).eq("id", targetStoreId);
+      }
+    }
+
+    return {
+      success: true,
+      message: "Dados da empresa atualizados com sucesso!",
+    };
+  });

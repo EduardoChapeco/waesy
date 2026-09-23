@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import {
  Plus,
  Edit3,
@@ -68,7 +68,7 @@ export const Route = createFileRoute("/workspace/cms/paginas/")({
  return res || [];
    } catch (err) {
      console.error("[loader:workspace.cms.paginas.index] Unhandled loader error:", err);
-     return {} as any;
+     return null as any;
     }
  },
  component: CmsPagesPage,

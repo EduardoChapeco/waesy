@@ -46,10 +46,10 @@ export const Route = createFileRoute("/workspace/empregos/candidatos")({
    try {
  const apps = await listStoreJobApplications();
  return apps || [];
-   } catch (err) {
-     console.error("[loader:workspace.empregos.candidatos] Unhandled loader error:", err);
-     return {} as any;
-    }
+    } catch (err) {
+      console.error("[loader:workspace.empregos.candidatos] Unhandled loader error:", err);
+      return [] as any[];
+     }
  },
  component: WorkspaceCandidatesPage,
 });
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/workspace/empregos/candidatos")({
 function WorkspaceCandidatesPage() {
  const initialApps = Route.useLoaderData();
  const router = useRouter();
- const [applications, setApplications] = useState<any[]>(initialApps);
+  const [applications, setApplications] = useState<any[]>(Array.isArray(initialApps) ? initialApps : []);
  const [statusTab, setStatusTab] = useState<string>("all");
  const [searchQuery, setSearchQuery] = useState("");
  const [isProcessing, setIsProcessing] = useState(false);

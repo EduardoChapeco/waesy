@@ -1,13 +1,17 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users, UserPlus, ShieldCheck, ShieldAlert, Trash2, Mail, User, CheckCircle2, Lock, ArrowRight, Layers, Info, RefreshCw, Building2 } from 'lucide-react';
+import { Users, UserPlus, ShieldCheck, ShieldAlert, Trash2, Mail, User, CheckCircle2, Lock, ArrowRight, Layers, Info, RefreshCw, Building2, Briefcase, ExternalLink, Wallet, Plus, Edit3 } from 'lucide-react';
 import {
- listTeamMembers,
- inviteTeamMember,
- updateTeamMemberRole,
- removeTeamMember,
+  listTeamMembers,
+  inviteTeamMember,
+  updateTeamMemberRole,
+  removeTeamMember,
+  listContractors,
+  upsertContractor,
+  deleteContractor,
 } from "@/services/admin-team.functions";
 import { listMyStoreJobs, createStoreJob } from "@/services/jobs.functions";
+import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Input } from "@/components/ui/input";
@@ -44,12 +48,6 @@ import {
  SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import {
- Briefcase,
- ExternalLink,
- Wallet,
- Plus,
-} from "lucide-react";
 
 export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  head: () => ({
@@ -58,17 +56,18 @@ export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  { name: "description", content: "Gerencie os membros, cargos, folha de pagamento e vagas de emprego da sua loja." },
  ],
  }),
- loader: async () => {
- try {
- const [members, jobs] = await Promise.all([
- listTeamMembers().catch(() => []),
- listMyStoreJobs().catch(() => []),
- ]);
- return { members: members || [], jobs: jobs || [] };
- } catch {
- return { members: [], jobs: [] };
- }
- },
+  loader: async () => {
+    try {
+      const [members, jobs, contractors] = await Promise.all([
+        listTeamMembers().catch(() => []),
+        listMyStoreJobs().catch(() => []),
+        listContractors().catch(() => []),
+      ]);
+      return { members: members || [], jobs: jobs || [], contractors: contractors || [] };
+    } catch {
+      return { members: [], jobs: [], contractors: [] };
+    }
+  },
  component: WorkspaceTeamPage,
 });
 
@@ -119,19 +118,37 @@ const ROLE_DEFINITIONS: Record<
 };
 
 export default function WorkspaceTeamPage() {
- const { members, jobs } = ((Route.useLoaderData?.() as any) || {});
- const router = useRouter();
+  const { members, jobs, contractors } = ((Route.useLoaderData?.() as any) || {});
+  const router = useRouter();
 
- const [activeTab, setActiveTab] = useState<"members" | "jobs">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "contractors" | "jobs">("members");
 
- // Estados do Modal de Convite
- const [isInviteOpen, setIsInviteOpen] = useState(false);
- const [inviteEmail, setInviteEmail] = useState("");
- const [inviteName, setInviteName] = useState("");
- const [inviteRole, setInviteRole] = useState<
- "admin" | "manager" | "seller" | "finance" | "content" | "stock" | "support"
- >("seller");
- const [isInviting, setIsInviting] = useState(false);
+  // Estados dos Prestadores Terceirizados (Persona Nexus Port)
+  const [contractorsList, setContractorsList] = useState<any[]>(contractors || []);
+  const [isContractorOpen, setIsContractorOpen] = useState(false);
+  const [isSavingContractor, setIsSavingContractor] = useState(false);
+  const [contractorForm, setContractorForm] = useState({
+    id: undefined as string | undefined,
+    name: "",
+    serviceCategory: "outro" as any,
+    documentNumber: "",
+    contactPhone: "",
+    contactEmail: "",
+    hourlyRateCents: 0,
+    fixedFeeCents: 0,
+    pixKey: "",
+    status: "active" as any,
+    notes: "",
+  });
+
+  // Estados do Modal de Convite
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState<
+    "admin" | "manager" | "seller" | "finance" | "content" | "stock" | "support"
+  >("seller");
+  const [isInviting, setIsInviting] = useState(false);
 
  // Estados do Modal de Criação de Vaga
  const [isJobOpen, setIsJobOpen] = useState(false);
@@ -307,6 +324,30 @@ export default function WorkspaceTeamPage() {
  <UserPlus className="size-3.5" />
  <span>Convidar</span>
  </Button>
+ ) : activeTab === "contractors" ? (
+ <Button
+ onClick={() => {
+ setContractorForm({
+ id: undefined,
+ name: "",
+ serviceCategory: "outro",
+ documentNumber: "",
+ contactPhone: "",
+ contactEmail: "",
+ hourlyRateCents: 0,
+ fixedFeeCents: 0,
+ pixKey: "",
+ status: "active",
+ notes: "",
+ });
+ setIsContractorOpen(true);
+ }}
+ size="sm"
+ className="h-9 rounded-xl font-bold text-xs gap-1.5 shadow-xs cursor-pointer bg-primary text-primary-foreground"
+ >
+ <Plus className="size-3.5" />
+ <span>Novo Prestador</span>
+ </Button>
  ) : (
  <Button
  onClick={() => setIsJobOpen(true)}
@@ -323,14 +364,18 @@ export default function WorkspaceTeamPage() {
 
  {/* ── Tabs de Navegação ── */}
  <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
- <TabsList className="grid grid-cols-2 max-w-md h-11 p-1 bg-muted/60 rounded-2xl">
+ <TabsList className="grid grid-cols-3 max-w-lg h-11 p-1 bg-muted/60 rounded-2xl">
  <TabsTrigger value="members" className="rounded-xl font-bold text-xs gap-1.5">
  <Users className="size-3.5" />
  <span>Colaboradores ({members.length})</span>
  </TabsTrigger>
- <TabsTrigger value="jobs" className="rounded-xl font-bold text-xs gap-1.5">
+ <TabsTrigger value="contractors" className="rounded-xl font-bold text-xs gap-1.5">
  <Briefcase className="size-3.5" />
- <span>Vagas Abertas ({jobs.length})</span>
+ <span>Terceirizados ({contractorsList.length})</span>
+ </TabsTrigger>
+ <TabsTrigger value="jobs" className="rounded-xl font-bold text-xs gap-1.5">
+ <Layers className="size-3.5" />
+ <span>Vagas ({jobs.length})</span>
  </TabsTrigger>
  </TabsList>
 
@@ -470,8 +515,171 @@ export default function WorkspaceTeamPage() {
  </div>
  </TabsContent>
 
- {/* ── ABA 2: VAGAS & RECRUTAMENTO (ATS) ── */}
- <TabsContent value="jobs" className="space-y-6 pt-4">
+  {/* ── ABA 2: PRESTADORES TERCEIRIZADOS & FREELANCERS (PERSONA NEXUS PORT) ── */}
+  <TabsContent value="contractors" className="space-y-6 pt-4">
+    <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs">
+      <div className="p-4 border-b border-border/60 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+          <span>Prestadores Terceirizados & Freelancers</span>
+          <Badge variant="secondary" className="text-[11px] font-bold">
+            {contractorsList.length}
+          </Badge>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setContractorForm({
+              id: undefined,
+              name: "",
+              serviceCategory: "outro",
+              documentNumber: "",
+              contactPhone: "",
+              contactEmail: "",
+              hourlyRateCents: 0,
+              fixedFeeCents: 0,
+              pixKey: "",
+              status: "active",
+              notes: "",
+            });
+            setIsContractorOpen(true);
+          }}
+          className="h-8 text-xs font-bold gap-1.5 rounded-xl cursor-pointer"
+        >
+          <Plus className="size-3.5" />
+          <span>Cadastrar Parceiro</span>
+        </Button>
+      </div>
+
+      {contractorsList.length === 0 ? (
+        <div className="p-12 text-center space-y-3">
+          <div className="size-12 rounded-2xl bg-muted text-muted-foreground mx-auto flex items-center justify-center">
+            <Briefcase className="size-6" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">Nenhum prestador terceirizado cadastrado</p>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            Cadastre parceiros externos para escala de eventos, seguranças, técnicos de som, fotógrafos ou prestadores por hora/diária.
+          </p>
+          <Button
+            onClick={() => {
+              setContractorForm({
+                id: undefined,
+                name: "",
+                serviceCategory: "outro",
+                documentNumber: "",
+                contactPhone: "",
+                contactEmail: "",
+                hourlyRateCents: 0,
+                fixedFeeCents: 0,
+                pixKey: "",
+                status: "active",
+                notes: "",
+              });
+              setIsContractorOpen(true);
+            }}
+            className="rounded-xl text-xs font-bold h-9 bg-primary text-primary-foreground gap-1.5"
+          >
+            <Plus className="size-3.5" />
+            <span>Cadastrar Primeiro Terceirizado</span>
+          </Button>
+        </div>
+      ) : (
+        <div className="divide-y divide-border/40">
+          {contractorsList.map((c: any) => (
+            <div
+              key={c.id}
+              className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/20 transition-colors"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="size-10 rounded-xl bg-muted text-foreground flex items-center justify-center font-bold text-sm shrink-0 border border-border/40">
+                  <Briefcase className="size-5 text-muted-foreground" />
+                </div>
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-foreground leading-tight truncate">
+                      {c.name}
+                    </h4>
+                    <Badge variant="outline" className="text-[10px] font-mono capitalize">
+                      {c.service_category?.replace("_", " ")}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                    {c.contact_phone && <span>Tel: {c.contact_phone}</span>}
+                    {c.pix_key && <span>Pix: <code className="font-mono text-[11px]">{c.pix_key}</code></span>}
+                    {c.hourly_rate_cents > 0 && <span>{formatMoney(c.hourly_rate_cents)}/h</span>}
+                    {c.fixed_fee_cents > 0 && <span>Diária: {formatMoney(c.fixed_fee_cents)}</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                {c.contact_phone && (
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1"
+                  >
+                    <a
+                      href={`https://wa.me/55${c.contact_phone.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="size-3.5" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setContractorForm({
+                      id: c.id,
+                      name: c.name,
+                      serviceCategory: c.service_category || "outro",
+                      documentNumber: c.document_number || "",
+                      contactPhone: c.contact_phone || "",
+                      contactEmail: c.contact_email || "",
+                      hourlyRateCents: c.hourly_rate_cents || 0,
+                      fixedFeeCents: c.fixed_fee_cents || 0,
+                      pixKey: c.pix_key || "",
+                      status: c.status || "active",
+                      notes: c.metadata?.notes || "",
+                    });
+                    setIsContractorOpen(true);
+                  }}
+                  className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+                >
+                  <Edit3 className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    if (!confirm(`Remover prestador ${c.name}?`)) return;
+                    try {
+                      await deleteContractor({ data: { contractorId: c.id } });
+                      toast.success("Prestador removido.");
+                      setContractorsList((prev) => prev.filter((item) => item.id !== c.id));
+                    } catch (err: any) {
+                      toast.error(err?.message || "Erro ao excluir prestador.");
+                    }
+                  }}
+                  className="size-8 p-0 rounded-xl text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </TabsContent>
+
+  {/* ── ABA 3: VAGAS & RECRUTAMENTO (ATS) ── */}
+  <TabsContent value="jobs" className="space-y-6 pt-4">
  <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs">
  <div className="p-4 border-b border-border/60 flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold text-foreground">
@@ -819,6 +1027,161 @@ export default function WorkspaceTeamPage() {
  </AlertDialogFooter>
  </AlertDialogContent>
  </AlertDialog>
+
+      {/* ── Modal de Cadastro / Edição de Terceirizado ── */}
+      <Dialog open={isContractorOpen} onOpenChange={setIsContractorOpen}>
+        <DialogContent className="sm:max-w-md p-6 rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold">
+              {contractorForm.id ? "Editar Terceirizado" : "Cadastrar Prestador Terceirizado"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Cadastre prestadores de serviços, freelancers e terceirizados para sua equipe e eventos.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!contractorForm.name.trim()) {
+                toast.error("Informe o nome do prestador.");
+                return;
+              }
+              setIsSavingContractor(true);
+              try {
+                const res = await upsertContractor({ data: contractorForm });
+                toast.success(contractorForm.id ? "Prestador atualizado!" : "Prestador cadastrado com sucesso!");
+                setIsContractorOpen(false);
+                setContractorsList((prev) => {
+                  if (contractorForm.id) {
+                    return prev.map((item) => (item.id === contractorForm.id ? res : item));
+                  }
+                  return [res, ...prev];
+                });
+              } catch (err: any) {
+                toast.error(err?.message || "Erro ao salvar prestador.");
+              } finally {
+                setIsSavingContractor(false);
+              }
+            }}
+            className="space-y-4 pt-2 text-xs"
+          >
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold">Nome Completo / Razão Social *</Label>
+              <Input
+                value={contractorForm.name}
+                onChange={(e) => setContractorForm({ ...contractorForm, name: e.target.value })}
+                placeholder="Ex: João Silva Segurança Eireli"
+                className="h-9 rounded-xl text-xs"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">Especialidade / Categoria</Label>
+                <Select
+                  value={contractorForm.serviceCategory}
+                  onValueChange={(val: any) => setContractorForm({ ...contractorForm, serviceCategory: val })}
+                >
+                  <SelectTrigger className="h-9 rounded-xl text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl">
+                    <SelectItem value="seguranca">Segurança</SelectItem>
+                    <SelectItem value="limpeza">Limpeza</SelectItem>
+                    <SelectItem value="buffet">Buffet</SelectItem>
+                    <SelectItem value="som_iluminacao">Som / Luz</SelectItem>
+                    <SelectItem value="fotografia">Fotografia</SelectItem>
+                    <SelectItem value="cenografia">Cenografia</SelectItem>
+                    <SelectItem value="brigadistas">Brigadistas</SelectItem>
+                    <SelectItem value="atendimento">Atendimento</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">CPF / CNPJ</Label>
+                <Input
+                  value={contractorForm.documentNumber}
+                  onChange={(e) => setContractorForm({ ...contractorForm, documentNumber: e.target.value })}
+                  placeholder="000.000.000-00"
+                  className="h-9 rounded-xl text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">Telefone / WhatsApp</Label>
+                <Input
+                  value={contractorForm.contactPhone}
+                  onChange={(e) => setContractorForm({ ...contractorForm, contactPhone: e.target.value })}
+                  placeholder="(00) 00000-0000"
+                  className="h-9 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">Chave Pix</Label>
+                <Input
+                  value={contractorForm.pixKey}
+                  onChange={(e) => setContractorForm({ ...contractorForm, pixKey: e.target.value })}
+                  placeholder="CPF, CNPJ, E-mail..."
+                  className="h-9 rounded-xl text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">Valor Hora (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={contractorForm.hourlyRateCents ? contractorForm.hourlyRateCents / 100 : ""}
+                  onChange={(e) => setContractorForm({ ...contractorForm, hourlyRateCents: Math.round(parseFloat(e.target.value || "0") * 100) })}
+                  placeholder="Ex: 50.00"
+                  className="h-9 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold">Valor Diária / Fixo (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={contractorForm.fixedFeeCents ? contractorForm.fixedFeeCents / 100 : ""}
+                  onChange={(e) => setContractorForm({ ...contractorForm, fixedFeeCents: Math.round(parseFloat(e.target.value || "0") * 100) })}
+                  placeholder="Ex: 350.00"
+                  className="h-9 rounded-xl text-xs"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="pt-3">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsContractorOpen(false)}
+                className="rounded-xl text-xs"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isSavingContractor}
+                className="rounded-xl text-xs font-bold"
+              >
+                {isSavingContractor ? "Salvando..." : contractorForm.id ? "Atualizar" : "Cadastrar Prestador"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
  </div>
  );
 }

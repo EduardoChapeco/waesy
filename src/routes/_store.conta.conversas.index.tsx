@@ -98,7 +98,7 @@ function CustomerConversationsIndexPage() {
   });
 
   const filtered = useMemo(() => {
-    if (!threads) return [];
+    if (!threads || !Array.isArray(threads)) return [];
     let list = threads as any[];
 
     if (activeFilter === "unread") {

@@ -12,6 +12,7 @@ import {
   Loader2,
   Lock,
   Paperclip,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/datetime";
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_store/conta/conversas/$id")({
       return res;
     } catch (err) {
       console.error("[loader:_store.conta.conversas.$id] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: CustomerChatPage,
@@ -145,6 +146,23 @@ function CustomerChatPage() {
       setIsSending(false);
     }
   };
+
+  if (!thread) {
+    return (
+      <section className="flex flex-col items-center justify-center min-h-[50vh] max-w-md mx-auto px-4 py-16 text-center gap-3">
+        <div className="size-12 rounded-full bg-muted/60 flex items-center justify-center">
+          <MessageCircle className="size-6 text-muted-foreground" />
+        </div>
+        <h2 className="text-base font-semibold text-foreground">Conversa não encontrada</h2>
+        <p className="text-xs text-muted-foreground">
+          Esta conversa pode ter sido finalizada, excluída ou você não tem permissão para acessá-la.
+        </p>
+        <Button variant="outline" size="sm" asChild className="mt-2">
+          <Link to="/conta/conversas">Voltar para Conversas</Link>
+        </Button>
+      </section>
+    );
+  }
 
   const isClosed = thread?.status === "closed" || thread?.status === "resolved";
 

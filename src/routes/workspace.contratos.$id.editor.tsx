@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/workspace/contratos/$id/editor")({
       return await getContractById({ data: params.id });
     } catch (err) {
       console.error("[loader:workspace.contratos.$id.editor] Error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: ContractEditorPage,

@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+﻿import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   TrendingUp, TrendingDown, ShoppingCart, Users, Package,
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/workspace/relatorios")({
       return data;
     } catch (err) {
       console.error("[loader:workspace.relatorios] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: RelatoriosPage,

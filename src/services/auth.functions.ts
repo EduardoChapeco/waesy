@@ -758,7 +758,7 @@ const UpdateProfileSchema = z.object({
  .string()
  .min(3, "Nome de usuário deve ter pelo menos 3 caracteres")
  .max(30, "Nome de usuário deve ter no máximo 30 caracteres")
- .regex(/^[a-z0-9_]+$/, "Nome de usuário deve conter apenas letras minúsculas, números e underline"),
+ .regex(/^[a-z0-9_]+$/, "Nome de usuário deve conter apenas letras minúsculas, números e underline").optional(),
  phone: z.string().max(20).optional().or(z.literal("")),
  avatarUrl: z.string().optional().or(z.literal("")),
  coverUrl: z.string().optional().or(z.literal("")),

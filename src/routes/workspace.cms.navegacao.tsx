@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+﻿import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { Plus, Trash2, GripVertical, Save, Link2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/workspace/cms/navegacao")({
       return res || [];
     } catch (err) {
       console.error("[loader:workspace.cms.navegacao] Unhandled loader error:", err);
-      return {} as any;
+      return null as any;
     }
   },
   component: CmsNavigationPage,

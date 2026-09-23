@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
 import {
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/_store/doacoes")({
  return {};
    } catch (err) {
      console.error("[loader:_store.doacoes] Unhandled error:", err);
-     return {} as any;
+     return null as any;
     }
  },
  component: DoacoesPage,
@@ -90,7 +90,7 @@ function DoacoesPage() {
  };
 
  return (
- <div className="w-full space-y-6 pb-20">
+ <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
  {/* ── 1. Ação Rápida de Doação ── */}
  <div className="flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-card ">
  <div className="flex items-center gap-3">

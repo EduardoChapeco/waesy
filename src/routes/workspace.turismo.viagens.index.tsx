@@ -33,6 +33,7 @@ import {
 } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import {
   ModuleTourModal,
   ModuleTourTrigger,

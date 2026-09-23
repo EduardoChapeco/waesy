@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { getDefaultCity } from "@/lib/brand.config";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -384,7 +385,7 @@ export function UniversalClassifiedShowcase({
           monthlyNetProfitCents: monthlyNetProfit || undefined,
           monthlyRentCents: monthlyRent || undefined,
           areaSqm: Number(attrs.area_sqm) || undefined,
-          city: classified?.location_name || attrs.city || "Chapecó",
+          city: getDefaultCity(classified?.location_name || attrs.city),
         },
       });
       setSimLabsAnalysis(res);
@@ -909,13 +910,13 @@ export function UniversalClassifiedShowcase({
 
   return (
     <div className="w-full min-h-screen bg-background text-foreground pb-20 lg:pb-12">
-      {/* ── Top Bar Minimalista (Voltar + Ações) ── */}
+      {/* ── Top Bar Minimalista (Voltar + Ações - Padrão Botão Grande) ── */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-3">
         <Button
           asChild
           variant="ghost"
           size="sm"
-          className="h-9 px-2.5 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground -ml-2"
+          className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground -ml-2"
         >
           <Link to="/classificados">
             <ArrowLeft className="size-4 mr-1.5" />
@@ -929,9 +930,9 @@ export function UniversalClassifiedShowcase({
               variant="outline"
               size="sm"
               onClick={onOpenCompanion}
-              className="h-9 px-3 rounded-xl text-xs font-medium border-border/50 bg-background hover:bg-muted/50 text-foreground hidden sm:flex items-center gap-1.5"
+              className="h-10 sm:h-11 px-3.5 rounded-xl text-xs sm:text-sm font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground hidden sm:flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-98"
             >
-              <Smartphone className="size-3.5 text-primary" />
+              <Smartphone className="size-4 text-primary" />
               <span>Guia Digital 9:16</span>
             </Button>
           )}
@@ -943,7 +944,7 @@ export function UniversalClassifiedShowcase({
               onClick={onEdit}
               title="Editar anúncio"
               aria-label="Editar anúncio"
-              className="h-9 w-9 p-0 rounded-xl border border-border/50 bg-background hover:bg-muted/50 text-foreground flex items-center justify-center cursor-pointer transition-all active:scale-95"
+              className="h-10 sm:h-11 w-10 sm:w-11 p-0 rounded-xl border border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-2xs"
             >
               <Edit3 className="size-4 text-foreground" />
             </Button>
@@ -953,20 +954,44 @@ export function UniversalClassifiedShowcase({
             entityId={classified.id}
             entityType="classified"
             title={classified.title}
-            className="h-9 w-9 rounded-xl border border-border/50 bg-background hover:bg-muted/50 p-0 flex items-center justify-center text-muted-foreground"
+            className="h-10 sm:h-11 w-10 sm:w-11 rounded-xl border border-border/70 bg-card hover:bg-muted/50 p-0 flex items-center justify-center text-muted-foreground shadow-2xs cursor-pointer active:scale-95"
           />
 
           <Button
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="h-9 px-3 rounded-xl text-xs font-medium border-border/50 bg-background hover:bg-muted/50 text-foreground"
+            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-98"
           >
-            <Share2 className="size-3.5 mr-1.5" />
+            <Share2 className="size-4" />
             <span className="hidden sm:inline">Compartilhar</span>
           </Button>
         </div>
       </div>
+
+      {/* ── Banner Canônico de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
+      {isOwner && (
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 mb-4 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 shadow-2xs">
+            <div className="flex items-center gap-2.5 text-xs font-medium">
+              <span className="flex size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+              <span>
+                <strong>Modo Proprietário:</strong> Você é o autor deste anúncio. Edições feitas no formulário são sincronizadas em tempo real.
+              </span>
+            </div>
+            {onEdit && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={onEdit}
+                className="h-7 text-xs px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer shrink-0"
+              >
+                <Edit3 className="size-3.5 mr-1" /> Editar Anúncio
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Seção de Mídia (Mobile: Edge-to-Edge / Desktop: Mosaico Airbnb) ── */}
       <section aria-label="Galeria de Fotos e Vídeos" className="w-full max-w-7xl mx-auto px-0 sm:px-6 mb-4 sm:mb-5">
@@ -1226,9 +1251,9 @@ export function UniversalClassifiedShowcase({
               </div>
             </div>
 
-            {/* Divulgação Progressiva: Barra de Abas Horizontais (Oculta se houver apenas Visão Geral) */}
+            {/* Divulgação Progressiva: Barra de Abas Horizontais (Padrão Botão Grande) */}
             {availableTabs.length > 1 && (
-              <div className="flex items-center gap-1.5 border-b border-border/40 pb-2 overflow-x-auto no-scrollbar pt-1">
+              <div className="flex items-center gap-1.5 sm:gap-2 border-b border-border/40 pb-2 overflow-x-auto no-scrollbar pt-1">
                 {availableTabs.map((tab) => {
                   const isSelected = activeTab === tab.id;
                   return (
@@ -1237,10 +1262,10 @@ export function UniversalClassifiedShowcase({
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
                       className={cn(
-                        "h-9 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0",
+                        "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 select-none active:scale-98 shadow-2xs",
                         isSelected
-                          ? "bg-foreground text-background shadow-xs font-bold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                          ? "bg-foreground text-background border-foreground shadow-xs font-bold"
+                          : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
                       )}
                     >
                       {tab.label}

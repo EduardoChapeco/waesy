@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, isRedirect } from "@tanstack/react-router";
+﻿import { createFileRoute, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -80,7 +80,7 @@ export const Route = createFileRoute("/workspace/estudio/")({
    } catch (err) {
       if (isRedirect(err)) throw err;
      console.error("[loader:workspace.estudio.index] Unhandled loader error:", err);
-     return {} as any;
+     return null as any;
     }
   },
  component: StudioWorkspacePage,

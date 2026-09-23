@@ -41,6 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -420,51 +421,55 @@ function PainelEmpresaPage() {
 
         {/* Navegação entre Abas com Scroll Horizontal */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-border/60 pb-2 gap-2">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 flex-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 flex-1">
             <button
               type="button"
               onClick={() => setActiveTab("leads")}
-              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+              className={cn(
+                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
                 activeTab === "leads"
-                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-              }`}
+                  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+              )}
             >
               Mural de Negociações ({leads.length})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("catalog")}
-              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+              className={cn(
+                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
                 activeTab === "catalog"
-                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-              }`}
+                  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+              )}
             >
               Catálogo ({classifieds.length})
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("jobs")}
-              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
+              className={cn(
+                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
                 activeTab === "jobs"
-                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-              }`}
+                  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+              )}
             >
-              <Briefcase className="size-3.5" />
+              <Briefcase className="size-4 shrink-0" />
               <span>Vagas & Candidatos ({applications.length})</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("reviews")}
-              className={`h-9 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
+              className={cn(
+                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap flex items-center gap-2 shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
                 activeTab === "reviews"
-                  ? "bg-foreground text-background border-foreground font-bold shadow-2xs"
-                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:border-border"
-              }`}
+                  ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                  : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
+              )}
             >
-              <Star className="size-3.5 fill-amber-400 text-amber-500" />
+              <Star className="size-4 shrink-0 fill-amber-400 text-amber-500" />
               <span>Avaliações ({reviewsData?.reviews?.length || 0})</span>
             </button>
           </div>

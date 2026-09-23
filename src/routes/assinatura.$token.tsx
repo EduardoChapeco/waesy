@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
+﻿import { createFileRoute, redirect, isRedirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/assinatura/$token")({
  loader: async ({ params }) => {
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/assinatura/$token")({
    } catch (err) {
       if (isRedirect(err)) throw err;
      console.error("[loader:assinatura.$token] Unhandled error:", err);
-     return {} as any;
+     return null as any;
     }
  },
  component: () => null,

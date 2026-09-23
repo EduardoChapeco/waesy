@@ -78,8 +78,8 @@ export function BannerHeroCarousel({
  onMouseEnter={() => setIsPlaying(false)}
  onMouseLeave={() => setIsPlaying(true)}
  >
- {/* ── Fixed Aspect Ratio Container: 21:9 (WYSIWYG 100% correspondente à máscara de recorte do Admin) ── */}
- <div className="relative w-full aspect-21/9 overflow-hidden bg-muted">
+ {/* ── Responsive Aspect Ratio Container: 16:9 mobile, 21:9 desktop ── */}
+ <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden bg-muted">
  {/* Render Actual Image / Video */}
  {renderMedia(currentBanner)}
 

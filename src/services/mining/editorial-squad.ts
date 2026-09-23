@@ -1,3 +1,4 @@
+import { getDefaultCity } from "@/lib/brand.config";
 /**
  * editorial-squad.ts — Squad Editorial de Curadoria Autônoma com 5 Personas Especialistas
  * 
@@ -65,7 +66,7 @@ export async function curateWithEditorialSquad(params: {
   city?: string;
   tone?: string;
 }): Promise<CuratedArticleOutput> {
-  const city = params.city || "Chapecó";
+  const city = getDefaultCity(params.city);
   const userPrompt = `Analise a matéria jornalística bruta abaixo, aplique o processo de curadoria dos 5 especialistas e estruture a versão final para publicação mobile.
 
 Origem: ${params.sourceName} (${params.sourceUrl})
