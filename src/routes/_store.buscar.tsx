@@ -461,15 +461,7 @@ function SearchPage() {
   }, [filteredStores]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── Topo Mobile Nativo ── */}
-      <div className="flex sm:hidden items-center justify-between gap-2 pt-1 pb-1">
-        <h1 className="text-xl font-black tracking-tight text-foreground">
-          Explorar
-        </h1>
-        <span className="text-xs text-muted-foreground font-medium">Descoberta local</span>
-      </div>
-
+    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-6">
       {/* ── 1. Barra de Busca Canônica Padronizada ── */}
       <DiscoveryControlBar
         search={input}
@@ -540,7 +532,7 @@ function SearchPage() {
           {userAffinities && userAffinities.length > 0 && (
             <div className="space-y-2">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-amber-500" />
+                <Sparkles className="size-3.5 text-primary" />
                 <span>Recomendado para você</span>
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -554,7 +546,7 @@ function SearchPage() {
                         setInput(tagLabel);
                         handleSearch(tagLabel);
                       }}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer select-none active:scale-95"
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/40 text-foreground border border-border/40 hover:bg-muted transition-all cursor-pointer select-none active:scale-95"
                     >
                       #{tagLabel}
                     </button>
@@ -580,7 +572,7 @@ function SearchPage() {
                       setInput(term);
                       handleSearch(term);
                     }}
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95 shadow-2xs"
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/60 hover:border-primary/40 hover:text-primary text-foreground transition-all cursor-pointer select-none active:scale-95"
                   >
                     {term}
                   </button>
@@ -592,17 +584,17 @@ function SearchPage() {
           {/* Atalhos Rápidos para Verticais */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             {[
-              { to: "/mercado", label: "Mercado & Feira", icon: ShoppingBag, color: "text-emerald-500 bg-emerald-500/10" },
-              { to: "/gastronomia", label: "Gastronomia", icon: Store, color: "text-amber-500 bg-amber-500/10" },
-              { to: "/classificados", label: "Classificados", icon: Tag, color: "text-blue-500 bg-blue-500/10" },
-              { to: "/agenda", label: "Eventos & Festas", icon: Calendar, color: "text-purple-500 bg-purple-500/10" },
+              { to: "/mercado", label: "Mercado & Feira", icon: ShoppingBag, color: "text-foreground bg-muted/30 border border-border/40" },
+              { to: "/gastronomia", label: "Gastronomia", icon: Store, color: "text-foreground bg-muted/30 border border-border/40" },
+              { to: "/classificados", label: "Classificados", icon: Tag, color: "text-foreground bg-muted/30 border border-border/40" },
+              { to: "/agenda", label: "Eventos & Festas", icon: Calendar, color: "text-foreground bg-muted/30 border border-border/40" },
             ].map((cat) => {
               const Icon = cat.icon;
               return (
                 <Link
                   key={cat.to}
                   to={cat.to as any}
-                  className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-card border border-border/60 hover:bg-muted/60 transition-all group"
+                  className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-card border border-border/60 hover:bg-muted/40 transition-all group"
                 >
                   <div className={`flex size-9 items-center justify-center rounded-xl ${cat.color} shrink-0 group-hover:scale-105 transition-transform`}>
                     <Icon className="size-4.5" />
@@ -632,7 +624,7 @@ function SearchPage() {
                     key={p.id}
                     to="/produto/$slug"
                     params={{ slug: p.slug || p.id }}
-                    className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/60 hover:border-border transition-all group shadow-2xs"
+                    className="flex flex-col rounded-2xl overflow-hidden bg-card border border-border/60 hover:border-border transition-all group"
                   >
                     <div className="aspect-square bg-muted overflow-hidden relative">
                       {p.cover_url ? (

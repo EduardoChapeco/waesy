@@ -39,6 +39,7 @@ import {
   type MetricCardItem,
 } from "@/components/workspace/workspace-dashboard-sheet";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 export const Route = createFileRoute("/workspace/eventos/")({
   head: () => ({ meta: [{ title: "Gestão de Eventos & Produtora | Workspace Waesy" }] }),
@@ -331,43 +332,37 @@ export default function WorkspaceEventosPage() {
                     </div>
                   </div>
 
-                  {/* Ações Rápidas do Evento */}
-                  <div className="p-4 pt-0 flex items-center gap-2 border-t border-border/40 mt-3 pt-3">
+                  {/* Ações Rápidas do Evento (Apple HIG / Padrão Silencioso) */}
+                  <div className="p-4 pt-0 flex items-center justify-between gap-2 border-t border-border/40 mt-3 pt-3">
                     <Button
                       asChild
                       variant="default"
                       size="sm"
-                      className="flex-1 h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                      className="flex-1 h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
                     >
                       <Link to="/workspace/eventos/$id" params={{ id: event.id }}>
                         <Ticket className="size-3.5" />
-                        <span>Lotes & Gestão</span>
+                        <span>Lotes & Ingressos</span>
                       </Link>
                     </Button>
 
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
-                      title="Portaria / Validador de QR Code"
-                    >
-                      <Link to="/workspace/eventos/$id/checkin" params={{ id: event.id }}>
-                        <QrCode className="size-3.5" />
-                      </Link>
-                    </Button>
-
-                    <Button
-                      asChild
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 px-2.5 rounded-xl text-xs cursor-pointer"
-                      title="Ver na Vitrine Pública"
-                    >
-                      <Link to="/evento/$id" params={{ id: event.id }} target="_blank">
-                        <ExternalLink className="size-3.5" />
-                      </Link>
-                    </Button>
+                    <CrudActionsMenu
+                      entityName="Evento"
+                      editUrl={`/workspace/eventos/${event.id}`}
+                      viewUrl={`/evento/${event.id}`}
+                      customActions={[
+                        {
+                          label: "Portaria & Validador QR Code",
+                          icon: QrCode,
+                          href: `/workspace/eventos/${event.id}/checkin`,
+                        },
+                      ]}
+                      onDelete={() => {
+                        toast.info("Para desativar este evento, altere o status dos lotes para encerrado.");
+                      }}
+                      deleteConfirmTitle="Encerrar Evento?"
+                      deleteConfirmDescription={`Deseja realmente desativar as vendas de ingressos para "${event.title}"?`}
+                    />
                   </div>
                 </Card>
               );

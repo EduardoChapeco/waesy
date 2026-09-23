@@ -969,24 +969,25 @@ export function UniversalClassifiedShowcase({
         </div>
       </div>
 
-      {/* ── Banner Canônico de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
+      {/* ── Banner Canônico de Modo Proprietário (Silencioso Apple HIG) ── */}
       {isOwner && (
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 mb-4 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 shadow-2xs">
-            <div className="flex items-center gap-2.5 text-xs font-medium">
-              <span className="flex size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+        <div className="w-full max-w-7xl mx-auto px-0 sm:px-6 mb-3 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-muted/20 border border-border/50 text-foreground shadow-none">
+            <div className="flex items-center gap-2 text-xs font-normal">
+              <span className="flex size-1.5 rounded-full bg-foreground/60 shrink-0" />
               <span>
-                <strong>Modo Proprietário:</strong> Você é o autor deste anúncio. Edições feitas no formulário são sincronizadas em tempo real.
+                <strong>Modo Proprietário:</strong> Alterações salvas refletem em tempo real.
               </span>
             </div>
             {onEdit && (
               <Button
                 type="button"
                 size="sm"
+                variant="outline"
                 onClick={onEdit}
-                className="h-7 text-xs px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer shrink-0"
+                className="h-7 text-xs px-2.5 rounded-lg border-border/60 hover:bg-muted font-medium text-foreground cursor-pointer shrink-0"
               >
-                <Edit3 className="size-3.5 mr-1" /> Editar Anúncio
+                <Edit3 className="size-3 mr-1" /> Editar
               </Button>
             )}
           </div>
@@ -1195,7 +1196,7 @@ export function UniversalClassifiedShowcase({
       </section>
 
       {/* ── Grid Principal de Conteúdo (Split Layout: 7 colunas Conteúdo / 5 colunas Sticky Card) ── */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-start">
           {/* ══════════════════════════════════════════════════════════
               COLUNA ESQUERDA: Abas de Alta Densidade e Clean UX (7 cols)
@@ -2437,7 +2438,7 @@ export function UniversalClassifiedShowcase({
       </div>
 
       {/* ── STICKY BOTTOM ACTION BAR (Mobile Core: Nielsen Norman & Apple HIG) ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border px-4 py-3 pb-safe flex items-center justify-between gap-3 shadow-lg">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/40 px-3.5 py-2.5 pb-safe flex items-center justify-between gap-3 shadow-xs">
         <div className="flex flex-col min-w-0">
           {isDonation ? (
             <div className="flex items-center gap-1.5">

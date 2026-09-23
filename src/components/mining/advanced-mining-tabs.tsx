@@ -62,39 +62,39 @@ export function TokenEconomyBanner() {
   const mechanicalTotal = metrics?.totalMechanicalExtractions || 81;
 
   return (
-    <div className="w-full rounded-2xl border border-emerald-500/30 bg-emerald-950/10 p-4 sm:p-5 relative overflow-hidden backdrop-blur-sm">
+    <div className="w-full rounded-2xl border border-border/60 bg-card p-4 sm:p-5 relative overflow-hidden shadow-2xs">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1.5 max-w-2xl">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/40 text-emerald-400 bg-emerald-500/10">
-              ZERO-TOKEN ARCHITECTURE
+            <span className="flex h-2 w-2 rounded-full bg-primary" />
+            <Badge variant="outline" className="text-[10px] font-mono border-border/80 text-foreground bg-muted/40">
+              ALTA EFICIÊNCIA
             </Badge>
             <span className="text-[11px] text-muted-foreground hidden sm:inline">
-              Extração Mecânica Industrial Open-Source
+              Processamento Estruturado Sem Custo Adicional
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
-            <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
-            Economia Extrema de Tokens de IA
+            <Zap className="w-4 h-4 text-primary shrink-0" />
+            Operação Otimizada & Inteligente
           </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            As extrações de Processos Judiciais (DataJud CNJ), Locais (Places), Feeds RSS e Schema.org (Receitas & Eventos) operam com <strong>0 tokens de IA</strong>. A inteligência artificial é acionada exclusivamente no refinamento editorial final.
+            As extrações de Processos Judiciais (CNJ), Empresas Locais, Feeds e Catálogos operam via processamento nativo direto. A inteligência generativa é acionada exclusivamente no refinamento editorial final.
           </p>
         </div>
 
         {/* Big KPI Numbers */}
-        <div className="flex items-center gap-3 sm:gap-6 bg-background/60 border border-border/40 p-3 rounded-xl shrink-0 self-stretch md:self-auto justify-between sm:justify-start">
+        <div className="flex items-center gap-3 sm:gap-6 bg-muted/20 border border-border/50 p-3 rounded-xl shrink-0 self-stretch md:self-auto justify-between sm:justify-start">
           <div className="space-y-0.5">
             <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Tokens Economizados
             </div>
-            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-400">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
               {isLoading ? "..." : `~${tokensSaved.toLocaleString("pt-BR")}`}
             </div>
-            <div className="text-[10px] text-emerald-500/80 font-medium flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" />
-              100% Custo Zero
+            <div className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-primary" />
+              Processamento Nativo
             </div>
           </div>
 
@@ -102,7 +102,7 @@ export function TokenEconomyBanner() {
 
           <div className="space-y-0.5">
             <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Extrações Mecânicas
+              Importações Diretas
             </div>
             <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">
               {isLoading ? "..." : mechanicalTotal.toLocaleString("pt-BR")}
@@ -118,7 +118,7 @@ export function TokenEconomyBanner() {
 }
 
 /**
- * 2. Painel Harvester DataJud CNJ (Processos Judiciais)
+ * 2. Sincronização de Processos Judiciais (CNJ)
  */
 export function DataJudMiningPanel() {
   const [processNumber, setProcessNumber] = useState("");

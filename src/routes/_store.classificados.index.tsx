@@ -607,9 +607,9 @@ function ClassifiedsMasterPage() {
   });
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-4 pb-24">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-6 space-y-4 pb-24">
         {/* ── NÍVEL 1 & NÍVEL 2: TOOLBAR CONSOLIDADA DE 2 NÍVEIS (APPLE & AIRBNB STANDARD) ── */}
-        <div className="sticky top-0 lg:static z-20 bg-background/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none px-0 pt-1 pb-2 space-y-2 border-b border-border/40 lg:border-b-0">
+        <div className="sticky top-0 lg:static z-20 bg-background lg:bg-transparent px-0 pt-1 pb-2 space-y-2 border-b border-border/40 lg:border-b-0">
           {/* NÍVEL 1: A Barra de Ação Principal (Tudo na mesma linha) */}
           <div className="flex items-center gap-2 w-full">
             {/* Search Input (Barra de busca ocupando a maior parte do espaço) */}
@@ -1315,7 +1315,7 @@ function ClassifiedsMasterPage() {
                       </div>
                     )}
                     <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                      <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md">
+                      <Badge className="bg-background/95 backdrop-blur-none text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md">
                         {itemNiche.shortLabel}
                       </Badge>
                       {(item.is_boosted || item.attributes?.is_boosted) && (
@@ -1456,7 +1456,7 @@ function ClassifiedsMasterPage() {
 
                     return (
                       <div key={item.id} className="w-72 sm:w-80 shrink-0 h-full flex flex-col">
-                        <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-md transition-all flex flex-col justify-between h-full">
+                        <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between h-full">
                           <Link
                             to="/classificados/$id"
                             params={{ id: item.id }}
@@ -1476,13 +1476,13 @@ function ClassifiedsMasterPage() {
                                 </div>
                               )}
                               <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                                <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border border-border/40">
+                                <Badge className="bg-background/95 backdrop-blur-none text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border border-border/40">
                                   {itemNiche.shortLabel}
                                 </Badge>
                                 {item.deal_type && (
                                   <Badge
                                     variant="secondary"
-                                    className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 bg-background/90 text-foreground backdrop-blur-md border border-border/40 rounded-md shadow-2xs"
+                                    className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 bg-background/90 text-foreground backdrop-blur-none border border-border/40 rounded-md shadow-2xs"
                                   >
                                     {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                                   </Badge>
@@ -1570,7 +1570,7 @@ function ClassifiedsMasterPage() {
               return (
                 <div
                   key={item.id}
-                  className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-md transition-all flex flex-col justify-between h-full"
+                  className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between h-full"
                 >
                   <Link
                     to="/classificados/$id"
@@ -1591,13 +1591,13 @@ function ClassifiedsMasterPage() {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                        <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-lg border border-border/40 shadow-xs">
+                        <Badge className="bg-background/95 backdrop-blur-none text-foreground font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-lg border border-border/40 shadow-xs">
                           {itemNiche.shortLabel}
                         </Badge>
                         {item.deal_type && (
                           <Badge
                             variant="secondary"
-                            className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 bg-background/90 text-foreground backdrop-blur-md border border-border/40 rounded-md shadow-2xs"
+                            className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 bg-background/90 text-foreground backdrop-blur-none border border-border/40 rounded-md shadow-2xs"
                           >
                             {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                           </Badge>

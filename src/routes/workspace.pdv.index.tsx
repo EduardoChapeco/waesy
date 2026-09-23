@@ -1188,7 +1188,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  className="h-9 rounded-xl text-xs font-bold gap-1"
- title="KDS — Estações de Preparo"
+ title="Cozinha (KDS)"
  >
  <Link to="/workspace/pdv/cozinha">
  <ChefHat className="size-3.5 text-orange-500" />
@@ -1201,7 +1201,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  className="h-9 rounded-xl text-xs font-bold gap-1"
- title="Salão & Mesas / Comandas"
+ title="Comandas e Mesas"
  >
  <Link to="/workspace/pdv/comandas">
  <Utensils className="size-3.5 text-amber-500" />

@@ -12,6 +12,7 @@
 
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getNextActiveKey, markKeyError } from "../api-orchestrator.functions";
+import { sleep, isDomainInCooldown, setDomainCooldown } from "@/lib/mining/scraper-utils";
 
 export interface ParsedCnj {
   clean: string;
@@ -164,25 +165,17 @@ export function parseCnjNumber(input: string): ParsedCnj {
 
 /**
  * Consulta a API Pública do DataJud CNJ via REST Elasticsearch
+ * Inclui rotação de chaves via api_key_pools, interceptador de 429 e backoff exponencial
  */
 export async function queryDataJud(cnj: ParsedCnj): Promise<MinedLawsuitData | null> {
-  const endpoint = `https://api-publica.datajud.cnj.jus.br/api_publica_${cnj.tribunalAcronym}/_search`;
-  
-  // Tentar obter chave ativa do pool
-  let apiKey = "cDZHYUp ExponentiallyRotatedKey";
-  try {
-    const keyRecord = await getNextActiveKey("datajud" as any);
-    if (keyRecord && keyRecord.rawKey && keyRecord.rawKey.trim().length > 5) {
-      apiKey = keyRecord.rawKey.trim();
-    }
-  } catch {
-    // Segue com chave padrão
+  const domain = "api-publica.datajud.cnj.jus.br";
+  const cooldown = isDomainInCooldown(domain);
+  if (cooldown.inCooldown) {
+    console.warn(`[DataJud] Domínio em cooldown temporário anti-ban (${cooldown.remainingSeconds}s restantes).`);
+    return null;
   }
 
-  if (process.env.DATAJUD_API_KEY) {
-    apiKey = process.env.DATAJUD_API_KEY;
-  }
-
+  const endpoint = `https://${domain}/api_publica_${cnj.tribunalAcronym}/_search`;
   const queryPayload = {
     query: {
       match: {
@@ -192,29 +185,77 @@ export async function queryDataJud(cnj: ParsedCnj): Promise<MinedLawsuitData | n
     size: 1,
   };
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Authorization": `APIKey ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(queryPayload),
-      signal: AbortSignal.timeout(15000),
-    });
+  const MAX_KEY_ATTEMPTS = 3;
+  for (let attempt = 1; attempt <= MAX_KEY_ATTEMPTS; attempt++) {
+    let keyRecord: { id: string; rawKey: string } | null = null;
+    let apiKey = "cDZHYUp ExponentiallyRotatedKey";
 
-    if (response.ok) {
-      const data = await response.json();
-      const hits = data?.hits?.hits || [];
-      if (hits.length > 0) {
-        const source = hits[0]._source;
-        return mapDataJudHitToLawsuit(source, cnj);
+    try {
+      keyRecord = await getNextActiveKey("datajud" as any);
+      if (keyRecord?.rawKey && keyRecord.rawKey.trim().length > 5) {
+        apiKey = keyRecord.rawKey.trim();
       }
-    } else {
-      console.warn(`[DataJud] Resposta HTTP ${response.status} para ${cnj.formatted} no tribunal ${cnj.tribunalAcronym}`);
+    } catch {
+      // Segue com chave padrão
     }
-  } catch (err: unknown) {
-    console.warn(`[DataJud] Falha na consulta de rede para ${cnj.formatted}:`, err instanceof Error ? err.message : String(err));
+
+    if (process.env.DATAJUD_API_KEY) {
+      apiKey = process.env.DATAJUD_API_KEY;
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Authorization": `APIKey ${apiKey}`,
+          "Content-Type": "application/json",
+          "User-Agent": "WaesyJusCrawler/2.0 (+https://usewaesy.com/jus)",
+        },
+        body: JSON.stringify(queryPayload),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const hits = data?.hits?.hits || [];
+        if (hits.length > 0) {
+          const source = hits[0]._source;
+          return mapDataJudHitToLawsuit(source, cnj);
+        }
+        return null;
+      }
+
+      if (response.status === 429) {
+        console.warn(`[DataJud] HTTP 429 Rate Limit detectado na tentativa ${attempt}/${MAX_KEY_ATTEMPTS}. Rotacionando chave...`);
+        if (keyRecord?.id) {
+          await markKeyError(keyRecord.id, "Rate limit 429 DataJud", 429);
+        }
+        if (attempt === MAX_KEY_ATTEMPTS) {
+          setDomainCooldown(domain, 60000, "rate_limit_429", 429);
+        } else {
+          const jitter = Math.floor(Math.random() * 200);
+          await sleep(500 * Math.pow(2, attempt) + jitter);
+        }
+        continue;
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`[DataJud] HTTP ${response.status} Chave inválida ou expirada. Desativando do pool...`);
+        if (keyRecord?.id) {
+          await markKeyError(keyRecord.id, `Auth failure ${response.status}`, response.status);
+        }
+        continue;
+      }
+
+      console.warn(`[DataJud] Resposta HTTP ${response.status} para ${cnj.formatted} no tribunal ${cnj.tribunalAcronym}`);
+      break;
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.warn(`[DataJud] Falha na consulta de rede para ${cnj.formatted} (Tentativa ${attempt}):`, errorMsg);
+      if (attempt < MAX_KEY_ATTEMPTS) {
+        await sleep(400 * attempt);
+      }
+    }
   }
 
   return null;

@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import {
  listBookingServices,
  upsertBookingService,
@@ -252,32 +253,18 @@ function ServicesIndexPage() {
  </Badge>
  </TableCell>
  <TableCell className="text-right">
- <div className="flex items-center justify-end gap-1">
- <Button
- variant="ghost"
- size="icon"
- onClick={() => handleOpenEdit(service)}
- className="size-7 rounded-lg"
- title="Editar Serviço"
- >
- <Edit3 className="size-3.5" />
- </Button>
- <Button
- variant="ghost"
- size="icon"
- className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
- onClick={() => {
- if (confirm(`Deseja arquivar o serviço "${service.title}"?`)) {
- deleteMutation.mutate(service.id);
- }
- }}
- disabled={deleteMutation.isPending}
- title="Arquivar"
- >
- <Archive className="size-3.5" />
- </Button>
- </div>
- </TableCell>
+                    <div className="flex items-center justify-end">
+                      <CrudActionsMenu
+                        entityName="Serviço"
+                        onEdit={() => handleOpenEdit(service)}
+                        onArchive={() => deleteMutation.mutate(service.id)}
+                        archiveLabel="Arquivar Serviço"
+                        onDelete={() => deleteMutation.mutate(service.id)}
+                        deleteConfirmTitle="Arquivar Serviço?"
+                        deleteConfirmDescription={`Deseja realmente arquivar o serviço "${service.title}"? Ele deixará de ser exibido para agendamentos.`}
+                      />
+                    </div>
+                  </TableCell>
  </TableRow>
  ))}
  </TableBody>

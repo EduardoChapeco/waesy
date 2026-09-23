@@ -349,8 +349,8 @@ function WorkspaceAdvocaciaPage() {
  <div className="space-y-6">
  {/* ── CABEÇALHO DO WORKSPACE JUS ── */}
  <PageHeader
- eyebrow="Módulo JUS • Advocacia 360°"
- title="Painel Jurídico & Processos"
+ eyebrow="Jurídico"
+ title="Processos"
  actions={
  <div className="flex items-center gap-2.5">
  <Button

@@ -91,6 +91,7 @@ import { useCartContext } from "@/lib/cart-context";
 import { SocialCardGeneratorModal } from "@/components/studio/SocialCardGeneratorModal";
 import { PromotionalFlyersRail } from "@/components/commerce/flyers/promotional-flyers-rail";
 import { listActiveStoreFlyers, type PromotionalFlyerDTO } from "@/services/store-flyers.functions";
+import { ClaimBusinessModal } from "@/components/commerce/claim-business-modal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -172,6 +173,7 @@ export function CanonicalStoreProfileView({
   const [isSectionsEditorOpen, setIsSectionsEditorOpen] = useState(false);
   const [postViewMode, setPostViewMode] = useState<"grid" | "feed">("grid");
   const [isSocialStudioOpen, setIsSocialStudioOpen] = useState(false);
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
 
   // Encartes Promocionais da Semana / Mês
   const [flyersList, setFlyersList] = useState<PromotionalFlyerDTO[]>(flyers || []);
@@ -560,52 +562,67 @@ export function CanonicalStoreProfileView({
       </div>
 
       {/* ── BANNER DE REIVINDICAÇÃO DE NEGÓCIO (GHOST TENANTS / CLAIMING) ── */}
-      {!isOwner && Boolean(store?.is_ghost || settings?.is_ghost) && (
-        <div className="rounded-2xl bg-muted/40 border border-border/70 p-3.5 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+      {!isOwner && Boolean(
+        store?.is_ghost ||
+        settings?.is_ghost ||
+        store?.is_crawled ||
+        (source === "directory" && !store?.is_verified)
+      ) && (
+        <div className="rounded-2xl bg-muted/20 border border-border/50 p-3.5 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-none">
           <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <div className="size-8 sm:size-9 rounded-xl bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0 shadow-2xs">
               <ShieldCheck className="size-5" />
             </div>
             <div>
               <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
                 <span>Você é proprietário(a) desta empresa?</span>
-                <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5 border-primary/30 text-primary">
-                  Página Verificada
+                <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                  {store?.is_verified ? "Perfil Verificado" : "Aguardando Reivindicação"}
                 </Badge>
               </div>
               <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                Reivindique o perfil oficial gratuitamente para gerenciar cardápio, produtos, pedidos e horário de atendimento.
+                Reivindique o perfil oficial gratuitamente para gerenciar cardápio, produtos, pedidos e horários.
               </p>
             </div>
           </div>
 
           <Button
-            asChild
             size="sm"
             variant="outline"
-            className="h-9 sm:h-10 px-4 rounded-xl font-medium text-xs sm:text-sm shrink-0 w-full sm:w-auto cursor-pointer"
+            className="h-8 sm:h-9 px-3.5 rounded-xl font-medium text-xs shrink-0 w-full sm:w-auto cursor-pointer border-border/60 hover:bg-card text-foreground"
+            onClick={() => setIsClaimModalOpen(true)}
           >
-            <Link
-              to="/claim/reivindicar/$entityId"
-              params={{ entityId: store?.slug || store?.id || "" }}
-            >
-              Reivindicar Negócio
-            </Link>
+            Reivindicar Negócio
           </Button>
         </div>
       )}
 
+      {/* Modal de Reivindicação de Negócio */}
+      <ClaimBusinessModal
+        isOpen={isClaimModalOpen}
+        onClose={() => setIsClaimModalOpen(false)}
+        listingId={store?.id || ""}
+        businessName={store?.business_name || store?.name || "Esta Empresa"}
+        onSuccess={() => {
+          setIsClaimModalOpen(false);
+          toast.success("Solicitação enviada com sucesso! Atualizando...");
+          if (typeof window !== "undefined") {
+            window.location.reload();
+          }
+        }}
+      />
+
       {/* ── BARRA DO PROPRIETÁRIO (ADMIN BAR SECUNDÁRIA — REGRA 23 & MASTER PROMPT V5) ── */}
       {isOwner && (
-        <div className="rounded-2xl bg-amber-500/10 border border-amber-500/25 p-3.5 sm:px-5 sm:py-3 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+        <div className="rounded-2xl bg-muted/20 border border-border/50 p-3 sm:px-4 sm:py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-none">
           <div className="flex items-center gap-2.5">
-            <div className="size-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <div className="size-7 sm:size-8 rounded-lg bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0 shadow-2xs">
               <Store className="size-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <span>Painel do Proprietário</span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0 px-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                <Badge variant="outline" className="text-[9px] uppercase font-mono py-0 px-1.5 border-border/50 text-muted-foreground bg-transparent">
                   Gestão Ativa
                 </Badge>
               </div>
@@ -620,7 +637,7 @@ export function CanonicalStoreProfileView({
               asChild
               size="sm"
               variant="default"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 bg-amber-600 hover:bg-amber-700 text-white cursor-pointer shadow-xs"
+              className="h-7 px-2.5 rounded-lg font-medium text-xs gap-1.5 shrink-0 border border-border/60 hover:bg-card text-foreground cursor-pointer shadow-none"
             >
               <Link to="/workspace" search={{ storeId: store.id }}>
                 <Store className="size-3.5" />
@@ -632,7 +649,7 @@ export function CanonicalStoreProfileView({
               asChild
               size="sm"
               variant="outline"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <Link to="/workspace/marketing/brand-kit" search={{ storeId: store.id }}>
                 <Camera className="size-3.5" />
@@ -644,10 +661,10 @@ export function CanonicalStoreProfileView({
               asChild
               size="sm"
               variant="outline"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <Link to="/portal-completo">
-                <Award className="size-3.5 text-amber-500" />
+                <Award className="size-3.5 text-muted-foreground" />
                 <span>Gestão Pro</span>
               </Link>
             </Button>
@@ -656,9 +673,9 @@ export function CanonicalStoreProfileView({
               size="sm"
               variant="outline"
               onClick={() => setIsEditCompanyModalOpen(true)}
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
             >
-              <Edit3 className="size-3.5 text-amber-500" />
+              <Edit3 className="size-3.5 text-muted-foreground" />
               <span>Editar Empresa</span>
             </Button>
 
@@ -666,9 +683,9 @@ export function CanonicalStoreProfileView({
               size="sm"
               variant="outline"
               onClick={() => setIsSocialStudioOpen(true)}
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-amber-500/30 hover:bg-amber-500/10 cursor-pointer"
+              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
             >
-              <Sparkles className="size-3.5 text-amber-500" />
+              <Sparkles className="size-3.5 text-muted-foreground" />
               <span>Social Studio</span>
             </Button>
           </div>
@@ -781,7 +798,7 @@ export function CanonicalStoreProfileView({
               <span className="inline-flex items-center gap-1 text-sm sm:text-base font-bold text-foreground">
                 {realReviewsCount > 0 && realRatingAverage !== null ? (
                   <>
-                    <Star className="size-3.5 fill-amber-500 text-amber-500" />
+                    <Star className="size-3.5 fill-amber-500 text-muted-foreground" />
                     <span>{realRatingAverage.toFixed(1)}</span>
                   </>
                 ) : (
@@ -1882,7 +1899,7 @@ export function CanonicalStoreProfileView({
                     </div>
                     {employerStats.avgRating && (
                       <div className="flex items-center gap-2 bg-amber-500/10 text-amber-600 px-3 py-1.5 rounded-xl border border-amber-500/20 shrink-0">
-                        <Star className="size-4 fill-amber-500 text-amber-500" />
+                        <Star className="size-4 fill-amber-500 text-muted-foreground" />
                         <span className="text-sm font-black font-mono">{employerStats.avgRating} / 5.0</span>
                       </div>
                     )}
@@ -1990,7 +2007,7 @@ export function CanonicalStoreProfileView({
                       {Number(store.rating || 5.0).toFixed(1)}
                     </div>
                     <div>
-                      <div className="flex items-center text-amber-500">
+                      <div className="flex items-center text-muted-foreground">
                         {[1, 2, 3, 4, 5].map((s) => (
                           <Star key={s} className="size-3.5 fill-amber-500" />
                         ))}
@@ -2010,7 +2027,7 @@ export function CanonicalStoreProfileView({
                         className="p-4 rounded-2xl border border-border/60 bg-card space-y-2 shadow-2xs"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center text-amber-500">
+                          <div className="flex items-center text-muted-foreground">
                             {Array.from({ length: r.rating || 5 }).map((_, i) => (
                               <Star key={i} className="size-3 fill-amber-500" />
                             ))}
@@ -2032,7 +2049,7 @@ export function CanonicalStoreProfileView({
                   </div>
                 ) : (
                   <div className="p-6 rounded-2xl bg-card border border-border/60 text-center space-y-2">
-                    <Star className="size-8 text-amber-500/40 mx-auto" />
+                    <Star className="size-8 text-muted-foreground/40 mx-auto" />
                     <p className="text-xs text-muted-foreground">
                       Esta empresa mantém nota máxima com excelente histórico de atendimento local.
                     </p>
@@ -2068,7 +2085,7 @@ export function CanonicalStoreProfileView({
                           className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-2 shadow-2xs"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center text-amber-500">
+                            <div className="flex items-center text-muted-foreground">
                               {Array.from({ length: rev.company_rating || 5 }).map((_, i) => (
                                 <Star key={i} className="size-3 fill-amber-500" />
                               ))}

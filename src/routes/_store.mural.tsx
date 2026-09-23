@@ -112,9 +112,9 @@ function MuralPage() {
       </div>
 
       {/* ─── Feed Container Central ─────────────────────────────────── */}
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto px-0 sm:px-4 py-6 space-y-6">
         {/* Composer de Postagem no topo do feed */}
-        <div className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden p-4 sm:p-5">
+        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden p-4 sm:p-5">
           <InlinePostComposer session={session || (profile ? { user: profile } : undefined)} />
         </div>
 
@@ -139,7 +139,7 @@ function MuralPage() {
         ) : (
           <div className="space-y-4">
             {items.map((post: any) => (
-              <div key={post.id} className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden">
+              <div key={post.id} className="rounded-2xl border border-border/60 bg-card overflow-hidden">
                 <PostCard
                   item={post}
                   session={session || (profile ? { user: profile } : undefined)}

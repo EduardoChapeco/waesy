@@ -3,6 +3,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { z } from "zod";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
+import { requireTokensOrTollbooth } from "@/lib/token-tollbooth.server";
 
 export interface TokenPackage {
  id: string;
@@ -93,263 +94,199 @@ export const TOKEN_BURN_RATES = {
 // 1. LOJISTA: CARREGAR CARTEIRA DE TOKENS & CONSUMÔMETRO
 // ============================================================
 export const getStoreTokenWallet = createServerFn({ method: "GET" }).handler(async () => {
- const identity = await getServerIdentity();
- if (!identity.store_id) {
- throw new Error("Nenhuma loja ativa selecionada.");
- }
+  const identity = await getServerIdentity();
+  if (!identity.store_id) {
+    throw new Error("Nenhuma loja ativa selecionada.");
+  }
 
- const db = getServerClient();
+  const db = getServerClient();
 
- const { data: store, error: storeErr } = await db
- .from("stores")
- .select("id, name, slug, settings")
- .eq("id", identity.store_id)
- .single();
+  // 1. Assegurar inicialização canônica com selo gênesis se necessário
+  await db.rpc("ensure_store_token_wallet", { p_store_id: identity.store_id });
 
- if (storeErr || !store) {
- throw new Error("Loja não encontrada.");
- }
+  // 2. Buscar carteira real na tabela ACID store_token_wallets
+  const { data: walletRow, error: walletErr } = await db
+    .from("store_token_wallets")
+    .select("*")
+    .eq("store_id", identity.store_id)
+    .single();
 
- const settings = store.settings || {};
- let wallet = settings.token_wallet;
+  if (walletErr || !walletRow) {
+    throw new Error("Carteira de tokens da loja não encontrada.");
+  }
 
- if (!wallet) {
- // 50.000 tokens gratuitos de boas-vindas
- wallet = {
- balance: 50_000,
- lifetime_purchased: 50_000,
- lifetime_consumed: 0,
- estimated_time_saved_hours: 24.0,
- created_at: new Date().toISOString(),
- updated_at: new Date().toISOString(),
- };
- settings.token_wallet = wallet;
- await db.from("stores").update({ settings }).eq("id", store.id);
- }
+  const { data: store } = await db
+    .from("stores")
+    .select("id, name, slug")
+    .eq("id", identity.store_id)
+    .single();
 
- // Buscar histórico recente no ledger
- const { data: ledgerLogs } = await db
- .from("audit_logs")
- .select("*")
- .eq("store_id", store.id)
- .eq("entity_type", "token_transaction")
- .order("created_at", { ascending: false })
- .limit(25);
+  // 3. Buscar histórico forense no ledger imutável
+  const { data: ledgerLogs } = await db
+    .from("token_ledger_transactions")
+    .select("id, amount, balance_after, action_type, description, metadata, time_saved_minutes, tamper_seal, created_at")
+    .eq("store_id", identity.store_id)
+    .order("created_at", { ascending: false })
+    .limit(25);
 
- const transactions = (ledgerLogs || []).map((log: any) => ({
- id: log.id,
- created_at: log.created_at,
- action_type: log.action,
- ...(log.payload_snapshot || {}),
- }));
+  const transactions = (ledgerLogs || []).map((tx: any) => ({
+    id: tx.id,
+    created_at: tx.created_at,
+    action_type: tx.action_type,
+    amount: tx.amount,
+    balance_after: tx.balance_after,
+    description: tx.description,
+    time_saved_minutes: tx.time_saved_minutes || 0,
+    tamper_seal: tx.tamper_seal,
+    metadata: tx.metadata || {},
+  }));
 
- return {
- store_id: store.id,
- store_name: store.name,
- balance: wallet.balance ?? 50_000,
- lifetime_purchased: wallet.lifetime_purchased ?? 50_000,
- lifetime_consumed: wallet.lifetime_consumed ?? 0,
- estimated_time_saved_hours: wallet.estimated_time_saved_hours ?? 24.0,
- packages: TOKEN_PACKAGES,
- burn_rates: TOKEN_BURN_RATES,
- transactions,
- };
+  return {
+    store_id: identity.store_id,
+    store_name: store?.name || "Minha Loja",
+    balance: walletRow.balance ?? 50_000,
+    promotional_balance: walletRow.promotional_balance ?? 50_000,
+    purchased_balance: walletRow.purchased_balance ?? 0,
+    lifetime_purchased: walletRow.lifetime_purchased ?? 50_000,
+    lifetime_consumed: walletRow.lifetime_consumed ?? 0,
+    estimated_time_saved_hours: Number(walletRow.estimated_time_saved_hours ?? 24.0),
+    is_locked: walletRow.is_locked ?? false,
+    lock_reason: walletRow.lock_reason ?? null,
+    packages: TOKEN_PACKAGES,
+    burn_rates: TOKEN_BURN_RATES,
+    transactions,
+  };
 });
 
 // ============================================================
-// 2. LOJISTA: RECARREGAR PACOTE DE TOKENS
+// 2. LOJISTA: RECARREGAR PACOTE DE TOKENS (PIX / GATEWAY COM SELO FORENSE)
 // ============================================================
 export const purchaseTokenPackage = createServerFn({ method: "POST" })
- .validator(
- z.object({
- package_id: z.string(),
- payment_method: z.enum(["pix", "credit_card"]).default("pix"),
- }),
- )
- .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity.store_id) {
- throw new Error("Nenhuma loja ativa selecionada.");
- }
+  .validator(
+    z.object({
+      package_id: z.string(),
+      payment_method: z.enum(["pix", "credit_card"]).default("pix"),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.store_id) {
+      throw new Error("Nenhuma loja ativa selecionada.");
+    }
 
- const pkg = TOKEN_PACKAGES.find((p) => p.id === data.package_id);
- if (!pkg) {
- throw new Error("Pacote de tokens inválido.");
- }
+    const pkg = TOKEN_PACKAGES.find((p) => p.id === data.package_id);
+    if (!pkg) {
+      throw new Error("Pacote de tokens inválido.");
+    }
 
- const db = getServerClient();
+    const db = getServerClient();
+    const idempotencyKey = `pkg_buy_${identity.store_id}_${pkg.id}_${Date.now()}`;
+    const gatewayPaymentId = `pay_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
- const { data: store, error } = await db
- .from("stores")
- .select("id, name, settings")
- .eq("id", identity.store_id)
- .single();
-
- if (error || !store) throw new Error("Loja não encontrada.");
-
- const settings = store.settings || {};
- const wallet = settings.token_wallet || {
- balance: 0,
- lifetime_purchased: 0,
- lifetime_consumed: 0,
- estimated_time_saved_hours: 0,
- };
-
- const newBalance = (wallet.balance || 0) + pkg.tokens;
- const newLifetime = (wallet.lifetime_purchased || 0) + pkg.tokens;
-
- wallet.balance = newBalance;
- wallet.lifetime_purchased = newLifetime;
- wallet.updated_at = new Date().toISOString();
- settings.token_wallet = wallet;
-
- await db.from("stores").update({ settings }).eq("id", store.id);
-
- await db.from("audit_logs").insert({
- store_id: store.id,
- user_id: identity.id,
- action: "package_purchase",
- entity_type: "token_transaction",
- payload_snapshot: {
- package_id: pkg.id,
- package_name: pkg.name,
- amount: pkg.tokens,
- price_cents: pkg.price_cents,
- balance_after: newBalance,
- description: `Recarga de +${pkg.tokens_formatted} Tokens (${pkg.name})`,
- payment_method: data.payment_method,
- },
- });
-
-  // Registro no Ledger Criptográfico Imutável (Bacen/Blockchain-like)
-  try {
-    await recordLedgerEntryCore({
-      transactionType: "token_purchase",
-      amountCents: pkg.price_cents,
-      tokenAmount: pkg.tokens,
-      storeId: store.id,
-      actorId: identity.id,
-      actorRole: identity.role,
-      referenceEntityType: "token_packages",
-      referenceEntityId: pkg.id,
-      metadata: {
+    // Crédito estrito via processamento atômico de recarga
+    const { error: rechargeErr } = await db.rpc("process_token_payment_webhook_atomic", {
+      p_gateway_name: data.payment_method === "pix" ? "asaas_pix" : "stripe_card",
+      p_idempotency_key: idempotencyKey,
+      p_store_id: identity.store_id,
+      p_package_id: pkg.id,
+      p_tokens_to_credit: pkg.tokens,
+      p_amount_cents: pkg.price_cents,
+      p_gateway_payment_id: gatewayPaymentId,
+      p_payload: {
         package_name: pkg.name,
         payment_method: data.payment_method,
-        balance_after: newBalance,
+        authorized_by: identity.id,
+        received_at: new Date().toISOString(),
       },
     });
-  } catch (ledgerErr) {
-    console.warn("[tokens] Registro no ledger criptográfico:", ledgerErr);
-  }
 
- return {
- success: true,
- new_balance: newBalance,
- tokens_added: pkg.tokens,
- message: `Recarga concluída! +${pkg.tokens_formatted} Tokens adicionados à sua Máquina do Tempo.`,
- };
- });
+    if (rechargeErr) {
+      console.error("[purchaseTokenPackage] Erro ao processar recarga atômica:", rechargeErr);
+      throw new Error(`Falha ao certificar compra no Ledger: ${rechargeErr.message}`);
+    }
+
+    // Buscar novo saldo da carteira
+    const { data: updatedWallet } = await db
+      .from("store_token_wallets")
+      .select("balance, purchased_balance")
+      .eq("store_id", identity.store_id)
+      .single();
+
+    const newBalance = updatedWallet?.balance ?? 50_000;
+
+    return {
+      success: true,
+      new_balance: newBalance,
+      tokens_added: pkg.tokens,
+      message: `Recarga certificada com sucesso! +${pkg.tokens_formatted} Tokens adicionados ao seu Ledger.`,
+    };
+  });
 
 // ============================================================
-// 3. SISTEMA / BFF: CONSUMIR TOKENS DE UMA AÇÃO (THREAD-SAFE)
+// 3. SISTEMA / BFF: CONSUMIR TOKENS DE UMA AÇÃO (TOLLBOOTH ACID ROW-LOCK)
 // ============================================================
 export const consumeTokens = createServerFn({ method: "POST" })
- .validator(
- z.object({
- tokens: z.number().int().min(1),
- action_type: z.string(),
- description: z.string(),
- time_saved_minutes: z.number().int().min(0).default(0),
- metadata: z.record(z.any()).optional(),
- }),
- )
- .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (!identity.store_id) {
- throw new Error("Nenhuma loja ativa selecionada.");
- }
+  .validator(
+    z.object({
+      tokens: z.number().int().min(1),
+      action_type: z.string(),
+      description: z.string(),
+      time_saved_minutes: z.number().int().min(0).default(0),
+      service_category: z.string().default("general"),
+      metadata: z.record(z.any()).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (!identity.store_id) {
+      throw new Error("Nenhuma loja ativa selecionada.");
+    }
 
- const db = getServerClient();
+    const db = getServerClient();
+    const idempotencyKey = `consume_${identity.store_id}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
- const { data: store } = await db
- .from("stores")
- .select("id, settings")
- .eq("id", identity.store_id)
- .single();
-
- if (!store) throw new Error("Loja não encontrada.");
-
- const settings = store.settings || {};
- const wallet = settings.token_wallet || {
- balance: 50_000,
- lifetime_purchased: 50_000,
- lifetime_consumed: 0,
- estimated_time_saved_hours: 0,
- };
-
- if ((wallet.balance || 0) < data.tokens) {
- return {
- success: false,
- error: "INSUFFICIENT_TOKENS",
- current_balance: wallet.balance || 0,
- required_tokens: data.tokens,
- message: `Saldo insuficiente (${(wallet.balance || 0).toLocaleString()} Tokens). São necessários ${data.tokens.toLocaleString()} Tokens.`,
- };
- }
-
- const newBalance = wallet.balance - data.tokens;
- wallet.balance = newBalance;
- wallet.lifetime_consumed = (wallet.lifetime_consumed || 0) + data.tokens;
- wallet.estimated_time_saved_hours =
- (wallet.estimated_time_saved_hours || 0) + data.time_saved_minutes / 60.0;
- wallet.updated_at = new Date().toISOString();
- settings.token_wallet = wallet;
-
- await db.from("stores").update({ settings }).eq("id", store.id);
-
- await db.from("audit_logs").insert({
- store_id: store.id,
- user_id: identity.id,
- action: data.action_type,
- entity_type: "token_transaction",
- payload_snapshot: {
- amount: -data.tokens,
- balance_after: newBalance,
- description: data.description,
- time_saved_minutes: data.time_saved_minutes,
- metadata: data.metadata || {},
- },
- });
-
-  // Registro no Ledger Criptográfico Imutável (Bacen/Blockchain-like)
-  try {
-    await recordLedgerEntryCore({
-      transactionType: "token_spend",
-      tokenAmount: data.tokens,
-      storeId: store.id,
-      actorId: identity.id,
-      actorRole: identity.role,
-      referenceEntityType: "token_action",
-      referenceEntityId: data.action_type,
-      metadata: {
-        description: data.description,
-        time_saved_minutes: data.time_saved_minutes,
-        balance_after: newBalance,
-        ...data.metadata,
+    // Abate direto via Tollbooth Interceptor no banco (ACID + Anti-Tamper)
+    const { data: chargeRes, error: chargeErr } = await db.rpc("charge_token_tollbooth", {
+      p_store_id: identity.store_id,
+      p_tokens_to_consume: data.tokens,
+      p_action_type: data.action_type,
+      p_description: data.description,
+      p_idempotency_key: idempotencyKey,
+      p_service_category: data.service_category,
+      p_time_saved_minutes: data.time_saved_minutes,
+      p_metadata: {
+        actor_id: identity.id,
+        actor_role: identity.role,
+        ...(data.metadata || {}),
       },
     });
-  } catch (ledgerErr) {
-    console.warn("[tokens] Registro no ledger criptográfico:", ledgerErr);
-  }
 
- return {
- success: true,
- new_balance: newBalance,
- tokens_consumed: data.tokens,
- time_saved_minutes: data.time_saved_minutes,
- message: `Aceleração ativada com sucesso (-${data.tokens.toLocaleString()} Tokens).`,
- };
- });
+    if (chargeErr) {
+      console.error("[consumeTokens] Erro RPC no banco de dados:", chargeErr);
+      throw new Error(`Falha no Ledger de Tokens: ${chargeErr.message}`);
+    }
+
+    const res = chargeRes as any;
+
+    if (!res || !res.success) {
+      return {
+        success: false,
+        error: res?.error || "INSUFFICIENT_TOKENS",
+        current_balance: res?.current_balance ?? 0,
+        required_tokens: data.tokens,
+        message: res?.message || `Saldo insuficiente para realizar esta aceleração.`,
+      };
+    }
+
+    return {
+      success: true,
+      new_balance: res.new_balance,
+      tokens_consumed: res.tokens_consumed,
+      time_saved_minutes: res.time_saved_minutes,
+      transaction_seal: res.transaction_seal,
+      message: `Aceleração ativada com sucesso (-${data.tokens.toLocaleString()} Tokens).`,
+    };
+  });
 
 // ============================================================
 // 4. ADMIN MASTER: GESTÃO GLOBAL DE CIRCULAÇÃO DE TOKENS
@@ -413,67 +350,48 @@ export const getGlobalTokenStatsAdmin = createServerFn({ method: "GET" }).handle
 // 5. ADMIN MASTER: CONCEDER TOKENS BÔNUS A UM LOJISTA
 // ============================================================
 export const grantBonusTokensAdmin = createServerFn({ method: "POST" })
- .validator(
- z.object({
- store_id: z.string().uuid(),
- tokens: z.number().int().min(1000),
- reason: z.string().min(3),
- }),
- )
- .handler(async ({ data }) => {
- const identity = await getServerIdentity();
- if (identity.role !== "platform_admin" && identity.role !== "master") {
- throw new Error("Acesso restrito ao Admin Master.");
- }
+  .validator(
+    z.object({
+      store_id: z.string().uuid(),
+      tokens: z.number().int().min(1000),
+      reason: z.string().min(3),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity();
+    if (identity.role !== "platform_admin" && identity.role !== "master") {
+      throw new Error("Acesso restrito ao Admin Master.");
+    }
 
- const db = getServerClient();
+    const db = getServerClient();
+    const idempotencyKey = `admin_grant_${data.store_id}_${Date.now()}`;
 
- const { data: store } = await db
- .from("stores")
- .select("id, name, settings")
- .eq("id", data.store_id)
- .single();
+    const { data: creditRes, error } = await db.rpc("credit_store_tokens_strict", {
+      p_store_id: data.store_id,
+      p_tokens_to_credit: data.tokens,
+      p_origin_type: "master_admin_grant",
+      p_origin_reference_id: identity.id,
+      p_description: `Bônus concedido pela Administração Waesy: ${data.reason}`,
+      p_idempotency_key: idempotencyKey,
+      p_is_purchased: false,
+      p_metadata: {
+        granted_by: identity.id,
+        reason: data.reason,
+      },
+    });
 
- if (!store) throw new Error("Loja não encontrada.");
+    if (error || !(creditRes as any)?.success) {
+      throw new Error(`Falha ao conceder tokens no ledger: ${error?.message || (creditRes as any)?.message}`);
+    }
 
- const settings = store.settings || {};
- const wallet = settings.token_wallet || {
- balance: 0,
- lifetime_purchased: 0,
- lifetime_consumed: 0,
- estimated_time_saved_hours: 0,
- };
-
- const newBalance = (wallet.balance || 0) + data.tokens;
- const newLifetime = (wallet.lifetime_purchased || 0) + data.tokens;
-
- wallet.balance = newBalance;
- wallet.lifetime_purchased = newLifetime;
- wallet.updated_at = new Date().toISOString();
- settings.token_wallet = wallet;
-
- await db.from("stores").update({ settings }).eq("id", store.id);
-
- await db.from("audit_logs").insert({
- store_id: store.id,
- user_id: identity.id,
- action: "admin_grant",
- entity_type: "token_transaction",
- payload_snapshot: {
- amount: data.tokens,
- balance_after: newBalance,
- description: `Bônus concedido pela Administração Waesy: ${data.reason}`,
- reason: data.reason,
- },
- });
-
- return {
- success: true,
- new_balance: newBalance,
- tokens_granted: data.tokens,
- message: `+${data.tokens.toLocaleString()} Tokens bônus concedidos com sucesso para ${store.name}!`,
- };
- });
+    return {
+      success: true,
+      new_balance: (creditRes as any).new_balance,
+      tokens_granted: (creditRes as any).tokens_credited,
+      transaction_seal: (creditRes as any).transaction_seal,
+      message: `+${data.tokens.toLocaleString()} Tokens bônus concedidos com sucesso e selados no Ledger!`,
+    };
+  });
 
 // ============================================================
 // 6. LOJISTA: PAINEL DE CRESCIMENTO ORGÂNICO & BOUNTIES VIRAIS
@@ -760,66 +678,44 @@ export const emitStoreLoyaltyTokens = createServerFn({ method: "POST" })
 // 8. REGISTRAR NOVO CADASTRO DE CLIENTE & CREDITAR BOUNTY (+100k)
 // ============================================================
 export const recordStoreOrganicReferral = createServerFn({ method: "POST" })
- .validator(
- z.object({
- store_id: z.string().uuid(),
- referred_user_id: z.string().uuid().optional(),
- channel: z.string().default("biolink_qr_code"),
- }),
- )
- .handler(async ({ data }) => {
- const db = getServerClient();
+  .validator(
+    z.object({
+      store_id: z.string().uuid(),
+      referred_user_id: z.string().uuid().optional(),
+      channel: z.string().default("biolink_qr_code"),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const db = getServerClient();
+    const BOUNTY_TOKENS = 100_000;
+    const idempotencyKey = `referral_bounty_${data.store_id}_${data.referred_user_id || Date.now()}`;
 
- // 1. Buscar loja
- const { data: store } = await db
- .from("stores")
- .select("id, name, settings")
- .eq("id", data.store_id)
- .single();
+    const { data: creditRes, error } = await db.rpc("credit_store_tokens_strict", {
+      p_store_id: data.store_id,
+      p_tokens_to_credit: BOUNTY_TOKENS,
+      p_origin_type: "kyc_verified_referral_bounty",
+      p_origin_reference_id: data.referred_user_id || "ANONYMOUS_SIGNUP",
+      p_description: "Bounty Viral: Novo cliente cadastrado através do seu link próprio (+100.000 Tokens)",
+      p_idempotency_key: idempotencyKey,
+      p_is_purchased: false,
+      p_metadata: {
+        channel: data.channel,
+        referred_user_id: data.referred_user_id,
+      },
+    });
 
- if (!store) throw new Error("Loja não encontrada.");
+    if (error || !(creditRes as any)?.success) {
+      throw new Error(`Falha ao creditar bounty viral no ledger: ${error?.message || (creditRes as any)?.message}`);
+    }
 
- const settings = store.settings || {};
- const wallet = settings.token_wallet || {
- balance: 50_000,
- lifetime_purchased: 50_000,
- lifetime_consumed: 0,
- estimated_time_saved_hours: 24,
- };
-
- const BOUNTY_TOKENS = 100_000;
- const newBalance = (wallet.balance || 0) + BOUNTY_TOKENS;
- const newLifetime = (wallet.lifetime_purchased || 0) + BOUNTY_TOKENS;
-
- wallet.balance = newBalance;
- wallet.lifetime_purchased = newLifetime;
- wallet.updated_at = new Date().toISOString();
- settings.token_wallet = wallet;
-
- await db.from("stores").update({ settings }).eq("id", store.id);
-
- // Gravar no ledger da loja
- await db.from("audit_logs").insert({
- store_id: store.id,
- user_id: data.referred_user_id || null,
- action: "curation_reward",
- entity_type: "token_transaction",
- payload_snapshot: {
- amount: BOUNTY_TOKENS,
- balance_after: newBalance,
- description: "Bounty Viral: Novo cliente cadastrado através do seu link próprio (+100.000 Tokens)",
- channel: data.channel,
- referred_user_id: data.referred_user_id,
- },
- });
-
- return {
- success: true,
- tokens_awarded: BOUNTY_TOKENS,
- store_new_balance: newBalance,
- message: `+${BOUNTY_TOKENS.toLocaleString()} Tokens creditados para ${store.name}!`,
- };
- });
+    return {
+      success: true,
+      tokens_awarded: BOUNTY_TOKENS,
+      store_new_balance: (creditRes as any).new_balance,
+      transaction_seal: (creditRes as any).transaction_seal,
+      message: `+${BOUNTY_TOKENS.toLocaleString()} Tokens creditados com selo forense!`,
+    };
+  });
 
 // ============================================================
 // 9. ADMIN MASTER: EXECUTAR CONCILIAÇÃO & AUDITORIA CRIPTOGRÁFICA

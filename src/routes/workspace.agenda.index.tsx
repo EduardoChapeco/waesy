@@ -551,11 +551,7 @@ function AdminAppointmentsPage() {
  size="sm"
  variant="ghost"
  className="h-7 text-[10px] text-muted-foreground hover:text-rose-600 cursor-pointer px-2"
- onClick={() => {
- if (confirm(`Cancelar o agendamento de ${appt.guest_name || "o cliente"}? Se houver passe de sessões, o crédito será estornado automaticamente.`)) {
- statusMutation.mutate({ id: appt.id, status: "cancelled" });
- }
- }}
+ onClick={() => statusMutation.mutate({ id: appt.id, status: "cancelled" })}
  >
  Cancelar
  </Button>
@@ -563,11 +559,7 @@ function AdminAppointmentsPage() {
  size="sm"
  variant="ghost"
  className="h-7 text-[10px] text-muted-foreground hover:text-destructive cursor-pointer px-2"
- onClick={() => {
- if (confirm(`Registrar falta / No-show para ${appt.guest_name || "o cliente"}?`)) {
- statusMutation.mutate({ id: appt.id, status: "no_show" });
- }
- }}
+ onClick={() => statusMutation.mutate({ id: appt.id, status: "no_show" })}
  >
  Falta (No-Show)
  </Button>

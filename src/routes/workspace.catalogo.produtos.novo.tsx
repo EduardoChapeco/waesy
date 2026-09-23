@@ -22,6 +22,7 @@ import {
  Plane,
  Sparkles,
  Search,
+ Store,
 } from "lucide-react";
 
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
@@ -76,7 +77,7 @@ import {
  ProductFoodSpecsCard,
  type FoodSpecsData,
 } from "@/components/admin/catalog/product-food-specs-card";
-import { importProductFromUrl } from "@/services/api-orchestrator.functions";
+import { importProductFromUrl, importFullCatalogMenu } from "@/services/api-orchestrator.functions";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getStoreSettings } from "@/services/store.functions";
@@ -522,6 +523,17 @@ export function UnifiedNewProductPage() {
  >
  <Globe className="size-3.5 text-primary" />
  <span>Importar por Link</span>
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ onClick={() => setIsImportModalOpen(true)}
+ className="rounded-xl text-xs font-bold gap-1.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer hidden sm:flex"
+ title="Copiar catálogo completo de loja antiga"
+ >
+ <Store className="size-3.5" />
+ <span>Copiar Loja Antiga</span>
  </Button>
  <Button variant="outline" asChild size="sm" className="rounded-xl text-xs font-bold">
  <Link to="/workspace/catalogo/produtos">

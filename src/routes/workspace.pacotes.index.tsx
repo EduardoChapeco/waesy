@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sliders, Plus, Trash2, Edit2, Calendar, Layers, Clock, Ticket, DollarSign, Repeat, CheckCircle2 } from 'lucide-react';
 import { toast } from "sonner";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -204,18 +205,13 @@ function WorkspacePackagesPage() {
  >
  <Edit2 className="size-3.5 mr-1" /> Editar
  </Button>
- <Button
- size="sm"
- variant="ghost"
- onClick={() => {
- if (confirm(`Remover pacote "${pkg.title}"?`)) {
- deleteMutation.mutate(pkg.id);
- }
- }}
- className="h-8 px-2 rounded-xl text-rose-500 hover:bg-rose-500/10"
- >
- <Trash2 className="size-3.5" />
- </Button>
+ <CrudActionsMenu
+ entityName="Pacote"
+ onEdit={() => handleOpenEdit(pkg)}
+ onDelete={() => deleteMutation.mutate(pkg.id)}
+ deleteConfirmTitle={`Excluir pacote "${pkg.title}"?`}
+ deleteConfirmDescription="Esta ação removerá o pacote do catálogo e da vitrine pública."
+ />
  </div>
  </div>
  </div>

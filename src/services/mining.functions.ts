@@ -63,6 +63,62 @@ export const MINING_TOKEN_COSTS = {
 // Schemas e Tipos
 // ============================================================
 
+
+/**
+ * Enriquecimento Dinâmico vs. Duplicação (Master Prompt V18 - Fase 4)
+ * Evita linhas duplicadas no catálogo global de produtos minerados,
+ * atualizando histórico de preços, imagens e metadados quando o produto já existe.
+ */
+export async function enrichOrInsertMinedProduct(supabase: any, prodPayload: any) {
+  // 1. Busca por source_url exata
+  const { data: existingByUrl } = await supabase
+    .from("mined_products")
+    .select("id, price_history, image_url, description, price_cents")
+    .eq("source_url", prodPayload.source_url)
+    .maybeSingle();
+
+  let existing = existingByUrl;
+  if (!existing && prodPayload.title && prodPayload.source_domain) {
+    const { data: existingByTitle } = await supabase
+      .from("mined_products")
+      .select("id, price_history, image_url, description, price_cents")
+      .eq("source_domain", prodPayload.source_domain)
+      .ilike("title", prodPayload.title.trim())
+      .maybeSingle();
+    existing = existingByTitle;
+  }
+
+  if (existing) {
+    const priceHistory = Array.isArray(existing.price_history) ? [...existing.price_history] : [];
+    if (prodPayload.price_cents > 0 && prodPayload.price_cents !== existing.price_cents) {
+      priceHistory.push({ date: new Date().toISOString(), price_cents: prodPayload.price_cents });
+    }
+
+    await supabase
+      .from("mined_products")
+      .update({
+        price_cents: prodPayload.price_cents > 0 ? prodPayload.price_cents : existing.price_cents,
+        compare_at_cents: prodPayload.compare_at_cents || undefined,
+        image_url: existing.image_url || prodPayload.image_url,
+        description: existing.description || prodPayload.description,
+        price_history: priceHistory,
+        availability: prodPayload.availability || "in_stock",
+        quality_score: Math.max(prodPayload.quality_score || 70, 80),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id);
+
+    return { action: "enriched", id: existing.id };
+  } else {
+    const { data: inserted } = await supabase
+      .from("mined_products")
+      .insert(prodPayload)
+      .select("id")
+      .maybeSingle();
+    return { action: "inserted", id: inserted?.id };
+  }
+}
+
 export const addCrawlUrlSchema = z.object({
  url: z.string().url("URL inválida"),
  priority: z.number().int().min(1).max(10).default(5),
@@ -742,6 +798,76 @@ export const curateMineArticle = createServerFn({ method: "POST" })
 // ============================================================
 // 7. Reescrita Editorial com IA
 // ============================================================
+
+// ============================================================
+// 6.1 Curadoria em Lote (OpenSquad Batch Curate)
+// ============================================================
+export const batchCurateMineArticlesFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      mined_article_ids: z.array(z.string().uuid()).min(1),
+      action: z.enum(["approve", "reject"]),
+      store_id: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    let storeId = data.store_id || identity.store_id;
+    if (!storeId && data.action === "approve") {
+      const { data: rootStore } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("is_platform_root", true)
+        .maybeSingle();
+      storeId = rootStore?.id;
+      if (!storeId) {
+        const { data: anyStore } = await supabase.from("stores").select("id").limit(1).maybeSingle();
+        storeId = anyStore?.id;
+      }
+    }
+
+    let processedCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
+
+    for (const articleId of data.mined_article_ids) {
+      try {
+        const result = await supabase.rpc("process_mined_article", {
+          p_mined_article_id: articleId,
+          p_curator_profile_id: identity.id,
+          p_action: data.action,
+          p_curator_notes: "Curadoria em lote (OpenSquad)",
+          p_title_override: null,
+          p_kicker_override: null,
+          p_category_override: null,
+          p_store_id_override: storeId || null,
+        });
+
+        if (result.error) {
+          failedCount++;
+          errors.push(result.error.message);
+        } else {
+          processedCount++;
+        }
+      } catch (err: any) {
+        failedCount++;
+        errors.push(err?.message || "Erro desconhecido");
+      }
+    }
+
+    return {
+      success: true,
+      action: data.action,
+      total: data.mined_article_ids.length,
+      processed: processedCount,
+      failed: failedCount,
+      errors: errors.slice(0, 3),
+    };
+  });
+
 export const aiRewriteMinedArticle = createServerFn({ method: "POST" })
  .validator(z.object({
  mined_article_id: z.string().uuid(),
@@ -2372,8 +2498,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
               };
 
               if (prod.title && prod.title.length > 2) {
-                await supabase.from("mined_products").upsert(
-                  {
+                await enrichOrInsertMinedProduct(supabase, {
                     source_url: pageData.url,
                     source_domain: pageData.domain,
                     title: prod.title,
@@ -2390,9 +2515,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
                     quality_score: prod.priceCents > 0 ? 85 : 60,
                     status: "pending_review",
                     updated_at: new Date().toISOString(),
-                  },
-                  { onConflict: "source_url" }
-                );
+                  });
               }
             }
 
@@ -3465,3 +3588,85 @@ export const getTokenEconomyMetricsFn = createServerFn({ method: "GET" })
     };
   });
 
+export interface MinedRecipeDTO {
+  id: string;
+  title: string;
+  description: string;
+  cover_image_url: string | null;
+  prep_time: string | null;
+  cook_time: string | null;
+  total_time: string | null;
+  recipe_yield: string | null;
+  category: string;
+  cuisine: string | null;
+  ingredients: string[];
+  instructions: string[];
+  source_url: string;
+  source_domain: string;
+  source_name: string;
+  created_at: string;
+}
+
+/**
+ * Catálogo Público de Receitas Mineradas (Zero-Token Culinária)
+ */
+export const listPublicRecipesFn = createServerFn({ method: "GET" })
+  .validator(
+    z
+      .object({
+        category: z.string().optional(),
+        search: z.string().optional(),
+        limit: z.number().int().min(1).max(50).default(24),
+        offset: z.number().int().min(0).default(0),
+      })
+      .optional()
+  )
+  .handler(async ({ data }) => {
+    const supabase = getAnonServerClient();
+    const limit = data?.limit || 24;
+    const offset = data?.offset || 0;
+
+    let query = supabase
+      .from("mined_raw_extractions")
+      .select("*", { count: "exact" })
+      .eq("content_type", "receitas")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (data?.search && data.search.trim()) {
+      query = query.ilike("raw_title", `%${data.search.trim()}%`);
+    }
+
+    const { data: rows, count, error } = await query;
+    if (error) {
+      console.error("[listPublicRecipesFn] Error fetching recipes:", error);
+      return { recipes: [], total: 0 };
+    }
+
+    const recipes: MinedRecipeDTO[] = (rows || []).map((r: any) => {
+      const meta = r.type_metadata || {};
+      return {
+        id: r.id,
+        title: r.raw_title,
+        description: r.raw_lead || r.raw_body_text?.slice(0, 160) || "",
+        cover_image_url: r.cover_image_url || null,
+        prep_time: meta.prep_time || null,
+        cook_time: meta.cook_time || null,
+        total_time: meta.total_time || null,
+        recipe_yield: meta.recipe_yield || null,
+        category: meta.category || "Geral",
+        cuisine: meta.cuisine || null,
+        ingredients: Array.isArray(meta.ingredients) ? meta.ingredients : [],
+        instructions: Array.isArray(meta.instructions) ? meta.instructions : [],
+        source_url: r.source_url,
+        source_domain: r.source_domain,
+        source_name: r.source_name,
+        created_at: r.created_at,
+      };
+    });
+
+    return {
+      recipes,
+      total: count || 0,
+    };
+  });

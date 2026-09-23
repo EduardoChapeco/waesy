@@ -37,6 +37,7 @@ import {
 import { listCategories, updateCategory } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 export const Route = createFileRoute("/workspace/catalogo/categorias/")({
  head: () => ({ meta: [{ title: "Categorias & Sessões | Workspace Waesy" }] }),
@@ -219,55 +220,29 @@ function AdminCategoriesPage() {
                       </Link>
                     </Button>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="h-11 px-4 rounded-xl border-border/60 hover:bg-muted cursor-pointer"
-                          aria-label="Mais opções"
-                        >
-                          <MoreHorizontal className="size-5 text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-xl">
-                        {cat.status !== "archived" ? (
-                          <>
-                            {cat.status === "active" ? (
-                              <DropdownMenuItem
-                                onClick={() => handleUpdateStatus(cat.id, "inactive")}
-                                className="h-10 rounded-lg text-sm font-medium cursor-pointer"
-                              >
-                                <EyeOff className="mr-2 size-4 text-muted-foreground" />
-                                Desativar Categoria
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem
-                                onClick={() => handleUpdateStatus(cat.id, "active")}
-                                className="h-10 rounded-lg text-sm font-medium cursor-pointer"
-                              >
-                                <Check className="mr-2 size-4 text-success" />
-                                Ativar Categoria
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              className="h-10 rounded-lg text-sm font-medium text-destructive focus:text-destructive cursor-pointer"
-                              onClick={() => handleUpdateStatus(cat.id, "archived")}
-                            >
-                              <Archive className="mr-2 size-4" />
-                              Arquivar
-                            </DropdownMenuItem>
-                          </>
-                        ) : (
-                          <DropdownMenuItem
-                            onClick={() => handleUpdateStatus(cat.id, "active")}
-                            className="h-10 rounded-lg text-sm font-medium cursor-pointer"
-                          >
-                            <RotateCcw className="mr-2 size-4" />
-                            Restaurar Categoria
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <CrudActionsMenu
+                      triggerVariant="outline"
+                      triggerClassName="h-11 px-4 rounded-xl border-border/60 hover:bg-muted"
+                      onEdit={() => router.navigate({ to: `/workspace/catalogo/categorias/${cat.id}` as any })}
+                      onToggleStatus={() =>
+                        handleUpdateStatus(cat.id, cat.status === "active" ? "inactive" : "active")
+                      }
+                      statusLabel={cat.status === "active" ? "Desativar Categoria" : "Ativar Categoria"}
+                      onArchive={cat.status !== "archived" ? () => handleUpdateStatus(cat.id, "archived") : undefined}
+                      archiveTitle={`Arquivar "${cat.name}"?`}
+                      archiveDescription="A categoria será movida para o arquivo morto e seus produtos não aparecerão agrupados nesta aba na vitrine pública."
+                      customActions={
+                        cat.status === "archived"
+                          ? [
+                              {
+                                label: "Restaurar Categoria",
+                                icon: RotateCcw,
+                                onClick: () => handleUpdateStatus(cat.id, "active"),
+                              },
+                            ]
+                          : undefined
+                      }
+                    />
                   </div>
                 </div>
               );
@@ -343,62 +318,27 @@ function AdminCategoriesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right py-3.5">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-9 rounded-lg hover:bg-muted cursor-pointer"
-                              aria-label="Ações da categoria"
-                            >
-                              <MoreHorizontal className="size-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 p-1.5 rounded-xl">
-                            {cat.status !== "archived" ? (
-                              <>
-                                <DropdownMenuItem asChild className="h-9 rounded-lg text-sm cursor-pointer">
-                                  <Link to={`/workspace/catalogo/categorias/${cat.id}` as any}>
-                                    <Edit className="mr-2 size-4" />
-                                    Editar Categoria
-                                  </Link>
-                                </DropdownMenuItem>
-                                {cat.status === "active" ? (
-                                  <DropdownMenuItem
-                                    onClick={() => handleUpdateStatus(cat.id, "inactive")}
-                                    className="h-9 rounded-lg text-sm cursor-pointer"
-                                  >
-                                    <EyeOff className="mr-2 size-4 text-muted-foreground" />
-                                    Desativar
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem
-                                    onClick={() => handleUpdateStatus(cat.id, "active")}
-                                    className="h-9 rounded-lg text-sm cursor-pointer"
-                                  >
-                                    <Check className="mr-2 size-4 text-success" />
-                                    Ativar
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem
-                                  className="h-9 rounded-lg text-sm text-destructive focus:text-destructive cursor-pointer"
-                                  onClick={() => handleUpdateStatus(cat.id, "archived")}
-                                >
-                                  <Archive className="mr-2 size-4" />
-                                  Arquivar
-                                </DropdownMenuItem>
-                              </>
-                            ) : (
-                              <DropdownMenuItem
-                                onClick={() => handleUpdateStatus(cat.id, "active")}
-                                className="h-9 rounded-lg text-sm cursor-pointer"
-                              >
-                                <RotateCcw className="mr-2 size-4" />
-                                Restaurar
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <CrudActionsMenu
+                          onEdit={() => router.navigate({ to: `/workspace/catalogo/categorias/${cat.id}` as any })}
+                          onToggleStatus={() =>
+                            handleUpdateStatus(cat.id, cat.status === "active" ? "inactive" : "active")
+                          }
+                          statusLabel={cat.status === "active" ? "Desativar Categoria" : "Ativar Categoria"}
+                          onArchive={cat.status !== "archived" ? () => handleUpdateStatus(cat.id, "archived") : undefined}
+                          archiveTitle={`Arquivar "${cat.name}"?`}
+                          archiveDescription="A categoria será movida para o arquivo morto e seus produtos não aparecerão agrupados nesta aba na vitrine pública."
+                          customActions={
+                            cat.status === "archived"
+                              ? [
+                                  {
+                                    label: "Restaurar Categoria",
+                                    icon: RotateCcw,
+                                    onClick: () => handleUpdateStatus(cat.id, "active"),
+                                  },
+                                ]
+                              : undefined
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

@@ -407,64 +407,37 @@ function AdminProductsPage() {
  };
 
   const ProductActionsMenu = ({ product }: { product: AdminProductRow }) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Ações do item"
-          className="size-11 rounded-xl hover:bg-muted cursor-pointer shrink-0"
-        >
-          <MoreVertical className="size-5 text-muted-foreground" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52 p-1.5 rounded-xl">
- <DropdownMenuLabel className="text-xs">Ações Comerciais</DropdownMenuLabel>
- <DropdownMenuItem asChild>
- <Link to={`/workspace/catalogo/produtos/${product.id}` as never}>
- <Edit3 className="size-3.5 mr-2" />
- Editar {nicheCtx.entityName}
- </Link>
- </DropdownMenuItem>
- <DropdownMenuItem asChild>
- <Link to={`/produto/${product.slug}` as never} target="_blank">
- <Eye className="size-3.5 mr-2" />
- Ver na Loja
- </Link>
- </DropdownMenuItem>
- <DropdownMenuItem onClick={() => handleDuplicate(product.id)}>
- <Copy className="size-3.5 mr-2" />
- Duplicar {nicheCtx.entityName}
- </DropdownMenuItem>
- <DropdownMenuSeparator />
- <DropdownMenuItem asChild>
- <Link to={`/workspace/estudio` as never} search={{ productId: product.id } as never}>
- <Palette className="size-3.5 mr-2 text-info" />
- Criar Post (Estúdio)
- </Link>
- </DropdownMenuItem>
- <DropdownMenuSeparator />
- {product.status !== "published" && (
- <DropdownMenuItem onClick={() => handleToggleStatus(product.id, "published")}>
- <CheckCircle2 className="size-3.5 mr-2 text-success" />
- Publicar na Vitrine
- </DropdownMenuItem>
- )}
- {product.status !== "draft" && (
- <DropdownMenuItem onClick={() => handleToggleStatus(product.id, "draft")}>
- <FileText className="size-3.5 mr-2 text-warning" />
- Mover para Rascunho
- </DropdownMenuItem>
- )}
- {product.status !== "archived" && (
- <DropdownMenuItem onClick={() => handleToggleStatus(product.id, "archived")}>
- <Archive className="size-3.5 mr-2" />
- Arquivar {nicheCtx.entityName}
- </DropdownMenuItem>
- )}
- </DropdownMenuContent>
- </DropdownMenu>
- );
+    <CrudActionsMenu
+      entityName={nicheCtx.entityName}
+      editUrl={`/workspace/catalogo/produtos/${product.id}`}
+      viewUrl={`/produto/${product.slug}`}
+      onDuplicate={() => handleDuplicate(product.id)}
+      customActions={[
+        {
+          label: "Criar Post (Estúdio)",
+          icon: Palette,
+          href: `/workspace/estudio?productId=${product.id}`,
+        },
+      ]}
+      onToggleStatus={() =>
+        handleToggleStatus(
+          product.id,
+          product.status === "published" ? "draft" : "published"
+        )
+      }
+      statusLabel={
+        product.status === "published"
+          ? "Mover para Rascunho"
+          : "Publicar na Vitrine"
+      }
+      statusIcon={product.status === "published" ? FileText : CheckCircle2}
+      onArchive={
+        product.status !== "archived"
+          ? () => handleToggleStatus(product.id, "archived")
+          : undefined
+      }
+    />
+  );
 
  return (
     <div className="space-y-6">

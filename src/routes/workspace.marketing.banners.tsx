@@ -34,6 +34,8 @@ import {
 import { toast } from "sonner";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { DestinationPicker } from "@/components/ui/destination-picker";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/marketing/banners")({
  head: () => ({ meta: [{ title: "Banners da Loja | Workspace Waesy" }] }),
@@ -193,7 +195,6 @@ function WorkspaceStoreBannersPage() {
  };
 
  const handleDelete = async (id: string) => {
- if (!confirm("Deseja realmente remover este banner?")) return;
  try {
  await deleteBanner({ data: { id } });
  toast.success("Banner removido.");
@@ -271,42 +272,27 @@ function WorkspaceStoreBannersPage() {
  </p>
  )}
  </div>
- <div className="flex items-center justify-between pt-2 text-xs">
- <button
- type="button"
- onClick={() => handleToggleActive(b)}
- className="flex items-center gap-1 text-muted-foreground hover:text-foreground font-medium cursor-pointer"
- >
- {b.is_active ? (
- <>
- <EyeOff className="size-3.5" />
- <span>Pausar</span>
- </>
- ) : (
- <>
- <Eye className="size-3.5" />
- <span>Ativar</span>
- </>
+ <div className="flex items-center justify-between pt-2.5 border-t border-border/40 text-xs">
+ <Badge
+ variant={b.is_active ? "default" : "outline"}
+ className={cn(
+ "text-[10px] font-semibold px-2 py-0.5 rounded-full",
+ b.is_active
+ ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+ : "text-muted-foreground"
  )}
- </button>
- <div className="flex items-center gap-2">
- <button
- type="button"
- onClick={() => handleOpenEdit(b)}
- className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
- title="Editar Banner"
  >
- <Pencil className="size-3.5" />
- </button>
- <button
- type="button"
- onClick={() => handleDelete(b.id)}
- className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
- title="Excluir Banner"
- >
- <Trash2 className="size-3.5" />
- </button>
- </div>
+ {b.is_active ? "Ativo na Loja" : "Pausado"}
+ </Badge>
+
+ <CrudActionsMenu
+ onEdit={() => handleOpenEdit(b)}
+ onToggleStatus={() => handleToggleActive(b)}
+ statusLabel={b.is_active ? "Pausar Banner" : "Ativar Banner"}
+ onDelete={() => handleDelete(b.id)}
+ deleteTitle={`Excluir banner "${b.title}"?`}
+ deleteDescription="O banner deixará de ser exibido nos carrosséis da vitrine da loja imediatamente."
+ />
  </div>
  </div>
  </div>

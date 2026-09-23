@@ -358,7 +358,7 @@ function ProfilePage() {
  };
 
  return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
+    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-6">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">

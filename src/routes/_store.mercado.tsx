@@ -264,9 +264,9 @@ function SupermarketMasterPage() {
  type="button"
  onClick={() => setSelectedStore("todos")}
  className={cn(
- "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+ "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
  selectedStore === "todos"
- ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+ ? "bg-foreground text-background border-foreground font-bold"
  : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
  )}
  >

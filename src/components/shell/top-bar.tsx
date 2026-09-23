@@ -1,49 +1,10 @@
-import { Tag, Rss } from "lucide-react";
 import React from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { DEFAULT_BRAND_NAME } from "@/lib/brand";
 import { LocationMasterPill } from "@/components/location/location-master-pill";
 import { UtilityCluster } from "@/components/shell/utility-cluster";
-import { 
-  House, 
-  Newspaper, 
-  Flame, 
-  Storefront, 
-  Compass, 
-  Scissors, 
-  AirplaneTilt, 
-  Briefcase, 
-  CalendarDots, 
-  Gift, 
-  Target, 
-  MapPin, 
-  ForkKnife,
-  Ticket,
-  MagnifyingGlass 
-} from "@phosphor-icons/react";
-
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import { BetaExplanationModal } from "@/components/shell/beta-explanation-modal";
-import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
-
-export interface MobileQuickChip {
-  to: string;
-  label: string;
-  icon: React.ElementType;
-  isPlacesBadge?: boolean;
-}
-
-export const MOBILE_QUICK_CHIPS: MobileQuickChip[] = [
-  { to: "/", label: "Início", icon: House },
-  { to: "/diretorio", label: "Places", isPlacesBadge: true, icon: Compass },
-  { to: "/classificados", label: "Classificados", icon: Tag },
-  { to: "/feed", label: "Feed", icon: Rss },
-  { to: "/noticias", label: "Notícias", icon: Newspaper },
-  { to: "/empregos", label: "Empregos", icon: Briefcase },
-  { to: "/eventos", label: "Eventos", icon: Ticket },
-  { to: "/agenda", label: "Agenda", icon: CalendarDots },
-  { to: "/afiliados", label: "Afiliados", icon: Target },
-  { to: "/concursos", label: "Sorteios", icon: Gift },
-];
 
 export interface TopBarProps {
   session?: any;
@@ -56,123 +17,95 @@ export interface TopBarProps {
   } | null;
 }
 
+/**
+ * TopBar Canônica Waesy — Padrão Apple HIG & Silêncio Visual
+ * - Desktop: Logo + Localização + Busca Inteligente com ⌘K + Cluster de Utilidades
+ * - Mobile: Logo + Localização Ergonômica + Botão de Busca Direto (Touch Target 44px) + Cluster
+ * - Zero vazamento de breakpoints: chips mobile redundantes erradicados (a navegação mobile pertence à MobileNav)
+ */
 export function TopBar({ session, brandSettings }: TopBarProps) {
-  const location = useLocation();
   const [betaModalOpen, setBetaModalOpen] = React.useState(false);
-  const isDetailPage =
-    (location.pathname.startsWith("/agendar/") && location.pathname !== "/agendar") ||
-    (location.pathname.startsWith("/classificados/") && !location.pathname.includes("/novo")) ||
-    location.pathname.startsWith("/produto/") ||
-    location.pathname.startsWith("/evento/") ||
-    (location.pathname.startsWith("/hospedagem/") && location.pathname !== "/hospedagem") ||
-    (location.pathname.startsWith("/turismo/") && location.pathname !== "/turismo");
 
-  const isUtilityOrCleanPage =
-    location.pathname.startsWith("/carrinho") ||
-    location.pathname.startsWith("/checkout") ||
-    location.pathname.startsWith("/conta") ||
-    location.pathname.startsWith("/buscar") ||
-    location.pathname.startsWith("/feed") ||
-    location.pathname.startsWith("/notificacoes") ||
-    location.pathname.startsWith("/membro");
+  const platformDisplayName =
+    brandSettings?.platform_name &&
+    !["Waesy", "waesy", "WAESY"].includes(brandSettings.platform_name)
+      ? brandSettings.platform_name
+      : DEFAULT_BRAND_NAME;
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/50">
-      {/* ── Camada 1: Topo Principal Compacto ── */}
-      <div className="px-3 sm:px-5 py-1.5 sm:py-2 flex items-center justify-between gap-2 sm:gap-4 min-h-[48px] w-full">
-        {/* Lado Esquerdo: Logo + Localização */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/40">
+      <div className="px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 h-12 sm:h-14 w-full">
+        {/* Lado Esquerdo: Logo + Selo Beta Silencioso + Localização */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
           <Link
             to="/"
             className="flex items-center gap-1.5 hover:opacity-90 transition-opacity shrink-0"
+            aria-label="Ir para a página inicial"
           >
             {brandSettings?.show_logo !== false && brandSettings?.logo_url ? (
               <img
                 src={brandSettings.logo_url}
-                alt={brandSettings.platform_name && !["Waesy", "Waesy", "waesy"].includes(brandSettings.platform_name) ? brandSettings.platform_name : DEFAULT_BRAND_NAME}
-                className="h-7 max-w-[100px] object-contain"
+                alt={platformDisplayName}
+                className="h-6 sm:h-7 max-w-[100px] object-contain"
               />
             ) : null}
             {(brandSettings?.show_name !== false || !brandSettings?.logo_url) && (
-              <span className="font-display font-black text-xl sm:text-2xl tracking-tight text-foreground leading-none">
-                {brandSettings?.platform_name && !["Waesy", "Waesy", "waesy"].includes(brandSettings.platform_name) ? brandSettings.platform_name : DEFAULT_BRAND_NAME}
+              <span className="font-display font-black text-lg sm:text-xl tracking-tight text-foreground leading-none">
+                {platformDisplayName}
               </span>
             )}
           </Link>
 
-          {/* Badge BETA com Modal */}
+          {/* Badge BETA Silencioso (Padrão Design.md: Monocromático, sem fundo colorido) */}
           <button
             type="button"
             onClick={() => setBetaModalOpen(true)}
-            title="Plataforma em Versão Beta — Clique para saber mais"
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-bold tracking-wider uppercase bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/25 transition-all cursor-pointer select-none active:scale-95 shrink-0"
+            title="Plataforma em Versão Beta — Saiba mais"
+            className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-mono font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground border border-border/50 bg-muted/20 hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
           >
             BETA
           </button>
 
-          {/* Location Pill — compacto no mobile */}
-          <LocationMasterPill className="max-w-[80px] sm:max-w-[170px]" />
+          {/* Location Master Pill — com largura fluida que não estrangula o nome da cidade */}
+          <LocationMasterPill className="max-w-[120px] sm:max-w-[200px]" />
         </div>
 
-        {/* Centro (Desktop): Busca Global Inteligente */}
+        {/* Centro (Desktop >= 1024px): Busca Global Inteligente Silenciosa */}
         <div className="hidden lg:flex flex-1 max-w-xl mx-4">
           <Link
             to="/buscar"
-            className="w-full flex items-center justify-between px-4 py-2 rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium transition-all group border border-border/40 hover:border-border"
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-all group border border-border/40 hover:border-border/70"
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
               <MagnifyingGlass
-                size={16}
-                className="text-muted-foreground group-hover:text-foreground transition-colors"
+                size={15}
+                weight="bold"
+                className="text-muted-foreground/70 group-hover:text-foreground transition-colors shrink-0"
               />
-              <span>Buscar classificados, vagas, eventos, empresas e publicações...</span>
+              <span className="truncate">Buscar lugares, classificados, vagas ou serviços...</span>
             </div>
-            <kbd className="hidden xl:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono font-bold text-muted-foreground bg-background rounded-md border border-border/40">
+            <kbd className="hidden xl:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-medium text-muted-foreground/80 bg-background rounded-md border border-border/40 shrink-0">
               ⌘K
             </kbd>
           </Link>
         </div>
 
-        {/* Lado Direito: UtilityCluster */}
-        <div className="flex items-center gap-2 shrink-0 ml-auto">
+        {/* Lado Direito: Ação de Busca Rápida Mobile + UtilityCluster */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
+          {/* Ação de Busca Rápida Mobile (Touch Target 44px ergonômico) */}
+          <Link
+            to="/buscar"
+            className="lg:hidden flex items-center justify-center size-9 sm:size-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            aria-label="Abrir busca"
+            title="Buscar"
+          >
+            <MagnifyingGlass size={18} weight="bold" />
+          </Link>
+
           <UtilityCluster session={session} embedded={true} />
         </div>
       </div>
 
-      {/* ── Camada 2: Chips de Navegação Rápida (Mobile/Tablet) — Exclusivo da Home (/) para eliminar poluição em páginas internas ── */}
-      {location.pathname === "/" && (
-        <div className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 overflow-x-auto no-scrollbar bg-background/80 backdrop-blur-sm border-t border-border/30">
-          {MOBILE_QUICK_CHIPS.map((chip) => {
-            const isSelected =
-              chip.to === "/"
-                ? location.pathname === "/"
-                : (location.pathname || "").startsWith(chip.to.split("?")[0]) &&
-                  (chip.to.includes("?")
-                    ? (location.searchStr || "").includes(chip.to.split("?")[1])
-                    : true);
-            const Icon = chip.icon;
-
-            return (
-              <Link
-                key={chip.label}
-                to={chip.to as any}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold font-sans shrink-0 transition-all ${
-                  isSelected
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70 bg-muted/30"
-                }`}
-              >
-                <Icon size={14} weight={isSelected ? "fill" : "bold"} />
-                {chip.isPlacesBadge ? (
-                  <PlacesHighlightBadge subtle={!isSelected} className="text-xs" />
-                ) : (
-                  <span className="whitespace-nowrap">{chip.label}</span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      )}
       <BetaExplanationModal open={betaModalOpen} onOpenChange={setBetaModalOpen} />
     </header>
   );

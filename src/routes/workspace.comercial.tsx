@@ -594,7 +594,6 @@ function WorkspaceComercialPage() {
   };
 
   const handleDeleteLead = async (leadId: string) => {
-    if (!confirm("Tem certeza que deseja remover este lead do funil comercial?")) return;
     try {
       await deleteLead({ data: { leadId } });
       toast.success("Lead removido com sucesso!");

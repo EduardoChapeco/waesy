@@ -58,7 +58,7 @@
 
 ## P-003 · Explorar e Busca
 
-**Rota:** `/_store/buscar` (`_store.buscar.tsx`) | **Status:** `⚠️ LEGADO`
+**Rota:** `/_store/buscar` (`_store.buscar.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** search | **Ator:** Todos
 
 ### Anatomia Desktop
@@ -90,7 +90,7 @@
 
 ## P-004 · Perfil Pessoal
 
-**Rota:** `/_store/conta/perfil` (`_store.conta.perfil.tsx`) | **Status:** `⚠️ LEGADO`
+**Rota:** `/_store/conta/perfil` (`_store.conta.perfil.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Social Shell | **Padrão:** profile | **Ator:** Próprio usuário / Visitantes
 
 ### Anatomia
@@ -142,7 +142,7 @@
 
 ## P-006 · Atividade / Notificações
 
-**Rota:** `/_store/conta/` (aba atividade) | **Status:** `🔵 PARCIAL`
+**Rota:** `/_store/conta/notificacoes` (`_store.conta.notificacoes.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Social Shell | **Padrão:** activity | **Ator:** Autenticado
 
 ### Anatomia
@@ -235,7 +235,7 @@
 
 ## P-008 · Mensagens — Inbox
 
-**Rota:** `/_store/conta/conversas/$id` (`_store.conta.conversas.$id.tsx`) | **Status:** `🔵 PARCIAL`
+**Rota:** `/_store/conta/conversas/$id` (`_store.conta.conversas.$id.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Social Shell | **Padrão:** inbox + conversation | **Ator:** Autenticado
 
 ### Anatomia Desktop (Master-Detail)
@@ -263,7 +263,7 @@
 
 ## P-009 · Diretório de Negócios
 
-**Rota:** `/_store/diretorio` (`_store.diretorio.tsx`) | **Status:** `⚠️ LEGADO`
+**Rota:** `/_store/diretorio` (`_store.diretorio.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** directory | **Ator:** Todos
 
 ### Anatomia Desktop
@@ -283,7 +283,7 @@
 
 ## P-010 · Eventos — Explorar
 
-**Rota:** `/_store/evento/$id` (`_store.evento.$id.tsx`) | **Status:** `🔵 PARCIAL`
+**Rota:** `/_store/evento/$id` (`_store.evento.$id.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** cards | **Ator:** Todos
 
 ### Anatomia (Listing — GAP, existe só o detalhe)
@@ -305,7 +305,7 @@
 
 ## P-011 · Classificados
 
-**Rota:** `/_store/conta/classificados` (`_store.conta.classificados.index.tsx`) | **Status:** `🔵 PARCIAL`
+**Rota:** `/_store/conta/classificados` (`_store.conta.classificados.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** cards | **Ator:** Todos
 
 ### Anatomia Listing
@@ -323,7 +323,7 @@
 
 ## P-012 · Mercado — Home de Lojas
 
-**Rota:** `/_store/mercado` (`_store.mercado.tsx`) | **Status:** `⚠️ LEGADO`
+**Rota:** `/_store/mercado` (`_store.mercado.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** market | **Ator:** Todos
 
 ### Anatomia
@@ -340,7 +340,7 @@
 
 ## P-013 · Storefront / Loja Pública
 
-**Rota:** `/_store/perfil-da-loja` (`_store.perfil-da-loja.tsx`) | **Status:** `⚠️ LEGADO`
+**Rota:** `/_store/vendedora/$slug` (`_store.vendedora.$slug.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** storefront | **Ator:** Todos
 
 ### Anatomia
@@ -393,7 +393,7 @@
 
 ## P-015 · Serviço Público (Detalhe)
 
-**Rota:** `/_store/agendar` (`_store.agendar.index.tsx`) | **Status:** `🔵 PARCIAL`
+**Rota:** `/_store/agendar` (`_store.agendar.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** service_public | **Ator:** Todos
 
 ### Anatomia
@@ -425,7 +425,7 @@
 
 ## P-017 · Agendamento — Seleção de Slot
 
-**Rota:** `/_store/agendar` (`_store.agendar.tsx`) | **Status:** `🔵 PARCIAL`
+**Rota:** `/_store/agendar` (`_store.agendar.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** stepper | **Ator:** Todos
 
 ### Fluxo em Etapas
@@ -445,7 +445,7 @@
 
 ## P-018 · Painel da Conta
 
-**Rota:** `/_store/conta` (`_store.conta.index.tsx`) | **Status:** `⚠️ LEGADO`
+**Rota:** `/_store/conta` (`_store.conta.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Minimal (autenticado) | **Padrão:** dashboard compacto | **Ator:** Cliente autenticado
 
 ### Anatomia
@@ -589,7 +589,7 @@ Sem KPI cards decorativos. Apenas links diretos e resumo real de atividade.
 
 ## W-001 · Painel Inicial
 
-**Rota:** `/workspace` | **Status:** `⚠️ LEGADO`
+**Rota:** `/workspace` (`workspace.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Organization Workspace Shell | **Padrão:** dashboard operacional | **Ator:** Staff
 
 ### Anatomia CORRETA (anti-protótipo)
@@ -629,7 +629,7 @@ Mostrar apenas o que gera decisão. Lojista bate o olho e sabe o que precisa faz
 
 ## W-003 · Comandas (PDV Adicional)
 
-**Rota:** `/workspace/pdv/comandas` (`workspace.pdv.comandas.tsx`) | **Status:** `🔵 PARCIAL`
+**Rota:** `/workspace/pdv/comandas` (`workspace.pdv.comandas.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** operational board | **Ator:** Seller, Owner
 
 ### Conceito
@@ -910,7 +910,7 @@ Ver `BUSINESS_FLOWS.md — Módulo 3.2` para anatomia completa.
 
 ## W-025 · Editor de Serviço
 
-**Rota:** GAP (edição inline na lista) | **Status:** `🔵 PARCIAL`
+**Rota:** `/workspace/servicos` (`workspace.servicos.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** editor_service | **Ator:** Owner
 
 ### Seções
@@ -933,9 +933,9 @@ Ver `BUSINESS_FLOWS.md — Módulo 6 / Editor de Serviço`.
 
 ---
 
-## W-028 · CRM / Pipeline (GAP)
+## W-028 · CRM / Pipeline & Leads Kanban
 
-**Rota:** GAP — `/workspace/crm` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/comercial` (`workspace.comercial.tsx`) e `/workspace/crm` | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** kanban | **Ator:** Owner, Manager
 
 ### Anatomia
@@ -948,16 +948,16 @@ Ver `BUSINESS_FLOWS.md — Módulo 6 / Editor de Serviço`.
 
 ---
 
-## W-029 · Orçamentos — Lista (GAP)
+## W-029 · Orçamentos — Lista
 
-**Rota:** GAP — `/workspace/orcamentos` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/orcamentos` (`workspace.orcamentos.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** quotes | **Ator:** Owner, Manager
 
 ---
 
-## W-030 · Detalhe do Orçamento (GAP)
+## W-030 · Detalhe do Orçamento
 
-**Rota:** GAP — `/workspace/orcamentos/$id` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/orcamentos/$id` (`workspace.orcamentos.$id.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** quote_detail | **Ator:** Owner, Manager
 
 
@@ -1087,9 +1087,9 @@ Ver `BUSINESS_FLOWS.md — Módulo 6 / Editor de Serviço`.
 
 ---
 
-## W-037 · Comissões de Parceiros/Afiliados (GAP)
+## W-037 · Comissões de Parceiros/Afiliados
 
-**Rota:** GAP — `/workspace/financeiro/afiliados` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/financeiro/afiliados` (`workspace.financeiro.afiliados.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** ledger | **Ator:** Owner, Finance
 
 ### Anatomia
@@ -1245,7 +1245,7 @@ Provider sem credencial: card mostra "Não configurado" e botão "Configurar". N
 
 ## W-051 · Configurações da Loja
 
-**Rota:** `/workspace/configuracoes/loja` | **Status:** `🔵 PARCIAL`
+**Rota:** `/workspace/configuracoes` (`workspace.configuracoes.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** settings | **Ator:** Owner
 
 ### Anatomia
@@ -1257,9 +1257,9 @@ Provider sem credencial: card mostra "Não configurado" e botão "Configurar". N
 
 ---
 
-## W-052 · Equipe e Permissões (GAP)
+## W-052 · Equipe e Permissões
 
-**Rota:** GAP — `/workspace/configuracoes/equipe` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/configuracoes/equipe` (`workspace.configuracoes.equipe.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** team | **Ator:** Owner
 
 ### Anatomia
@@ -1272,9 +1272,9 @@ Provider sem credencial: card mostra "Não configurado" e botão "Configurar". N
 
 ---
 
-## W-053 · Configurações de Nicho/Onboarding (GAP)
+## W-053 · Configurações de Nicho/Onboarding
 
-**Rota:** GAP — `/workspace/configuracoes/nicho` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/onboarding` (`workspace.onboarding.index.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** settings | **Ator:** Owner
 
 ### Conceito
@@ -1284,9 +1284,9 @@ Renomeia módulos na sidebar conforme o nicho selecionado.
 
 ---
 
-## W-054 · Configuração de Parceiros/Afiliados (GAP)
+## W-054 · Configuração de Parceiros/Afiliados
 
-**Rota:** GAP — `/workspace/configuracoes/parceiros` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/configuracoes/parceiros` (`workspace.configuracoes.parceiros.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Workspace | **Padrão:** settings | **Ator:** Owner
 
 ---
@@ -1315,16 +1315,16 @@ Renomeia módulos na sidebar conforme o nicho selecionado.
 
 ---
 
-## A-004 · Usuários e Acessos (GAP)
+## A-004 · Usuários e Acessos
 
-**Rota:** GAP — `/admin-master/usuarios` | **Status:** `🔴 GAP`
+**Rota:** `/admin-master/usuarios` (`admin-master.usuarios.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Admin Master Shell | **Padrão:** admin_table | **Ator:** Admin Master
 
 ---
 
-## A-005 · Moderação de Conteúdo (GAP)
+## A-005 · Moderação de Conteúdo
 
-**Rota:** GAP — `/admin-master/moderacao` | **Status:** `🔴 GAP`
+**Rota:** `/workspace/moderacao` (`workspace.moderacao.index.tsx`) e `/admin-master/denuncias` | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Admin Master Shell | **Padrão:** moderation | **Ator:** Admin Master
 
 ### Anatomia

@@ -273,3 +273,96 @@ export interface CNPJEnrichedData {
   source: 'cnpj.ja' | 'receitaws' | 'brasilapi';
   dataQualityScore: number;
 }
+
+export type MiningContentType =
+  | 'noticia'
+  | 'artigo'
+  | 'blog_post'
+  | 'educacao'
+  | 'eventos'
+  | 'portal_municipal'
+  | 'portais_publicos'
+  | 'empregos'
+  | 'receitas'
+  | 'empresas'
+  | 'processos'
+  | 'produtos';
+
+export interface MinedRawExtraction {
+  id: string;
+  content_type: MiningContentType;
+  source_url: string;
+  source_domain: string;
+  source_name: string;
+  external_id?: string | null;
+  raw_title: string;
+  raw_lead?: string | null;
+  raw_body_text: string;
+  raw_html_fragment?: string | null;
+  raw_author?: string | null;
+  raw_published_at?: string | null;
+  cover_image_url?: string | null;
+  gallery_images: string[];
+  city?: string | null;
+  state?: string | null;
+  region?: string | null;
+  tags: string[];
+  type_metadata?: Record<string, unknown> | null;
+  word_count: number;
+  paragraph_count: number;
+  has_full_content: boolean;
+  extraction_method: string;
+  title_hash: string;
+  cluster_id?: string | null;
+  is_duplicate: boolean;
+  primary_source_id?: string | null;
+  status:
+    | 'raw_extracted'
+    | 'integrity_failed'
+    | 'clustered'
+    | 'curating'
+    | 'curated'
+    | 'published'
+    | 'rejected'
+    | 'archived';
+  integrity_failure_reason?: string | null;
+  store_id?: string | null;
+  curated_article_id?: string | null;
+  curated_event_id?: string | null;
+  curated_job_id?: string | null;
+  curated_directory_id?: string | null;
+  curated_lawsuit_id?: string | null;
+  curated_product_id?: string | null;
+  curated_at?: string | null;
+  curator_profile_id?: string | null;
+  curator_notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MinedLawsuit {
+  id: string;
+  process_number: string;
+  process_number_clean?: string | null;
+  court_code?: string | null;
+  court_name?: string | null;
+  class_name?: string | null;
+  subject_name?: string | null;
+  status?: string | null;
+  priority?: string | null;
+  value?: number | null;
+  distribution_date?: string | null;
+  last_movement_date?: string | null;
+  last_movement_text?: string | null;
+  linked_cpf?: string | null;
+  linked_cnpj?: string | null;
+  linked_profile_id?: string | null;
+  parties: Array<{ name: string; role: string; type?: string; document?: string }>;
+  lawyers: Array<{ name: string; oab?: string; uf?: string }>;
+  secrecy_level?: string | null;
+  source: string;
+  source_url?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

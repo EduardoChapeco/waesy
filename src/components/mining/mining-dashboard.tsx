@@ -1,4 +1,5 @@
 import { TokenEconomyBanner, DataJudMiningPanel, PlacesMiningPanel, SpecializedUrlMiningPanel } from "./advanced-mining-tabs";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Scale, MapPin, Utensils, Zap } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
@@ -351,7 +352,6 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
   };
 
   const handleDeleteMinedProduct = async (productId: string) => {
-    if (!confirm("Tem certeza que deseja excluir este produto minerado?")) return;
     try {
       await deleteMinedProductFn({ data: { id: productId } });
       toast.success("Produto minerado excluído.");
@@ -417,7 +417,6 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
   const handleBatchDeleteProducts = async () => {
     if (selectedProductIds.length === 0) return;
-    if (!confirm(`Tem certeza que deseja excluir os ${selectedProductIds.length} produtos selecionados?`)) return;
     setIsProcessingBatch(true);
     try {
       for (const id of selectedProductIds) {
@@ -645,10 +644,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Database className="w-5 h-5 text-primary" />
-            Mineração
+            Central de Dados & Inteligência Comercial
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Controle de filas, feeds RSS, indicadores oficiais e diretório de empresas.
+            Gestão unificada de importações, catálogo comercial, processos judiciais e indicadores de mercado.
           </p>
         </div>
 
@@ -691,7 +690,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             ) : (
               <Play className="w-4 h-4 mr-1.5 fill-current" />
             )}
-            Executar Crawl
+            Sincronizar Dados
           </Button>
         </div>
       </div>
@@ -798,10 +797,10 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           </TabsTrigger>
           <TabsTrigger value="cooldowns" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5" />
-            Anti-Ban ({domainCooldowns.length})
+            Segurança & Conexão ({domainCooldowns.length})
           </TabsTrigger>
           <TabsTrigger value="queue" className="rounded-lg text-xs font-normal py-2 px-3">
-            Fila ({stats?.crawlQueue.pending ?? 0})
+            Importações Agendadas ({stats?.crawlQueue.pending ?? 0})
           </TabsTrigger>
           <TabsTrigger value="businesses" className="rounded-lg text-xs font-normal py-2 px-3">
             Empresas ({stats?.indexedBusinesses.total ?? 0})
@@ -810,22 +809,22 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             Indicadores BCB
           </TabsTrigger>
           <TabsTrigger value="feeds" className="rounded-lg text-xs font-normal py-2 px-3">
-            Feeds RSS ({stats?.rssFeeds.total ?? 0})
+            Feeds de Notícias ({stats?.rssFeeds.total ?? 0})
           </TabsTrigger>
           <TabsTrigger value="audit" className="rounded-lg text-xs font-normal py-2 px-3">
-            Logs de Auditoria
+            Histórico de Importações
           </TabsTrigger>
           <TabsTrigger value="datajud" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
             <Scale className="w-3.5 h-3.5" />
-            Processos CNJ
+            Processos Judiciais (CNJ)
           </TabsTrigger>
           <TabsTrigger value="places" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
             <MapPin className="w-3.5 h-3.5" />
-            Empresas (Places)
+            Buscar Empresas Locais
           </TabsTrigger>
           <TabsTrigger value="specialized" className="rounded-lg text-xs font-normal py-2 px-3 gap-1.5">
             <Utensils className="w-3.5 h-3.5" />
-            Receitas & Eventos
+            Importar por Link
           </TabsTrigger>
 
         </TabsList>
@@ -1182,6 +1181,44 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               </span>
             </div>
 
+            {/* Batch Operations Bar */}
+            {selectedProductIds.length > 0 && (
+              <div className="flex items-center justify-between p-2.5 px-3.5 bg-muted/30 border border-border/50 rounded-xl text-xs">
+                <span className="font-medium text-foreground">
+                  {selectedProductIds.length} {selectedProductIds.length === 1 ? "produto selecionado" : "produtos selecionados"}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isProcessingBatch}
+                    onClick={handleBatchApproveProducts}
+                    className="h-7 px-2.5 rounded-lg text-xs font-normal"
+                  >
+                    Aprovar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isProcessingBatch}
+                    onClick={handleBatchRejectProducts}
+                    className="h-7 px-2.5 rounded-lg text-xs font-normal"
+                  >
+                    Rejeitar
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={isProcessingBatch}
+                    onClick={handleBatchDeleteProducts}
+                    className="h-7 px-2.5 rounded-lg text-xs font-normal text-destructive hover:bg-destructive/10"
+                  >
+                    Excluir
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Mobile: WhatsApp Minimalist List */}
             <div className="block sm:hidden divide-y divide-border/40 rounded-xl border border-border/40 bg-card overflow-hidden">
               {isLoadingProducts ? (
@@ -1226,15 +1263,6 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleOpenEditProduct(p)}
-                        className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-                        title="Editar Produto"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenImportProduct(p)}
@@ -1244,6 +1272,36 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                         <ShoppingBag className="w-3 h-3" />
                         <span>Importar</span>
                       </Button>
+                      <CrudActionsMenu
+                        entityName="Produto Minerado"
+                        onEdit={() => handleOpenEditProduct(p)}
+                        onDelete={() => handleDeleteMinedProduct(p.id)}
+                        deleteConfirmTitle="Excluir produto minerado?"
+                        deleteConfirmDescription="Esta ação removerá o produto do catálogo de inteligência."
+                        customActions={[
+                          ...(p.status !== "approved"
+                            ? [
+                                {
+                                  id: "approve",
+                                  label: "Aprovar Produto",
+                                  icon: CheckCircle2,
+                                  onClick: () => handleQuickStatusProduct(p.id, "approved"),
+                                },
+                              ]
+                            : []),
+                          ...(p.status !== "rejected"
+                            ? [
+                                {
+                                  id: "reject",
+                                  label: "Rejeitar Produto",
+                                  icon: XCircle,
+                                  onClick: () => handleQuickStatusProduct(p.id, "rejected"),
+                                  variant: "destructive" as const,
+                                },
+                              ]
+                            : []),
+                        ]}
+                      />
                     </div>
                   </div>
                 );})
@@ -1325,7 +1383,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                           </span>
                         </TableCell>
                         <TableCell className="text-right text-xs">
-                          <div className="flex items-center justify-end gap-1">
+                          <div className="flex items-center justify-end gap-1.5">
                             {p.source_url && (
                               <a
                                 href={p.source_url}
@@ -1338,37 +1396,6 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                               </a>
                             )}
                             <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleOpenEditProduct(p)}
-                              className="h-7 w-7 p-0 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
-                              title="Editar Produto"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </Button>
-                            {p.status !== "approved" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleQuickStatusProduct(p.id, "approved")}
-                                className="h-7 w-7 p-0 rounded-md text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 cursor-pointer"
-                                title="Aprovar"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                              </Button>
-                            )}
-                            {p.status !== "rejected" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleQuickStatusProduct(p.id, "rejected")}
-                                className="h-7 w-7 p-0 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                                title="Rejeitar"
-                              >
-                                <XCircle className="w-3.5 h-3.5" />
-                              </Button>
-                            )}
-                            <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenImportProduct(p)}
@@ -1378,15 +1405,36 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                               <ShoppingBag className="w-3 h-3" />
                               Importar
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteMinedProduct(p.id)}
-                              className="h-7 w-7 p-0 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                              title="Excluir"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
+                            <CrudActionsMenu
+                              entityName="Produto Minerado"
+                              onEdit={() => handleOpenEditProduct(p)}
+                              onDelete={() => handleDeleteMinedProduct(p.id)}
+                              deleteConfirmTitle="Excluir produto minerado?"
+                              deleteConfirmDescription="Esta ação removerá o produto do catálogo de inteligência."
+                              customActions={[
+                                ...(p.status !== "approved"
+                                  ? [
+                                      {
+                                        id: "approve",
+                                        label: "Aprovar Produto",
+                                        icon: CheckCircle2,
+                                        onClick: () => handleQuickStatusProduct(p.id, "approved"),
+                                      },
+                                    ]
+                                  : []),
+                                ...(p.status !== "rejected"
+                                  ? [
+                                      {
+                                        id: "reject",
+                                        label: "Rejeitar Produto",
+                                        icon: XCircle,
+                                        onClick: () => handleQuickStatusProduct(p.id, "rejected"),
+                                        variant: "destructive" as const,
+                                      },
+                                    ]
+                                  : []),
+                              ]}
+                            />
                           </div>
                         </TableCell>
                       </TableRow>

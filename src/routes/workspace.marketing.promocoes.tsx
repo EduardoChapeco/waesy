@@ -16,6 +16,7 @@ import {
   Truck,
 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -212,9 +213,6 @@ function WorkspacePromotionsPage() {
   };
 
   const handleDeleteCoupon = async (id: string, code: string) => {
-    if (!confirm(`Deseja realmente excluir o cupom ${code}? Esta ação não pode ser desfeita.`)) {
-      return;
-    }
     try {
       await deleteCoupon({ data: { id } });
       setCouponsList((prev) => prev.filter((c) => c.id !== id));
@@ -389,163 +387,22 @@ function WorkspacePromotionsPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {promo.is_active ? "Ativa" : "Pausada"}
-                      </span>
-                      <Switch
-                        checked={promo.is_active}
-                        onCheckedChange={() => handleTogglePromo(promo.id, promo.is_active)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── ABA 2: CUPONS DE DESCONTO ────────────────────────────────────────── */}
-      {activeTab === "coupons" && (
-        <div className="space-y-6">
-          {/* Métricas de Cupons */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                Cupons Ativos
-              </span>
-              <div className="text-2xl font-mono font-bold text-foreground">
-                {couponsList.filter((c) => c.is_active).length}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                Total de Resgates
-              </span>
-              <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                {couponsList.reduce((sum, c) => sum + (c.uses_count || 0), 0)}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
-              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                Cupons Cadastrados
-              </span>
-              <div className="text-2xl font-mono font-bold text-foreground">{couponsList.length}</div>
-            </div>
-          </div>
-
-          {/* Lista de Cupons */}
-          <div className="space-y-3">
-            {couponsList.length === 0 ? (
-              <div className="py-12 text-center space-y-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
-                <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center mx-auto text-muted-foreground">
-                  <Ticket className="size-6" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-foreground">Nenhum cupom cadastrado</h3>
-                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                    Crie cupons promocionais para seus clientes ou parceiros utilizarem no carrinho e checkout.
-                  </p>
-                </div>
-                <Button onClick={() => setIsCouponOpen(true)} size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9">
-                  <Plus className="size-3.5 mr-1" />
-                  Criar Primeiro Cupom
-                </Button>
-              </div>
-            ) : (
-              couponsList.map((coupon) => (
-                <div
-                  key={coupon.id}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-card border border-border/70 gap-4 hover:border-border transition-all shadow-2xs"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="size-10 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
-                      {coupon.discount_type === "free_shipping" ? (
-                        <Truck className="size-5" />
-                      ) : coupon.discount_type === "fixed_amount" ? (
-                        <DollarSign className="size-5" />
-                      ) : (
-                        <Percent className="size-5" />
-                      )}
-                    </div>
-
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-black text-sm text-foreground tracking-wider bg-muted/60 px-2 py-0.5 rounded-lg border border-border/60">
-                          {coupon.code}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => copyCouponCode(coupon.code, coupon.id)}
-                          className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-                          title="Copiar código do cupom"
-                        >
-                          {copiedCouponId === coupon.id ? (
-                            <Check className="size-3.5 text-emerald-600" />
-                          ) : (
-                            <Copy className="size-3.5" />
-                          )}
-                        </Button>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                          {coupon.discount_type === "percentage"
-                            ? `${coupon.discount_value}% OFF`
-                            : coupon.discount_type === "fixed_amount"
-                            ? `R$ ${Number(coupon.discount_value).toFixed(2)} OFF`
-                            : "Frete Grátis"}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                        {coupon.min_order_cents ? (
-                          <span>
-                            Mínimo: R$ {(coupon.min_order_cents / 100).toFixed(2)}
-                          </span>
-                        ) : (
-                          <span>Sem valor mínimo</span>
-                        )}
-                        <span>•</span>
-                        <span>
-                          {coupon.max_uses
-                            ? `${coupon.uses_count || 0} de ${coupon.max_uses} usos`
-                            : `${coupon.uses_count || 0} usos (ilimitado)`}
-                        </span>
-                        {coupon.expires_at && (
-                          <>
-                            <span>•</span>
-                            <span className="inline-flex items-center gap-1">
-                              <Calendar className="size-3" />
-                              Expira em {new Date(coupon.expires_at).toLocaleDateString("pt-BR")}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-border/40">
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {coupon.is_active ? "Ativo" : "Pausado"}
-                      </span>
-                      <Switch
-                        checked={coupon.is_active}
-                        onCheckedChange={() => handleToggleCoupon(coupon)}
-                      />
-                    </div>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteCoupon(coupon.id, coupon.code)}
-                      className="size-8 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer"
-                      title="Excluir Cupom"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <CrudActionsMenu
+ triggerVariant="outline"
+ triggerClassName="h-9 px-3 rounded-xl border-border/60 hover:bg-muted"
+ onToggleStatus={() => handleToggleCoupon(coupon)}
+ statusLabel={coupon.is_active ? "Pausar Cupom" : "Ativar Cupom"}
+ onDelete={() => handleDeleteCoupon(coupon.id, coupon.code)}
+ deleteTitle={`Excluir cupom "${coupon.code}"?`}
+ deleteDescription="O cupom será removido e não poderá mais ser aplicado no carrinho ou checkout."
+ customActions={[
+ {
+ label: "Copiar Código",
+ icon: Copy,
+ onClick: () => copyCouponCode(coupon.code, coupon.id),
+ },
+ ]}
+ />
                   </div>
                 </div>
               ))

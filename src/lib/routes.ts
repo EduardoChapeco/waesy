@@ -93,7 +93,15 @@ export const PUBLIC_ROUTES: RouteEntry[] = [
   },
 
  {
- path: "/diretorio",
+ path: "/receitas",
+    label: "Receitas",
+    description: "Guia de receitas culinárias e gastronomia local",
+    audience: "public",
+    roles: ["visitor"],
+    phase: 1,
+  },
+  {
+    path: "/diretorio",
  label: "Diretório",
  description: "Marcas e artistas",
  audience: "public",

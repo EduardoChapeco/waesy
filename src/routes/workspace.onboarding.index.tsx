@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { getOnboardingStatus } from "@/services/onboarding.functions";
+import { MagicOnboardingCard } from "@/components/onboarding/magic-onboarding-card";
 
 export const Route = createFileRoute("/workspace/onboarding/")({
   head: () => ({
@@ -209,7 +210,10 @@ export default function WorkspaceOnboardingPage() {
         </div>
       </div>
 
-      {/* ── 2. LISTA DE ETAPAS DE CONFIGURAÇÃO ── */}
+      {/* ── 2. ONBOARDING MÁGICO VIA CRAWLER IA (THE TOLLBOOTH) ── */}
+      <MagicOnboardingCard />
+
+      {/* ── 3. LISTA DE ETAPAS DE CONFIGURAÇÃO MANUAL ── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-foreground">{niche.stepsSectionTitle}</h2>

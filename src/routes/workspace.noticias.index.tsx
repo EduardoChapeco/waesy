@@ -21,8 +21,11 @@ import {
  ThumbsDown,
  Loader2,
  Sparkles,
+  Zap,
+  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateCarouselFromMinedContent } from "@/services/studio.functions";
@@ -37,6 +40,7 @@ import {
 import {
  listMinedArticles,
  curateMineArticle,
+  batchCurateMineArticlesFn,
  type MinedArticleDTO,
 } from "@/services/mining.functions";
 import {
@@ -46,6 +50,8 @@ import {
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { EmptyState } from "@/components/state/states";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { AiCurationUpgradeModal } from "@/components/commerce/ai-curation-upgrade-modal";
 
 export const Route = createFileRoute("/workspace/noticias/")({
  head: () => ({ meta: [{ title: "Redação & Gestão de Notícias | Workspace Waesy" }] }),
@@ -79,6 +85,50 @@ function WorkspaceNoticiasIndexPage() {
  const [activeTab, setActiveTab] = useState("materias");
  const [isPending, startTransition] = useTransition();
  const [curatingId, setCuratingId] = useState<string | null>(null);
+  const [selectedMinedIds, setSelectedMinedIds] = useState<string[]>([]);
+  const [isBatchProcessing, setIsBatchProcessing] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+
+  const toggleSelectMined = (id: string) => {
+    setSelectedMinedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAllMined = () => {
+    if (selectedMinedIds.length === minedArticles.length) {
+      setSelectedMinedIds([]);
+    } else {
+      setSelectedMinedIds(minedArticles.map((m) => m.id));
+    }
+  };
+
+  const handleBatchCurate = async (action: "approve" | "reject") => {
+    if (selectedMinedIds.length === 0) return;
+    setIsBatchProcessing(true);
+    try {
+      const res = await batchCurateMineArticlesFn({
+        data: {
+          mined_article_ids: selectedMinedIds,
+          action,
+        },
+      });
+
+      if (action === "approve") {
+        toast.success(`${res.processed} notícia(s) aprovada(s) e publicadas no portal!`);
+        await refreshArticles();
+      } else {
+        toast.success(`${res.processed} notícia(s) rejeitada(s).`);
+      }
+
+      setMinedArticles((prev) => prev.filter((m) => !selectedMinedIds.includes(m.id)));
+      setSelectedMinedIds([]);
+    } catch (err: any) {
+      toast.error(err?.message || "Erro na curadoria em lote");
+    } finally {
+      setIsBatchProcessing(false);
+    }
+  };
 
  // Studio Machine Carrossel
  const [studioProject, setStudioProject] = useState<EscamasCarouselProject | null>(null);
@@ -137,7 +187,7 @@ function WorkspaceNoticiasIndexPage() {
  };
 
  const handleDelete = async (id: string) => {
- if (!confirm("Deseja realmente remover esta matéria?")) return;
+
  try {
  await deleteArticle({ data: { id } });
  toast.success("Matéria removida com sucesso.");
@@ -196,6 +246,16 @@ function WorkspaceNoticiasIndexPage() {
  title="Redação & Notícias"
  actions={
  <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsUpgradeModalOpen(true)}
+                    className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
+                    title="Configurar Chave de IA própria (BYOK) ou Plano"
+                  >
+                    <Sparkles className="size-3.5 text-primary" />
+                    <span>Curadoria IA (BYOK)</span>
+                  </Button>
  <Button asChild variant="outline" size="sm" className="rounded-xl font-bold text-xs gap-1.5">
  <Link to="/workspace/marketing/patrocinadores">
  <Megaphone className="size-3.5" />
@@ -285,56 +345,109 @@ function WorkspaceNoticiasIndexPage() {
  </div>
  </div>
 
- <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
- <Button
-   variant="outline"
-   size="sm"
-   onClick={() => handleGenerateCarouselFromArticle(art)}
-   disabled={isGeneratingCarousel}
-   className="h-8 px-2.5 text-xs font-semibold rounded-xl gap-1 border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10"
-   title="Gerar Carrossel no Studio para Instagram"
- >
-   <Sparkles className="size-3.5" />
-   Carrossel
- </Button>
- <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs">
- <Link to="/noticias/$slug" params={{ slug: art.slug }} target="_blank">
- <ExternalLink className="size-3.5 mr-1" />
- Ver
- </Link>
- </Button>
- <Button
- variant="ghost"
- size="icon"
- onClick={() => handleDelete(art.id)}
- className="size-8 text-muted-foreground hover:text-destructive"
- title="Excluir Matéria"
- >
- <Trash2 className="size-3.5" />
- </Button>
- </div>
+ <div className="shrink-0 self-end sm:self-center">
+                    <CrudActionsMenu
+                      entityName="Matéria"
+                      viewUrl={`/noticias/${art.slug}`}
+                      customActions={[
+                        {
+                          label: "Gerar Carrossel (Studio)",
+                          icon: Sparkles,
+                          onClick: () => handleGenerateCarouselFromArticle(art),
+                        },
+                      ]}
+                      onDelete={() => handleDelete(art.id)}
+                      deleteConfirmTitle="Excluir Notícia?"
+                      deleteConfirmDescription={`Deseja realmente excluir "${art.title}"? Esta ação removerá a publicação do portal.`}
+                    />
+                  </div>
  </div>
  ))}
  </div>
  )}
  </TabsContent>
 
- {/* ── Aba 2: Mineradas com IA ── */}
- <TabsContent value="mineradas" className="space-y-4">
- {minedArticles.length === 0 ? (
- <EmptyState
- title="Nenhuma notícia minerada pendente de curadoria"
- description="Quando novas notícias da cidade ou região forem extraídas por IA ou feeds RSS, elas aparecerão aqui para aprovação rápida."
- />
- ) : (
- <div className="grid grid-cols-1 gap-4">
- {minedArticles.map((mined) => (
+ {/* ── Aba 2: Mineradas com IA & OpenSquad ── */}
+        <TabsContent value="mineradas" className="space-y-4">
+          {minedArticles.length === 0 ? (
+            <EmptyState
+              title="Nenhuma notícia minerada pendente de curadoria"
+              description="Quando novas notícias da cidade ou região forem extraídas por IA ou feeds RSS, elas aparecerão aqui para aprovação rápida."
+            />
+          ) : (
+            <div className="space-y-3">
+              {/* Barra de Ações em Lote do OpenSquad */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:px-4 rounded-xl bg-card border border-border/60 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="select-all-mined"
+                    checked={
+                      minedArticles.length > 0 &&
+                      selectedMinedIds.length === minedArticles.length
+                    }
+                    onCheckedChange={toggleSelectAllMined}
+                  />
+                  <label
+                    htmlFor="select-all-mined"
+                    className="text-xs font-medium text-foreground cursor-pointer select-none"
+                  >
+                    {selectedMinedIds.length > 0 ? (
+                      <span className="font-semibold text-primary">
+                        {selectedMinedIds.length} selecionada(s)
+                      </span>
+                    ) : (
+                      "Selecionar todas as matérias"
+                    )}
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    disabled={selectedMinedIds.length === 0 || isBatchProcessing}
+                    onClick={() => handleBatchCurate("approve")}
+                    className="h-8 px-3 rounded-xl font-bold text-xs gap-1.5 shadow-2xs cursor-pointer"
+                  >
+                    {isBatchProcessing ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Zap className="size-3.5 fill-current" />
+                    )}
+                    Aprovar Selecionadas ({selectedMinedIds.length})
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={selectedMinedIds.length === 0 || isBatchProcessing}
+                    onClick={() => handleBatchCurate("reject")}
+                    className="h-8 px-3 rounded-xl font-bold text-xs gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10 cursor-pointer"
+                  >
+                    <ThumbsDown className="size-3.5" />
+                    Rejeitar
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                {minedArticles.map((mined) => (
  <div
- key={mined.id}
- className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 space-y-3"
- >
- <div className="flex items-start justify-between gap-4">
- <div className="flex items-start gap-3 min-w-0">
+                    key={mined.id}
+                    className={`p-4 sm:p-5 rounded-2xl bg-card border transition-colors space-y-3 ${
+                      selectedMinedIds.includes(mined.id)
+                        ? "border-primary/50 bg-primary/5 shadow-2xs"
+                        : "border-border/60"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="pt-1">
+                          <Checkbox
+                            checked={selectedMinedIds.includes(mined.id)}
+                            onCheckedChange={() => toggleSelectMined(mined.id)}
+                            aria-label="Selecionar notícia"
+                          />
+                        </div>
                   <div className="relative size-14 rounded-xl overflow-hidden bg-muted shrink-0">
                     <img
                       src={mined.ai_suggested_cover_url || getFallbackThematicImage(mined.ai_suggested_category)}
@@ -417,6 +530,7 @@ function WorkspaceNoticiasIndexPage() {
  </div>
  ))}
  </div>
+              </div>
  )}
  </TabsContent>
 
@@ -489,6 +603,11 @@ function WorkspaceNoticiasIndexPage() {
      onProjectUpdated={(up) => setStudioProject(up)}
    />
  )}
- </div>
- );
+      {/* Modal de Desbloqueio de Curadoria IA & BYOK */}
+      <AiCurationUpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+      />
+    </div>
+  );
 }

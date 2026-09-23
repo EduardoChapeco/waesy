@@ -147,9 +147,6 @@ function CarteiraClientesPage() {
  ).length;
 
  const handleArchive = async (customerId: string, name: string) => {
- if (!confirm(`Deseja arquivar "${name}"? Ele poderá ser restaurado futuramente.`)) {
- return;
- }
  try {
  await archiveCustomer({ data: { customerId } });
  toast.success("Registro arquivado com sucesso.");
@@ -472,54 +469,50 @@ function CarteiraClientesPage() {
                       </Button>
                     )}
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="h-11 px-4 rounded-xl border-border/60 hover:bg-muted cursor-pointer shrink-0"
-                          aria-label="Mais opções do cliente"
-                        >
-                          <MoreVertical className="size-5 text-muted-foreground" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl">
-                        <DropdownMenuItem asChild className="h-10 text-sm cursor-pointer">
-                          <Link to="/workspace/comercial" className="gap-2">
-                            <Plane className="size-4 text-primary" />
-                            <span>Criar Oportunidade</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="h-10 text-sm cursor-pointer">
-                          <Link
-                            to="/workspace/turismo/cotacoes"
-                            search={{
-                              leadName: c.fullName,
-                              leadPhone: c.phone || undefined,
-                              leadEmail: c.email || undefined,
-                              clientId: c.id,
-                            } as any}
-                            className="gap-2"
-                          >
-                            <DollarSign className="size-4 text-primary" />
-                            <span>Iniciar Cotação</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild className="h-10 text-sm cursor-pointer">
-                          <Link to="/workspace/turismo/aereos" className="gap-2">
-                            <Ticket className="size-4 text-primary" />
-                            <span>Emitir Bilhete Aéreo</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleArchive(c.id, c.fullName)}
-                          className="h-10 text-sm cursor-pointer gap-2 text-destructive focus:text-destructive"
-                        >
-                          <Archive className="size-4" />
-                          <span>Arquivar Cliente</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <CrudActionsMenu
+ triggerVariant="outline"
+ triggerClassName="h-11 px-4 rounded-xl border-border/60 hover:bg-muted shrink-0"
+ onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
+ viewLabel="Ficha Completa 360°"
+ onArchive={() => handleArchive(c.id, c.fullName)}
+ archiveTitle={`Arquivar cliente "${c.fullName}"?`}
+ archiveDescription="O cliente será arquivado e não aparecerá nas listagens ativas, podendo ser restaurado futuramente."
+ customActions={[
+ ...(c.phone
+ ? [
+ {
+ label: "Conversar no WhatsApp",
+ icon: MessageCircle,
+ onClick: () => openWhatsApp(c.phone, c.fullName),
+ },
+ ]
+ : []),
+ {
+ label: "Criar Oportunidade",
+ icon: Plane,
+ onClick: () => router.navigate({ to: "/workspace/comercial" }),
+ },
+ {
+ label: "Iniciar Cotação",
+ icon: DollarSign,
+ onClick: () =>
+ router.navigate({
+ to: "/workspace/turismo/cotacoes",
+ search: {
+ leadName: c.fullName,
+ leadPhone: c.phone || undefined,
+ leadEmail: c.email || undefined,
+ clientId: c.id,
+ } as any,
+ }),
+ },
+ {
+ label: "Emitir Bilhete Aéreo",
+ icon: Ticket,
+ onClick: () => router.navigate({ to: "/workspace/turismo/aereos" }),
+ },
+ ]}
+ />
                   </div>
                 </div>
               );
@@ -679,86 +672,58 @@ function CarteiraClientesPage() {
 
                       {/* Menu de Ações */}
                       <TableCell className="text-right py-3.5">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Link
-                            to="/workspace/clientes/$id"
-                            params={{ id: c.id }}
-                            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
-                          >
-                            Ficha 360°
-                          </Link>
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 rounded-lg hover:bg-muted cursor-pointer"
-                              >
-                                <MoreVertical className="size-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-52 p-1.5 rounded-xl text-xs">
-                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
-                                <Link to="/workspace/clientes/$id" params={{ id: c.id }} className="gap-2">
-                                  <FileText className="size-3.5" />
-                                  <span>Ver Ficha Completa</span>
-                                </Link>
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
-                                <Link to="/workspace/comercial" className="gap-2">
-                                  <Plane className="size-3.5 text-primary" />
-                                  <span>Criar Oportunidade / Viagem</span>
-                                </Link>
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
-                                <Link
-                                  to="/workspace/turismo/cotacoes"
-                                  search={{
-                                    leadName: c.fullName,
-                                    leadPhone: c.phone || undefined,
-                                    leadEmail: c.email || undefined,
-                                    clientId: c.id,
-                                  } as any}
-                                  className="gap-2"
-                                >
-                                  <DollarSign className="size-3.5 text-primary" />
-                                  <span>Iniciar Cotação de Viagem</span>
-                                </Link>
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem asChild className="h-9 text-xs cursor-pointer">
-                                <Link to="/workspace/turismo/aereos" className="gap-2">
-                                  <Ticket className="size-3.5 text-primary" />
-                                  <span>Emitir Bilhete Aéreo</span>
-                                </Link>
-                              </DropdownMenuItem>
-
-                              {c.phone && (
-                                <DropdownMenuItem
-                                  onClick={() => openWhatsApp(c.phone, c.fullName)}
-                                  className="h-9 text-xs cursor-pointer gap-2 text-emerald-600"
-                                >
-                                  <MessageCircle className="size-3.5" />
-                                  <span>Iniciar WhatsApp</span>
-                                </DropdownMenuItem>
-                              )}
-
-                              <DropdownMenuSeparator />
-
-                              <DropdownMenuItem
-                                onClick={() => handleArchive(c.id, c.fullName)}
-                                className="h-9 text-xs cursor-pointer gap-2 text-destructive focus:text-destructive"
-                              >
-                                <Archive className="size-3.5" />
-                                <span>Arquivar Cliente</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
+ <div className="flex items-center justify-end gap-1.5">
+ <Link
+ to="/workspace/clientes/$id"
+ params={{ id: c.id }}
+ className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/60 text-foreground hover:bg-muted transition-colors hover:no-underline"
+ >
+ Ficha 360°
+ </Link>
+ <CrudActionsMenu
+ onView={() => router.navigate({ to: "/workspace/clientes/$id", params: { id: c.id } })}
+ viewLabel="Ver Ficha Completa"
+ onArchive={() => handleArchive(c.id, c.fullName)}
+ archiveTitle={`Arquivar cliente "${c.fullName}"?`}
+ archiveDescription="O cliente será arquivado e poderá ser restaurado futuramente."
+ customActions={[
+ ...(c.phone
+ ? [
+ {
+ label: "Conversar no WhatsApp",
+ icon: MessageCircle,
+ onClick: () => openWhatsApp(c.phone, c.fullName),
+ },
+ ]
+ : []),
+ {
+ label: "Criar Oportunidade",
+ icon: Plane,
+ onClick: () => router.navigate({ to: "/workspace/comercial" }),
+ },
+ {
+ label: "Iniciar Cotação",
+ icon: DollarSign,
+ onClick: () =>
+ router.navigate({
+ to: "/workspace/turismo/cotacoes",
+ search: {
+ leadName: c.fullName,
+ leadPhone: c.phone || undefined,
+ leadEmail: c.email || undefined,
+ clientId: c.id,
+ } as any,
+ }),
+ },
+ {
+ label: "Emitir Bilhete Aéreo",
+ icon: Ticket,
+ onClick: () => router.navigate({ to: "/workspace/turismo/aereos" }),
+ },
+ ]}
+ />
+ </div>
+ </TableCell>
                     </TableRow>
                   );
                 })}

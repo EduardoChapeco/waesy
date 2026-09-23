@@ -531,25 +531,25 @@ function CommunityMarketplaceView({ data }: { data: any }) {
 
   return (
     <div className="w-full space-y-3.5 sm:space-y-4 pb-14">
-      {/* ── 0. BANNER CONVITE MEMBRO FUNDADOR CIRCUITO 2027 ── */}
-      <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-primary/5 to-transparent p-3 sm:p-4 flex items-center justify-between gap-3 shadow-2xs">
+      {/* ── 0. BANNER CONVITE MEMBRO FUNDADOR CIRCUITO 2027 (Padrão Silencioso Apple HIG) ── */}
+      <div className="rounded-2xl border border-border/50 bg-muted/20 hover:bg-muted/30 p-3 sm:p-4 flex items-center justify-between gap-3 transition-colors">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="size-9 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <Sparkle className="size-4.5" />
+          <div className="size-8 sm:size-9 rounded-xl bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0 shadow-2xs">
+            <Sparkle className="size-4" weight="bold" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-foreground">Circuito Internacional Waesy 2027</span>
-              <Badge variant="outline" className="text-[9px] font-bold bg-amber-500/20 text-amber-600 border-amber-500/30">
+              <span className="text-xs sm:text-sm font-semibold text-foreground tracking-tight">Circuito Internacional Waesy 2027</span>
+              <Badge variant="outline" className="text-[9px] font-mono text-muted-foreground border-border/60 bg-transparent px-1.5 py-0">
                 Fundadores
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground truncate">
-              Chapecó & São Miguel do Oeste • Garanta sua vaga de Membro Fundador e concorra a viagens em 2027.
+              Chapecó & São Miguel do Oeste • Vagas de Membro Fundador e benefícios exclusivos.
             </p>
           </div>
         </div>
-        <Button asChild size="sm" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-3.5 shrink-0 shadow-2xs">
+        <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold h-8 sm:h-9 px-3 shrink-0 border-border/70 hover:bg-card">
           <Link to="/home">
             <span>Conhecer</span>
             <ArrowRight className="size-3.5 ml-1" />
@@ -557,14 +557,14 @@ function CommunityMarketplaceView({ data }: { data: any }) {
         </Button>
       </div>
 
-      {/* ── 1. CARDS COM IMAGENS DO TOPO (Carrossel Horizontal de Categorias Master) ── */}
+      {/* ── 1. CARDS COM IMAGENS DO TOPO (Categorias Master com Separação Rigorosa de Breakpoint) ── */}
       <section aria-label="Categorias Principais">
         <HorizontalRail title="Categorias Principais" hideHeader={true}>
           {displayHeroCards.map((card) => (
             <Link
               key={card.slug}
               to={card.to as any}
-              className={`min-w-[190px] sm:min-w-[215px] md:min-w-[235px] max-w-[250px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[2/1] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 transition-all duration-300 active:scale-[0.98] ${(card as any).showShadow ? "shadow-md hover:shadow-xl" : "shadow-none"}`}
+              className={`min-w-[145px] sm:min-w-[200px] md:min-w-[230px] max-w-[250px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[16/10] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 transition-all duration-200 active:scale-[0.98] shadow-none`}
             >
               {(card as any).coverUrl ? (
                 <img

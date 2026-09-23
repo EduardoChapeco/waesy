@@ -28,7 +28,16 @@ import {
  Activity,
  KeyRound,
  RefreshCw,
+ Loader2,
 } from "lucide-react";
+import {
+ Dialog,
+ DialogContent,
+ DialogDescription,
+ DialogFooter,
+ DialogHeader,
+ DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_store/conta/seguranca")({
  head: () => ({ meta: [{ title: "Segurança e Dispositivos | Waesy" }] }),
@@ -55,6 +64,7 @@ function SecurityAndDevicesPage() {
  const [logs, setLogs] = useState(initialLogs || []);
  const [isRefreshing, setIsRefreshing] = useState(false);
  const [loadingDeviceId, setLoadingDeviceId] = useState<string | null>(null);
+ const [deviceToRevoke, setDeviceToRevoke] = useState<any | null>(null);
 
  const handleRefresh = async () => {
  setIsRefreshing(true);
@@ -74,14 +84,12 @@ function SecurityAndDevicesPage() {
  };
 
  const handleRevokeDevice = async (deviceId: string) => {
- if (!confirm("Deseja realmente desconectar este dispositivo? O usuário precisará fazer login novamente.")) {
- return;
- }
  setLoadingDeviceId(deviceId);
  try {
  await revokeUserDevice({ data: { deviceId } });
  setDevices((prev: any[]) => prev.filter((d) => d.id !== deviceId));
  toast.success("Dispositivo desconectado com sucesso.");
+ setDeviceToRevoke(null);
  } catch (e: any) {
  toast.error("Erro ao revogar: " + (e?.message || "Falha"));
  } finally {
@@ -204,7 +212,7 @@ function SecurityAndDevicesPage() {
       variant="ghost"
       size="sm"
       disabled={loadingDeviceId === device.id}
-      onClick={() => handleRevokeDevice(device.id)}
+      onClick={() => setDeviceToRevoke(device)}
       className="h-9 px-3 text-xs font-semibold rounded-xl gap-1.5 text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
     >
       <Trash2 className="size-3.5" strokeWidth={1.75} />
@@ -305,6 +313,31 @@ function SecurityAndDevicesPage() {
  </div>
  )}
  </section>
+
+ <Dialog open={Boolean(deviceToRevoke)} onOpenChange={(open) => !open && setDeviceToRevoke(null)}>
+ <DialogContent className="sm:max-w-md rounded-2xl">
+ <DialogHeader>
+ <DialogTitle className="text-base font-bold text-foreground">Desconectar dispositivo?</DialogTitle>
+ <DialogDescription className="text-xs text-muted-foreground">
+ Esta ação encerrará a sessão em <strong>{deviceToRevoke?.device_name || "Dispositivo"}</strong>. Será necessário fazer login novamente.
+ </DialogDescription>
+ </DialogHeader>
+ <DialogFooter className="gap-2 sm:gap-0">
+ <Button variant="ghost" onClick={() => setDeviceToRevoke(null)} className="rounded-xl text-xs">
+ Cancelar
+ </Button>
+ <Button
+ variant="destructive"
+ onClick={() => deviceToRevoke && handleRevokeDevice(deviceToRevoke.id)}
+ disabled={loadingDeviceId === deviceToRevoke?.id}
+ className="rounded-xl text-xs font-semibold"
+ >
+ {loadingDeviceId === deviceToRevoke?.id ? <Loader2 className="size-3.5 animate-spin mr-1.5" /> : null}
+ Desconectar
+ </Button>
+ </DialogFooter>
+ </DialogContent>
+ </Dialog>
  </div>
  );
 }

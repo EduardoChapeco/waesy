@@ -8,6 +8,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess, requireAdmin } from "@/lib/server-access";
 import { getActiveSecretForProvider, internalTestSecretKeyConnection } from "./secret-vault.functions";
+import { enrichOrInsertMinedProduct } from "./mining.functions";
 
 // ============================================================
 // Schemas e Tipos
@@ -404,6 +405,32 @@ export async function getNextActiveKey(provider: ApiProvider, ownerId?: string):
 }
 
 /**
+ * Registra falha de requisição ou rate limit (HTTP 429) em uma chave de API do pool.
+ * Atualiza last_error_at, last_error_message e temporariamente rotaciona a chave.
+ */
+export async function markKeyError(
+  keyId: string, 
+  errorMessage: string = "Rate limit or network error",
+  statusCode?: number
+): Promise<void> {
+  if (!keyId || keyId.startsWith("env-") || keyId.startsWith("byok-")) return;
+  const supabase = getServerClient();
+  try {
+    const isRateLimit = statusCode === 429 || errorMessage.toLowerCase().includes("rate limit") || errorMessage.includes("429");
+    await supabase
+      .from("api_key_pools")
+      .update({
+        last_error_at: new Date().toISOString(),
+        last_error_message: errorMessage.slice(0, 255),
+        is_active: isRateLimit ? true : false,
+      })
+      .eq("id", keyId);
+  } catch (err) {
+    console.warn(`[api-orchestrator] Falha ao registrar erro da chave ${keyId}:`, err);
+  }
+}
+
+/**
  * Cadastra ou atualiza uma chave de API para o SimLab e módulos de IA diretamente.
  */
 export const saveSimLabApiKey = createServerFn({ method: "POST" })
@@ -495,20 +522,6 @@ export const getSimLabKeyStatus = createServerFn({ method: "GET" }).handler(
   }
 );
 
-/**
- * Helper interno: Registra erro em uma chave da pool para auditoria.
- */
-export async function markKeyError(keyId: string, errorMessage: string) {
-  if (keyId.startsWith("env-") || keyId === "override-key") return;
-  const supabase = getServerClient();
-  await supabase
-    .from("api_key_pools")
-    .update({
-      last_error_at: new Date().toISOString(),
-      last_error_message: errorMessage.slice(0, 200),
-    })
-    .eq("id", keyId);
-}
 
 export interface UnifiedAiCallOptions {
   systemPrompt?: string;
@@ -1071,6 +1084,63 @@ export const importProductFromUrl = createServerFn({ method: "POST" })
  }
 
  const html = await fetchRes.text();
+
+      // 3.1. Tentativa Mecânica Zero-Token (Schema.org JSON-LD Product)
+      try {
+        const jsonLdMatches = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+        for (const match of jsonLdMatches) {
+          try {
+            const parsed = JSON.parse(match[1]);
+            const items = Array.isArray(parsed) ? parsed : [parsed];
+            for (const item of items) {
+              const candidate = item["@graph"] ? item["@graph"] : [item];
+              for (const node of candidate) {
+                const type = node["@type"];
+                const isProduct = type === "Product" || (Array.isArray(type) && type.includes("Product"));
+                if (isProduct && (node.name || node.title)) {
+                  const rawPrice = node.offers?.price || (Array.isArray(node.offers) ? node.offers[0]?.price : undefined);
+                  let priceCents = 0;
+                  if (rawPrice) {
+                    const numeric = parseFloat(String(rawPrice).replace(/[^\d.,]/g, "").replace(",", "."));
+                    if (!isNaN(numeric)) priceCents = Math.round(numeric * 100);
+                  }
+                  const images = [];
+                  const rawImages = node.image ? (Array.isArray(node.image) ? node.image : [node.image]) : [];
+                  for (const img of rawImages) {
+                    const url = typeof img === "string" ? img : img?.url;
+                    if (url && typeof url === "string" && url.startsWith("http")) images.push(url);
+                  }
+                  const brand = typeof node.brand === "string" ? node.brand : node.brand?.name;
+
+                  const mechanicalProduct = {
+                    title: String(node.name || node.title).trim(),
+                    description: String(node.description || "").trim(),
+                    price_cents: priceCents,
+                    brand: brand ? String(brand).trim() : undefined,
+                    images: images.slice(0, 8),
+                  };
+
+                  // Enriquecer e salvar atomicamente na base global mined_products
+                  enrichOrInsertMinedProduct(supabase, {
+                    source_url: input.url,
+                    source_domain: new URL(input.url).hostname.replace("www.", ""),
+                    title: mechanicalProduct.title,
+                    description: mechanicalProduct.description,
+                    price_cents: mechanicalProduct.price_cents,
+                    brand: mechanicalProduct.brand,
+                    images: mechanicalProduct.images,
+                    category: "Produtos",
+                  }).catch((err) => console.warn("[api-orchestrator] Falha não impeditiva ao enriquecer mined_product:", err));
+
+                  return mechanicalProduct;
+                }
+              }
+            }
+          } catch {}
+        }
+      } catch (e) {
+        console.warn("[api-orchestrator] Extração mecânica Schema.org ignorada, prosseguindo com fallback de IA:", e);
+      }
  // Remove scripts, styles e tags desnecessárias para economizar tokens
  rawContent = html
  .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
@@ -1153,7 +1223,21 @@ export const importProductFromUrl = createServerFn({ method: "POST" })
  });
  }
 
- return extractedProduct;
+    // Enriquecimento na base global mined_products
+    if (extractedProduct) {
+      enrichOrInsertMinedProduct(supabase, {
+        source_url: input.url,
+        source_domain: new URL(input.url).hostname.replace("www.", ""),
+        title: (extractedProduct as any).title,
+        description: (extractedProduct as any).description || "",
+        price_cents: (extractedProduct as any).price_cents || 0,
+        brand: (extractedProduct as any).brand,
+        images: (extractedProduct as any).images || [],
+        category: (extractedProduct as any).category_suggestion || "Produtos",
+      }).catch((err) => console.warn("[api-orchestrator] Falha não impeditiva ao enriquecer mined_product:", err));
+    }
+
+    return extractedProduct;
  });
 
 export interface ImportedMenuCategory {

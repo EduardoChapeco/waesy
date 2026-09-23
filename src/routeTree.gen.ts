@@ -111,6 +111,8 @@ import { Route as WorkspaceIndexRouteImport } from './routes/workspace.index'
 import { Route as WorkspaceAutomacoesRouteImport } from './routes/workspace.automacoes'
 import { Route as WorkspaceAvaliacoesRouteImport } from './routes/workspace.avaliacoes'
 import { Route as WorkspaceComercialRouteImport } from './routes/workspace.comercial'
+import { Route as WorkspaceCrmRouteImport } from './routes/workspace.crm'
+import { Route as WorkspaceLicitacoesRouteImport } from './routes/workspace.licitacoes'
 import { Route as WorkspaceMiningRouteImport } from './routes/workspace.mining'
 import { Route as WorkspaceNotificacoesRouteImport } from './routes/workspace.notificacoes'
 import { Route as WorkspaceQualidadeRouteImport } from './routes/workspace.qualidade'
@@ -183,6 +185,7 @@ import { Route as StorePoliticasSlugRouteImport } from './routes/_store.politica
 import { Route as StoreProdutoSlugRouteImport } from './routes/_store.produto.$slug'
 import { Route as StorePropostaTokenRouteImport } from './routes/_store.proposta.$token'
 import { Route as StorePublicacaoIdRouteImport } from './routes/_store.publicacao.$id'
+import { Route as StoreReceitasIndexRouteImport } from './routes/_store.receitas.index'
 import { Route as StoreTurismoIndexRouteImport } from './routes/_store.turismo.index'
 import { Route as StoreTurismoIdRouteImport } from './routes/_store.turismo.$id'
 import { Route as StoreUUsernameRouteImport } from './routes/_store.u.$username'
@@ -230,6 +233,7 @@ import { Route as WorkspaceConfiguracoesAiRouteImport } from './routes/workspace
 import { Route as WorkspaceConfiguracoesEquipeRouteImport } from './routes/workspace.configuracoes.equipe'
 import { Route as WorkspaceConfiguracoesIntegracoesRouteImport } from './routes/workspace.configuracoes.integracoes'
 import { Route as WorkspaceConfiguracoesInteligenciaArtificialRouteImport } from './routes/workspace.configuracoes.inteligencia-artificial'
+import { Route as WorkspaceConfiguracoesLojaRouteImport } from './routes/workspace.configuracoes.loja'
 import { Route as WorkspaceConfiguracoesParceirosRouteImport } from './routes/workspace.configuracoes.parceiros'
 import { Route as WorkspaceConfiguracoesPrivacidadeLojaRouteImport } from './routes/workspace.configuracoes.privacidade-loja'
 import { Route as WorkspaceConfiguracoesPwaRouteImport } from './routes/workspace.configuracoes.pwa'
@@ -881,6 +885,16 @@ const WorkspaceComercialRoute = WorkspaceComercialRouteImport.update({
   path: '/comercial',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceCrmRoute = WorkspaceCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceLicitacoesRoute = WorkspaceLicitacoesRouteImport.update({
+  id: '/licitacoes',
+  path: '/licitacoes',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceMiningRoute = WorkspaceMiningRouteImport.update({
   id: '/mining',
   path: '/mining',
@@ -1242,6 +1256,11 @@ const StorePublicacaoIdRoute = StorePublicacaoIdRouteImport.update({
   path: '/publicacao/$id',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreReceitasIndexRoute = StoreReceitasIndexRouteImport.update({
+  id: '/receitas/',
+  path: '/receitas/',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreTurismoIndexRoute = StoreTurismoIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -1488,6 +1507,12 @@ const WorkspaceConfiguracoesInteligenciaArtificialRoute =
   WorkspaceConfiguracoesInteligenciaArtificialRouteImport.update({
     id: '/configuracoes/inteligencia-artificial',
     path: '/configuracoes/inteligencia-artificial',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceConfiguracoesLojaRoute =
+  WorkspaceConfiguracoesLojaRouteImport.update({
+    id: '/configuracoes/loja',
+    path: '/configuracoes/loja',
     getParentRoute: () => WorkspaceRoute,
   } as any)
 const WorkspaceConfiguracoesParceirosRoute =
@@ -2379,6 +2404,8 @@ export interface FileRoutesByFullPath {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/crm': typeof WorkspaceCrmRoute
+  '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
@@ -2485,6 +2512,7 @@ export interface FileRoutesByFullPath {
   '/workspace/configuracoes/equipe': typeof WorkspaceConfiguracoesEquipeRoute
   '/workspace/configuracoes/integracoes': typeof WorkspaceConfiguracoesIntegracoesRoute
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
+  '/workspace/configuracoes/loja': typeof WorkspaceConfiguracoesLojaRoute
   '/workspace/configuracoes/parceiros': typeof WorkspaceConfiguracoesParceirosRoute
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
@@ -2566,6 +2594,7 @@ export interface FileRoutesByFullPath {
   '/diretorio/': typeof StoreDiretorioIndexRoute
   '/empregos/': typeof StoreEmpregosIndexRoute
   '/noticias/': typeof StoreNoticiasIndexRoute
+  '/receitas/': typeof StoreReceitasIndexRoute
   '/turismo/': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca/': typeof AdminMasterSegurancaIndexRoute
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
@@ -2731,6 +2760,8 @@ export interface FileRoutesByTo {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/crm': typeof WorkspaceCrmRoute
+  '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
@@ -2838,6 +2869,7 @@ export interface FileRoutesByTo {
   '/workspace/configuracoes/equipe': typeof WorkspaceConfiguracoesEquipeRoute
   '/workspace/configuracoes/integracoes': typeof WorkspaceConfiguracoesIntegracoesRoute
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
+  '/workspace/configuracoes/loja': typeof WorkspaceConfiguracoesLojaRoute
   '/workspace/configuracoes/parceiros': typeof WorkspaceConfiguracoesParceirosRoute
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
@@ -2919,6 +2951,7 @@ export interface FileRoutesByTo {
   '/diretorio': typeof StoreDiretorioIndexRoute
   '/empregos': typeof StoreEmpregosIndexRoute
   '/noticias': typeof StoreNoticiasIndexRoute
+  '/receitas': typeof StoreReceitasIndexRoute
   '/turismo': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca': typeof AdminMasterSegurancaIndexRoute
   '/workspace/advocacia': typeof WorkspaceAdvocaciaIndexRoute
@@ -3093,6 +3126,8 @@ export interface FileRoutesById {
   '/workspace/automacoes': typeof WorkspaceAutomacoesRoute
   '/workspace/avaliacoes': typeof WorkspaceAvaliacoesRoute
   '/workspace/comercial': typeof WorkspaceComercialRoute
+  '/workspace/crm': typeof WorkspaceCrmRoute
+  '/workspace/licitacoes': typeof WorkspaceLicitacoesRoute
   '/workspace/mining': typeof WorkspaceMiningRoute
   '/workspace/notificacoes': typeof WorkspaceNotificacoesRoute
   '/workspace/qualidade': typeof WorkspaceQualidadeRoute
@@ -3200,6 +3235,7 @@ export interface FileRoutesById {
   '/workspace/configuracoes/equipe': typeof WorkspaceConfiguracoesEquipeRoute
   '/workspace/configuracoes/integracoes': typeof WorkspaceConfiguracoesIntegracoesRoute
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
+  '/workspace/configuracoes/loja': typeof WorkspaceConfiguracoesLojaRoute
   '/workspace/configuracoes/parceiros': typeof WorkspaceConfiguracoesParceirosRoute
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
@@ -3281,6 +3317,7 @@ export interface FileRoutesById {
   '/_store/diretorio/': typeof StoreDiretorioIndexRoute
   '/_store/empregos/': typeof StoreEmpregosIndexRoute
   '/_store/noticias/': typeof StoreNoticiasIndexRoute
+  '/_store/receitas/': typeof StoreReceitasIndexRoute
   '/_store/turismo/': typeof StoreTurismoIndexRoute
   '/admin-master/seguranca/': typeof AdminMasterSegurancaIndexRoute
   '/workspace/advocacia/': typeof WorkspaceAdvocaciaIndexRoute
@@ -3456,6 +3493,8 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/crm'
+    | '/workspace/licitacoes'
     | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
@@ -3562,6 +3601,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/equipe'
     | '/workspace/configuracoes/integracoes'
     | '/workspace/configuracoes/inteligencia-artificial'
+    | '/workspace/configuracoes/loja'
     | '/workspace/configuracoes/parceiros'
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
@@ -3643,6 +3683,7 @@ export interface FileRouteTypes {
     | '/diretorio/'
     | '/empregos/'
     | '/noticias/'
+    | '/receitas/'
     | '/turismo/'
     | '/admin-master/seguranca/'
     | '/workspace/advocacia/'
@@ -3808,6 +3849,8 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/crm'
+    | '/workspace/licitacoes'
     | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
@@ -3915,6 +3958,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/equipe'
     | '/workspace/configuracoes/integracoes'
     | '/workspace/configuracoes/inteligencia-artificial'
+    | '/workspace/configuracoes/loja'
     | '/workspace/configuracoes/parceiros'
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
@@ -3996,6 +4040,7 @@ export interface FileRouteTypes {
     | '/diretorio'
     | '/empregos'
     | '/noticias'
+    | '/receitas'
     | '/turismo'
     | '/admin-master/seguranca'
     | '/workspace/advocacia'
@@ -4169,6 +4214,8 @@ export interface FileRouteTypes {
     | '/workspace/automacoes'
     | '/workspace/avaliacoes'
     | '/workspace/comercial'
+    | '/workspace/crm'
+    | '/workspace/licitacoes'
     | '/workspace/mining'
     | '/workspace/notificacoes'
     | '/workspace/qualidade'
@@ -4276,6 +4323,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/equipe'
     | '/workspace/configuracoes/integracoes'
     | '/workspace/configuracoes/inteligencia-artificial'
+    | '/workspace/configuracoes/loja'
     | '/workspace/configuracoes/parceiros'
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
@@ -4357,6 +4405,7 @@ export interface FileRouteTypes {
     | '/_store/diretorio/'
     | '/_store/empregos/'
     | '/_store/noticias/'
+    | '/_store/receitas/'
     | '/_store/turismo/'
     | '/admin-master/seguranca/'
     | '/workspace/advocacia/'
@@ -5187,6 +5236,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceComercialRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/crm': {
+      id: '/workspace/crm'
+      path: '/crm'
+      fullPath: '/workspace/crm'
+      preLoaderRoute: typeof WorkspaceCrmRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/licitacoes': {
+      id: '/workspace/licitacoes'
+      path: '/licitacoes'
+      fullPath: '/workspace/licitacoes'
+      preLoaderRoute: typeof WorkspaceLicitacoesRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/mining': {
       id: '/workspace/mining'
       path: '/mining'
@@ -5691,6 +5754,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StorePublicacaoIdRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/receitas/': {
+      id: '/_store/receitas/'
+      path: '/receitas'
+      fullPath: '/receitas/'
+      preLoaderRoute: typeof StoreReceitasIndexRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/turismo/': {
       id: '/_store/turismo/'
       path: '/'
@@ -6018,6 +6088,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes/inteligencia-artificial'
       fullPath: '/workspace/configuracoes/inteligencia-artificial'
       preLoaderRoute: typeof WorkspaceConfiguracoesInteligenciaArtificialRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/configuracoes/loja': {
+      id: '/workspace/configuracoes/loja'
+      path: '/configuracoes/loja'
+      fullPath: '/workspace/configuracoes/loja'
+      preLoaderRoute: typeof WorkspaceConfiguracoesLojaRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/configuracoes/parceiros': {
@@ -7233,6 +7310,7 @@ interface StoreRouteChildren {
   StoreVoucherTokenRoute: typeof StoreVoucherTokenRoute
   StoreClassificadosIndexRoute: typeof StoreClassificadosIndexRoute
   StoreNoticiasIndexRoute: typeof StoreNoticiasIndexRoute
+  StoreReceitasIndexRoute: typeof StoreReceitasIndexRoute
   StorePedidoPublicTokenConfirmacaoRoute: typeof StorePedidoPublicTokenConfirmacaoRoute
 }
 
@@ -7315,6 +7393,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreVoucherTokenRoute: StoreVoucherTokenRoute,
   StoreClassificadosIndexRoute: StoreClassificadosIndexRoute,
   StoreNoticiasIndexRoute: StoreNoticiasIndexRoute,
+  StoreReceitasIndexRoute: StoreReceitasIndexRoute,
   StorePedidoPublicTokenConfirmacaoRoute:
     StorePedidoPublicTokenConfirmacaoRoute,
 }
@@ -7474,6 +7553,8 @@ interface WorkspaceRouteChildren {
   WorkspaceAutomacoesRoute: typeof WorkspaceAutomacoesRoute
   WorkspaceAvaliacoesRoute: typeof WorkspaceAvaliacoesRoute
   WorkspaceComercialRoute: typeof WorkspaceComercialRoute
+  WorkspaceCrmRoute: typeof WorkspaceCrmRoute
+  WorkspaceLicitacoesRoute: typeof WorkspaceLicitacoesRoute
   WorkspaceMiningRoute: typeof WorkspaceMiningRoute
   WorkspaceNotificacoesRoute: typeof WorkspaceNotificacoesRoute
   WorkspaceQualidadeRoute: typeof WorkspaceQualidadeRoute
@@ -7499,6 +7580,7 @@ interface WorkspaceRouteChildren {
   WorkspaceConfiguracoesEquipeRoute: typeof WorkspaceConfiguracoesEquipeRoute
   WorkspaceConfiguracoesIntegracoesRoute: typeof WorkspaceConfiguracoesIntegracoesRoute
   WorkspaceConfiguracoesInteligenciaArtificialRoute: typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
+  WorkspaceConfiguracoesLojaRoute: typeof WorkspaceConfiguracoesLojaRoute
   WorkspaceConfiguracoesParceirosRoute: typeof WorkspaceConfiguracoesParceirosRoute
   WorkspaceConfiguracoesPrivacidadeLojaRoute: typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   WorkspaceConfiguracoesPwaRoute: typeof WorkspaceConfiguracoesPwaRoute
@@ -7631,6 +7713,8 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAutomacoesRoute: WorkspaceAutomacoesRoute,
   WorkspaceAvaliacoesRoute: WorkspaceAvaliacoesRoute,
   WorkspaceComercialRoute: WorkspaceComercialRoute,
+  WorkspaceCrmRoute: WorkspaceCrmRoute,
+  WorkspaceLicitacoesRoute: WorkspaceLicitacoesRoute,
   WorkspaceMiningRoute: WorkspaceMiningRoute,
   WorkspaceNotificacoesRoute: WorkspaceNotificacoesRoute,
   WorkspaceQualidadeRoute: WorkspaceQualidadeRoute,
@@ -7658,6 +7742,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
     WorkspaceConfiguracoesIntegracoesRoute,
   WorkspaceConfiguracoesInteligenciaArtificialRoute:
     WorkspaceConfiguracoesInteligenciaArtificialRoute,
+  WorkspaceConfiguracoesLojaRoute: WorkspaceConfiguracoesLojaRoute,
   WorkspaceConfiguracoesParceirosRoute: WorkspaceConfiguracoesParceirosRoute,
   WorkspaceConfiguracoesPrivacidadeLojaRoute:
     WorkspaceConfiguracoesPrivacidadeLojaRoute,

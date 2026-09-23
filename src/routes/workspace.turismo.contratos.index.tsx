@@ -21,6 +21,7 @@ import {
   type MetricCardItem,
 } from "@/components/workspace/workspace-dashboard-sheet";
 import { toast } from "sonner";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import {
   listAgencyTravelContracts,
   deleteTravelContract,
@@ -238,23 +239,12 @@ export default function WorkspaceContractsIndexPage() {
                     )}
                   </div>
 
-                  <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-1.5">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCopyLink(c.public_token)}
-                      className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3 flex-1"
-                    >
-                      <Copy className="size-3.5 sm:size-3" />
-                      <span>Copiar Link</span>
-                    </Button>
-
+                  <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
                     <Button
                       asChild
                       variant="secondary"
                       size="sm"
-                      className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3"
+                      className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3 flex-1 cursor-pointer"
                     >
                       <a
                         href={`/contrato/${c.public_token}`}
@@ -262,40 +252,31 @@ export default function WorkspaceContractsIndexPage() {
                         rel="noopener noreferrer"
                       >
                         <ExternalLink className="size-3.5 sm:size-3" />
-                        <span>Abrir</span>
+                        <span>Abrir Contrato</span>
                       </a>
                     </Button>
 
-                    {isSigned && (
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
-                        title="Ver protocolo criptográfico e termo de quitação"
-                      >
-                        <a href={`/verify/document/${c.public_token}`} target="_blank" rel="noreferrer">
-                          <CheckCircle2 className="size-3.5 sm:size-3" />
-                          <span>Validar</span>
-                        </a>
-                      </Button>
-                    )}
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        if (confirm(`Deseja excluir este contrato?`)) {
-                          deleteMutation.mutate(c.id);
-                        }
-                      }}
-                      className="size-11 sm:size-8 p-0 rounded-xl text-muted-foreground hover:text-destructive"
-                      title="Excluir contrato"
-                      aria-label="Excluir contrato"
-                    >
-                      <Trash2 className="size-4 sm:size-3.5" />
-                    </Button>
+                    <CrudActionsMenu
+                      onDelete={() => deleteMutation.mutate(c.id)}
+                      deleteTitle="Excluir este contrato?"
+                      deleteDescription="O documento de viagem será cancelado e removido do sistema."
+                      customActions={[
+                        {
+                          label: "Copiar Link Público",
+                          icon: Copy,
+                          onClick: () => handleCopyLink(c.public_token),
+                        },
+                        ...(isSigned
+                          ? [
+                              {
+                                label: "Validar Protocolo",
+                                icon: CheckCircle2,
+                                onClick: () => window.open(`/verify/document/${c.public_token}`, "_blank"),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
                   </div>
                 </Card>
               );

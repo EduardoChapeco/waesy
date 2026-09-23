@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -309,7 +310,6 @@ function ContasPagarPage() {
 
   // ── EXCLUSÃO ─────────────────────────────────────────────────────────────
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Deseja realmente remover a conta "${title}"?`)) return;
     try {
       await deleteFinancialObligation({ data: { obligationId: id } });
       setObligations((prev) => prev.filter((item) => item.id !== id));
@@ -324,8 +324,8 @@ function ContasPagarPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
-        eyebrow="Financeiro & Tesouraria"
-        title="Contas a Pagar & Obrigações"
+        eyebrow="Financeiro"
+        title="Contas a Pagar"
         description="Controle despesas fixas, boletos de fornecedores, impostos e aluguéis com previsão de saída e conciliação financeira."
         actions={
           <div className="flex items-center gap-2">
@@ -644,16 +644,24 @@ function ContasPagarPage() {
                       </div>
                     )}
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDelete(ob.id, ob.title)}
-                      className="size-11 shrink-0 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 border-border/70 cursor-pointer"
-                      title="Remover conta"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <CrudActionsMenu
+                      triggerVariant="outline"
+                      triggerClassName="size-11 shrink-0 rounded-xl border-border/70 hover:bg-muted"
+                      onDelete={() => handleDelete(ob.id, ob.title)}
+                      deleteTitle={`Remover conta "${ob.title}"?`}
+                      deleteDescription="A obrigação financeira será excluída do fluxo de caixa e não poderá ser recuperada."
+                      customActions={[
+                        ...(ob.barcode
+                          ? [
+                              {
+                                label: "Copiar Linha Digitável / Pix",
+                                icon: Copy,
+                                onClick: () => handleCopyBarcode(ob.id, ob.barcode!),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
                   </div>
                 </div>
               );
@@ -780,15 +788,22 @@ function ContasPagarPage() {
                               Liquidado
                             </Badge>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(ob.id, ob.title)}
-                            className="size-8 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer"
-                            title="Remover conta"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </Button>
+                          <CrudActionsMenu
+                            onDelete={() => handleDelete(ob.id, ob.title)}
+                            deleteTitle={`Remover conta "${ob.title}"?`}
+                            deleteDescription="A obrigação financeira será excluída do fluxo de caixa e não poderá ser recuperada."
+                            customActions={[
+                              ...(ob.barcode
+                                ? [
+                                    {
+                                      label: "Copiar Linha Digitável / Pix",
+                                      icon: Copy,
+                                      onClick: () => handleCopyBarcode(ob.id, ob.barcode!),
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
                         </div>
                       </TableCell>
                     </TableRow>

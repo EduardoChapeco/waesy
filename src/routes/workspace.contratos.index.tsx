@@ -23,6 +23,8 @@ import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
+import { useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { listContracts } from "@/services/contracts.functions";
@@ -71,6 +73,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 function ContractsDashboard() {
+ const router = useRouter();
   const { contracts: initialContracts } = ((Route.useLoaderData?.() as any) || {});
 
   const { data: contracts = [] } = useQuery({
@@ -287,52 +290,39 @@ function ContractsDashboard() {
                 </div>
 
                 <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer gap-1"
-                      onClick={(e) => handleCopyLink(e, contract.id)}
-                      title="Copiar link do contrato"
-                    >
-                      {isCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
-                      <span className="hidden sm:inline">{isCopied ? "Copiado!" : "Copiar"}</span>
-                    </Button>
+ <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-1.5 flex-1">
+ <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
+ <FileSignature className="size-3.5" />
+ <span>Abrir Contrato</span>
+ </Link>
+ </Button>
 
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-2 text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer gap-1"
-                      onClick={(e) => handleShareWhatsApp(e, contract)}
-                      title="Enviar por WhatsApp"
-                    >
-                      <WhatsappLogo className="size-3.5" weight="fill" />
-                      <span className="hidden sm:inline">WhatsApp</span>
-                    </Button>
-
-                    {contract.verification_code && (
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer gap-1"
-                        title="Ver Certificado Público"
-                      >
-                        <Link to="/verify/document/$code" params={{ code: contract.verification_code }}>
-                          <ExternalLink className="size-3.5" />
-                          <span className="hidden sm:inline">Certificado</span>
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-
-                  <Button asChild size="sm" className="h-8 px-3 rounded-lg text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer gap-1">
-                    <Link to="/workspace/contratos/$id/editor" params={{ id: contract.id }}>
-                      <span>Abrir</span>
-                      <ArrowRight className="size-3 ml-0.5" />
-                    </Link>
-                  </Button>
-                </div>
+ <CrudActionsMenu
+ triggerVariant="outline"
+ triggerClassName="h-9 px-3 rounded-xl border-border/60 hover:bg-muted"
+ customActions={[
+ {
+ label: isCopied ? "Link Copiado!" : "Copiar Link de Assinatura",
+ icon: isCopied ? Check : Copy,
+ onClick: (e) => handleCopyLink(e, contract.id),
+ },
+ {
+ label: "Enviar via WhatsApp",
+ icon: WhatsappLogo as any,
+ onClick: (e) => handleShareWhatsApp(e, contract),
+ },
+ ...(contract.verification_code
+ ? [
+ {
+ label: "Certificado Público de Assinatura",
+ icon: ExternalLink,
+ onClick: () => router.navigate({ to: "/verify/document/$code", params: { code: contract.verification_code } }),
+ },
+ ]
+ : []),
+ ]}
+ />
+ </div>
               </div>
             );
           })}

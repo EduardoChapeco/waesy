@@ -254,9 +254,9 @@ function AccountDashboardPage() {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-6 animate-in fade-in duration-200">
       {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
-      <div className="bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+      <div className="bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4 min-w-0">
           <div className="size-14 rounded-2xl bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
             {userAvatar ? (
@@ -281,7 +281,7 @@ function AccountDashboardPage() {
 
         <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
           {isMasterAdmin && (
-            <Button asChild size="sm" variant="default" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-bold bg-primary text-primary-foreground gap-2 shadow-2xs cursor-pointer active:scale-98">
+            <Button asChild size="sm" variant="default" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98">
               <Link to="/admin-master">
                 <Shield className="size-4" />
                 <span>Admin Master</span>
@@ -289,7 +289,7 @@ function AccountDashboardPage() {
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer shadow-2xs active:scale-98">
+          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
             <Link to="/conta/perfil">Editar Perfil</Link>
           </Button>
 
@@ -298,7 +298,7 @@ function AccountDashboardPage() {
             disabled={isLoggingOut}
             variant="ghost"
             size="sm"
-            className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3 sm:px-3.5 font-semibold text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
+            className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3 sm:px-3.5 font-semibold text-destructive hover:bg-destructive/10 cursor-pointer active:scale-98"
           >
             <LogOut className="size-4 mr-1.5" />
             <span>Sair</span>

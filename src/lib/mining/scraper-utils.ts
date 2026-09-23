@@ -117,17 +117,51 @@ export function setDomainCooldown(
   // Multiplicador progressivo se o domínio continuar falhando
   const multiplier = Math.min(consecutiveErrors, 4);
   const finalDuration = durationMs * multiplier;
+  const until = Date.now() + finalDuration;
 
   domainCooldowns.set(cleanDomain, {
-    until: Date.now() + finalDuration,
+    until,
     reason,
     httpStatus,
     consecutiveErrors,
   });
+
+  // Persistência em background no Postgres (domain_cooldowns)
+  if (typeof window === "undefined") {
+    import("@/lib/supabase").then(({ getServerClient }) => {
+      try {
+        const supabase = getServerClient();
+        supabase.from("domain_cooldowns").upsert({
+          domain: cleanDomain,
+          reason,
+          http_status: httpStatus || null,
+          cooldown_until: new Date(until).toISOString(),
+          consecutive_errors: consecutiveErrors,
+          last_error: reason,
+          updated_at: new Date().toISOString(),
+        }).then(({ error }) => {
+          if (error) console.warn("[scraper-utils] Erro ao persistir domain_cooldowns:", error.message);
+        });
+      } catch {
+        // Fallback defensivo silencioso
+      }
+    }).catch(() => {});
+  }
 }
 
 export function clearDomainCooldown(domain: string): void {
-  domainCooldowns.delete(domain.toLowerCase().trim());
+  const clean = domain.toLowerCase().trim();
+  domainCooldowns.delete(clean);
+  if (typeof window === "undefined") {
+    import("@/lib/supabase").then(({ getServerClient }) => {
+      try {
+        const supabase = getServerClient();
+        supabase.from("domain_cooldowns").delete().eq("domain", clean).then(() => {});
+      } catch {
+        // Fallback defensivo silencioso
+      }
+    }).catch(() => {});
+  }
 }
 
 export function parseRetryAfterHeader(headers: Headers): number | null {

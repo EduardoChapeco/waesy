@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Coins, Copy, Loader2, TrendingDown, Sliders, CreditCard, CheckCircle2, Shield, Layers } from 'lucide-react';
+import { Coins, Copy, Loader2, TrendingDown, Sliders, CreditCard, CheckCircle2, Shield, Layers, ArrowDownLeft, ArrowUpRight, Sparkles } from 'lucide-react';
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,22 @@ export const Route = createFileRoute("/workspace/tokens")({
  },
  component: WorkspaceTokensPage,
 });
+
+const ACTION_LABELS: Record<string, string> = {
+  welcome_bonus: "Bônus de Boas-Vindas",
+  package_purchase: "Recarga de Tokens",
+  admin_grant: "Bônus Concedido pela Administração",
+  curation_reward: "Recompensa de Indicação",
+  burn_ai_curate: "Curadoria de Artigo com IA",
+  burn_ai_rewrite: "Reescrita Editorial OpenSquad",
+  burn_ai_summarize: "Resumo Executivo com IA",
+  burn_scrape_url: "Extração Avançada de Conteúdo",
+  burn_tender_unlock: "Desbloqueio de Licitação Pública",
+  burn_magic_onboarding: "Onboarding Mágico por IA",
+  burn_lead_unlock: "Desbloqueio de Lead Qualificado",
+  burn_feed_view: "Visualização no Radar",
+  system_burn_service: "Serviço de Aceleração",
+};
 
 export default function WorkspaceTokensPage() {
  const loaderData = Route.useLoaderData();
@@ -356,51 +372,83 @@ export default function WorkspaceTokensPage() {
  </div>
  </div>
 
- {/* Extrato Forense */}
- <div className="space-y-2">
- <h2 className="text-sm font-bold text-foreground">Extrato de Movimentações</h2>
- <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
- <Table>
- <TableHeader>
- <TableRow>
- <TableHead className="text-xs">Data</TableHead>
- <TableHead className="text-xs">Operação</TableHead>
- <TableHead className="text-xs">Descrição</TableHead>
- <TableHead className="text-xs text-right">Tokens</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {wallet.transactions.length === 0 ? (
- <TableRow>
- <TableCell colSpan={4} className="text-center py-6 text-muted-foreground text-xs">
- Nenhuma movimentação recente registrada.
- </TableCell>
- </TableRow>
- ) : (
- wallet.transactions.map((tx: any) => {
- const isCredit = tx.amount > 0;
- return (
- <TableRow key={tx.id}>
- <TableCell className="text-xs font-mono text-muted-foreground py-2.5">
- {new Date(tx.created_at).toLocaleDateString("pt-BR")}
- </TableCell>
- <TableCell className="text-xs capitalize py-2.5">
- {tx.action_type?.replace(/_/g, " ")}
- </TableCell>
- <TableCell className="text-xs text-muted-foreground py-2.5">
- {tx.description || tx.action}
- </TableCell>
- <TableCell className={`text-right font-mono text-xs font-semibold py-2.5 ${isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}>
- {isCredit ? `+${Number(tx.amount).toLocaleString()}` : Number(tx.amount).toLocaleString()}
- </TableCell>
- </TableRow>
- );
- })
- )}
- </TableBody>
- </Table>
- </div>
- </div>
+ {/* Extrato de Movimentações (WhatsApp / Apple HIG) */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">Extrato de Movimentações</h2>
+            <span className="text-xs text-muted-foreground">Atualizado em tempo real</span>
+          </div>
+
+          <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm divide-y divide-border/40 overflow-hidden shadow-xs">
+            {wallet.transactions.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground text-xs">
+                Nenhuma movimentação registrada até o momento.
+              </div>
+            ) : (
+              wallet.transactions.map((tx: any) => {
+                const isCredit = Number(tx.amount) > 0;
+                const label = ACTION_LABELS[tx.action_type] || tx.description || tx.action || "Aceleração do Sistema";
+                const dateStr = new Date(tx.created_at).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                });
+                const timeStr = new Date(tx.created_at).toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+
+                return (
+                  <div
+                    key={tx.id}
+                    className="flex items-center justify-between p-3.5 sm:px-4 hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                          isCredit
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {isCredit ? (
+                          <ArrowDownLeft className="w-4 h-4" />
+                        ) : (
+                          <ArrowUpRight className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-foreground truncate">
+                          {label}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {dateStr} às {timeStr}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0 pl-3">
+                      <span
+                        className={`text-xs sm:text-sm font-semibold tabular-nums ${
+                          isCredit
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-foreground"
+                        }`}
+                      >
+                        {isCredit
+                          ? `+${Number(tx.amount).toLocaleString("pt-BR")}`
+                          : Number(tx.amount).toLocaleString("pt-BR")}
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
+                        tokens
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
  </TabsContent>
 
  {/* Tab 2: Calculadora de Economia Real */}

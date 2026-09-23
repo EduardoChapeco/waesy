@@ -12,7 +12,7 @@
  */
 
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
-import { getRandomUserAgent, cleanHtmlText } from "@/lib/mining/scraper-utils";
+import { getRandomUserAgent, cleanHtmlText, isDomainInCooldown, setDomainCooldown, sleep } from "@/lib/mining/scraper-utils";
 
 export interface HarvestedPlace {
   businessName: string;
@@ -77,17 +77,30 @@ export function normalizePlaceCategory(rawCategory: string): string {
  * Consulta geocodificação e locais via OpenStreetMap Nominatim (Gratuito e público)
  */
 export async function queryNominatimPlaces(query: string, city: string = "Chapecó", state: string = "SC"): Promise<HarvestedPlace[]> {
+  const domain = "nominatim.openstreetmap.org";
+  const cooldown = isDomainInCooldown(domain);
+  if (cooldown.inCooldown) {
+    console.warn(`[PlacesHarvester] Nominatim em cooldown (${cooldown.remainingSeconds}s restantes). Usando fallback regional.`);
+    return [];
+  }
+
   const searchQuery = `${query}, ${city}, ${state}, Brasil`;
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&addressdetails=1&limit=20`;
+  const url = `https://${domain}/search?q=${encodeURIComponent(searchQuery)}&format=json&addressdetails=1&limit=20`;
 
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "WaesyUrbanDiscoveryBot/1.0 (contato@usewaesy.com)",
+        "User-Agent": getRandomUserAgent(),
         "Accept-Language": "pt-BR,pt;q=0.9",
       },
       signal: AbortSignal.timeout(12000),
     });
+
+    if (response.status === 429) {
+      console.warn(`[PlacesHarvester] Nominatim retornou HTTP 429 (Rate Limit). Ativando cooldown de 60s.`);
+      setDomainCooldown(domain, 60000, "rate_limit_429", 429);
+      return [];
+    }
 
     if (!response.ok) {
       console.warn(`[PlacesHarvester] Nominatim retornou status ${response.status}`);
