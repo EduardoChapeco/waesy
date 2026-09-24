@@ -534,7 +534,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
       {/* ── 0. BANNER CONVITE MEMBRO FUNDADOR CIRCUITO 2027 (Padrão Silencioso Apple HIG) ── */}
       <div className="rounded-2xl border border-border/50 bg-muted/20 hover:bg-muted/30 p-3 sm:p-4 flex items-center justify-between gap-3 transition-colors">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="size-8 sm:size-9 rounded-xl bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="size-8 sm:size-9 rounded-xl bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0">
             <Sparkle className="size-4" weight="bold" />
           </div>
           <div className="min-w-0">
@@ -603,7 +603,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     />
                   ) : (
                     <h2
-                      className={`text-xs font-bold leading-tight drop-shadow-sm truncate backdrop-blur-[2px] ${
+                      className={`text-xs font-bold leading-tight drop-shadow-sm truncate ${
                         (card as any).textColor ? "" : (card as any).showOverlay ? "text-white" : "text-foreground"
                       }`}
                       style={(card as any).textColor ? { color: (card as any).textColor } : undefined}
@@ -659,7 +659,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                   return (
                     <div
                       key={item.id}
-                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs h-[285px]"
+                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-[285px]"
                     >
                       <Link to="/diretorio/$id" params={{ id: item.id }} className="block">
                         <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40">
@@ -676,7 +676,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                             </div>
                           )}
                           <div className="absolute top-2.5 right-2.5">
-                            <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-[10px] font-bold">
+                            <Badge variant="secondary" className="bg-background/95 border border-border/40 text-foreground text-[10px] font-bold">
                               {item.category}
                             </Badge>
                           </div>
@@ -754,7 +754,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                       key={item.id}
                       to="/classificados/$id"
                       params={{ id: item.id }}
-                      className="min-w-[240px] sm:min-w-[270px] max-w-[280px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs h-[330px]"
+                      className="min-w-[240px] sm:min-w-[270px] max-w-[280px] shrink-0 group flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all h-[330px]"
                     >
                       <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
                         {coverImage ? (
@@ -770,7 +770,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           </div>
                         )}
                         <div className="absolute top-2 left-2">
-                          <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-[9.5px] font-bold uppercase">
+                          <Badge variant="secondary" className="bg-background/95 border border-border/40 text-foreground text-[9.5px] font-bold uppercase">
                             {item.deal_type || item.category || "Anúncio"}
                           </Badge>
                         </div>
@@ -809,7 +809,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     <Link
                       key={post.id}
                       to="/feed"
-                      className="min-w-[260px] sm:min-w-[280px] max-w-[300px] shrink-0 p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between group space-y-3"
+                      className="min-w-[260px] sm:min-w-[280px] max-w-[300px] shrink-0 p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all flex flex-col justify-between group space-y-3"
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="size-8 rounded-full bg-muted/60 overflow-hidden flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
@@ -897,7 +897,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                       key={job.id}
                       to="/empregos/$id"
                       params={{ id: job.id }}
-                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-all space-y-3 group flex flex-col justify-between"
+                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all space-y-3 group flex flex-col justify-between"
                     >
                       <div className="flex items-start gap-3">
                         <div className="size-12 rounded-xl overflow-hidden bg-muted/40 border border-border/60 shrink-0 flex items-center justify-center">
@@ -956,7 +956,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                       key={ev.id}
                       to="/evento/$id"
                       params={{ id: ev.id }}
-                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between group"
+                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group"
                     >
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40">
                         {coverImage ? (
@@ -972,12 +972,12 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           </div>
                         )}
                         <div className="absolute top-2.5 left-2.5">
-                          <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-[10px] font-bold">
+                          <Badge variant="secondary" className="bg-background/95 border border-border/40 text-foreground text-[10px] font-bold">
                             {ev.category || "Evento"}
                           </Badge>
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
-                          <span className="bg-black/75 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
+                          <span className="bg-foreground text-background text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
                             {ev.date_display || "Em breve"}
                           </span>
                         </div>
@@ -1016,7 +1016,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     <Link
                       key={`agenda-${ev.id}`}
                       to="/agenda"
-                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between group"
+                      className="min-w-[280px] sm:min-w-[310px] max-w-[320px] shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group"
                     >
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40">
                         {coverImage ? (
@@ -1032,12 +1032,12 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                           </div>
                         )}
                         <div className="absolute top-2.5 left-2.5">
-                          <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-[10px] font-bold">
+                          <Badge variant="secondary" className="bg-background/95 border border-border/40 text-foreground text-[10px] font-bold">
                             {ev.category || "Agenda"}
                           </Badge>
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
-                          <span className="bg-black/75 backdrop-blur-md text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
+                          <span className="bg-foreground text-background text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
                             {ev.date_display || "Data confirmada"}
                           </span>
                         </div>
@@ -1069,7 +1069,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 >
                   <Link
                     to={(middleBanners[0].link_url || "/afiliados") as any}
-                    className="group relative block w-full aspect-[21/9] sm:aspect-[24/9] rounded-2xl overflow-hidden bg-card border border-border/60 shadow-2xs hover:border-foreground/30 transition-all"
+                    className="group relative block w-full aspect-[21/9] sm:aspect-[24/9] rounded-2xl overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-all"
                   >
                     {middleBanners[0].media_type === "video" ? (
                       <video
@@ -1090,7 +1090,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4 text-left">
                       {middleBanners[0].badge_text && (
-                        <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20 mb-1.5">
+                        <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-white/20 text-white border border-white/20 mb-1.5">
                           {middleBanners[0].badge_text}
                         </span>
                       )}
@@ -1107,7 +1107,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                 </AdTelemetryBeacon>
               ) : activeCategory === "afiliados" ? (
                 /* Card Editorial de Afiliados exibido exclusivamente na categoria Afiliados */
-                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="p-5 sm:p-6 rounded-2xl border border-border/60 bg-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1 max-w-xl">
                     <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider font-bold">
                       Afiliados
@@ -1154,11 +1154,11 @@ function CommunityMarketplaceView({ data }: { data: any }) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {unifiedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between"
+                  className="group rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between"
                 >
                   <Link to={item.to as any} className="flex-1 flex flex-col cursor-pointer">
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40 shrink-0">
@@ -1175,7 +1175,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5">
-                        <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
+                        <Badge className="bg-background/95 text-foreground font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
                           {item.badge}
                         </Badge>
                       </div>
@@ -1233,71 +1233,66 @@ function CommunityMarketplaceView({ data }: { data: any }) {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────────────────
-          MODO 3: LISTA COMPACTA (SPLIT COM IMAGEM À ESQUERDA)
+          MODO 3: LISTA COMPACTA (SEPARAÇÃO RIGOROSA MOBILE VS DESKTOP)
+          - Mobile (< 768px): WhatsApp List Pattern (Row compacta, 48px thumb, dados à direita)
+          - Desktop (>= 768px): Split Card Horizontal Widescreen
           ───────────────────────────────────────────────────────────────────────────── */}
       {viewMode === "list" && (
         <section aria-label="Lista de Anúncios" className="space-y-3">
           {unifiedItems.length === 0 ? (
-            <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-border/60 p-8">
+            <div className="py-20 text-center space-y-3 bg-card rounded-2xl border border-border/50 p-8">
               <Tag className="size-10 text-muted-foreground/40 mx-auto" />
               <h2 className="text-sm font-bold text-foreground">
                 Nenhum anúncio encontrado com estes filtros
               </h2>
             </div>
           ) : (
-            unifiedItems.map((item) => (
-              <div
-                key={item.id}
-                className="group flex flex-col sm:flex-row items-stretch justify-between rounded-2xl border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-all overflow-hidden p-0 w-full"
-              >
-                <Link
-                  to={item.to as any}
-                  className="relative w-full sm:w-56 md:w-64 h-44 sm:h-auto min-h-[140px] overflow-hidden bg-muted/40 shrink-0 cursor-pointer"
-                >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="size-full bg-muted/40 flex items-center justify-center">
-                      <Tag size={28} className="text-muted-foreground/30" />
+            <>
+              {/* ── MOBILE EXCLUSIVO (< 768px): WhatsApp List Pattern ── */}
+              <div className="block md:hidden divide-y divide-border/30 rounded-2xl border border-border/50 bg-card overflow-hidden">
+                {unifiedItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={item.to as any}
+                    className="p-3 flex items-center justify-between gap-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+                  >
+                    <div className="size-12 rounded-xl bg-muted/30 border border-border/40 shrink-0 overflow-hidden flex items-center justify-center">
+                      {item.image ? (
+                        <img src={item.image} alt={item.title} className="size-full object-cover" loading="lazy" />
+                      ) : (
+                        <Tag size={20} className="text-muted-foreground/40" />
+                      )}
                     </div>
-                  )}
-                  <div className="absolute top-2.5 left-2.5">
-                    <Badge className="bg-background/95 backdrop-blur-md text-foreground font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
-                      {item.badge}
-                    </Badge>
-                  </div>
-                </Link>
 
-                <div className="flex-1 min-w-0 p-4 sm:p-5 flex flex-col justify-between space-y-2">
-                  <Link to={item.to as any} className="space-y-1 block cursor-pointer">
-                    {item.priceOrDate && (
-                      <p className="text-lg sm:text-xl font-black text-foreground font-mono">
-                        {item.priceOrDate}
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 h-4 text-muted-foreground border-border/50">
+                          {item.badge}
+                        </Badge>
+                        {item.priceOrDate && (
+                          <span className="font-mono font-bold text-xs text-foreground truncate">
+                            {item.priceOrDate}
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-bold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+                        {item.title}
                       </p>
-                    )}
-                    <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                      {item.title}
-                    </h3>
-                  </Link>
+                      {item.location && (
+                        <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                          <MapPin size={11} className="shrink-0 text-muted-foreground" />
+                          <span className="truncate">{item.location}</span>
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/30">
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
-                      <MapPin size={12} className="shrink-0 text-primary" />
-                      <span className="truncate">{item.location || "Na sua região"}</span>
-                    </span>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 shrink-0">
                       {item.phone && (
-                        <Button
+                        <button
                           type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             trackAndOpenWhatsApp({
                               phone: item.phone || "",
                               message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
@@ -1305,30 +1300,109 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                               entityType: item.pillar,
                               entityId: item.id,
                               entityTitle: item.title,
-                            })
-                          }
-                          className="h-10 sm:h-8 px-3 rounded-xl text-xs gap-1.5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                            });
+                          }}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+                          title="WhatsApp"
                         >
-                          <WhatsappLogo size={15} weight="bold" />
-                          <span>WhatsApp</span>
-                        </Button>
+                          <WhatsappLogo size={18} weight="bold" />
+                        </button>
                       )}
+                      <ArrowRight size={16} className="text-muted-foreground/60 group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
 
-                      <Button
-                        asChild
-                        size="sm"
-                        className="h-10 sm:h-8 px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                      >
-                        <Link to={item.to as any}>
-                          <span>Ver</span>
-                          <ArrowRight size={14} className="ml-1" />
-                        </Link>
-                      </Button>
+              {/* ── DESKTOP EXCLUSIVO (>= 768px): Split Card Horizontal Widescreen ── */}
+              <div className="hidden md:flex flex-col space-y-3">
+                {unifiedItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group flex flex-row items-stretch justify-between rounded-2xl border border-border/50 bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 w-full"
+                  >
+                    <Link
+                      to={item.to as any}
+                      className="relative w-56 lg:w-64 h-auto min-h-[140px] overflow-hidden bg-muted/40 shrink-0 cursor-pointer"
+                    >
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="size-full bg-muted/40 flex items-center justify-center">
+                          <Tag size={28} className="text-muted-foreground/30" />
+                        </div>
+                      )}
+                      <div className="absolute top-2.5 left-2.5">
+                        <Badge className="bg-background/95 text-foreground font-mono text-[9px] uppercase font-bold px-2 py-0.5 rounded-md border border-border/40">
+                          {item.badge}
+                        </Badge>
+                      </div>
+                    </Link>
+
+                    <div className="flex-1 min-w-0 p-4 sm:p-5 flex flex-col justify-between space-y-2">
+                      <Link to={item.to as any} className="space-y-1 block cursor-pointer">
+                        {item.priceOrDate && (
+                          <p className="text-lg font-black text-foreground font-mono">
+                            {item.priceOrDate}
+                          </p>
+                        )}
+                        <h3 className="font-bold text-base text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                      </Link>
+
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                          <MapPin size={12} className="shrink-0 text-muted-foreground" />
+                          <span className="truncate">{item.location || "Na sua região"}</span>
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          {item.phone && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                trackAndOpenWhatsApp({
+                                  phone: item.phone || "",
+                                  message: `Olá! Vi o anúncio "${item.title}" no Waesy.`,
+                                  storeId: null,
+                                  entityType: item.pillar,
+                                  entityId: item.id,
+                                  entityTitle: item.title,
+                                })
+                              }
+                              className="h-8 px-3 rounded-xl text-xs gap-1.5 border-border/50 hover:bg-muted/50 cursor-pointer"
+                            >
+                              <WhatsappLogo size={15} weight="bold" />
+                              <span>WhatsApp</span>
+                            </Button>
+                          )}
+
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-3.5 rounded-xl text-xs font-semibold hover:bg-muted cursor-pointer"
+                          >
+                            <Link to={item.to as any}>
+                              <span>Ver</span>
+                              <ArrowRight size={14} className="ml-1" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))
+            </>
           )}
         </section>
       )}
@@ -1342,7 +1416,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           >
             <Link
               to={(footerBanners[0].link_url || "/criar-negocio") as any}
-              className="group relative block w-full aspect-[21/9] sm:aspect-[24/9] rounded-3xl overflow-hidden bg-card border border-border/60 shadow-2xs hover:border-foreground/30 transition-all"
+              className="group relative block w-full aspect-[21/9] sm:aspect-[24/9] rounded-3xl overflow-hidden bg-card border border-border/60 hover:border-foreground/30 transition-all"
             >
               {footerBanners[0].media_type === "video" ? (
                 <video
@@ -1363,7 +1437,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
               <div className="absolute bottom-5 left-5 right-5 text-left">
                 {footerBanners[0].badge_text && (
-                  <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20 mb-1.5">
+                  <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider bg-white/20 text-white border border-white/20 mb-1.5">
                     {footerBanners[0].badge_text}
                   </span>
                 )}
@@ -1393,7 +1467,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              <Button asChild className="h-10 px-5 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 shadow-2xs cursor-pointer">
+              <Button asChild className="h-10 px-5 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer">
                 <Link to="/criar-negocio">
                   <Storefront size={15} weight="bold" className="mr-1.5" />
                   Cadastrar Empresa
