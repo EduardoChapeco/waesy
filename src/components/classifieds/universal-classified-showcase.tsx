@@ -930,7 +930,7 @@ export function UniversalClassifiedShowcase({
               variant="outline"
               size="sm"
               onClick={onOpenCompanion}
-              className="h-10 sm:h-11 px-3.5 rounded-xl text-xs sm:text-sm font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground hidden sm:flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-98"
+              className="h-10 sm:h-11 px-3.5 rounded-xl text-xs sm:text-sm font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground hidden sm:flex items-center gap-1.5 cursor-pointer active:scale-98"
             >
               <Smartphone className="size-4 text-primary" />
               <span>Guia Digital 9:16</span>
@@ -944,7 +944,7 @@ export function UniversalClassifiedShowcase({
               onClick={onEdit}
               title="Editar anúncio"
               aria-label="Editar anúncio"
-              className="h-10 sm:h-11 w-10 sm:w-11 p-0 rounded-xl border border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-2xs"
+              className="h-10 sm:h-11 w-10 sm:w-11 p-0 rounded-xl border border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center justify-center cursor-pointer transition-all active:scale-95"
             >
               <Edit3 className="size-4 text-foreground" />
             </Button>
@@ -954,14 +954,14 @@ export function UniversalClassifiedShowcase({
             entityId={classified.id}
             entityType="classified"
             title={classified.title}
-            className="h-10 sm:h-11 w-10 sm:w-11 rounded-xl border border-border/70 bg-card hover:bg-muted/50 p-0 flex items-center justify-center text-muted-foreground shadow-2xs cursor-pointer active:scale-95"
+            className="h-10 sm:h-11 w-10 sm:w-11 rounded-xl border border-border/70 bg-card hover:bg-muted/50 p-0 flex items-center justify-center text-muted-foreground cursor-pointer active:scale-95"
           />
 
           <Button
             variant="outline"
             size="sm"
             onClick={handleShare}
-            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-98"
+            className="h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-1.5 cursor-pointer active:scale-98"
           >
             <Share2 className="size-4" />
             <span className="hidden sm:inline">Compartilhar</span>
@@ -1017,13 +1017,13 @@ export function UniversalClassifiedShowcase({
               )}
               {images.length > 1 && (
                 <>
-                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[11px] font-mono font-medium">
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/75 text-white text-[11px] font-mono font-medium">
                     {activeImage + 1} / {images.length}
                   </div>
                   <button
                     type="button"
                     onClick={() => setActiveImage((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-sm"
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/70 text-white flex items-center justify-center"
                     aria-label="Foto anterior"
                   >
                     <ChevronLeft className="size-4" />
@@ -1031,7 +1031,7 @@ export function UniversalClassifiedShowcase({
                   <button
                     type="button"
                     onClick={() => setActiveImage((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-sm"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 size-8 rounded-full bg-black/70 text-white flex items-center justify-center"
                     aria-label="Próxima foto"
                   >
                     <ChevronRight className="size-4" />
@@ -1062,7 +1062,7 @@ export function UniversalClassifiedShowcase({
                       <button
                         type="button"
                         onClick={() => setFullscreenImage(images[0])}
-                        className="absolute bottom-4 right-4 px-3 py-1.5 rounded-xl bg-background/80 hover:bg-background text-foreground text-xs font-medium backdrop-blur-md border border-border/50 shadow-xs flex items-center gap-1.5 transition-all"
+                        className="absolute bottom-4 right-4 px-3 py-1.5 rounded-xl bg-background/80 hover:bg-background text-foreground text-xs font-medium border border-border/50 flex items-center gap-1.5 transition-all"
                       >
                         <Maximize2 className="size-3.5" />
                         <span>Ver em tela cheia</span>
@@ -1089,7 +1089,7 @@ export function UniversalClassifiedShowcase({
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[0])}
-                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/90 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/60 shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/95 border border-border/40 text-foreground hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-1.5 transition-all active:scale-95"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Ver as 2 fotos</span>
@@ -1124,7 +1124,7 @@ export function UniversalClassifiedShowcase({
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[0])}
-                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/90 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/60 shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/95 border border-border/40 text-foreground hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-1.5 transition-all active:scale-95"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Ver as 3 fotos</span>
@@ -1178,7 +1178,7 @@ export function UniversalClassifiedShowcase({
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[0])}
-                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/90 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/60 shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-background/95 border border-border/40 text-foreground hover:bg-background text-foreground text-xs font-semibold border border-border/60 flex items-center gap-1.5 transition-all active:scale-95"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Mostrar todas as {images.length} fotos</span>
@@ -1263,9 +1263,9 @@ export function UniversalClassifiedShowcase({
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
                       className={cn(
-                        "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 select-none active:scale-98 shadow-2xs",
+                        "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 select-none active:scale-98",
                         isSelected
-                          ? "bg-foreground text-background border-foreground shadow-xs font-bold"
+                          ? "bg-foreground text-background border-foreground font-bold"
                           : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
                       )}
                     >
@@ -1309,7 +1309,7 @@ export function UniversalClassifiedShowcase({
 
                 {/* Oportunidade de Investimento & Parceria (quando aplicável) */}
                 {isInvestmentOpportunity && (
-                  <div className="rounded-2xl border border-primary/25 bg-card p-4 sm:p-5 space-y-4 shadow-xs">
+                  <div className="rounded-2xl border border-primary/25 bg-card p-4 sm:p-5 space-y-4">
                     <div className="flex items-center justify-between pb-2 border-b border-border/30">
                       <div className="flex items-center gap-2">
                         <Coins className="size-4 text-primary" />
@@ -1397,7 +1397,7 @@ export function UniversalClassifiedShowcase({
                           size="sm"
                           type="button"
                           onClick={handleWhatsApp}
-                          className="h-8 px-3.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 cursor-pointer shadow-xs gap-1.5"
+                          className="h-8 px-3.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 cursor-pointer gap-1.5"
                         >
                           <MessageCircle className="size-3.5" />
                           <span>Apresentar Proposta</span>
@@ -2161,7 +2161,7 @@ export function UniversalClassifiedShowcase({
               COLUNA DIREITA: Card Sticky de Preço & Conversão (Desktop >= 1024px)
               ══════════════════════════════════════════════════════════ */}
           <div className="hidden lg:block lg:col-span-5">
-            <div className="sticky top-24 rounded-2xl border border-border/60 bg-card p-6 shadow-xs space-y-6">
+            <div className="sticky top-24 rounded-2xl border border-border/60 bg-card p-6 space-y-6">
               {/* Bloco de Preço */}
               <div className="space-y-1">
                 {isDonation ? (
@@ -2438,7 +2438,7 @@ export function UniversalClassifiedShowcase({
       </div>
 
       {/* ── STICKY BOTTOM ACTION BAR (Mobile Core: Nielsen Norman & Apple HIG) ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/40 px-3.5 py-2.5 pb-safe flex items-center justify-between gap-3 shadow-xs">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/40 px-3.5 py-2.5 pb-safe flex items-center justify-between gap-3">
         <div className="flex flex-col min-w-0">
           {isDonation ? (
             <div className="flex items-center gap-1.5">

@@ -623,7 +623,7 @@ function ClassifiedsMasterPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar imóveis, carros, serviços, vagas, desapegos..."
-                className="h-10 sm:h-11 pl-9.5 pr-8 rounded-xl bg-card border-border/70 text-xs sm:text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary w-full shadow-2xs"
+                className="h-10 sm:h-11 pl-9.5 pr-8 rounded-xl bg-card border-border/70 text-xs sm:text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary w-full"
                 aria-label="Buscar nos classificados"
               />
               {search && (
@@ -644,7 +644,7 @@ function ClassifiedsMasterPage() {
               variant="outline"
               onClick={() => setMobileFilterSheetOpen(true)}
               className={cn(
-                "h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs transition-all active:scale-95",
+                "h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl border border-border/70 text-xs sm:text-sm font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer transition-all active:scale-95",
                 activeFiltersCount > 0
                   ? "bg-primary/10 border-primary/40 text-primary font-bold"
                   : "bg-card hover:bg-muted/50 text-foreground"
@@ -669,7 +669,7 @@ function ClassifiedsMasterPage() {
                 className={cn(
                   "h-full px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "feed"
-                    ? "bg-card text-foreground shadow-xs"
+                    ? "bg-card text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
                 title="Modo Feed / Trilhos"
@@ -683,7 +683,7 @@ function ClassifiedsMasterPage() {
                 className={cn(
                   "h-full px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "grid"
-                    ? "bg-card text-foreground shadow-xs"
+                    ? "bg-card text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
                 title="Modo Grade"
@@ -697,7 +697,7 @@ function ClassifiedsMasterPage() {
                 className={cn(
                   "h-full px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center",
                   viewMode === "list"
-                    ? "bg-card text-foreground shadow-xs"
+                    ? "bg-card text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
                 title="Modo Lista"
@@ -710,7 +710,7 @@ function ClassifiedsMasterPage() {
             {/* Botão de Anunciar / Publicar (Acesso Direto ao Fluxo) */}
             <Button
               asChild
-              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-bold text-xs sm:text-sm shrink-0 flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
+              className="h-10 sm:h-11 px-3 sm:px-4 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-bold text-xs sm:text-sm shrink-0 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
             >
               <Link to="/conta/classificados/novo">
                 <Plus size={16} weight="bold" />
@@ -733,9 +733,9 @@ function ClassifiedsMasterPage() {
                     if (cat.id !== "real_estate") setSelectedDealType("todos");
                   }}
                   className={cn(
-                    "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                    "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
                     isActive
-                      ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                      ? "bg-foreground text-background border-foreground font-bold"
                       : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
                   )}
                   style={(cat as any).textColor ? { color: (cat as any).textColor } : undefined}
@@ -818,7 +818,7 @@ function ClassifiedsMasterPage() {
                     className={cn(
                       "px-3 py-1.5 rounded-xl font-mono text-xs cursor-pointer transition-all",
                       selectedCity === "todos"
-                        ? "bg-foreground text-background font-bold shadow-xs"
+                        ? "bg-foreground text-background font-bold"
                         : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                     )}
                   >
@@ -832,7 +832,7 @@ function ClassifiedsMasterPage() {
                       className={cn(
                         "px-3 py-1.5 rounded-xl font-mono text-xs cursor-pointer transition-all",
                         selectedCity === c.name
-                          ? "bg-foreground text-background font-bold shadow-xs"
+                          ? "bg-foreground text-background font-bold"
                           : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                       )}
                     >
@@ -902,7 +902,7 @@ function ClassifiedsMasterPage() {
                       className={cn(
                         "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                         selectedDelivery === m.id
-                          ? "bg-foreground text-background font-bold shadow-xs"
+                          ? "bg-foreground text-background font-bold"
                           : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                       )}
                     >
@@ -930,7 +930,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             selectedDealType === dt.id
-                              ? "bg-foreground text-background font-bold shadow-xs"
+                              ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -952,7 +952,7 @@ function ClassifiedsMasterPage() {
                             className={cn(
                               "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all flex items-center gap-1",
                               isChecked
-                                ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                                ? "bg-primary text-primary-foreground font-bold"
                                 : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                             )}
                           >
@@ -983,7 +983,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             vehicleGearbox === opt.id
-                              ? "bg-foreground text-background font-bold shadow-xs"
+                              ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -1003,7 +1003,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             vehicleFuel === opt.id
-                              ? "bg-foreground text-background font-bold shadow-xs"
+                              ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -1040,7 +1040,7 @@ function ClassifiedsMasterPage() {
                         className={cn(
                           "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                           selectedSubcategory === opt.id
-                            ? "bg-foreground text-background font-bold shadow-xs"
+                            ? "bg-foreground text-background font-bold"
                             : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                         )}
                       >
@@ -1066,7 +1066,7 @@ function ClassifiedsMasterPage() {
                         className={cn(
                           "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                           foodSubniche === opt.id
-                            ? "bg-foreground text-background font-bold shadow-xs"
+                            ? "bg-foreground text-background font-bold"
                             : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                         )}
                       >
@@ -1094,7 +1094,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             serviceAudience === opt.id
-                              ? "bg-foreground text-background font-bold shadow-xs"
+                              ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -1114,7 +1114,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             serviceSubniche === opt.id
-                              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                              ? "bg-primary text-primary-foreground font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -1134,7 +1134,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             selectedServiceModality === opt.id
-                              ? "bg-foreground text-background font-bold shadow-xs"
+                              ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -1163,7 +1163,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             businessGoal === opt.id
-                              ? "bg-foreground text-background font-bold shadow-xs"
+                              ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -1183,7 +1183,7 @@ function ClassifiedsMasterPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                             businessPointType === opt.id
-                              ? "bg-foreground text-background font-bold shadow-xs"
+                              ? "bg-foreground text-background font-bold"
                               : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                           )}
                         >
@@ -1221,7 +1221,7 @@ function ClassifiedsMasterPage() {
                         className={cn(
                           "px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-all",
                           selectedJobRegime === opt.id
-                            ? "bg-foreground text-background font-bold shadow-xs"
+                            ? "bg-foreground text-background font-bold"
                             : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
                         )}
                       >
@@ -1295,7 +1295,7 @@ function ClassifiedsMasterPage() {
               return (
                 <div
                   key={item.id}
-                  className="group flex flex-col sm:flex-row items-stretch justify-between rounded-2xl border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-all overflow-hidden p-0 w-full"
+                  className="group flex flex-col sm:flex-row items-stretch justify-between rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 w-full"
                 >
                   <Link
                     to="/classificados/$id"
@@ -1315,11 +1315,11 @@ function ClassifiedsMasterPage() {
                       </div>
                     )}
                     <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                      <Badge className="bg-background/95 backdrop-blur-none text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md">
+                      <Badge className="bg-background/95 text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md">
                         {itemNiche.shortLabel}
                       </Badge>
                       {(item.is_boosted || item.attributes?.is_boosted) && (
-                        <Badge variant="outline" className="border-border/60 text-foreground font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+                        <Badge variant="outline" className="border-border/60 text-foreground font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-md">
                           Destaque
                         </Badge>
                       )}
@@ -1456,7 +1456,7 @@ function ClassifiedsMasterPage() {
 
                     return (
                       <div key={item.id} className="w-72 sm:w-80 shrink-0 h-full flex flex-col">
-                        <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between h-full">
+                        <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between h-full">
                           <Link
                             to="/classificados/$id"
                             params={{ id: item.id }}
@@ -1476,13 +1476,13 @@ function ClassifiedsMasterPage() {
                                 </div>
                               )}
                               <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                                <Badge className="bg-background/95 backdrop-blur-none text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border border-border/40">
+                                <Badge className="bg-background/95 text-foreground font-mono text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border border-border/40">
                                   {itemNiche.shortLabel}
                                 </Badge>
                                 {item.deal_type && (
                                   <Badge
                                     variant="secondary"
-                                    className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 bg-background/90 text-foreground backdrop-blur-none border border-border/40 rounded-md shadow-2xs"
+                                    className="text-[9px] uppercase font-mono font-bold px-2 py-0.5 bg-background/90 text-foreground border border-border/40 rounded-md"
                                   >
                                     {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                                   </Badge>
@@ -1570,7 +1570,7 @@ function ClassifiedsMasterPage() {
               return (
                 <div
                   key={item.id}
-                  className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between h-full"
+                  className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between h-full"
                 >
                   <Link
                     to="/classificados/$id"
@@ -1591,19 +1591,19 @@ function ClassifiedsMasterPage() {
                         </div>
                       )}
                       <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap z-10">
-                        <Badge className="bg-background/95 backdrop-blur-none text-foreground font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-lg border border-border/40 shadow-xs">
+                        <Badge className="bg-background/95 text-foreground font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-lg border border-border/40">
                           {itemNiche.shortLabel}
                         </Badge>
                         {item.deal_type && (
                           <Badge
                             variant="secondary"
-                            className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 bg-background/90 text-foreground backdrop-blur-none border border-border/40 rounded-md shadow-2xs"
+                            className="text-[9px] uppercase font-mono font-bold px-1.5 py-0.5 bg-background/90 text-foreground border border-border/40 rounded-md"
                           >
                             {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
                           </Badge>
                         )}
                         {(item.is_boosted || item.attributes?.is_boosted) && (
-                          <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+                          <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[9px] font-bold px-1.5 py-0.5 rounded-md">
                             Destaque
                           </Badge>
                         )}
@@ -1650,7 +1650,7 @@ function ClassifiedsMasterPage() {
                             classifiedTitle: item.title,
                           });
                         }}
-                        className="h-8 px-2.5 rounded-xl text-xs gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                        className="h-8 px-2.5 rounded-xl text-xs gap-1 border-border/50 text-foreground hover:bg-muted/50 cursor-pointer"
                         title="Chamar no WhatsApp"
                       >
                         <WhatsappLogo size={15} weight="fill" />

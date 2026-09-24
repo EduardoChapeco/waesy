@@ -1,1 +1,6 @@
-feat(config): rename project to usewaesy and deploy to usewaesy.pages.dev on Cloudflare Pages
+feat(ui-v20): complete responsive purification and visual silence for classifieds and showcase
+
+- Purified universal-classified-showcase: eradicated non-canonical shadows and backdrop filters
+- Purified store classifieds index: sanitized WhatsApp action button to neutral outline tokens
+- Enforced Rule 7 and Rule 11 (Clean Surface and Visual Silence)
+- 0-error production build verified with single-file Cloudflare Pages worker
