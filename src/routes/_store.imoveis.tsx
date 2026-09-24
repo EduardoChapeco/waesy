@@ -155,7 +155,7 @@ function ImoveisVerticalPage() {
       )}
 
       {/* ── 2. Switcher de Ecossistema: Imóveis vs Temporada ── */}
-      <div className="p-4 rounded-2xl bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border/40 shadow-2xs">
+      <div className="p-4 rounded-2xl bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border/40">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <House size={22} weight="bold" />
@@ -358,7 +358,7 @@ function PropertyCard({ item }: { item: any }) {
   const isTemporada = item.deal_type === "temporada";
 
   return (
-    <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover:shadow-xs transition-all flex flex-col justify-between h-full shadow-2xs">
+    <div className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 hover: transition-all flex flex-col justify-between h-full">
       <Link to="/classificados/$id" params={{ id: item.id }} className="block flex-1 flex flex-col">
         <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 flex items-center justify-center">
           {img ? (
@@ -369,7 +369,7 @@ function PropertyCard({ item }: { item: any }) {
             </div>
           )}
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-            <Badge variant="secondary" className="bg-background/90 backdrop-blur-md text-[10px] font-bold">
+            <Badge variant="secondary" className="bg-background/90 text-[10px] font-bold">
               {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
             </Badge>
           </div>
@@ -415,7 +415,7 @@ function PropertyListItem({ item }: { item: any }) {
     <Link
       to="/classificados/$id"
       params={{ id: item.id }}
-      className="group p-3.5 rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-2xs"
+      className="group p-3.5 rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-4"
     >
       <div className="relative size-20 sm:size-24 rounded-xl overflow-hidden bg-muted shrink-0">
         {img ? (

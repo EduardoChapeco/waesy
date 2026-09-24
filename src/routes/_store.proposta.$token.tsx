@@ -186,7 +186,7 @@ function PublicTravelProposalPage() {
       
       {/* ── 1. HEADER TABS MULTI-OPÇÃO (QUANDO EXISTIREM 2+ COTAÇÕES) ── */}
       {options.length > 1 && (
-        <div className="bg-card/90 backdrop-blur-md border border-border/80 rounded-2xl p-2.5 shadow-sm">
+        <div className="bg-card/90 backdrop-blur-md border border-border/80 rounded-2xl p-2.5">
           <div className="flex items-center justify-between gap-2 mb-2 px-1">
             <span className="text-[11px] font-bold tracking-tight text-foreground uppercase flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -209,7 +209,7 @@ function PublicTravelProposalPage() {
                   onClick={() => setSelectedOptionIndex(idx)}
                   className={`relative text-left p-3 rounded-xl border transition-all duration-150 cursor-pointer ${
                     isSelected
-                      ? "border-emerald-600 bg-emerald-500/10 shadow-sm"
+                      ? "border-emerald-600 bg-emerald-500/10 "
                       : "border-border/60 bg-background hover:bg-muted/40"
                   }`}
                 >
@@ -245,7 +245,7 @@ function PublicTravelProposalPage() {
       )}
 
       {/* ── 2. BARRA DE AÇÕES PRINCIPAL (DESKTOP E TABLET) ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80 sticky top-4 z-20 shadow-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80 sticky top-4 z-20">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <span className="text-xs sm:text-sm font-bold text-foreground truncate">
@@ -273,7 +273,7 @@ function PublicTravelProposalPage() {
             size="sm"
             variant="outline"
             onClick={() => setIsAdvisorOpen(true)}
-            className="rounded-xl text-xs font-bold gap-1.5 h-10 border-amber-500/40 text-amber-700 bg-amber-50/50 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:text-amber-300 cursor-pointer shadow-sm"
+            className="rounded-xl text-xs font-bold gap-1.5 h-10 border-amber-500/40 text-amber-700 bg-amber-50/50 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:text-amber-300 cursor-pointer"
           >
             <Sparkles className="size-3.5 text-amber-600 dark:text-amber-400" />
             <span>Consultor IA</span>
@@ -314,7 +314,7 @@ function PublicTravelProposalPage() {
             type="button"
             size="sm"
             onClick={() => setIsCheckoutModalOpen(true)}
-            className="rounded-xl text-xs font-bold gap-1.5 h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm cursor-pointer"
+            className="rounded-xl text-xs font-bold gap-1.5 h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
           >
             <ShieldCheck className="size-4" />
             <span>{isApproved ? "Concluir Reserva" : "Escolher & Reservar"}</span>
@@ -323,12 +323,12 @@ function PublicTravelProposalPage() {
       </div>
 
       {/* ── 3. RENDERIZAÇÃO DA LÂMINA EDITORIAL DA PROPOSTA ── */}
-      <div id="public-proposal-canvas" className="rounded-2xl border border-border/80 shadow-lg overflow-hidden bg-white">
+      <div id="public-proposal-canvas" className="rounded-2xl border border-border/80 overflow-hidden bg-white">
         <ProposalCanvasRenderer proposal={effectiveProposal} />
       </div>
 
       {/* ── 4. BARRA FIXA MOBILE (Thumb Zone Ergonomics - Regra 12) ── */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-2.5 bg-background/95 backdrop-blur-md border-t border-border/70 z-30 flex items-center gap-2 shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 p-2.5 bg-background/95 backdrop-blur-md border-t border-border/70 z-30 flex items-center gap-2">
         <Button
           type="button"
           variant="outline"
@@ -359,7 +359,7 @@ function PublicTravelProposalPage() {
         <Button
           type="button"
           onClick={() => setIsCheckoutModalOpen(true)}
-          className="flex-1 h-11 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md cursor-pointer"
+          className="flex-1 h-11 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
         >
           <ShieldCheck className="size-4 mr-1.5" />
           <span>{isApproved ? "Concluir Reserva" : "Escolher Opção"}</span>

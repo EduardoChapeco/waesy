@@ -427,7 +427,7 @@ function DedicatedHotpageView() {
  />
  </div>
  )}
- <span className={`px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider backdrop-blur-md ${theme.badgeBg}`}>
+ <span className={`px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider  ${theme.badgeBg}`}>
  {badgeLabel}
  </span>
  </div>
@@ -445,7 +445,7 @@ function DedicatedHotpageView() {
  {theme.heroPills.map((pill, idx) => (
  <span
  key={idx}
- className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/35 text-white backdrop-blur-md text-[11px] sm:text-xs font-bold border border-white/15 drop-shadow-xs"
+ className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/35 text-white text-[11px] sm:text-xs font-bold border border-white/15 drop-"
  >
  {pill}
  </span>
@@ -468,9 +468,9 @@ function DedicatedHotpageView() {
                 type="button"
                 onClick={() => setSelectedSubCategory(chip.id)}
                 className={cn(
-                  "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 shadow-2xs",
+                  "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98 ",
                   isSelected
-                    ? "bg-foreground text-background border-foreground font-bold shadow-xs"
+                    ? "bg-foreground text-background border-foreground font-bold "
                     : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
                 )}
               >
@@ -497,7 +497,7 @@ function DedicatedHotpageView() {
  />
  </div>
 
- <div className="flex items-center gap-2 overflow-x-auto no-scrollbar ">
+ <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
  <button
  type="button"
  onClick={() => setSelectedFastFilter(selectedFastFilter === "desconto" ? null : "desconto")}
@@ -599,7 +599,7 @@ function DedicatedHotpageView() {
  return (
  <div
  key={p.id}
- className="flex items-stretch justify-between p-3 sm:p-4 rounded-2xl bg-card hover:border-foreground/30 transition-all gap-3.5 group "
+ className="flex items-stretch justify-between p-3 sm:p-4 rounded-2xl bg-card hover:border-foreground/30 transition-all gap-3.5 group"
  >
  {/* Imagem do Produto com Badge de Desconto */}
  <div className="relative size-20 sm:size-24 rounded-xl overflow-hidden bg-muted shrink-0 flex items-center justify-center">
@@ -615,7 +615,7 @@ function DedicatedHotpageView() {
  )}
  {discountPercent && (
  <div className="absolute top-1 left-1">
- <span className="bg-destructive text-white font-mono font-black text-[9px] px-1.5 py-0.5 rounded-md ">
+ <span className="bg-destructive text-white font-mono font-black text-[9px] px-1.5 py-0.5 rounded-md">
  -{discountPercent}%
  </span>
  </div>

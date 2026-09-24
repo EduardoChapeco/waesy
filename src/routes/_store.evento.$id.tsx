@@ -259,11 +259,11 @@ function EventDetailPage() {
         {/* Coluna Esquerda: Banner, Detalhes & Cobertura Cruzada */}
         <div className="lg:col-span-7 space-y-6">
           {event.cover_image && (
-            <div className="w-full aspect-video md:aspect-[16/9] overflow-hidden rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-muted shadow-xs relative">
+            <div className="w-full aspect-video md:aspect-[16/9] overflow-hidden rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-muted relative">
               <img src={event.cover_image} alt={event.title} className="w-full h-full object-cover" />
               {event.is_external && (
                 <div className="absolute top-3 left-3">
-                  <Badge className="bg-background/90 backdrop-blur-md text-foreground text-[11px] font-bold border border-border/50 uppercase tracking-wider shadow-xs">
+                  <Badge className="bg-background/90 text-foreground text-[11px] font-bold border border-border/50 uppercase tracking-wider">
                     {event.external_source ? `Via ${event.external_source}` : "Evento Externo"}
                   </Badge>
                 </div>
@@ -325,7 +325,7 @@ function EventDetailPage() {
                 <Link
                   to="/noticias/$slug"
                   params={{ slug: linkedNews.slug }}
-                  className="block group p-4 rounded-none sm:rounded-2xl border-y sm:border border-border/80 bg-card hover:border-primary/50 transition-all shadow-xs"
+                  className="block group p-4 rounded-none sm:rounded-2xl border-y sm:border border-border/80 bg-card hover:border-primary/50 transition-all"
                 >
                   <div className="flex gap-4 items-center">
                     {linkedNews.cover_media_url && (
@@ -362,7 +362,7 @@ function EventDetailPage() {
         {/* Coluna Direita: Ingressos & RSVP (Sticky no Desktop) */}
         <div className="lg:col-span-5 space-y-5 lg:sticky lg:top-24">
           {/* ── Card 1: Confirmação de Presença (RSVP) ── */}
-          <div className="p-5 sm:p-6 rounded-none sm:rounded-2xl border-y sm:border border-border/80 bg-card shadow-xs space-y-4">
+          <div className="p-5 sm:p-6 rounded-none sm:rounded-2xl border-y sm:border border-border/80 bg-card space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <Users size={18} weight="bold" className="text-primary" />
@@ -380,7 +380,7 @@ function EventDetailPage() {
                 disabled={isSubmittingRsvp}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all min-h-[58px] ${
                   userRsvp === "going"
-                    ? "bg-primary/10 border-primary text-primary font-bold shadow-xs"
+                    ? "bg-primary/10 border-primary text-primary font-bold "
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
                 }`}
               >
@@ -399,7 +399,7 @@ function EventDetailPage() {
                 disabled={isSubmittingRsvp}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all min-h-[58px] ${
                   userRsvp === "interested"
-                    ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold shadow-xs"
+                    ? "bg-amber-500/10 border-amber-500 text-amber-700 dark:text-amber-400 font-bold "
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
                 }`}
               >
@@ -418,7 +418,7 @@ function EventDetailPage() {
                 disabled={isSubmittingRsvp}
                 className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all min-h-[58px] ${
                   userRsvp === "not_going"
-                    ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold shadow-xs"
+                    ? "bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-400 font-bold "
                     : "bg-background border-border/80 hover:border-border text-foreground hover:bg-muted/40"
                 }`}
               >
@@ -434,7 +434,7 @@ function EventDetailPage() {
           </div>
 
           {/* ── Card 2: Ingressos ── */}
-          <div className="p-5 sm:p-6 rounded-none sm:rounded-2xl border-y sm:border border-border/80 bg-card shadow-xs space-y-5">
+          <div className="p-5 sm:p-6 rounded-none sm:rounded-2xl border-y sm:border border-border/80 bg-card space-y-5">
             <div className="flex items-center gap-2.5 pb-3 border-b border-border/40">
               <Ticket size={20} weight="bold" className="text-primary" />
               <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
@@ -530,7 +530,7 @@ function EventDetailPage() {
         </div>
       </div>
       {/* ── Mobile Sticky Action Bar (Thumb Zone) ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border/60 shadow-lg px-4 py-3 flex items-center justify-between gap-3 select-none pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border/60 px-4 py-3 flex items-center justify-between gap-3 select-none pb-safe">
         <div>
           <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider font-mono">
             {event.is_external || event.is_external_ticket ? "Ingressos" : "A partir de"}
@@ -545,7 +545,7 @@ function EventDetailPage() {
         </div>
 
         {(event.is_external || event.is_external_ticket) && event.external_ticket_url ? (
-          <Button asChild size="lg" className="h-11 px-5 rounded-xl font-bold text-xs bg-foreground text-background gap-1.5 cursor-pointer shadow-sm">
+          <Button asChild size="lg" className="h-11 px-5 rounded-xl font-bold text-xs bg-foreground text-background gap-1.5 cursor-pointer">
             <a href={event.external_ticket_url} target="_blank" rel="noopener noreferrer">
               <Ticket size={16} weight="bold" />
               <span>Ver Ingressos</span>
@@ -555,7 +555,7 @@ function EventDetailPage() {
         ) : activeLots.length > 0 ? (
           <Button
             size="lg"
-            className="h-11 px-6 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5 cursor-pointer shadow-sm"
+            className="h-11 px-6 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-1.5 cursor-pointer"
             onClick={() => handleBuyTicket(activeLots[0])}
           >
             <Ticket size={16} weight="bold" />

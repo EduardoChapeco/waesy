@@ -154,7 +154,7 @@ function PublicRecipesPage() {
             className={cn(
               "px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
               selectedCategory === cat
-                ? "bg-foreground text-background font-bold shadow-xs"
+                ? "bg-foreground text-background font-bold "
                 : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
             )}
           >
@@ -192,7 +192,7 @@ function PublicRecipesPage() {
                 setSelectedRecipe(rec);
                 setCheckedIngredients({});
               }}
-              className="group rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-primary/40 hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between"
+              className="group rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-primary/40 hover: transition-all cursor-pointer flex flex-col justify-between"
             >
               <div>
                 {/* Imagem de Capa 16:9 */}
@@ -207,13 +207,13 @@ function PublicRecipesPage() {
                     loading="lazy"
                   />
                   {rec.total_time && (
-                    <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-background/90 backdrop-blur-md px-2 py-0.5 text-[11px] font-mono font-bold text-foreground">
+                    <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-0.5 text-[11px] font-mono font-bold text-foreground">
                       <Clock className="size-3 text-primary" />
                       {rec.total_time}
                     </span>
                   )}
                   {rec.recipe_yield && (
-                    <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-lg bg-background/90 backdrop-blur-md px-2 py-0.5 text-[11px] font-mono font-bold text-foreground">
+                    <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-lg bg-background/90 px-2 py-0.5 text-[11px] font-mono font-bold text-foreground">
                       <Users className="size-3 text-muted-foreground" />
                       {rec.recipe_yield}
                     </span>
@@ -277,7 +277,7 @@ function PublicRecipesPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4">
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 backdrop-blur-xs mb-1.5">
+                  <Badge variant="outline" className="text-[10px] uppercase font-mono py-0 px-2 text-primary border-primary/30 bg-background/80 mb-1.5">
                     {selectedRecipe.category}
                   </Badge>
                   <h2 className="text-base sm:text-xl font-bold text-foreground leading-snug">

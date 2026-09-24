@@ -228,7 +228,7 @@ function JobsMasterPage() {
  ))}
 
  {/* Feed Geral de Oportunidades no Fim da Página */}
- <div className="space-y-4 pt-6 ">
+ <div className="space-y-4 pt-6">
  <div className="flex items-center justify-between">
  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
  <Briefcase size={18} weight="bold" className="text-primary" />
@@ -335,11 +335,11 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
 
         {/* Badge de Modalidade e Vaga Externa */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-          <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[10px] font-bold px-2 py-0.5 rounded-lg">
+          <Badge className="bg-background/90 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-lg">
             {job.workplace_type || "Presencial"}
           </Badge>
           {job.is_external && (
-            <Badge className="bg-primary/90 text-primary-foreground backdrop-blur-md text-[10px] font-bold px-2 py-0.5 rounded-lg">
+            <Badge className="bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-lg">
               Oficial
             </Badge>
           )}
@@ -347,7 +347,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
 
  {/* Badge de Regime de Contrato */}
  <div className="absolute top-2.5 right-2.5">
- <Badge className="bg-foreground/90 text-background backdrop-blur-md text-[10px] font-black px-2 py-0.5 rounded-lg">
+ <Badge className="bg-foreground/90 text-background text-[10px] font-black px-2 py-0.5 rounded-lg">
  {job.contract_type || "CLT"}
  </Badge>
  </div>
