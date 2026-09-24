@@ -721,7 +721,7 @@ export function EditorialShowcaseView({
 
         {/* ── Banner Canônico de Modo Proprietário (Regra 23 do AGENTS.md) ── */}
         {isOwner && (
-          <div className="mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 shadow-2xs">
+          <div className="mx-2 sm:mx-0 flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200">
             <div className="flex items-center gap-2.5 text-xs font-medium">
               <span className="flex size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
               <span>
@@ -769,7 +769,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={onOpenCompanionCard}
-                className="h-8 gap-1.5 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer shadow-2xs"
+                className="h-8 gap-1.5 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
                 title="Guia Digital 9:16 e mensagem para WhatsApp"
               >
                 <Smartphone className="size-3.5" />
@@ -782,7 +782,7 @@ export function EditorialShowcaseView({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPromoFlyerOpen(true)}
-                className="h-8 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer shadow-2xs"
+                className="h-8 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
                 title="Gerar Flyer / Story Promocional 9:16 com IA"
               >
                 <Sparkles className="size-3.5" />
@@ -832,7 +832,7 @@ export function EditorialShowcaseView({
                   <button
                     type="button"
                     onClick={() => setFullscreenImage(images[activeImageIndex] || images[0])}
-                    className="absolute bottom-3.5 right-3.5 px-3 py-1.5 rounded-xl bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 shadow-xs flex items-center gap-1.5 transition-all"
+                    className="absolute bottom-3.5 right-3.5 px-3 py-1.5 rounded-xl bg-background/85 hover:bg-background text-foreground text-xs font-semibold backdrop-blur-md border border-border/50 flex items-center gap-1.5 transition-all"
                   >
                     <Maximize2 className="size-3.5" />
                     <span>Expandir</span>
@@ -941,7 +941,7 @@ export function EditorialShowcaseView({
         {/* ── Card do Anunciante / Loja Parceira (Visível no Mobile) ── */}
         <div className="lg:hidden p-3.5 rounded-2xl bg-muted/30 border border-border/50 flex items-center justify-between gap-3 transition-colors hover:bg-muted/40">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-11 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+            <div className="size-11 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
               {advertiserAvatar ? (
                 <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
               ) : isCompany ? (
@@ -1094,7 +1094,7 @@ export function EditorialShowcaseView({
                         className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Maximize2 className="size-4 text-white drop-shadow-md" />
+                        <Maximize2 className="size-4 text-white drop-" />
                       </div>
                     </button>
                   ))}
@@ -1531,7 +1531,7 @@ export function EditorialShowcaseView({
                 <div className="relative pl-7 space-y-6 before:absolute before:left-3 before:top-3 before:bottom-3 before:w-[2px] before:bg-border/80">
                     {itineraryDays.map((item: any, idx: number) => (
                     <div key={idx} className="relative space-y-3">
-                      <div className="absolute -left-7 top-0.5 size-7 rounded-full bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground shadow-xs">
+                      <div className="absolute -left-7 top-0.5 size-7 rounded-full bg-card border-2 border-primary/90 flex items-center justify-center text-xs font-bold text-foreground">
                         {item.day_number || idx + 1}
                       </div>
                       <div className="space-y-2.5">
@@ -1554,7 +1554,7 @@ export function EditorialShowcaseView({
                           return (
                             <div className={cn("gap-2 pt-0.5", imgs.length === 1 ? "block" : "grid grid-cols-2")}>
                               {imgs.map((src: string, imgIdx: number) => (
-                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-32 sm:h-36 object-cover rounded-xl border border-border/40 shadow-2xs" loading="lazy" />
+                                <img key={imgIdx} src={src} alt={`${item.title} - foto ${imgIdx + 1}`} className="w-full h-32 sm:h-36 object-cover rounded-xl border border-border/40" loading="lazy" />
                               ))}
                             </div>
                           );
@@ -2014,7 +2014,7 @@ export function EditorialShowcaseView({
                   {transportType === "bus" && (
                     <>
                       <div className="flex items-center gap-3">
-                        <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0 shadow-xs">
+                        <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center shrink-0">
                           <Bus className="size-4.5" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -2037,7 +2037,7 @@ export function EditorialShowcaseView({
                         </p>
                       )}
                       {flightDetails.meeting_point && (
-                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-background border border-border/70 shadow-2xs">
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-background border border-border/70">
                           <MapPin className="size-4 text-primary mt-0.5 shrink-0" />
                           <div className="space-y-0.5">
                             <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ponto de Encontro</p>
@@ -2270,7 +2270,7 @@ export function EditorialShowcaseView({
 
       {/* Coluna Direita: Painel Sticky de Preço, Datas, Stats e CTAs (5 colunas no Desktop) */}
       <div className="hidden lg:block lg:col-span-5 lg:sticky lg:top-24 space-y-4">
-        <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-5 shadow-xs">
+        <div className="bg-card rounded-2xl border border-border/70 p-6 sm:p-7 space-y-5">
 
           {/* ── 1. Localização / Rota + Título ── */}
           <div className="space-y-2">
@@ -2479,7 +2479,7 @@ export function EditorialShowcaseView({
           <div className="space-y-2.5 pt-1 border-t border-border/40">
             <Button
               onClick={handleOpenAction}
-              className="w-full h-12 sm:h-13 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight shadow-md active:scale-98 transition-all cursor-pointer"
+              className="w-full h-12 sm:h-13 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-black text-sm tracking-tight active:scale-98 transition-all cursor-pointer"
             >
               {getPrimaryCtaLabel()}
             </Button>
@@ -2512,7 +2512,7 @@ export function EditorialShowcaseView({
           {/* ── 7. Card do Anunciante Desktop (Integrado na Base) ── */}
           <div className="pt-3 border-t border-border/40 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="size-11 rounded-xl bg-background border border-border/70 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+              <div className="size-11 rounded-xl bg-background border border-border/70 overflow-hidden shrink-0 flex items-center justify-center">
                 {advertiserAvatar ? (
                   <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
                 ) : isCompany ? (
@@ -2553,7 +2553,7 @@ export function EditorialShowcaseView({
       </div>
 
       {/* ── Barra Inferior Flutuante Fixa (Apenas no Mobile) ── */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 shadow-2xl pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3">
           {/* Lado Esquerdo: Valor Parcelado / Total Limpo (Sem cortes, clicável para abrir opções) */}
           <button
@@ -2630,7 +2630,7 @@ export function EditorialShowcaseView({
           <Button
             type="button"
             onClick={handlePrimaryCtaClick}
-            className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight shadow-md active:scale-95 transition-all shrink-0 cursor-pointer"
+            className="h-11 px-5 sm:px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 font-extrabold text-xs tracking-tight active:scale-95 transition-all shrink-0 cursor-pointer"
           >
             {getPrimaryCtaLabel()}
           </Button>
@@ -2919,7 +2919,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     setIsBookingDossierOpen(true);
                   }}
-                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer shadow-sm"
+                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-xl bg-background/20 text-background flex items-center justify-center shrink-0">
@@ -2939,7 +2939,7 @@ export function EditorialShowcaseView({
                     setIsContactModalOpen(false);
                     onOpenProposalModal();
                   }}
-                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer shadow-sm"
+                  className="w-full min-h-[48px] p-3 rounded-2xl bg-foreground text-background hover:bg-foreground/90 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="size-9 rounded-xl bg-background/20 text-background flex items-center justify-center shrink-0">

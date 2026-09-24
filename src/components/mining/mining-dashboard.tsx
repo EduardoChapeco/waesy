@@ -955,7 +955,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
 
             {/* Floating Action Bar (Batch Operations Thumb Zone) */}
             {selectedProductIds.length > 0 && (
-              <div className="sticky bottom-4 z-40 p-3 rounded-2xl border border-border/60 bg-background/95 backdrop-blur-md shadow-lg flex flex-wrap items-center justify-between gap-3">
+              <div className="sticky bottom-4 z-40 p-3 rounded-2xl border border-border/60 bg-background/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="font-mono text-xs px-2 py-0.5 rounded-full border-primary/40 bg-primary/10 text-primary font-bold">
                     {selectedProductIds.length} selecionado{selectedProductIds.length > 1 ? "s" : ""}
@@ -997,7 +997,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
                     size="sm"
                     onClick={() => setIsBatchImportModalOpen(true)}
                     disabled={isProcessingBatch}
-                    className="h-8 rounded-xl text-xs gap-1 font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer shadow-xs"
+                    className="h-8 rounded-xl text-xs gap-1 font-semibold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
                   >
                     <ShoppingBag className="size-3.5" />
                     <span>Importar para Loja...</span>

@@ -542,7 +542,7 @@ export function ConvenienceShowcaseView({
     <div className="p-3.5 rounded-2xl border border-border/60 bg-muted/15 space-y-2.5">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="size-9 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center shadow-2xs">
+          <div className="size-9 rounded-full bg-background border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
             {advertiserAvatar ? (
               <img src={advertiserAvatar} alt={advertiserName} className="size-full object-cover" />
             ) : isCompany ? (
@@ -648,7 +648,7 @@ export function ConvenienceShowcaseView({
 
   // Componente Reutilizável: Bloco de Preço e Condições de Pagamento com Suporte a Desconto Progressivo
   const PricingBlock = () => (
-    <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-2.5">
+    <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-2.5">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div>
           <div className="flex items-baseline gap-2">
@@ -729,7 +729,7 @@ export function ConvenienceShowcaseView({
     if (!isFreshPricingActive && !isRipenessActive) return null;
 
     return (
-      <div className="p-3.5 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3">
+      <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-3">
         {/* Toggle Unidade vs Peso */}
         {isFreshPricingActive && (
           <div className="space-y-1.5">
@@ -751,7 +751,7 @@ export function ConvenienceShowcaseView({
                 className={cn(
                   "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5",
                   pricingMode === "unit"
-                    ? "bg-background text-foreground shadow-2xs font-bold ring-1 ring-border/80"
+                    ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -763,7 +763,7 @@ export function ConvenienceShowcaseView({
                 className={cn(
                   "py-2 px-3 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5",
                   pricingMode === "weight"
-                    ? "bg-background text-foreground shadow-2xs font-bold ring-1 ring-border/80"
+                    ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -783,7 +783,7 @@ export function ConvenienceShowcaseView({
                       className={cn(
                         "px-2 py-1 rounded-lg text-xs font-mono font-medium border transition-all cursor-pointer",
                         weightGrams === g
-                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
+                          ? "bg-primary text-primary-foreground border-primary font-bold "
                           : "bg-background text-muted-foreground border-border/60 hover:text-foreground"
                       )}
                     >
@@ -814,7 +814,7 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "p-2.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5",
                       isSelected
-                        ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs ring-1 ring-primary/30"
+                        ? "border-primary bg-primary/10 text-primary font-bold  ring-1 ring-primary/30"
                         : "border-border/60 bg-background text-muted-foreground hover:text-foreground hover:bg-muted/30"
                     )}
                   >
@@ -839,7 +839,7 @@ export function ConvenienceShowcaseView({
     if (!progressiveDiscountTiers || progressiveDiscountTiers.length === 0) return null;
 
     return (
-      <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3">
+      <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <BadgePercent className="size-4 text-emerald-600 dark:text-emerald-400" />
@@ -993,7 +993,7 @@ export function ConvenienceShowcaseView({
             {/* Box da Foto: Grande, full-bleed, limpo */}
             <div className="space-y-2 sm:space-y-3">
               <div
-                className="relative aspect-square w-full rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm:shadow-2xs group cursor-pointer"
+                className="relative aspect-square w-full rounded-none sm:rounded-2xl overflow-hidden bg-muted/20 border-b sm:border border-border/60 flex items-center justify-center shadow-none sm: group cursor-pointer"
                 onClick={() => images.length > 0 && setFullscreenImage(images[activePhotoIdx] || images[0])}
               >
                 {images.length > 0 ? (
@@ -1010,7 +1010,7 @@ export function ConvenienceShowcaseView({
                 )}
                 {images.length > 0 && (
                   <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="px-2.5 py-1 rounded-xl bg-background/90 backdrop-blur-md text-[11px] font-semibold text-foreground border border-border/50 shadow-xs flex items-center gap-1.5">
+                    <span className="px-2.5 py-1 rounded-xl bg-background/90 backdrop-blur-md text-[11px] font-semibold text-foreground border border-border/50 flex items-center gap-1.5">
                       <Maximize2 className="size-3.5" />
                       Expandir
                     </span>
@@ -1074,7 +1074,7 @@ export function ConvenienceShowcaseView({
 
               {/* Seletor de Opções de Preparo / Corte se configurado */}
               {prepOptions && prepOptions.length > 0 && (
-                <div className="p-3 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-1.5">
+                <div className="p-3 rounded-2xl bg-card border border-border/60 space-y-1.5">
                   <Label className="text-xs font-bold text-foreground block">
                     Opção de Corte / Preparo:
                   </Label>
@@ -1089,7 +1089,7 @@ export function ConvenienceShowcaseView({
                           className={cn(
                             "px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                             isSelected
-                              ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                              ? "bg-primary text-primary-foreground border-primary font-bold "
                               : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
                           )}
                         >
@@ -1106,7 +1106,7 @@ export function ConvenienceShowcaseView({
                 SEÇÃO: DETALHES DO PRODUTO (DESCRIÇÃO SEMPRE ABAIXO DA FOTO)
                ───────────────────────────────────────────────────────────── */}
             {description && (
-              <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3">
+              <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-3">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                   <FileText className="size-4 text-primary" />
                   <span>Detalhes do Produto</span>
@@ -1120,7 +1120,7 @@ export function ConvenienceShowcaseView({
             {/* ─────────────────────────────────────────────────────────────
                 SEÇÃO: ESPECIFICAÇÕES TÉCNICAS E TABELA DE ATRIBUTOS
                ───────────────────────────────────────────────────────────── */}
-            <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-4">
+            <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" />
                 <span>Especificações & Características</span>
@@ -1270,7 +1270,7 @@ export function ConvenienceShowcaseView({
 
             {/* Seletor de Opções de Preparo / Corte (Açougue / Padaria) se configurado */}
             {prepOptions && prepOptions.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-2">
+              <div className="p-3.5 rounded-2xl bg-card border border-border/60 space-y-2">
                 <Label className="text-xs font-bold text-foreground block">
                   Opção de Corte / Preparo:
                 </Label>
@@ -1285,7 +1285,7 @@ export function ConvenienceShowcaseView({
                         className={cn(
                           "px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer",
                           isSelected
-                            ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                            ? "bg-primary text-primary-foreground border-primary font-bold "
                             : "bg-background text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted/40"
                         )}
                       >
@@ -1298,14 +1298,14 @@ export function ConvenienceShowcaseView({
             )}
 
             {/* Seletor de Quantidade & Ações de Compra */}
-            <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-4">
+            <div className="p-4 rounded-2xl bg-card border border-border/60 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-foreground block">Quantidade</span>
                   <span className="text-[11px] text-muted-foreground">Adicione ao seu pedido</span>
                 </div>
 
-                <div className="flex items-center gap-2 border border-border/70 rounded-xl bg-background p-1 shadow-2xs">
+                <div className="flex items-center gap-2 border border-border/70 rounded-xl bg-background p-1">
                   <Button
                     type="button"
                     variant="ghost"
@@ -1352,7 +1352,7 @@ export function ConvenienceShowcaseView({
               <div className="space-y-2 pt-1">
                 <Button
                   onClick={() => setIsOrderModalOpen(true)}
-                  className="w-full h-12 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md cursor-pointer transition-all active:scale-[0.99]"
+                  className="w-full h-12 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer transition-all active:scale-[0.99]"
                 >
                   <ShoppingBag className="size-4" />
                   <span>
@@ -1384,7 +1384,7 @@ export function ConvenienceShowcaseView({
           FLOATING BOTTOM BAR NO MOBILE (THUMB ZONE ERGONOMICS)
          ═══════════════════════════════════════════════════════════════════════ */}
       <div className={cn(
-        "z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 shadow-lg flex items-center gap-3",
+        "z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3  flex items-center gap-3",
         isForcedMobile || isPreview
           ? "sticky bottom-0 inset-x-0 block rounded-none sm:rounded-b-2xl"
           : "md:hidden fixed bottom-0 inset-x-0"
@@ -1425,7 +1425,7 @@ export function ConvenienceShowcaseView({
 
         <Button
           onClick={() => setIsOrderModalOpen(true)}
-          className="h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700 shadow-md cursor-pointer shrink-0"
+          className="h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
         >
           <ShoppingBag className="size-4" />
           <span>Pedir Agora</span>
@@ -1528,7 +1528,7 @@ export function ConvenienceShowcaseView({
                     className={cn(
                       "h-8 px-3 rounded-lg text-xs font-bold cursor-pointer shrink-0 transition-all",
                       isOrderBumpAdded
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        ? "bg-foreground text-background hover:bg-foreground/90"
                         : "border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
                     )}
                   >
@@ -1554,7 +1554,7 @@ export function ConvenienceShowcaseView({
                   className={cn(
                     "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
                     orderDeliveryMode === "immediate"
-                      ? "bg-background text-foreground shadow-2xs font-bold ring-1 ring-border/80"
+                      ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -1566,7 +1566,7 @@ export function ConvenienceShowcaseView({
                   className={cn(
                     "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
                     orderDeliveryMode === "scheduled"
-                      ? "bg-background text-foreground shadow-2xs font-bold ring-1 ring-border/80"
+                      ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -1578,7 +1578,7 @@ export function ConvenienceShowcaseView({
                   className={cn(
                     "py-2 px-1 text-center rounded-lg font-semibold text-xs transition-all cursor-pointer",
                     orderDeliveryMode === "pickup"
-                      ? "bg-background text-foreground shadow-2xs font-bold ring-1 ring-border/80"
+                      ? "bg-background text-foreground  font-bold ring-1 ring-border/80"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -1771,7 +1771,7 @@ export function ConvenienceShowcaseView({
             </Button>
             <Button
               onClick={handleConfirmOrder}
-              className="flex-1 h-11 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md cursor-pointer"
+              className="flex-1 h-11 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
             >
               <ShoppingBag className="size-4" />
               <span>Confirmar Pedido · {formatMoney(grandTotalCents)}</span>

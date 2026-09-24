@@ -124,7 +124,7 @@ function EventCard({ event, isMobileList = false }: { event: SearchResultEvent; 
     <Link
       to="/evento/$id"
       params={{ id: event.id }}
-      className="flex items-stretch rounded-2xl bg-card hover:bg-muted/50 transition-colors overflow-hidden p-0 group border border-border/60 shadow-2xs"
+      className="flex items-stretch rounded-2xl bg-card hover:bg-muted/50 transition-colors overflow-hidden p-0 group border border-border/60"
     >
       <div className="relative w-20 sm:w-24 bg-muted shrink-0 overflow-hidden">
         {event.cover_image ? (
@@ -208,7 +208,7 @@ function ClassifiedCard({ classified, isMobileList = false }: { classified: Sear
     <Link
       to="/classificados/$id"
       params={{ id: classified.id }}
-      className="flex items-stretch justify-between rounded-2xl bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 group border border-border/60 shadow-2xs"
+      className="flex items-stretch justify-between rounded-2xl bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 group border border-border/60"
     >
       <div className="relative w-24 sm:w-28 bg-muted shrink-0 overflow-hidden">
         {classified.images && classified.images[0] ? (
@@ -291,7 +291,7 @@ function StoreCard({ store, isMobileList = false }: { store: SearchResultStore; 
     <Link
       to="/vendedora/$slug"
       params={{ slug: store.slug }}
-      className="flex gap-3 p-3 rounded-2xl bg-card hover:bg-muted transition-colors group border border-border/60 shadow-2xs"
+      className="flex gap-3 p-3 rounded-2xl bg-card hover:bg-muted transition-colors group border border-border/60"
     >
       {store.logo_url ? (
         <img
@@ -694,7 +694,7 @@ function SearchPage() {
       )}
 
  {input.length >= 2 && result !== null && total === 0 && (
- <div className="py-12 text-center space-y-4 bg-card rounded-2xl p-6 ">
+ <div className="py-12 text-center space-y-4 bg-card rounded-2xl p-6">
  <EmptyState
  title={`Nenhum resultado encontrado para "${input}"`}
  description="Tente buscar por termos mais genéricos ou explore as categorias abaixo."

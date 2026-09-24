@@ -90,7 +90,7 @@ function StoreCartPage() {
           </p>
           <Button
             onClick={() => router.navigate({ to: "/mercado" })}
-            className="rounded-2xl h-11 px-6 font-bold text-sm cursor-pointer shadow-sm active:scale-95 transition-all"
+            className="rounded-2xl h-11 px-6 font-bold text-sm cursor-pointer active:scale-95 transition-all"
           >
             Continuar Comprando
           </Button>
@@ -188,7 +188,7 @@ function StoreCartPage() {
 
                         {/* Controles de Quantidade e Ação com hit-area mínima de 44px (Apple HIG) */}
                         <div className="flex items-center justify-between mt-3 pt-1">
-                          <div className="inline-flex items-center rounded-xl border border-border/80 bg-background overflow-hidden shadow-2xs">
+                          <div className="inline-flex items-center rounded-xl border border-border/80 bg-background overflow-hidden">
                             <button
                               type="button"
                               className="size-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
@@ -293,7 +293,7 @@ function StoreCartPage() {
 
       {/* ── Sticky Mobile Bottom Bar (Thumb Zone para Mobile) ── */}
       {selectedCart && selectedCart.items.length > 0 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-background border-t border-border/60 z-40 shadow-xs">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3.5 bg-background border-t border-border/60 z-40">
           <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-semibold">

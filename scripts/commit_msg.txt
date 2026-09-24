@@ -1,7 +1,7 @@
-feat(ui-v21): enforce canonical md 768px breakpoint separation across shell and header
+feat(ui-v21): eradicate non-canonical shadows and flatten UI across detail, profile, mining, search, and checkout modules
 
-- Unify TopBar breakpoint: desktop search bar with cmd-k to hidden md:flex, mobile search touch target to md:hidden
-- Unify UtilityCluster: eradicate redundant tablet search button and align desktop utilities to md:inline-flex
-- Unify ContextSidebar: promote to hidden md:flex w-52 lg:w-60 and eradicate shadow-2xs on active links
-- Unify MobileNav: strictly bind to md:hidden and eradicate shadow-xs for true Flat UI
-- Unify AppShell: clean mobile app pages TopBar hidden md:block, canonical 1px mobile margin and pb-24 md:pb-8 padding
+- Enforce FASE 2 Flat UI: remove all shadow-2xs/xs/sm/md/lg/2xl across editorial and convenience classified views, store profile, and member vanity profiles
+- Enforce FASE 3 Component Library: eradicate shadow-xs from Button default variant and enforce Soft Badges
+- Enforce FASE 4 Progressive Disclosure: sanitize search page and classifieds create wizard to neutral tokens
+- Enforce FASE 5 Module Sweeping: flatten MiningDashboard, AdvancedMiningTabs, Admin Mining, Checkout, and Carrinho
+- 0-error production build verified

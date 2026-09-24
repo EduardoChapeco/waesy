@@ -491,7 +491,7 @@ export function MemberPublicProfileView({
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
                   activeMode === "comercial"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -504,7 +504,7 @@ export function MemberPublicProfileView({
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
                   activeMode === "social"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -517,7 +517,7 @@ export function MemberPublicProfileView({
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
                   activeMode === "profissional"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -533,7 +533,7 @@ export function MemberPublicProfileView({
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
                   activeMode === "social"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -546,7 +546,7 @@ export function MemberPublicProfileView({
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
                   activeMode === "profissional"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -559,7 +559,7 @@ export function MemberPublicProfileView({
                 className={cn(
                   "px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer",
                   activeMode === "comercial"
-                    ? "bg-background text-foreground font-bold shadow-2xs"
+                    ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -602,7 +602,7 @@ export function MemberPublicProfileView({
       </div>
 
       {/* ── Bloco 1: Header do Perfil (Foto de Perfil + Banner ao lado com Scroll Interno + Stats no final) ── */}
-      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-5 shadow-xs">
+      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-5">
         {/* Linha Superior Panorâmica: Foto + Banner ao lado com Scroll Interno + Stats no Final */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4">
           
@@ -610,7 +610,7 @@ export function MemberPublicProfileView({
           <div className="flex flex-row items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
             {/* Foto de Perfil em Squircle 1:1 */}
             <div className="relative group shrink-0">
-              <Avatar className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-2xl ring-2 ring-border/60 bg-muted shrink-0 overflow-hidden shadow-xs flex items-center justify-center">
+              <Avatar className="size-20 sm:size-24 md:size-28 lg:size-32 rounded-2xl ring-2 ring-border/60 bg-muted shrink-0 overflow-hidden flex items-center justify-center">
                 {avatarSrc ? (
                   <AvatarImage
                     src={avatarSrc}
@@ -676,7 +676,7 @@ export function MemberPublicProfileView({
                 <Link
                   to="/conta/perfil"
                   search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer transition-colors z-20"
+                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
                 >
                   <Camera className="size-3" />
                   <span>Alterar Capa</span>
@@ -686,7 +686,7 @@ export function MemberPublicProfileView({
           </div>
 
           {/* Stats no Final (Seguidores, Seguindo, Curtidas) */}
-          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-[240px] shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 p-2 sm:p-4 flex flex-col justify-center shadow-xs">
+          <div className="h-14 sm:h-20 md:h-28 lg:h-32 lg:min-w-[240px] shrink-0 bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 p-2 sm:p-4 flex flex-col justify-center">
             <div className="grid grid-cols-3 gap-2 text-center w-full">
               <div>
                 <p className="text-sm sm:text-base md:text-lg font-black text-foreground">{followersCount}</p>
@@ -802,7 +802,7 @@ export function MemberPublicProfileView({
                   size="sm"
                   className={cn(
                     "h-8 px-4 rounded-xl font-bold text-xs gap-1.5 shrink-0 cursor-pointer transition-all",
-                    isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground shadow-xs"
+                    isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground "
                   )}
                   onClick={handleToggleFollow}
                   disabled={isFollowLoading}
@@ -920,7 +920,7 @@ export function MemberPublicProfileView({
  href={link.url}
  target="_blank"
  rel="noopener noreferrer"
- className="block w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border/60 relative group shadow-xs hover:border-border transition-all select-none"
+ className="block w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border/60 relative group hover:border-border transition-all select-none"
  >
  <img
  src={link.imageUrl}
@@ -928,7 +928,7 @@ export function MemberPublicProfileView({
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex flex-col justify-end p-2.5">
- <span className="text-xs font-bold text-white drop-shadow-sm truncate flex items-center justify-between gap-1">
+ <span className="text-xs font-bold text-white drop- truncate flex items-center justify-between gap-1">
  <span>{link.label || link.title || "Acessar"}</span>
  <ExternalLink className="size-3 text-white/80 shrink-0" />
  </span>
@@ -965,7 +965,7 @@ export function MemberPublicProfileView({
  href={profile.featured_banner_link || "#"}
  target={profile.featured_banner_link ? "_blank" : undefined}
  rel="noopener noreferrer"
- className="block w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border/60 shadow-xs relative group select-none hover:border-border transition-all"
+ className="block w-full aspect-[16/9] rounded-2xl overflow-hidden border border-border/60 relative group select-none hover:border-border transition-all"
  >
  <img
  src={profile.featured_banner_url}
@@ -973,7 +973,7 @@ export function MemberPublicProfileView({
  className="size-full object-cover group-hover:scale-102 transition-transform duration-300"
  />
  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
- <span className="text-[11px] font-bold text-white flex items-center gap-1 drop-shadow-sm">
+ <span className="text-[11px] font-bold text-white flex items-center gap-1 drop-">
  <span>Acessar</span>
  <ExternalLink className="size-3" />
  </span>
@@ -1772,7 +1772,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "feed" && "bg-background shadow-xs")}
+ className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "feed" && "bg-background ")}
  onClick={() => setPostViewMode("feed")}
  aria-label="Modo Feed"
  >
@@ -1781,7 +1781,7 @@ export function MemberPublicProfileView({
  <Button
  size="sm"
  variant="ghost"
- className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "grid" && "bg-background shadow-xs")}
+ className={cn("size-7 p-0 rounded-lg cursor-pointer", postViewMode === "grid" && "bg-background ")}
  onClick={() => setPostViewMode("grid")}
  aria-label="Modo Grade"
  >
@@ -1930,7 +1930,7 @@ export function MemberPublicProfileView({
  {creatorEvents.map((evt: any) => (
  <div
  key={evt.id}
- className="p-4 rounded-2xl border border-border/60 bg-card flex items-start gap-4 shadow-xs"
+ className="p-4 rounded-2xl border border-border/60 bg-card flex items-start gap-4"
  >
  <div className="size-16 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40">
  {evt.cover_image ? (
@@ -1969,7 +1969,7 @@ export function MemberPublicProfileView({
  if (sectionKey === "banner" && creatorProfile?.banner_url) {
  return (
  <div key="banner" className="space-y-3">
- <div className="aspect-video sm:aspect-[21/9] w-full rounded-2xl overflow-hidden relative border border-border/40 shadow-xs">
+ <div className="aspect-video sm:aspect-[21/9] w-full rounded-2xl overflow-hidden relative border border-border/40">
  <img
  src={creatorProfile.banner_url}
  alt={creatorProfile.banner_title || "Banner da marca"}
@@ -2018,7 +2018,7 @@ export function MemberPublicProfileView({
  return (
  <div
  key={s.id}
- className="p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between gap-4 shadow-xs"
+ className="p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between gap-4"
  >
  <div className="flex items-start gap-3">
  <div className="size-12 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40 flex items-center justify-center">
@@ -2092,7 +2092,7 @@ export function MemberPublicProfileView({
  to="/produto/$slug"
  params={{ slug: p.slug }}
  search={{ ref: creatorProfile?.handle || profile.username } as any}
- className="group rounded-2xl bg-card border border-border/60 hover:border-primary/40 transition-all overflow-hidden flex flex-col justify-between shadow-xs"
+ className="group rounded-2xl bg-card border border-border/60 hover:border-primary/40 transition-all overflow-hidden flex flex-col justify-between"
  >
  <div className="space-y-3">
  <div className="aspect-video bg-muted/40 relative overflow-hidden">
@@ -2156,7 +2156,7 @@ export function MemberPublicProfileView({
  {creatorEvents.map((evt: any) => (
  <div
  key={evt.id}
- className="p-4 rounded-2xl border border-border/60 bg-card flex items-start gap-3.5 shadow-xs"
+ className="p-4 rounded-2xl border border-border/60 bg-card flex items-start gap-3.5"
  >
  <div className="size-16 rounded-xl bg-muted/60 overflow-hidden shrink-0 border border-border/40">
  {evt.cover_image ? (

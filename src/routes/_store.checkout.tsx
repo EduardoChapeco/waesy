@@ -711,7 +711,7 @@ export function CheckoutPage() {
   return (
     <div className="w-full max-w-5xl mx-auto pb-32 sm:pb-16 space-y-6 px-0 sm:px-4 md:px-0 pt-4 sm:pt-0">
   {/* ── Sub-Header Clean (Silêncio Operacional) ── */}
- <div className="flex items-center justify-between gap-4 pb-2 ">
+ <div className="flex items-center justify-between gap-4 pb-2">
  <div className="flex items-center gap-2.5">
  <Link
  to="/"
@@ -780,7 +780,7 @@ export function CheckoutPage() {
  {activeStep === 1 && (
  <Surface variant="default" className="p-5 sm:p-6 rounded-2xl space-y-5">
  {userProfile ? (
- <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/30 ">
+ <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/30">
  <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
  {(userProfile.fullName || userProfile.email || "U").charAt(0).toUpperCase()}
  </div>
@@ -1812,7 +1812,7 @@ export function CheckoutPage() {
                 <Button
                   onClick={handleSubmitOrder}
                   disabled={isSubmitting}
-                  className="rounded-xl px-8 h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-sm sm:text-base cursor-pointer active:scale-98 transition-all shadow-sm flex items-center justify-center gap-2"
+                  className="rounded-xl px-8 h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-sm sm:text-base cursor-pointer active:scale-98 transition-all flex items-center justify-center gap-2"
                 >
  {isSubmitting ? (
  <>

@@ -444,7 +444,7 @@ function ProfilePage() {
         {/* ── ABA 1: Dados Pessoais & Fotos ── */}
         <TabsContent value="dados" className="space-y-5">
           {/* Card 1: Fotos de Identidade Visual */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <Camera className="size-4 text-primary shrink-0" />
               <span>1. Fotos de Identidade Visual</span>
@@ -464,7 +464,7 @@ function ProfilePage() {
                   </button>
                 )}
               </div>
-              <div className="w-full aspect-[3/1] max-h-52 rounded-2xl bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40 relative group shadow-xs">
+              <div className="w-full aspect-[3/1] max-h-52 rounded-2xl bg-muted/30 overflow-hidden flex items-center justify-center border border-border/40 relative group">
                 {formData.coverUrl ? (
                   <img
                     src={formData.coverUrl}
@@ -493,7 +493,7 @@ function ProfilePage() {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className="rounded-xl text-xs font-bold gap-1.5 bg-background/95 backdrop-blur-md shadow-md hover:bg-background cursor-pointer min-h-[44px]"
+                    className="rounded-xl text-xs font-bold gap-1.5 bg-background/95 backdrop-blur-md hover:bg-background cursor-pointer min-h-[44px]"
                     onClick={() => coverInputRef.current?.click()}
                     disabled={isUploadingMedia}
                   >
@@ -506,7 +506,7 @@ function ProfilePage() {
                   type="button"
                   size="sm"
                   variant="secondary"
-                  className="absolute bottom-2.5 right-2.5 sm:hidden rounded-xl text-xs font-bold gap-1.5 bg-background/90 backdrop-blur-md shadow-xs min-h-[40px]"
+                  className="absolute bottom-2.5 right-2.5 sm:hidden rounded-xl text-xs font-bold gap-1.5 bg-background/90 backdrop-blur-md min-h-[40px]"
                   onClick={() => coverInputRef.current?.click()}
                   disabled={isUploadingMedia}
                 >
@@ -555,7 +555,7 @@ function ProfilePage() {
           </div>
 
           {/* Card 2: Informações de Identidade & Contato */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <User className="size-4 text-primary shrink-0" />
               <span>2. Dados Básicos & Biografia</span>
@@ -624,7 +624,7 @@ function ProfilePage() {
           </div>
 
           {/* Card 3: Localização & Presença Digital */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <LinkIcon className="size-4 text-primary shrink-0" />
               <span>3. Localização & Presença Digital</span>
@@ -663,7 +663,7 @@ function ProfilePage() {
           </div>
 
           {/* Card 4: Privacidade & Identidade Civil (CPF) */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                 <ShieldCheck className="size-4 text-primary shrink-0" />
@@ -795,7 +795,7 @@ function ProfilePage() {
  return (
  <div
  key={link.id || idx}
- className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3 shadow-2xs"
+ className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3"
  >
  <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
  <div className="flex items-center gap-2">
@@ -887,7 +887,7 @@ function ProfilePage() {
  )}
 
             {/* Mini-Banner em Destaque Principal em Card Canônico */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                 <ImageIcon className="size-4 text-primary shrink-0" />
                 <span>Mini-Banner de Destaque / Parceiro Oficial (16:9)</span>
@@ -946,7 +946,7 @@ function ProfilePage() {
           />
 
           {/* Card 1: Fotos de Identidade Visual da Marca */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <Camera className="size-4 text-primary shrink-0" />
               <span>1. Fotos de Identidade Visual da Marca</span>
@@ -1033,7 +1033,7 @@ function ProfilePage() {
           </div>
 
           {/* Card 2: Identificação da Marca & Nicho Estruturado */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <Sparkles className="size-4 text-primary shrink-0" />
               <span>2. Identificação da Marca & Nicho de Atuação</span>
@@ -1112,7 +1112,7 @@ function ProfilePage() {
           </div>
 
           {/* Card 3: Canais Sociais & Contato Comercial */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <LinkIcon className="size-4 text-primary shrink-0" />
               <span>3. Canais Oficiais & Contato para Parcerias</span>
@@ -1152,7 +1152,7 @@ function ProfilePage() {
           </div>
 
           {/* Card 4: Opções Avançadas & Governança da Vitrine */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
               <ShieldCheck className="size-4 text-primary shrink-0" />
               <span>4. Governança & Visibilidade da Vitrine</span>

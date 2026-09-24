@@ -570,7 +570,7 @@ export function CanonicalStoreProfileView({
       ) && (
         <div className="rounded-2xl bg-muted/20 border border-border/50 p-3.5 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-none">
           <div className="flex items-center gap-3">
-            <div className="size-8 sm:size-9 rounded-xl bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="size-8 sm:size-9 rounded-xl bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0">
               <ShieldCheck className="size-5" />
             </div>
             <div>
@@ -616,7 +616,7 @@ export function CanonicalStoreProfileView({
       {isOwner && (
         <div className="rounded-2xl bg-muted/20 border border-border/50 p-3 sm:px-4 sm:py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-none">
           <div className="flex items-center gap-2.5">
-            <div className="size-7 sm:size-8 rounded-lg bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="size-7 sm:size-8 rounded-lg bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0">
               <Store className="size-4" />
             </div>
             <div>
@@ -693,12 +693,12 @@ export function CanonicalStoreProfileView({
       )}
 
       {/* ── 2. CABEÇALHO DO PERFIL: FOTO 1:1 + CAPA 21:9 NA MESMA ALTURA SEM BORDAS PESADAS ── */}
-      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4 shadow-xs">
+      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4">
         {/* Faixa Superior: Foto 1:1 + Capa 21:9 com Mesma Altura */}
         <div className="flex items-center gap-3 sm:gap-4 w-full">
           {/* Foto da Empresa em Squircle 1:1 */}
           <div className="flex-shrink-0 relative group">
-            <div className="size-20 sm:size-32 rounded-2xl bg-muted flex-shrink-0 overflow-hidden shadow-2xs flex items-center justify-center">
+            <div className="size-20 sm:size-32 rounded-2xl bg-muted flex-shrink-0 overflow-hidden flex items-center justify-center">
               {logoUrl ? (
                 <img
                   src={logoUrl}
@@ -763,7 +763,7 @@ export function CanonicalStoreProfileView({
               <Link
                 to="/workspace/marketing/brand-kit"
                 search={{ storeId: store.id }}
-                className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer transition-colors z-20"
+                className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
               >
                 <Camera className="size-3 sm:size-3.5" />
                 <span>Alterar Capa</span>
@@ -857,7 +857,7 @@ export function CanonicalStoreProfileView({
                       customMessage: `Olá! Vi o perfil oficial de ${store.name || store.business_name} no Waesy e gostaria de mais informações.`,
                     })
                   }
-                  className="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer shadow-2xs transition-transform active:scale-98"
+                  className="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer transition-transform active:scale-98"
                 >
                   <WhatsappLogo size={15} weight="bold" />
                   <span>WhatsApp</span>
@@ -1106,7 +1106,7 @@ export function CanonicalStoreProfileView({
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                 activeTab === "vitrine"
-                  ? "bg-background text-foreground font-bold shadow-xs"
+                  ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1121,7 +1121,7 @@ export function CanonicalStoreProfileView({
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                 activeTab === "posts"
-                  ? "bg-background text-foreground font-bold shadow-xs"
+                  ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1141,7 +1141,7 @@ export function CanonicalStoreProfileView({
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                 activeTab === "catalogo"
-                  ? "bg-background text-foreground font-bold shadow-xs"
+                  ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1161,7 +1161,7 @@ export function CanonicalStoreProfileView({
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                 activeTab === "vagas"
-                  ? "bg-background text-foreground font-bold shadow-xs"
+                  ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1181,7 +1181,7 @@ export function CanonicalStoreProfileView({
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                 activeTab === "avaliacoes"
-                  ? "bg-background text-foreground font-bold shadow-xs"
+                  ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1201,7 +1201,7 @@ export function CanonicalStoreProfileView({
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                 activeTab === "sobre"
-                  ? "bg-background text-foreground font-bold shadow-xs"
+                  ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -1217,7 +1217,7 @@ export function CanonicalStoreProfileView({
                 className={cn(
                   "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
                   activeTab === "concursos"
-                    ? "bg-background text-foreground font-bold shadow-xs"
+                    ? "bg-background text-foreground font-bold "
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -1245,7 +1245,7 @@ export function CanonicalStoreProfileView({
                     size="sm"
                     variant="outline"
                     onClick={() => setIsSectionsEditorOpen(true)}
-                    className="h-8 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/70 shadow-2xs"
+                    className="h-8 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/70"
                   >
                     <Layers className="size-3.5 text-primary" />
                     <span>Personalizar Vitrine</span>
@@ -1273,7 +1273,7 @@ export function CanonicalStoreProfileView({
                     if (!banners || banners.length === 0) return null;
                     return (
                       <div key={section.id} className="space-y-2">
-                        <BannerHeroCarousel banners={banners} className="w-full rounded-2xl overflow-hidden shadow-xs" />
+                        <BannerHeroCarousel banners={banners} className="w-full rounded-2xl overflow-hidden" />
                       </div>
                     );
                   }
@@ -1339,7 +1339,7 @@ export function CanonicalStoreProfileView({
                               <div
                                 key={card.id}
                                 onClick={handleCardClick}
-                                className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all cursor-pointer shadow-2xs flex flex-col justify-between"
+                                className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all cursor-pointer flex flex-col justify-between"
                               >
                                 {card.imageUrl ? (
                                   <div className="aspect-[16/9] w-full overflow-hidden bg-muted/30 relative">
@@ -1415,7 +1415,7 @@ export function CanonicalStoreProfileView({
                                 key={p.id}
                                 to="/classificados/$id"
                                 params={{ id: p.slug || p.id }}
-                                className="w-56 shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs flex flex-col justify-between group cursor-pointer"
+                                className="w-56 shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group cursor-pointer"
                               >
                                 {/* PLACEHOLDER OBRIGATÓRIO — nunca exibe card sem imagem */}
                                 <div className="aspect-square w-full overflow-hidden bg-muted/20 relative">
@@ -1483,7 +1483,7 @@ export function CanonicalStoreProfileView({
                     return (
                       <div
                         key={section.id}
-                        className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-2xs space-y-3"
+                        className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-3"
                       >
                         <div className="flex items-center gap-2.5">
                           <Store className="size-4 text-primary" />
@@ -1539,7 +1539,7 @@ export function CanonicalStoreProfileView({
                     className={cn(
                       "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer",
                       postViewMode === "grid"
-                        ? "bg-background text-foreground shadow-2xs"
+                        ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
                     )}
                     aria-label="Visualização em Grade"
@@ -1552,7 +1552,7 @@ export function CanonicalStoreProfileView({
                     className={cn(
                       "size-8 rounded-lg flex items-center justify-center transition-all cursor-pointer",
                       postViewMode === "feed"
-                        ? "bg-background text-foreground shadow-2xs"
+                        ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground"
                     )}
                     aria-label="Visualização em Feed"
@@ -1759,7 +1759,7 @@ export function CanonicalStoreProfileView({
                       return (
                         <div
                           key={p.id}
-                          className="flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all shadow-2xs group"
+                          className="flex flex-col justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all group"
                         >
                           <div className="flex items-start gap-3 p-4">
                             <div className="min-w-0 flex-1 space-y-1">
@@ -1867,7 +1867,7 @@ export function CanonicalStoreProfileView({
                           customMessage: `Olá! Gostaria de um orçamento ou informações sobre seus serviços.`,
                         })
                       }
-                      className="rounded-xl h-10 px-5 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer mx-auto"
+                      className="rounded-xl h-10 px-5 font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-2 cursor-pointer mx-auto"
                     >
                       <WhatsappLogo size={16} weight="bold" />
                       <span>Falar no WhatsApp</span>
@@ -1883,7 +1883,7 @@ export function CanonicalStoreProfileView({
             <div className="space-y-4 animate-in fade-in duration-150">
               {/* Card de Inteligência de Empregador e Cultura Corporativa */}
               {employerStats && (
-                <div className="p-5 rounded-2xl bg-card border border-border/70 shadow-2xs space-y-4">
+                <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
                     <div>
                       <div className="flex items-center gap-2">
@@ -1950,7 +1950,7 @@ export function CanonicalStoreProfileView({
                   {jobs.map((j: any) => (
                     <div
                       key={j.id}
-                      className="p-5 rounded-2xl border border-border/60 bg-card space-y-3 hover:border-foreground/30 transition-all shadow-2xs"
+                      className="p-5 rounded-2xl border border-border/60 bg-card space-y-3 hover:border-foreground/30 transition-all"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -2001,7 +2001,7 @@ export function CanonicalStoreProfileView({
           {activeTab === "avaliacoes" && (
             <div className="space-y-6 animate-in fade-in duration-150">
               <div className="space-y-4">
-                <div className="p-5 rounded-2xl bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+                <div className="p-5 rounded-2xl bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="size-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-black text-xl font-mono">
                       {Number(store.rating || 5.0).toFixed(1)}
@@ -2024,7 +2024,7 @@ export function CanonicalStoreProfileView({
                     {reviews.map((r: any) => (
                       <div
                         key={r.id}
-                        className="p-4 rounded-2xl border border-border/60 bg-card space-y-2 shadow-2xs"
+                        className="p-4 rounded-2xl border border-border/60 bg-card space-y-2"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center text-muted-foreground">
@@ -2082,7 +2082,7 @@ export function CanonicalStoreProfileView({
                       {employerStats.recentReviews.map((rev: any, idx: number) => (
                         <div
                           key={idx}
-                          className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-2 shadow-2xs"
+                          className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-2"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center text-muted-foreground">
@@ -2125,7 +2125,7 @@ export function CanonicalStoreProfileView({
                 {sponsors.map((sp: any) => (
                   <div
                     key={sp.id}
-                    className="p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between space-y-3 shadow-2xs hover:border-foreground/30 transition-all"
+                    className="p-5 rounded-2xl border border-border/60 bg-card flex flex-col justify-between space-y-3 hover:border-foreground/30 transition-all"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
@@ -2201,7 +2201,7 @@ export function CanonicalStoreProfileView({
                   return (
                     <div
                       key={c.id}
-                      className="p-5 sm:p-6 rounded-3xl border border-border/70 bg-card space-y-3 flex flex-col justify-between shadow-2xs hover:border-foreground/30 transition-all"
+                      className="p-5 sm:p-6 rounded-3xl border border-border/70 bg-card space-y-3 flex flex-col justify-between hover:border-foreground/30 transition-all"
                     >
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between gap-2 flex-wrap">

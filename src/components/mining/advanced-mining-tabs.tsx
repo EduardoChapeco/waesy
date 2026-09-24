@@ -62,7 +62,7 @@ export function TokenEconomyBanner() {
   const mechanicalTotal = metrics?.totalMechanicalExtractions || 81;
 
   return (
-    <div className="w-full rounded-2xl border border-border/60 bg-card p-4 sm:p-5 relative overflow-hidden shadow-2xs">
+    <div className="w-full rounded-2xl border border-border/60 bg-card p-4 sm:p-5 relative overflow-hidden">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="space-y-1.5 max-w-2xl">
           <div className="flex items-center gap-2">
