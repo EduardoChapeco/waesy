@@ -145,17 +145,17 @@ function PublicRecipesPage() {
         </div>
       </div>
 
-      {/* ── 2. Filtro Horizontal de Categorias (Pills) ── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      {/* ── 2. Filtro Horizontal de Categorias (Underlined Tabs) ── */}
+      <div className="flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-border/40 pb-2">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
             className={cn(
-              "px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer",
+              "text-xs sm:text-sm font-medium whitespace-nowrap transition-colors relative py-1 cursor-pointer",
               selectedCategory === cat
-                ? "bg-foreground text-background font-bold "
-                : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
+                ? "text-foreground font-semibold after:absolute after:bottom-[-9px] after:left-0 after:right-0 after:h-0.5 after:bg-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {cat}
@@ -186,13 +186,11 @@ function PublicRecipesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredRecipes.map((rec) => (
-            <div
+            <Link
               key={rec.id}
-              onClick={() => {
-                setSelectedRecipe(rec);
-                setCheckedIngredients({});
-              }}
-              className="group rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-primary/40 hover: transition-all cursor-pointer flex flex-col justify-between"
+              to="/receitas/$id"
+              params={{ id: rec.id }}
+              className="group rounded-2xl bg-card border border-border/60 overflow-hidden hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between"
             >
               <div>
                 {/* Imagem de Capa 16:9 */}
@@ -252,7 +250,7 @@ function PublicRecipesPage() {
                   Ver preparo <ChevronRight className="size-3" />
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

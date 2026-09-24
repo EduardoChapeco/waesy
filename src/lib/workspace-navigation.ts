@@ -125,6 +125,7 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
   items: [
     { path: "/workspace/squads", label: "Squads Especializados", icon: Bot },
     { path: "/workspace/mining", label: "Inteligência & Importações", icon: Database },
+    { path: "/workspace/conteudo/receitas", label: "Curadoria de Receitas", icon: ChefHat },
     { path: "/workspace/simlab/focus-group", label: "SimLab Focus Group", icon: Users },
     { path: "/workspace/inteligencia/radar", label: "Radar de Mercado & DNA", icon: Target },
     { path: "/workspace/marketing/canvas-pecados", label: "Canvas dos 7 Pecados", icon: Flame },

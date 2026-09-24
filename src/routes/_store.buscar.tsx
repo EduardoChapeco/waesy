@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { z } from "zod";
-import { ShoppingBag, Calendar, Tag, Store, ChevronRight, Layers, Clock, Sparkles, TrendingUp, X } from 'lucide-react';
+import { ShoppingBag, Calendar, Tag, Store, ChevronRight, Layers, Clock, Sparkles, TrendingUp, X, CookingPot } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 import {
@@ -12,6 +12,7 @@ import {
   type SearchResultEvent,
   type SearchResultClassified,
   type SearchResultStore,
+  type SearchResultRecipe,
 } from "@/services/search.functions";
 import { getUserTopAffinities } from "@/services/telemetry-affinity.functions";
 import { ProductGrid } from "@/components/commerce/product-grid";
@@ -29,7 +30,7 @@ import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplib
 
 const SearchSchema = z.object({
   q: z.string().optional(),
-  tipo: z.enum(["product", "event", "classified", "store"]).optional(),
+  tipo: z.enum(["product", "event", "classified", "store", "recipe"]).optional(),
 });
 
 export const Route = createFileRoute("/_store/buscar")({
@@ -67,7 +68,88 @@ const TYPE_FILTERS: FilterChipOption[] = [
  { id: "classified", label: "Classificados", icon: Tag as any },
  { id: "store", label: "Lojas & Negócios", icon: Store as any },
  { id: "event", label: "Eventos", icon: Calendar as any },
+  { id: "recipe", label: "Receitas", icon: CookingPot as any },
 ];
+
+
+function RecipeCard({ recipe, isMobileList = false }: { recipe: SearchResultRecipe; isMobileList?: boolean }) {
+  if (isMobileList) {
+    return (
+      <Link
+        to="/receitas/$id"
+        params={{ id: recipe.id }}
+        className="flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors group cursor-pointer"
+      >
+        <div className="size-12 rounded-lg overflow-hidden bg-muted shrink-0 relative border border-border/40">
+          <img
+            src={recipe.cover_image_url || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=400&q=80"}
+            alt={recipe.title}
+            className="size-full object-cover group-hover:scale-105 transition-transform"
+            loading="lazy"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="text-[10px] uppercase font-bold text-primary font-mono tracking-wider">
+              {recipe.category || "Receita"}
+            </span>
+            {recipe.prep_time && (
+              <span className="text-[10px] text-muted-foreground font-mono">
+                • {recipe.prep_time}
+              </span>
+            )}
+          </div>
+          <h4 className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+            {recipe.title}
+          </h4>
+          {recipe.description && (
+            <p className="text-[11px] text-muted-foreground truncate">
+              {recipe.description}
+            </p>
+          )}
+        </div>
+        <ChevronRight className="size-4 text-muted-foreground/50 shrink-0 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to="/receitas/$id"
+      params={{ id: recipe.id }}
+      className="group rounded-xl border border-border/50 bg-card overflow-hidden hover:border-primary/40 transition-all flex flex-col justify-between"
+    >
+      <div className="aspect-video w-full bg-muted overflow-hidden relative">
+        <img
+          src={recipe.cover_image_url || "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80"}
+          alt={recipe.title}
+          className="size-full object-cover group-hover:scale-103 transition-transform duration-300"
+          loading="lazy"
+        />
+        {recipe.prep_time && (
+          <span className="absolute bottom-2 left-2 rounded-md bg-background/90 px-1.5 py-0.5 text-[10px] font-mono font-medium text-foreground">
+            {recipe.prep_time}
+          </span>
+        )}
+      </div>
+      <div className="p-3.5 space-y-1.5 flex-1 flex flex-col justify-between">
+        <div>
+          <span className="text-[10px] font-mono uppercase text-primary font-semibold">
+            {recipe.category || "Receita"}
+          </span>
+          <h4 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+            {recipe.title}
+          </h4>
+        </div>
+        {recipe.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2">
+            {recipe.description}
+          </p>
+        )}
+      </div>
+    </Link>
+  );
+}
 
 function getTotalCount(result: FederatedSearchResponse | null): number {
  if (!result) return 0;
@@ -443,6 +525,7 @@ function SearchPage() {
   const filteredClassifieds =
     activeType === "todos" || activeType === "classified" ? (result?.classifieds ?? []) : [];
   const filteredStores = activeType === "todos" || activeType === "store" ? (result?.stores ?? []) : [];
+  const filteredRecipes = activeType === "todos" || activeType === "recipe" ? (result?.recipes ?? []) : [];
 
   const [selectedStoreMarker, setSelectedStoreMarker] = useState<any | null>(null);
 
@@ -824,6 +907,27 @@ function SearchPage() {
         <div className="hidden sm:grid sm:grid-cols-2 gap-3">
           {filteredClassifieds.map((classified) => (
             <ClassifiedCard key={classified.id} classified={classified} />
+          ))}
+        </div>
+      </ResultSection>
+
+      
+      {/* Seção de Receitas & Gastronomia */}
+      <ResultSection
+        title="Receitas & Gastronomia"
+        count={filteredRecipes.length}
+        icon={CookingPot}
+      >
+        {/* Mobile: WhatsApp Minimalist List */}
+        <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
+          {filteredRecipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} isMobileList />
+          ))}
+        </div>
+        {/* Desktop: Grid */}
+        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredRecipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>
       </ResultSection>

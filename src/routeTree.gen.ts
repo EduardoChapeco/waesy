@@ -186,6 +186,7 @@ import { Route as StoreProdutoSlugRouteImport } from './routes/_store.produto.$s
 import { Route as StorePropostaTokenRouteImport } from './routes/_store.proposta.$token'
 import { Route as StorePublicacaoIdRouteImport } from './routes/_store.publicacao.$id'
 import { Route as StoreReceitasIndexRouteImport } from './routes/_store.receitas.index'
+import { Route as StoreReceitasIdRouteImport } from './routes/_store.receitas.$id'
 import { Route as StoreTurismoIndexRouteImport } from './routes/_store.turismo.index'
 import { Route as StoreTurismoIdRouteImport } from './routes/_store.turismo.$id'
 import { Route as StoreUUsernameRouteImport } from './routes/_store.u.$username'
@@ -239,6 +240,7 @@ import { Route as WorkspaceConfiguracoesPrivacidadeLojaRouteImport } from './rou
 import { Route as WorkspaceConfiguracoesPwaRouteImport } from './routes/workspace.configuracoes.pwa'
 import { Route as WorkspaceConfiguracoesSessoesRouteImport } from './routes/workspace.configuracoes.sessoes'
 import { Route as WorkspaceContadorIndexRouteImport } from './routes/workspace.contador.index'
+import { Route as WorkspaceConteudoReceitasRouteImport } from './routes/workspace.conteudo.receitas'
 import { Route as WorkspaceContratosIndexRouteImport } from './routes/workspace.contratos.index'
 import { Route as WorkspaceContratosNovoRouteImport } from './routes/workspace.contratos.novo'
 import { Route as WorkspaceCurriculoEditorRouteImport } from './routes/workspace.curriculo.editor'
@@ -1261,6 +1263,11 @@ const StoreReceitasIndexRoute = StoreReceitasIndexRouteImport.update({
   path: '/receitas/',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreReceitasIdRoute = StoreReceitasIdRouteImport.update({
+  id: '/receitas/$id',
+  path: '/receitas/$id',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreTurismoIndexRoute = StoreTurismoIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -1544,6 +1551,12 @@ const WorkspaceContadorIndexRoute = WorkspaceContadorIndexRouteImport.update({
   path: '/contador/',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceConteudoReceitasRoute =
+  WorkspaceConteudoReceitasRouteImport.update({
+    id: '/conteudo/receitas',
+    path: '/conteudo/receitas',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceContratosIndexRoute = WorkspaceContratosIndexRouteImport.update({
   id: '/contratos/',
   path: '/contratos/',
@@ -2474,6 +2487,7 @@ export interface FileRoutesByFullPath {
   '/produto/$slug': typeof StoreProdutoSlugRoute
   '/proposta/$token': typeof StorePropostaTokenRoute
   '/publicacao/$id': typeof StorePublicacaoIdRoute
+  '/receitas/$id': typeof StoreReceitasIdRoute
   '/turismo/$id': typeof StoreTurismoIdRoute
   '/u/$username': typeof StoreUUsernameRoute
   '/vendedora/$slug': typeof StoreVendedoraSlugRoute
@@ -2517,6 +2531,7 @@ export interface FileRoutesByFullPath {
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
+  '/workspace/conteudo/receitas': typeof WorkspaceConteudoReceitasRoute
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
   '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
@@ -2831,6 +2846,7 @@ export interface FileRoutesByTo {
   '/produto/$slug': typeof StoreProdutoSlugRoute
   '/proposta/$token': typeof StorePropostaTokenRoute
   '/publicacao/$id': typeof StorePublicacaoIdRoute
+  '/receitas/$id': typeof StoreReceitasIdRoute
   '/turismo/$id': typeof StoreTurismoIdRoute
   '/u/$username': typeof StoreUUsernameRoute
   '/vendedora/$slug': typeof StoreVendedoraSlugRoute
@@ -2874,6 +2890,7 @@ export interface FileRoutesByTo {
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
+  '/workspace/conteudo/receitas': typeof WorkspaceConteudoReceitasRoute
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
   '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
@@ -3197,6 +3214,7 @@ export interface FileRoutesById {
   '/_store/produto/$slug': typeof StoreProdutoSlugRoute
   '/_store/proposta/$token': typeof StorePropostaTokenRoute
   '/_store/publicacao/$id': typeof StorePublicacaoIdRoute
+  '/_store/receitas/$id': typeof StoreReceitasIdRoute
   '/_store/turismo/$id': typeof StoreTurismoIdRoute
   '/_store/u/$username': typeof StoreUUsernameRoute
   '/_store/vendedora/$slug': typeof StoreVendedoraSlugRoute
@@ -3240,6 +3258,7 @@ export interface FileRoutesById {
   '/workspace/configuracoes/privacidade-loja': typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   '/workspace/configuracoes/pwa': typeof WorkspaceConfiguracoesPwaRoute
   '/workspace/configuracoes/sessoes': typeof WorkspaceConfiguracoesSessoesRoute
+  '/workspace/conteudo/receitas': typeof WorkspaceConteudoReceitasRoute
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
   '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
@@ -3563,6 +3582,7 @@ export interface FileRouteTypes {
     | '/produto/$slug'
     | '/proposta/$token'
     | '/publicacao/$id'
+    | '/receitas/$id'
     | '/turismo/$id'
     | '/u/$username'
     | '/vendedora/$slug'
@@ -3606,6 +3626,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
+    | '/workspace/conteudo/receitas'
     | '/workspace/contratos/novo'
     | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
@@ -3920,6 +3941,7 @@ export interface FileRouteTypes {
     | '/produto/$slug'
     | '/proposta/$token'
     | '/publicacao/$id'
+    | '/receitas/$id'
     | '/turismo/$id'
     | '/u/$username'
     | '/vendedora/$slug'
@@ -3963,6 +3985,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
+    | '/workspace/conteudo/receitas'
     | '/workspace/contratos/novo'
     | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
@@ -4285,6 +4308,7 @@ export interface FileRouteTypes {
     | '/_store/produto/$slug'
     | '/_store/proposta/$token'
     | '/_store/publicacao/$id'
+    | '/_store/receitas/$id'
     | '/_store/turismo/$id'
     | '/_store/u/$username'
     | '/_store/vendedora/$slug'
@@ -4328,6 +4352,7 @@ export interface FileRouteTypes {
     | '/workspace/configuracoes/privacidade-loja'
     | '/workspace/configuracoes/pwa'
     | '/workspace/configuracoes/sessoes'
+    | '/workspace/conteudo/receitas'
     | '/workspace/contratos/novo'
     | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
@@ -5761,6 +5786,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreReceitasIndexRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/receitas/$id': {
+      id: '/_store/receitas/$id'
+      path: '/receitas/$id'
+      fullPath: '/receitas/$id'
+      preLoaderRoute: typeof StoreReceitasIdRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/turismo/': {
       id: '/_store/turismo/'
       path: '/'
@@ -6130,6 +6162,13 @@ declare module '@tanstack/react-router' {
       path: '/contador'
       fullPath: '/workspace/contador/'
       preLoaderRoute: typeof WorkspaceContadorIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/conteudo/receitas': {
+      id: '/workspace/conteudo/receitas'
+      path: '/conteudo/receitas'
+      fullPath: '/workspace/conteudo/receitas'
+      preLoaderRoute: typeof WorkspaceConteudoReceitasRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/contratos/': {
@@ -7305,6 +7344,7 @@ interface StoreRouteChildren {
   StoreProdutoSlugRoute: typeof StoreProdutoSlugRoute
   StorePropostaTokenRoute: typeof StorePropostaTokenRoute
   StorePublicacaoIdRoute: typeof StorePublicacaoIdRoute
+  StoreReceitasIdRoute: typeof StoreReceitasIdRoute
   StoreUUsernameRoute: typeof StoreUUsernameRoute
   StoreVendedoraSlugRoute: typeof StoreVendedoraSlugRoute
   StoreVoucherTokenRoute: typeof StoreVoucherTokenRoute
@@ -7388,6 +7428,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreProdutoSlugRoute: StoreProdutoSlugRoute,
   StorePropostaTokenRoute: StorePropostaTokenRoute,
   StorePublicacaoIdRoute: StorePublicacaoIdRoute,
+  StoreReceitasIdRoute: StoreReceitasIdRoute,
   StoreUUsernameRoute: StoreUUsernameRoute,
   StoreVendedoraSlugRoute: StoreVendedoraSlugRoute,
   StoreVoucherTokenRoute: StoreVoucherTokenRoute,
@@ -7585,6 +7626,7 @@ interface WorkspaceRouteChildren {
   WorkspaceConfiguracoesPrivacidadeLojaRoute: typeof WorkspaceConfiguracoesPrivacidadeLojaRoute
   WorkspaceConfiguracoesPwaRoute: typeof WorkspaceConfiguracoesPwaRoute
   WorkspaceConfiguracoesSessoesRoute: typeof WorkspaceConfiguracoesSessoesRoute
+  WorkspaceConteudoReceitasRoute: typeof WorkspaceConteudoReceitasRoute
   WorkspaceContratosNovoRoute: typeof WorkspaceContratosNovoRoute
   WorkspaceCurriculoEditorRoute: typeof WorkspaceCurriculoEditorRoute
   WorkspaceEmpregosCandidatosRoute: typeof WorkspaceEmpregosCandidatosRoute
@@ -7748,6 +7790,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
     WorkspaceConfiguracoesPrivacidadeLojaRoute,
   WorkspaceConfiguracoesPwaRoute: WorkspaceConfiguracoesPwaRoute,
   WorkspaceConfiguracoesSessoesRoute: WorkspaceConfiguracoesSessoesRoute,
+  WorkspaceConteudoReceitasRoute: WorkspaceConteudoReceitasRoute,
   WorkspaceContratosNovoRoute: WorkspaceContratosNovoRoute,
   WorkspaceCurriculoEditorRoute: WorkspaceCurriculoEditorRoute,
   WorkspaceEmpregosCandidatosRoute: WorkspaceEmpregosCandidatosRoute,

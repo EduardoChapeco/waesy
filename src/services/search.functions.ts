@@ -22,9 +22,9 @@ import { getServerClient } from "@/lib/supabase";
 const federatedSearchInput = z.object({
  query: z.string().min(1).max(200),
  types: z
- .array(z.enum(["product", "event", "classified", "store"]))
+ .array(z.enum(["product", "event", "classified", "store", "recipe"]))
  .optional()
- .default(["product", "event", "classified", "store"]),
+ .default(["product", "event", "classified", "store", "recipe"]),
  limit: z.number().int().min(1).max(50).optional().default(10),
  store_id: z.string().uuid().optional(), // Opcional: filtrar por loja específica
 });
@@ -85,8 +85,20 @@ export type SearchResultStore = {
   longitude?: number | null;
 };
 
+export type SearchResultRecipe = {
+  type: "recipe";
+  id: string;
+  title: string;
+  description: string | null;
+  cover_image_url: string | null;
+  prep_time: string | null;
+  cook_time: string | null;
+  category: string;
+  ingredients: string[];
+};
+
 export type SearchResult =
- SearchResultProduct | SearchResultEvent | SearchResultClassified | SearchResultStore;
+ SearchResultProduct | SearchResultEvent | SearchResultClassified | SearchResultStore | SearchResultRecipe;
 
 export type FederatedSearchResponse = {
  products: SearchResultProduct[];
@@ -321,7 +333,41 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  );
  }
 
- await Promise.allSettled(promises);
+ 
+  // ── Receitas & Gastronomia (Mined Recipes) ────────────────────────────────
+  if (types.includes("recipe")) {
+    promises.push(
+      (async () => {
+        const { data, error } = await db
+          .from("mined_raw_extractions")
+          .select("id, raw_title, raw_lead, raw_body_text, cover_image_url, type_metadata")
+          .eq("content_type", "receitas")
+          .neq("status", "hidden")
+          .ilike("raw_title", ilikeTerm)
+          .limit(limit);
+
+        if (!error && data) {
+          results.recipes = data.map((r) => {
+            const meta = r.type_metadata || {};
+            return {
+              type: "recipe" as const,
+              id: r.id,
+              title: r.raw_title,
+              description: r.raw_lead || r.raw_body_text?.slice(0, 140) || null,
+              cover_image_url: r.cover_image_url || null,
+              prep_time: meta.prep_time || null,
+              cook_time: meta.cook_time || null,
+              category: meta.category || "Geral",
+              ingredients: Array.isArray(meta.ingredients) ? meta.ingredients : [],
+            };
+          });
+        }
+      })(),
+    );
+  }
+
+  await Promise.allSettled(promises);
+
 
  results.total =
  results.products.length +

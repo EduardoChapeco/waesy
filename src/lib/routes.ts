@@ -101,6 +101,14 @@ export const PUBLIC_ROUTES: RouteEntry[] = [
     phase: 1,
   },
   {
+    path: "/receitas/:id",
+    label: "Detalhes da Receita",
+    description: "Modo de preparo, ingredientes e impressão",
+    audience: "public",
+    roles: ["visitor"],
+    phase: 1,
+  },
+  {
     path: "/diretorio",
  label: "Diretório",
  description: "Marcas e artistas",
