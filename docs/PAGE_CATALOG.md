@@ -283,12 +283,12 @@
 
 ## P-010 · Eventos — Explorar
 
-**Rota:** `/_store/evento/$id` (`_store.evento.$id.tsx`) | **Status:** `✅ IMPLEMENTADO`
+**Rota:** `/_store/eventos` (`_store.eventos.tsx`) & `/_store/evento/$id` (`_store.evento.$id.tsx`) | **Status:** `✅ IMPLEMENTADO`
 **Shell:** Public Discovery Shell | **Padrão:** cards | **Ator:** Todos
 
-### Anatomia (Listing — GAP, existe só o detalhe)
+### Anatomia (Listing)
 
-- Grid 2-4 colunas: mídia 4:3, data, título, local, preço.
+- Grid 2-4 colunas: mídia 4:3, data, título, local, preço, tickets e categorias.
 
 ### Anatomia (Detalhe do Evento)
 
@@ -335,6 +335,24 @@
 [Seção "Lojas em Destaque"]
 [Seção "Produtos recentes"]
 ```
+
+---
+
+## P-012B · Gastronomia & Receitas Locais
+
+**Rota:** `/_store/receitas` (`_store.receitas.index.tsx`) & `/_store/receitas/$id` (`_store.receitas.$id.tsx`) | **Status:** `✅ IMPLEMENTADO`
+**Shell:** Public Discovery Shell | **Padrão:** editorial-minimal + whatsapp-list | **Ator:** Todos
+
+### Anatomia Listing
+- Abas underline no padrão Apple (Todas, Café da Manhã, Almoço, Jantar, Sobremesas, Bebidas).
+- Grid responsivo 1 col mobile / 2-3 col desktop com badges de tempo e imagem 16:9.
+
+### Anatomia Detalhe
+- Breadcrumb silencioso, título tipografia editorial, hero 16:9, barra de métricas (Preparo, Cozimento, Total, Rendimento).
+- WhatsApp Minimalist List de ingredientes com checklist interativo.
+- Modo de preparo passo a passo numerado.
+- Ponte comercial: "Comprar Ingredientes no Comércio Local" direcionando ao `/mercado`.
+- Modal de Story 9:16 com exportação PNG (html2canvas) e motor nativo de impressão/PDF.
 
 ---
 
