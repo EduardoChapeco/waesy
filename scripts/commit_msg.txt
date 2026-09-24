@@ -1,6 +1,7 @@
-feat(ui-v20): complete responsive purification and visual silence for classifieds and showcase
+feat(ui-v21): enforce canonical md 768px breakpoint separation across shell and header
 
-- Purified universal-classified-showcase: eradicated non-canonical shadows and backdrop filters
-- Purified store classifieds index: sanitized WhatsApp action button to neutral outline tokens
-- Enforced Rule 7 and Rule 11 (Clean Surface and Visual Silence)
-- 0-error production build verified with single-file Cloudflare Pages worker
+- Unify TopBar breakpoint: desktop search bar with cmd-k to hidden md:flex, mobile search touch target to md:hidden
+- Unify UtilityCluster: eradicate redundant tablet search button and align desktop utilities to md:inline-flex
+- Unify ContextSidebar: promote to hidden md:flex w-52 lg:w-60 and eradicate shadow-2xs on active links
+- Unify MobileNav: strictly bind to md:hidden and eradicate shadow-xs for true Flat UI
+- Unify AppShell: clean mobile app pages TopBar hidden md:block, canonical 1px mobile margin and pb-24 md:pb-8 padding

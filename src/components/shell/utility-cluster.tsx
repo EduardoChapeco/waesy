@@ -129,24 +129,13 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  embedded ? "" : "h-10 px-2 rounded-2xl bg-card"
  }`}
  >
- {/* 1. Busca Rápida (Apenas Tablet, escondido no Mobile e no Desktop com busca expandida) */}
- <Button
- variant="ghost"
- size="icon"
- onClick={() => setSearchOpen(true)}
- className="size-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer hidden sm:inline-flex lg:hidden"
- title="Buscar"
- >
- <Search className="size-4" />
- </Button>
-
- {/* 2. Conversas / Chat Direto (Oculto no mobile pois já existe na MobileNav) */}
+ {/* 1. Conversas / Chat Direto (Desktop >= 768px) */}
  {session && (
  <Button
  asChild
  variant="ghost"
  size="icon"
- className="hidden sm:inline-flex size-8 rounded-xl relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
+ className="hidden md:inline-flex size-8 rounded-xl relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
  title="Atendimento & Suporte"
  >
  <Link to="/conta/suporte">
@@ -155,12 +144,12 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  </Button>
  )}
 
- {/* 3. Sacola de Compras (Oculto no mobile pois já existe na MobileNav) */}
+ {/* 2. Sacola de Compras (Desktop >= 768px) */}
  <Button
  variant="ghost"
  size="icon"
  onClick={() => setIsCartOpen(true)}
- className="hidden sm:inline-flex size-8 rounded-xl relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
+ className="hidden md:inline-flex size-8 rounded-xl relative text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer"
  title="Sacola de Compras"
  >
  <ShoppingBag className="size-4" />
@@ -171,13 +160,13 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  )}
  </Button>
 
- {/* 4. Notificações */}
+ {/* 3. Notificações */}
  <NotificationsPopover session={session} />
 
- {/* 5. Alternador de Tema Dark/Light */}
- <ThemeToggle className="hidden sm:inline-flex size-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer" />
+ {/* 4. Alternador de Tema Dark/Light (Desktop >= 768px) */}
+ <ThemeToggle className="hidden md:inline-flex size-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all active:scale-95 cursor-pointer" />
 
- <div className="hidden sm:block h-4 w-px bg-border/60 mx-0.5" />
+ <div className="hidden md:block h-4 w-px bg-border/60 mx-0.5" />
 
  {/* 6. Perfil / Auth Menu (Oculto no mobile pois já existe na MobileNav com suporte a gestos) */}
  {session ? (
@@ -413,7 +402,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <Button
  asChild
  size="sm"
- className="h-8 rounded-xl px-3 text-xs font-bold bg-primary text-primary-foreground"
+ className="hidden md:inline-flex h-8 rounded-xl px-3 text-xs font-bold bg-primary text-primary-foreground"
  >
  <Link to="/entrar">Entrar</Link>
  </Button>

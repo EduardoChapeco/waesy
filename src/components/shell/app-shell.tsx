@@ -132,7 +132,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
   return (
     <div className="h-screen w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
       {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário e Afiliados) ── */}
-      <div className={isProfilePage || isFormPage || isCleanMobileAppPage ? "hidden sm:block" : ""}>
+      <div className={isProfilePage || isFormPage || isCleanMobileAppPage ? "hidden md:block" : ""}>
         <TopBar
           session={session}
           brandSettings={brandSettings}
@@ -151,12 +151,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           ref={mainRef}
           className={`flex-1 flex flex-col min-w-0 h-full w-full max-w-full overflow-y-auto no-scrollbar overflow-x-hidden ${
             isFeedPage || isCleanMobileAppPage
-              ? "px-[1px] sm:px-4 py-1 sm:py-2.5 pb-24 md:pb-8"
+              ? "px-[1px] md:px-4 py-1 md:py-2.5 pb-24 md:pb-8"
               : isFormPage
-              ? "px-[1px] sm:px-6 py-1 sm:py-3 pb-20 md:pb-8"
+              ? "px-[1px] md:px-6 py-1 md:py-3 pb-20 md:pb-8"
               : isDetailPage
-              ? "px-[1px] sm:px-6 py-1 sm:py-2 pb-24 md:pb-8"
-              : "px-[1px] sm:px-6 py-1 sm:py-2.5 pb-24 md:pb-8"
+              ? "px-[1px] md:px-6 py-1 md:py-2 pb-24 md:pb-8"
+              : "px-[1px] md:px-6 py-1 md:py-2.5 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${

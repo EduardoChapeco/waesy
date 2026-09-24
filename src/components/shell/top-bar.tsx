@@ -70,8 +70,8 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           <LocationMasterPill className="max-w-[120px] sm:max-w-[200px]" />
         </div>
 
-        {/* Centro (Desktop >= 1024px): Busca Global Inteligente Silenciosa */}
-        <div className="hidden lg:flex flex-1 max-w-xl mx-4">
+        {/* Centro (Desktop >= 768px): Busca Global Inteligente Silenciosa */}
+        <div className="hidden md:flex flex-1 max-w-xl mx-4">
           <Link
             to="/buscar"
             className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-muted/40 hover:bg-muted/70 text-muted-foreground hover:text-foreground text-xs font-normal transition-all group border border-border/40 hover:border-border/70"
@@ -95,7 +95,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
           {/* Ação de Busca Rápida Mobile (Touch Target 44px ergonômico) */}
           <Link
             to="/buscar"
-            className="lg:hidden flex items-center justify-center size-9 sm:size-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+            className="md:hidden flex items-center justify-center size-9 sm:size-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
             aria-label="Abrir busca"
             title="Buscar"
           >

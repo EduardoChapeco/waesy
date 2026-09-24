@@ -479,12 +479,12 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
 
   return (
     <div
-      className="lg:hidden fixed bottom-2.5 inset-x-2.5 z-40 max-w-xl mx-auto select-none"
+      className="md:hidden fixed bottom-2.5 inset-x-2.5 z-40 max-w-xl mx-auto select-none"
       style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 10px)" }}
     >
       <nav
         aria-label={adminMode ? "Navegação Admin Master" : "Navegação principal mobile"}
-        className="flex items-center gap-1.5 p-1.5 bg-background border border-border/70 shadow-xs rounded-[24px] transition-all duration-200"
+        className="flex items-center gap-1.5 p-1.5 bg-background border border-border rounded-[24px] transition-all duration-200"
       >
         {/* ── ADMIN MODE BAR ── */}
         {adminMode && (
@@ -758,7 +758,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
                   </div>
                 )}
                 {/* Distintivo de status visual no canto inferior */}
-                <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-[8px] font-black text-foreground flex items-center justify-center border border-background shadow-xs">
+                <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-[8px] font-black text-foreground flex items-center justify-center border border-background">
                   P
                 </span>
               </button>
@@ -767,7 +767,7 @@ export function MobileNav({ session, userRole }: MobileNavProps) {
             <Link
               to="/entrar"
               aria-label="Entrar na conta"
-              className="h-11 px-3.5 rounded-2xl bg-foreground text-background font-sans font-medium text-[13.5px] flex items-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-xs"
+              className="h-11 px-3.5 rounded-2xl bg-foreground text-background font-sans font-medium text-[13.5px] flex items-center gap-1.5 shrink-0 active:scale-95 transition-all"
             >
               <LogIn className="size-4.5" />
               <span className="whitespace-nowrap">Entrar</span>

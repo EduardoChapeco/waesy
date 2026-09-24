@@ -70,7 +70,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-60 shrink-0 h-full py-3 px-2.5 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40">
+    <aside className="hidden md:flex flex-col w-52 lg:w-60 shrink-0 h-full py-3 px-2.5 bg-background justify-between select-none overflow-y-auto no-scrollbar z-20 border-r border-border/40">
       <div className="space-y-4">
         {/* ── 1. MÓDULOS PRINCIPAIS (5 PILARES COMUNITÁRIOS) ── */}
         <div className="space-y-0.5">
@@ -92,7 +92,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                     active
                       ? isInvite
                         ? "bg-amber-500/15 text-amber-500 font-bold"
-                        : "bg-primary/10 text-primary font-bold shadow-2xs"
+                        : "bg-primary/10 text-primary font-bold"
                       : isInvite
                       ? "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 font-semibold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
@@ -174,7 +174,7 @@ export function ContextSidebar({ config, session }: ContextSidebarProps) {
                     to={item.to as any}
                     className={`flex items-center gap-2.5 h-8.5 px-2.5 rounded-xl text-xs transition-all cursor-pointer group ${
                       active
-                        ? "bg-primary/10 text-primary font-bold shadow-2xs"
+                        ? "bg-primary/10 text-primary font-bold"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/60 font-medium"
                     }`}
                   >
