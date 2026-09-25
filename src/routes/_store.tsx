@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, isRedirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, isRedirect, useRouterState } from "@tanstack/react-router";
 import { getNavigationMenus, getPublicStoreSettings } from "@/services/cms.functions";
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { getCart, getGlobalCarts } from "@/services/cart.functions";
@@ -173,15 +173,34 @@ function StoreLayout() {
  platform_name: brand?.platform_name || storeData?.name || "Waesy",
  };
 
- return (
- <AppShell session={session} brandSettings={brandSettings}>
- <StoreAnalyticsInjector storeSettings={storeData?.settings} />
- <script
- type="application/ld+json"
- dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
- />
- <Outlet />
- <GlobalPopupRenderer popups={popups} />
- </AppShell>
- );
+ const routerState = useRouterState();
+  const searchParams = (routerState.location.search as any) || {};
+  const isMarketplace = searchParams.view === "marketplace" || searchParams.view === "vitrine";
+  const isMarketingLanding = routerState.location.pathname === "/" && !isMarketplace;
+
+  if (isMarketingLanding) {
+    return (
+      <div className="w-full min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/20">
+        <StoreAnalyticsInjector storeSettings={storeData?.settings} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <Outlet />
+        <GlobalPopupRenderer popups={popups} />
+      </div>
+    );
+  }
+
+  return (
+    <AppShell session={session} brandSettings={brandSettings}>
+      <StoreAnalyticsInjector storeSettings={storeData?.settings} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Outlet />
+      <GlobalPopupRenderer popups={popups} />
+    </AppShell>
+  );
 }

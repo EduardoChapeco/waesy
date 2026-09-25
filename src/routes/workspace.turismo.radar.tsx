@@ -438,7 +438,7 @@ export default function TurismoRadarPage() {
                 onClick={() => setSelectedDest(isSelected ? null : dest)}
                 className={`relative p-5 rounded-2xl border cursor-pointer transition-all duration-300 shadow-2xs ${
                   isSelected
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20 shadow-md'
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20 shadow-xs'
                     : 'border-border/70 bg-card hover:border-primary/40'
                 }`}
               >

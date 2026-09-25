@@ -146,7 +146,7 @@ function ColaboradorPortalPage() {
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-md shrink-0">
+            <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
               {initials}
             </div>
             <div>
@@ -222,7 +222,7 @@ function ColaboradorPortalPage() {
  <Button
  onClick={() => clockMutation.mutate("clock_in")}
  disabled={clockMutation.isPending}
- className="min-h-[52px] rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex flex-col gap-0.5 shadow-lg shadow-emerald-600/20"
+ className="min-h-[52px] rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex flex-col gap-0.5 shadow-xs shadow-emerald-600/20"
  >
  <span>Entrada</span>
  <span className="text-[10px] opacity-80 font-normal">Início da jornada</span>
@@ -248,7 +248,7 @@ function ColaboradorPortalPage() {
  <Button
  onClick={() => clockMutation.mutate("clock_out")}
  disabled={clockMutation.isPending}
- className="min-h-[52px] rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold flex flex-col gap-0.5 shadow-lg shadow-rose-600/20"
+ className="min-h-[52px] rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold flex flex-col gap-0.5 shadow-xs shadow-rose-600/20"
  >
  <span>Saída</span>
  <span className="text-[10px] opacity-80 font-normal">Fim do expediente</span>

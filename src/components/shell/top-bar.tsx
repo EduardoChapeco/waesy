@@ -33,7 +33,7 @@ export function TopBar({ session, brandSettings }: TopBarProps) {
       : DEFAULT_BRAND_NAME;
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/40">
+    <header className="sticky top-0 z-30 w-full bg-background select-none border-b border-border/40 pt-[env(safe-area-inset-top,0px)]">
       <div className="px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 h-12 sm:h-14 w-full">
         {/* Lado Esquerdo: Logo + Selo Beta Silencioso + Localização */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">

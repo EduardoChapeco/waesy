@@ -27,6 +27,7 @@ import {
  formatRetryAfter,
 } from "@/lib/rate-limiter";
 import { recordAuthAuditEvent } from "@/lib/session-audit.server";
+import { getRealClientIP } from "@/lib/network-telemetry.server";
 import { validateCpfMod11, cleanDocument } from "@/lib/document-validator";
 
 // ---------------------------------------------------------------------------
@@ -38,11 +39,7 @@ import { validateCpfMod11, cleanDocument } from "@/lib/document-validator";
  * Cloudflare sets CF-Connecting-IP; falls back to X-Forwarded-For or "unknown".
  */
 function getClientIp(req: Request): string {
- return (
- req.headers.get("cf-connecting-ip") ??
- req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
- "unknown"
- );
+ return getRealClientIP(req);
 }
 
 // ---------------------------------------------------------------------------
@@ -166,7 +163,7 @@ export const checkIdentifierExists = createServerFn({ method: "POST" })
 
 export const signInWithPassword = createServerFn({ method: "POST" })
  .validator(LoginSchema)
- .handler(async ({ data: { email, identifier, password, redirectTo, deviceFingerprint } }) => {
+ .handler(async ({ data: { email, identifier, password, redirectTo, deviceFingerprint, clientLocation } }) => {
  let request: Request | null = null;
  try {
  request = getRequest();
@@ -182,12 +179,13 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  if (!rateCheck.allowed) {
  // Registra evento suspeito de rate limit
  void recordAuthAuditEvent({
- profileId: null,
- eventType: "suspicious_activity",
- request,
- deviceFingerprint,
- metadata: { reason: "rate_limited", ip },
- }).catch(() => {});
+     profileId: null,
+     eventType: "suspicious_activity",
+     request,
+     deviceFingerprint,
+     clientLocation,
+     metadata: { reason: "rate_limited", ip },
+    }).catch(() => {});
 
  return {
  status: "rate_limited" as const,
@@ -244,12 +242,13 @@ export const signInWithPassword = createServerFn({ method: "POST" })
 
  // Grava auditoria forense de falha de login em background
  void recordAuthAuditEvent({
- profileId: matchedProfileId || null,
- eventType: "login_failed",
- request,
- deviceFingerprint,
- metadata: { identifier: rawIdentifier, errorMsg: error.message },
- }).catch(() => {});
+     profileId: matchedProfileId || null,
+     eventType: "login_failed",
+     request,
+     deviceFingerprint,
+     clientLocation,
+     metadata: { identifier: rawIdentifier, errorMsg: error.message },
+    }).catch(() => {});
 
  if (error.status === 429) {
  return { status: "error" as const, message: "Muitas tentativas de login. Aguarde alguns minutos." };
@@ -266,12 +265,13 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  // Grava auditoria forense de sucesso de login de forma assíncrona (não bloqueia resposta HTTP)
  if (data.user) {
  void recordAuthAuditEvent({
- profileId: data.user.id,
- eventType: "login_success",
- request,
- deviceFingerprint,
- metadata: { email: targetEmail, identifier: rawIdentifier },
- }).catch((err) => console.warn("[auth] Auditoria de login falhou em background:", err));
+     profileId: data.user.id,
+     eventType: "login_success",
+     request,
+     deviceFingerprint,
+     clientLocation,
+     metadata: { email: targetEmail, identifier: rawIdentifier },
+    }).catch((err) => console.warn("[auth] Auditoria de login falhou em background:", err));
 
  void (async () => {
  try {
@@ -287,9 +287,8 @@ export const signInWithPassword = createServerFn({ method: "POST" })
  })();
  }
 
- // Return success immediately to let client perform fast redirect
- return { status: "success" as const };
- } catch (e: unknown) {
+   return { status: "success" as const };
+  } catch (e: unknown) {
  logSystemError({ route: "auth.functions.signInWithPassword", error: e, payload: { email, identifier } });
  const message = e instanceof Error ? e.message : "Erro desconhecido";
  return { status: "error" as const, message: message.replace(/^Error:\s*/, "") };
@@ -331,7 +330,7 @@ export const signInWithOAuth = createServerFn({ method: "POST" })
 
 export const signUpWithPassword = createServerFn({ method: "POST" })
  .validator(RegisterSchema)
- .handler(async ({ data: { email, password, fullName, cpf, phone, redirectTo, isConsentLgpd, deviceFingerprint } }) => {
+ .handler(async ({ data: { email, password, fullName, cpf, phone, redirectTo, isConsentLgpd, deviceFingerprint, clientLocation } }) => {
  let request: Request | null = null;
  try {
  request = getRequest();
@@ -498,12 +497,13 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
 
  // Grava auditoria forense do evento de cadastro
  await recordAuthAuditEvent({
- profileId: createdUserId,
- eventType: "signup",
- request,
- deviceFingerprint,
- metadata: { email, fullName, hasCpf: !!cleanCpf },
- });
+    profileId: createdUserId,
+    eventType: "signup",
+    request,
+    deviceFingerprint,
+    clientLocation,
+    metadata: { email, fullName, hasCpf: !!cleanCpf },
+   });
  }
 
  // 5. Mescla carrinho de convidado
@@ -537,8 +537,16 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
  });
 
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
- try {
- const supabase = await getSSRClient();
+  try {
+   let request: Request | null = null;
+   try { request = getRequest(); } catch {}
+   let userId: string | null = null;
+   try {
+    const identity = await getServerIdentity();
+    userId = identity.id || null;
+   } catch {}
+
+   const supabase = await getSSRClient();
  const { error } = await supabase.auth.signOut();
 
  if (error) {
@@ -552,6 +560,14 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
  getEnvVar("VITE_SITE_URL")?.includes("localhost") ? "" : "; Secure"
  }`,
  );
+
+ if (userId) {
+   void recordAuthAuditEvent({
+     profileId: userId,
+     eventType: "logout",
+     request,
+   }).catch(() => {});
+ }
 
  return { status: "success" as const };
  } catch (e: unknown) {

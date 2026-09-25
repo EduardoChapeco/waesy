@@ -16,7 +16,9 @@ import {
   Copy,
   Video,
   Sparkles,
+  Link2,
 } from "lucide-react";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,7 +158,6 @@ function WorkspacePatrocinadoresPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Deseja realmente remover este patrocinador?")) return;
     try {
       await deleteSponsor({ data: { id } });
       toast.success("Patrocinador removido com sucesso.");
@@ -351,14 +352,25 @@ function WorkspacePatrocinadoresPage() {
                     >
                       Editar Dados
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(sp.id)}
-                      className="size-10 rounded-xl text-destructive hover:bg-destructive/10 min-h-[40px] min-w-[40px]"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <CrudActionsMenu
+                      entityName="Patrocinador"
+                      onEdit={() => handleOpenEdit(sp)}
+                      onDelete={() => handleDelete(sp.id)}
+                      deleteConfirmTitle={`Excluir patrocinador "${sp.sponsor_name}"?`}
+                      deleteConfirmDescription="Esta ação removerá permanentemente o patrocinador, os cliques e os relatórios de conversão vinculados."
+                      customActions={[
+                        ...(sp.magic_token
+                          ? [
+                              {
+                                id: "copy-magic-link",
+                                label: "Copiar Link Mágico",
+                                icon: Link2,
+                                onClick: () => handleCopyMagicLink(sp.magic_token),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
                   </div>
                 </div>
               </div>

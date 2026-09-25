@@ -1,22 +1,22 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- MIGRATION: 20261112000000_master_plan_v14_ck_hotels_simlab.sql
--- DESCRIÇÃO: Master Plan V14 — Hotéis & Resorts, Central Knowledge (CK) e SimLab
--- GRUPOS 4, 5 e 6 com RLS Deny-by-Default, Multi-Tenant e Índices de Alta Performance
+-- DESCRIÃ‡ÃƒO: Master Plan V14 â€” HotÃ©is & Resorts, Central Knowledge (CK) e SimLab
+-- GRUPOS 4, 5 e 6 com RLS Deny-by-Default, Multi-Tenant e Ãndices de Alta Performance
 -- ==============================================================================
 
--- ── 1. GRUPO 4: HOTÉIS & RESORTS ──
+-- â”€â”€ 1. GRUPO 4: HOTÃ‰IS & RESORTS â”€â”€
 
--- [REQ-36] Coordenadas Geográficas (location_lat, location_lng) e [REQ-37] Parcelamento (max_installments)
+-- [REQ-36] Coordenadas GeogrÃ¡ficas (location_lat, location_lng) e [REQ-37] Parcelamento (max_installments)
 ALTER TABLE public.hotels_bank
   ADD COLUMN IF NOT EXISTS location_lat NUMERIC(9,6),
   ADD COLUMN IF NOT EXISTS location_lng NUMERIC(9,6),
   ADD COLUMN IF NOT EXISTS max_installments INTEGER NOT NULL DEFAULT 12 CHECK (max_installments >= 1 AND max_installments <= 24);
 
-COMMENT ON COLUMN public.hotels_bank.location_lat IS 'Latitude real para mapa e widget meteorológico';
-COMMENT ON COLUMN public.hotels_bank.location_lng IS 'Longitude real para mapa e widget meteorológico';
-COMMENT ON COLUMN public.hotels_bank.max_installments IS 'Número máximo de parcelas configurado pelo anunciante (1-24x)';
+COMMENT ON COLUMN public.hotels_bank.location_lat IS 'Latitude real para mapa e widget meteorolÃ³gico';
+COMMENT ON COLUMN public.hotels_bank.location_lng IS 'Longitude real para mapa e widget meteorolÃ³gico';
+COMMENT ON COLUMN public.hotels_bank.max_installments IS 'NÃºmero mÃ¡ximo de parcelas configurado pelo anunciante (1-24x)';
 
--- [REQ-32] Tabela hotel_media (mídias categorizadas)
+-- [REQ-32] Tabela hotel_media (mÃ­dias categorizadas)
 CREATE TABLE IF NOT EXISTS public.hotel_media (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   hotel_id UUID NOT NULL REFERENCES public.hotels_bank(id) ON DELETE CASCADE,
@@ -35,9 +35,11 @@ CREATE INDEX IF NOT EXISTS idx_hotel_media_category ON public.hotel_media(catego
 ALTER TABLE public.hotel_media ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "hotel_media_public_read" ON public.hotel_media;
+DROP POLICY IF EXISTS "hotel_media_public_read" ON public.hotel_media;
 CREATE POLICY "hotel_media_public_read" ON public.hotel_media
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hotel_media_admin_write" ON public.hotel_media;
 DROP POLICY IF EXISTS "hotel_media_admin_write" ON public.hotel_media;
 CREATE POLICY "hotel_media_admin_write" ON public.hotel_media
   FOR ALL USING (
@@ -74,9 +76,11 @@ CREATE INDEX IF NOT EXISTS idx_hotel_amenities_key ON public.hotel_amenities(ame
 ALTER TABLE public.hotel_amenities ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "hotel_amenities_public_read" ON public.hotel_amenities;
+DROP POLICY IF EXISTS "hotel_amenities_public_read" ON public.hotel_amenities;
 CREATE POLICY "hotel_amenities_public_read" ON public.hotel_amenities
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hotel_amenities_admin_write" ON public.hotel_amenities;
 DROP POLICY IF EXISTS "hotel_amenities_admin_write" ON public.hotel_amenities;
 CREATE POLICY "hotel_amenities_admin_write" ON public.hotel_amenities
   FOR ALL USING (
@@ -108,9 +112,9 @@ CREATE INDEX IF NOT EXISTS idx_proposals_hotel_id ON public.proposals(hotel_id);
 CREATE INDEX IF NOT EXISTS idx_travel_proposals_hotel_id ON public.travel_proposals(hotel_id);
 CREATE INDEX IF NOT EXISTS idx_trips_hotel_id ON public.trips(hotel_id);
 
--- ── 2. GRUPO 5: BANCO CENTRAL DE CONHECIMENTO (CK) ──
+-- â”€â”€ 2. GRUPO 5: BANCO CENTRAL DE CONHECIMENTO (CK) â”€â”€
 
--- [REQ-38] Tabela ck_vehicles_fipe (Tabela FIPE canônica)
+-- [REQ-38] Tabela ck_vehicles_fipe (Tabela FIPE canÃ´nica)
 CREATE TABLE IF NOT EXISTS public.ck_vehicles_fipe (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   fipe_code TEXT NOT NULL,
@@ -131,9 +135,10 @@ CREATE INDEX IF NOT EXISTS idx_ck_vehicles_brand_model ON public.ck_vehicles_fip
 
 ALTER TABLE public.ck_vehicles_fipe ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "ck_vehicles_fipe_public_read" ON public.ck_vehicles_fipe;
+DROP POLICY IF EXISTS "ck_vehicles_fipe_public_read" ON public.ck_vehicles_fipe;
 CREATE POLICY "ck_vehicles_fipe_public_read" ON public.ck_vehicles_fipe FOR SELECT USING (true);
 
--- [REQ-39] Tabela ck_ncm (Nomenclatura Comum do Mercosul & Reforma Tributária 2026)
+-- [REQ-39] Tabela ck_ncm (Nomenclatura Comum do Mercosul & Reforma TributÃ¡ria 2026)
 CREATE TABLE IF NOT EXISTS public.ck_ncm (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   ncm_code TEXT NOT NULL UNIQUE,
@@ -155,9 +160,10 @@ CREATE INDEX IF NOT EXISTS idx_ck_ncm_desc ON public.ck_ncm USING gin(to_tsvecto
 
 ALTER TABLE public.ck_ncm ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "ck_ncm_public_read" ON public.ck_ncm;
+DROP POLICY IF EXISTS "ck_ncm_public_read" ON public.ck_ncm;
 CREATE POLICY "ck_ncm_public_read" ON public.ck_ncm FOR SELECT USING (true);
 
--- [REQ-40] Expansão / Tabela ck_financial_institutions
+-- [REQ-40] ExpansÃ£o / Tabela ck_financial_institutions
 CREATE TABLE IF NOT EXISTS public.ck_financial_institutions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   compe_code TEXT NOT NULL UNIQUE,
@@ -176,6 +182,7 @@ CREATE INDEX IF NOT EXISTS idx_ck_financial_compe ON public.ck_financial_institu
 CREATE INDEX IF NOT EXISTS idx_ck_financial_short ON public.ck_financial_institutions(short_name);
 
 ALTER TABLE public.ck_financial_institutions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "ck_financial_public_read" ON public.ck_financial_institutions;
 DROP POLICY IF EXISTS "ck_financial_public_read" ON public.ck_financial_institutions;
 CREATE POLICY "ck_financial_public_read" ON public.ck_financial_institutions FOR SELECT USING (true);
 
@@ -201,9 +208,10 @@ CREATE INDEX IF NOT EXISTS idx_ck_airports_city ON public.ck_airports(city);
 
 ALTER TABLE public.ck_airports ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "ck_airports_public_read" ON public.ck_airports;
+DROP POLICY IF EXISTS "ck_airports_public_read" ON public.ck_airports;
 CREATE POLICY "ck_airports_public_read" ON public.ck_airports FOR SELECT USING (true);
 
--- [REQ-42] Tabela ck_brands (Catálogo Central de Marcas)
+-- [REQ-42] Tabela ck_brands (CatÃ¡logo Central de Marcas)
 CREATE TABLE IF NOT EXISTS public.ck_brands (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -221,9 +229,10 @@ CREATE INDEX IF NOT EXISTS idx_ck_brands_slug ON public.ck_brands(slug);
 
 ALTER TABLE public.ck_brands ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "ck_brands_public_read" ON public.ck_brands;
+DROP POLICY IF EXISTS "ck_brands_public_read" ON public.ck_brands;
 CREATE POLICY "ck_brands_public_read" ON public.ck_brands FOR SELECT USING (true);
 
--- [REQ-43] Tabela ck_product_variations (Matriz de Variações Canônicas)
+-- [REQ-43] Tabela ck_product_variations (Matriz de VariaÃ§Ãµes CanÃ´nicas)
 CREATE TABLE IF NOT EXISTS public.ck_product_variations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   dimension_name TEXT NOT NULL,
@@ -238,9 +247,10 @@ CREATE INDEX IF NOT EXISTS idx_ck_variations_niche ON public.ck_product_variatio
 
 ALTER TABLE public.ck_product_variations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "ck_product_variations_public_read" ON public.ck_product_variations;
+DROP POLICY IF EXISTS "ck_product_variations_public_read" ON public.ck_product_variations;
 CREATE POLICY "ck_product_variations_public_read" ON public.ck_product_variations FOR SELECT USING (true);
 
--- [REQ-44] Tabela ck_generic_products (Catálogo de Produtos Genéricos com GTIN/EAN)
+-- [REQ-44] Tabela ck_generic_products (CatÃ¡logo de Produtos GenÃ©ricos com GTIN/EAN)
 CREATE TABLE IF NOT EXISTS public.ck_generic_products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   gtin_ean TEXT UNIQUE,
@@ -260,9 +270,10 @@ CREATE INDEX IF NOT EXISTS idx_ck_generic_niche ON public.ck_generic_products(ni
 
 ALTER TABLE public.ck_generic_products ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "ck_generic_products_public_read" ON public.ck_generic_products;
+DROP POLICY IF EXISTS "ck_generic_products_public_read" ON public.ck_generic_products;
 CREATE POLICY "ck_generic_products_public_read" ON public.ck_generic_products FOR SELECT USING (true);
 
--- [REQ-45] Tabela ck_cnae_services (Catálogo CNAE de Serviços & Tributação)
+-- [REQ-45] Tabela ck_cnae_services (CatÃ¡logo CNAE de ServiÃ§os & TributaÃ§Ã£o)
 CREATE TABLE IF NOT EXISTS public.ck_cnae_services (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   cnae_code TEXT NOT NULL UNIQUE,
@@ -278,9 +289,10 @@ CREATE TABLE IF NOT EXISTS public.ck_cnae_services (
 CREATE INDEX IF NOT EXISTS idx_ck_cnae_code ON public.ck_cnae_services(cnae_code);
 ALTER TABLE public.ck_cnae_services ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "ck_cnae_services_public_read" ON public.ck_cnae_services;
+DROP POLICY IF EXISTS "ck_cnae_services_public_read" ON public.ck_cnae_services;
 CREATE POLICY "ck_cnae_services_public_read" ON public.ck_cnae_services FOR SELECT USING (true);
 
--- ── 3. GRUPO 6: SIMLAB & PERSONAS DEMOGRÁFICAS ──
+-- â”€â”€ 3. GRUPO 6: SIMLAB & PERSONAS DEMOGRÃFICAS â”€â”€
 
 -- [REQ-46] Tabela synthetic_populations (Demografia IBGE Estratificada)
 CREATE TABLE IF NOT EXISTS public.synthetic_populations (
@@ -303,9 +315,10 @@ CREATE INDEX IF NOT EXISTS idx_synthetic_class ON public.synthetic_populations(e
 
 ALTER TABLE public.synthetic_populations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "synthetic_populations_public_read" ON public.synthetic_populations;
+DROP POLICY IF EXISTS "synthetic_populations_public_read" ON public.synthetic_populations;
 CREATE POLICY "synthetic_populations_public_read" ON public.synthetic_populations FOR SELECT USING (true);
 
--- [REQ-47] Tabela persona_consumption_profiles (Padrões de Consumo & Ticket Médio)
+-- [REQ-47] Tabela persona_consumption_profiles (PadrÃµes de Consumo & Ticket MÃ©dio)
 CREATE TABLE IF NOT EXISTS public.persona_consumption_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   archetype_name TEXT NOT NULL,
@@ -325,9 +338,10 @@ CREATE INDEX IF NOT EXISTS idx_persona_niche_class ON public.persona_consumption
 
 ALTER TABLE public.persona_consumption_profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "persona_consumption_public_read" ON public.persona_consumption_profiles;
+DROP POLICY IF EXISTS "persona_consumption_public_read" ON public.persona_consumption_profiles;
 CREATE POLICY "persona_consumption_public_read" ON public.persona_consumption_profiles FOR SELECT USING (true);
 
--- [REQ-48] Tabela persona_focus_group_simulations (Simulação SDR & Focus Group)
+-- [REQ-48] Tabela persona_focus_group_simulations (SimulaÃ§Ã£o SDR & Focus Group)
 CREATE TABLE IF NOT EXISTS public.persona_focus_group_simulations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id UUID REFERENCES public.stores(id) ON DELETE CASCADE,
@@ -345,6 +359,7 @@ CREATE INDEX IF NOT EXISTS idx_persona_simulations_store ON public.persona_focus
 
 ALTER TABLE public.persona_focus_group_simulations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "persona_simulations_store_read" ON public.persona_focus_group_simulations;
+DROP POLICY IF EXISTS "persona_simulations_store_read" ON public.persona_focus_group_simulations;
 CREATE POLICY "persona_simulations_store_read" ON public.persona_focus_group_simulations
   FOR SELECT USING (
     auth.jwt()->>'role' = 'service_role' OR
@@ -354,3 +369,4 @@ CREATE POLICY "persona_simulations_store_read" ON public.persona_focus_group_sim
     ) OR
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'platform_admin', 'superadmin'))
   );
+

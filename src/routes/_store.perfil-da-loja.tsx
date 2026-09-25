@@ -1,18 +1,20 @@
 /**
  * _store.perfil-da-loja.tsx — Página Oficial da Loja / Empresa no Marketplace
  * Utiliza a visão canônica unificada com abas especializadas (Vitrine, Sobre, Posts, Vagas, Avaliações, Patrocinadores).
+ * PURIFICADO (Fase 1 & Master Prompt V37): Zero vazamento de contexto, Data Scoping estrito por store_id.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
 import { getPublicStoreProfile, getStorePublicCatalog } from "@/services/catalog.functions";
 import { listPublicJobs } from "@/services/jobs.functions";
 import { getPublicExperienceDocumentBySlug } from "@/services/builder.functions";
-import { listHotpages } from "@/services/hotpage.functions";
 import { listActiveBanners } from "@/services/banner.functions";
+import { listActiveStoreFlyers } from "@/services/store-flyers.functions";
 import { getIdentity } from "@/services/identity.functions";
 import { getMuralFeed, getCompanyEmployerStats } from "@/services/social.functions";
 import { listStorePublicReviews } from "@/services/cms.functions";
 import { listStorePublicSponsors } from "@/services/news.functions";
+import { getAdsByStoreId } from "@/services/classifieds.functions";
 import { CanonicalStoreProfileView } from "@/components/commerce/canonical-store-profile-view";
 import { UnconfiguredState } from "@/components/state/states";
 
@@ -51,7 +53,7 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
             "Catálogo de produtos, cardápio, horários de funcionamento e canais oficiais de atendimento.",
         },
         { name: "theme-color", content: primaryColor },
-        { name: "apple-mobile-web-app-title", content: storeName },
+        { name: "apple-mobile-web-app-title", storeName },
         { name: "apple-mobile-web-app-capable", content: "yes" },
         { name: "mobile-web-app-capable", content: "yes" },
         { property: "og:title", content: `${storeName} — Loja Oficial` },
@@ -77,62 +79,71 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
       const search = (location.search || {}) as any;
       const targetStore = search.storeId || search.slug;
 
+      // 1. Resolução atômica do perfil para obter o storeId UUID real
+      const profile = await getPublicStoreProfile({
+        data: targetStore ? { storeId: targetStore } : undefined,
+      }).catch(() => null);
+
+      if (!profile || !profile.id) {
+        return {
+          profile: null,
+          catalog: [],
+          categories: [],
+          jobs: [],
+          ads: [],
+          hotpages: [],
+          banners: [],
+          flyers: [],
+          posts: [],
+          reviews: [],
+          sponsors: [],
+          employerStats: null,
+          isOwner: false,
+          builderTree: null,
+        };
+      }
+
+      const storeId = profile.id;
+
+      // 2. Coletas estritamente escopadas por storeId (Zero Vazamento de Contexto)
       const [
-        profile,
         docRes,
         catalogRes,
         jobsRes,
-        hotpagesRes,
         bannersRes,
+        flyersRes,
         postsRes,
         reviewsRes,
         sponsorsRes,
         employerStatsRes,
         identityRes,
+        adsRes,
       ] = await Promise.all([
-        getPublicStoreProfile({ data: targetStore ? { storeId: targetStore } : undefined }).catch(
-          () => null
-        ),
         getPublicExperienceDocumentBySlug({
-          data: { slug: "home", document_type: "storefront", storeId: targetStore },
+          data: { slug: "home", document_type: "storefront", storeId },
         }).catch(() => null),
-        getStorePublicCatalog({ data: targetStore ? { storeId: targetStore } : undefined }).catch(
-          () => null
-        ),
-        listPublicJobs({ data: {} }).catch(() => null),
-        listHotpages({ data: { module: "home" } }).catch(() => []),
-        listActiveBanners({ data: { placement: "store" } }).catch(() => []),
-        targetStore
-          ? getMuralFeed({ data: { store_id: targetStore, limit: 12 } }).catch(() => null)
-          : Promise.resolve(null),
-        targetStore
-          ? listStorePublicReviews({ data: { storeId: targetStore } }).catch(() => [])
-          : Promise.resolve([]),
-        targetStore
-          ? listStorePublicSponsors({ data: { storeId: targetStore } }).catch(() => [])
-          : Promise.resolve([]),
-        targetStore
-          ? getCompanyEmployerStats({ data: { storeId: targetStore } }).catch(() => null)
-          : Promise.resolve(null),
+        getStorePublicCatalog({ data: { storeId } }).catch(() => null),
+        listPublicJobs({ data: { storeId } }).catch(() => []),
+        listActiveBanners({ data: { storeId } }).catch(() => []),
+        listActiveStoreFlyers({ data: { storeSlug: profile.slug || targetStore, storeId } }).catch(() => []),
+        getMuralFeed({ data: { store_id: storeId, limit: 12 } }).catch(() => null),
+        listStorePublicReviews({ data: { storeId } }).catch(() => []),
+        listStorePublicSponsors({ data: { storeId } }).catch(() => []),
+        getCompanyEmployerStats({ data: { storeId } }).catch(() => null),
         getIdentity().catch(() => null),
+        getAdsByStoreId({ data: { storeId } }).catch(() => []),
       ]);
 
-      const rawJobs = Array.isArray(jobsRes) ? jobsRes : (jobsRes as any)?.jobs || [];
-      const storeJobs = rawJobs.filter((j: any) => {
-        if (!profile?.id) return false;
-        return (
-          j.store_id === profile.id ||
-          j.company_name?.toLowerCase() === profile.name?.toLowerCase()
-        );
-      });
-
+      const storeJobs = Array.isArray(jobsRes) ? jobsRes : (jobsRes as any)?.jobs || [];
       const storePosts = (postsRes as any)?.items || [];
+      const storeAds = Array.isArray(adsRes) ? adsRes : [];
+      const storeFlyers = Array.isArray(flyersRes) ? flyersRes : [];
 
       const isOwner = Boolean(
         (identityRes as any)?.id &&
         ((profile as any)?.owner_id === (identityRes as any).id ||
          (profile as any)?.user_id === (identityRes as any).id ||
-         (identityRes as any).store_id === profile?.id ||
+         (identityRes as any).store_id === profile.id ||
          (identityRes as any).role === "admin")
       );
 
@@ -141,8 +152,10 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
         catalog: catalogRes?.products || [],
         categories: catalogRes?.categories || [],
         jobs: storeJobs,
-        hotpages: Array.isArray(hotpagesRes) ? hotpagesRes : [],
+        ads: storeAds,
+        hotpages: [], // Zero context bleeding: nunca renderiza botões da home global na vitrine privada
         banners: Array.isArray(bannersRes) ? bannersRes : [],
+        flyers: storeFlyers,
         posts: storePosts,
         reviews: Array.isArray(reviewsRes) ? reviewsRes : [],
         sponsors: Array.isArray(sponsorsRes) ? sponsorsRes : [],
@@ -157,15 +170,18 @@ export const Route = createFileRoute("/_store/perfil-da-loja")({
       console.error("[loader:_store.perfil-da-loja] Unhandled error:", err);
       return {
         profile: null,
-        catalog: null,
-        categories: null,
-        jobs: null,
-        hotpages: null,
-        banners: null,
-        posts: null,
-        reviews: null,
-        sponsors: null,
+        catalog: [],
+        categories: [],
+        jobs: [],
+        ads: [],
+        hotpages: [],
+        banners: [],
+        flyers: [],
+        posts: [],
+        reviews: [],
+        sponsors: [],
         employerStats: null,
+        isOwner: false,
         builderTree: null,
       };
     }
@@ -180,8 +196,10 @@ function StorePerfilPage() {
     catalog,
     categories,
     jobs,
+    ads,
     hotpages,
     banners,
+    flyers,
     posts,
     reviews,
     sponsors,
@@ -206,6 +224,7 @@ function StorePerfilPage() {
       catalog={catalog}
       categories={categories}
       banners={banners}
+      flyers={flyers}
       hotpages={hotpages}
       jobs={jobs}
       posts={posts}

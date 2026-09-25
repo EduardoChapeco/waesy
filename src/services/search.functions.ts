@@ -101,11 +101,12 @@ export type SearchResult =
  SearchResultProduct | SearchResultEvent | SearchResultClassified | SearchResultStore | SearchResultRecipe;
 
 export type FederatedSearchResponse = {
- products: SearchResultProduct[];
- events: SearchResultEvent[];
- classifieds: SearchResultClassified[];
- stores: SearchResultStore[];
- total: number;
+  products: SearchResultProduct[];
+  events: SearchResultEvent[];
+  classifieds: SearchResultClassified[];
+  stores: SearchResultStore[];
+  recipes: SearchResultRecipe[];
+  total: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -127,12 +128,13 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
  const ilikeTerm = `%${query.trim()}%`;
 
  const results: FederatedSearchResponse = {
- products: [],
- events: [],
- classifieds: [],
- stores: [],
- total: 0,
- };
+    products: [],
+    events: [],
+    classifieds: [],
+    stores: [],
+    recipes: [],
+    total: 0,
+  };
 
  const promises: Promise<void>[] = [];
 
@@ -370,10 +372,11 @@ async function _federatedSearch(input: FederatedSearchInput): Promise<FederatedS
 
 
  results.total =
- results.products.length +
- results.events.length +
- results.classifieds.length +
- results.stores.length;
+    results.products.length +
+    results.events.length +
+    results.classifieds.length +
+    results.stores.length +
+    results.recipes.length;
 
  return results;
 }

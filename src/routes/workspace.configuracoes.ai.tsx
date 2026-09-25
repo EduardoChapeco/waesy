@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders } from 'lucide-react';
+import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders, Trash2 } from 'lucide-react';
 import { toast } from "sonner";
 
 import {
@@ -250,9 +250,25 @@ function AIConfigurationPage() {
  </div>
  </div>
 
- <Badge variant="outline" className="text-[10px] font-mono">
- {sec.masked_suffix}
- </Badge>
+ <div className="flex items-center gap-1.5">
+                    <Badge variant="outline" className="text-[10px] font-mono">
+                      {sec.masked_suffix}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (confirm("Deseja realmente remover esta chave do cofre?")) {
+                          deleteMutation.mutate(sec.id);
+                        }
+                      }}
+                      disabled={deleteMutation.isPending}
+                      className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                      title="Remover chave do cofre"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
  </div>
 
  <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs text-muted-foreground">

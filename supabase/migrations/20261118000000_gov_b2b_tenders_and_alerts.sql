@@ -1,9 +1,9 @@
--- ============================================================================
--- WAESY B2B GOV HARVESTER: LICITAÇÕES PÚBLICAS, PNCP & FILTROS DE ALERTA
--- Extração Contínua, Dossiê Executivo com IA e Tarifação Transacional por Tokens
+﻿-- ============================================================================
+-- WAESY B2B GOV HARVESTER: LICITAÃ‡Ã•ES PÃšBLICAS, PNCP & FILTROS DE ALERTA
+-- ExtraÃ§Ã£o ContÃ­nua, DossiÃª Executivo com IA e TarifaÃ§Ã£o Transacional por Tokens
 -- ============================================================================
 
--- 1. Tabela Canônica de Licitações Públicas Mineradas
+-- 1. Tabela CanÃ´nica de LicitaÃ§Ãµes PÃºblicas Mineradas
 CREATE TABLE IF NOT EXISTS public.mined_tenders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   pncp_id TEXT UNIQUE NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.mined_tenders (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- Índices de Performance para Descoberta de Licitações
+-- Ãndices de Performance para Descoberta de LicitaÃ§Ãµes
 CREATE INDEX IF NOT EXISTS idx_mined_tenders_city_uf ON public.mined_tenders(city, uf);
 CREATE INDEX IF NOT EXISTS idx_mined_tenders_closing ON public.mined_tenders(closing_date DESC);
 CREATE INDEX IF NOT EXISTS idx_mined_tenders_modality ON public.mined_tenders(modality);
@@ -50,22 +50,25 @@ CREATE TABLE IF NOT EXISTS public.tender_alert_filters (
 
 CREATE INDEX IF NOT EXISTS idx_tender_alerts_store ON public.tender_alert_filters(store_id);
 
--- 3. Habilitar RLS Rígido
+-- 3. Habilitar RLS RÃ­gido
 ALTER TABLE public.mined_tenders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tender_alert_filters ENABLE ROW LEVEL SECURITY;
 
--- Políticas para Licitações: Leitura Pública, Escrita Restrita ao Backend / Admin
+-- PolÃ­ticas para LicitaÃ§Ãµes: Leitura PÃºblica, Escrita Restrita ao Backend / Admin
+DROP POLICY IF EXISTS "mined_tenders_read_all" ON public.mined_tenders;
 DROP POLICY IF EXISTS "mined_tenders_read_all" ON public.mined_tenders;
 CREATE POLICY "mined_tenders_read_all" ON public.mined_tenders
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "mined_tenders_admin_write" ON public.mined_tenders;
 DROP POLICY IF EXISTS "mined_tenders_admin_write" ON public.mined_tenders;
 CREATE POLICY "mined_tenders_admin_write" ON public.mined_tenders
   FOR ALL USING (
     auth.uid() IN (SELECT id FROM public.profiles WHERE role IN ('platform_admin', 'master', 'admin'))
   );
 
--- Políticas para Filtros de Alerta: Isolamento Multi-Tenant por Loja
+-- PolÃ­ticas para Filtros de Alerta: Isolamento Multi-Tenant por Loja
+DROP POLICY IF EXISTS "tender_alert_filters_store_own" ON public.tender_alert_filters;
 DROP POLICY IF EXISTS "tender_alert_filters_store_own" ON public.tender_alert_filters;
 CREATE POLICY "tender_alert_filters_store_own" ON public.tender_alert_filters
   FOR ALL USING (
@@ -76,3 +79,4 @@ CREATE POLICY "tender_alert_filters_store_own" ON public.tender_alert_filters
     )
     OR auth.uid() IN (SELECT id FROM public.profiles WHERE role IN ('platform_admin', 'master', 'admin'))
   );
+

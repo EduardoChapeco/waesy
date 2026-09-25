@@ -3,7 +3,7 @@ import { setCookie } from "@tanstack/start-server-core";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getSSRClient } from "@/lib/supabase-ssr.server";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from "@/lib/server-access";
 import { getIdentity } from "./identity.functions";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 
@@ -215,6 +215,7 @@ export const listCompanyLeadsAndOrders = createServerFn({ method: "GET" })
   .validator(
     z
       .object({
+        storeId: z.string().uuid().optional(),
         status: z.string().optional(),
         limit: z.number().int().min(1).max(100).optional().default(50),
       })
@@ -222,52 +223,50 @@ export const listCompanyLeadsAndOrders = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) return { leads: [], currentStore: null };
 
-    // Buscar loja do usuário
-    let storeId = identity.store_id;
-    if (!storeId) {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("store_id")
-        .eq("profile_id", identity.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      storeId = member?.store_id || null;
+    // Buscar loja do usuário garantindo isolamento estrito
+    let targetStoreId = data?.storeId || identity.store_id;
+
+    if (targetStoreId) {
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
+    } else {
+      const validMembership = identity.memberships?.find((m) => STAFF_ROLES.includes(m.role as any));
+      if (validMembership) {
+        targetStoreId = validMembership.store_id;
+      }
     }
 
-    if (!storeId) {
+    if (!targetStoreId) {
       return { leads: [], currentStore: null };
     }
 
     const { data: store } = await supabase
       .from("stores")
       .select("id, name, slug, logo_url, phone, city, address, settings")
-      .eq("id", storeId)
+      .eq("id", targetStoreId)
       .maybeSingle();
 
-    // Buscar classificados da loja
+    // Buscar classificados pertencentes EXCLUSIVAMENTE a esta loja (Zero Context Bleeding)
     const { data: storeClassifieds } = await supabase
       .from("classifieds")
       .select("id")
-      .eq("store_id", storeId);
+      .eq("store_id", targetStoreId);
 
     const classifiedIds = (storeClassifieds || []).map((c) => c.id);
 
-    // Buscar deals vinculados à loja ou ao perfil
+    if (classifiedIds.length === 0) {
+      return { leads: [], currentStore: store };
+    }
+
+    // STRICT IDENTITY WALL: Apenas deals vinculados aos anúncios da loja. NUNCA misturar com vendas civis da pessoa física (seller_id = identity.id).
     let query = supabase
       .from("deals")
       .select("*, classifieds(id, title, price_cents, images, category)")
+      .in("classified_id", classifiedIds)
       .order("created_at", { ascending: false })
       .limit(data?.limit || 50);
-
-    if (classifiedIds.length > 0) {
-      query = query.or(`seller_id.eq.${identity.id},classified_id.in.(${classifiedIds.join(",")})`);
-    } else {
-      query = query.eq("seller_id", identity.id);
-    }
 
     if (data?.status && data.status !== "todos") {
       query = query.eq("status", data.status);
@@ -417,36 +416,42 @@ export const getCompanyReceiptData = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 
 export const listCompanyCatalogClassifieds = createServerFn({ method: "GET" })
-  .validator(z.object({ limit: z.number().int().optional().default(50) }).optional())
+  .validator(
+    z
+      .object({
+        storeId: z.string().uuid().optional(),
+        limit: z.number().int().optional().default(50),
+      })
+      .optional()
+  )
   .handler(async ({ data }) => {
     const supabase = getServerClient();
-    const identity = await getIdentity();
+    const identity = await getServerIdentity();
     if (!identity?.id) return { classifieds: [], stats: { active: 0, paused: 0, resolved: 0 } };
 
-    let storeId = identity.store_id;
-    if (!storeId) {
-      const { data: member } = await supabase
-        .from("workspace_members")
-        .select("store_id")
-        .eq("profile_id", identity.id)
-        .limit(1)
-        .maybeSingle();
-      storeId = member?.store_id || null;
+    let targetStoreId = data?.storeId || identity.store_id;
+
+    if (targetStoreId) {
+      assertStoreAccess(identity, STAFF_ROLES, targetStoreId);
+    } else {
+      const validMembership = identity.memberships?.find((m) => STAFF_ROLES.includes(m.role as any));
+      if (validMembership) {
+        targetStoreId = validMembership.store_id;
+      }
     }
 
-    let query = supabase
+    if (!targetStoreId) {
+      return { classifieds: [], stats: { active: 0, paused: 0, resolved: 0 } };
+    }
+
+    // STRICT IDENTITY WALL: Empresa NUNCA vê itens civis de author_profile_id. Somente produtos da loja.
+    const { data: classifieds, error } = await supabase
       .from("classifieds")
       .select("*")
+      .eq("store_id", targetStoreId)
       .order("created_at", { ascending: false })
       .limit(data?.limit || 50);
 
-    if (storeId) {
-      query = query.or(`store_id.eq.${storeId},author_profile_id.eq.${identity.id}`);
-    } else {
-      query = query.eq("author_profile_id", identity.id);
-    }
-
-    const { data: classifieds, error } = await query;
     if (error) {
       console.warn("[company-mvp] Erro ao listar catálogo:", error);
       return { classifieds: [], stats: { active: 0, paused: 0, resolved: 0 } };

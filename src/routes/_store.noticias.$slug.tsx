@@ -346,7 +346,7 @@ function NoticiaDetailPage() {
                   )}
                   {linkedEvent.rsvp_going_count > 0 && (
                     <span className="flex items-center gap-1 font-semibold text-foreground">
-                      <Users className="size-3.5 text-emerald-500" />
+                      <Users className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                       {linkedEvent.rsvp_going_count} confirmados
                     </span>
                   )}

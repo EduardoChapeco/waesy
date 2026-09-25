@@ -42,6 +42,7 @@ import {
   Edit3,
   Package,
   LayoutGrid,
+  Tag,
 } from "lucide-react";
 import {
   WhatsappLogo,
@@ -70,6 +71,7 @@ import {
 } from "@/components/commerce/store-vitrine-sections-editor";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { CommunityFeedCard } from "@/components/social/community-feed-card";
+import { NativeMobileHeader } from "@/components/navigation";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
 import { ProductModifiersModal, type SelectedModifier } from "@/components/pos/product-modifiers-modal";
@@ -104,6 +106,7 @@ export interface CanonicalStoreProfileViewProps {
   flyers?: PromotionalFlyerDTO[];
   hotpages?: any[];
   jobs?: any[];
+  ads?: any[];
   posts?: any[];
   reviews?: any[];
   sponsors?: any[];
@@ -126,6 +129,7 @@ export function CanonicalStoreProfileView({
   flyers,
   hotpages = [],
   jobs = [],
+  ads = [],
   posts = [],
   reviews = [],
   sponsors = [],
@@ -526,29 +530,74 @@ export function CanonicalStoreProfileView({
     ""
   ).replace(/\D/g, "");
 
+  const phoneCallNumber = (
+    store?.phone ||
+    store?.contact_phone ||
+    store?.contact_whatsapp ||
+    ""
+  ).replace(/\D/g, "");
+
+  // Endereço Canônico Sanitizado (Sem loops e sem repetição de cidade/estado)
+  const formattedAddress = useMemo(() => {
+    if (!store) return null;
+    const isHidden = Boolean(
+      store.settings?.hide_address_completely ||
+      store.settings?.is_address_public === false ||
+      store.settings?.hide_location
+    );
+    if (isHidden) return null;
+
+    let raw = store.address || store.settings?.address || store.location || "";
+    let street = "";
+    let neighborhood = store.neighborhood || store.settings?.neighborhood || "";
+
+    if (Array.isArray(raw)) {
+      raw = raw.filter(Boolean).join(", ");
+    } else if (typeof raw === "object" && raw !== null) {
+      neighborhood = raw.neighborhood || neighborhood;
+      raw = [raw.street, raw.number].filter(Boolean).join(", ");
+    }
+
+    if (typeof raw === "string") {
+      street = raw.trim();
+    }
+
+    const city = (store.city || store.settings?.city || "").trim();
+    const state = (store.state || store.settings?.state || "SC").trim();
+
+    const segments = [];
+    if (street) segments.push(street);
+    if (neighborhood && !street.toLowerCase().includes(neighborhood.toLowerCase())) {
+      segments.push(neighborhood);
+    }
+
+    const cityState = [city, state].filter(Boolean).join(" - ");
+    if (cityState && !street.toLowerCase().includes(city.toLowerCase())) {
+      segments.push(cityState);
+    }
+
+    if (segments.length === 0) return null;
+
+    return {
+      display: segments.join(" • "),
+      mapsQuery: [street, neighborhood, city, state].filter(Boolean).join(", "),
+    };
+  }, [store]);
+
   const hasSponsors = sponsors && sponsors.length > 0;
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 md:pb-12 animate-in fade-in duration-200">
-      {/* ── 1. TOP BAR CANÔNICA (PADRÃO PERFIL DE MEMBRO) — Renderizada apenas no Mobile onde a TopBar global é ocultada ── */}
-      <div className="px-4 py-2.5 bg-background/95 backdrop-blur-md sticky top-0 z-40 border-b border-border/40 flex items-center justify-between sm:hidden">
-        {/* Esquerda: Botão Voltar */}
-        <Link
-          to={backUrl}
-          className="size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground inline-flex items-center justify-center cursor-pointer transition-colors"
-          aria-label="Voltar"
-        >
-          <ArrowLeft className="size-5" />
-        </Link>
-
-        {/* Centro: Nome de Usuário / Identificador da Empresa */}
-        <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
-          <span className="font-mono">@{store.slug || store.id?.slice(0, 8)}</span>
-          <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
-        </div>
-
-        {/* Direita: Compartilhar */}
-        <div className="flex items-center gap-1.5">
+            {/* ── 1. NATIVE MOBILE HEADER CANÔNICO (Apple HIG / Safe Area) ── */}
+      <NativeMobileHeader
+        fallbackHref={backUrl}
+        title={
+          <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
+            <span className="font-mono">@{store.slug || store.id?.slice(0, 8)}</span>
+            <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+          </div>
+        }
+        rightActions={
           <Button
             size="sm"
             variant="ghost"
@@ -558,8 +607,10 @@ export function CanonicalStoreProfileView({
           >
             <Share2 className="size-4" />
           </Button>
-        </div>
-      </div>
+        }
+        centerTitle={true}
+        mobileOnly={true}
+      />
 
       {/* ── BANNER DE REIVINDICAÇÃO DE NEGÓCIO (GHOST TENANTS / CLAIMING) ── */}
       {!isOwner && Boolean(
@@ -812,170 +863,32 @@ export function CanonicalStoreProfileView({
           )}
         </div>
 
-        {/* Linha de Identidade e Ações Minimalistas */}
+        {/* Linha de Identidade e Ações Minimalistas (Padrão Instagram / Apple HIG) */}
         <div className="pt-2 border-t border-border/30 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-                  {store.name || store.business_name}
-                </h1>
-                <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
-                {store.slug && (
-                  <span className="text-xs sm:text-sm font-medium text-muted-foreground font-mono">
-                    @{store.slug}
-                  </span>
-                )}
-              </div>
-
-              {/* Informações úteis em texto limpo — Categoria e Localização concisas */}
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground pt-0.5">
-                <span className="font-semibold text-foreground/90">
-                  {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa")}
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                {store.name || store.business_name}
+              </h1>
+              <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+              {store.slug && (
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground font-mono">
+                  @{store.slug}
                 </span>
-                {(store.city || store.state) && (
-                  <>
-                    <span className="text-muted-foreground/40">•</span>
-                    <span>{[store.city, store.state || "SC"].filter(Boolean).join(" - ")}</span>
-                  </>
-                )}
-              </div>
+              )}
             </div>
 
-            {/* Ações de Conversão Rápidas — Escala Compacta h-8 em Linha Única */}
-            <div className="flex items-center gap-2 w-full sm:w-auto pt-1 sm:pt-0">
-              {whatsappNumber && (
-                <Button
-                  onClick={() =>
-                    trackAndOpenWhatsApp({
-                      phone: whatsappNumber,
-                      storeId: store.id || null,
-                      entityType: "store",
-                      entityId: store.id,
-                      entityTitle: store.name || store.business_name,
-                      niche: segment,
-                      customMessage: `Olá! Vi o perfil oficial de ${store.name || store.business_name} no Waesy e gostaria de mais informações.`,
-                    })
-                  }
-                  className="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 cursor-pointer transition-transform active:scale-98"
-                >
-                  <WhatsappLogo size={15} weight="bold" />
-                  <span>WhatsApp</span>
-                </Button>
+            {/* Categoria Limpa — Sem repetição de endereço */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground pt-0.5">
+              <span className="font-semibold text-foreground/90">
+                {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa")}
+              </span>
+              {store.is_verified && (
+                <>
+                  <span className="text-muted-foreground/40">•</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Verificado</span>
+                </>
               )}
-
-              <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="flex-1 sm:flex-initial h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
-                  >
-                    <PaperPlaneTilt size={13} weight="bold" className="text-muted-foreground" />
-                    <span>Orçamento</span>
-                  </Button>
-                </DialogTrigger>
-
-                <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5">
-                  <DialogHeader>
-                    <DialogTitle className="text-base font-bold">
-                      Solicitar Atendimento / Orçamento
-                    </DialogTitle>
-                    <DialogDescription className="text-xs">
-                      Envie sua dúvida ou solicitação para a equipe de{" "}
-                      {store.name || store.business_name}.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {hasQuoted ? (
-                    <div className="py-6 text-center space-y-3">
-                      <CheckCircle className="size-12 text-emerald-500 mx-auto" />
-                      <h4 className="font-bold text-sm">Solicitação Enviada!</h4>
-                      <p className="text-xs text-muted-foreground">
-                        A empresa recebeu sua mensagem e responderá pelo telefone ou e-mail informado.
-                      </p>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setIsQuoteOpen(false);
-                          setHasQuoted(false);
-                        }}
-                        className="rounded-xl font-bold text-xs mt-2"
-                      >
-                        Fechar
-                      </Button>
-                    </div>
-                  ) : (
-                    <form onSubmit={handleSendQuote} className="space-y-3 pt-2">
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Seu Nome Completo
-                        </label>
-                        <Input
-                          value={quoteName}
-                          onChange={(e) => setQuoteName(e.target.value)}
-                          placeholder="Ex: Carlos Silva"
-                          required
-                          className="h-10 rounded-xl text-xs"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                            WhatsApp
-                          </label>
-                          <Input
-                            value={quotePhone}
-                            onChange={(e) => setQuotePhone(e.target.value)}
-                            placeholder="(00) 00000-0000"
-                            required
-                            className="h-10 rounded-xl text-xs"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                            E-mail
-                          </label>
-                          <Input
-                            type="email"
-                            value={quoteEmail}
-                            onChange={(e) => setQuoteEmail(e.target.value)}
-                            placeholder="seu@email.com"
-                            required
-                            className="h-10 rounded-xl text-xs"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                          O que você precisa?
-                        </label>
-                        <Input
-                          value={quoteService}
-                          onChange={(e) => setQuoteService(e.target.value)}
-                          placeholder="Ex: Orçamento de serviço, entrega personalizada..."
-                          className="h-10 rounded-xl text-xs"
-                        />
-                      </div>
-                      <Button
-                        type="submit"
-                        disabled={isSendingQuote}
-                        className="w-full h-10 rounded-xl font-bold text-xs bg-foreground text-background mt-2"
-                      >
-                        {isSendingQuote ? "Enviando..." : "Enviar Solicitação"}
-                      </Button>
-                    </form>
-                  )}
-                </DialogContent>
-              </Dialog>
-
-              <Button
-                variant="outline"
-                onClick={handleShare}
-                className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 border-border/50 bg-transparent hover:bg-muted/40 cursor-pointer text-muted-foreground hover:text-foreground shrink-0"
-              >
-                <Share2 className="size-3.5" />
-                <span>Compartilhar</span>
-              </Button>
             </div>
           </div>
 
@@ -993,7 +906,7 @@ export function CanonicalStoreProfileView({
 
           {/* Bio / Descrição Formatada com Limite & Expansão */}
           {(store.description || settings.bio || settings.about) && (
-            <div className="space-y-1 max-w-2xl">
+            <div className="space-y-1 max-w-2xl pt-1">
               <p
                 className={cn(
                   "text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed whitespace-pre-line",
@@ -1014,8 +927,8 @@ export function CanonicalStoreProfileView({
             </div>
           )}
 
-          {/* Links e Localização Minimalistas */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs text-muted-foreground">
+          {/* Links e Localização Sanitizada (Única Renderização) */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1 text-xs text-muted-foreground">
             {store.website && (
               <a
                 href={store.website.startsWith("http") ? store.website : `https://${store.website}`}
@@ -1023,8 +936,8 @@ export function CanonicalStoreProfileView({
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary font-semibold hover:underline"
               >
-                <Globe size={14} />
-                <span>{store.website.replace(/^https?:\/\//, "")}</span>
+                <Globe size={13} />
+                <span>{store.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
               </a>
             )}
 
@@ -1035,68 +948,222 @@ export function CanonicalStoreProfileView({
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-foreground/80 font-semibold hover:underline"
               >
-                <InstagramLogo size={14} className="text-primary" />
+                <InstagramLogo size={13} className="text-primary" />
                 <span>@{store.instagram.replace(/^@/, "")}</span>
               </a>
             )}
 
-            {(() => {
-              const isAddressHidden = Boolean(
-                store.settings?.hide_address_completely ||
-                store.settings?.is_address_public === false ||
-                store.settings?.hide_location
-              );
+            {formattedAddress && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formattedAddress.mapsQuery)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 font-medium text-foreground/80 hover:text-primary hover:underline cursor-pointer"
+              >
+                <MapPin className="size-3.5 text-primary shrink-0" />
+                <span>{formattedAddress.display}</span>
+              </a>
+            )}
 
-              if (isAddressHidden) {
-                return (store.city || store.state) ? (
-                  <span className="inline-flex items-center gap-1 font-medium text-foreground/80">
-                    <MapPin className="size-3.5 text-primary shrink-0" />
-                    <span>
-                      {[store.city, store.state || "SC"].filter(Boolean).join(" - ")}
-                    </span>
-                  </span>
-                ) : null;
-              }
+            {store.latitude && store.longitude && (
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-bold hover:underline inline-flex items-center gap-1"
+              >
+                <Navigation className="size-3" />
+                <span>Como Chegar</span>
+              </a>
+            )}
+          </div>
 
-              return (
-                <>
-                  {store.address && (
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        [store.address, store.city, store.state].filter(Boolean).join(", ")
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-medium text-foreground/80 hover:text-primary hover:underline cursor-pointer"
-                    >
-                      <MapPin className="size-3.5 text-primary shrink-0" />
-                      <span>
-                        {store.address}
-                        {store.city ? ` — ${store.city}, ${store.state || "SC"}` : ""}
-                      </span>
+          {/* ── BOTÕES DE AÇÃO ERGONÔMICOS (PADRÃO INSTAGRAM / APPLE HIG) — Imediatamente Abaixo da Bio ── */}
+          <div className="flex items-center gap-2 pt-3 w-full">
+            {isOwner ? (
+              <>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="flex-1 h-9 sm:h-10 px-3 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-1.5 shadow-none"
+                >
+                  <Link to="/workspace" search={{ storeId: store.id }}>
+                    <Store className="size-3.5" />
+                    <span>Workspace</span>
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditCompanyModalOpen(true)}
+                  className="flex-1 h-9 sm:h-10 px-3 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-1.5 shadow-none cursor-pointer"
+                >
+                  <Edit3 className="size-3.5" />
+                  <span>Editar Perfil</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleShare}
+                  aria-label="Compartilhar Perfil"
+                  className="size-9 sm:size-10 p-0 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                >
+                  <Share2 className="size-4 text-muted-foreground" />
+                </Button>
+              </>
+            ) : (
+              <>
+                {whatsappNumber && (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      trackAndOpenWhatsApp({
+                        phone: whatsappNumber,
+                        storeId: store.id || null,
+                        entityType: "store",
+                        entityId: store.id,
+                        entityTitle: store.name || store.business_name,
+                        niche: segment,
+                        customMessage: `Olá! Vi o perfil oficial de ${store.name || store.business_name} no Waesy e gostaria de mais informações.`,
+                      })
+                    }
+                    className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-1.5 shadow-none cursor-pointer"
+                  >
+                    <WhatsappLogo size={15} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>WhatsApp</span>
+                  </Button>
+                )}
+
+                {phoneCallNumber && (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-1.5 shadow-none"
+                  >
+                    <a href={`tel:${phoneCallNumber}`}>
+                      <Phone size={14} className="text-primary shrink-0" />
+                      <span>Ligar</span>
                     </a>
-                  )}
+                  </Button>
+                )}
 
-                  {store.latitude && store.longitude && (
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary font-bold hover:underline flex items-center gap-1 ml-auto sm:ml-0"
+                <Dialog open={isQuoteOpen} onOpenChange={setIsQuoteOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex-1 h-9 sm:h-10 px-2 sm:px-3 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-1.5 shadow-none cursor-pointer"
                     >
-                      <Navigation className="size-3.5" />
-                      <span>Como Chegar</span>
-                    </a>
-                  )}
-                </>
-              );
-            })()}
+                      <PaperPlaneTilt size={14} weight="bold" className="text-muted-foreground shrink-0" />
+                      <span>Orçamento</span>
+                    </Button>
+                  </DialogTrigger>
 
+                  <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6 p-5">
+                    <DialogHeader>
+                      <DialogTitle className="text-base font-bold">
+                        Solicitar Atendimento / Orçamento
+                      </DialogTitle>
+                      <DialogDescription className="text-xs">
+                        Envie sua dúvida ou solicitação para a equipe de{" "}
+                        {store.name || store.business_name}.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    {hasQuoted ? (
+                      <div className="py-6 text-center space-y-3">
+                        <CheckCircle className="size-12 text-emerald-500 mx-auto" />
+                        <h4 className="font-bold text-sm">Solicitação Enviada!</h4>
+                        <p className="text-xs text-muted-foreground">
+                          A empresa recebeu sua mensagem e responderá pelo telefone ou e-mail informado.
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setIsQuoteOpen(false);
+                            setHasQuoted(false);
+                          }}
+                          className="rounded-xl font-bold text-xs mt-2"
+                        >
+                          Fechar
+                        </Button>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSendQuote} className="space-y-3 pt-2">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                            Seu Nome Completo
+                          </label>
+                          <Input
+                            value={quoteName}
+                            onChange={(e) => setQuoteName(e.target.value)}
+                            placeholder="Ex: Carlos Silva"
+                            required
+                            className="h-10 rounded-xl text-xs"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                              WhatsApp
+                            </label>
+                            <Input
+                              value={quotePhone}
+                              onChange={(e) => setQuotePhone(e.target.value)}
+                              placeholder="(00) 00000-0000"
+                              required
+                              className="h-10 rounded-xl text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                              E-mail
+                            </label>
+                            <Input
+                              type="email"
+                              value={quoteEmail}
+                              onChange={(e) => setQuoteEmail(e.target.value)}
+                              placeholder="seu@email.com"
+                              required
+                              className="h-10 rounded-xl text-xs"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                            O que você precisa?
+                          </label>
+                          <Input
+                            value={quoteService}
+                            onChange={(e) => setQuoteService(e.target.value)}
+                            placeholder="Ex: Orçamento de serviço, entrega personalizada..."
+                            className="h-10 rounded-xl text-xs"
+                          />
+                        </div>
+                        <Button
+                          type="submit"
+                          disabled={isSendingQuote}
+                          className="w-full h-10 rounded-xl font-bold text-xs bg-foreground text-background mt-2"
+                        >
+                          {isSendingQuote ? "Enviando..." : "Enviar Solicitação"}
+                        </Button>
+                      </form>
+                    )}
+                  </DialogContent>
+                </Dialog>
+
+                <Button
+                  variant="outline"
+                  onClick={handleShare}
+                  aria-label="Compartilhar Perfil"
+                  className="size-9 sm:size-10 p-0 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                >
+                  <Share2 className="size-4 text-muted-foreground" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-        {/* ── 3. NAVEGAÇÃO POR ABAS NO PADRÃO DO PERFIL DE MEMBRO (Apple HIG) ── */}
+      {/* ── 3. NAVEGAÇÃO POR ABAS NO PADRÃO DO PERFIL DE MEMBRO (Apple HIG) ── */}
         <div className="space-y-6 pt-2">
           <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 text-xs font-semibold overflow-x-auto no-scrollbar border border-border/40">
             {/* Aba 1: Vitrine / Início */}
@@ -1114,27 +1181,7 @@ export function CanonicalStoreProfileView({
               <span>Vitrine</span>
             </button>
 
-            {/* Aba 2: Posts & Novidades */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("posts")}
-              className={cn(
-                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
-                activeTab === "posts"
-                  ? "bg-background text-foreground font-bold "
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <MessageSquare className="size-4" />
-              <span>Posts</span>
-              {posts.length > 0 && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
-                  {posts.length}
-                </span>
-              )}
-            </button>
-
-            {/* Aba 3: Catálogo / Cardápio */}
+            {/* Aba 2: Catálogo / Cardápio */}
             <button
               type="button"
               onClick={() => setActiveTab("catalogo")}
@@ -1154,22 +1201,37 @@ export function CanonicalStoreProfileView({
               )}
             </button>
 
-            {/* Aba 4: Vagas */}
+            {/* Aba 3: Sobre & Atendimento (Posição Natural e Ergonômica) */}
             <button
               type="button"
-              onClick={() => setActiveTab("vagas")}
+              onClick={() => setActiveTab("sobre")}
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
-                activeTab === "vagas"
+                activeTab === "sobre"
                   ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Briefcase className="size-4" />
-              <span>Vagas</span>
-              {jobs.length > 0 && (
+              <Building2 className="size-4" />
+              <span>Sobre & Atendimento</span>
+            </button>
+
+            {/* Aba 4: Posts & Novidades */}
+            <button
+              type="button"
+              onClick={() => setActiveTab("posts")}
+              className={cn(
+                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                activeTab === "posts"
+                  ? "bg-background text-foreground font-bold "
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <MessageSquare className="size-4" />
+              <span>Posts</span>
+              {posts.length > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
-                  {jobs.length}
+                  {posts.length}
                 </span>
               )}
             </button>
@@ -1194,20 +1256,45 @@ export function CanonicalStoreProfileView({
               )}
             </button>
 
-            {/* Aba 6: Sobre & Atendimento */}
+            {/* Aba 6: Vagas */}
             <button
               type="button"
-              onClick={() => setActiveTab("sobre")}
+              onClick={() => setActiveTab("vagas")}
               className={cn(
                 "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
-                activeTab === "sobre"
+                activeTab === "vagas"
                   ? "bg-background text-foreground font-bold "
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Building2 className="size-4" />
-              <span>Sobre & Atendimento</span>
+              <Briefcase className="size-4" />
+              <span>Vagas</span>
+              {jobs.length > 0 && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                  {jobs.length}
+                </span>
+              )}
             </button>
+
+            {/* Aba 7: Classificados da Empresa (Zero Context Bleeding) */}
+            {ads.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("classificados")}
+                className={cn(
+                  "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                  activeTab === "classificados"
+                    ? "bg-background text-foreground font-bold "
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Tag className="size-4" />
+                <span>Classificados</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
+                  {ads.length}
+                </span>
+              </button>
+            )}
 
             {/* Aba 7: Sorteios & Prêmios (Condicional) */}
             {concursos.length > 0 && (
@@ -1499,23 +1586,8 @@ export function CanonicalStoreProfileView({
                   }
 
                   if (section.type === "infinite_feed") {
-                    return (
-                      <div key={section.id} className="pt-6 border-t border-border/40 space-y-4">
-                        <div className="space-y-0.5">
-                          <h2 className="text-base font-bold text-foreground tracking-tight">
-                            {section.title || "Explore Mais na Região"}
-                          </h2>
-                          <p className="text-xs text-muted-foreground">
-                            Navegação contínua de produtos e oportunidades locais.
-                          </p>
-                        </div>
-                        <ProceduralInfiniteFeed
-                          initialExcludedStoreIds={[store.id]}
-                          city={store.city}
-                          className="pt-2"
-                        />
-                      </div>
-                    );
+                    // Zero Context Bleeding: não vaza outras lojas na vitrine privada desta empresa
+                    return null;
                   }
 
                   return null;
@@ -1997,6 +2069,64 @@ export function CanonicalStoreProfileView({
             </div>
           )}
 
+          {/* ── CONTEÚDO DA ABA: CLASSIFICADOS DA EMPRESA (Strict Data Scoping) ── */}
+          {activeTab === "classificados" && ads.length > 0 && (
+            <div className="space-y-4 animate-in fade-in duration-150">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {ads.map((ad: any) => {
+                  const firstImage = ad.images && Array.isArray(ad.images) && ad.images.length > 0 ? ad.images[0] : null;
+                  return (
+                    <Link
+                      key={ad.id}
+                      to="/_store/classificados/$id"
+                      params={{ id: ad.id }}
+                      className="group flex flex-col rounded-2xl bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-all cursor-pointer shadow-xs"
+                    >
+                      <div className="aspect-[16/10] w-full bg-muted/40 relative overflow-hidden">
+                        {firstImage ? (
+                          <img
+                            src={firstImage}
+                            alt={ad.title}
+                            className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="size-full flex items-center justify-center text-muted-foreground">
+                            <Tag className="size-8 opacity-40" />
+                          </div>
+                        )}
+                        {ad.deal_type && (
+                          <span className="absolute top-2.5 left-2.5 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-background/90 backdrop-blur-xs text-foreground border border-border/50">
+                            {ad.deal_type === "sale" ? "Venda" : ad.deal_type === "rent" ? "Aluguel" : ad.deal_type}
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-3.5 sm:p-4 flex flex-col flex-1 justify-between gap-2">
+                        <div>
+                          <h4 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                            {ad.title}
+                          </h4>
+                          {ad.category && (
+                            <span className="text-[11px] text-muted-foreground capitalize">
+                              {ad.category}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                          <span className="text-sm font-black font-mono text-foreground">
+                            {ad.price_cents ? formatMoney(ad.price_cents) : "Sob Consulta"}
+                          </span>
+                          <span className="text-xs text-primary font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                            Ver anúncio →
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* ── CONTEÚDO DA ABA 5: AVALIAÇÕES VERIFICADAS ── */}
           {activeTab === "avaliacoes" && (
             <div className="space-y-6 animate-in fade-in duration-150">
@@ -2182,6 +2312,201 @@ export function CanonicalStoreProfileView({
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── CONTEÚDO DA ABA 6: SOBRE & ATENDIMENTO (CANÔNICO) ── */}
+          {activeTab === "sobre" && (
+            <div className="space-y-6 animate-in fade-in duration-150">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 1. Horários de Atendimento */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="size-4 text-primary" />
+                      <h3 className="text-sm font-bold text-foreground">Horários de Atendimento</h3>
+                    </div>
+                    {openStatus && (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[10px] font-mono font-bold",
+                          openStatus.isOpenNow
+                            ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
+                            : "border-border/60 text-muted-foreground bg-muted/20"
+                        )}
+                      >
+                        {openStatus.isOpenNow ? "Aberto Agora" : "Fechado"}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {scheduleSummary}
+                  </p>
+
+                  <div className="divide-y divide-border/30 pt-1 text-xs">
+                    {WEEKDAYS_ORDER.map((d) => {
+                      const daySched = weeklySchedule ? (weeklySchedule as any)[d.key] : null;
+                      const isOpen = daySched?.open && Array.isArray(daySched.intervals) && daySched.intervals.length > 0;
+                      return (
+                        <div key={d.key} className="py-2 flex items-center justify-between">
+                          <span className="font-medium text-foreground">{d.label}</span>
+                          <span className={cn("font-mono", isOpen ? "text-foreground" : "text-muted-foreground")}>
+                            {isOpen
+                              ? daySched.intervals.map((i: any) => `${i.from} às ${i.to}`).join(" • ")
+                              : "Fechado"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Endereço & Localização */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="size-4 text-primary" />
+                      <h3 className="text-sm font-bold text-foreground">Endereço & Localização</h3>
+                    </div>
+
+                    {formattedAddress ? (
+                      <div className="space-y-2">
+                        <p className="text-xs sm:text-sm text-foreground font-medium leading-relaxed">
+                          {formattedAddress.display}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {store.city || store.settings?.city || "São Miguel do Oeste"} — {store.state || store.settings?.state || "SC"}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Endereço sob consulta diretamente com o atendimento da empresa.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    {formattedAddress && (
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-9 rounded-xl text-xs font-semibold gap-1.5"
+                      >
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formattedAddress.mapsQuery)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Navigation className="size-3.5" />
+                          <span>Abrir no Maps</span>
+                        </a>
+                      </Button>
+                    )}
+
+                    {store.latitude && store.longitude && (
+                      <Button
+                        asChild
+                        size="sm"
+                        className="flex-1 h-9 rounded-xl text-xs font-bold gap-1.5 bg-foreground text-background"
+                      >
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Navigation className="size-3.5" />
+                          <span>Como Chegar</span>
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Pagamento & Modalidades */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="size-4 text-primary" />
+                    <h3 className="text-sm font-bold text-foreground">Pagamento & Modalidades</h3>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between py-1 border-b border-border/30">
+                      <span className="text-muted-foreground">PIX Instantâneo</span>
+                      <span className="font-semibold text-emerald-600">Disponível</span>
+                    </div>
+                    <div className="flex items-center justify-between py-1 border-b border-border/30">
+                      <span className="text-muted-foreground">Cartões de Crédito / Débito</span>
+                      <span className="font-semibold text-foreground">Aceita no local / entrega</span>
+                    </div>
+                    <div className="flex items-center justify-between py-1">
+                      <span className="text-muted-foreground">Dinheiro / À Vista</span>
+                      <span className="font-semibold text-foreground">Sim</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex flex-wrap gap-1.5">
+                    {orderTypes.delivery && (
+                      <Badge variant="outline" className="text-[10px] gap-1">
+                        <Truck className="size-3" /> Delivery
+                      </Badge>
+                    )}
+                    {orderTypes.takeout && (
+                      <Badge variant="outline" className="text-[10px] gap-1">
+                        <Package className="size-3" /> Retirada no Balcão
+                      </Badge>
+                    )}
+                    {orderTypes.dine_in && (
+                      <Badge variant="outline" className="text-[10px] gap-1">
+                        <UtensilsCrossed className="size-3" /> Consumo no Local
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* 4. Canais Oficiais de Contato */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Phone className="size-4 text-primary" />
+                    <h3 className="text-sm font-bold text-foreground">Canais de Atendimento</h3>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    {whatsappNumber && (
+                      <div className="flex items-center justify-between py-1 border-b border-border/30">
+                        <span className="text-muted-foreground flex items-center gap-1.5">
+                          <WhatsappLogo size={14} className="text-emerald-500" /> WhatsApp
+                        </span>
+                        <span className="font-mono font-medium text-foreground">{whatsappNumber}</span>
+                      </div>
+                    )}
+                    {phoneCallNumber && (
+                      <div className="flex items-center justify-between py-1 border-b border-border/30">
+                        <span className="text-muted-foreground flex items-center gap-1.5">
+                          <Phone size={14} /> Telefone
+                        </span>
+                        <span className="font-mono font-medium text-foreground">{phoneCallNumber}</span>
+                      </div>
+                    )}
+                    {store.email && (
+                      <div className="flex items-center justify-between py-1 border-b border-border/30">
+                        <span className="text-muted-foreground">E-mail</span>
+                        <span className="font-medium text-foreground">{store.email}</span>
+                      </div>
+                    )}
+                    {store.instagram && (
+                      <div className="flex items-center justify-between py-1">
+                        <span className="text-muted-foreground flex items-center gap-1.5">
+                          <InstagramLogo size={14} /> Instagram
+                        </span>
+                        <span className="font-medium text-foreground">@{store.instagram.replace(/^@/, '')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}

@@ -53,6 +53,7 @@ import {
 } from "@/services/integrations.functions";
 import {
   saveSecretKey,
+  deleteSecretKey,
   listConfiguredSecrets,
   testSecretKeyConnection,
 } from "@/services/secret-vault.functions";
@@ -60,24 +61,32 @@ import {
   listMarketplaceConnectors,
   type MarketplaceConnectorDTO,
 } from "@/services/marketplace-hub.functions";
+import {
+  getGmbStatus,
+  connectGmb,
+  syncGmbStoreProfile,
+  type GmbLocationDTO,
+} from "@/services/gmb.functions";
 
 export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
   head: () => ({ meta: [{ title: "Central de Integrações & APIs | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [integrations, secrets, marketplaceConnectors] = await Promise.all([
+      const [integrations, secrets, marketplaceConnectors, gmbStatus] = await Promise.all([
         listIntegrationSettings().catch(() => []),
         listConfiguredSecrets().catch(() => []),
         listMarketplaceConnectors().catch(() => []),
+        getGmbStatus().catch(() => null),
       ]);
       return {
         integrations: integrations || [],
         secrets: secrets || [],
         marketplaceConnectors: marketplaceConnectors || [],
+        gmbStatus: gmbStatus || null,
       };
     } catch (err) {
       console.error("[loader:workspace.configuracoes.integracoes] Erro no loader:", err);
-      return { integrations: [], secrets: [], marketplaceConnectors: [] };
+      return { integrations: [], secrets: [], marketplaceConnectors: [], gmbStatus: null };
     }
   },
   component: UnifiedIntegrationsHubPage,
@@ -286,6 +295,7 @@ interface SecretVaultCardProps {
   existingSecret?: any;
   onSave: (provider: string, secretKey: string) => Promise<void>;
   onTestConnection?: (provider: string, secretKey: string) => Promise<{ success: boolean; message: string }>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 function SecretVaultCard({
@@ -297,6 +307,7 @@ function SecretVaultCard({
   existingSecret,
   onSave,
   onTestConnection,
+  onDelete,
 }: SecretVaultCardProps) {
   const [isActive, setIsActive] = useState(!!existingSecret);
   const [secretKey, setSecretKey] = useState("");
@@ -383,7 +394,21 @@ function SecretVaultCard({
                 <CheckCircle2 className="size-4 shrink-0 text-primary" />
                 <span className="font-medium">Chave Pessoal Salva:</span>
               </div>
-              <span className="font-mono font-bold">{existingSecret.masked_suffix}</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold">{existingSecret.masked_suffix}</span>
+                {onDelete && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(existingSecret.id)}
+                    className="size-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                    title="Remover chave e voltar ao pool da plataforma"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
@@ -468,9 +493,55 @@ function UnifiedIntegrationsHubPage() {
     integrations: settings = [],
     secrets = [],
     marketplaceConnectors = [],
+    gmbStatus = null,
   } = (Route.useLoaderData?.() as any) || {};
 
   const router = useRouter();
+
+  const [gmb, setGmb] = useState<GmbLocationDTO | null>(gmbStatus);
+  const [isSyncingGmb, setIsSyncingGmb] = useState(false);
+  const [gmbLocationIdInput, setGmbLocationIdInput] = useState(gmbStatus?.locationId || "");
+  const [gmbLocationNameInput, setGmbLocationNameInput] = useState(gmbStatus?.locationName || "");
+
+  const handleSyncGmb = async () => {
+    setIsSyncingGmb(true);
+    try {
+      const res = await syncGmbStoreProfile();
+      toast.success(res.message || "Dados do Google Meu Negócio sincronizados com sucesso!");
+      const updated = await getGmbStatus();
+      setGmb(updated);
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao sincronizar com Google Meu Negócio.");
+    } finally {
+      setIsSyncingGmb(false);
+    }
+  };
+
+  const handleConnectGmb = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gmbLocationIdInput.trim() || !gmbLocationNameInput.trim()) {
+      toast.error("Informe o ID e o Nome da Empresa no Google.");
+      return;
+    }
+    setIsSyncingGmb(true);
+    try {
+      const res = await connectGmb({
+        data: {
+          locationId: gmbLocationIdInput.trim(),
+          locationName: gmbLocationNameInput.trim(),
+        },
+      });
+      toast.success(res.message);
+      const updated = await getGmbStatus();
+      setGmb(updated);
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao conectar Google Meu Negócio.");
+    } finally {
+      setIsSyncingGmb(false);
+    }
+  };
 
   // Handlers para Secret Vault (IA BYOK)
   const handleSaveSecret = async (provider: string, secretKey: string) => {
@@ -498,6 +569,16 @@ function UnifiedIntegrationsHubPage() {
         secretKey: secretKey || undefined,
       },
     });
+  };
+
+  const handleDeleteSecret = async (id: string) => {
+    try {
+      await deleteSecretKey({ data: { id } });
+      toast.success("Chave removida do cofre com sucesso!");
+      router.invalidate();
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao remover chave do cofre.");
+    }
   };
 
   // Handlers para Credenciais de Integração
@@ -887,6 +968,7 @@ function UnifiedIntegrationsHubPage() {
               existingSecret={secrets.find((s: any) => s.provider === "gemini" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
+              onDelete={handleDeleteSecret}
             />
 
             <SecretVaultCard
@@ -898,6 +980,7 @@ function UnifiedIntegrationsHubPage() {
               existingSecret={secrets.find((s: any) => s.provider === "openai" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
+              onDelete={handleDeleteSecret}
             />
 
             <SecretVaultCard
@@ -909,6 +992,7 @@ function UnifiedIntegrationsHubPage() {
               existingSecret={secrets.find((s: any) => s.provider === "groq" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
+              onDelete={handleDeleteSecret}
             />
 
             <SecretVaultCard
@@ -920,6 +1004,7 @@ function UnifiedIntegrationsHubPage() {
               existingSecret={secrets.find((s: any) => s.provider === "openrouter" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
+              onDelete={handleDeleteSecret}
             />
 
             <SecretVaultCard
@@ -931,6 +1016,7 @@ function UnifiedIntegrationsHubPage() {
               existingSecret={secrets.find((s: any) => s.provider === "anthropic" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
+              onDelete={handleDeleteSecret}
             />
 
             <SecretVaultCard
@@ -942,6 +1028,7 @@ function UnifiedIntegrationsHubPage() {
               existingSecret={secrets.find((s: any) => s.provider === "firecrawl" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
+              onDelete={handleDeleteSecret}
             />
 
             <SecretVaultCard
@@ -953,6 +1040,7 @@ function UnifiedIntegrationsHubPage() {
               existingSecret={secrets.find((s: any) => s.provider === "steel" && s.is_active)}
               onSave={handleSaveSecret}
               onTestConnection={handleTestSecret}
+              onDelete={handleDeleteSecret}
             />
           </div>
         </TabsContent>

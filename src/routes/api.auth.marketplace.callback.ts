@@ -46,11 +46,100 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
 
           const supabase = getServerClient();
 
-          // Simula/Executa troca de tokens em ambiente real
-          const mockAccessToken = `tok_${platform}_${Buffer.from(code).toString("base64").slice(0, 24)}`;
-          const mockRefreshToken = `ref_${platform}_${Date.now()}`;
+          // 1. Busca credenciais da aplicação configuradas no ambiente ou no banco
+          const envClientId =
+            platform === "mercadolivre"
+              ? process.env.MERCADOLIVRE_CLIENT_ID || process.env.VITE_MERCADOLIVRE_CLIENT_ID
+              : platform === "ifood"
+              ? process.env.IFOOD_CLIENT_ID || process.env.VITE_IFOOD_CLIENT_ID
+              : null;
 
-          // Atualiza ou cria conector conectado
+          const envClientSecret =
+            platform === "mercadolivre"
+              ? process.env.MERCADOLIVRE_CLIENT_SECRET
+              : platform === "ifood"
+              ? process.env.IFOOD_CLIENT_SECRET
+              : null;
+
+          let realAccessToken: string | null = null;
+          let realRefreshToken: string | null = null;
+          let expiresIn = 21600;
+
+          // Se houver credenciais reais, efetua a troca HTTP real com o provedor
+          if (envClientId && envClientSecret) {
+            try {
+              const redirectUri = new URL("/api/auth/marketplace/callback", url.origin).toString();
+              let tokenEndpoint = "";
+              let tokenBody: Record<string, string> = {};
+
+              if (platform === "mercadolivre") {
+                tokenEndpoint = "https://api.mercadolibre.com/oauth/token";
+                tokenBody = {
+                  grant_type: "authorization_code",
+                  client_id: envClientId,
+                  client_secret: envClientSecret,
+                  code: code,
+                  redirect_uri: redirectUri,
+                };
+              } else if (platform === "ifood") {
+                tokenEndpoint = "https://merchant-api.ifood.com.br/authentication/v1.0/oauth/token";
+                tokenBody = {
+                  grantType: "authorization_code",
+                  clientId: envClientId,
+                  clientSecret: envClientSecret,
+                  authorizationCode: code,
+                  authorizationCodeVerifier: "",
+                };
+              }
+
+              if (tokenEndpoint) {
+                const tokenRes = await fetch(tokenEndpoint, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: new URLSearchParams(tokenBody).toString(),
+                });
+
+                if (tokenRes.ok) {
+                  const tokenData = await tokenRes.json();
+                  realAccessToken = tokenData.access_token || tokenData.accessToken;
+                  realRefreshToken = tokenData.refresh_token || tokenData.refreshToken || null;
+                  expiresIn = tokenData.expires_in || 21600;
+                } else {
+                  const errJson = await tokenRes.text();
+                  console.error(`[oauth:callback] Provedor ${platform} rejeitou troca de token:`, errJson);
+                  const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+                  redirectUrl.searchParams.set("error", `Provedor ${platform} rejeitou autorização: ${tokenRes.status}`);
+                  redirectUrl.searchParams.set("platform", platform);
+                  return Response.redirect(redirectUrl.toString(), 302);
+                }
+              }
+            } catch (exchangeErr: any) {
+              console.error(`[oauth:callback] Erro de rede ao trocar token com ${platform}:`, exchangeErr);
+              const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+              redirectUrl.searchParams.set("error", `Erro de conexão com o provedor ${platform}.`);
+              redirectUrl.searchParams.set("platform", platform);
+              return Response.redirect(redirectUrl.toString(), 302);
+            }
+          } else {
+            // Sem credenciais no servidor — Política Zero Mocks: rejeita conexão simulada
+            console.warn(`[oauth:callback] Credenciais de API para ${platform} não configuradas no servidor.`);
+            const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+            redirectUrl.searchParams.set(
+              "error",
+              `Credenciais do aplicativo ${platform.toUpperCase()} não configuradas no servidor (MERCADOLIVRE_CLIENT_ID / SECRET). Cadastre as chaves nas variáveis de ambiente.`
+            );
+            redirectUrl.searchParams.set("platform", platform);
+            return Response.redirect(redirectUrl.toString(), 302);
+          }
+
+          if (!realAccessToken) {
+            const redirectUrl = new URL("/workspace/integracoes/marketplaces", url.origin);
+            redirectUrl.searchParams.set("error", "Não foi possível obter o token de acesso oficial.");
+            redirectUrl.searchParams.set("platform", platform);
+            return Response.redirect(redirectUrl.toString(), 302);
+          }
+
+          // Atualiza conector conectado com credenciais reais
           await supabase
             .from("marketplace_connectors")
             .upsert(
@@ -60,10 +149,10 @@ export const Route = createFileRoute("/api/auth/marketplace/callback")({
                 name: platform === "mercadolivre" ? "Mercado Livre Brasil" : platform === "ifood" ? "iFood Delivery" : "Canal Marketplace",
                 status: "connected",
                 credentials: {
-                  access_token: mockAccessToken,
-                  refresh_token: mockRefreshToken,
+                  access_token: realAccessToken,
+                  refresh_token: realRefreshToken,
                   token_type: "Bearer",
-                  expires_in: 21600,
+                  expires_in: expiresIn,
                   obtained_at: new Date().toISOString(),
                 },
                 last_sync_at: new Date().toISOString(),

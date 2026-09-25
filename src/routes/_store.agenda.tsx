@@ -446,7 +446,7 @@ function AgendaPadronizadaPage() {
                 <ChevronDown className="size-3.5 opacity-70" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-3 rounded-2xl bg-card border-border/60 shadow-xl" align="start">
+            <PopoverContent className="w-auto p-3 rounded-2xl bg-card border-border/60 shadow-xs" align="start">
               <Calendar
                 mode="single"
                 selected={selectedDate !== "all" ? new Date(selectedDate + "T12:00:00") : undefined}

@@ -547,7 +547,7 @@ function CommunityHomePage() {
             <Link
               key={card.slug}
               to={card.to as any}
-              className={`min-w-[190px] sm:min-w-[215px] md:min-w-[235px] max-w-[250px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[2/1] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 transition-all duration-300 active:scale-[0.98] ${(card as any).showShadow ? " hover:shadow-xl" : "shadow-none"}`}
+              className={`min-w-[190px] sm:min-w-[215px] md:min-w-[235px] max-w-[250px] shrink-0 snap-start group relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card aspect-[2/1] sm:aspect-[16/9] border border-border/60 hover:border-foreground/30 transition-all duration-300 active:scale-[0.98] ${(card as any).showShadow ? " hover:shadow-xs" : "shadow-none"}`}
             >
               {(card as any).coverUrl ? (
                 <img
@@ -961,7 +961,7 @@ function CommunityHomePage() {
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
                           <span className="bg-black/75 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
-                            {ev.date_display || "Em breve"}
+                            {ev.date_display || "A Confirmar"}
                           </span>
                         </div>
                       </div>

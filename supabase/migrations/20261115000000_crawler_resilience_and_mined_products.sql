@@ -1,5 +1,5 @@
--- Migration: 20261115000000_crawler_resilience_and_mined_products.sql
--- Infraestrutura de Resiliência dos Crawlers, Cooldown de Domínios e Base Global de Preços & Produtos
+﻿-- Migration: 20261115000000_crawler_resilience_and_mined_products.sql
+-- Infraestrutura de ResiliÃªncia dos Crawlers, Cooldown de DomÃ­nios e Base Global de PreÃ§os & Produtos
 
 -- 1. Enriquecimento de crawl_queue com campos de telemetria anti-bloqueio
 ALTER TABLE public.crawl_queue
@@ -9,14 +9,14 @@ ALTER TABLE public.crawl_queue
   ADD COLUMN IF NOT EXISTS error_type TEXT,
   ADD COLUMN IF NOT EXISTS extracted_entities JSONB DEFAULT '{}'::jsonb;
 
--- Índice para deduplicação segura de URLs na fila
+-- Ãndice para deduplicaÃ§Ã£o segura de URLs na fila
 CREATE UNIQUE INDEX IF NOT EXISTS idx_cq_url_unique ON public.crawl_queue(url);
 
--- Índice para agendamento e backoff por domínio
+-- Ãndice para agendamento e backoff por domÃ­nio
 CREATE INDEX IF NOT EXISTS idx_cq_scheduled_cooldown ON public.crawl_queue(scheduled_for, cooldown_until)
   WHERE status = 'pending';
 
--- 2. Tabela de Cooldowns de Domínio Persistente (Circuito Elétrico Anti-Banimento)
+-- 2. Tabela de Cooldowns de DomÃ­nio Persistente (Circuito ElÃ©trico Anti-Banimento)
 CREATE TABLE IF NOT EXISTS public.domain_cooldowns (
   domain TEXT PRIMARY KEY,
   reason TEXT NOT NULL, -- 'rate_limit_429', 'cloudflare_403', 'server_error_5xx', 'timeout'
@@ -34,14 +34,16 @@ ALTER TABLE public.domain_cooldowns ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   DROP POLICY IF EXISTS "domain_cooldowns_public_read" ON public.domain_cooldowns;
-  CREATE POLICY "domain_cooldowns_public_read" ON public.domain_cooldowns FOR SELECT USING (true);
+  DROP POLICY IF EXISTS "domain_cooldowns_public_read" ON public.domain_cooldowns;
+CREATE POLICY "domain_cooldowns_public_read" ON public.domain_cooldowns FOR SELECT USING (true);
 
   DROP POLICY IF EXISTS "domain_cooldowns_staff_all" ON public.domain_cooldowns;
-  CREATE POLICY "domain_cooldowns_staff_all" ON public.domain_cooldowns FOR ALL USING (true);
+  DROP POLICY IF EXISTS "domain_cooldowns_staff_all" ON public.domain_cooldowns;
+CREATE POLICY "domain_cooldowns_staff_all" ON public.domain_cooldowns FOR ALL USING (true);
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
--- 3. Base Global de Produtos & Inteligência de Preços (mined_products)
+-- 3. Base Global de Produtos & InteligÃªncia de PreÃ§os (mined_products)
 CREATE TABLE IF NOT EXISTS public.mined_products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   source_url TEXT UNIQUE NOT NULL,
@@ -78,9 +80,12 @@ ALTER TABLE public.mined_products ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   DROP POLICY IF EXISTS "mined_products_public_read" ON public.mined_products;
-  CREATE POLICY "mined_products_public_read" ON public.mined_products FOR SELECT USING (true);
+  DROP POLICY IF EXISTS "mined_products_public_read" ON public.mined_products;
+CREATE POLICY "mined_products_public_read" ON public.mined_products FOR SELECT USING (true);
 
   DROP POLICY IF EXISTS "mined_products_staff_all" ON public.mined_products;
-  CREATE POLICY "mined_products_staff_all" ON public.mined_products FOR ALL USING (true);
+  DROP POLICY IF EXISTS "mined_products_staff_all" ON public.mined_products;
+CREATE POLICY "mined_products_staff_all" ON public.mined_products FOR ALL USING (true);
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
+

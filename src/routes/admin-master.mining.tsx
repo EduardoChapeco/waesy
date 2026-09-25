@@ -1436,7 +1436,7 @@ function AdminMiningHubPage() {
   className={cn(
   "text-[10px] px-1.5 py-0 font-medium rounded-md",
   item.modalidadeNome.toLowerCase().includes("pregão")
-  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+  ? "bg-primary/10 text-primary border-primary/20"
   : item.modalidadeNome.toLowerCase().includes("dispensa") || item.modalidadeNome.toLowerCase().includes("inexigibilidade")
   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
   : item.modalidadeNome.toLowerCase().includes("concorrência") || item.modalidadeNome.toLowerCase().includes("tomada")

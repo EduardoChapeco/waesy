@@ -61,10 +61,10 @@ const ENTITY_TYPE_META: Record<string, { label: string; icon: React.ElementType;
 
 function getRiskBadge(score: number, flagged: boolean) {
  if (flagged || score >= 70)
- return { label: "Alto Risco", variant: "destructive" as const, color: "bg-red-500/10 text-red-500 border-red-500/20" };
+ return { label: "Alto Risco", variant: "destructive" as const, color: "bg-destructive/10 text-destructive border-destructive/20" };
  if (score >= 40)
  return { label: "Médio", variant: "secondary" as const, color: "bg-amber-500/10 text-amber-500 border-amber-500/20" };
- return { label: "Normal", variant: "outline" as const, color: "bg-green-500/10 text-green-500 border-green-500/20" };
+ return { label: "Normal", variant: "outline" as const, color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" };
 }
 
 function truncateHash(hash: string, chars = 12) {
@@ -126,7 +126,7 @@ function TransactionCertificatesPage() {
  </div>
  <div className="ml-auto flex items-center gap-2">
  {flaggedCount > 0 && (
- <Badge className="bg-red-500/10 text-red-500 border-red-500/20 text-xs font-mono">
+ <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-xs font-mono">
  <ShieldAlert className="size-3 mr-1" />
  {flaggedCount} sinalizados
  </Badge>
@@ -151,12 +151,12 @@ function TransactionCertificatesPage() {
  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
  {[
  { label: "Total (carregados)", value: certs.length, icon: Shield, color: "text-primary" },
- { label: "Sinalizados auto", value: flaggedCount, icon: ShieldAlert, color: "text-red-500" },
+ { label: "Sinalizados auto", value: flaggedCount, icon: ShieldAlert, color: "text-destructive" },
  { label: "Alto risco (≥70)", value: highRiskCount, icon: AlertTriangle, color: "text-amber-500" },
  { label: "Válidos", value: certs.filter((c: any) => c.is_valid).length, icon: ShieldCheck, color: "text-green-500" },
  ].map((kpi) => (
  <div key={kpi.label} className="bg-card border border-border/50 rounded-xl p-4">
- <div className={cn("size-8 rounded-lg flex items-center justify-center mb-2.5", kpi.color === "text-primary" ? "bg-primary/10" : kpi.color === "text-red-500" ? "bg-red-500/10" : kpi.color === "text-amber-500" ? "bg-amber-500/10" : "bg-green-500/10")}>
+ <div className={cn("size-8 rounded-lg flex items-center justify-center mb-2.5", kpi.color === "text-primary" ? "bg-primary/10" : kpi.color === "text-destructive" ? "bg-destructive/10" : kpi.color === "text-amber-500" ? "bg-amber-500/10" : "bg-emerald-500/10")}>
  <kpi.icon className={cn("size-4", kpi.color)} />
  </div>
  <div className="text-xl font-bold font-mono">{kpi.value}</div>
@@ -237,7 +237,7 @@ function TransactionCertificatesPage() {
  key={cert.id}
  className={cn(
  "hover:bg-muted/20 transition-colors",
- cert.auto_flagged && "bg-red-500/3"
+ cert.auto_flagged && "bg-destructive/5"
  )}
  >
  <td className="px-4 py-3">

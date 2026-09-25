@@ -9,13 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
+import { listAllSystemOnboardingSteps } from "@/services/system-onboarding.functions";
+
 export const Route = createFileRoute("/admin-master/onboarding")({
   head: () => ({ meta: [{ title: "Gestão do Onboarding | Admin Master" }] }),
   loader: async () => {
-    return {
-      // O agent deve conectar isso com a DB system_onboarding_steps posteriormente.
-      steps: []
-    };
+    try {
+      const steps = await listAllSystemOnboardingSteps().catch(() => []);
+      return { steps: steps || [] };
+    } catch (err) {
+      console.error("[loader:admin-master.onboarding] Erro defensivo:", err);
+      return { steps: [] };
+    }
   },
   component: AdminOnboardingManager,
 });

@@ -53,10 +53,10 @@ type PrepStation = "all" | "chapa" | "forno" | "bebidas" | "sobremesas";
 
 const STATIONS: Array<{ id: PrepStation; label: string; icon: any; color: string }> = [
  { id: "all", label: "Todas", icon: Utensils, color: "text-foreground" },
- { id: "chapa", label: "Chapa", icon: Thermometer, color: "text-orange-500" },
- { id: "forno", label: "Forno", icon: Flame, color: "text-red-500" },
- { id: "bebidas", label: "Bebidas", icon: Beer, color: "text-blue-500" },
- { id: "sobremesas", label: "Sobremesas", icon: CakeSlice, color: "text-pink-500" },
+ { id: "chapa", label: "Chapa", icon: Thermometer, color: "text-amber-600 dark:text-amber-400" },
+ { id: "forno", label: "Forno", icon: Flame, color: "text-destructive" },
+ { id: "bebidas", label: "Bebidas", icon: Beer, color: "text-primary" },
+ { id: "sobremesas", label: "Sobremesas", icon: CakeSlice, color: "text-accent-foreground" },
 ];
 
 // Keywords simples para classificação automática de itens por estação
@@ -302,7 +302,7 @@ function KDSDashboard() {
  toolDescription="O painel KDS (Kitchen Display System) com tempos de cocção, alertas sonoros e divisão por estações de cozinha é desenhado especificamente para restaurantes e gastronomia."
  store={store}
  >
- <div className="flex flex-col h-[calc(100vh-4rem)] max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
+ <div className="flex flex-col h-[calc(100dvh-4rem)] max-w-full overflow-hidden bg-muted/15 text-foreground font-sans">
  {/* ── Topbar da Cozinha ── */}
  <header className="flex flex-col gap-2 px-4 sm:px-6 pt-3 pb-2 bg-card border-b border-border/80 shrink-0">
  {/* Linha 1: Identidade + Ações */}
@@ -456,7 +456,7 @@ function KDSDashboard() {
  title="Em Preparo"
  count={colProcessing.length}
  icon={Flame}
- headerClass="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30"
+ headerClass="bg-primary/10 text-primary border-primary/30"
  orders={colProcessing}
  onAction={moveOrder}
  actionLabel="Marcar como Pronto"

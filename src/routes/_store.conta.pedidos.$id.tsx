@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
@@ -23,6 +23,7 @@ import { DigitalCompanionCard } from "@/components/documents/digital-companion-c
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NativeMobileHeader } from "@/components/navigation";
 import { ReviewModal } from "@/components/commerce/review-modal";
 import { RmaWizard } from "@/components/commerce/rma-wizard";
 import { EmptyState } from "@/components/state/states";
@@ -244,45 +245,32 @@ function CustomerOrderDetailPage() {
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 font-sans text-foreground">
-      {/* ── 1. Header com Navegação e Ações ── */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-4 pt-1">
-        <Link
-          to="/conta/pedidos"
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="size-4" />
-          <span>Voltar para pedidos</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCompanionOpen(true)}
-            className="rounded-xl text-xs font-semibold gap-1.5 h-8.5 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
-          >
-            <Smartphone className="size-3.5" />
-            <span className="hidden sm:inline">Resumo 9:16</span>
-            <span className="sm:hidden">9:16</span>
-          </Button>
-          <Badge
-            variant={getStatusVariant(order.status)}
-            className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-lg"
-          >
-            {translateStatus(order.status)}
-          </Badge>
-        </div>
-      </div>
-
-      {/* ── 2. Título & Metadados do Pedido ── */}
-      <div className="space-y-1">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
-          <Package className="size-6 text-primary" strokeWidth={2} />
-          Pedido #{order.public_token}
-        </h1>
-        <p className="text-xs text-muted-foreground">
-          Realizado em {formatDate(order.created_at)}
-        </p>
-      </div>
+      {/* ── 1. Canonical Navigation Header ── */}
+      <NativeMobileHeader
+        title={`Pedido #${order.public_token}`}
+        subtitle={`Realizado em ${formatDate(order.created_at)}`}
+        fallbackHref="/conta/pedidos"
+        rightActions={
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCompanionOpen(true)}
+              className="rounded-xl text-xs font-semibold gap-1.5 h-8.5 px-3 cursor-pointer border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
+            >
+              <Smartphone className="size-3.5" />
+              <span className="hidden sm:inline">Resumo 9:16</span>
+              <span className="sm:hidden">9:16</span>
+            </Button>
+            <Badge
+              variant={getStatusVariant(order.status)}
+              className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-lg"
+            >
+              {translateStatus(order.status)}
+            </Badge>
+          </div>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Left: items + shipping */}

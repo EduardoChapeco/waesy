@@ -21,7 +21,7 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
   if (!slides || slides.length === 0) return null;
 
   return (
-    <div className="relative w-full space-y-3">
+    <div className="relative w-full min-w-0 max-w-full overflow-hidden space-y-3">
       {/* Botões de navegação no desktop */}
       <div className="hidden sm:flex items-center justify-between px-1">
         <span className="text-xs font-bold text-foreground flex items-center gap-1.5">

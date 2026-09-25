@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-canonical-toolbar';
 import { WorkspaceDashboardSheet, type MetricCardItem } from '@/components/workspace/workspace-dashboard-sheet';
 import { toast } from 'sonner';
+import { CrudActionsMenu } from '@/components/ui/crud-actions-menu';
 import { getStoreSettings } from '@/services/store.functions';
 import { listTravelSuppliers, deleteTravelSupplier } from '@/services/travel-suppliers.functions';
 import { SUPPLIER_KIND_LABELS, type SupplierKind } from '@/types/travel-suppliers';
@@ -61,11 +62,10 @@ function WorkspaceSuppliersPage() {
  (s.city && s.city.toLowerCase().includes(search.toLowerCase()))
  );
 
- const handleDelete = async (id: string, name: string) => {
- if (!confirm(`Deseja realmente excluir o fornecedor ${name}?`)) return;
+ const handleDelete = async (id: string, name?: string) => {
  try {
  await deleteTravelSupplier({ data: { id } });
- toast.success('Fornecedor removido com sucesso!');
+ toast.success(`Fornecedor ${name ? name + " " : ""}removido!`);
  refetch();
  } catch (err: any) {
  toast.error('Erro ao remover: ' + err?.message);
@@ -210,15 +210,12 @@ function WorkspaceSuppliersPage() {
  )}
  </div>
 
- <Button
- type="button"
- variant="ghost"
- size="sm"
- onClick={() => handleDelete(s.id, s.name)}
- className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive"
- >
- <Trash2 className="size-3.5" />
- </Button>
+ <CrudActionsMenu
+ entityName="Fornecedor"
+ onDelete={() => handleDelete(s.id, s.name)}
+ deleteConfirmTitle={`Excluir fornecedor "${s.name}"?`}
+ deleteConfirmDescription="Esta ação removerá permanentemente o fornecedor cadastrado e seus dados de comissionamento."
+ />
  </div>
  </div>
  ))}

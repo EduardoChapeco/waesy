@@ -1,6 +1,0 @@
-feat(prod-v22): audit production data linkage and enforce Apple HIG silent design
-
-- Schema audit verified: 492 public tables and 734 foreign key constraints active in live database pooler
-- Zero mock verification: 202/202 workspace navigation links mapped to real routes, verified real WhatsApp checkout payload
-- Eradicate gratuitous backdrop-blur and shadows across Badges, pills, and cards in consumer discovery routes (empregos, eventos, imoveis, receitas, explorar, destaques, proposta)
-- Production build with 0 errors verified

@@ -342,7 +342,7 @@ function SignContractPage() {
                   <button
                     type="button"
                     onClick={captureSelfie}
-                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-11 px-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg hover:opacity-90 transition-opacity"
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 h-11 px-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
                   >
                     Tirar Foto
                   </button>

@@ -548,7 +548,7 @@ export default function CurriculoEditorPage() {
           <div
             ref={previewRef}
             className={cn(
-              "bg-white text-zinc-900 shadow-2xl transition-all select-none overflow-hidden",
+              "bg-white text-zinc-900 shadow-xs transition-all select-none overflow-hidden",
               format === "a4"
                 ? "w-full max-w-[650px] min-h-[920px] p-8 sm:p-10 space-y-6 rounded-2xl border border-zinc-200"
                 : "w-full max-w-[400px] aspect-[9/16] p-6 space-y-4 rounded-3xl border border-zinc-200 flex flex-col justify-between"

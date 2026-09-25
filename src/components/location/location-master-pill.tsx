@@ -131,6 +131,21 @@ export async function resolveGeoCoordinates(
  };
 }
 
+export function syncClientGeoCookie(loc: LocationState) {
+  if (typeof document === "undefined" || !loc) return;
+  document.cookie = `waesy_city=${encodeURIComponent(loc.city)}; path=/; max-age=31536000; SameSite=Lax`;
+  try {
+    const geoPayload = encodeURIComponent(JSON.stringify({
+      city: loc.city,
+      state: loc.state,
+      lat: loc.lat,
+      lng: loc.lng,
+      source: loc.source || "gps",
+    }));
+    document.cookie = `waesy_client_geo=${geoPayload}; path=/; max-age=31536000; SameSite=Lax`;
+  } catch {}
+}
+
 export function useMasterLocation() {
  const [location, setLocation] = useState<LocationState>(GLOBAL_DEFAULT_LOCATION);
 
@@ -142,7 +157,8 @@ export function useMasterLocation() {
  stored.source !== "default"
  ) {
  setLocation(stored);
- }
+      syncClientGeoCookie(stored);
+    }
 
  // Auto-detectar de forma resiliente: se o navegador já possui permissão concedida ou se o usuário
  // já autorizou no Waesy, sincronizar as coordenadas reais imediatamente e NUNCA deixar travado em "Global"
@@ -165,7 +181,7 @@ export function useMasterLocation() {
  };
  setLocation(autoLoc);
  localStorage.setItem("waesy_master_location", JSON.stringify(autoLoc));
- document.cookie = `waesy_city=${encodeURIComponent(autoLoc.city)}; path=/; max-age=31536000; SameSite=Lax`;
+ syncClientGeoCookie(autoLoc);
  localStorage.removeItem("waesy_geo_permission_dismissed");
  localStorage.setItem("waesy_geo_permission_granted", "true");
  window.dispatchEvent(new CustomEvent("waesy:location-updated", { detail: autoLoc }));
@@ -221,7 +237,7 @@ export function useMasterLocation() {
     setLocation(newLoc);
     if (typeof window !== "undefined") {
       localStorage.setItem("waesy_master_location", JSON.stringify(newLoc));
-      document.cookie = `waesy_city=${encodeURIComponent(newLoc.city)}; path=/; max-age=31536000; SameSite=Lax`;
+      syncClientGeoCookie(newLoc);
       window.dispatchEvent(new CustomEvent("waesy:location-updated", { detail: newLoc }));
     }
   };

@@ -460,7 +460,7 @@ function EditProductPage() {
  <ProductEditorLayout
  preview={
  isTravelPackageMode ? (
- <div className="w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-md max-h-[750px] overflow-y-auto no-scrollbar">
+ <div className="w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-xs max-h-[750px] overflow-y-auto no-scrollbar">
  <TravelPackageDetailView
  packageData={travelData}
  productTitle={liveTitle || travelData.destination?.name || "Pacote de Viagem"}
@@ -474,7 +474,7 @@ function EditProductPage() {
  />
  </div>
  ) : isGroceryMode ? (
- <div className="w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-md max-h-[750px] overflow-y-auto no-scrollbar">
+ <div className="w-full max-w-[380px] rounded-2xl border border-border/80 bg-background overflow-hidden shadow-xs max-h-[750px] overflow-y-auto no-scrollbar">
  <ConvenienceShowcaseView
  previewData={{
  title: liveTitle || "Produto de Mercado",
@@ -1411,7 +1411,7 @@ function GeneralForm({
  <Button
  type="submit"
  disabled={isSubmitting}
- className="w-full rounded-2xl h-14 text-sm font-bold bg-primary text-primary-foreground gap-2 shadow-lg"
+ className="w-full rounded-2xl h-14 text-sm font-bold bg-primary text-primary-foreground gap-2 shadow-xs"
  >
  {isSubmitting ? <Loader2 className="size-5 animate-spin" /> : <CheckCircle2 className="size-5" />}
  Salvar {nicheCtx.entityName}

@@ -192,9 +192,10 @@ export const getTripCommissionDetails = createServerFn({ method: "GET" })
     try {
       const supabase = getServerClient();
       const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "finance"]);
       const [commRes, suppliersRes] = await Promise.all([
-        supabase.from("trip_commissions").select("*").eq("trip_id", data.tripId).maybeSingle(),
-        supabase.from("travel_suppliers").select("id, name").eq("store_id", identity.store_id || "").limit(50),
+        supabase.from("trip_commissions").select("*").eq("trip_id", data.tripId).eq("store_id", identity.store_id).maybeSingle(),
+        supabase.from("travel_suppliers").select("id, name").eq("store_id", identity.store_id).limit(50),
       ]);
       return {
         commission: commRes.data || null,
@@ -213,9 +214,10 @@ export const saveTripCommission = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    const { data: existing } = await supabase.from("trip_commissions").select("id").eq("trip_id", data.tripId).maybeSingle();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
+    const { data: existing } = await supabase.from("trip_commissions").select("id").eq("trip_id", data.tripId).eq("store_id", identity.store_id).maybeSingle();
     if (existing) {
-      const { data: updated, error } = await supabase.from("trip_commissions").update(data.payload).eq("id", existing.id).select().single();
+      const { data: updated, error } = await supabase.from("trip_commissions").update(data.payload).eq("id", existing.id).eq("store_id", identity.store_id).select().single();
       if (error) throw error;
       return updated;
     } else {

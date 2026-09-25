@@ -535,7 +535,7 @@ function AdminMasterHotpagesPage() {
  {filteredItems.map((item) => (
  <div
  key={item.id}
- className="group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 shadow-xs hover:border-foreground/30 hover:shadow-md"
+ className="group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 shadow-xs hover:border-foreground/30 hover:shadow-xs"
  >
  {item.cover_image_url ? (
  <img
@@ -655,7 +655,7 @@ function AdminMasterHotpagesPage() {
  return (
  <div
  key={item.id}
- className={`group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-md hover:shadow-xl" : "shadow-xs"}`}
+ className={`group relative flex flex-col justify-end aspect-16/9 rounded-2xl sm:rounded-2xl border border-border/80 bg-card overflow-hidden transition-all duration-300 hover:border-foreground/30 ${showShadowOnCard ? "shadow-xs hover:shadow-xs" : "shadow-xs"}`}
  >
  {item.cover_image_url ? (
  <img
@@ -776,7 +776,7 @@ function AdminMasterHotpagesPage() {
  </div>
  </div>
  ) : (
- <div className={`relative aspect-16/9 rounded-xl overflow-hidden bg-card border border-border/80 ${showShadow ? "shadow-md" : "shadow-xs"}`}>
+ <div className={`relative aspect-16/9 rounded-xl overflow-hidden bg-card border border-border/80 ${showShadow ? "shadow-xs" : "shadow-xs"}`}>
  {coverImageUrl ? (
  <img src={coverImageUrl} alt="Preview Capa" className="size-full object-cover" />
  ) : (

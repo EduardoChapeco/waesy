@@ -232,7 +232,7 @@ function WorkspaceTasksPage() {
   }, [digest, tasks]);
 
   return (
-    <div className="flex flex-col gap-4 min-h-[calc(100vh-8.5rem)]">
+    <div className="flex flex-col gap-4 min-h-[calc(100dvh-8.5rem)]">
       {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
       <WorkspaceCanonicalToolbar
         tabs={[

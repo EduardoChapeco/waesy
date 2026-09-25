@@ -36,7 +36,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
 
   if (isStandalonePage) {
     return (
-      <div className="min-h-screen w-full bg-background text-foreground flex flex-col overflow-x-hidden">
+      <div className="min-h-[100dvh] w-full bg-background text-foreground flex flex-col overflow-x-hidden">
         {children}
       </div>
     );
@@ -79,7 +79,11 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.startsWith("/produto/") ||
     location.pathname.startsWith("/evento/") ||
     (location.pathname.startsWith("/hospedagem/") && location.pathname !== "/hospedagem") ||
-    (location.pathname.startsWith("/turismo/") && location.pathname !== "/turismo");
+    (location.pathname.startsWith("/turismo/") && location.pathname !== "/turismo") ||
+    location.pathname.startsWith("/imoveis/") ||
+    location.pathname.startsWith("/veiculos/") ||
+    location.pathname.startsWith("/vagas/") ||
+    (location.pathname.startsWith("/empregos/") && location.pathname !== "/empregos");
 
   const isCleanMobileAppPage =
     location.pathname.includes("/buscar") ||
@@ -125,14 +129,17 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/bebidas") ||
     location.pathname.includes("/construcao") ||
     location.pathname.includes("/beleza") ||
+    location.pathname.includes("/receitas") ||
     location.pathname.includes("/voucher");
 
   const isFeedPage = location.pathname.startsWith("/feed");
+  const isMarketplace = (location.search as any)?.view === "marketplace" || (location.search as any)?.view === "vitrine";
+  const isMarketingLanding = location.pathname === "/" && !isMarketplace;
 
   return (
-    <div className="h-screen w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
+    <div className="h-[100dvh] w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
       {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário e Afiliados) ── */}
-      <div className={isProfilePage || isFormPage || isCleanMobileAppPage ? "hidden md:block" : ""}>
+      <div className={isMarketingLanding ? "hidden" : (isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage ? "hidden md:block" : "")}>
         <TopBar
           session={session}
           brandSettings={brandSettings}
@@ -142,7 +149,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       {/* ── Corpo Principal com Scrolls Independentes (Sidebar fixa + Main independente) ── */}
       <div className="flex-1 flex min-w-0 w-full max-w-full relative overflow-hidden">
         {/* Coluna Contextual Fixa com Scroll Próprio (Desktop apenas) */}
-        {contextConfig.showContextSidebar !== false && (
+        {!isMarketingLanding && contextConfig.showContextSidebar !== false && (
           <ContextSidebar config={contextConfig} session={session} />
         )}
 
@@ -151,12 +158,12 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
           ref={mainRef}
           className={`flex-1 flex flex-col min-w-0 h-full w-full max-w-full overflow-y-auto no-scrollbar overflow-x-hidden ${
             isFeedPage || isCleanMobileAppPage
-              ? "px-[1px] md:px-4 py-1 md:py-2.5 pb-24 md:pb-8"
+              ? "px-[1px] md:px-4 pt-0 md:pt-2.5 pb-24 md:pb-8"
               : isFormPage
-              ? "px-[1px] md:px-6 py-1 md:py-3 pb-20 md:pb-8"
+              ? "px-[1px] md:px-6 pt-0 md:pt-3 pb-20 md:pb-8"
               : isDetailPage
-              ? "px-[1px] md:px-6 py-1 md:py-2 pb-24 md:pb-8"
-              : "px-[1px] md:px-6 py-1 md:py-2.5 pb-24 md:pb-8"
+              ? "px-[1px] md:px-6 py-0 md:py-2 pb-20 md:pb-8"
+              : "px-[1px] md:px-6 pt-0 md:pt-2.5 pb-24 md:pb-8"
           }`}
         >
           <div className={`w-full mx-auto flex flex-col items-stretch min-w-0 flex-1 ${
@@ -172,7 +179,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       </div>
 
       {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
-      {!isDetailPage && <MobileNav session={session} userRole={session?.role} />}
+      {!isDetailPage && !isMarketingLanding && <MobileNav session={session} userRole={session?.role} />}
 
  {/* Global Cart Slide-over */}
  <CartSheet />

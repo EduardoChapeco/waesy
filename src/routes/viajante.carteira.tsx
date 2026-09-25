@@ -348,7 +348,7 @@ export default function ViajanteCarteiraPage() {
         open={Boolean(fullscreenQrPass)}
         onOpenChange={(open) => !open && setFullscreenQrPass(null)}
       >
-        <DialogContent className="max-w-sm p-6 bg-card text-foreground rounded-2xl border border-border/60 shadow-lg text-center">
+        <DialogContent className="max-w-sm p-6 bg-card text-foreground rounded-2xl border border-border/60 shadow-xs text-center">
           <DialogHeader className="w-full text-center">
             <DialogTitle className="text-base font-bold text-foreground">
               Apresentação para Embarque

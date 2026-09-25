@@ -1,5 +1,9 @@
 import { useState, useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { CampaignDraftCard } from "@/components/adtech/campaign-draft-card";
+import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
+import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
 import {
  Search,
  X,
@@ -47,6 +51,11 @@ import {
  Layers,
  Award,
  Target,
+  Sparkles,
+  Mic,
+  MicOff,
+  Send,
+  Loader2,
 } from "lucide-react";
 import {
  Dialog,
@@ -340,13 +349,92 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
 ];
 
 export function WorkspaceAllToolsDialog({
- open,
- onOpenChange,
- activeStore,
+  open,
+  onOpenChange,
+  activeStore,
 }: WorkspaceAllToolsDialogProps) {
- const [searchQuery, setSearchQuery] = useState("");
- const semantics = useMemo(() => getNicheSemantics(activeStore), [activeStore]);
- const frequentTools = useMemo(() => getFrequentToolsForNiche(semantics), [semantics]);
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mcpBlock, setMcpBlock] = useState<DynamicRenderableBlock | null>(null);
+  const [isOrchestrating, setIsOrchestrating] = useState(false);
+  const [isListeningVoice, setIsListeningVoice] = useState(false);
+
+  const semantics = useMemo(() => getNicheSemantics(activeStore), [activeStore]);
+  const frequentTools = useMemo(() => getFrequentToolsForNiche(semantics), [semantics]);
+
+  const handleToggleVoice = () => {
+    const SpeechRec =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      toast.info("Reconhecimento de voz não suportado neste navegador. Digite sua instrução!");
+      return;
+    }
+    if (isListeningVoice) {
+      setIsListeningVoice(false);
+      return;
+    }
+    try {
+      const recognition = new SpeechRec();
+      recognition.lang = "pt-BR";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      setIsListeningVoice(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        setIsListeningVoice(false);
+        handleExecuteAiCommand(transcript);
+      };
+      recognition.onerror = () => setIsListeningVoice(false);
+      recognition.onend = () => setIsListeningVoice(false);
+      recognition.start();
+    } catch {
+      setIsListeningVoice(false);
+    }
+  };
+
+  const handleExecuteAiCommand = async (customPrompt?: string) => {
+    const promptToUse = (customPrompt || searchQuery).trim();
+    if (!promptToUse) {
+      toast.error("Informe um comando ou instrução para a IA.");
+      return;
+    }
+    setIsOrchestrating(true);
+    setMcpBlock(null);
+    try {
+      const block = await orchestrateCampaignIntent({
+        data: {
+          prompt: promptToUse,
+        },
+      });
+      setMcpBlock(block);
+      toast.success("Proposta de anúncio gerada via MCP! Revise o mockup antes de aprovar.");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao orquestrar comando com IA.");
+    } finally {
+      setIsOrchestrating(false);
+    }
+  };
+
+  const isAiIntent = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.trim().length < 3) return false;
+    const q = searchQuery.toLowerCase();
+    return (
+      q.startsWith("cria") ||
+      q.startsWith("gerar") ||
+      q.startsWith("fazer") ||
+      q.startsWith("anúncio") ||
+      q.startsWith("anuncio") ||
+      q.startsWith("campanha") ||
+      q.startsWith("divulgar") ||
+      q.startsWith("promover") ||
+      q.includes(" r$") ||
+      q.includes("reais") ||
+      q.includes("meta ads") ||
+      q.includes("instagram") ||
+      q.includes("google")
+    );
+  }, [searchQuery]);
 
  // Filtro dinâmico por palavra-chave e priorização por nicho
  const filteredSectors = useMemo(() => {
@@ -410,31 +498,132 @@ export function WorkspaceAllToolsDialog({
  </span>
  </div>
 
- <div className="relative">
- <Search className="size-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
- <Input
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- placeholder="Pesquisar palavras-chave em todas as ferramentas..."
- className="h-10 pl-10 pr-4 text-xs sm:text-sm rounded-xl bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
- autoFocus
- />
- {searchQuery && (
- <button
- type="button"
- onClick={() => setSearchQuery("")}
- className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
- >
- <X className="size-4" />
- </button>
- )}
- </div>
- </div>
+ <div className="relative flex items-center">
+            <Search className="size-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (mcpBlock) setMcpBlock(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim()) {
+                  e.preventDefault();
+                  handleExecuteAiCommand();
+                }
+              }}
+              placeholder="Pesquisar ferramentas ou ditar comando (ex: 'Criar anúncio de R$ 50 para o produto X')..."
+              className="h-10 pl-10 pr-20 text-xs sm:text-sm rounded-xl bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary shadow-xs"
+              autoFocus
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleToggleVoice}
+                title={isListeningVoice ? "Ouvindo... clique para parar" : "Falar comando por voz"}
+                className={cn(
+                  "size-7 rounded-lg flex items-center justify-center transition-all cursor-pointer",
+                  isListeningVoice
+                    ? "bg-rose-500 text-white animate-pulse"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {isListeningVoice ? <MicOff className="size-3.5" /> : <Mic className="size-3.5" />}
+              </button>
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setMcpBlock(null);
+                  }}
+                  className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Destaque Spotlight para Ação de IA em Linguagem Natural */}
+          {searchQuery.trim().length >= 3 && !mcpBlock && !isOrchestrating && (
+            <div
+              onClick={() => handleExecuteAiCommand()}
+              className="p-2.5 px-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between cursor-pointer group animate-in fade-in"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="size-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                  <Sparkles className="size-3.5" />
+                </div>
+                <div className="truncate">
+                  <p className="text-xs font-bold text-foreground truncate">
+                    Orquestrar com IA (MCP): &quot;{searchQuery}&quot;
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    Gera anúncio com criativo do produto, orçamento e segmentação
+                  </p>
+                </div>
+              </div>
+              <Badge className="bg-primary hover:bg-primary text-primary-foreground text-[10px] gap-1 shrink-0 font-medium h-6">
+                <span>Enter</span>
+                <ArrowRight className="size-3" />
+              </Badge>
+            </div>
+          )}
+        </div>
 
  {/* ── 2. Conteúdo Scrollável com Gôndola e Grid Setorial ── */}
  <ScrollArea className="flex-1 p-4 sm:p-6 overflow-y-auto no-scrollbar">
- <div className="space-y-6 max-w-5xl mx-auto pb-4">
- {/* Seção: Usadas com frequência (Exibida quando não há busca ativa) */}
+          <div className="space-y-6 max-w-5xl mx-auto pb-4">
+            {/* Estado de Carregamento da IA MCP */}
+            {isOrchestrating && (
+              <div className="py-12 p-6 rounded-2xl border border-border/80 bg-card text-center space-y-3 animate-pulse">
+                <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                  <Loader2 className="size-6 animate-spin" />
+                </div>
+                <h4 className="text-sm font-bold text-foreground">
+                  Orquestrando Ação Dinâmica via MCP...
+                </h4>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  A inteligência está mapeando produtos da loja, gerando copy de alta conversão e calculando projeção de alcance e CPA.
+                </p>
+              </div>
+            )}
+
+            {/* Proposta Dinâmica Renderizada (CampaignDraftCard) */}
+            {mcpBlock && (
+              <div className="space-y-3 pb-2 animate-in fade-in">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+                    Resultado da Intenção MCP
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMcpBlock(null)}
+                    className="text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+                  >
+                    Voltar para Ferramentas
+                  </button>
+                </div>
+
+                <CampaignDraftCard
+                  block={mcpBlock}
+                  onApproved={() => {
+                    setTimeout(() => {
+                      onOpenChange(false);
+                      setMcpBlock(null);
+                      router.invalidate();
+                    }, 1200);
+                  }}
+                  onDiscard={() => setMcpBlock(null)}
+                />
+              </div>
+            )}
+
+            {!isOrchestrating && !mcpBlock && (
+              <>
+            {/* Seção: Usadas com frequência (Exibida quando não há busca ativa) */}
  {!searchQuery && (
  <div className="space-y-2.5 pb-5 border-b border-border/60">
  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground block">
@@ -524,10 +713,12 @@ export function WorkspaceAllToolsDialog({
  </p>
  </div>
  )}
- </div>
- </ScrollArea>
+               </>
+            )}
+          </div>
+        </ScrollArea>
 
- {/* ── 3. Rodapé com Atalho de Ajuda e Fechamento ── */}
+        {/* ── 3. Rodapé com Atalho de Ajuda e Fechamento ── */}
  <div className="p-3 px-6 border-t border-border/60 bg-muted/20 flex items-center justify-between text-xs text-muted-foreground shrink-0">
  <div className="flex items-center gap-3">
  <span className="text-[10px] font-mono">Dica: Use as setas e Enter para navegar rápido</span>

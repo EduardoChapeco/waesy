@@ -261,7 +261,7 @@ function GastronomiaVerticalPage() {
 
       {/* ── BARRA FLUTUANTE DA SACOLA (3 TOQUES - APPLE HIG THUMB ZONE) ── */}
       {cartItemsCount > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 p-3 rounded-2xl bg-foreground text-background shadow-2xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-96 z-40 p-3 rounded-2xl bg-foreground text-background shadow-xs flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-4 border border-background/20">
           <div className="flex items-center gap-2.5">
             <div className="size-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
               <ShoppingBag className="size-5" />
@@ -279,7 +279,7 @@ function GastronomiaVerticalPage() {
           <Button
             size="sm"
             onClick={() => setIsCartOpen(true)}
-            className="h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 shadow-md cursor-pointer shrink-0"
+            className="h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs gap-1.5 shadow-xs cursor-pointer shrink-0"
           >
             <span>Ver Sacola</span>
             <ArrowRight className="size-3.5" />

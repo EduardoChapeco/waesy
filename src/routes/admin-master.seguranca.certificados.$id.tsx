@@ -79,7 +79,7 @@ function Row({ label, value, mono = false, className }: { label: string; value: 
 
 // ─── Risk Gauge ────────────────────────────────────────────────────────────────
 function RiskGauge({ score }: { score: number }) {
- const color = score >= 70 ? "bg-red-500" : score >= 40 ? "bg-amber-500" : "bg-green-500";
+ const color = score >= 70 ? "bg-destructive" : score >= 40 ? "bg-amber-500" : "bg-emerald-500";
  const label = score >= 70 ? "Alto Risco" : score >= 40 ? "Médio Risco" : "Normal";
  return (
  <div className="space-y-2">
@@ -120,10 +120,10 @@ function CertificateDetailPage() {
  <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-10">
  <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
  <div className={cn("size-9 rounded-xl flex items-center justify-center",
- status.auto_flagged ? "bg-red-500/10" : "bg-primary/10"
+ status.auto_flagged ? "bg-destructive/10" : "bg-primary/10"
  )}>
  {status.auto_flagged
- ? <ShieldAlert className="size-5 text-red-500" />
+ ? <ShieldAlert className="size-5 text-destructive" />
  : <ShieldCheck className="size-5 text-primary" />
  }
  </div>
@@ -134,7 +134,7 @@ function CertificateDetailPage() {
  {cert.entity_type}
  </Badge>
  {status.auto_flagged && (
- <Badge className="bg-red-500/10 text-red-500 border-red-500/20 text-[10px]">
+ <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">
  <AlertTriangle className="size-2.5 mr-1" />
  Sinalizado
  </Badge>
@@ -151,19 +151,19 @@ function CertificateDetailPage() {
  <RiskGauge score={status.risk_score} />
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
  <div className="text-center">
- <div className={cn("text-base font-bold", status.is_valid ? "text-green-500" : "text-red-500")}>
+ <div className={cn("text-base font-bold", status.is_valid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
  {status.is_valid ? "✓ Válido" : "✗ Inválido"}
  </div>
  <div className="text-[10px] text-muted-foreground">Status</div>
  </div>
  <div className="text-center">
- <div className={cn("text-base font-bold", cryptography.chain_valid ? "text-green-500" : "text-red-500")}>
+ <div className={cn("text-base font-bold", cryptography.chain_valid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
  {cryptography.chain_valid ? "⛓ Íntegra" : "⚠ Quebrada"}
  </div>
  <div className="text-[10px] text-muted-foreground">Cadeia</div>
  </div>
  <div className="text-center">
- <div className={cn("text-base font-bold", (timestamps.clock_drift_ms || 0) < 30000 ? "text-green-500" : "text-amber-500")}>
+ <div className={cn("text-base font-bold", (timestamps.clock_drift_ms || 0) < 30000 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500")}>
  {timestamps.clock_drift_ms != null ? `${(timestamps.clock_drift_ms / 1000).toFixed(1)}s` : "—"}
  </div>
  <div className="text-[10px] text-muted-foreground">Clock Drift</div>
@@ -181,7 +181,7 @@ function CertificateDetailPage() {
  <Row
  label="Integridade"
  value={
- <span className={cn("flex items-center gap-1", cryptography.chain_valid ? "text-green-500" : "text-red-500")}>
+ <span className={cn("flex items-center gap-1", cryptography.chain_valid ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
  {cryptography.chain_valid
  ? <><CheckCircle2 className="size-3" /> Cadeia íntegra</>
  : <><XCircle className="size-3" /> Cadeia comprometida</>
@@ -233,8 +233,8 @@ function CertificateDetailPage() {
  value={
  <span className={cn(
  "font-mono font-semibold",
- (timestamps.clock_drift_ms || 0) > 300000 ? "text-red-500" :
- (timestamps.clock_drift_ms || 0) > 30000 ? "text-amber-500" : "text-green-500"
+ (timestamps.clock_drift_ms || 0) > 300000 ? "text-destructive" :
+ (timestamps.clock_drift_ms || 0) > 30000 ? "text-amber-500" : "text-emerald-600 dark:text-emerald-400"
  )}>
  {timestamps.clock_drift_ms != null ? `${timestamps.clock_drift_ms.toLocaleString()}ms` : "—"}
  {(timestamps.clock_drift_ms || 0) > 300000 ? " ⚠ Suspeito" : ""}
@@ -263,7 +263,7 @@ function CertificateDetailPage() {
  className={cn(
  "flex items-start gap-3 p-3 rounded-lg border text-xs",
  ev.severity === "critical" || ev.severity === "emergency"
- ? "bg-red-500/5 border-red-500/20"
+ ? "bg-destructive/5 border-destructive/20"
  : ev.severity === "warning"
  ? "bg-amber-500/5 border-amber-500/20"
  : "bg-muted/30 border-border/50"
@@ -271,7 +271,7 @@ function CertificateDetailPage() {
  >
  <div className="size-5 shrink-0 rounded flex items-center justify-center mt-0.5">
  {ev.severity === "critical" || ev.severity === "emergency"
- ? <ShieldAlert className="size-3.5 text-red-500" />
+ ? <ShieldAlert className="size-3.5 text-destructive" />
  : ev.severity === "warning"
  ? <AlertTriangle className="size-3.5 text-amber-500" />
  : <Shield className="size-3.5 text-muted-foreground" />

@@ -125,8 +125,15 @@ export interface HotpageDTO {
 export function mapHotpageDTO(row: any): HotpageDTO {
   if (!row) return row;
   const filterRules = row.filter_rules && typeof row.filter_rules === "object" ? row.filter_rules : {};
+  const rawTarget = typeof row.target_route === "string" ? row.target_route.trim() : null;
+  const targetRoute =
+    rawTarget && rawTarget !== "null" && rawTarget !== "undefined" && rawTarget.length > 0
+      ? rawTarget
+      : (row.slug ? `/explorar?nicho=${encodeURIComponent(row.slug)}` : "/explorar");
+
   return {
     ...row,
+    target_route: targetRoute,
     show_title: row.show_title !== false,
     show_description: row.show_description !== false,
     show_overlay: row.show_overlay === true,

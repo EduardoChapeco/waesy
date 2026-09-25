@@ -110,7 +110,7 @@ function PublicTravelerFormPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col items-center justify-center p-4 selection:bg-primary selection:text-primary-foreground font-sans">
-      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
         {/* Header com Identidade da Agência */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
@@ -266,7 +266,7 @@ function PublicTravelerFormPage() {
                   Continuar
                 </Button>
               ) : (
-                <Button type="submit" disabled={loading} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-6 shadow-lg">
+                <Button type="submit" disabled={loading} className="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-6 shadow-xs">
                   {loading ? 'Enviando & Registrando...' : 'Finalizar & Enviar Ficha'}
                 </Button>
               )}

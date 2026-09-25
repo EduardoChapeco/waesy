@@ -59,6 +59,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCents, cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 export const Route = createFileRoute("/_store/conta/financas")({
   head: () => ({ meta: [{ title: "Gestão Financeira Pessoal | Waesy" }] }),
@@ -300,8 +301,6 @@ function PersonalFinancePage() {
 
   // Exclusão de lançamento
   const handleDeleteEntry = async (id: string) => {
-    if (!confirm("Deseja realmente excluir este lançamento?")) return;
-
     try {
       await deletePersonalFinanceEntry({ data: { id } });
       toast.success("Lançamento excluído.");
@@ -714,14 +713,12 @@ function PersonalFinancePage() {
                                 <Lock className="h-4 w-4" />
                               </div>
                             ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteEntry(entry.id)}
-                                className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
-                                title="Excluir lançamento"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
+                              <CrudActionsMenu
+                                entityName="Lançamento"
+                                onDelete={() => handleDeleteEntry(entry.id)}
+                                deleteConfirmTitle={`Excluir lançamento "${entry.description}"?`}
+                                deleteConfirmDescription={`Deseja realmente remover o lançamento de ${formatCents(entry.amountCents)}? O saldo mensal será recalculado.`}
+                              />
                             )}
                           </div>
                         </div>
@@ -738,7 +735,7 @@ function PersonalFinancePage() {
       {isNewEntryOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
           <div
-            className="bg-card border border-border/80 w-full sm:max-w-lg rounded-t-[28px] sm:rounded-2xl p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-5"
+            className="bg-card border border-border/80 w-full sm:max-w-lg rounded-t-[28px] sm:rounded-2xl p-5 sm:p-6 shadow-xs max-h-[90vh] overflow-y-auto space-y-5"
             role="dialog"
             aria-modal="true"
           >
@@ -1006,7 +1003,7 @@ function PersonalFinancePage() {
           onClick={() => setViewingReceiptUrl(null)}
         >
           <div
-            className="relative max-w-2xl w-full bg-card rounded-2xl overflow-hidden shadow-2xl p-2"
+            className="relative max-w-2xl w-full bg-card rounded-2xl overflow-hidden shadow-xs p-2"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-2 border-b border-border/40">

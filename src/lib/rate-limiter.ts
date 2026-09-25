@@ -1,3 +1,4 @@
+import { getRealClientIP } from "@/lib/network-telemetry.server";
 /**
  * rate-limiter.ts — Motor Central de Proteção Anti-Abuso, Anti-Bot, Anti-DDoS e Rate Limiting
  * Padrão BigTech (Inspirado em express-rate-limit & Cloudflare Sliding Window).
@@ -159,19 +160,7 @@ export function passiveCleanup() {
 
 export function extractClientIp(req?: Request | null): string {
  if (!req) return "unknown_ip";
- const cfIp = req.headers.get("cf-connecting-ip");
- if (cfIp) return cfIp.trim();
-
- const realIp = req.headers.get("x-real-ip");
- if (realIp) return realIp.trim();
-
- const forwarded = req.headers.get("x-forwarded-for");
- if (forwarded) {
- const first = forwarded.split(",")[0]?.trim();
- if (first) return first;
- }
-
- return "127.0.0.1";
+ return getRealClientIP(req, "127.0.0.1");
 }
 
 // ---------------------------------------------------------------------------

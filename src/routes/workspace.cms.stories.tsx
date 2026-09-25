@@ -18,6 +18,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/state/states";
@@ -144,7 +145,6 @@ function CmsStoriesPage() {
  };
 
  const handleDelete = async (id: string) => {
- if (!confirm("Deseja realmente excluir este story?")) return;
  try {
  await deleteStory({ data: { id } });
  toast.success("Story excluído com sucesso");
@@ -263,15 +263,12 @@ function CmsStoriesPage() {
  )}
 
  <div className="pt-2 flex items-center justify-end gap-1.5 border-t border-border/50">
- <Button
- variant="ghost"
- size="icon"
- className="size-8 rounded-lg text-destructive hover:bg-destructive/10"
- onClick={() => handleDelete(story.id)}
- title="Excluir"
- >
- <Trash2 className="size-4" />
- </Button>
+ <CrudActionsMenu
+ entityName="Story"
+ onDelete={() => handleDelete(story.id)}
+ deleteConfirmTitle={`Excluir story "${story.title || "sem título"}"?`}
+ deleteConfirmDescription="Esta ação removerá permanentemente o story e a mídia publicada da vitrine."
+ />
  </div>
  </CardContent>
  </Card>

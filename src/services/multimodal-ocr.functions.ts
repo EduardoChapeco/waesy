@@ -10,6 +10,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { getServerClient } from "@/lib/supabase";
+import { getServerIdentity } from "@/lib/server-access";
 import type {
   CompanionCardNiche,
   CompanionCardSectionItem,
@@ -113,6 +115,33 @@ export const parseUniversalDocumentOCR = createServerFn({ method: "POST" })
   .handler(async ({ data: input }): Promise<UniversalOcrResult> => {
     const { files, nicheHint, contextHint } = input;
     const validatedNiche = validateNiche(nicheHint, "tourism");
+
+    // Tokenomics: Cobra tokens via Tollbooth ACID se executado no contexto de loja/agência
+    const identity = await getServerIdentity().catch(() => null);
+    if (identity?.store_id) {
+      const db = getServerClient();
+      const idempotencyKey = `ocr_${identity.store_id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const { data: chargeRes, error: chargeErr } = await db.rpc("charge_token_tollbooth", {
+        p_store_id: identity.store_id,
+        p_tokens_to_consume: 5,
+        p_action_type: "multimodal_ocr_parse",
+        p_description: `OCR Inteligente de Documento (${contextHint || "proposta/cotação"}) via Visão Computacional`,
+        p_idempotency_key: idempotencyKey,
+        p_service_category: "ai_vision",
+        p_time_saved_minutes: 15,
+        p_metadata: {
+          actor_id: identity.id,
+          file_count: files.length,
+          niche: nicheHint,
+        },
+      });
+
+      if (chargeErr) {
+        console.warn("[multimodal-ocr] Aviso no Ledger de Tokens:", chargeErr.message);
+      } else if (chargeRes && !(chargeRes as any).success) {
+        throw new Error((chargeRes as any).message || "Saldo de tokens insuficiente para processamento de OCR.");
+      }
+    }
 
     try {
       const aiRes = await executeUnifiedAiCall({

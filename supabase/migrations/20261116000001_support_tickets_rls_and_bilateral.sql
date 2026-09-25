@@ -1,17 +1,17 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- MIGRATION: 20261116000000_support_tickets_rls_and_bilateral.sql
--- DESCRIÇÃO: Habilita inserção e gestão bilateral de chamados de suporte ao cliente
+-- DESCRIÃ‡ÃƒO: Habilita inserÃ§Ã£o e gestÃ£o bilateral de chamados de suporte ao cliente
 --            (support_tickets e ticket_messages) com RLS deny-by-default seguro.
 -- ==============================================================================
 
--- 1. Políticas RLS para support_tickets
+-- 1. PolÃ­ticas RLS para support_tickets
 DROP POLICY IF EXISTS "Customers can view own tickets" ON public.support_tickets;
 DROP POLICY IF EXISTS "Customers can create support tickets" ON public.support_tickets;
 DROP POLICY IF EXISTS "Customers can update own tickets" ON public.support_tickets;
 DROP POLICY IF EXISTS "Store members can view store support tickets" ON public.support_tickets;
 DROP POLICY IF EXISTS "Store members can update store support tickets" ON public.support_tickets;
 
--- Clientes podem visualizar seus próprios chamados
+-- Clientes podem visualizar seus prÃ³prios chamados
 CREATE POLICY "Customers can view own tickets"
 ON public.support_tickets
 FOR SELECT
@@ -23,7 +23,7 @@ ON public.support_tickets
 FOR INSERT
 WITH CHECK (auth.uid() = customer_id);
 
--- Clientes podem atualizar status do próprio chamado (ex: encerrar)
+-- Clientes podem atualizar status do prÃ³prio chamado (ex: encerrar)
 CREATE POLICY "Customers can update own tickets"
 ON public.support_tickets
 FOR UPDATE
@@ -53,7 +53,7 @@ USING (
   )
 );
 
--- 2. Políticas RLS para ticket_messages
+-- 2. PolÃ­ticas RLS para ticket_messages
 DROP POLICY IF EXISTS "Customers can view ticket messages" ON public.ticket_messages;
 DROP POLICY IF EXISTS "Customers can insert ticket messages" ON public.ticket_messages;
 DROP POLICY IF EXISTS "Store members can view ticket messages" ON public.ticket_messages;
@@ -72,7 +72,7 @@ USING (
   AND (is_internal_note = false)
 );
 
--- Clientes podem responder seus próprios chamados
+-- Clientes podem responder seus prÃ³prios chamados
 CREATE POLICY "Customers can insert ticket messages"
 ON public.ticket_messages
 FOR INSERT
@@ -111,3 +111,4 @@ WITH CHECK (
       AND wm.user_id = auth.uid()
   )
 );
+

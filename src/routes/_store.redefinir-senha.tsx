@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { updatePassword, getUserSession } from "@/services/auth.functions";
 import { Lock, CheckCircle2, ShieldCheck, ShieldAlert, ArrowRight, Mail } from "lucide-react";
+import { NativeMobileHeader } from "@/components/navigation";
 
 export const Route = createFileRoute("/_store/redefinir-senha")({
  head: () => ({
@@ -62,7 +63,12 @@ function ResetPasswordPage() {
  };
 
  return (
- <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+    <div className="w-full">
+      <NativeMobileHeader
+        title="Redefinir Senha"
+        fallbackHref="/entrar"
+      />
+      <div className="min-h-[80vh] flex items-center justify-center px-4 py-8 md:py-12">
  <div className="w-full max-w-md bg-card border border-border/60 rounded-2xl p-6 sm:p-8 shadow-xs">
  {success ? (
  <div className="text-center space-y-4 py-2">
@@ -154,6 +160,7 @@ function ResetPasswordPage() {
  </Button>
  </form>
  )}
+ </div>
  </div>
  </div>
  );

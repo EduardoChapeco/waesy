@@ -84,7 +84,7 @@ function ReclamarNovoPage() {
  if (isSuccess) {
  return (
  <div className="min-h-screen bg-background flex items-center justify-center p-4">
- <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-card shadow-2xl text-center flex flex-col items-center">
+ <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-card shadow-xs text-center flex flex-col items-center">
  <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4">
  <CheckCircle2 className="size-8" />
  </div>
@@ -117,7 +117,7 @@ function ReclamarNovoPage() {
  </p>
  </div>
 
- <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl border border-border bg-card shadow-xl space-y-5">
+ <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl border border-border bg-card shadow-xs space-y-5">
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
  <label className="text-xs font-semibold text-muted-foreground">Seu Nome Completo</label>
@@ -220,7 +220,7 @@ function ReclamarNovoPage() {
  <Button 
  type="submit" 
  disabled={isSubmitting}
- className="w-full h-13 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 gap-2 min-h-[44px]"
+ className="w-full h-13 rounded-2xl font-bold text-base shadow-xs shadow-primary/20 gap-2 min-h-[44px]"
  >
  {isSubmitting ? 'Registrando...' : 'Publicar Reclamação'}
  <ArrowRight className="size-4" />

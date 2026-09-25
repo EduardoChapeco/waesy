@@ -77,7 +77,7 @@ export function BuilderCanvas({
  {/* ── 1. FRAME DE VISUALIZAÇÃO STUDIO: DESKTOP (EDGE-TO-EDGE REAL) ── */}
  {viewport === "desktop" && (
  <div
- className="w-full max-w-[1440px] min-h-[calc(100vh-100px)] bg-background border border-border/60 rounded-none shadow-none overflow-hidden flex flex-col mb-16 transition-all"
+ className="w-full max-w-[1440px] min-h-[calc(100dvh-100px)] bg-background border border-border/60 rounded-none shadow-none overflow-hidden flex flex-col mb-16 transition-all"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Régua de Precisão Superior Studio (Sem Mac dots, sem cartoonismo) */}

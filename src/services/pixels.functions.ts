@@ -214,11 +214,19 @@ export const dispatchMetaCapiEvent = createServerFn({ method: "POST" })
       const normalizedPhone = data.userData.phone.replace(/\D/g, "");
       hashedUserData.ph = [crypto.createHash("sha256").update(normalizedPhone).digest("hex")];
     }
-    if (data.userData?.clientIpAddress) {
-      hashedUserData.client_ip_address = data.userData.clientIpAddress;
+    let req: Request | null = null;
+    try {
+      const { getRequest } = await import("@tanstack/start-server-core");
+      req = getRequest();
+    } catch {}
+    const { getRealClientIP } = await import("@/lib/network-telemetry.server");
+    const resolvedIp = data.userData?.clientIpAddress || (req ? getRealClientIP(req) : null);
+    if (resolvedIp) {
+      hashedUserData.client_ip_address = resolvedIp;
     }
-    if (data.userData?.clientUserAgent) {
-      hashedUserData.client_user_agent = data.userData.clientUserAgent;
+    const resolvedUa = data.userData?.clientUserAgent || req?.headers.get("user-agent");
+    if (resolvedUa) {
+      hashedUserData.client_user_agent = resolvedUa;
     }
 
     const payload = {

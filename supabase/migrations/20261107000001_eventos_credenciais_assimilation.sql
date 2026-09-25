@@ -1,5 +1,5 @@
--- Migration: 20261107000000_eventos_credenciais_assimilation.sql
--- Description: Strict porting of Event Credentials (Crachás com QR Code) from persona-nexus to Waesy
+﻿-- Migration: 20261107000000_eventos_credenciais_assimilation.sql
+-- Description: Strict porting of Event Credentials (CrachÃ¡s com QR Code) from persona-nexus to Waesy
 -- Attached to public.events and public.stores without duplicating entities.
 
 CREATE TABLE IF NOT EXISTS public.eventos_credenciais (
@@ -54,7 +54,8 @@ ALTER TABLE public.eventos_credenciais ENABLE ROW LEVEL SECURITY;
 DO $$
 BEGIN
   DROP POLICY IF EXISTS "eventos_credenciais_store_auth" ON public.eventos_credenciais;
-  CREATE POLICY "eventos_credenciais_store_auth" ON public.eventos_credenciais
+  DROP POLICY IF EXISTS "eventos_credenciais_store_auth" ON public.eventos_credenciais;
+CREATE POLICY "eventos_credenciais_store_auth" ON public.eventos_credenciais
     FOR ALL TO authenticated
     USING (
       store_id IN (
@@ -67,3 +68,4 @@ BEGIN
       )
     );
 END $$;
+

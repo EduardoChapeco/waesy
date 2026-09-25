@@ -1,11 +1,11 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Waesy Platform: Comprehensive Mining, Partitioned Content, Events RSVP & News Linking
 -- Migration: 20261025000000_mining_and_events_comprehensive.sql
 -- ============================================================================
 
--- ────────────────────────────────────────────────────────────────────────────
--- 1. Tipo Enum de Conteúdo Minerado
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- 1. Tipo Enum de ConteÃºdo Minerado
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 DO $$ BEGIN
   CREATE TYPE public.mining_content_type AS ENUM (
     'noticia',
@@ -19,9 +19,9 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
--- ────────────────────────────────────────────────────────────────────────────
--- 2. Tabela Central de Extrações Brutas Particionadas (mined_raw_extractions)
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- 2. Tabela Central de ExtraÃ§Ãµes Brutas Particionadas (mined_raw_extractions)
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS public.mined_raw_extractions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   content_type public.mining_content_type NOT NULL DEFAULT 'noticia',
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.mined_raw_extractions (
   source_name TEXT NOT NULL,
   external_id TEXT,
   
-  -- Dados Brutos Mecânicos
+  -- Dados Brutos MecÃ¢nicos
   raw_title TEXT NOT NULL,
   raw_lead TEXT,
   raw_body_text TEXT NOT NULL,
@@ -41,21 +41,21 @@ CREATE TABLE IF NOT EXISTS public.mined_raw_extractions (
   gallery_images TEXT[] DEFAULT '{}'::text[],
   
   -- Georreferenciamento e Cidades
-  city TEXT DEFAULT 'Chapecó',
+  city TEXT DEFAULT 'ChapecÃ³',
   state TEXT DEFAULT 'SC',
   region TEXT DEFAULT 'oeste',
   tags TEXT[] DEFAULT '{}'::text[],
   
-  -- Metadados Dinâmicos por Tipo
+  -- Metadados DinÃ¢micos por Tipo
   type_metadata JSONB DEFAULT '{}'::jsonb,
   
-  -- Auditoria e Métricas de Integridade Mecânica
+  -- Auditoria e MÃ©tricas de Integridade MecÃ¢nica
   word_count INT NOT NULL DEFAULT 0,
   paragraph_count INT NOT NULL DEFAULT 0,
   has_full_content BOOLEAN NOT NULL DEFAULT false,
   extraction_method TEXT NOT NULL DEFAULT 'mechanical', -- 'json_ld', 'css_selector', 'readability', 'api_pncp'
   
-  -- Clusterização e Deduplicação
+  -- ClusterizaÃ§Ã£o e DeduplicaÃ§Ã£o
   title_hash TEXT NOT NULL,
   cluster_id UUID,
   is_duplicate BOOLEAN NOT NULL DEFAULT false,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.mined_raw_extractions (
     CHECK (status IN ('raw_extracted', 'integrity_failed', 'clustered', 'curating', 'curated', 'published', 'rejected', 'archived')),
   integrity_failure_reason TEXT,
   
-  -- Relações de Publicação e Multi-Tenant
+  -- RelaÃ§Ãµes de PublicaÃ§Ã£o e Multi-Tenant
   store_id UUID REFERENCES public.stores(id) ON DELETE SET NULL,
   curated_article_id UUID REFERENCES public.news_articles(id) ON DELETE SET NULL,
   curated_event_id UUID REFERENCES public.events(id) ON DELETE SET NULL,
@@ -89,7 +89,8 @@ CREATE INDEX IF NOT EXISTS idx_mined_raw_store ON public.mined_raw_extractions(s
 -- RLS para mined_raw_extractions
 ALTER TABLE public.mined_raw_extractions ENABLE ROW LEVEL SECURITY;
 
--- Leitura pública para itens já aprovados/publicados ou leitura ampla para membros de loja e admin master
+-- Leitura pÃºblica para itens jÃ¡ aprovados/publicados ou leitura ampla para membros de loja e admin master
+DROP POLICY IF EXISTS "mined_raw_staff_read" ON public.mined_raw_extractions;
 CREATE POLICY "mined_raw_staff_read" ON public.mined_raw_extractions
   FOR SELECT USING (
     public.is_platform_admin() OR 
@@ -97,18 +98,20 @@ CREATE POLICY "mined_raw_staff_read" ON public.mined_raw_extractions
     status = 'published'
   );
 
+DROP POLICY IF EXISTS "mined_raw_master_write" ON public.mined_raw_extractions;
 CREATE POLICY "mined_raw_master_write" ON public.mined_raw_extractions
   FOR ALL USING (public.is_platform_admin());
 
+DROP POLICY IF EXISTS "mined_raw_store_write" ON public.mined_raw_extractions;
 CREATE POLICY "mined_raw_store_write" ON public.mined_raw_extractions
   FOR UPDATE USING (
     store_id IS NOT NULL AND 
     public.has_workspace_role(store_id, ARRAY['owner', 'admin', 'manager', 'content'])
   );
 
--- ────────────────────────────────────────────────────────────────────────────
--- 3. Expansão de Events (Eventos Externos, RSVP e Relacionamento com Mineração)
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- 3. ExpansÃ£o de Events (Eventos Externos, RSVP e Relacionamento com MineraÃ§Ã£o)
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 ALTER TABLE public.events
   ADD COLUMN IF NOT EXISTS is_external BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS external_source TEXT, -- 'sympla', 'eventbrite', 'prefeitura', 'ingresse'
@@ -122,9 +125,9 @@ ALTER TABLE public.events
 
 CREATE INDEX IF NOT EXISTS idx_events_is_external ON public.events(is_external, event_date);
 
--- ────────────────────────────────────────────────────────────────────────────
--- 4. Tabela de Confirmação de Presença (event_rsvps)
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- 4. Tabela de ConfirmaÃ§Ã£o de PresenÃ§a (event_rsvps)
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS public.event_rsvps (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
@@ -147,9 +150,11 @@ CREATE INDEX IF NOT EXISTS idx_event_rsvps_event_status ON public.event_rsvps(ev
 
 ALTER TABLE public.event_rsvps ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "event_rsvps_public_read" ON public.event_rsvps;
 CREATE POLICY "event_rsvps_public_read" ON public.event_rsvps
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "event_rsvps_insert_all" ON public.event_rsvps;
 CREATE POLICY "event_rsvps_insert_all" ON public.event_rsvps
   FOR INSERT WITH CHECK (
     (user_id IS NOT NULL AND user_id = auth.uid()) OR
@@ -157,15 +162,16 @@ CREATE POLICY "event_rsvps_insert_all" ON public.event_rsvps
     public.is_platform_admin()
   );
 
+DROP POLICY IF EXISTS "event_rsvps_update_owner" ON public.event_rsvps;
 CREATE POLICY "event_rsvps_update_owner" ON public.event_rsvps
   FOR UPDATE USING (
     (user_id IS NOT NULL AND user_id = auth.uid()) OR
     public.is_platform_admin()
   );
 
--- ────────────────────────────────────────────────────────────────────────────
--- 5. RPC Atômico para RSVP de Eventos com Contadores Sincronizados
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- 5. RPC AtÃ´mico para RSVP de Eventos com Contadores Sincronizados
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE OR REPLACE FUNCTION public.toggle_event_rsvp(
   p_event_id UUID,
   p_status TEXT, -- 'going', 'interested', 'not_going'
@@ -229,7 +235,7 @@ BEGIN
     END IF;
   END IF;
 
-  -- Recalcula contadores atômicos
+  -- Recalcula contadores atÃ´micos
   SELECT 
     COUNT(*) FILTER (WHERE status = 'going'),
     COUNT(*) FILTER (WHERE status = 'interested'),
@@ -256,9 +262,9 @@ BEGIN
 END;
 $$;
 
--- ────────────────────────────────────────────────────────────────────────────
--- 6. Tabela de Relacionamento Bidirecional entre Eventos e Notícias (event_news_relations)
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- 6. Tabela de Relacionamento Bidirecional entre Eventos e NotÃ­cias (event_news_relations)
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS public.event_news_relations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
@@ -274,9 +280,11 @@ CREATE INDEX IF NOT EXISTS idx_event_news_article ON public.event_news_relations
 
 ALTER TABLE public.event_news_relations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "event_news_public_read" ON public.event_news_relations;
 CREATE POLICY "event_news_public_read" ON public.event_news_relations
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "event_news_staff_write" ON public.event_news_relations;
 CREATE POLICY "event_news_staff_write" ON public.event_news_relations
   FOR ALL USING (
     public.is_platform_admin() OR
@@ -287,9 +295,9 @@ CREATE POLICY "event_news_staff_write" ON public.event_news_relations
     )
   );
 
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -- 7. Tabela de Squads de Curadoria Customizados (curation_squad_registry)
--- ────────────────────────────────────────────────────────────────────────────
+-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 CREATE TABLE IF NOT EXISTS public.curation_squad_registry (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id UUID REFERENCES public.stores(id) ON DELETE CASCADE, -- NULL = Squad Global da Plataforma
@@ -297,7 +305,7 @@ CREATE TABLE IF NOT EXISTS public.curation_squad_registry (
   slug TEXT NOT NULL,
   description TEXT,
   tone TEXT NOT NULL DEFAULT 'editorial_clean', -- 'editorial_clean', 'investigative', 'pop_viral', 'corporate_sober', 'community_direct'
-  target_audience TEXT DEFAULT 'Leitores regionais móveis',
+  target_audience TEXT DEFAULT 'Leitores regionais mÃ³veis',
   is_active BOOLEAN NOT NULL DEFAULT true,
   is_default BOOLEAN NOT NULL DEFAULT false,
   config JSONB DEFAULT '{
@@ -316,6 +324,7 @@ CREATE INDEX IF NOT EXISTS idx_curation_squad_store ON public.curation_squad_reg
 
 ALTER TABLE public.curation_squad_registry ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "curation_squad_public_read" ON public.curation_squad_registry;
 CREATE POLICY "curation_squad_public_read" ON public.curation_squad_registry
   FOR SELECT USING (
     store_id IS NULL OR 
@@ -323,22 +332,24 @@ CREATE POLICY "curation_squad_public_read" ON public.curation_squad_registry
     public.is_platform_admin()
   );
 
+DROP POLICY IF EXISTS "curation_squad_admin_all" ON public.curation_squad_registry;
 CREATE POLICY "curation_squad_admin_all" ON public.curation_squad_registry
   FOR ALL USING (
     public.is_platform_admin() OR 
     (store_id IS NOT NULL AND public.has_workspace_role(store_id, ARRAY['owner', 'admin']))
   );
 
--- Seed dos squads canônicos
+-- Seed dos squads canÃ´nicos
 INSERT INTO public.curation_squad_registry (store_id, name, slug, description, tone, target_audience, is_default)
 VALUES
   (NULL, 'Squad PhD Jornalismo & Anti-AI (Waesy Oficial)', 'waesy-official-phd', 
    'Equipe de elite com rigor investigativo 5W1H, escrita mobile-first concisa e filtro anti-AI rigoroso.', 
-   'editorial_clean', 'Público geral de Chapecó e Santa Catarina', true),
-  (NULL, 'Squad Rápido & Viral (Tendências & Acontecimentos)', 'waesy-viral-trends', 
-   'Focado em agilidade, notícias urgentes, calor de pauta e chamadas dinâmicas sem sensacionalismo.', 
-   'pop_viral', 'Leitores ávidos de redes sociais e feeds rápidos', false),
+   'editorial_clean', 'PÃºblico geral de ChapecÃ³ e Santa Catarina', true),
+  (NULL, 'Squad RÃ¡pido & Viral (TendÃªncias & Acontecimentos)', 'waesy-viral-trends', 
+   'Focado em agilidade, notÃ­cias urgentes, calor de pauta e chamadas dinÃ¢micas sem sensacionalismo.', 
+   'pop_viral', 'Leitores Ã¡vidos de redes sociais e feeds rÃ¡pidos', false),
   (NULL, 'Squad Municipal & Cidadania (Prefeituras & Editais)', 'waesy-public-portal', 
-   'Especializado na simplificação de editais, licitações, obras e utilidade pública municipal.', 
-   'community_direct', 'Cidadãos, empresários e servidores locais', false)
+   'Especializado na simplificaÃ§Ã£o de editais, licitaÃ§Ãµes, obras e utilidade pÃºblica municipal.', 
+   'community_direct', 'CidadÃ£os, empresÃ¡rios e servidores locais', false)
 ON CONFLICT DO NOTHING;
+

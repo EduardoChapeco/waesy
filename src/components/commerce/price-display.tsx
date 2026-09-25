@@ -30,7 +30,7 @@ export function PriceDisplay({
  return (
  <div className={cn("flex flex-wrap items-baseline gap-2", className)}>
  <span className={cn("font-semibold text-foreground", sizes[size])}>
- {formatMoney(amountCents, currency)}
+ {formatMoney(effectiveAmount, currency)}
  </span>
  {hasCompare ? (
  <span className="text-sm text-muted-foreground line-through">

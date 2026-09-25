@@ -46,6 +46,7 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  search: z.string().optional(),
  contract_type: z.string().optional(),
  limit: z.number().int().min(1).max(100).optional(),
+			storeId: z.string().optional(),
  })
  .optional(),
  )
@@ -61,7 +62,11 @@ export const listPublicJobs = createServerFn({ method: "GET" })
  .order("created_at", { ascending: false })
  .limit(limit);
 
- if (data?.category && data.category !== "todos") {
+		if (data?.storeId) {
+			query = query.eq("store_id", data.storeId);
+		}
+
+		if (data?.category && data.category !== "todos") {
  query = query.eq("category", data.category);
  }
 

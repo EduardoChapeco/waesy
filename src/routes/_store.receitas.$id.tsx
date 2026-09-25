@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Clock,
   Users,
@@ -14,10 +14,13 @@ import {
   ChefHat,
   Bookmark,
   ArrowRight,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getPublicRecipeByIdFn, type MinedRecipeDTO } from "@/services/mining.functions";
+import { recordUserBehavior } from "@/services/telemetry-affinity.functions";
+import { getIdentity } from "@/services/identity.functions";
 import { RecipeStoryModal } from "@/components/recipes/recipe-story-modal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -42,22 +45,44 @@ export const Route = createFileRoute("/_store/receitas/$id")({
   },
   loader: async ({ params }) => {
     try {
-      const recipe = await getPublicRecipeByIdFn({ data: { id: params.id } });
-      return { recipe };
+      const [recipe, identity] = await Promise.all([
+        getPublicRecipeByIdFn({ data: { id: params.id } }),
+        getIdentity().catch(() => null),
+      ]);
+      const isOwner = Boolean(
+        identity?.id &&
+          (identity.role === "admin" || identity.role === "staff" || identity.role === "owner")
+      );
+      return { recipe, isOwner };
     } catch (err) {
       console.error("[loader:_store.receitas.$id] Error:", err);
-      return { recipe: null };
+      return { recipe: null, isOwner: false };
     }
   },
   component: RecipeDetailPage,
 });
 
 function RecipeDetailPage() {
-  const { recipe } = Route.useLoaderData();
+  const { recipe, isOwner } = Route.useLoaderData();
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
   const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>({});
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (recipe?.id) {
+      recordUserBehavior({
+        data: {
+          eventType: "view_item",
+          entityType: "recipe",
+          entityId: recipe.id,
+          niche: "gastronomia",
+          categorySlug: recipe.category,
+          metadata: { title: recipe.title },
+        },
+      }).catch(() => {});
+    }
+  }, [recipe?.id]);
 
   if (!recipe) {
     return (
@@ -89,6 +114,17 @@ function RecipeDetailPage() {
   };
 
   const handlePrint = () => {
+    if (recipe?.id) {
+      recordUserBehavior({
+        data: {
+          eventType: "download_pdf",
+          entityType: "recipe",
+          entityId: recipe.id,
+          niche: "gastronomia",
+          metadata: { action: "print_pdf" },
+        },
+      }).catch(() => {});
+    }
     window.print();
   };
 
@@ -145,9 +181,9 @@ function RecipeDetailPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6">
+      <div className="w-full max-w-4xl mx-auto px-0 sm:px-6 py-4 sm:py-8 space-y-6">
         {/* ── 1. Top Navigation & Silent Actions ── */}
-        <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-4">
+        <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-4 print:hidden">
           <Link
             to="/receitas"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
@@ -159,7 +195,20 @@ function RecipeDetailPage() {
           {/* Silent Ghost Buttons */}
           <div className="flex items-center gap-1 sm:gap-2">
             <Button
-              onClick={() => setIsStoryModalOpen(true)}
+              onClick={() => {
+                if (recipe?.id) {
+                  recordUserBehavior({
+                    data: {
+                      eventType: "share_item",
+                      entityType: "recipe",
+                      entityId: recipe.id,
+                      niche: "gastronomia",
+                      metadata: { action: "story_generator" },
+                    },
+                  }).catch(() => {});
+                }
+                setIsStoryModalOpen(true);
+              }}
               variant="ghost"
               size="sm"
               className="rounded-xl h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-1.5"
@@ -180,6 +229,22 @@ function RecipeDetailPage() {
               <span className="hidden sm:inline">Baixar PDF</span>
             </Button>
 
+            {/* Owner Edit Action */}
+            {isOwner && (
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="rounded-xl h-8 px-2.5 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 gap-1.5"
+                title="Editar Receita no Painel de Curadoria"
+              >
+                <Link to="/workspace/conteudo/receitas">
+                  <Pencil className="size-3.5" />
+                  <span className="hidden sm:inline">Editar</span>
+                </Link>
+              </Button>
+            )}
+
             <Button
               onClick={handleShare}
               variant="ghost"
@@ -192,6 +257,28 @@ function RecipeDetailPage() {
             </Button>
           </div>
         </div>
+
+        {/* ── 1.1 Banner de Modo Proprietário / Curador (Regra 23) ── */}
+        {isOwner && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 print:hidden">
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4 text-amber-600 shrink-0" />
+              <span>
+                <strong>Modo de Curadoria:</strong> Você tem autoridade para moderar, editar ingredientes e alterar a visibilidade desta receita.
+              </span>
+            </div>
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11px] rounded-lg border-amber-500/40 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 shrink-0"
+            >
+              <Link to="/workspace/conteudo/receitas">
+                Abrir Curadoria
+              </Link>
+            </Button>
+          </div>
+        )}
 
         {/* ── 2. Imersão Visual: Imagem Destaque Clean (Apple HIG) ── */}
         <div className="relative w-full aspect-video sm:aspect-[21/9] rounded-2xl overflow-hidden bg-muted border border-border/50">
@@ -315,7 +402,7 @@ function RecipeDetailPage() {
             </div>
 
             {/* Ação Direta: Comprar Ingredientes no Comércio Local */}
-            <div className="p-3.5 rounded-xl border border-border/50 bg-muted/20 space-y-2">
+            <div className="p-3.5 rounded-xl border border-border/50 bg-muted/20 space-y-2 print:hidden">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="size-4 text-primary" />
                 <span className="text-xs font-bold text-foreground">Comércio Local</span>

@@ -66,10 +66,10 @@ export function WelcomeOnboardingModal({ initialSteps }: { initialSteps: SystemO
               />
             )
           ) : (
-            <div className="flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
-              <Play className="size-12 mb-4 opacity-50" />
-              <p className="text-sm">Mídia em breve</p>
-            </div>
+            <>
+              <Play className="size-10 mb-2 opacity-40 text-primary" />
+              <p className="text-xs font-semibold text-muted-foreground">Apresentação Interativa</p>
+            </>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent md:hidden" />
         </div>

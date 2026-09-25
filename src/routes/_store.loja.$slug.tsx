@@ -17,6 +17,7 @@ import { getMuralFeed, getCompanyEmployerStats } from "@/services/social.functio
 import { listStorePublicReviews } from "@/services/cms.functions";
 import { listStorePublicSponsors } from "@/services/news.functions";
 import { listActiveStoreFlyers } from "@/services/store-flyers.functions";
+import { getAdsByStoreId } from "@/services/classifieds.functions";
 import { CanonicalStoreProfileView } from "@/components/commerce/canonical-store-profile-view";
 import { UnconfiguredState } from "@/components/state/states";
 
@@ -69,12 +70,15 @@ export const Route = createFileRoute("/_store/loja/$slug")({
     try {
       const targetStore = params.slug;
 
+      // 1. Resolve store profile first to establish identity boundary and get real UUID
+      const profile = await getPublicStoreProfile({ data: { storeId: targetStore } }).catch(() => null);
+      const storeId = profile?.id || targetStore;
+
+      // 2. Fetch all dependent collections strictly scoped by storeId (Zero Context Bleeding)
       const [
-        profile,
         docRes,
         catalogRes,
         jobsRes,
-        hotpagesRes,
         bannersRes,
         flyersRes,
         postsRes,
@@ -82,21 +86,21 @@ export const Route = createFileRoute("/_store/loja/$slug")({
         sponsorsRes,
         employerStatsRes,
         identityRes,
+        adsRes,
       ] = await Promise.all([
-        getPublicStoreProfile({ data: { storeId: targetStore } }).catch(() => null),
         getPublicExperienceDocumentBySlug({
-          data: { slug: "home", document_type: "storefront", storeId: targetStore },
+          data: { slug: "home", document_type: "storefront", storeId },
         }).catch(() => null),
-        getStorePublicCatalog({ data: { storeId: targetStore } }).catch(() => null),
-        listPublicJobs({ data: {} as any }).catch(() => []),
-        listHotpages({ data: { module: "home" } as any }).catch(() => []),
-        listActiveBanners({ data: { storeId: targetStore } }).catch(() => []),
-        listActiveStoreFlyers({ data: { storeSlug: targetStore } }).catch(() => []),
-        getMuralFeed({ data: { store_id: targetStore } }).catch(() => []),
-        listStorePublicReviews({ data: { storeId: targetStore } }).catch(() => []),
-        listStorePublicSponsors({ data: { storeId: targetStore } }).catch(() => []),
-        getCompanyEmployerStats({ data: { storeId: targetStore } }).catch(() => null),
+        getStorePublicCatalog({ data: { storeId } }).catch(() => null),
+        listPublicJobs({ data: { storeId } }).catch(() => []),
+        listActiveBanners({ data: { storeId } }).catch(() => []),
+        listActiveStoreFlyers({ data: { storeSlug: profile?.slug || targetStore, storeId } }).catch(() => []),
+        getMuralFeed({ data: { store_id: storeId } }).catch(() => []),
+        listStorePublicReviews({ data: { storeId } }).catch(() => []),
+        listStorePublicSponsors({ data: { storeId } }).catch(() => []),
+        getCompanyEmployerStats({ data: { storeId } }).catch(() => null),
         getIdentity().catch(() => null),
+        getAdsByStoreId({ data: { storeId } }).catch(() => []),
       ]);
 
       return {
@@ -105,10 +109,11 @@ export const Route = createFileRoute("/_store/loja/$slug")({
         catalog: catalogRes?.products || [],
         categories: catalogRes?.categories || [],
         jobs: jobsRes || [],
-        hotpages: hotpagesRes || [],
+        ads: adsRes || [],
+        hotpages: [], // Purged: never leak global homepage hotpages into a private store profile
         banners: bannersRes || [],
         flyers: flyersRes || [],
-        posts: postsRes || [],
+        posts: Array.isArray(postsRes) ? postsRes : (postsRes as any)?.items || [],
         reviews: reviewsRes || [],
         sponsors: sponsorsRes || [],
         employerStats: employerStatsRes,
@@ -123,6 +128,7 @@ export const Route = createFileRoute("/_store/loja/$slug")({
         catalog: [],
         categories: [],
         jobs: [],
+        ads: [],
         hotpages: [],
         banners: [],
         flyers: [],
@@ -209,6 +215,7 @@ function StoreSlugCanonicalPage() {
       flyers={data.flyers}
       hotpages={data.hotpages}
       jobs={data.jobs}
+      ads={data.ads}
       posts={data.posts}
       reviews={data.reviews}
       sponsors={data.sponsors}

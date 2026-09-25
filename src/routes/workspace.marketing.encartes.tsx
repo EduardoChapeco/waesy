@@ -33,6 +33,7 @@ import {
 } from "@/services/store-flyers.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
 import { Button } from "@/components/ui/button";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -189,12 +190,10 @@ export default function WorkspaceMarketingEncartesPage() {
   };
 
   // Excluir encarte
-  const handleDeleteFlyer = async (flyerId: string, title: string) => {
-    if (!confirm(`Deseja realmente excluir o encarte "${title}"?`)) return;
-
+  const handleDeleteFlyer = async (flyerId: string, title?: string) => {
     try {
       await deleteStoreFlyer({ data: { id: flyerId } });
-      toast.success("Encarte excluído com sucesso.");
+      toast.success(`Encarte ${title ? `"${title}" ` : ""}excluído com sucesso.`);
       await router.invalidate();
     } catch (err: any) {
       toast.error(err?.message || "Erro ao excluir encarte.");
@@ -545,27 +544,26 @@ export default function WorkspaceMarketingEncartesPage() {
                       </div>
 
                       <div className="flex items-center gap-1">
-                        {flyer.status_badge === "expired" && (
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleRenewFlyer(flyer)}
-                            className="h-8 px-2.5 rounded-lg text-xs font-bold gap-1 cursor-pointer text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40"
-                            title="Renovar encarte por mais 7 dias"
-                          >
-                            <RefreshCw className="size-3.5" />
-                            <span>Renovar</span>
-                          </Button>
-                        )}
-
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDeleteFlyer(flyer.id, flyer.title)}
-                          className="size-8 rounded-lg text-muted-foreground hover:text-red-600 cursor-pointer"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
+                        <CrudActionsMenu
+                          entityName="Encarte"
+                          onEdit={() => handleOpenEditor(flyer)}
+                          viewUrl={`/encarte/${flyer.id}`}
+                          onDelete={() => handleDeleteFlyer(flyer.id, flyer.title)}
+                          deleteConfirmTitle={`Excluir encarte "${flyer.title}"?`}
+                          deleteConfirmDescription="Esta ação removerá permanentemente o encarte e todos os marcadores de produtos vinculados."
+                          customActions={[
+                            ...(flyer.status_badge === "expired"
+                              ? [
+                                  {
+                                    id: "renew-flyer",
+                                    label: "Renovar por 7 dias",
+                                    icon: RefreshCw,
+                                    onClick: () => handleRenewFlyer(flyer),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
                       </div>
                     </div>
                   </div>
@@ -782,12 +780,12 @@ export default function WorkspaceMarketingEncartesPage() {
                           }}
                           className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group"
                         >
-                          <div className="size-8 rounded-full bg-red-600 text-amber-300 border-2 border-amber-300 flex items-center justify-center font-black text-[11px] shadow-lg">
+                          <div className="size-8 rounded-full bg-red-600 text-amber-300 border-2 border-amber-300 flex items-center justify-center font-black text-[11px] shadow-xs">
                             {idx + 1}
                           </div>
 
                           {/* Tooltip do produto no hover com botão de excluir */}
-                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-1.5 px-2 py-1 bg-black/90 text-white text-[10px] font-bold rounded shadow-lg whitespace-nowrap z-30">
+                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:flex items-center gap-1.5 px-2 py-1 bg-black/90 text-white text-[10px] font-bold rounded shadow-xs whitespace-nowrap z-30">
                             <span>{spot.custom_label || spot.product?.title || "Produto"}</span>
                             <button
                               type="button"

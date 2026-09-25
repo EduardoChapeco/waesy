@@ -1423,6 +1423,8 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.ready_delivery ?? true
   );
 
+
+
   // Computadores Canônicos
   const [computerType, setComputerType] = useState("");
   const [computerBrand, setComputerBrand] = useState("");
@@ -2216,6 +2218,12 @@ function SpecializedClassifiedEditor({
         max_installments: acceptsCard ? Number(maxInstallments) || 12 : (acceptsCarne ? maxCarneInstallments : (acceptsBoletoInstallments ? maxBoletoInstallments : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
         template_style: templateStyle,
+        volume: convenienceVolume || undefined,
+        temperature: convenienceTemp,
+        is_alcoholic: isAlcoholic,
+        brand: convenienceBrand || undefined,
+        delivery_estimate: deliveryEstimateText,
+        ready_delivery: readyDelivery,
         story_highlights: travelStoryHighlights,
         itinerary_days: travelItineraryDays,
         bio_bullets: travelBioBullets.map((b) => b.trim()).filter(Boolean),
@@ -2873,6 +2881,12 @@ function SpecializedClassifiedEditor({
       attributes: {
         niche: niche.id === "negocio" ? "business" : niche.id,
         template_style: templateStyle,
+        volume: convenienceVolume,
+        temperature: convenienceTemp,
+        is_alcoholic: isAlcoholic,
+        brand: convenienceBrand || (niche.id === "mercado" ? groceryBrand : vehicleBrand),
+        delivery_estimate: deliveryEstimateText,
+        ready_delivery: readyDelivery,
         pricing_type: pricingType,
         price_min_cents: pricingType === "price_range" || pricingType === "starting_at" ? priceMinCents : undefined,
         price_max_cents: pricingType === "price_range" ? priceMaxCents : undefined,
@@ -2964,7 +2978,6 @@ function SpecializedClassifiedEditor({
         iptu_cents: reIptuCents,
         furnished: reFurnished,
         // Veículos
-        brand: niche.id === "mercado" ? groceryBrand : vehicleBrand,
         model: vehicleModel,
         version: vehicleVersion,
         year_fab: vehicleYearFab,
@@ -2992,17 +3005,14 @@ function SpecializedClassifiedEditor({
         sub_category: grocerySubCategory,
         unit_type: groceryUnitType,
         estimated_weight_per_unit: groceryEstimatedWeightPerUnit,
-        temperature: groceryTemperature,
         storage_temp: groceryTemperature,
         manufacturer: groceryBrand,
         barcode_ean: groceryBarcodeEan,
         ingredients: groceryIngredients,
-        is_alcoholic: groceryIsAlcoholic,
         contains_gluten: groceryContainsGluten,
         contains_lactose: groceryContainsLactose,
         is_organic: groceryIsOrganic,
         prep_options: groceryPrepOptions,
-        delivery_estimate: groceryDeliveryEstimate,
         delivery_fee_cents: groceryDeliveryFeeCents,
         grocery_fresh_pricing: grocerySupportsFreshPricing ? {
           supports_fresh_pricing: true,
@@ -3456,8 +3466,8 @@ function SpecializedClassifiedEditor({
                 <EditorialShowcaseView
                   classified={livePreviewClassified}
                   isOwner={true}
-                  onOpenBookingModal={() => toast.info("Simulação: Modal de reserva abre aqui.")}
-                  onOpenProposalModal={() => toast.info("Simulação: Modal de proposta abre aqui.")}
+                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
+                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
                   onEditClassified={() => setCurrentStep(2)}
                 />
               ) : (
@@ -3465,8 +3475,8 @@ function SpecializedClassifiedEditor({
                   classified={livePreviewClassified}
                   isOwner={true}
                   canManage={true}
-                  onOpenBookingModal={() => toast.info("Simulação: Modal de reserva abre aqui.")}
-                  onOpenProposalModal={() => toast.info("Simulação: Modal de proposta abre aqui.")}
+                  onOpenBookingModal={() => toast.info("Modo de Pré-visualização: As reservas estarão ativas após a publicação do anúncio.")}
+                  onOpenProposalModal={() => toast.info("Modo de Pré-visualização: O envio de propostas estará ativo após a publicação do anúncio.")}
                   onEdit={() => setCurrentStep(2)}
                 />
               )}
@@ -5571,6 +5581,119 @@ function SpecializedClassifiedEditor({
                       </div>
                     );
                   })()}
+                </div>
+              )}
+
+              {/* Conveniência, Bebidas & Mercado Especializado */}
+              {((niche.id as string) === "mercado" || templateStyle === "conveniencia") && (
+                <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <Zap className="size-4 text-emerald-600" />
+                      <span>2. Parâmetros de Conveniência & Delivery</span>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                      Pronta Entrega
+                    </Badge>
+                  </div>
+
+                  {/* Volume / Medida */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs text-foreground font-medium">Volume / Embalagem *</Label>
+                      <span className="text-[10px] text-muted-foreground font-mono">Ex: 1L, 350ml, 500g</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {["350ml", "473ml", "600ml", "1L", "1.5L", "2L", "500g", "1kg", "Pack 6 un", "Unidade"].map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setConvenienceVolume(v)}
+                          className={cn(
+                            "h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all border",
+                            convenienceVolume === v
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/60"
+                          )}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                    <Input
+                      value={convenienceVolume}
+                      onChange={(e) => setConvenienceVolume(e.target.value)}
+                      placeholder="Ou digite o volume/tamanho (ex: Garrafa 1 Litro)"
+                      className="h-10 rounded-xl text-xs bg-background"
+                    />
+                  </div>
+
+                  {/* Temperatura / Conservação */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-foreground font-medium">Temperatura / Conservação</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: "gelada", label: "🧊 Gelada", desc: "Pronta p/ consumo" },
+                        { id: "ambiente", label: "📦 Ambiente", desc: "Prateleira / Bar" },
+                        { id: "congelado", label: "❄️ Congelado", desc: "Freezer / Gelo" },
+                        { id: "fresco", label: "🥬 Fresco", desc: "Hortifrúti / Padaria" },
+                      ].map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setConvenienceTemp(t.id as any)}
+                          className={cn(
+                            "p-2.5 rounded-xl border text-left cursor-pointer transition-all",
+                            convenienceTemp === t.id
+                              ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary/30"
+                              : "bg-background border-border/60 text-muted-foreground hover:bg-muted/30"
+                          )}
+                        >
+                          <p className="text-xs font-bold text-foreground">{t.label}</p>
+                          <p className="text-[10px] text-muted-foreground">{t.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Restrição Alcoólica / 18+ */}
+                  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="conv-alcoholic" className="text-xs font-semibold text-foreground cursor-pointer flex items-center gap-1.5">
+                        <span>Contém Álcool (Bebida Alcoólica +18)</span>
+                      </Label>
+                      <p className="text-[11px] text-muted-foreground">
+                        Exibe aviso obrigatório de proibição de venda para menores de 18 anos.
+                      </p>
+                    </div>
+                    <Switch
+                      id="conv-alcoholic"
+                      checked={isAlcoholic}
+                      onCheckedChange={setIsAlcoholic}
+                    />
+                  </div>
+
+                  {/* Marca & Tempo de Despacho */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-foreground">Marca / Fabricante</Label>
+                      <Input
+                        value={convenienceBrand}
+                        onChange={(e) => setConvenienceBrand(e.target.value)}
+                        placeholder="Ex: Mansão Maromba, Ambev, Coca-Cola..."
+                        className="h-10 rounded-xl text-xs bg-background"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-foreground">Previsão de Entrega</Label>
+                      <Input
+                        value={deliveryEstimateText}
+                        onChange={(e) => setDeliveryEstimateText(e.target.value)}
+                        placeholder="Ex: 35-50 min (MotoLink Express)"
+                        className="h-10 rounded-xl text-xs bg-background font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 

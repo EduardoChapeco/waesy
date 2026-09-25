@@ -151,13 +151,13 @@ export function FounderSmartphoneMockup({
           </div>
 
           {/* Badge Oficial de Membro Fundador */}
-          <div className="rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border border-amber-500/30 p-3 space-y-1">
+          <div className="rounded-2xl bg-card border border-border/80 p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                <Sparkles className="size-3 text-amber-500" />
+              <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                <Sparkles className="size-3 text-primary" />
                 Membro Fundador 2027
               </span>
-              <Badge variant="outline" className="bg-amber-500/20 text-amber-600 border-amber-500/30 text-[9px] font-mono font-bold">
+              <Badge variant="outline" className="border-border text-foreground text-[9px] font-mono font-bold">
                 OFICIAL
               </Badge>
             </div>
@@ -190,7 +190,7 @@ export function FounderSmartphoneMockup({
             <Button
               asChild
               size="sm"
-              className="w-full rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white h-10 gap-1.5 shadow-xs"
+              className="w-full rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground h-10 gap-1.5 shadow-xs"
             >
               <a
                 href={cleanWa ? `https://wa.me/55${cleanWa}` : "#"}

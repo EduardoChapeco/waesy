@@ -373,7 +373,7 @@ export const processCheckout = createServerFn({ method: "POST" })
  }
  
  if (errMsg.includes("Carrinho no encontrado")) {
- return { status: "error" as const, message: "Carrinho expirado ou jǭ processado. Inicie um novo checkout." };
+ return { status: "error" as const, message: "Carrinho expirado ou já processado. Inicie um novo checkout." };
  }
 
  return { status: "error" as const, message: "Erro ao processar pedido: " + errMsg };

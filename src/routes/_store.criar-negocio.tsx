@@ -542,7 +542,7 @@ function CriarNegocioPage() {
  className={cn(
  "group relative h-64 rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 border flex flex-col justify-between p-5 select-none active:scale-[0.98]",
  isSelected
- ? "border-primary ring-2 ring-primary shadow-md"
+ ? "border-primary ring-2 ring-primary shadow-xs"
  : "border-border/60 hover:border-foreground/30 hover:shadow-xs"
  )}
  >

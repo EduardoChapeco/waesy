@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader } from "@/components/commerce/page-header";
+import { NativeMobileHeader } from "@/components/navigation";
 import { EmptyState } from "@/components/state/states";
 import { getPublicFaqs } from "@/services/catalog.functions";
 import {
@@ -31,8 +31,12 @@ function Page() {
  }>;
 
  return (
- <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-6 md:py-12">
- <div className="max-w-3xl mx-auto">
+    <div className="w-full">
+      <NativeMobileHeader
+        title="Dúvidas Frequentes"
+        fallbackHref="/"
+      />
+      <div className="mx-auto max-w-3xl px-4 py-6 md:px-6 md:py-10 space-y-6">
  {!faqs || faqs.length === 0 ? (
  <EmptyState title="Nenhuma pergunta publicada" />
  ) : (
@@ -44,7 +48,7 @@ function Page() {
  <AccordionItem
  key={i}
  value={`faq-${i}`}
- className=" rounded-xl px-4 bg-card"
+ className="rounded-xl px-4 bg-card border border-border/50"
  >
  <AccordionTrigger className="text-base font-medium py-4 hover:no-underline text-left">
  {question}

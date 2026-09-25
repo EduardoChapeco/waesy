@@ -564,7 +564,7 @@ function WorkspaceBoardingPage() {
     : null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-[calc(100vh-4rem)] pb-12 overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col min-h-[calc(100dvh-4rem)] pb-12 overflow-x-hidden">
       {/* ── Canonical Toolbar ── */}
       <WorkspaceCanonicalToolbar
         viewModes={[
@@ -764,7 +764,7 @@ function WorkspaceBoardingPage() {
               <Loader2 className="size-4 animate-spin mr-2" />Carregando embarques...
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pb-4 min-h-[calc(100vh-12rem)]">
+            <div className="flex gap-4 overflow-x-auto pb-4 min-h-[calc(100dvh-12rem)]">
               {DEPARTURE_STAGES.map(col => {
                 const colCards = filteredKanban.filter(c => c.stage === col.id);
                 return (

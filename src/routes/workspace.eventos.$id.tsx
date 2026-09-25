@@ -88,21 +88,22 @@ export const Route = createFileRoute("/workspace/eventos/$id")({
  }),
  loader: async ({ params }) => {
  try {
- const [event, lots, tickets] = await Promise.all([
+ const [event, lots, tickets, budgets] = await Promise.all([
  getAdminEventById({ data: params.id }),
  listEventLots({ data: params.id }),
  listEventTickets({ data: params.id }),
+ listEventBudgets({ data: { eventId: params.id } }).catch(() => []),
  ]);
- return { event, lots: lots || [], tickets: tickets || [] };
+ return { event, lots: lots || [], tickets: tickets || [], budgets: budgets || [] };
  } catch {
- return { event: null, lots: [], tickets: [] };
+ return { event: null, lots: [], tickets: [], budgets: [] };
  }
  },
  component: SubPainelEventoPage,
 });
 
 function SubPainelEventoPage() {
- const { event, lots: initialLots, tickets: initialTickets } = ((Route.useLoaderData?.() as any) || {});
+ const { event, lots: initialLots, tickets: initialTickets, budgets = [] } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
 
  const [activeTab, setActiveTab] = useState("ingressos");
@@ -134,15 +135,6 @@ function SubPainelEventoPage() {
  const [quickCheckinInput, setQuickCheckinInput] = useState("");
  const [isValidating, setIsValidating] = useState(false);
 
- // Custos / Despesas State (DRE in-memory do evento)
- const [costs, setCosts] = useState<{ id: string; name: string; amountCents: number }[]>([
- { id: "1", name: "Sonorização & Iluminação de Palco", amountCents: 350000 },
- { id: "2", name: "Equipe de Segurança & Ambulância", amountCents: 180000 },
- { id: "3", name: "Gerador de Energia & Combustível", amountCents: 90000 },
- ]);
- const [newCostName, setNewCostName] = useState("");
- const [newCostCents, setNewCostCents] = useState(50000);
-
  if (!event) {
  return (
  <div className="space-y-6">
@@ -163,7 +155,8 @@ function SubPainelEventoPage() {
  0
  );
  const totalCheckins = tickets.filter((t) => t.status === "used").length;
- const totalCostsCents = costs.reduce((acc, c) => acc + c.amountCents, 0);
+ const activeBudget = (budgets || []).find((b: any) => b.status === "aprovado") || budgets?.[0];
+ const totalCostsCents = activeBudget ? Math.round((activeBudget.total_despesas || 0) * 100) : 0;
  const netProfitCents = totalRevenueCents - totalCostsCents;
 
  const handleCreateLot = async (e: React.FormEvent) => {
@@ -268,17 +261,7 @@ function SubPainelEventoPage() {
  }
  };
 
- const handleAddCost = (e: React.FormEvent) => {
- e.preventDefault();
- if (!newCostName.trim()) return;
- setCosts((prev) => [
- ...prev,
- { id: crypto.randomUUID(), name: newCostName, amountCents: newCostCents },
- ]);
- setNewCostName("");
- setNewCostCents(50000);
- toast.success("Custo lançado com sucesso!");
- };
+
 
  return (
  <div className="space-y-6">

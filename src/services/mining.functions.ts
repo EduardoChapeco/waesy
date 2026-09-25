@@ -557,7 +557,22 @@ Retorne o JSON:
  baseSystemPrompt
  );
 
-  // 6. Processamento por IA via Orquestrador Universal
+  // 5.1. Validador Pré-Voo de Saldo de Tokens (Ledger ACID Lock)
+	if (input.consume_tokens && input.store_id) {
+		const { data: wallet } = await supabase
+			.from("store_token_wallets")
+			.select("balance")
+			.eq("store_id", input.store_id)
+			.maybeSingle();
+
+		if (wallet && (wallet.balance ?? 0) < MINING_TOKEN_COSTS.scrape_url) {
+			throw new Error(
+				`Saldo insuficiente de tokens para extração. Necessário: ${MINING_TOKEN_COSTS.scrape_url.toLocaleString('pt-BR')} tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString('pt-BR')} tokens.`
+			);
+		}
+	}
+
+	// 6. Processamento por IA via Orquestrador Universal
   let extracted: any = null;
   let aiProviderUsed = "fallback";
   let tokensConsumed = 0;
@@ -889,7 +904,22 @@ export const aiRewriteMinedArticle = createServerFn({ method: "POST" })
 
  if (fetchErr || !mined) throw new Error("Artigo minerado não encontrado.");
 
- const originalContent = JSON.stringify(mined.ai_structured_sections || []);
+ // Validador Pré-Voo de Saldo para Reescrita Editorial
+	if (input.consume_tokens && input.store_id) {
+		const { data: wallet } = await supabase
+			.from("store_token_wallets")
+			.select("balance")
+			.eq("store_id", input.store_id)
+			.maybeSingle();
+
+		if (wallet && (wallet.balance ?? 0) < MINING_TOKEN_COSTS.ai_rewrite) {
+			throw new Error(
+				`Saldo insuficiente de tokens para reescrita editorial. Necessário: ${MINING_TOKEN_COSTS.ai_rewrite.toLocaleString('pt-BR')} tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString('pt-BR')} tokens.`
+			);
+		}
+	}
+
+	const originalContent = JSON.stringify(mined.ai_structured_sections || []);
  const systemPrompt = `Você é um editor-chefe de jornal digital premiado. Reescreva o conteúdo abaixo no tom solicitado, mantendo os fatos e a estrutura em blocos JSON. Retorne APENAS JSON válido.`;
  const userPrompt = `Reescreva este artigo no tom "${input.tone}"${input.focus ? `, enfatizando: ${input.focus}` : ""}.
 
@@ -1716,6 +1746,21 @@ export const crossVerifyAndEnrichArticle = createServerFn({ method: "POST" })
  .single();
 
  if (fetchErr || !mined) throw new Error("Artigo minerado não encontrado.");
+
+	// Validador Pré-Voo de Saldo para Fact-Checking IA (10.000 tokens)
+	if (input.consume_tokens && input.store_id) {
+		const { data: wallet } = await supabase
+			.from("store_token_wallets")
+			.select("balance")
+			.eq("store_id", input.store_id)
+			.maybeSingle();
+
+		if (wallet && (wallet.balance ?? 0) < 10_000) {
+			throw new Error(
+				`Saldo insuficiente de tokens para fact-checking IA. Necessário: 10.000 tokens. Saldo atual: ${(wallet.balance ?? 0).toLocaleString('pt-BR')} tokens.`
+			);
+		}
+	}
 
  const rawSectionsText = JSON.stringify(mined.ai_structured_sections || []);
  const systemPrompt = `Você é um auditor sênior de jornalismo e fact-checking. Analise a matéria fornecida quanto à completude, clareza, neutralidade e precisão dos fatos. Gere uma versão editorial aprimorada de alto padrão. Retorne APENAS JSON válido no formato solicitado.`;
@@ -3941,4 +3986,63 @@ export const deleteMinedRecipeFn = createServerFn({ method: "POST" })
     }
 
     return { success: true };
+  });
+
+/**
+ * Criação Manual de Nova Receita Curada (Master Admin / Workspace)
+ */
+export const createMinedRecipeFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      title: z.string().min(2).max(250),
+      description: z.string().max(2000).optional(),
+      cover_image_url: z.string().url().nullable().optional(),
+      prep_time: z.string().nullable().optional(),
+      cook_time: z.string().nullable().optional(),
+      total_time: z.string().nullable().optional(),
+      recipe_yield: z.string().nullable().optional(),
+      category: z.string().min(1),
+      cuisine: z.string().nullable().optional(),
+      ingredients: z.array(z.string().min(1)),
+      instructions: z.array(z.string().min(1)),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+
+    const typeMetadata = {
+      category: data.category,
+      cuisine: data.cuisine || null,
+      prep_time: data.prep_time || null,
+      cook_time: data.cook_time || null,
+      total_time: data.total_time || null,
+      recipe_yield: data.recipe_yield || null,
+      ingredients: data.ingredients,
+      instructions: data.instructions,
+    };
+
+    const { data: inserted, error: insertErr } = await supabase
+      .from("mined_raw_extractions")
+      .insert({
+        source_domain: "manual_curation",
+        source_url: `https://usewaesy.com/receitas/manual-${Date.now()}`,
+        extraction_type: "recipe",
+        raw_title: data.title,
+        raw_lead: data.description || "",
+        raw_body_text: data.description || "",
+        cover_image_url: data.cover_image_url || null,
+        type_metadata: typeMetadata,
+        status: "active",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (insertErr || !inserted) {
+      console.error("[createMinedRecipeFn] Error:", insertErr);
+      throw new Error(`Erro ao cadastrar receita: ${insertErr?.message}`);
+    }
+
+    return { success: true, id: inserted.id };
   });

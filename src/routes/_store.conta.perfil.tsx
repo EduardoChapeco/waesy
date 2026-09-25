@@ -11,6 +11,7 @@ import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { CitySelect } from "@/components/ui/city-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NativeMobileHeader } from "@/components/navigation";
 import {
  AlertDialog,
  AlertDialogAction,
@@ -359,54 +360,53 @@ function ProfilePage() {
 
  return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-6">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Perfil
-          </h1>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer"
-          >
-            <Link
-              to="/membro/$id"
-              params={{ id: formData.username || profile.username || profile.id }}
-              target="_blank"
+      {/* ── 1. Canonical Navigation Header ── */}
+      <NativeMobileHeader
+        title="Perfil"
+        fallbackHref="/conta"
+        rightActions={
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="rounded-xl text-xs font-semibold h-8.5 px-3 cursor-pointer"
             >
-              <ExternalLink className="size-3.5 mr-1.5" />
-              <span>Ver Perfil Público</span>
-            </Link>
-          </Button>
+              <Link
+                to="/membro/$id"
+                params={{ id: formData.username || profile.username || profile.id }}
+                target="_blank"
+              >
+                <ExternalLink className="size-3.5 mr-1.5" />
+                <span className="hidden sm:inline">Ver Perfil Público</span>
+                <span className="sm:hidden">Público</span>
+              </Link>
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="rounded-xl text-xs font-semibold h-8 px-3 cursor-pointer"
-            onClick={() => {
-              if (typeof navigator !== "undefined" && navigator.clipboard) {
-                const handle = formData.username || profile.username;
-                const link = handle
-                  ? `${window.location.origin}/membro/@${handle}`
-                  : `${window.location.origin}/membro/${profile.id}`;
-                navigator.clipboard.writeText(link);
-                toast.success("Link do seu perfil copiado!");
-              }
-            }}
-          >
-            <LinkIcon className="size-3.5 mr-1.5" />
-            <span>Copiar Link</span>
-          </Button>
-        </div>
-      </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-xl text-xs font-semibold h-8.5 px-2.5 sm:px-3 cursor-pointer"
+              onClick={() => {
+                if (typeof navigator !== "undefined" && navigator.clipboard) {
+                  const handle = formData.username || profile.username;
+                  const link = handle
+                    ? `${window.location.origin}/membro/@${handle}`
+                    : `${window.location.origin}/membro/${profile.id}`;
+                  navigator.clipboard.writeText(link);
+                  toast.success("Link do seu perfil copiado!");
+                }
+              }}
+            >
+              <LinkIcon className="size-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">Copiar Link</span>
+            </Button>
+          </div>
+        }
+      />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 px-4 sm:px-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
             <TabsList className="bg-transparent p-0 gap-1.5 h-auto flex flex-nowrap">

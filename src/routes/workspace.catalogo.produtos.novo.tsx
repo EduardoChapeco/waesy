@@ -497,7 +497,7 @@ export function UnifiedNewProductPage() {
  };
 
  return (
- <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-28 sm:pb-20 animate-in fade-in duration-200">
  {/* ── Top Header Limpo ── */}
  <PageHeader
  eyebrow="Catálogo"
@@ -1322,7 +1322,7 @@ export function UnifiedNewProductPage() {
 
  {/* COLUNA DIREITA: PREVIEW REAL DA VITRINE (7 COLUNAS STICKY) */}
  <div className="lg:col-span-7 lg:sticky lg:top-24">
- <div className="bg-card rounded-2xl overflow-hidden border border-border/80 shadow-md">
+ <div className="bg-card rounded-2xl overflow-hidden border border-border/80 shadow-xs">
  {/* Header do Mockup com Seletor de Dispositivo */}
  <div className="bg-muted/40 px-4 py-2.5 border-b flex items-center justify-between gap-2">
  <div className="flex items-center gap-2 min-w-0">
@@ -1365,7 +1365,7 @@ export function UnifiedNewProductPage() {
  <div className={cn(
  "overflow-y-auto no-scrollbar transition-all duration-300",
  previewDevice === "mobile"
- ? "max-w-[390px] mx-auto my-3 border border-border/80 rounded-3xl p-1 bg-background shadow-lg max-h-[750px]"
+ ? "max-w-[390px] mx-auto my-3 border border-border/80 rounded-3xl p-1 bg-background shadow-xs max-h-[750px]"
  : "max-h-[85vh] p-3"
  )}>
  <TravelPackageDetailView

@@ -1066,9 +1066,36 @@ export function resolveWorkspaceNavigation(
     return resolvedGroups;
   }
 
-  // Gerente / Manager: acesso a quase tudo, exceto configurações bancárias/críticas
+  // Gerente / Manager: acesso operacional completo, exceto configurações societárias/bancárias de titularidade
   if (userRole === "manager" || userRole === "gerente") {
-    return resolvedGroups;
+    const OWNER_ONLY_PREFIXES = [
+      "/workspace/configuracoes/seguranca",
+      "/workspace/configuracoes/excluir",
+      "/workspace/settings/danger-zone",
+      "/workspace/assinatura",
+      "/workspace/faturamento",
+      "/workspace/financeiro/faturas",
+      "/workspace/financeiro/dados-bancarios",
+      "/workspace/financeiro/saques",
+      "/workspace/financeiro/configuracao",
+      "/workspace/configuracoes/integracoes",
+      "/workspace/configuracoes/ai",
+      "/workspace/configuracoes/sessoes",
+      "/workspace/configuracoes/privacidade-loja",
+      "/workspace/configuracoes/parceiros",
+    ];
+
+    return resolvedGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter(
+          (item) =>
+            !OWNER_ONLY_PREFIXES.some(
+              (prefix) => item.path === prefix || item.path.startsWith(prefix + "/")
+            )
+        ),
+      }))
+      .filter((group) => group.items.length > 0);
   }
 
   // Operador de Caixa / Cashier: apenas PDV, Abertura/Fechamento de Caixa

@@ -119,7 +119,7 @@ function PwaEditorPage() {
  <Button
  onClick={() => saveMutation.mutate()}
  disabled={saveMutation.isPending}
- className="w-full min-h-[48px] rounded-2xl font-bold bg-primary text-primary-foreground shadow-lg"
+ className="w-full min-h-[48px] rounded-2xl font-bold bg-primary text-primary-foreground shadow-xs"
  >
  <Layers className="h-4 w-4 mr-2" /> Salvar & Publicar Aplicativo PWA
  </Button>
@@ -127,7 +127,7 @@ function PwaEditorPage() {
 
  {/* Mockup Interativo de iPhone (Apple HIG Preview) */}
  <div className="lg:col-span-5 flex flex-col items-center">
- <div className="w-[280px] h-[580px] bg-black rounded-[48px] p-3.5 border-4 border-neutral-800 shadow-2xl relative flex flex-col">
+ <div className="w-[280px] h-[580px] bg-black rounded-[48px] p-3.5 border-4 border-neutral-800 shadow-xs relative flex flex-col">
  {/* Dynamic Island */}
  <div className="h-4 w-24 bg-neutral-900 rounded-full mx-auto mb-4" />
 
@@ -139,7 +139,7 @@ function PwaEditorPage() {
  <div className="mt-8 space-y-3 flex flex-col items-center">
  <div 
  style={{ backgroundColor: themeColor }}
- className="h-20 w-20 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-xl"
+ className="h-20 w-20 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-xs"
  >
  {shortName.slice(0, 2).toUpperCase()}
  </div>

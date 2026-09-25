@@ -1031,6 +1031,18 @@ export const createLead = createServerFn({ method: "POST" })
  .single();
 
  if (error) throw error;
+
+ if (data?.id) {
+ try {
+ await (supabase.rpc as any)("deduplicate_and_link_lead_to_customer", {
+ p_lead_id: data.id,
+ p_store_id: identity.store_id,
+ });
+ } catch {
+ // deduplicação silenciosa
+ }
+ }
+
  return { status: "success" as const, lead: data };
  } catch (e: unknown) {
  console.error("[crm] createLead error:", e);
@@ -1085,7 +1097,9 @@ export const batchImportLeads = createServerFn({ method: "POST" })
       title: l.title || `Oportunidade - ${l.fullName}`,
       status: l.status || "new",
       estimated_value_cents: l.estimated_value_cents || 0,
+      destination: l.destination || null,
       destination_of_interest: l.destination || null,
+      pax_count: l.passenger_count || 1,
       passenger_count: l.passenger_count || 1,
       acquisition_channel: l.acquisition_channel || "importacao_massa",
       notes: l.notes || null,
@@ -1102,6 +1116,20 @@ export const batchImportLeads = createServerFn({ method: "POST" })
     if (error) {
       console.error("[crm] batchImportLeads error:", error);
       throw new Error(`Falha ao importar lote de leads: ${error.message}`);
+    }
+
+    // Vincula atomicamente os leads importados à tabela canônica customers_crm
+    if (data && data.length > 0) {
+      for (const row of data) {
+        try {
+          await (supabase.rpc as any)("deduplicate_and_link_lead_to_customer", {
+            p_lead_id: row.id,
+            p_store_id: identity.store_id,
+          });
+        } catch {
+          // deduplicação defensiva em lote
+        }
+      }
     }
 
     return { success: true, count: data?.length || toInsert.length };
@@ -1331,7 +1359,7 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
   const identity = await getServerIdentity();
   assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
 
-  // 1. Busca dados completos do lead
+  // 1. Busca dados do lead
   const { data: lead, error: fetchError } = await supabase
   .from("leads_crm")
   .select("*")
@@ -1341,64 +1369,77 @@ export const promoteLeadToCustomer = createServerFn({ method: "POST" })
 
   if (fetchError || !lead) throw new Error("Lead não encontrado");
 
-  // 2. Evita duplicação se já foi convertido
-  if (lead.customer_id) {
-  return { status: "already_converted" as const, customerId: lead.customer_id };
+  // 2. Tenta associar via deduplicação atômica ou reutiliza existente
+  let customerId = lead.customer_id;
+  if (!customerId) {
+    const { data: linkedId, error: rpcError } = await (supabase.rpc as any)(
+      "deduplicate_and_link_lead_to_customer",
+      {
+        p_lead_id: leadId,
+        p_store_id: identity.store_id,
+      }
+    );
+
+    if (!rpcError && linkedId) {
+      customerId = linkedId;
+    } else {
+      const tagsList = ["Lead Convertido"];
+      if (lead.source) tagsList.push(lead.source);
+      if (lead.interest_type) tagsList.push(lead.interest_type);
+
+      const notesLines: string[] = [];
+      if (lead.message) notesLines.push(`Mensagem original: ${lead.message}`);
+      if (lead.destination) notesLines.push(`Destino de interesse: ${lead.destination}`);
+      if (lead.notes) notesLines.push(lead.notes);
+
+      const { data: newCustomer, error: createError } = await supabase
+        .from("customers_crm")
+        .insert({
+          store_id: identity.store_id,
+          kind: "individual",
+          full_name: lead.full_name?.trim() || lead.title || "Cliente",
+          email: lead.email?.trim() || null,
+          phone: lead.phone?.trim() || null,
+          document: lead.document?.trim() || null,
+          birth_date: lead.birth_date || null,
+          status: "active",
+          channel: lead.source || "direct",
+          tags: tagsList,
+          notes: notesLines.length > 0 ? notesLines.join("\n") : null,
+          lifetime_lead_count: 1,
+          last_commercial_touch_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+
+      if (createError) throw new Error("Erro ao criar cliente: " + createError.message);
+      customerId = newCustomer.id;
+    }
   }
 
-  // 3. Cria o cliente com todos os dados disponíveis
-  const tagsList = ["Lead Convertido"];
-  if (lead.source) tagsList.push(lead.source);
-  if (lead.interest_type) tagsList.push(lead.interest_type);
-
-  const notesLines: string[] = [];
-  if (lead.message) notesLines.push(`Mensagem original: ${lead.message}`);
-  if (lead.destination) notesLines.push(`Destino de interesse: ${lead.destination}`);
-  if (lead.notes) notesLines.push(lead.notes);
-
-  const { data: newCustomer, error: createError } = await supabase
-  .from("customers_crm")
-  .insert({
-   store_id: identity.store_id,
-   kind: "individual",
-   full_name: lead.full_name?.trim() || lead.title || "Cliente",
-   email: lead.email?.trim() || null,
-   phone: lead.phone?.trim() || null,
-   document: lead.document?.trim() || null,
-   birth_date: lead.birth_date || null,
-   status: "active",
-   channel: lead.source || "direct",
-   tags: tagsList,
-   notes: notesLines.length > 0 ? notesLines.join("\n") : null,
-  })
-  .select("id")
-  .single();
-
-  if (createError) throw new Error("Erro ao criar cliente: " + createError.message);
-
-  // 4. Seta customer_id no lead (link bidirecional) e atualiza status
+  // 3. Atualiza lead com customer_id e status converted
   await supabase
   .from("leads_crm")
   .update({
    status: "converted",
-   customer_id: newCustomer.id,
+   customer_id: customerId,
    closed_at: new Date().toISOString(),
    updated_at: new Date().toISOString(),
   })
   .eq("id", leadId)
   .eq("store_id", identity.store_id);
 
-  // 5. Registra atividade na timeline
+  // 4. Registra atividade na timeline
   await supabase.from("lead_activities").insert({
     lead_id: leadId,
     store_id: identity.store_id,
     author_id: identity.id,
     type: "conversion",
-    content: `Lead convertido para Cliente Oficial. ID: ${newCustomer.id}`,
-    metadata: { customer_id: newCustomer.id },
+    content: `Lead convertido para Cliente Oficial. ID: ${customerId}`,
+    metadata: { customer_id: customerId },
   }).then(() => null, () => null);
 
-  return { status: "success" as const, customerId: newCustomer.id };
+  return { status: "success" as const, customerId };
  } catch (e: unknown) {
   console.error("[crm] promoteLeadToCustomer error:", e);
   throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao converter lead.");
@@ -1803,3 +1844,359 @@ export const submitPublicLeadForm = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message || "Erro ao enviar acompanhantes.");
     return data;
   });
+
+// ─── ASSIMILAÇÃO ENTERPRISE: PERSISTÊNCIA ATÔMICA & PERFIL 360° DO LEAD ────────
+
+export const persistLeadMove = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+      toStatus: z.string(),
+      reorderedIds: z.array(z.string().uuid()).default([]),
+    })
+  )
+  .handler(async ({ data: { leadId, toStatus, reorderedIds } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { error } = await (supabase.rpc as any)("persist_lead_move", {
+      _lead_id: leadId,
+      _to_status: toStatus,
+      _reordered_ids: reorderedIds,
+      _store_id: identity.store_id,
+    });
+
+    if (error) {
+      // Fallback defensivo
+      await supabase
+        .from("leads_crm")
+        .update({
+          status: toStatus,
+          updated_at: new Date().toISOString(),
+          last_contacted_at: new Date().toISOString(),
+          closed_at: ["won", "lost", "converted"].includes(toStatus) ? new Date().toISOString() : null,
+        })
+        .eq("id", leadId)
+        .eq("store_id", identity.store_id);
+    }
+
+    return { success: true };
+  });
+
+export const deduplicateAndLinkLead = createServerFn({ method: "POST" })
+  .validator(z.object({ leadId: z.string().uuid() }))
+  .handler(async ({ data: { leadId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data: customerId, error } = await (supabase.rpc as any)(
+      "deduplicate_and_link_lead_to_customer",
+      {
+        p_lead_id: leadId,
+        p_store_id: identity.store_id,
+      }
+    );
+
+    if (error) throw new Error(`Falha na deduplicação do lead: ${error.message}`);
+    return { success: true, customerId };
+  });
+
+export const getCustomer360Profile = createServerFn({ method: "GET" })
+  .validator(z.object({ leadId: z.string().uuid() }))
+  .handler(async ({ data: { leadId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller", "support"]);
+
+    // 1. Busca o lead atual
+    const { data: lead, error: leadErr } = await supabase
+      .from("leads_crm")
+      .select("*")
+      .eq("id", leadId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (leadErr || !lead) throw new Error("Lead não encontrado");
+
+    // 2. Busca o cliente vinculado
+    let customer: any = null;
+    let otherLeads: any[] = [];
+    let contracts: any[] = [];
+
+    if (lead.customer_id) {
+      const { data: cData } = await supabase
+        .from("customers_crm")
+        .select("*")
+        .eq("id", lead.customer_id)
+        .eq("store_id", identity.store_id)
+        .single();
+      customer = cData;
+
+      // Busca todos os outros leads deste mesmo cliente (com estrito isolamento por store_id)
+      const { data: lData } = await supabase
+        .from("leads_crm")
+        .select("id, title, destination, status, estimated_value_cents, created_at, closed_at")
+        .eq("customer_id", lead.customer_id)
+        .eq("store_id", identity.store_id)
+        .neq("id", lead.id)
+        .order("created_at", { ascending: false });
+      otherLeads = lData || [];
+
+      // Busca contratos vinculados ao cliente ou ao lead com garantia de tenant
+      const { data: ctrData } = await supabase
+        .from("travel_contracts")
+        .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
+        .eq("store_id", identity.store_id)
+        .or(`customer_id.eq.${lead.customer_id},lead_id.eq.${lead.id}`)
+        .order("created_at", { ascending: false });
+      contracts = ctrData || [];
+    } else {
+      // Se ainda não tem customer_id, busca contratos só pelo lead_id
+      const { data: ctrData } = await supabase
+        .from("travel_contracts")
+        .select("id, contract_title, public_token, status, total_value_cents, destination, signed_at, created_at")
+        .eq("lead_id", lead.id)
+        .eq("store_id", identity.store_id)
+        .order("created_at", { ascending: false });
+      contracts = ctrData || [];
+    }
+
+    // 3. Busca atividades da timeline isoladas por store_id
+    const { data: activities } = await supabase
+      .from("lead_activities")
+      .select("*")
+      .eq("lead_id", lead.id)
+      .eq("store_id", identity.store_id)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    return {
+      lead,
+      customer,
+      otherLeads,
+      contracts,
+      activities: activities || [],
+    };
+  });
+
+export const issueLeadContract = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      leadId: z.string().uuid(),
+      contractTitle: z.string().min(2),
+      packageSummary: z.string().min(5),
+      totalValueCents: z.number().int().min(0),
+      paymentConditions: z.string().default("À vista ou parcelado"),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "seller"]);
+
+    const { data: lead, error: leadErr } = await supabase
+      .from("leads_crm")
+      .select("*")
+      .eq("id", input.leadId)
+      .eq("store_id", identity.store_id)
+      .single();
+
+    if (leadErr || !lead) throw new Error("Lead não encontrado");
+
+    let customerId = lead.customer_id;
+    if (!customerId) {
+      const { data: linkedId } = await (supabase.rpc as any)(
+        "deduplicate_and_link_lead_to_customer",
+        {
+          p_lead_id: lead.id,
+          p_store_id: identity.store_id,
+        }
+      );
+      customerId = linkedId || null;
+    }
+
+    const publicToken = `CTR-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+    const { data: contract, error: ctrErr } = await supabase
+      .from("travel_contracts")
+      .insert({
+        store_id: identity.store_id,
+        created_by_profile_id: identity.id,
+        lead_id: lead.id,
+        customer_id: customerId,
+        public_token: publicToken,
+        contract_title: input.contractTitle,
+        client_name: lead.full_name || lead.title || "Cliente",
+        client_document: lead.document || "Não informado",
+        client_email: lead.email || null,
+        client_phone: lead.phone || "",
+        destination: lead.destination || "Não informado",
+        travel_start_date: lead.travel_start || null,
+        travel_end_date: lead.travel_end || null,
+        package_summary: input.packageSummary,
+        total_value_cents: input.totalValueCents,
+        payment_conditions: input.paymentConditions,
+        passengers: lead.pax_list || [],
+        status: "sent",
+      })
+      .select()
+      .single();
+
+    if (ctrErr) throw new Error(`Erro ao emitir contrato: ${ctrErr.message}`);
+
+    // Registra na cadeia forense
+    await supabase.from("contract_audit_chain").insert({
+      contract_id: contract.id,
+      store_id: identity.store_id,
+      action: "CREATED",
+      actor_profile: identity.id,
+      payload_hash: publicToken,
+      metadata: { lead_id: lead.id, total_value_cents: input.totalValueCents },
+    }).then(() => null, () => null);
+
+    // Registra na timeline do lead
+    await supabase.from("lead_activities").insert({
+      lead_id: lead.id,
+      store_id: identity.store_id,
+      author_id: identity.id,
+      type: "contract_issued",
+      content: `Contrato emitido: "${input.contractTitle}" (Token: ${publicToken})`,
+      metadata: { contract_id: contract.id, public_token: publicToken },
+    }).then(() => null, () => null);
+
+    return { success: true, contract, publicToken };
+  });
+
+
+
+export interface StoreLtvAndAdSpendDTO {
+  totalAdSpendCents: number;
+  totalRevenueCents: number;
+  roas: number;
+  totalCustomers: number;
+  averageLtvCents: number;
+  cacCents: number;
+  ltvToCacRatio: number;
+  conversionRate: number;
+  monthlyCohortData: Array<{
+    monthKey: string;
+    adSpendCents: number;
+    revenueCents: number;
+    leadsCount: number;
+    ordersCount: number;
+  }>;
+}
+
+/**
+ * MOTOR DE TELEMETRIA LTV & ROAS (MASTER PROMPT V46 - FASE 3)
+ * Cruza o investimento em anúncios (Meta/Google) com a receita realizada e o LTV ao longo de 12 meses.
+ */
+export const calculateStoreLtvAndAdSpend = createServerFn({ method: "GET" }).handler(
+  async (): Promise<StoreLtvAndAdSpendDTO> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+    const isoSince = twelveMonthsAgo.toISOString();
+
+    const [campaignsRes, ordersRes, customersRes, leadsRes] = await Promise.all([
+      supabase
+        .from("ad_campaigns")
+        .select("budget_cents, spent_cents, created_at, status")
+        .eq("store_id", identity.store_id),
+      supabase
+        .from("orders")
+        .select("total_cents, created_at, status, customer_id")
+        .eq("store_id", identity.store_id)
+        .gte("created_at", isoSince)
+        .in("status", ["paid", "delivered", "completed", "shipped"]),
+      supabase
+        .from("customers_crm")
+        .select("id, created_at")
+        .eq("store_id", identity.store_id)
+        .is("deleted_at", null),
+      supabase
+        .from("leads_crm")
+        .select("id, status, created_at, estimated_value_cents")
+        .eq("store_id", identity.store_id)
+        .gte("created_at", isoSince),
+    ]);
+
+    const campaigns = campaignsRes.data || [];
+    const orders = ordersRes.data || [];
+    const customers = customersRes.data || [];
+    const leads = leadsRes.data || [];
+
+    // 1. Totais
+    const totalAdSpendCents = campaigns.reduce((acc, c) => acc + (c.spent_cents || c.budget_cents || 0), 0);
+    const totalRevenueCents = orders.reduce((acc, o) => acc + (o.total_cents || 0), 0);
+    const totalCustomers = Math.max(customers.length, 1);
+    const totalLeads = Math.max(leads.length, 1);
+
+    const roas = totalAdSpendCents > 0 ? Number((totalRevenueCents / totalAdSpendCents).toFixed(2)) : 0;
+    const averageLtvCents = Math.round(totalRevenueCents / totalCustomers);
+    const cacCents = Math.round(totalAdSpendCents / totalCustomers);
+    const ltvToCacRatio = cacCents > 0 ? Number((averageLtvCents / cacCents).toFixed(1)) : 0;
+    const wonLeads = leads.filter((l) => ["won", "converted"].includes(l.status)).length;
+    const conversionRate = Number(((wonLeads / totalLeads) * 100).toFixed(1));
+
+    // 2. Agrupamento em Cohorts de 12 Meses
+    const monthsMap = new Map<string, { adSpend: number; revenue: number; leads: number; orders: number }>();
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      monthsMap.set(key, { adSpend: 0, revenue: 0, leads: 0, orders: 0 });
+    }
+
+    orders.forEach((o) => {
+      const key = o.created_at.substring(0, 7);
+      if (monthsMap.has(key)) {
+        const item = monthsMap.get(key)!;
+        item.revenue += o.total_cents || 0;
+        item.orders++;
+      }
+    });
+
+    leads.forEach((l) => {
+      const key = l.created_at.substring(0, 7);
+      if (monthsMap.has(key)) {
+        const item = monthsMap.get(key)!;
+        item.leads++;
+      }
+    });
+
+    campaigns.forEach((c) => {
+      const key = c.created_at ? c.created_at.substring(0, 7) : "";
+      if (monthsMap.has(key)) {
+        const item = monthsMap.get(key)!;
+        item.adSpend += c.spent_cents || c.budget_cents || 0;
+      }
+    });
+
+    const monthlyCohortData = Array.from(monthsMap.entries()).map(([monthKey, val]) => ({
+      monthKey,
+      adSpendCents: val.adSpend,
+      revenueCents: val.revenue,
+      leadsCount: val.leads,
+      ordersCount: val.orders,
+    }));
+
+    return {
+      totalAdSpendCents,
+      totalRevenueCents,
+      roas,
+      totalCustomers,
+      averageLtvCents,
+      cacCents,
+      ltvToCacRatio,
+      conversionRate,
+      monthlyCohortData,
+    };
+  }
+);

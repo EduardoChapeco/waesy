@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NativeMobileHeader } from "@/components/navigation";
 import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -299,20 +300,23 @@ function CustomerTicketsPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-0 animate-in fade-in duration-200">
-      {/* ── 1. Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1 px-4 sm:px-0">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-xl font-black tracking-tight text-foreground">Ingressos</h1>
-          {tickets.length > 0 && (
+      {/* ── 1. Canonical Navigation Header ── */}
+      <NativeMobileHeader
+        title="Ingressos"
+        fallbackHref="/conta"
+        badge={
+          tickets.length > 0 ? (
             <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-md">
               {tickets.length}
             </Badge>
-          )}
-        </div>
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-9 px-3.5 cursor-pointer">
-          <Link to="/agenda">Ver Agenda Cultural</Link>
-        </Button>
-      </div>
+          ) : null
+        }
+        rightActions={
+          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8.5 px-3 cursor-pointer">
+            <Link to="/agenda">Ver Agenda Cultural</Link>
+          </Button>
+        }
+      />
 
       {tickets.length === 0 ? (
         /* ── Empty State ── */

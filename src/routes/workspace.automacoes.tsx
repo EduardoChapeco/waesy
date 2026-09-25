@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -186,7 +187,6 @@ function AutomacoesWorkflowsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Deletar este workflow permanentemente?")) return;
     setLoadingId(id);
     try {
       await deleteWorkflow({ data: { id } });
@@ -372,16 +372,23 @@ function AutomacoesWorkflowsPage() {
                     >
                       {isActive ? <ToggleRight className="size-5" /> : <ToggleLeft className="size-5" />}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={isLoading || executingId === wf.id}
-                      onClick={() => handleDelete(wf.id)}
-                      className="size-11 sm:size-9 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
-                      title="Deletar"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <CrudActionsMenu
+                      entityName="Automação"
+                      onToggleStatus={() => handleToggle(wf)}
+                      statusLabel={isActive ? "Pausar Workflow" : "Ativar Workflow"}
+                      onDelete={() => handleDelete(wf.id)}
+                      deleteConfirmTitle={`Excluir automação "${wf.name}"?`}
+                      deleteConfirmDescription="Esta ação removerá permanentemente o gatilho, as condições e as ações automatizadas deste fluxo."
+                      customActions={[
+                        {
+                          id: "execute-now",
+                          label: "Disparar Teste Manual",
+                          icon: Play,
+                          onClick: () => handleExecute(wf),
+                          disabled: isLoading || executingId === wf.id,
+                        },
+                      ]}
+                    />
                   </div>
                 </div>
               );

@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
 export interface StoreInvoiceDTO {
   id: string;
@@ -34,14 +34,8 @@ export interface StoreInvoiceDTO {
 export const getStoreInvoicesList = createServerFn({ method: "GET" }).handler(
   async (): Promise<StoreInvoiceDTO[]> => {
     const identity = await getServerIdentity();
-    if (!identity?.id) {
-      throw new Error("Não autorizado.");
-    }
-
-    const storeId = identity.store_id || identity.memberships?.[0]?.store_id;
-    if (!storeId) {
-      return [];
-    }
+    assertStoreAccess(identity, ["owner", "admin"]);
+    const storeId = identity.store_id;
 
     const db = getServerClient();
     const { data, error } = await db
@@ -113,14 +107,8 @@ export const submitStoreInvoicePaymentProof = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    if (!identity?.id) {
-      throw new Error("Não autorizado.");
-    }
-
-    const storeId = identity.store_id || identity.memberships?.[0]?.store_id;
-    if (!storeId) {
-      throw new Error("Loja ativa não identificada.");
-    }
+    assertStoreAccess(identity, ["owner", "admin"]);
+    const storeId = identity.store_id;
 
     const db = getServerClient();
 
@@ -183,9 +171,8 @@ export const getStoreInvoicePixDetails = createServerFn({ method: "GET" })
   .validator(z.object({ invoiceId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    if (!identity?.id) throw new Error("Não autorizado.");
-
-    const storeId = identity.store_id || identity.memberships?.[0]?.store_id;
+    assertStoreAccess(identity, ["owner", "admin"]);
+    const storeId = identity.store_id;
     const db = getServerClient();
 
     const { data: inv } = await db

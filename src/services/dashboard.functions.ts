@@ -36,7 +36,8 @@ export interface DashboardMetrics {
  }>;
  criticalStockCount: number;
  newCustomers30d: number;
- abandonedCartsCount: number;
+	newLeads30d?: number;
+	abandonedCartsCount: number;
  recentActivities: DashboardActivity[];
  activeCashRegister: {
  isOpen: boolean;
@@ -90,7 +91,8 @@ async function _getDashboardData(): Promise<DashboardMetrics> {
  lowStockItems: [],
  criticalStockCount: 0,
  newCustomers30d: 0,
- abandonedCartsCount: 0,
+		newLeads30d: 0,
+		abandonedCartsCount: 0,
  recentActivities: [],
  activeCashRegister: { isOpen: false },
  setupChecklist: [],
@@ -231,7 +233,7 @@ async function _getDashboardData(): Promise<DashboardMetrics> {
  // 3. Low stock items
  const { data: variantRows } = await db
  .from("product_variants")
- .select("id, sku, stock_on_hand, products(title)")
+ .select("id, sku, stock_on_hand, products!inner(title, store_id)").eq("products.store_id", storeId)
  .lte("stock_on_hand", 5)
  .order("stock_on_hand", { ascending: true })
  .limit(5);
@@ -252,11 +254,19 @@ async function _getDashboardData(): Promise<DashboardMetrics> {
  .eq("store_id", storeId)
  .gte("created_at", last30Days);
 
- // 5. Abandoned Carts (last 7d)
- const { count: abandonedCartsCount } = await db
- .from("carts")
- .select("id", { count: "exact", head: true })
- .gte("updated_at", last7Days);
+ // 4.1. New Leads CRM (last 30d)
+	const { count: newLeads30d } = await db
+		.from("leads_crm")
+		.select("id", { count: "exact", head: true })
+		.eq("store_id", storeId)
+		.gte("created_at", last30Days);
+
+	// 5. Abandoned Carts (last 7d - Strict Scoped to Store)
+	const { count: abandonedCartsCount } = await db
+		.from("carts")
+		.select("id", { count: "exact", head: true })
+		.eq("store_id", storeId)
+		.gte("updated_at", last7Days);
 
  // 6. Active Cash Register
  const { data: activeRegister } = await db
@@ -318,7 +328,8 @@ async function _getDashboardData(): Promise<DashboardMetrics> {
  lowStockItems,
  criticalStockCount: lowStockItems.length,
  newCustomers30d: newCustomers30d ?? 0,
- abandonedCartsCount: abandonedCartsCount ?? 0,
+		newLeads30d: newLeads30d ?? 0,
+		abandonedCartsCount: abandonedCartsCount ?? 0,
  recentActivities,
  activeCashRegister,
  setupChecklist,

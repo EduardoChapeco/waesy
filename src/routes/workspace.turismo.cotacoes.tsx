@@ -42,6 +42,7 @@ import { formatMoney } from "@/lib/money";
 
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export const Route = createFileRoute("/workspace/turismo/cotacoes")({
  head: () => ({
@@ -106,6 +107,7 @@ export default function AgencyQuotesPage() {
  // Modais
  const [isNewSheetOpen, setIsNewSheetOpen] = useState(Boolean(searchParams?.leadName || searchParams?.clientId));
  const [managingQuote, setManagingQuote] = useState<TravelQuoteRequestDTO | null>(null);
+ const { confirm: confirmAction, ConfirmDialog } = useConfirm();
 
  // Edit State: Gestão de Lead Existente
  const [editStatus, setEditStatus] = useState<"new" | "analyzing" | "quoted" | "won" | "lost">("new");
@@ -239,7 +241,7 @@ export default function AgencyQuotesPage() {
  toolDescription="O pipeline de cotações, orçamentos e captação de passageiros para pacotes aéreos, cruzeiros e hotéis foi projetado especificamente para agências de viagens e turismo."
  store={store}
  >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)] pb-20">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100dvh-8.5rem)] pb-20">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -387,7 +389,7 @@ export default function AgencyQuotesPage() {
           </div>
         ) : viewMode === "kanban" ? (
           /* Visualização de Funil Kanban por Estágios */
-          <div className="flex gap-4 overflow-x-auto pb-4 min-h-[calc(100vh-16rem)] no-scrollbar">
+          <div className="flex gap-4 overflow-x-auto pb-4 min-h-[calc(100dvh-16rem)] no-scrollbar">
             {[
               { id: "new", title: "Novas Solicitações", icon: Clock, color: "#3b82f6" },
               { id: "analyzing", title: "Em Análise & Cotação", icon: ChatCircleDots, color: "#f59e0b" },
@@ -888,9 +890,15 @@ export default function AgencyQuotesPage() {
          size="sm"
          disabled={deleteQuoteMutation.isPending}
          onClick={() => {
-           if (confirm("Deseja realmente remover esta cotação?")) {
-             deleteQuoteMutation.mutate(managingQuote!.id);
-           }
+           if (!managingQuote) return;
+           confirmAction({
+             title: "Excluir Cotação",
+             description: `Tem certeza que deseja remover esta cotação de ${managingQuote.client_name}? Esta ação não poderá ser desfeita.`,
+             variant: "destructive",
+             onConfirm: () => {
+               deleteQuoteMutation.mutate(managingQuote.id);
+             },
+           });
          }}
          className="text-destructive text-xs rounded-xl h-10 hover:bg-destructive/10 cursor-pointer"
        >
@@ -1010,7 +1018,8 @@ export default function AgencyQuotesPage() {
  ],
  }}
  />
- </div>
- </NicheOperationalGuard>
- );
+        <ConfirmDialog />
+      </div>
+    </NicheOperationalGuard>
+  );
 }

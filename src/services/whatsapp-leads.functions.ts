@@ -71,7 +71,31 @@ export const recordWhatsAppLead = createServerFn({ method: "POST" })
 
  const sanitizedPhone = input.phone_target.replace(/\D/g, "");
 
- const { data: res, error } = await supabase.rpc("record_whatsapp_lead", {
+ 	let req: Request | null = null;
+	try {
+		const { getRequest } = await import("@tanstack/start-server-core");
+		req = getRequest();
+	} catch {}
+	const { captureRequestTelemetry } = await import("@/lib/network-telemetry.server");
+	const tele = req ? captureRequestTelemetry(req) : null;
+	const enrichedMetadata = {
+		...(input.metadata || {}),
+		...(tele ? {
+			telemetry: {
+				ip: tele.ip,
+				device_name: tele.deviceName,
+				device_type: tele.deviceType,
+				geo: {
+					city: tele.geo.city,
+					state: tele.geo.state,
+					country: tele.geo.country,
+					source: tele.geo.source,
+				},
+			},
+		} : {}),
+	};
+
+	const { data: res, error } = await supabase.rpc("record_whatsapp_lead", {
  p_store_id: input.store_id || null,
  p_entity_type: input.entity_type,
  p_entity_id: input.entity_id || null,
@@ -84,7 +108,7 @@ export const recordWhatsAppLead = createServerFn({ method: "POST" })
  p_visitor_id: input.visitor_id || null,
  p_user_id: userId,
  p_device_type: input.device_type,
- p_metadata: input.metadata || {},
+ p_metadata: enrichedMetadata,
  });
 
  if (error) {

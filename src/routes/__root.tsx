@@ -125,7 +125,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  { charSet: "utf-8" },
  {
  name: "viewport",
- content: "width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, interactive-widget=resizes-content",
+ content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover, interactive-widget=resizes-content",
  },
  { title: seoTitle },
  {
@@ -133,7 +133,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  content: seoDesc,
  },
  { name: "author", content: storeName },
- { name: "theme-color", content: theme?.background_color || "#09090b" },
+ { name: "theme-color", media: "(prefers-color-scheme: light)", content: "#ffffff" },
+      { name: "theme-color", media: "(prefers-color-scheme: dark)", content: theme?.background_color || "#09090b" },
  { name: "mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-status-bar-style", content: "default" },
@@ -271,7 +272,7 @@ function RootShell({ children }: { children: ReactNode }) {
           />
         )}
       </head>
- <body>
+ <body className="w-full max-w-full overflow-x-hidden min-h-[100dvh] antialiased">
  {children}
  <CookieBanner />
  <Scripts />

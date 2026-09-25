@@ -15,7 +15,9 @@ import {
   CheckCircle2,
   Smartphone,
   Layers,
+  Eye,
 } from "lucide-react";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -133,11 +135,10 @@ export default function WorkspaceVouchersPage() {
     },
   ];
 
-  const handleDelete = async (id: string, num: string) => {
-    if (!confirm(`Deseja realmente excluir o voucher ${num}?`)) return;
+  const handleDelete = async (id: string, num?: string) => {
     try {
       await deleteTravelVoucher({ data: { id } });
-      toast.success("Voucher removido com sucesso!");
+      toast.success(`Voucher ${num ? num + " " : ""}removido com sucesso!`);
       refetch();
     } catch (err: any) {
       toast.error("Erro ao remover voucher: " + err?.message);
@@ -366,15 +367,26 @@ export default function WorkspaceVouchersPage() {
                   </Button>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => handleDelete(v.id, v.voucher_number)}
-                  className="size-11 sm:size-8 p-0 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
-                  title="Excluir voucher"
-                >
-                  <Trash2 className="size-4 sm:size-3.5" />
-                </Button>
+                <CrudActionsMenu
+                  entityName="Voucher"
+                  onDelete={() => handleDelete(v.id, v.voucher_number)}
+                  deleteConfirmTitle={`Excluir voucher ${v.voucher_number}?`}
+                  deleteConfirmDescription="Esta ação removerá permanentemente o voucher operacional emitido."
+                  customActions={[
+                    {
+                      id: "view-companion",
+                      label: "Abrir Cartão 9:16",
+                      icon: Smartphone,
+                      onClick: () => setCompanionModalVoucher(v),
+                    },
+                    {
+                      id: "download-pdf-menu",
+                      label: "Baixar PDF (A4)",
+                      icon: Download,
+                      onClick: () => handleDownloadPdf(v),
+                    },
+                  ]}
+                />
               </div>
             </div>
           ))}
@@ -400,7 +412,7 @@ export default function WorkspaceVouchersPage() {
 
       {/* ── 3.2 MODAL DE SCANNER MULTIMODAL OCR (GERADOR 9:16 & WHATSAPP) ── */}
       <Dialog open={isUniversalOcrOpen} onOpenChange={setIsUniversalOcrOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <Smartphone className="size-4 text-primary" />
@@ -436,7 +448,7 @@ export default function WorkspaceVouchersPage() {
           if (!open) setCompanionModalVoucher(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Visualizador de Voucher & Bilhete</DialogTitle>
           </DialogHeader>
@@ -538,7 +550,7 @@ export default function WorkspaceVouchersPage() {
                     </Button>
                   </div>
                   <div className="w-full overflow-x-auto p-4 bg-muted/30 rounded-2xl border border-border/40 flex justify-center">
-                    <div className="scale-75 sm:scale-85 md:scale-90 origin-top shadow-xl">
+                    <div className="scale-75 sm:scale-85 md:scale-90 origin-top shadow-xs">
                       <TemplateVoucherA4
                         voucher={companionModalVoucher}
                         agencyName={store?.name}

@@ -1,3 +1,5 @@
+import { getRequest } from "@tanstack/start-server-core";
+import { getRealClientIP, resolveGeoLocation } from "@/lib/network-telemetry.server";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";

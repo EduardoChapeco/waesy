@@ -36,6 +36,7 @@ import {
   Trash2,
   HelpCircle,
 } from "lucide-react";
+import { NativeMobileHeader } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -315,90 +316,71 @@ function PainelEmpresaPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Top Bar Operacional */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border/60">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-muted border border-border/60 overflow-hidden flex items-center justify-center shrink-0">
-              {store.logo_url ? (
-                <img src={store.logo_url} alt={store.name} className="w-full h-full object-cover" />
-              ) : (
-                <Store className="size-5 text-muted-foreground" />
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-foreground">{store.name}</h1>
-                <Badge variant="outline" className="text-[10px] font-medium border-emerald-500/30 text-emerald-600 bg-emerald-500/5">
-                  Ativo no Guia
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <span>{store.settings?.category || "Comércio & Serviços"}</span>
-                <span>•</span>
-                <span>{store.city || "Chapecó"}, {store.state || "SC"}</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
+            {/* Top Bar Operacional Nativa */}
+      <NativeMobileHeader
+        fallbackHref="/conta"
+        title={store.name}
+        subtitle={`${store.settings?.category || "Comércio & Serviços"} • ${store.city || "Chapecó"}, ${store.state || "SC"}`}
+        rightActions={
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <CompanyNotificationsBell />
-
-            <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50">
-              <Link to="/perfil-da-loja" search={{ storeId: store.id }} target="_blank">
-                <span className="hidden sm:inline">Ver Perfil</span>
-                <ArrowUpRight className="size-3.5" />
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" size="sm" className="h-9 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50">
-              <Link to="/workspace/marketing/brand-kit">
-                <Edit className="size-3.5 text-primary" />
-                <span className="hidden md:inline">Editar Perfil</span>
-              </Link>
-            </Button>
-
-            <Button asChild size="sm" className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-xs">
+            <Button asChild size="sm" className="h-8.5 px-3 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground">
               <Link to="/workspace">
                 <Store className="size-3.5" />
-                <span>Portal</span>
+                <span className="hidden xs:inline">Workspace</span>
               </Link>
-            </Button>
-
-            <Button asChild size="sm" variant="outline" className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/5">
-              <Link to="/portal-completo">
-                <Layers className="size-3.5" />
-                <span className="hidden sm:inline">Gestão Pro</span>
-              </Link>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setCustomFields(initialFormSettings?.fields || []);
-                setIsCustomFormModalOpen(true);
-              }}
-              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50 hidden lg:inline-flex"
-            >
-              <FileText className="size-3.5 text-primary" />
-              <span>Proposta</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsDeliveryModalOpen(true)}
-              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50 hidden lg:inline-flex"
-            >
-              <Bike className="size-3.5 text-primary" />
-              <span>Entregas</span>
             </Button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="max-w-6xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
+        {/* Barra de Ações Rápidas da Empresa */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50 shrink-0">
+            <Link to="/perfil-da-loja" search={{ storeId: store.id }} target="_blank">
+              <span>Ver Perfil Público</span>
+              <ArrowUpRight className="size-3.5" />
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50 shrink-0">
+            <Link to="/workspace/marketing/brand-kit">
+              <Edit className="size-3.5 text-primary" />
+              <span>Editar Perfil & Marca</span>
+            </Link>
+          </Button>
+
+          <Button asChild size="sm" variant="outline" className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 shrink-0">
+            <Link to="/portal-completo">
+              <Layers className="size-3.5" />
+              <span>Gestão Pro</span>
+            </Link>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setCustomFields(initialFormSettings?.fields || []);
+              setIsCustomFormModalOpen(true);
+            }}
+            className="h-9 px-3 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50 shrink-0"
+          >
+            <FileText className="size-3.5 text-primary" />
+            <span>Campos da Proposta</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsDeliveryModalOpen(true)}
+            className="h-9 px-3 rounded-xl text-xs font-bold gap-1.5 border-border/80 hover:bg-muted/50 shrink-0"
+          >
+            <Bike className="size-3.5 text-primary" />
+            <span>Configurar Entregas</span>
+          </Button>
+        </div>
         {/* Métricas Principais em Grid Simétrico 4-Col (Apple HIG) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-card rounded-2xl p-4 border border-border/60 shadow-2xs space-y-1">

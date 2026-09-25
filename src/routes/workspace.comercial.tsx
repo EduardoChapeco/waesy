@@ -30,6 +30,12 @@ import {
   FileText,
   BarChart3,
   Settings2,
+  Brain,
+  FileSignature,
+  History,
+  Copy,
+  Check,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
@@ -70,6 +76,11 @@ import {
   createLead,
   toggleLeadChecklist,
   deleteLead,
+  persistLeadMove,
+  getCustomer360Profile,
+  calculateStoreLtvAndAdSpend,
+  type StoreLtvAndAdSpendDTO,
+  issueLeadContract,
 } from "@/services/crm.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
@@ -365,7 +376,22 @@ function WorkspaceComercialPage() {
   });
 
   const [newChecklistItemText, setNewChecklistItemText] = useState("");
-  const [activeTabDetail, setActiveTabDetail] = useState<"viagem" | "checklist" | "comercial" | "notas">("viagem");
+  const [activeTabDetail, setActiveTabDetail] = useState<"viagem" | "cliente360" | "contratos" | "telemetria" | "checklist" | "comercial" | "notas">("viagem");
+  const [customer360Data, setCustomer360Data] = useState<{
+    customer: any;
+    otherLeads: any[];
+    contracts: any[];
+    activities: any[];
+  } | null>(null);
+  const [isLoading360, setIsLoading360] = useState(false);
+  const [isIssuingContract, setIsIssuingContract] = useState(false);
+  const [copiedMagicLink, setCopiedMagicLink] = useState(false);
+  const [contractForm, setContractForm] = useState({
+    title: "",
+    packageSummary: "",
+    totalValueCents: 0,
+    paymentConditions: "À vista ou parcelado em até 10x",
+  });
 
   const openLeadDetails = (lead: any) => {
     setSelectedLead(lead);
@@ -390,7 +416,18 @@ function WorkspaceComercialPage() {
       checklist: Array.isArray(lead.checklist) ? lead.checklist : DEFAULT_CHECKLIST_TEMPLATE,
       lost_reason: lead.lost_reason || "",
     });
+    setContractForm({
+      title: lead.destination ? `Contrato de Viagem - ${lead.destination}` : `Contrato de Prestação de Serviços - ${lead.full_name || "Cliente"}`,
+      packageSummary: lead.destination ? `Pacote Turístico completo para ${lead.destination}.` : "Prestação de serviços turísticos conforme proposta comercial.",
+      totalValueCents: lead.estimated_value_cents || 0,
+      paymentConditions: "Entrada + saldo em até 10x sem juros",
+    });
     setActiveTabDetail("viagem");
+    setIsLoading360(true);
+    getCustomer360Profile({ data: { leadId: lead.id } })
+      .then((res) => setCustomer360Data(res))
+      .catch((err) => console.warn("Erro ao buscar perfil 360:", err))
+      .finally(() => setIsLoading360(false));
   };
 
   const filteredLeads = useMemo(() => {
@@ -415,10 +452,11 @@ function WorkspaceComercialPage() {
 
   const handleMoveStage = async (leadId: string, newStage: LeadStage) => {
     try {
-      await updateLeadStatus({
+      await persistLeadMove({
         data: {
           leadId,
-          status: newStage,
+          toStatus: newStage,
+          reorderedIds: [],
         },
       });
       toast.success("Oportunidade movida no funil com sucesso!");
@@ -428,6 +466,55 @@ function WorkspaceComercialPage() {
       router.invalidate();
     } catch (err: any) {
       toast.error(err.message || "Erro ao mover lead.");
+    }
+  };
+
+  const handleCopyMagicLink = () => {
+    if (!selectedLead) return;
+    const token = selectedLead.magic_token || selectedLead.id;
+    const url = `${window.location.origin}/m/lead/${token}`;
+    navigator.clipboard.writeText(url);
+    setCopiedMagicLink(true);
+    toast.success("Link do formulário autônomo copiado!");
+    setTimeout(() => setCopiedMagicLink(false), 2500);
+  };
+
+  const handleCopyContractLink = (publicToken: string) => {
+    const url = `${window.location.origin}/viajante/${publicToken}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link de assinatura digital copiado!");
+  };
+
+  const handleIssueContract = async () => {
+    if (!selectedLead) return;
+    if (!contractForm.title.trim()) {
+      toast.error("Informe o título do contrato.");
+      return;
+    }
+    if (!contractForm.packageSummary.trim()) {
+      toast.error("Informe o resumo dos serviços contratados.");
+      return;
+    }
+    try {
+      setIsIssuingContract(true);
+      const res = await issueLeadContract({
+        data: {
+          leadId: selectedLead.id,
+          contractTitle: contractForm.title,
+          packageSummary: contractForm.packageSummary,
+          totalValueCents: contractForm.totalValueCents || selectedLead.estimated_value_cents || 0,
+          paymentConditions: contractForm.paymentConditions,
+        },
+      });
+      toast.success(`Contrato gerado com sucesso! Token: ${res.publicToken}`);
+      getCustomer360Profile({ data: { leadId: selectedLead.id } })
+        .then((r) => setCustomer360Data(r))
+        .catch(() => null);
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao emitir contrato.");
+    } finally {
+      setIsIssuingContract(false);
     }
   };
 
@@ -605,7 +692,7 @@ function WorkspaceComercialPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-[calc(100vh-120px)] pb-12 overflow-x-hidden">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-5 min-h-[calc(100dvh-120px)] pb-12 overflow-x-hidden">
       <div className="flex items-center justify-between px-1">
         <p className="text-xs font-medium text-muted-foreground">Pipeline de oportunidades, CRM e propostas comerciais</p>
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
@@ -680,7 +767,7 @@ function WorkspaceComercialPage() {
           return (
             <div
               key={stage.id}
-              className="flex flex-col rounded-2xl border border-border/70 bg-card/50 backdrop-blur-xs w-[calc(100vw-2.5rem)] sm:w-[330px] min-w-[calc(100vw-2.5rem)] sm:min-w-[330px] shrink-0 min-h-[580px] lg:min-h-[calc(100vh-320px)] shadow-2xs transition-all snap-center"
+              className="flex flex-col rounded-2xl border border-border/70 bg-card w-[calc(100vw-2.5rem)] sm:w-[330px] min-w-[calc(100vw-2.5rem)] sm:min-w-[330px] shrink-0 min-h-[580px] lg:min-h-[calc(100dvh-320px)] shadow-2xs transition-all snap-center"
             >
               {/* Header da Coluna com Somatório e Ação Rápida */}
               <div className="p-3.5 pb-2.5 border-b border-border/60 bg-muted/25 rounded-t-2xl space-y-1.5 sticky top-0 z-10">
@@ -718,7 +805,7 @@ function WorkspaceComercialPage() {
               </div>
 
               {/* Lista de Cards da Coluna */}
-              <div className="p-3 space-y-3 flex-1 overflow-y-auto no-scrollbar max-h-[calc(100vh-380px)] [scrollbar-width:thin]">
+              <div className="p-3 space-y-3 flex-1 overflow-y-auto no-scrollbar max-h-[calc(100dvh-380px)] [scrollbar-width:thin]">
                 {stageLeads.length === 0 ? (
                   <div className="h-36 rounded-xl border border-dashed border-border/70 flex flex-col items-center justify-center p-4 text-center text-muted-foreground gap-1.5">
                     <span className="text-xs font-medium">Nenhum lead nesta etapa</span>
@@ -1080,7 +1167,7 @@ function WorkspaceComercialPage() {
                 </SheetHeader>
 
                 {/* Ações Rápidas no Topo — Conexão Sistêmica com Cotações, Propostas, Comissões e Voos */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {selectedLead.phone && (
                     <a
                       href={`https://wa.me/55${selectedLead.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
@@ -1088,9 +1175,9 @@ function WorkspaceComercialPage() {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 border border-emerald-500/20 flex items-center justify-center gap-1.5 font-bold text-xs transition-colors"
+                      className="p-2.5 rounded-xl border border-border/80 bg-background hover:bg-muted text-foreground flex items-center justify-center gap-1.5 font-semibold text-xs transition-colors min-h-[44px]"
                     >
-                      <Phone className="size-3.5 shrink-0" />
+                      <Phone className="size-3.5 shrink-0 text-emerald-600" />
                       <span className="truncate">WhatsApp</span>
                     </a>
                   )}
@@ -1107,9 +1194,9 @@ function WorkspaceComercialPage() {
                       estimated_value_cents: selectedLead.estimated_value_cents,
                       passenger_count: selectedLead.pax_count,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 font-bold text-xs gap-1.5 cursor-pointer"
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
                   >
-                    <FileText className="size-3.5 shrink-0 text-primary" />
+                    <FileText className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Gerar Proposta</span>
                   </Button>
 
@@ -1122,9 +1209,9 @@ function WorkspaceComercialPage() {
                       estimated_value_cents: selectedLead.estimated_value_cents,
                       notes: selectedLead.notes,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-amber-500/30 bg-amber-500/5 text-amber-600 hover:bg-amber-500/10 font-bold text-xs gap-1.5 cursor-pointer"
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
                   >
-                    <Calculator className="size-3.5 shrink-0 text-amber-500" />
+                    <Calculator className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Comissão</span>
                   </Button>
 
@@ -1136,15 +1223,29 @@ function WorkspaceComercialPage() {
                       fullName: selectedLead.full_name,
                       destination: selectedLead.destination,
                     })}
-                    className="h-auto p-2.5 rounded-xl border-sky-500/30 bg-sky-500/5 text-sky-600 hover:bg-sky-500/10 font-bold text-xs gap-1.5 cursor-pointer"
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
                   >
-                    <Plane className="size-3.5 shrink-0 text-sky-500" />
+                    <Plane className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">Malha Aérea</span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCopyMagicLink}
+                    className="h-auto p-2.5 rounded-xl border-border/80 bg-background hover:bg-muted text-foreground font-semibold text-xs gap-1.5 cursor-pointer min-h-[44px]"
+                  >
+                    {copiedMagicLink ? (
+                      <Check className="size-3.5 shrink-0 text-emerald-600" />
+                    ) : (
+                      <Copy className="size-3.5 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className="truncate">{copiedMagicLink ? "Copiado!" : "Magic Link"}</span>
                   </Button>
                 </div>
 
                 {/* Abas da Ficha 360° */}
-                <div className="flex border-b border-border/50 gap-2">
+                <div className="flex border-b border-border/50 gap-2 overflow-x-auto scrollbar-none pb-0.5">
                   <button
                     type="button"
                     onClick={() => setActiveTabDetail("viagem")}
@@ -1156,6 +1257,53 @@ function WorkspaceComercialPage() {
                     )}
                   >
                     Viagem & Destino
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTabDetail("cliente360")}
+                    className={cn(
+                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
+                      activeTabDetail === "cliente360"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <History className="size-3 shrink-0" />
+                    <span>Cliente 360°</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTabDetail("contratos")}
+                    className={cn(
+                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
+                      activeTabDetail === "contratos"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <FileSignature className="size-3 shrink-0" />
+                    <span>Contratos</span>
+                    {customer360Data?.contracts?.length ? (
+                      <Badge variant="secondary" className="text-[9px] h-4 px-1">
+                        {customer360Data.contracts.length}
+                      </Badge>
+                    ) : null}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTabDetail("telemetria")}
+                    className={cn(
+                      "pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1",
+                      activeTabDetail === "telemetria"
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Brain className="size-3 shrink-0" />
+                    <span>Brain</span>
                   </button>
                   <button
                     type="button"
@@ -1305,6 +1453,301 @@ function WorkspaceComercialPage() {
                         placeholder="Ex: 5, 8"
                         className="h-8 text-xs rounded-xl"
                       />
+                    </div>
+                  </div>
+                )}
+
+                {/* Aba: Ficha do Cliente 360° & Histórico de Oportunidades */}
+                {activeTabDetail === "cliente360" && (
+                  <div className="space-y-4 pt-1">
+                    {isLoading360 ? (
+                      <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">
+                        Carregando histórico unificado do cliente...
+                      </div>
+                    ) : customer360Data?.customer ? (
+                      <div className="space-y-4">
+                        {/* Cartão do Cliente Master */}
+                        <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-foreground">
+                              {customer360Data.customer.full_name || "Cliente Oficial"}
+                            </span>
+                            <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                              Perfil Canônico
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                            <div>
+                              <span className="font-semibold text-foreground">Documento:</span> {customer360Data.customer.document || "Não informado"}
+                            </div>
+                            <div>
+                              <span className="font-semibold text-foreground">Telefone:</span> {customer360Data.customer.phone || "Não informado"}
+                            </div>
+                            <div>
+                              <span className="font-semibold text-foreground">E-mail:</span> {customer360Data.customer.email || "Não informado"}
+                            </div>
+                            <div>
+                              <span className="font-semibold text-foreground">Canal Origem:</span> {customer360Data.customer.channel || "Direto"}
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Ciclo de Vida do Cliente:</span>
+                            <span className="font-bold text-foreground font-mono">{customer360Data.customer.lifetime_lead_count || 1} oportunidade(s)</span>
+                          </div>
+                        </div>
+
+                        {/* Histórico de Outras Oportunidades do mesmo cliente */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                              <History className="size-3.5 text-muted-foreground" />
+                              <span>Outras Oportunidades Deste Cliente</span>
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-mono">
+                              {customer360Data.otherLeads.length} outra(s)
+                            </span>
+                          </div>
+
+                          {customer360Data.otherLeads.length === 0 ? (
+                            <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                              Esta é a primeira oportunidade registrada deste cliente.
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {customer360Data.otherLeads.map((ol: any) => (
+                                <div
+                                  key={ol.id}
+                                  className="p-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors flex items-center justify-between text-xs"
+                                >
+                                  <div className="space-y-0.5">
+                                    <p className="font-bold text-foreground">{ol.title || ol.destination || "Oportunidade"}</p>
+                                    <p className="text-[10px] text-muted-foreground">
+                                      Criado em {new Date(ol.created_at).toLocaleDateString("pt-BR")}
+                                    </p>
+                                  </div>
+                                  <div className="text-right space-y-1">
+                                    <span className="font-mono font-semibold block">{formatMoney(ol.estimated_value_cents || 0)}</span>
+                                    <Badge variant="secondary" className="text-[9px] uppercase">
+                                      {ol.status}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-5 rounded-xl border border-dashed border-border/60 text-center space-y-3">
+                        <p className="text-xs text-muted-foreground">
+                          Este lead ainda não está formalmente vinculado a um cadastro oficial na carteira de clientes.
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePromoteToCustomer(selectedLead.id)}
+                          className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+                        >
+                          <UserCheck className="size-3.5" />
+                          <span>Vincular / Criar Perfil Oficial</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Aba: Contratos & Assinaturas Digitais (SHA-256) */}
+                {activeTabDetail === "contratos" && (
+                  <div className="space-y-4 pt-1">
+                    {/* Formulário de Emissão Rápida de Contrato */}
+                    <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <FileSignature className="size-3.5 text-primary" />
+                          <span>Emitir Contrato com Assinatura Eletrônica</span>
+                        </span>
+                        <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                          SHA-256 Tamper Seal
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold">Título do Contrato</Label>
+                        <Input
+                          value={contractForm.title}
+                          onChange={(e) => setContractForm((prev) => ({ ...prev, title: e.target.value }))}
+                          className="h-8 text-xs rounded-xl"
+                          placeholder="Ex: Contrato de Pacote Turístico"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold">Resumo dos Serviços Inclusos</Label>
+                        <Textarea
+                          value={contractForm.packageSummary}
+                          onChange={(e) => setContractForm((prev) => ({ ...prev, packageSummary: e.target.value }))}
+                          className="text-xs rounded-xl resize-none"
+                          rows={3}
+                          placeholder="Descrição dos serviços contratados..."
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-semibold">Valor Total (R$)</Label>
+                          <CurrencyField
+                            value={contractForm.totalValueCents}
+                            onChange={(val) => setContractForm((prev) => ({ ...prev, totalValueCents: val ?? 0 }))}
+                            className="h-8 text-xs rounded-xl font-mono"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-semibold">Condição de Pagamento</Label>
+                          <Input
+                            value={contractForm.paymentConditions}
+                            onChange={(e) => setContractForm((prev) => ({ ...prev, paymentConditions: e.target.value }))}
+                            className="h-8 text-xs rounded-xl"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={isIssuingContract}
+                        onClick={handleIssueContract}
+                        className="w-full rounded-xl text-xs font-bold gap-1.5 cursor-pointer"
+                      >
+                        <FileSignature className="size-3.5" />
+                        <span>{isIssuingContract ? "Gerando Contrato..." : "Gerar e Enviar para Assinatura"}</span>
+                      </Button>
+                    </div>
+
+                    {/* Lista de Contratos */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-foreground">Contratos Vinculados</span>
+                      {(!customer360Data?.contracts || customer360Data.contracts.length === 0) ? (
+                        <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                          Nenhum contrato gerado para esta oportunidade ainda.
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {customer360Data.contracts.map((ctr: any) => (
+                            <div
+                              key={ctr.id}
+                              className="p-3 rounded-xl border border-border/60 bg-card hover:bg-muted/30 transition-colors space-y-2"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-foreground">{ctr.contract_title}</span>
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "text-[9px] font-mono",
+                                    ctr.status === "signed"
+                                      ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
+                                      : "border-amber-500/30 text-amber-600 bg-amber-500/10"
+                                  )}
+                                >
+                                  {ctr.status === "signed" ? "Assinado" : "Aguardando"}
+                                </Badge>
+                              </div>
+
+                              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                <span>Valor: <strong className="text-foreground font-mono">{formatMoney(ctr.total_value_cents || 0)}</strong></span>
+                                <span>Token: <strong className="font-mono text-[10px]">{ctr.public_token}</strong></span>
+                              </div>
+
+                              <div className="pt-2 border-t border-border/40 flex items-center justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleCopyContractLink(ctr.public_token)}
+                                  className="h-7 px-2.5 rounded-lg text-[11px] font-bold gap-1 cursor-pointer"
+                                >
+                                  <Copy className="size-3" />
+                                  <span>Copiar Link</span>
+                                </Button>
+                                <Link
+                                  to="/viajante/$token"
+                                  params={{ token: ctr.public_token }}
+                                  target="_blank"
+                                  className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-bold border border-border/60 hover:bg-muted/50 transition-colors"
+                                >
+                                  <ExternalLink className="size-3" />
+                                  <span>Abrir</span>
+                                </Link>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Aba: Telemetria & Brain */}
+                {activeTabDetail === "telemetria" && (
+                  <div className="space-y-4 pt-1">
+                    <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Brain className="size-3.5 text-primary" />
+                          <span>Inteligência Comportamental ("Brain")</span>
+                        </span>
+                        <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                          Algoritmo Preditivo
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Cruza os cliques, buscas no portal, visualizações de vitrine e requisições de WhatsApp deste perfil consolidado.
+                      </p>
+                    </div>
+
+                    {/* Top Nichos de Afinidade */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-foreground">Nichos de Maior Afinidade</span>
+                      {customer360Data?.customer?.behavioral_profile?.top_niches?.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          {customer360Data.customer.behavioral_profile.top_niches.map((n: any, idx: number) => (
+                            <div key={idx} className="p-2.5 rounded-xl border border-border/60 bg-card flex items-center justify-between text-xs">
+                              <span className="capitalize font-medium">{n.niche || "Geral"}</span>
+                              <span className="font-mono text-[11px] font-bold text-primary">{Number(n.total_score || 0).toFixed(0)} pts</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                          Nenhuma afinidade ponderada registrada para este perfil até o momento.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Timeline de Atividades da Oportunidade */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-foreground">Rastro de Atividades da Oportunidade</span>
+                      {(!customer360Data?.activities || customer360Data.activities.length === 0) ? (
+                        <div className="p-4 text-center rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground">
+                          Nenhuma atividade registrada ainda nesta oportunidade.
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                          {customer360Data.activities.map((act: any) => (
+                            <div key={act.id} className="p-2 rounded-lg border border-border/40 bg-card text-[11px] flex items-center justify-between">
+                              <div>
+                                <span className="font-medium text-foreground">{act.content}</span>
+                                <span className="text-[9px] text-muted-foreground block">
+                                  {new Date(act.created_at).toLocaleString("pt-BR")}
+                                </span>
+                              </div>
+                              <Badge variant="secondary" className="text-[9px] uppercase">
+                                {act.type}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

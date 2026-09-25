@@ -39,6 +39,23 @@ import {
  DialogTitle,
 } from "@/components/ui/dialog";
 
+function formatRelativeTime(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return "Recentemente";
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  const now = new Date();
+  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffSec < 60) return "Agora mesmo";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `Há ${diffMin} ${diffMin === 1 ? "minuto" : "minutos"}`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `Há ${diffHours} ${diffHours === 1 ? "hora" : "horas"}`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return `Ontem às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+  if (diffDays < 7) return `Há ${diffDays} dias`;
+  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
 export const Route = createFileRoute("/_store/conta/seguranca")({
  head: () => ({ meta: [{ title: "Segurança e Dispositivos | Waesy" }] }),
  loader: async () => {
@@ -149,78 +166,80 @@ function SecurityAndDevicesPage() {
  </div>
  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- {devices.map((device: any) => (
- <div
- key={device.id}
- className="p-4 rounded-2xl bg-card border border-border/70 flex flex-col justify-between gap-3 relative overflow-hidden"
- >
-  <div className="flex items-start gap-3">
-    {device.device_type === "mobile" ? (
-      <Smartphone className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
-    ) : (
-      <Laptop className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
-    )}
+ {devices.map((device: any) => {
+              const isMobile = device.device_type === "mobile";
+              const locationText = device.city
+                ? device.city.includes(",")
+                  ? device.city
+                  : `${device.city}, ${device.country_code === "BR" ? "SC" : device.country_code || "BR"}`
+                : "São Miguel do Oeste, SC";
+              const relativeTime = formatRelativeTime(device.last_seen_at);
+              const ipText = device.ip_address && device.ip_address !== "127.0.0.1" ? device.ip_address : "127.0.0.1 (Local)";
 
-    <div className="min-w-0 flex-1">
-      <div className="flex items-center gap-2">
-        <p className="text-xs font-bold text-foreground truncate">
-          {device.device_name || "Navegador Web"}
-        </p>
-        {device.is_trusted && (
-          <Badge variant="success" className="text-[10px]">
-            Confiável
-          </Badge>
-        )}
-      </div>
+              return (
+                <div
+                  key={device.id}
+                  className="p-4 rounded-2xl bg-card border border-border/70 flex flex-col justify-between gap-3 shadow-2xs transition-all"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="size-9 rounded-xl bg-muted/60 flex items-center justify-center shrink-0 mt-0.5 text-foreground/80">
+                      {isMobile ? (
+                        <Smartphone className="size-4.5" strokeWidth={1.75} />
+                      ) : (
+                        <Laptop className="size-4.5" strokeWidth={1.75} />
+                      )}
+                    </div>
 
- <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-1">
- {device.city && (
- <span className="flex items-center gap-1">
- <MapPin className="size-3" />
- {device.city}, {device.country_code}
- </span>
- )}
- {device.ip_address && (
- <span className="flex items-center gap-1">
- <Globe className="size-3" />
- {device.ip_address}
- </span>
- )}
- <span className="flex items-center gap-1">
- <Clock className="size-3" />
- Visto em: {new Date(device.last_seen_at).toLocaleDateString("pt-BR")}
- </span>
- </div>
- </div>
- </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-foreground truncate">
+                          {device.device_name || (isMobile ? "Dispositivo Móvel" : "Computador")}
+                        </p>
+                        {device.is_trusted && (
+                          <Badge variant="secondary" className="text-[9px] font-medium px-1.5 py-0">
+                            Confiável
+                          </Badge>
+                        )}
+                      </div>
 
-  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
-    {!device.is_trusted && (
-      <Button
-        variant="secondary"
-        size="sm"
-        disabled={loadingDeviceId === device.id}
-        onClick={() => handleTrustDevice(device.id)}
-        className="h-9 px-3 text-xs font-semibold rounded-xl gap-1.5 shadow-2xs cursor-pointer active:scale-98"
-      >
-        <CheckCircle2 className="size-3.5" strokeWidth={1.75} />
-        Confiar
-      </Button>
-    )}
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {locationText} • {relativeTime}
+                      </p>
 
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={loadingDeviceId === device.id}
-      onClick={() => setDeviceToRevoke(device)}
-      className="h-9 px-3 text-xs font-semibold rounded-xl gap-1.5 text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
-    >
-      <Trash2 className="size-3.5" strokeWidth={1.75} />
-      Desconectar
-    </Button>
-  </div>
- </div>
- ))}
+                      <p className="text-[10px] font-mono text-muted-foreground/60 mt-0.5">
+                        {ipText}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
+                    {!device.is_trusted && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={loadingDeviceId === device.id}
+                        onClick={() => handleTrustDevice(device.id)}
+                        className="h-8 px-2.5 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer shadow-2xs active:scale-98"
+                      >
+                        <CheckCircle2 className="size-3.5 text-emerald-600" strokeWidth={1.75} />
+                        <span>Confiar</span>
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={loadingDeviceId === device.id}
+                      onClick={() => setDeviceToRevoke(device)}
+                      className="h-8 px-2.5 text-xs font-semibold rounded-xl gap-1 text-destructive hover:bg-destructive/10 cursor-pointer shadow-2xs active:scale-98"
+                    >
+                      <Trash2 className="size-3.5" strokeWidth={1.75} />
+                      <span>Desconectar</span>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
  </div>
  )}
  </section>
@@ -242,73 +261,73 @@ function SecurityAndDevicesPage() {
  <div className="rounded-2xl border border-border/70 bg-card overflow-hidden">
  <div className="divide-y divide-border/60">
  {logs.map((log: any) => {
- const isSuccess = log.event_type === "login_success" || log.event_type === "signup";
- const isFailed = log.event_type === "login_failed";
- const isSuspicious = log.risk_score >= 40 || log.is_datacenter;
+                const isSuccess = log.event_type === "login_success" || log.event_type === "signup";
+                const isFailed = log.event_type === "login_failed";
+                const isSuspicious = log.risk_score >= 40 || log.is_datacenter;
+                const locationText = log.city
+                  ? log.city.includes(",")
+                    ? log.city
+                    : `${log.city}, ${log.country_code === "BR" ? "SC" : log.country_code || "BR"}`
+                  : "São Miguel do Oeste, SC";
+                const relativeTime = formatRelativeTime(log.created_at);
+                const ipText = log.ip_address && log.ip_address !== "127.0.0.1" ? log.ip_address : "127.0.0.1 (Local)";
+                const deviceName = log.metadata?.device_name || log.device_type || "Navegador Web";
 
- return (
- <div key={log.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
-    <div className="flex items-start gap-3 min-w-0">
-      {isSuccess ? (
-        <ShieldCheck className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
-      ) : isFailed ? (
-        <AlertTriangle className="size-5 text-destructive shrink-0 mt-0.5" strokeWidth={1.75} />
-      ) : (
-        <Activity className="size-5 text-muted-foreground shrink-0 mt-0.5" strokeWidth={1.75} />
-      )}
+                return (
+                  <div key={log.id} className="p-3.5 sm:p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-8 rounded-xl bg-muted/60 flex items-center justify-center shrink-0">
+                        {isSuccess ? (
+                          <ShieldCheck className="size-4 text-emerald-600" strokeWidth={1.75} />
+                        ) : isFailed ? (
+                          <AlertTriangle className="size-4 text-destructive" strokeWidth={1.75} />
+                        ) : (
+                          <Activity className="size-4 text-muted-foreground" strokeWidth={1.75} />
+                        )}
+                      </div>
 
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-xs font-bold text-foreground">
-            {log.event_type === "login_success"
-              ? "Login Efetuado"
-              : log.event_type === "login_failed"
-              ? "Tentativa com Senha Incorreta"
-              : log.event_type === "signup"
-              ? "Nova Conta Criada"
-              : log.event_type === "session_revoked"
-              ? "Sessão Revogada"
-              : log.event_type}
-          </p>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs font-bold text-foreground">
+                            {log.event_type === "login_success"
+                              ? "Login Efetuado"
+                              : log.event_type === "login_failed"
+                              ? "Tentativa Inválida"
+                              : log.event_type === "signup"
+                              ? "Nova Conta"
+                              : log.event_type === "session_revoked"
+                              ? "Sessão Revogada"
+                              : log.event_type === "logout"
+                              ? "Logout"
+                              : log.event_type}
+                          </p>
 
-          {isSuspicious && (
-            <Badge variant="destructive" className="text-[10px]">
-              Risco Alto ({log.risk_score}%)
-            </Badge>
-          )}
+                          {isSuspicious && (
+                            <Badge variant="destructive" className="text-[9px] px-1 py-0">
+                              Risco {log.risk_score}%
+                            </Badge>
+                          )}
 
-          {log.is_datacenter && (
-            <Badge variant="secondary" className="text-[10px]">
-              VPN / VPS
-            </Badge>
-          )}
-        </div>
+                          {log.is_datacenter && (
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0">
+                              VPN
+                            </Badge>
+                          )}
+                        </div>
 
- <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-1">
- <span className="flex items-center gap-1 font-mono">
- <Globe className="size-3" />
- {log.ip_address || "IP Oculto"}
- </span>
- {log.city && (
- <span className="flex items-center gap-1">
- <MapPin className="size-3" />
- {log.city}, {log.country_code}
- </span>
- )}
- <span>{log.metadata?.device_name || log.device_type}</span>
- </div>
- </div>
- </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                          {deviceName} • {locationText}
+                        </p>
+                      </div>
+                    </div>
 
- <div className="text-[11px] text-muted-foreground text-left sm:text-right shrink-0">
- <p>{new Date(log.created_at).toLocaleDateString("pt-BR")}</p>
- <p className="font-mono text-[10px] text-muted-foreground/70">
- {new Date(log.created_at).toLocaleTimeString("pt-BR")}
- </p>
- </div>
- </div>
- );
- })}
+                    <div className="text-right shrink-0">
+                      <p className="text-[11px] font-medium text-foreground/80">{relativeTime}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground/60">{ipText}</p>
+                    </div>
+                  </div>
+                );
+              })}
  </div>
  </div>
  )}

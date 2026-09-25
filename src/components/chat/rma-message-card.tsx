@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertCircle, CheckCircle2, Clock, ShieldAlert, Image as ImageIcon, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface RmaMessageCardProps {

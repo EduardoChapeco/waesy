@@ -975,7 +975,7 @@ const handleDownloadDigitalFile = async () => {
               <Button
                 onClick={handleDirectBooking}
                 disabled={isBooking}
-                className="w-full h-12 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md cursor-pointer"
+                className="w-full h-12 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer"
               >
                 {isBooking ? (
                   <>
@@ -1363,7 +1363,7 @@ const handleDownloadDigitalFile = async () => {
 
   const renderCompanionDialog = () => (
     <Dialog open={companionModalOpen} onOpenChange={setCompanionModalOpen}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
         <DialogHeader className="sr-only">
           <DialogTitle>Guia Digital 9:16 do Anúncio</DialogTitle>
           <DialogDescription>Cartão e guia digital interativo do anúncio</DialogDescription>

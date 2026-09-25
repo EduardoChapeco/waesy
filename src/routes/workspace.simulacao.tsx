@@ -236,7 +236,7 @@ function SimulacaoPage() {
   }, [synthesis, personas.length, evaluations.length]);
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full">
+    <div className="flex flex-col min-h-[calc(100dvh-4rem)] w-full">
       {/* ── 1. BARRA CANÔNICA APPLE HIG (SEM TÍTULOS PROLIXOS) ── */}
       <WorkspaceCanonicalToolbar
         placeholder="Buscar por nome, classe ABEP ou região..."

@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { getStoreSettings } from "@/services/store.functions";
 import {
   listTravelVisas,
@@ -136,11 +137,10 @@ function WorkspaceVisasPage() {
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Deseja realmente remover o processo consular de ${name}?`)) return;
+  const handleDelete = async (id: string, name?: string) => {
     try {
       await deleteTravelVisa({ data: { id } });
-      toast.success("Processo removido com sucesso!");
+      toast.success(`Processo consular ${name ? "de " + name + " " : ""}removido!`);
       refetch();
     } catch (err: any) {
       toast.error("Erro ao remover: " + err?.message);
@@ -428,15 +428,12 @@ function WorkspaceVisasPage() {
                     <span className="text-[10px] font-mono">
                       {v.documents?.length || 4} itens no checklist
                     </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(v.id, v.client_name)}
-                      className="size-8 p-0 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
+                    <CrudActionsMenu
+                      entityName="Processo Consular"
+                      onDelete={() => handleDelete(v.id, v.client_name)}
+                      deleteConfirmTitle={`Remover processo de ${v.client_name}?`}
+                      deleteConfirmDescription="Esta ação removerá permanentemente o registro do processo consular e seu checklist associado."
+                    />
                   </div>
                 </div>
               );

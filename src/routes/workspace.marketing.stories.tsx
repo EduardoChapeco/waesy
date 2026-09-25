@@ -398,7 +398,7 @@ export default function WorkspaceMarketingStoriesPage() {
               {generatedCard?.svgMarkup ? (
                 <div
                   className={cn(
-                    "overflow-hidden rounded-3xl shadow-xl border border-border/60 bg-black flex items-center justify-center transition-all",
+                    "overflow-hidden rounded-3xl shadow-xs border border-border/60 bg-black flex items-center justify-center transition-all",
                     format === "story_9_16"
                       ? "w-[270px] h-[480px]"
                       : format === "feed_1_1"

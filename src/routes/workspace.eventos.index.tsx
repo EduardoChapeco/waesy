@@ -272,14 +272,14 @@ export default function WorkspaceEventosPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-3 left-3">
-                          <Badge className="bg-black/70 backdrop-blur-md text-white border-none text-[10px] font-bold">
+                          <Badge className="bg-background/95 text-foreground border border-border/80 text-[10px] font-semibold shadow-xs">
                             {event.category || "Evento"}
                           </Badge>
                         </div>
                         <div className="absolute top-3 right-3">
                           <Badge
                             variant={isPast ? "secondary" : "default"}
-                            className="bg-card/90 backdrop-blur-md text-foreground text-[10px] font-bold uppercase"
+                            className="text-[10px] font-semibold uppercase shadow-xs"
                           >
                             {isPast ? "Encerrado" : "Confirmado"}
                           </Badge>

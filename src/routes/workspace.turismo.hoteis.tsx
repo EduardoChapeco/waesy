@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -900,20 +901,17 @@ function WorkspaceHotelsPage() {
  </Button>
  </div>
 
- <Button
- type="button"
- size="icon"
- variant="ghost"
- onClick={() => {
- if (confirm(`Deseja remover o hotel "${hotel.name}" do banco de hospedagens?`)) {
- deleteMut.mutate(hotel.id);
- }
- }}
- className="size-11 sm:size-8 text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
- title="Remover Hotel"
- >
- <Trash2 className="size-3.5" />
- </Button>
+ <CrudActionsMenu
+                    entityName="Hotel"
+                    onEdit={() => handleOpenEditor(hotel)}
+                    onDuplicate={() => handleDuplicate(hotel)}
+                    onView={() => setPreviewModalHotel(hotel)}
+                    onDelete={async () => {
+                      await deleteMut.mutateAsync(hotel.id);
+                    }}
+                    deleteConfirmTitle={`Excluir hotel "${hotel.name}"?`}
+                    deleteConfirmDescription="Esta ação removerá permanentemente o hotel, seus quartos e tarifas cadastradas."
+                  />
  </div>
  </div>
  </div>
@@ -1016,19 +1014,17 @@ function WorkspaceHotelsPage() {
  >
  <Copy className="size-4 sm:size-3.5" />
  </Button>
- <Button
- size="icon"
- variant="ghost"
- onClick={() => {
- if (confirm(`Remover hotel "${hotel.name}"?`)) {
- deleteMut.mutate(hotel.id);
- }
- }}
- className="size-9 sm:size-8 rounded-xl text-destructive hover:bg-destructive/10 cursor-pointer"
- title="Excluir"
- >
- <Trash2 className="size-3.5" />
- </Button>
+ <CrudActionsMenu
+                    entityName="Hotel"
+                    onEdit={() => handleOpenEditor(hotel)}
+                    onDuplicate={() => handleDuplicate(hotel)}
+                    onView={() => setPreviewModalHotel(hotel)}
+                    onDelete={async () => {
+                      await deleteMut.mutateAsync(hotel.id);
+                    }}
+                    deleteConfirmTitle={`Excluir hotel "${hotel.name}"?`}
+                    deleteConfirmDescription="Esta ação removerá permanentemente o hotel, seus quartos e tarifas cadastradas."
+                  />
  </div>
  </td>
  </tr>

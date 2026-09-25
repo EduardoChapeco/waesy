@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MapPin, Star, Trash2, Plus, CheckCircle2, Navigation, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { EmptyState } from "@/components/state/states";
 import { CitySelect } from "@/components/ui/city-select";
 
@@ -107,7 +108,6 @@ function AddressesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Deseja realmente excluir este endereço?")) return;
     try {
       await deleteCustomerAddress({ data: { id } });
       toast.success("Endereço excluído com sucesso.");
@@ -367,15 +367,24 @@ function AddressesPage() {
                     <div />
                   )}
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-11 rounded-xl px-3.5 text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer ml-auto"
-                    onClick={() => handleDelete(addr.id)}
-                  >
-                    <Trash2 className="size-3.5 mr-1.5" />
-                    Excluir
-                  </Button>
+                  <CrudActionsMenu
+                    entityName="Endereço"
+                    onDelete={() => handleDelete(addr.id)}
+                    deleteConfirmTitle="Excluir este endereço de entrega?"
+                    deleteConfirmDescription={`Deseja remover ${addr.street}, ${addr.number} (${addr.city || "sua localidade"}) da sua lista de endereços?`}
+                    customActions={[
+                      ...(!addr.is_default
+                        ? [
+                            {
+                              id: "set-default",
+                              label: "Tornar Endereço Padrão",
+                              icon: Star,
+                              onClick: () => handleSetDefault(addr.id),
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
                 </div>
               </div>
             ))}

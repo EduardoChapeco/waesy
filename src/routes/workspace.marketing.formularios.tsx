@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPhone } from "@/lib/document-validator";
 import {
@@ -384,10 +385,6 @@ function WorkspaceLeadFormsPage() {
 
   // Excluir formulário
   const handleDeleteForm = async (formId: string) => {
-    if (!confirm("Tem certeza que deseja excluir este formulário? Todas as respostas e a landing page serão removidas.")) {
-      return;
-    }
-
     try {
       await deleteLeadForm({ data: { formId } });
       toast.success("Formulário removido!");
@@ -658,22 +655,22 @@ function WorkspaceLeadFormsPage() {
                         <span>Abrir Landing</span>
                       </a>
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditForm(form)}
-                      className="h-9 w-9 p-0 rounded-xl"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteForm(form.id)}
-                      className="h-9 w-9 p-0 rounded-xl text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                    <CrudActionsMenu
+                      entityName="Formulário"
+                      onEdit={() => handleEditForm(form)}
+                      viewUrl={`/f/${form.slug}`}
+                      onDelete={() => handleDeleteForm(form.id)}
+                      deleteConfirmTitle={`Excluir formulário "${form.title}"?`}
+                      deleteConfirmDescription="Todas as respostas enviadas e a landing page pública associada serão permanentemente removidas."
+                      customActions={[
+                        {
+                          id: "copy-url",
+                          label: "Copiar Link Público",
+                          icon: Copy,
+                          onClick: () => handleCopyLink(form.slug),
+                        },
+                      ]}
+                    />
                   </div>
                 </div>
               ))}

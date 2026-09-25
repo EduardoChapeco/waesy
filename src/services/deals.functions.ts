@@ -256,29 +256,54 @@ export const respondToDealProposal = createServerFn({ method: "POST" })
  });
 
 export const getDealsByUser = createServerFn({ method: "GET" }).handler(async () => {
- const supabase = getServerClient();
- const identity = await getIdentity();
- if (!identity?.id) throw new Error("Não autenticado");
+  const supabase = getServerClient();
+  const identity = await getIdentity();
+  if (!identity?.id) throw new Error("Não autenticado");
 
- const { data, error } = await supabase
- .from("deals")
- .select(
- `
- *,
- classified:classified_id (id, title, category, images, location_name),
- buyer:buyer_id (id, full_name, avatar_url),
- seller:seller_id (id, full_name, avatar_url)
- `,
- )
- .or(`buyer_id.eq.${identity.id},seller_id.eq.${identity.id}`)
- .order("updated_at", { ascending: false });
+  const { data: deals, error } = await supabase
+    .from("deals")
+    .select(
+      `
+      *,
+      classified:classified_id (id, title, category, images, location_name),
+      buyer:buyer_id (id, full_name, avatar_url),
+      seller:seller_id (id, full_name, avatar_url)
+      `,
+    )
+    .or(`buyer_id.eq.${identity.id},seller_id.eq.${identity.id}`)
+    .order("updated_at", { ascending: false });
 
- if (error) {
- console.error("[deals] getDealsByUser error:", error);
- throw new Error("Erro ao listar negociações.");
- }
+  if (error) {
+    console.error("[deals] getDealsByUser error:", error);
+    throw new Error("Erro ao listar negociações.");
+  }
 
- return data || [];
+  const dealList = deals || [];
+  if (dealList.length === 0) return [];
+
+  // Reconciliação segura de contratos e carnês sem risco de quebra de relacionamento PostgREST
+  try {
+    const dealIds = dealList.map((d: any) => d.id);
+    const [recRes, conRes] = await Promise.all([
+      supabase.from("receivables").select("id, deal_id, status, installments_count, total_cents").in("deal_id", dealIds),
+      supabase.from("contracts").select("id, deal_id, status").in("deal_id", dealIds),
+    ]);
+
+    const recMap = new Map();
+    (recRes.data || []).forEach((r: any) => recMap.set(r.deal_id, r));
+
+    const conMap = new Map();
+    (conRes.data || []).forEach((c: any) => conMap.set(c.deal_id, c));
+
+    return dealList.map((d: any) => ({
+      ...d,
+      receivable: recMap.get(d.id) || null,
+      contract: conMap.get(d.id) || null,
+    }));
+  } catch (enrichErr) {
+    console.warn("[deals] Falha ao enriquecer deals com contratos/carnês:", enrichErr);
+    return dealList;
+  }
 });
 
 export const getDealById = createServerFn({ method: "GET" })
@@ -346,4 +371,116 @@ export const getClassifiedBookedDates = createServerFn({ method: "GET" })
       startDate: d.start_date ? d.start_date.split("T")[0] : "",
       endDate: d.end_date ? d.end_date.split("T")[0] : "",
     }));
+  });
+
+
+export const generateCarneFromDeal = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      dealId: z.string().uuid(),
+      firstDueDate: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    const { data: deal, error: dErr } = await supabase
+      .from("deals")
+      .select(`
+        *,
+        classified:classified_id (id, title)
+      `)
+      .eq("id", input.dealId)
+      .single();
+
+    if (dErr || !deal) throw new Error("Negociação não encontrada.");
+
+    if (deal.buyer_id !== identity.id && deal.seller_id !== identity.id) {
+      throw new Error("Acesso negado a esta negociação.");
+    }
+
+    // Verifica se já existe um recebível emitido para este deal
+    const { data: existingRec } = await supabase
+      .from("receivables")
+      .select("id, title, status, installments_count, total_cents")
+      .eq("deal_id", deal.id)
+      .maybeSingle();
+
+    if (existingRec) {
+      return existingRec;
+    }
+
+    const installmentsCount = deal.installments_count && deal.installments_count > 0 ? deal.installments_count : 1;
+    const totalCents = deal.total_price_cents || deal.proposed_price_cents || 0;
+    const baseInstallmentCents = Math.floor(totalCents / installmentsCount);
+    const remainderCents = totalCents - (baseInstallmentCents * installmentsCount);
+
+    const firstDate = input.firstDueDate ? new Date(input.firstDueDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    // Insere receivable
+    const { data: receivable, error: recErr } = await supabase
+      .from("receivables")
+      .insert({
+        deal_id: deal.id,
+        creditor_id: deal.seller_id,
+        debtor_id: deal.buyer_id,
+        title: `Carnê — ${(deal.classified as any)?.title || "Negociação P2P"}`,
+        total_cents: totalCents,
+        installments_count: installmentsCount,
+        status: "active",
+      })
+      .select()
+      .single();
+
+    if (recErr || !receivable) {
+      console.error("[deals] generateCarneFromDeal error:", recErr);
+      throw new Error("Erro ao emitir carnê para negociação.");
+    }
+
+    // Gera parcelas
+    const installmentsToInsert = [];
+    for (let i = 1; i <= installmentsCount; i++) {
+      const dueDate = new Date(firstDate);
+      dueDate.setMonth(dueDate.getMonth() + (i - 1));
+      const amount = i === 1 ? baseInstallmentCents + remainderCents : baseInstallmentCents;
+
+      installmentsToInsert.push({
+        receivable_id: receivable.id,
+        installment_number: i,
+        amount_cents: amount,
+        due_date: dueDate.toISOString(),
+        status: "pending",
+      });
+    }
+
+    await supabase.from("receivable_installments").insert(installmentsToInsert);
+
+    // Registra evento de carnê gerado no histórico do deal
+    await supabase.from("deal_events").insert({
+      deal_id: deal.id,
+      sender_id: identity.id,
+      event_type: "carne_created",
+      payload: {
+        receivable_id: receivable.id,
+        installments_count: installmentsCount,
+        total_cents: totalCents,
+      },
+    });
+
+    // Notifica devedor/comprador
+    try {
+      await supabase.from("notifications").insert({
+        user_id: deal.buyer_id,
+        type: "carne_created",
+        title: "Carnê Emitido para Negociação",
+        message: `O carnê de ${installmentsCount}x parcelas referente a "${(deal.classified as any)?.title || "sua negociação"}" já está disponível para acompanhamento.`,
+        link_url: "/conta/carnes",
+      });
+    } catch (notifErr) {
+      console.warn("[deals] Falha ao notificar comprador sobre carnê:", notifErr);
+    }
+
+    return receivable;
   });

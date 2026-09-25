@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { ShieldCheck, Calendar, FileText, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Calendar, FileText, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NativeMobileHeader } from "@/components/navigation";
 
 export interface LegalDocumentProps {
  document: {
@@ -24,24 +25,17 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
 
  return (
  <div className="mx-auto max-w-4xl px-4 py-8 md:px-6 md:py-12 space-y-8">
- {/* Breadcrumb & Navigation */}
- <div className="flex items-center justify-between gap-4 pb-4">
- <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground">
- <Link to="/">
- <ArrowLeft className="size-3.5 mr-1.5" />
- Voltar à Página Inicial
- </Link>
- </Button>
-
+ <NativeMobileHeader
+ title={document.title}
+ fallbackHref="/"
+ rightActions={
  <div className="flex items-center gap-2">
  <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/10 text-primary border-primary/20">
- <ShieldCheck className="size-3 mr-1 inline" /> Versão {document.version || "2.0"}
+ <ShieldCheck className="size-3 mr-1 inline" /> v{document.version || "2.0"}
  </Badge>
- <span className="text-xs text-muted-foreground hidden sm:inline flex items-center gap-1">
- <Calendar className="size-3" /> Atualizado em {formattedDate}
- </span>
  </div>
- </div>
+ }
+ />
 
  {/* Header Documento */}
  <div className="space-y-3">

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CurrencyField } from "@/components/ui/currency-field";
@@ -168,13 +169,6 @@ function GiftCardsDashboardPage() {
   };
 
   const handleCancel = async (id: string) => {
-    if (
-      !confirm(
-        "Tem certeza que deseja cancelar este Vale-Presente? Esta ação não pode ser desfeita.",
-      )
-    )
-      return;
-
     setProcessingId(id);
     try {
       await cancelGiftCard({ data: { id } });
@@ -269,16 +263,23 @@ function GiftCardsDashboardPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {card.status === "active" && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs font-bold text-destructive hover:bg-destructive/10 hover:text-destructive rounded-lg"
-                        onClick={() => handleCancel(card.id)}
-                        disabled={processingId === card.id}
-                      >
-                        <XCircle className="size-3.5 mr-1" /> Cancelar
-                      </Button>
+                    {card.status === "active" ? (
+                      <CrudActionsMenu
+                        entityName="Vale-Presente"
+                        onDelete={() => handleCancel(card.id)}
+                        deleteConfirmTitle={`Cancelar Vale-Presente ${card.code}?`}
+                        deleteConfirmDescription="Esta ação cancelará permanentemente o saldo restante do vale-presente e invalidará o código de resgate."
+                        customActions={[
+                          {
+                            id: "copy-link",
+                            label: "Copiar Link de Resgate",
+                            icon: Copy,
+                            onClick: () => handleCopyLink(card.code),
+                          },
+                        ]}
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">—</span>
                     )}
                   </TableCell>
                 </TableRow>

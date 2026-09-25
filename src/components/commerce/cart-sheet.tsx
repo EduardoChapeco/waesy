@@ -45,7 +45,7 @@ export function CartSheet() {
  <>
  <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 bg-background max-sm:!inset-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:rounded-none max-sm:border-none"
+ side="right" size="wide" className="w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background border-l border-border/60 max-sm:!inset-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:rounded-none max-sm:border-none"
  >
  {/* ── CABEÇALHO DO CARRINHO ── */}
  <SheetHeader className="px-6 py-4 bg-card/60 backdrop-blur-md shrink-0">
@@ -242,7 +242,7 @@ export function CartSheet() {
 
  {/* ── RODAPÉ FIXO DO CARRINHO ── */}
  {globalCarts.length > 0 && (
- <div className=" bg-card/90 backdrop-blur-md p-5 pb-safe z-10 shrink-0 space-y-3">
+ <div className="bg-card/90 backdrop-blur-md p-5 pb-safe z-10 shrink-0 space-y-3 border-t border-border/60">
  <div className="space-y-1">
  <div className="flex items-center justify-between font-bold text-foreground">
  <span className="text-xs uppercase tracking-wider text-muted-foreground">

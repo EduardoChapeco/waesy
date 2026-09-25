@@ -401,11 +401,11 @@ export default function LoyaltyDashboardPage() {
 
  {/* Simulador de Cartão Wallet em Tempo Real */}
  <div className="lg:col-span-5 flex flex-col items-center">
- <div className="w-full max-w-[340px] bg-card rounded-2xl border-4 border-foreground/10 p-4 shadow-xl space-y-4">
+ <div className="w-full max-w-[340px] bg-card rounded-2xl border-4 border-foreground/10 p-4 shadow-xs space-y-4">
  {/* Cartão de Fidelidade Digital (Wallet Pass) */}
  <div
  style={{ backgroundColor: cardBgColor, color: cardTextColor }}
- className="rounded-2xl p-5 shadow-md flex flex-col justify-between min-h-[360px] relative overflow-hidden transition-all duration-300"
+ className="rounded-2xl p-5 shadow-xs flex flex-col justify-between min-h-[360px] relative overflow-hidden transition-all duration-300"
  >
  {/* Topo do Cartão */}
  <div className="flex items-start justify-between">

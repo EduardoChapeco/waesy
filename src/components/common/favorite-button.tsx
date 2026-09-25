@@ -19,7 +19,7 @@ export interface FavoriteButtonProps {
 
 export function FavoriteButton({
   entityType,
-  entityId,
+  entityId: effectiveEntityId,
   variant = "icon",
   className,
   size,
@@ -29,15 +29,15 @@ export function FavoriteButton({
   const navigate = useNavigate();
 
   // Entidade canônica no backend: service é mapeado como product
-  const backendEntityType = entityType === "service" ? "product" : entityType;
+  const backendEntityType = effectiveEntityType === "service" ? "product" : effectiveEntityType;
 
   const { data: statusData, isLoading } = useQuery({
-    queryKey: ["is-favorited", backendEntityType, entityId],
+    queryKey: ["is-favorited", backendEntityType, effectiveEntityId],
     queryFn: () =>
       getFavoriteStatus({
         data: {
           entityType: backendEntityType as any,
-          entityId,
+          entityId: effectiveEntityId,
         },
       }),
     staleTime: 60000,

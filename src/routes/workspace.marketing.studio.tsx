@@ -336,7 +336,7 @@ export default function WorkspaceSocialStudioPage() {
         </div>
 
         {/* Visualizador do Card em Tempo Real */}
-        <div className="lg:col-span-6 flex flex-col items-center justify-center p-6 rounded-3xl bg-neutral-900/90 border border-neutral-800 shadow-2xl">
+        <div className="lg:col-span-6 flex flex-col items-center justify-center p-6 rounded-3xl bg-neutral-900/90 border border-neutral-800 shadow-xs">
           <div className="w-full flex items-center justify-between text-neutral-400 text-xs mb-4 px-2">
             <span className="flex items-center gap-1.5 font-medium">
               <Eye className="size-3.5" /> Pré-visualização
@@ -351,7 +351,7 @@ export default function WorkspaceSocialStudioPage() {
             ref={previewRef}
             id="social-card-render-target"
             className={cn(
-              "relative overflow-hidden rounded-2xl shadow-2xl transition-all select-none flex flex-col justify-between p-6 bg-neutral-950 text-white",
+              "relative overflow-hidden rounded-2xl shadow-xs transition-all select-none flex flex-col justify-between p-6 bg-neutral-950 text-white",
               ratio === "9:16"
                 ? "w-[300px] sm:w-[340px] h-[533px] sm:h-[604px]"
                 : "w-[300px] sm:w-[380px] h-[300px] sm:h-[380px]"
@@ -394,7 +394,7 @@ export default function WorkspaceSocialStudioPage() {
             ) : (
               <div className="space-y-3 z-10 mt-auto">
                 <div className="space-y-1">
-                  <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-md leading-snug">
+                  <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-xs leading-snug">
                     {title}
                   </h3>
                   <p className="text-xs text-neutral-300 drop-shadow line-clamp-2">

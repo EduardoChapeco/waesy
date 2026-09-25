@@ -37,10 +37,10 @@ const sheetVariants = cva(
       side: {
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          "inset-x-0 bottom-0 border-t max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom sm:max-h-[85vh] sm:rounded-t-3xl",
-        left: "inset-y-0 left-0 h-full w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+          "inset-x-0 bottom-0 border-t rounded-t-3xl data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom max-h-[92dvh] sm:max-h-[85vh]",
+        left: "inset-y-0 left-0 h-full w-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
         right:
-          "inset-y-0 right-0 h-full w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+          "inset-y-0 right-0 h-full w-full border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
       },
       size: {
         default: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
@@ -50,7 +50,7 @@ const sheetVariants = cva(
         xl: "w-full sm:max-w-4xl md:max-w-5xl lg:max-w-[70vw]",
         "70": "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
         wide: "w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw]",
-        full: "w-screen max-w-full",
+        full: "w-full max-w-full",
       },
     },
     defaultVariants: {

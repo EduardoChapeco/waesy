@@ -35,6 +35,7 @@ import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { DestinationPicker } from "@/components/ui/destination-picker";
 
 export const Route = createFileRoute("/workspace/marketing/hotpages")({
@@ -166,8 +167,7 @@ function WorkspaceStoreHotpagesPage() {
  };
 
  const handleDelete = async (id: string) => {
- if (!confirm("Deseja realmente remover este destaque?")) return;
- try {
+    try {
  await deleteHotpage({ data: { id } });
  toast.success("Destaque removido.");
  await refreshList();
@@ -270,22 +270,23 @@ function WorkspaceStoreHotpagesPage() {
  </div>
  </div>
 
- <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">
- <Button
- onClick={() => handleOpenEdit(h)}
- variant="outline"
- className="h-10 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
- >
- <Pencil className="size-3.5" /> Editar
- </Button>
- <Button
- onClick={() => handleDelete(h.id)}
- variant="ghost"
- className="h-10 px-3 rounded-xl text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
- >
- <Trash2 className="size-4" />
- </Button>
- </div>
+ <div className="flex items-center justify-between pt-3 border-t border-border/40">
+              <Button
+                onClick={() => handleOpenEdit(h)}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Pencil className="size-3.5" /> Editar
+              </Button>
+              <CrudActionsMenu
+                entityName="Destaque"
+                onEdit={() => handleOpenEdit(h)}
+                onDelete={() => handleDelete(h.id)}
+                deleteConfirmTitle={`Excluir destaque "${h.title}"?`}
+                deleteConfirmDescription="Esta ação removerá permanentemente este card da vitrine."
+              />
+            </div>
  </div>
  ))}
  </div>

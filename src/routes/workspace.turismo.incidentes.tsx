@@ -254,7 +254,7 @@ export default function TourismIncidentsPage() {
   const anacRights = detail?.anac_rights_summary as any;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 min-h-[calc(100vh-8.5rem)] pb-20 animate-in fade-in duration-200">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 flex flex-col gap-4 min-h-[calc(100dvh-8.5rem)] pb-20 animate-in fade-in duration-200">
       {/* ── Toolbar Canônica ── */}
       <WorkspaceCanonicalToolbar
         tabs={[

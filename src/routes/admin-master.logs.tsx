@@ -398,7 +398,7 @@ function SystemLogsPage() {
                               ? "bg-destructive/15 text-destructive"
                               : log.severity === "warn"
                               ? "bg-amber-500/15 text-amber-600"
-                              : "bg-red-500/10 text-red-500"
+                              : "bg-destructive/10 text-destructive"
                           }`}
                         >
                           {log.severity === "critical" ? (

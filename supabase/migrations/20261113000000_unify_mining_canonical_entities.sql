@@ -93,11 +93,20 @@ FROM public.directory_listings;
 -- 2. Unificação de Vagas Externas no Mural de Empregos (public.jobs)
 -- ────────────────────────────────────────────────────────────────────────────
 ALTER TABLE public.jobs
+  ADD COLUMN IF NOT EXISTS is_external BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS external_id TEXT,
+  ADD COLUMN IF NOT EXISTS external_source TEXT,
+  ADD COLUMN IF NOT EXISTS company_name TEXT,
+  ADD COLUMN IF NOT EXISTS company_logo TEXT,
+  ADD COLUMN IF NOT EXISTS location_city TEXT,
+  ADD COLUMN IF NOT EXISTS location_state TEXT,
+  ADD COLUMN IF NOT EXISTS external_url TEXT,
   ADD COLUMN IF NOT EXISTS salary_min NUMERIC,
   ADD COLUMN IF NOT EXISTS salary_max NUMERIC,
   ADD COLUMN IF NOT EXISTS remote_type TEXT,
   ADD COLUMN IF NOT EXISTS employment_type TEXT,
   ADD COLUMN IF NOT EXISTS apply_url TEXT,
+  ADD COLUMN IF NOT EXISTS category TEXT,
   ADD COLUMN IF NOT EXISTS data_quality_score INTEGER DEFAULT 50,
   ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
@@ -158,7 +167,14 @@ ALTER TABLE public.events
   ADD COLUMN IF NOT EXISTS ticket_url TEXT,
   ADD COLUMN IF NOT EXISTS price_min NUMERIC,
   ADD COLUMN IF NOT EXISTS price_max NUMERIC,
-  ADD COLUMN IF NOT EXISTS is_free BOOLEAN DEFAULT false;
+  ADD COLUMN IF NOT EXISTS is_free BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS city TEXT,
+  ADD COLUMN IF NOT EXISTS state TEXT,
+  ADD COLUMN IF NOT EXISTS start_date TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS end_date TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS banner_url TEXT,
+  ADD COLUMN IF NOT EXISTS category TEXT,
+  ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
 DO $$
 BEGIN
@@ -181,9 +197,9 @@ SELECT
   location AS address,
   city,
   state,
-  start_date,
+  coalesce(start_date, event_date) AS start_date,
   end_date,
-  banner_url,
+  coalesce(banner_url, cover_image) AS banner_url,
   ticket_url,
   price_min,
   price_max,
@@ -212,17 +228,17 @@ SELECT
   id,
   'prod-' || id::text AS external_id,
   'catalog' AS source,
-  name,
+  title AS name,
   description,
-  category_id::text AS category,
-  coalesce(sale_price_cents, base_price_cents)::numeric / 100.0 AS price,
-  base_price_cents::numeric / 100.0 AS original_price,
+  COALESCE((attributes->>'category_id'), '')::text AS category,
+  coalesce(price_cents, 0)::numeric / 100.0 AS price,
+  coalesce(compare_at_cents, price_cents, 0)::numeric / 100.0 AS original_price,
   0 AS discount_percent,
-  main_image_url AS thumbnail,
+  (attributes->>'main_image_url') AS thumbnail,
   '/produto/' || slug AS product_url,
   5.0 AS rating,
-  (status = 'active') AS in_stock,
-  '{}'::jsonb AS metadata,
+  (status = 'published') AS in_stock,
+  attributes AS metadata,
   created_at AS indexed_at,
   created_at
 FROM public.products;

@@ -373,36 +373,42 @@ export async function _createProduct(input: {
  }
  }
 
- // Insere variantes ou variante default
- if (input.variants && input.variants.length > 0) {
- try {
- const variantRows = input.variants.map((v) => ({
- product_id: productId,
- sku: v.sku,
- attributes: v.attributes || {},
- price_override_cents: v.price_override_cents || null,
- stock: v.stock || 0,
- image_url: v.image_url || null,
- }));
- await db.from("product_variants").insert(variantRows);
- } catch {
- // Ignora erro de variante no fallback
- }
- } else {
- try {
- await db.from("product_variants").insert({
- product_id: productId,
- sku: `${input.slug}-default`,
- attributes: {},
- stock: 10,
- price_override_cents: null,
- });
- } catch {
- // Ignora erro de variante base no fallback
- }
- }
+ // Insere variantes ou variante default (Integridade Canônica de Schema: stock_on_hand)
+	if (input.variants && input.variants.length > 0) {
+		try {
+			const variantRows = input.variants.map((v) => ({
+				product_id: productId,
+				sku: v.sku,
+				attributes: v.attributes || {},
+				price_override_cents: v.price_override_cents || null,
+				stock_on_hand: v.stock || 0,
+				image_url: v.image_url || null,
+			}));
+			const { error: varErr } = await db.from("product_variants").insert(variantRows);
+			if (varErr) {
+				console.error("[admin-catalog] Erro ao inserir variantes de produto:", varErr);
+			}
+		} catch (err) {
+			console.error("[admin-catalog] Exceção ao processar variantes:", err);
+		}
+	} else {
+		try {
+			const { error: defaultVarErr } = await db.from("product_variants").insert({
+				product_id: productId,
+				sku: `${input.slug}-default`,
+				attributes: {},
+				stock_on_hand: 10,
+				price_override_cents: null,
+			});
+			if (defaultVarErr) {
+				console.error("[admin-catalog] Erro ao inserir variante default:", defaultVarErr);
+			}
+		} catch (err) {
+			console.error("[admin-catalog] Exceção ao inserir variante default:", err);
+		}
+	}
 
- return insertedProduct;
+	return insertedProduct;
 }
 
 export const createProduct = createServerFn({ method: "POST" })

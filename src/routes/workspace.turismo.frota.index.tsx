@@ -233,7 +233,7 @@ function VehicleLayoutsListPage() {
  toolDescription="Editor interativo de plantas baixas de ônibus (Double Decker, Executivo, Leito) com mapa de assentos para agências de turismo e fretamento."
  store={store}
  >
- <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20">
+ <div className="flex flex-col min-h-[calc(100dvh-4rem)] w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-6 pb-20">
  {/* ── 1. BARRA CANÔNICA APPLE HIG ── */}
  <WorkspaceCanonicalToolbar
  placeholder="Buscar modelo de veículo..."

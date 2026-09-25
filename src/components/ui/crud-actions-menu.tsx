@@ -61,16 +61,21 @@ export interface CrudActionsMenuProps {
   /** Ação de Arquivamento */
   onArchive?: () => void;
   archiveLabel?: string;
+  archiveTitle?: string;
+  archiveDescription?: string;
   /** Ação de Exclusão (com confirmação segura integrada) */
   onDelete?: () => void | Promise<void>;
   deleteConfirmTitle?: string;
   deleteConfirmDescription?: string;
+  deleteTitle?: string;
+  deleteDescription?: string;
   /** Ações customizadas adicionais no menu */
   customActions?: CustomActionItem[];
   /** Alinhamento do Dropdown */
   align?: "start" | "center" | "end";
   className?: string;
   triggerClassName?: string;
+  triggerVariant?: string;
   triggerIcon?: React.ElementType;
   triggerAriaLabel?: string;
 }
@@ -101,6 +106,9 @@ export function CrudActionsMenu({
   triggerClassName,
   triggerIcon: TriggerIcon = MoreVertical,
   triggerAriaLabel,
+  deleteTitle,
+  deleteDescription,
+  triggerVariant,
 }: CrudActionsMenuProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -282,7 +290,7 @@ export function CrudActionsMenu({
                 </DialogTitle>
               </div>
               <DialogDescription className="text-xs text-muted-foreground">
-                {deleteConfirmDescription ||
+                {deleteConfirmDescription || deleteDescription ||
                   `Tem certeza de que deseja excluir este ${entityName.toLowerCase()}? Esta ação removerá o item da vitrine e não poderá ser desfeita.`}
               </DialogDescription>
             </DialogHeader>

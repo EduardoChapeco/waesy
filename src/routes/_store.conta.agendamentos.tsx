@@ -6,6 +6,7 @@ import { Smartphone } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NativeMobileHeader } from "@/components/navigation";
 import {
  Dialog,
  DialogContent,
@@ -108,28 +109,28 @@ function CustomerAgendaPage() {
 
  return (
   <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-   {/* ── 1. Clean Minimalist Header ── */}
-   <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-     <div className="flex items-center gap-3">
-       <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-         Agendamentos
-       </h1>
-       {apptList.length > 0 && (
+   {/* ── 1. Canonical Navigation Header ── */}
+   <NativeMobileHeader
+     title="Agendamentos"
+     fallbackHref="/conta"
+     badge={
+       apptList.length > 0 ? (
          <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
            {apptList.length}
          </Badge>
-       )}
-     </div>
-
-     <Button
-       asChild
-       size="sm"
-       variant="outline"
-       className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer"
-     >
-       <Link to="/agendar">Novo Agendamento</Link>
-     </Button>
-   </div>
+       ) : null
+     }
+     rightActions={
+       <Button
+         asChild
+         size="sm"
+         variant="outline"
+         className="rounded-xl text-xs font-semibold h-8.5 px-3.5 cursor-pointer"
+       >
+         <Link to="/agendar">Novo Agendamento</Link>
+       </Button>
+     }
+   />
 
  {/* ── 2. Minimalist Tab Controls (Apple iOS Segments) ── */}
  <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-2xl w-fit border border-border/40">
@@ -332,7 +333,7 @@ function CustomerAgendaPage() {
         if (!open) setSelectedCompanionAppt(null);
       }}
     >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
         <DialogHeader className="sr-only">
           <DialogTitle>Guia Digital do Atendimento</DialogTitle>
         </DialogHeader>

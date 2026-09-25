@@ -20,6 +20,7 @@ import { MediaLightboxModal } from "@/components/community/media-lightbox-modal"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NativeMobileHeader } from "@/components/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -400,83 +401,75 @@ export function MemberPublicProfileView({
  />
  )}
 
- {/* ── 1. Top Bar Canônica: Voltar, @username & Ações (Compartilhar / Configurações) ── */}
-      <div className="-mx-4 -mt-4 sm:mx-0 sm:mt-0 px-4 py-2.5 bg-background/95 backdrop-blur-md sticky top-0 z-40 border-b border-border/40 flex items-center justify-between">
-        {/* Esquerda: Botão Voltar */}
-        <Button
-          size="sm"
-          variant="ghost"
-          className="size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
-          onClick={() => window.history.back()}
-          aria-label="Voltar"
-        >
-          <ArrowLeft className="size-5" />
-        </Button>
+ {/* ── 1. Canonical Navigation Header ── */}
+      <NativeMobileHeader
+        fallbackHref="/explorar"
+        centerTitle={true}
+        title={
+          <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
+            <span className="font-mono">@{profile.username || "perfil"}</span>
+            {profile.is_verified && (
+              <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+            )}
+          </div>
+        }
+        rightActions={
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="size-9 sm:size-10 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+              onClick={handleShare}
+              aria-label="Compartilhar Perfil"
+            >
+              <Share2 className="size-4" />
+            </Button>
 
-        {/* Centro: Nome de Usuário / Identificador */}
-        <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
-          <span className="font-mono">@{profile.username || "perfil"}</span>
-          {profile.is_verified && (
-            <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
-          )}
-        </div>
-
-        {/* Direita: Compartilhar & Configurações */}
-        <div className="flex items-center gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
-            onClick={handleShare}
-            aria-label="Compartilhar Perfil"
-          >
-            <Share2 className="size-4" />
-          </Button>
-
-          {isOwner && (
-            <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
-                  aria-label="Configurações e Atividades"
-                >
-                  <Settings className="size-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="rounded-t-3xl p-6 space-y-4 max-h-[85vh]">
-                <SheetHeader className="text-left pb-2 border-b border-border/40">
-                  <SheetTitle className="text-base font-bold">Configurações & Gestão</SheetTitle>
-                </SheetHeader>
-                <div className="grid gap-2 text-sm font-medium">
-                  <Link
-                    to="/conta/perfil"
-                    className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
+            {isOwner && (
+              <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="size-9 sm:size-10 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+                    aria-label="Configurações e Atividades"
                   >
-                    <Edit3 className="size-4 text-primary" />
-                    <span>Editar Dados do Perfil</span>
-                  </Link>
-                  <Link
-                    to="/conta/lojas"
-                    className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
-                  >
-                    <Store className="size-4 text-primary" />
-                    <span>Minhas Lojas & Negócios</span>
-                  </Link>
-                  <Link
-                    to="/conta/pedidos"
-                    className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
-                  >
-                    <Package className="size-4 text-primary" />
-                    <span>Meus Pedidos & Compras</span>
-                  </Link>
-                </div>
-              </SheetContent>
-            </Sheet>
-          )}
-        </div>
-      </div>
+                    <Settings className="size-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-3xl p-6 space-y-4 max-h-[85vh]">
+                  <SheetHeader className="text-left pb-2 border-b border-border/40">
+                    <SheetTitle className="text-base font-bold">Configurações & Gestão</SheetTitle>
+                  </SheetHeader>
+                  <div className="grid gap-2 text-sm font-medium">
+                    <Link
+                      to="/conta/perfil"
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
+                    >
+                      <Edit3 className="size-4 text-primary" />
+                      <span>Editar Dados do Perfil</span>
+                    </Link>
+                    <Link
+                      to="/conta/lojas"
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
+                    >
+                      <Store className="size-4 text-primary" />
+                      <span>Minhas Lojas & Negócios</span>
+                    </Link>
+                    <Link
+                      to="/conta/pedidos"
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
+                    >
+                      <Package className="size-4 text-primary" />
+                      <span>Meus Pedidos & Compras</span>
+                    </Link>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+          </div>
+        }
+      />
 
       {/* ── 2. Seletor de Tipo de Perfil & Ação Editar (Abaixo do Top Bar) ── */}
       <div className="flex items-center justify-between gap-2 px-1">
@@ -2171,7 +2164,7 @@ export function MemberPublicProfileView({
  <div className="space-y-1 min-w-0 flex-1">
  <h4 className="text-sm font-bold text-foreground truncate">{evt.title}</h4>
  <p className="text-xs text-muted-foreground">
- {evt.event_date ? formatDate(evt.event_date) : "Em breve"} • {evt.location || evt.city || "Chapecó"}
+ {evt.event_date ? formatDate(evt.event_date) : "A Confirmar"} • {evt.location || evt.city || "Chapecó"}
  </p>
  <Badge variant="secondary" className="text-[10px]">
  {evt.is_free ? "Gratuito" : formatMoney(evt.price_cents || 0)}

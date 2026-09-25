@@ -112,7 +112,7 @@ function PublicLeadPassageirosPage() {
   if (!leadData || leadData.error) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-4 shadow-xl">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-4 shadow-xs">
           <div className="size-14 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
             <AlertCircle className="size-7" />
           </div>
@@ -198,7 +198,7 @@ function PublicLeadPassageirosPage() {
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-5 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center space-y-5 shadow-xs animate-in fade-in zoom-in-95 duration-300">
           <div className="size-16 rounded-3xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20 shadow-xs">
             <CheckCircle2 className="size-8" />
           </div>
@@ -495,7 +495,7 @@ function PublicLeadPassageirosPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 rounded-2xl text-sm font-bold shadow-xl bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2"
+              className="w-full h-12 rounded-2xl text-sm font-bold shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer gap-2"
             >
               {isSubmitting ? (
                 <span>Gravando e Enviando...</span>

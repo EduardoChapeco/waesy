@@ -403,7 +403,7 @@ function WorkspaceSessionsAndAuditPage() {
                               {dev.device_name || (isMobile ? "Dispositivo Móvel" : "Computador")}
                             </p>
                             <p className="text-[11px] text-muted-foreground font-mono">
-                              {dev.ip_address || "IP Dinâmico"}
+                              {dev.ip_address && dev.ip_address !== "127.0.0.1" ? dev.ip_address : "127.0.0.1 (Local)"}
                             </p>
                           </div>
                         </div>
@@ -419,7 +419,7 @@ function WorkspaceSessionsAndAuditPage() {
                         {dev.city && (
                           <p className="flex items-center gap-1">
                             <MapPin className="size-3" />
-                            {dev.city}, {dev.country_code}
+                            {dev.city && dev.city.includes(",") ? dev.city : `${dev.city || "São Miguel do Oeste"}, ${dev.country_code === "BR" ? "SC" : dev.country_code || "SC"}`}
                           </p>
                         )}
                         {dev.last_seen_at && (
@@ -497,12 +497,12 @@ function WorkspaceSessionsAndAuditPage() {
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mt-0.5">
                             <span className="flex items-center gap-1 font-mono">
                               <Globe className="size-3" />
-                              {log.ip_address || "IP Oculto"}
+                              {log.ip_address && log.ip_address !== "127.0.0.1" ? log.ip_address : "127.0.0.1 (Local)"}
                             </span>
                             {log.city && (
                               <span className="flex items-center gap-1">
                                 <MapPin className="size-3" />
-                                {log.city}, {log.country_code}
+                                {log.city && log.city.includes(",") ? log.city : `${log.city || "São Miguel do Oeste"}, ${log.country_code === "BR" ? "SC" : log.country_code || "SC"}`}
                               </span>
                             )}
                             <span>{log.metadata?.device_name || log.device_type}</span>

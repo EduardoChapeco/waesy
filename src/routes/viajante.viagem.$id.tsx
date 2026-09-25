@@ -35,7 +35,7 @@ export default function TripPortalPage() {
  return (
  <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col items-center">
  {/* Hero Banner */}
- <div className="w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-12 px-6 shadow-md border-b border-border/20">
+ <div className="w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-12 px-6 shadow-xs border-b border-border/20">
  <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10 text-cyan-300 backdrop-blur-md mb-2">

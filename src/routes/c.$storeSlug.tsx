@@ -155,7 +155,7 @@ function CustomerPortalWhitelabelPage() {
  <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8">
  {!isAuthenticated ? (
  /* Tela de Login Sem Senha (Magic Link / CPF) */
- <div className="max-w-md mx-auto my-12 p-6 sm:p-8 rounded-2xl border border-border/80 bg-card shadow-lg space-y-6">
+ <div className="max-w-md mx-auto my-12 p-6 sm:p-8 rounded-2xl border border-border/80 bg-card shadow-xs space-y-6">
  <div className="text-center space-y-2">
  <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
  <ShieldCheck className="w-6 h-6" />

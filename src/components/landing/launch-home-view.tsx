@@ -13,6 +13,7 @@ import {
   Search,
   Loader2,
   LogIn,
+  ChefHat,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -151,9 +152,9 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
   }, [createdProfile]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 pb-28">
+    <div className="w-full max-w-full overflow-x-hidden min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 pb-20 sm:pb-28">
       {/* ── HEADER SUPERIOR ELEGANTE (APPLE HIG) ── */}
-      <header className="sticky top-0 z-40 w-full bg-background/85 backdrop-blur-md border-b border-border/70">
+      <header className="sticky top-0 z-40 w-full max-w-full bg-background/85 backdrop-blur-md border-b border-border/70">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo Waesy */}
           <Link to="/" className="flex items-center gap-2.5 group cursor-pointer">
@@ -210,10 +211,10 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
       </header>
 
       {/* ── CORPO PRINCIPAL ── */}
-      <main className="max-w-5xl mx-auto px-3 sm:px-4 pt-4 sm:pt-10 space-y-8 sm:space-y-14 flex-1">
+      <div className="w-full max-w-5xl mx-auto px-3 sm:px-4 pt-4 sm:pt-10 space-y-8 sm:space-y-14 flex-1 min-w-0">
 
         {/* 1. HERO SECTION */}
-        <section className="text-center space-y-4 sm:space-y-5 max-w-2xl mx-auto pt-1 sm:pt-2">
+        <section className="text-center space-y-4 sm:space-y-5 w-full max-w-2xl mx-auto pt-1 sm:pt-2 px-1">
           <Badge
             variant="outline"
             className="rounded-full bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3.5 py-1 inline-flex items-center gap-1.5 shadow-2xs animate-pulse"
@@ -222,28 +223,28 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             <span>{settings.hero_badge}</span>
           </Badge>
 
-          <h1 className="text-2xl sm:text-5xl font-extrabold text-foreground tracking-tight leading-snug sm:leading-tight">
+          <h1 className="text-2xl sm:text-5xl font-extrabold text-foreground tracking-tight leading-snug sm:leading-tight break-words [text-wrap:balance]">
             {settings.hero_title}
           </h1>
 
-          <p className="text-xs sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
+          <p className="text-xs sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto break-words [text-wrap:pretty]">
             {settings.hero_subtitle}
           </p>
 
           {/* Contador de Fundadores */}
-          <div className="flex items-center justify-center gap-6 py-1">
-            <div className="text-center">
-              <div className="text-2xl font-black text-foreground font-mono">2027</div>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-1 max-w-full">
+            <div className="text-center px-1">
+              <div className="text-xl sm:text-2xl font-black text-foreground font-mono">2027</div>
               <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Circuito</div>
             </div>
             <div className="w-px h-8 bg-border/60" />
-            <div className="text-center">
-              <div className="text-2xl font-black text-primary font-mono">100%</div>
+            <div className="text-center px-1">
+              <div className="text-xl sm:text-2xl font-black text-primary font-mono">100%</div>
               <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Gratuito</div>
             </div>
             <div className="w-px h-8 bg-border/60" />
-            <div className="text-center">
-              <div className="text-2xl font-black text-foreground font-mono">2&nbsp;<span className="text-primary">cidades</span></div>
+            <div className="text-center px-1">
+              <div className="text-xl sm:text-2xl font-black text-foreground font-mono">2&nbsp;<span className="text-primary">cidades</span></div>
               <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Chapecó &amp; SMO</div>
             </div>
           </div>
@@ -252,7 +253,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             <Button
               size="lg"
               onClick={() => setIsSheetOpen(true)}
-              className="w-full sm:w-auto h-12 rounded-2xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground px-6 gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+              className="w-full sm:w-auto h-12 rounded-2xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground px-6 gap-2 shadow-xs hover:bg-primary/90 transition-all cursor-pointer"
             >
               <span>Garantir Vaga de Membro Fundador</span>
               <ArrowRight className="size-4" />
@@ -279,10 +280,10 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
         {/* 3. SEÇÃO CIRCUITO INTERNACIONAL WAESY 2027 */}
         <section
           id="circuito-2027"
-          className="rounded-3xl border border-border/80 bg-gradient-to-b from-muted/30 to-muted/10 p-4 sm:p-10 space-y-6"
+          className="rounded-3xl border border-border/80 bg-card p-4 sm:p-10 space-y-6"
         >
           <div className="space-y-2 text-center sm:text-left">
-            <div className="inline-flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
               <PartyPopper className="size-4" />
               <span>Evento & Conexões Regionais</span>
             </div>
@@ -312,7 +313,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
           </div>
 
           {/* Card de Destaque: Sorteio Anual de Viagens */}
-          <div className="rounded-2xl bg-gradient-to-r from-primary/15 via-primary/10 to-amber-500/10 border border-primary/20 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="rounded-2xl bg-card border border-border/80 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Ticket className="size-4 text-primary" />
@@ -409,29 +410,41 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
               {
                 title: "Turismo & Roteiros",
-                desc: "Pacotes, passagens e reservas de viagens locais",
+                desc: "Pacotes, passagens e reservas de viagens",
                 icon: Compass,
                 to: "/turismo",
               },
               {
                 title: "Comércio & PDV",
-                desc: "Vendas ágeis no balcão e vitrine online integrada",
+                desc: "Vendas no balcão e vitrine online",
                 icon: Store,
                 to: "/explorar",
               },
               {
+                title: "Receitas & Culinária",
+                desc: "Pratos típicos e guia de gastronomia local",
+                icon: ChefHat,
+                to: "/receitas",
+              },
+              {
+                title: "Eventos & Shows",
+                desc: "Ingressos digitais e atrações regionais",
+                icon: PartyPopper,
+                to: "/eventos",
+              },
+              {
                 title: "Agenda & Serviços",
-                desc: "Agendamentos diretos e lembretes por WhatsApp",
+                desc: "Agendamentos diretos e lembretes",
                 icon: CalendarDays,
                 to: "/agenda",
               },
               {
                 title: "Classificados & Vagas",
-                desc: "Imóveis, veículos, oportunidades e classificados",
+                desc: "Imóveis, veículos e vagas de trabalho",
                 icon: ShieldCheck,
                 to: "/classificados",
               },
@@ -439,29 +452,32 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               <Link
                 key={idx}
                 to={nicho.to as any}
-                className="rounded-2xl border border-border/80 bg-card p-4 space-y-2 text-center flex flex-col items-center justify-center hover:border-primary/40 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer group"
+                className="rounded-2xl border border-border/80 bg-card p-3.5 space-y-2 text-center flex flex-col items-center justify-center hover:border-primary/40 hover:shadow-xs transition-all cursor-pointer group"
               >
-                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <nicho.icon className="size-5" />
+                <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <nicho.icon className="size-4" />
                 </div>
                 <h4 className="text-xs font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
                   {nicho.title}
                 </h4>
-                <p className="text-[11px] text-muted-foreground leading-snug">
+                <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">
                   {nicho.desc}
                 </p>
               </Link>
             ))}
           </div>
         </section>
-      </main>
+      </div>
 
-      {/* ── FLOATING DOCK NA THUMB ZONE INFERIOR (MOBILE & DESKTOP) ── */}
-      <div className="fixed bottom-3 inset-x-0 z-40 px-4 pointer-events-none">
+      {/* ── FLOATING DOCK NA THUMB ZONE INFERIOR (Acima da MobileNav) ── */}
+      <div
+        className="sm:hidden fixed inset-x-0 z-30 px-4 pointer-events-none"
+        style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 72px), 80px)" }}
+      >
         <div className="max-w-md mx-auto pointer-events-auto">
-          <div className="rounded-2xl bg-card/95 backdrop-blur-md border border-border/80 p-2 shadow-xl flex items-center justify-between gap-3 ring-1 ring-black/5">
+          <div className="rounded-2xl bg-card border border-border/80 p-2 shadow-xs flex items-center justify-between gap-3">
             <div className="pl-2 min-w-0">
-              <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-1 text-[11px] font-bold text-primary">
                 <Sparkles className="size-3 shrink-0" />
                 <span className="truncate">Circuito 2027 Aberto</span>
               </div>

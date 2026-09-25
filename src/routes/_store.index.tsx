@@ -1,5 +1,5 @@
 import { getLaunchLandingSettings } from "@/services/launch.functions";
-import { LaunchHomeView } from "@/components/landing/launch-home-view";
+import { EnterpriseLandingView } from "@/components/landing/enterprise-landing-view";
 import React, { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -92,6 +92,16 @@ const CANONICAL_PILLARS = [
     to: "/afiliados",
   },
   {
+    slug: "receitas",
+    title: "Receitas",
+    to: "/receitas",
+  },
+  {
+    slug: "turismo",
+    title: "Turismo & Roteiros",
+    to: "/turismo",
+  },
+  {
     slug: "concursos",
     title: "Concursos",
     to: "/concursos",
@@ -102,6 +112,8 @@ const DISCOVERY_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Todos os Anúncios", emoji: "✨" },
   { id: "places", label: "Places (Lista Telefônica)", emoji: "📍" },
   { id: "classificados", label: "Classificados", emoji: "🏷️" },
+  { id: "receitas", label: "Receitas", emoji: "🍲" },
+  { id: "turismo", label: "Turismo & Roteiros", emoji: "✈️" },
   { id: "feed", label: "Feed", emoji: "📡" },
   { id: "noticias", label: "Notícias", emoji: "📰" },
   { id: "empregos", label: "Empregos", emoji: "💼" },
@@ -205,7 +217,7 @@ function CommunityHomePage() {
   const isMarketplace = routeSearch.view === "marketplace" || routeSearch.view === "vitrine";
 
   if (!isMarketplace) {
-    return <LaunchHomeView initialSettings={data.launchSettings || null} />;
+    return <EnterpriseLandingView initialSettings={data.launchSettings || null} />;
   }
 
   return <CommunityMarketplaceView data={data} />;
@@ -978,7 +990,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
                         </div>
                         <div className="absolute bottom-2.5 right-2.5">
                           <span className="bg-foreground text-background text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md">
-                            {ev.date_display || "Em breve"}
+                            {ev.date_display || "A Confirmar"}
                           </span>
                         </div>
                       </div>

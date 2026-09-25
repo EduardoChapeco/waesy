@@ -35,9 +35,11 @@ import {
   toggleMinedRecipeVisibilityFn,
   duplicateMinedRecipeFn,
   deleteMinedRecipeFn,
+  createMinedRecipeFn,
   type MinedRecipeDTO,
 } from "@/services/mining.functions";
 import { toast } from "sonner";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/conteudo/receitas")({
@@ -62,11 +64,12 @@ function WorkspaceRecipesManagementPage() {
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "hidden">("all");
   const [isPending, startTransition] = useTransition();
 
-  // Edit Modal State
+  // Recipe Modal State (Create & Edit)
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<MinedRecipeDTO | null>(null);
   const [editForm, setEditForm] = useState({
     title: "",
-    category: "",
+    category: "Pratos Principais",
     cuisine: "",
     prep_time: "",
     cook_time: "",
@@ -75,6 +78,22 @@ function WorkspaceRecipesManagementPage() {
     ingredientsText: "",
     instructionsText: "",
   });
+
+  const openCreateModal = () => {
+    setEditingRecipe(null);
+    setEditForm({
+      title: "",
+      category: "Pratos Principais",
+      cuisine: "",
+      prep_time: "15 min",
+      cook_time: "30 min",
+      recipe_yield: "4 porções",
+      cover_image_url: "",
+      ingredientsText: "",
+      instructionsText: "",
+    });
+    setIsModalOpen(true);
+  };
 
   const openEditModal = (rec: MinedRecipeDTO) => {
     setEditingRecipe(rec);
@@ -89,10 +108,14 @@ function WorkspaceRecipesManagementPage() {
       ingredientsText: rec.ingredients.join("\n"),
       instructionsText: rec.instructions.join("\n"),
     });
+    setIsModalOpen(true);
   };
 
-  const handleSaveEdit = async () => {
-    if (!editingRecipe) return;
+  const handleSaveRecipe = async () => {
+    if (!editForm.title.trim()) {
+      toast.error("Informe o título da receita.");
+      return;
+    }
 
     try {
       startTransition(async () => {
@@ -106,44 +129,97 @@ function WorkspaceRecipesManagementPage() {
           .map((s) => s.trim())
           .filter(Boolean);
 
-        const updated = await updateMinedRecipeFn({
-          data: {
-            id: editingRecipe.id,
+        if (editingRecipe) {
+          await updateMinedRecipeFn({
+            data: {
+              id: editingRecipe.id,
+              title: editForm.title.trim(),
+              category: editForm.category.trim(),
+              cuisine: editForm.cuisine.trim() || undefined,
+              prep_time: editForm.prep_time.trim() || undefined,
+              cook_time: editForm.cook_time.trim() || undefined,
+              recipe_yield: editForm.recipe_yield.trim() || undefined,
+              cover_image_url: editForm.cover_image_url.trim() || undefined,
+              ingredients,
+              instructions,
+            },
+          });
+
+          setRecipes((prev) =>
+            prev.map((r) =>
+              r.id === editingRecipe.id
+                ? {
+                    ...r,
+                    title: editForm.title.trim(),
+                    category: editForm.category.trim(),
+                    cuisine: editForm.cuisine.trim() || undefined,
+                    prep_time: editForm.prep_time.trim() || undefined,
+                    cook_time: editForm.cook_time.trim() || undefined,
+                    recipe_yield: editForm.recipe_yield.trim() || undefined,
+                    cover_image_url: editForm.cover_image_url.trim() || undefined,
+                    ingredients,
+                    instructions,
+                  }
+                : r
+            )
+          );
+
+          toast.success("Receita atualizada com sucesso!");
+        } else {
+          const res = await createMinedRecipeFn({
+            data: {
+              title: editForm.title.trim(),
+              category: editForm.category.trim(),
+              cuisine: editForm.cuisine.trim() || undefined,
+              prep_time: editForm.prep_time.trim() || undefined,
+              cook_time: editForm.cook_time.trim() || undefined,
+              recipe_yield: editForm.recipe_yield.trim() || undefined,
+              cover_image_url: editForm.cover_image_url.trim() || undefined,
+              ingredients,
+              instructions,
+            },
+          });
+
+          const newRecipe: MinedRecipeDTO = {
+            id: res.id,
             title: editForm.title.trim(),
+            description: "",
             category: editForm.category.trim(),
             cuisine: editForm.cuisine.trim() || undefined,
             prep_time: editForm.prep_time.trim() || undefined,
             cook_time: editForm.cook_time.trim() || undefined,
+            total_time: undefined,
             recipe_yield: editForm.recipe_yield.trim() || undefined,
             cover_image_url: editForm.cover_image_url.trim() || undefined,
             ingredients,
             instructions,
-          },
-        });
+            status: "active",
+            source_domain: "manual_curation",
+            created_at: new Date().toISOString(),
+          };
 
-        setRecipes((prev) =>
-          prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r))
-        );
+          setRecipes((prev) => [newRecipe, ...prev]);
+          toast.success("Nova receita cadastrada e disponível na vitrine!");
+        }
 
-        toast.success("Receita atualizada com sucesso!");
+        setIsModalOpen(false);
         setEditingRecipe(null);
         router.invalidate();
       });
     } catch (err: any) {
-      toast.error(err.message || "Erro ao atualizar receita.");
+      toast.error(err.message || "Erro ao salvar receita.");
     }
   };
 
   const handleToggleVisibility = async (rec: MinedRecipeDTO) => {
     const nextStatus = rec.status === "hidden" ? "active" : "hidden";
     try {
-      // Optimistic update
       setRecipes((prev) =>
         prev.map((r) => (r.id === rec.id ? { ...r, status: nextStatus } : r))
       );
 
       await toggleMinedRecipeVisibilityFn({
-        data: { id: rec.id, currentStatus: rec.status },
+        data: { id: rec.id, status: nextStatus },
       });
 
       toast.success(
@@ -153,7 +229,6 @@ function WorkspaceRecipesManagementPage() {
       );
       router.invalidate();
     } catch (err: any) {
-      // Revert on failure
       setRecipes((prev) =>
         prev.map((r) => (r.id === rec.id ? { ...r, status: rec.status } : r))
       );
@@ -168,7 +243,15 @@ function WorkspaceRecipesManagementPage() {
         data: { id: rec.id },
       });
 
-      setRecipes((prev) => [duplicated, ...prev]);
+      const clonedRecipe: MinedRecipeDTO = {
+        ...rec,
+        id: duplicated.newId,
+        title: `${rec.title} (Cópia)`,
+        status: "active",
+        created_at: new Date().toISOString(),
+      };
+
+      setRecipes((prev) => [clonedRecipe, ...prev]);
       toast.success("Receita duplicada! Edite os detalhes para variações sazonais.");
       router.invalidate();
     } catch (err: any) {
@@ -176,8 +259,7 @@ function WorkspaceRecipesManagementPage() {
     }
   };
 
-  const handleDelete = async (rec: MinedRecipeDTO) => {
-    if (!confirm(`Tem certeza que deseja excluir "${rec.title}"?`)) return;
+    const handleDelete = async (rec: MinedRecipeDTO) => {
 
     try {
       setRecipes((prev) => prev.filter((r) => r.id !== rec.id));
@@ -401,37 +483,19 @@ function WorkspaceRecipesManagementPage() {
                     title="Editar dados da receita"
                   >
                     <Edit2 className="size-3.5" />
-                    <span>Editar</span>
+                    <span className="hidden sm:inline">Editar</span>
                   </Button>
 
-                  {/* Duplicar */}
-                  <Button
-                    onClick={() => handleDuplicate(rec)}
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-xl h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
-                    title="Duplicar para variação sazonal"
-                  >
-                    <Copy className="size-3.5" />
-                  </Button>
-
-                  {/* Ver Página Pública */}
-                  <Button asChild variant="ghost" size="sm" className="rounded-xl h-8 px-2 text-xs">
-                    <Link to="/receitas/$id" params={{ id: rec.id }} title="Ver página pública">
-                      <ExternalLink className="size-3.5" />
-                    </Link>
-                  </Button>
-
-                  {/* Excluir */}
-                  <Button
-                    onClick={() => handleDelete(rec)}
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-xl h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
-                    title="Excluir receita"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
+                  {/* Ações Avançadas Canônicas */}
+                  <CrudActionsMenu
+                    entityName="Receita"
+                    onEdit={() => openEditModal(rec)}
+                    viewUrl={`/receitas/${rec.id}`}
+                    onDuplicate={() => handleDuplicate(rec)}
+                    onDelete={() => handleDelete(rec)}
+                    deleteConfirmTitle={`Excluir receita "${rec.title}"?`}
+                    deleteConfirmDescription="Esta ação removerá permanentemente a receita da vitrine pública e da lista de curadoria."
+                  />
                 </div>
               </div>
             );
@@ -440,12 +504,12 @@ function WorkspaceRecipesManagementPage() {
       )}
 
       {/* ── 5. Modal de Edição Completa da Receita ── */}
-      <Dialog open={Boolean(editingRecipe)} onOpenChange={(open) => !open && setEditingRecipe(null)}>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card border border-border/60 p-5 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <ChefHat className="size-4 text-primary" />
-              Editar Receita
+              {editingRecipe ? "Editar Receita" : "Nova Receita Curada"}
             </DialogTitle>
           </DialogHeader>
 
@@ -561,7 +625,7 @@ function WorkspaceRecipesManagementPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setEditingRecipe(null)}
+              onClick={() => setIsModalOpen(false)}
               className="rounded-xl text-xs h-9"
             >
               Cancelar
@@ -569,12 +633,12 @@ function WorkspaceRecipesManagementPage() {
             <Button
               variant="default"
               size="sm"
-              onClick={handleSaveEdit}
+              onClick={handleSaveRecipe}
               disabled={isPending}
               className="rounded-xl text-xs h-9 gap-1.5 font-semibold"
             >
               <Save className="size-3.5" />
-              {isPending ? "Salvando..." : "Salvar Alterações"}
+              {isPending ? "Salvando..." : editingRecipe ? "Salvar Alterações" : "Publicar Receita"}
             </Button>
           </DialogFooter>
         </DialogContent>

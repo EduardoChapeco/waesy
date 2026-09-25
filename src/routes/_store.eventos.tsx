@@ -646,7 +646,7 @@ function EventosPage() {
                 <LucideChevronDown className="size-3 opacity-60 ml-0.5" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-2xl border border-border shadow-xl bg-card" align="start">
+            <PopoverContent className="w-auto p-0 rounded-2xl border border-border shadow-xs bg-card" align="start">
               <Calendar
                 mode="single"
                 selected={selectedDateFilter.includes("-") && selectedDateFilter.length === 10 ? new Date(selectedDateFilter + "T12:00:00") : undefined}

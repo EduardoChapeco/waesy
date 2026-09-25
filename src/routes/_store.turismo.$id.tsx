@@ -161,9 +161,7 @@ function TourismDetailPage() {
   }, [experience?.description]);
 
   const [viewMode, setViewMode] = useState<"standard" | "instagram_editorial">(
-    meta.view_template === "instagram_editorial" || experience?.category === "group_tour"
-      ? "instagram_editorial"
-      : "standard"
+    "instagram_editorial"
   );
 
   const editorialClassified = useMemo(() => {
@@ -693,7 +691,7 @@ function TourismDetailPage() {
             {experience.included_items && experience.included_items.length > 0 && (
               <section className="space-y-3">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <CheckCircle size={18} weight="bold" className="text-emerald-600" />
+                  <CheckCircle size={18} weight="bold" className="text-emerald-600 dark:text-emerald-400" />
                   <span>O que está incluso no pacote</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -702,7 +700,7 @@ function TourismDetailPage() {
                       key={idx}
                       className="flex items-center gap-2.5 p-3 rounded-2xl border border-border/60 bg-card text-xs font-medium text-foreground"
                     >
-                      <CheckCircle size={14} weight="bold" className="text-emerald-500 shrink-0" />
+                      <CheckCircle size={14} weight="bold" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>{item}</span>
                     </div>
                   ))}

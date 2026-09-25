@@ -886,28 +886,6 @@ export const getPublicStoreProfile = createServerFn({ method: "GET" })
  if (!storeIdToUse) {
  storeIdToUse = (await resolveTenantStoreId()) ?? undefined;
  }
- if (!storeIdToUse) {
- try {
- const { getIdentity } = await import("@/services/identity.functions");
- const iden = await getIdentity();
- if (iden?.store_id) {
- storeIdToUse = iden.store_id;
- } else if (iden?.id) {
- const { getServerClient } = await import("@/lib/supabase");
- const client = getServerClient();
- const { data: member } = await client
- .from("workspace_members")
- .select("store_id")
- .eq("profile_id", iden.id)
- .order("created_at", { ascending: false })
- .limit(1)
- .maybeSingle();
- if (member?.store_id) {
- storeIdToUse = member.store_id;
- }
- }
- } catch {}
- }
  if (!storeIdToUse) return null;
 
  const db = getAnonServerClient();
@@ -1030,7 +1008,8 @@ export const getStorePublicCatalog = createServerFn({ method: "GET" })
  let storeId = targetId;
  if (!isUuid) {
  const { data: st } = await db.from("stores").select("id").eq("slug", targetId).maybeSingle();
- if (st) storeId = st.id;
+ if (!st?.id) return { products: [], categories: [] };
+ storeId = st.id;
  }
 
  const [productsRes, categoriesRes] = await Promise.all([

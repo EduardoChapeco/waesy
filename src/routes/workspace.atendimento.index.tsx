@@ -322,7 +322,7 @@ function WorkspaceAtendimentoPage() {
  });
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] font-sans text-foreground">
+    <div className="flex flex-col h-[calc(100dvh-80px)] font-sans text-foreground">
       {/* Top Header com Seletor de Modo: Atendimento em Tempo Real vs SDR IA */}
       <div className="bg-card border-b border-border/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">

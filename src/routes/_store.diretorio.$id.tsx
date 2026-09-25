@@ -16,7 +16,7 @@ import { getMuralFeed, getCompanyEmployerStats } from "@/services/social.functio
 import { listStorePublicReviews } from "@/services/cms.functions";
 import { listStoreDealReviews } from "@/services/deal-reviews.functions";
 import { listStorePublicSponsors } from "@/services/news.functions";
-import { getPublicClassifieds } from "@/services/classifieds.functions";
+import { getAdsByStoreId } from "@/services/classifieds.functions";
 import { getStoreConcursos } from "@/services/invite.functions";
 import { getStorePublicProfileWithSections } from "@/services/store.functions";
 import { getMinedProductsFn } from "@/services/mining.functions";
@@ -92,9 +92,9 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
               },
             }).catch(() => ({ products: [], total: 0 }))
           : Promise.resolve({ products: [], total: 0 }),
-        listPublicJobs({ data: {} }).catch(() => null),
-        listHotpages({ data: { module: "home" } }).catch(() => []),
-        listActiveBanners({ data: { placement: "store" } }).catch(() => []),
+        targetStore ? listPublicJobs({ data: { storeId: targetStore } }).catch(() => []) : Promise.resolve([]),
+        Promise.resolve([]), // Zero Context Bleeding: nunca injeta botões da home global em perfis privados
+        targetStore ? listActiveBanners({ data: { storeId: targetStore } }).catch(() => []) : Promise.resolve([]),
         targetStore
           ? getMuralFeed({ data: { store_id: targetStore, limit: 12 } }).catch(() => null)
           : Promise.resolve(null),
@@ -108,7 +108,7 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
           ? listStorePublicSponsors({ data: { storeId: targetStore } }).catch(() => [])
           : Promise.resolve([]),
         targetStore
-          ? getPublicClassifieds({ data: { storeId: targetStore, limit: 30 } }).catch(() => null)
+          ? getAdsByStoreId({ data: { storeId: targetStore, limit: 30 } }).catch(() => [])
           : Promise.resolve(null),
         targetStore
           ? getStoreConcursos({ data: { storeId: targetStore } }).catch(() => [])
@@ -132,7 +132,7 @@ export const Route = createFileRoute("/_store/diretorio/$id")({
       });
 
       const storePosts = (postsRes as any)?.items || [];
-      const rawClassifieds = (classifiedsRes as any)?.items || [];
+      const rawClassifieds = Array.isArray(classifiedsRes) ? classifiedsRes : (classifiedsRes as any)?.items || [];
       const classifiedProducts = rawClassifieds.map((item: any) => ({
         id: item.id,
         name: item.title,

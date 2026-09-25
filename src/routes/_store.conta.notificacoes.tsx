@@ -8,7 +8,6 @@ import {
   Briefcase,
   Store,
   Info,
-  ArrowLeft,
   Trash2,
   ExternalLink,
   MailOpen,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NativeMobileHeader } from "@/components/navigation";
 import {
   listUserNotifications,
   markNotificationAsRead,
@@ -151,40 +151,32 @@ function NotificationsPage() {
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => (window.history.length > 1 ? window.history.back() : navigate({ to: "/" }))}
-            className="p-2 -ml-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors active:scale-95"
-            aria-label="Voltar"
-          >
-            <ArrowLeft className="size-5" />
-          </button>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Notificações
-          </h1>
-          {unreadCount > 0 && (
+      {/* ── 1. Canonical Navigation Header ── */}
+      <NativeMobileHeader
+        title="Notificações"
+        fallbackHref="/conta"
+        badge={
+          unreadCount > 0 ? (
             <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
               {unreadCount} novas
             </Badge>
-          )}
-        </div>
-
-        {unreadCount > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => markAllMutation.mutate()}
-            disabled={markAllMutation.isPending}
-            className="h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs sm:text-sm gap-1.5 cursor-pointer shadow-2xs active:scale-98"
-          >
-            <CheckCheck className="size-4 text-primary" />
-            <span>Marcar lidas</span>
-          </Button>
-        )}
-      </div>
+          ) : null
+        }
+        rightActions={
+          unreadCount > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAllMutation.mutate()}
+              disabled={markAllMutation.isPending}
+              className="h-8.5 px-3 rounded-xl border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs gap-1.5 cursor-pointer shadow-2xs active:scale-98"
+            >
+              <CheckCheck className="size-3.5 text-primary" />
+              <span>Marcar lidas</span>
+            </Button>
+          ) : null
+        }
+      />
 
       {/* ── 2. Tabs / Filtros Horizontais (Padrão Botão Grande) ── */}
       <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar">
@@ -212,7 +204,7 @@ function NotificationsPage() {
       {notifications.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Coluna Esquerda: Lista de Notificações (5 colunas no Desktop) */}
-          <div className="lg:col-span-5 space-y-2 lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto lg:pr-1 no-scrollbar">
+          <div className="lg:col-span-5 space-y-2 lg:max-h-[calc(100dvh-220px)] lg:overflow-y-auto lg:pr-1 no-scrollbar">
             {notifications.map((item) => {
               const isSelected = activeNotification?.id === item.id;
               return (

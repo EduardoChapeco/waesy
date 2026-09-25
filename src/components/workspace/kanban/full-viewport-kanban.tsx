@@ -27,7 +27,7 @@ export function FullViewportKanban<T = any>({
   return (
     <div
       className={cn(
-        "flex gap-3.5 sm:gap-4 items-stretch h-[calc(100vh-8.5rem)] sm:h-[calc(100vh-8rem)] pb-4 overflow-x-auto no-scrollbar select-none",
+        "flex gap-3.5 sm:gap-4 items-stretch h-[calc(100dvh-8.5rem)] sm:h-[calc(100dvh-8rem)] pb-4 overflow-x-auto no-scrollbar select-none",
         className
       )}
     >

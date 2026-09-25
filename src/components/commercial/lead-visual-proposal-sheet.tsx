@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -21,6 +23,8 @@ import {
   CreditCard,
   QrCode,
   Users,
+  Sparkles,
+  Eye,
 } from "lucide-react";
 import {
   Sheet,
@@ -120,6 +124,81 @@ export function LeadVisualProposalSheet({
   const [paymentTerms, setPaymentTerms] = useState("Entrada de 20% + saldo em até 10x sem juros no cartão.");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdProposalToken, setCreatedProposalToken] = useState<string | null>(null);
+  const [isScanningOcr, setIsScanningOcr] = useState(false);
+  const ocrFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // 🔄 Auto-binding: Sincroniza dados do CRM Lead instantaneamente sem digitação dupla
+  useEffect(() => {
+    if (lead && isOpen) {
+      if (lead.destination) {
+        setDestinationCity(lead.destination);
+        setFlightDest(lead.destination);
+      }
+      if (lead.passenger_count && lead.passenger_count > 0) {
+        setPassengerCount(lead.passenger_count);
+      }
+      if (lead.estimated_value_cents && lead.estimated_value_cents > 0) {
+        setBasePriceCents(lead.estimated_value_cents);
+      }
+      const cover = lead.cover_image || lead.cover_image_url;
+      if (cover) {
+        setCoverPhotoUrl(cover);
+      }
+    }
+  }, [lead, isOpen]);
+
+  const handleOcrFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsScanningOcr(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const base64Data = (event.target?.result as string)?.split(",")[1];
+          if (!base64Data) throw new Error("Falha ao ler arquivo.");
+
+          const res = await parseUniversalDocumentOCR({
+            data: {
+              base64Data,
+              mimeType: file.type || "image/jpeg",
+              nicheHint: "tourism",
+            },
+          });
+
+          if (res.destinationCity) setDestinationCity(res.destinationCity);
+          if (res.dates?.departure) setStartDate(res.dates.departure);
+          if (res.dates?.return) setEndDate(res.dates.return);
+          if (res.participants && res.participants.length > 0) setPassengerCount(res.participants.length);
+          if (res.flightSegments && res.flightSegments.length > 0) {
+            setHasFlight(true);
+            const first = res.flightSegments[0];
+            if (first.airline) setAirline(first.airline);
+            if (first.origin) setFlightOrigin(first.origin);
+            if (first.destination) setFlightDest(first.destination);
+          }
+          if (res.hotel?.name) {
+            setHasHotel(true);
+            setHotelName(res.hotel.name);
+          }
+          if (res.financials?.totalCents && res.financials.totalCents > 0) {
+            setBasePriceCents(res.financials.totalCents);
+          }
+          toast.success("Dados da cotação extraídos com sucesso via OCR!");
+        } catch (ocrErr: any) {
+          toast.error(ocrErr?.message || "Erro ao processar OCR do documento.");
+        } finally {
+          setIsScanningOcr(false);
+          if (ocrFileInputRef.current) ocrFileInputRef.current.value = "";
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      setIsScanningOcr(false);
+      toast.error(err?.message || "Erro ao carregar arquivo.");
+    }
+  };
 
   // Simulador dinâmico de parcelas
   const totalPrice = basePriceCents + boardingTaxCents;
@@ -229,20 +308,52 @@ export function LeadVisualProposalSheet({
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
         size="wide"
-        className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] overflow-y-auto"
+        className="w-full sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl overflow-y-auto max-h-[94dvh]"
       >
         <SheetHeader className="pb-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
-              <FileText className="size-5" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                <FileText className="size-5" />
+              </div>
+              <div>
+                <SheetTitle className="text-base font-bold text-foreground">
+                  Emitir Proposta Visual para {lead?.fullName || "Lead"}
+                </SheetTitle>
+                <SheetDescription className="text-xs text-muted-foreground">
+                  Gere uma lâmina interativa de alta conversão para WhatsApp ou e-mail.
+                </SheetDescription>
+              </div>
             </div>
-            <div>
-              <SheetTitle className="text-base font-bold text-foreground">
-                Emitir Proposta Visual para {lead?.fullName || "Lead"}
-              </SheetTitle>
-              <SheetDescription className="text-xs text-muted-foreground">
-                Gere uma lâmina interativa de alta conversão para WhatsApp ou e-mail.
-              </SheetDescription>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isScanningOcr}
+                onClick={() => ocrFileInputRef.current?.click()}
+                className="h-8 rounded-xl text-xs font-semibold gap-1.5 border-border/80 bg-background hover:bg-muted text-foreground cursor-pointer"
+              >
+                {isScanningOcr ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin text-primary" />
+                    <span>Lendo OCR...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="size-3.5 text-primary" />
+                    <span>Importar Cotação (OCR)</span>
+                  </>
+                )}
+              </Button>
+              <input
+                ref={ocrFileInputRef}
+                type="file"
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={handleOcrFileUpload}
+              />
             </div>
           </div>
         </SheetHeader>
@@ -288,7 +399,139 @@ export function LeadVisualProposalSheet({
             </div>
           </div>
         ) : (
-          <div className="space-y-6 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 py-4 items-start">
+            {/* ── LIVE PREVIEW LATERAL (SPLIT-SCREEN EDITOR) ── */}
+            <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-0 order-2 lg:order-1">
+              <div className="p-4 rounded-2xl border border-border/80 bg-card shadow-sm space-y-4 overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Preview em Tempo Real
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono">
+                    PDF / WhatsApp
+                  </Badge>
+                </div>
+
+                {/* Banner / Foto de Capa */}
+                <div className="relative h-44 rounded-xl overflow-hidden bg-muted/60 border border-border/60">
+                  {coverPhotoUrl ? (
+                    <img
+                      src={coverPhotoUrl}
+                      alt={destinationCity}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/5 to-muted flex items-center justify-center">
+                      <MapPin className="size-10 text-primary/40" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3.5 text-white">
+                    <Badge className="w-fit text-[10px] bg-primary text-primary-foreground mb-1">
+                      {destinationCountry || "Destino Exclusivo"}
+                    </Badge>
+                    <h4 className="text-lg font-black tracking-tight leading-tight">
+                      {destinationCity || "Cotação Personalizada"}
+                    </h4>
+                    <p className="text-[11px] text-white/80">
+                      Preparado para {lead?.fullName || "Cliente Especial"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Resumo de Datas e Pax */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 flex items-center gap-2">
+                    <Calendar className="size-4 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-muted-foreground font-medium">Período</p>
+                      <p className="font-semibold text-foreground truncate">
+                        {startDate ? new Date(startDate + "T12:00:00").toLocaleDateString("pt-BR") : "A definir"} - {endDate ? new Date(endDate + "T12:00:00").toLocaleDateString("pt-BR") : "A definir"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 flex items-center gap-2">
+                    <Users className="size-4 text-primary shrink-0" />
+                    <div>
+                      <p className="text-[10px] text-muted-foreground font-medium">Viajantes</p>
+                      <p className="font-semibold text-foreground">
+                        {pCount} {pCount === 1 ? "passageiro" : "passageiros"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Voo & Hotel */}
+                <div className="space-y-2 text-xs">
+                  {hasFlight && (
+                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Plane className="size-3.5 text-primary shrink-0" />
+                        <span className="font-medium text-foreground">{airline}</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">{flightOrigin} ➔ {flightDest}</span>
+                    </div>
+                  )}
+                  {hasHotel && (
+                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 className="size-3.5 text-primary shrink-0" />
+                        <span className="font-medium text-foreground truncate">{hotelName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-[9px] shrink-0">{roomType}</Badge>
+                    </div>
+                  )}
+                </div>
+
+                {/* Inclusões selecionadas */}
+                {selectedTours.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Inclusões
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedTours.map((tour) => (
+                        <Badge key={tour} variant="secondary" className="text-[10px] font-normal py-0.5 px-2">
+                          ✓ {tour}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preço Total & Condições */}
+                <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 space-y-2.5">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs font-bold text-foreground">Total da Proposta</span>
+                    <span className="text-xl font-black font-mono text-primary">
+                      R$ {(totalPrice / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Por passageiro ({pCount} pax)</span>
+                    <span className="font-mono font-semibold text-foreground">
+                      R$ {(perPersonCents / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="pt-2 border-t border-primary/10 grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="text-emerald-600 dark:text-emerald-400 font-medium">
+                      PIX (5% off): <span className="font-bold font-mono">R$ {(pixDiscountCents / 100).toFixed(2)}</span>
+                    </div>
+                    <div className="text-right text-muted-foreground">
+                      Cartão: <span className="font-bold text-foreground font-mono">10x R$ {(installment10xCents / 100).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── CONTROLES DO FORMULÁRIO (COLUNA DIREITA) ── */}
+            <div className="lg:col-span-7 space-y-6 order-1 lg:order-2">
             {/* ── 1. Destino & Apresentação ── */}
             <div className="space-y-3">
               <Label className="text-xs font-bold text-foreground uppercase tracking-wider">
@@ -546,6 +789,7 @@ export function LeadVisualProposalSheet({
               </div>
             </div>
           </div>
+        </div>
         )}
 
         <SheetFooter className="gap-2 sm:gap-0 pt-4 border-t border-border">

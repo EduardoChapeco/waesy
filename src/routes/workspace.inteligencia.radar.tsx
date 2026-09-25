@@ -738,7 +738,7 @@ export function MarketRadarPage() {
       {/* ── MODAL DE ADICIONAR CONCORRENTE ── */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowAddModal(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="bg-card border-t sm:border border-border/60 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-w-md w-full max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar shadow-xl space-y-5">
+          <div onClick={(e) => e.stopPropagation()} className="bg-card border-t sm:border border-border/60 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 max-w-md w-full max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar shadow-xs space-y-5">
             <div>
               <h3 className="text-lg font-bold text-foreground tracking-tight">
                 Cadastrar Novo Concorrente

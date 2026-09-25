@@ -24,6 +24,25 @@ import {
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { LegalTermsSheet } from "@/components/legal/legal-terms-sheet";
 
+function getClientGeoTelemetry() {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const raw = localStorage.getItem("waesy_master_location");
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.city === "string" && parsed.city !== "Global") {
+      return {
+        city: parsed.city,
+        state: parsed.state,
+        lat: parsed.lat,
+        lng: parsed.lng,
+        source: parsed.source || "gps",
+      };
+    }
+  } catch {}
+  return undefined;
+}
+
 export const Route = createFileRoute("/_store/entrar")({
  head: () => ({
  meta: [{ title: "Acessar Conta — Waesy" }],
@@ -191,9 +210,10 @@ function StepByStepAuthPage() {
  setIsLoading(true);
  const cleanId = identifier.trim();
  try {
- const res = await signInWithPassword({
- data: { identifier: cleanId, password },
- });
+ const clientLocation = getClientGeoTelemetry();
+    const res = await signInWithPassword({
+      data: { identifier: cleanId, password, clientLocation },
+    });
 
  if (res.status === "success") {
  toast.success(`Bem-vindo(a) ao Portal @${portalSlug}!`);
@@ -250,12 +270,14 @@ function StepByStepAuthPage() {
 
  try {
  // Sempre chama o BFF para resolver @username/CPF, rate-limiting, cookies SSR e mesclar carrinho
- const res = await signInWithPassword({
- data: {
- identifier: cleanId,
- password,
- },
- });
+ const clientLocation = getClientGeoTelemetry();
+      const res = await signInWithPassword({
+        data: {
+          identifier: cleanId,
+          password,
+          clientLocation,
+        },
+      });
 
  if (res.status === "success") {
  toast.success("Bem-vindo(a) de volta!");
@@ -309,15 +331,17 @@ function StepByStepAuthPage() {
  ? identifier.trim().toLowerCase()
  : `${identifier.replace(/\D/g, "") || "usuario"}@usewaesy.com`;
 
- const result = await signUpWithPassword({
- data: {
- email: cleanEmail,
- password,
- fullName: fullName.trim() || identifier.split("@")[0] || "Membro Waesy",
- redirectTo: returnUrl,
- isConsentLgpd: true,
- },
- });
+ const clientLocation = getClientGeoTelemetry();
+      const result = await signUpWithPassword({
+        data: {
+          email: cleanEmail,
+          password,
+          fullName: fullName.trim() || identifier.split("@")[0] || "Membro Waesy",
+          redirectTo: returnUrl,
+          isConsentLgpd: true,
+          clientLocation,
+        },
+      });
 
  if (!result.success) {
  toast.error(result.message || "Não foi possível concluir seu cadastro.");

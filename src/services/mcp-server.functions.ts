@@ -5,6 +5,7 @@ import { getServerIdentity, assertStoreAccess, STAFF_ROLES } from '@/lib/identit
 import { enforceRateLimit } from '@/lib/rate-limiter';
 import { executeSimLabBatchSimulation } from './simlab.functions';
 import { executeOrchestrateMarketingPost } from './squad-content.functions';
+import type { DynamicRenderableBlock } from '@/types/ad-tech-mcp';
 
 export type McpToolAccessTier = 'public' | 'store_staff' | 'admin_only';
 
@@ -127,6 +128,26 @@ export const MCP_TOOLS_MANIFEST: McpToolDefinition[] = [
         targetSin: { type: 'string', description: 'Pecado capital calibrado' }
       },
       required: ['storeId', 'companyName', 'theme']
+    }
+  },
+  {
+    name: 'generate_ad_campaign_proposal',
+    description: 'Processa comandos em linguagem natural e gera uma proposta de campanha de tráfego pago (Meta Ads, Google, Local) com criativos, segmentação demográfica e orçamento calibrado em formato de bloco renderizável (DynamicRenderableBlock).',
+    tier: 'store_staff',
+    requiredScope: 'store:marketing:write',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        storeId: { type: 'string', description: 'UUID da loja emissora' },
+        naturalLanguagePrompt: { type: 'string', description: 'Comando de voz ou texto do usuário (ex: campanha para festival)' },
+        targetPlatform: {
+          type: 'string',
+          enum: ['meta_ads', 'google_ads', 'omnichannel_local'],
+          description: 'Canal de mídia pretendido'
+        },
+        dailyBudgetCents: { type: 'number', description: 'Orçamento diário em centavos BRL (opcional)' }
+      },
+      required: ['storeId', 'naturalLanguagePrompt']
     }
   },
   {
@@ -582,6 +603,127 @@ export async function executeMcpToolCall(data: McpToolCallRequest): Promise<McpT
     }
 
     // ─── TOOL: analyze_competitor_dna (TIER 2 - GATED) ────────────────────────
+    
+    // ─── TOOL: generate_ad_campaign_proposal (TIER 2 - GATED) ────────────────
+    if (data.tool === 'generate_ad_campaign_proposal') {
+      const storeId = data.storeId || data.arguments.storeId;
+      const prompt = String(data.arguments.naturalLanguagePrompt || '').trim();
+      const platformArg = String(data.arguments.targetPlatform || 'meta_ads');
+      const customBudgetCents = Number(data.arguments.dailyBudgetCents) || 0;
+
+      // Busca dados reais da loja no banco
+      const { data: storeRow } = await supabase
+        .from('stores')
+        .select('name, city, state, slug, logo_url, settings')
+        .eq('id', storeId)
+        .maybeSingle();
+
+      const storeName = storeRow?.name || 'Sua Loja';
+      const city = storeRow?.city || 'Chapecó';
+      const state = storeRow?.state || 'SC';
+
+      // Interpretação inteligente de valores no prompt
+      let dailyCents = customBudgetCents;
+      if (!dailyCents) {
+        const matchMoney = prompt.match(/R\$\s*([0-9]+(?:[.,][0-9]{2})?)/i) || prompt.match(/([0-9]+)\s*(?:reais|p\/dia|por dia)/i);
+        if (matchMoney) {
+          const rawNum = parseFloat(matchMoney[1].replace(',', '.'));
+          dailyCents = Math.round(rawNum * 100);
+        } else {
+          dailyCents = 5000; // Padrão calibrado: R$ 50,00/dia
+        }
+      }
+
+      // Determina plataforma e canal
+      const platform = platformArg === 'google_ads' 
+        ? 'google_search' 
+        : platformArg === 'omnichannel_local'
+        ? 'omnichannel_local'
+        : 'meta_instagram';
+
+      // Derivação de tema e criativo com base no prompt
+      const cleanTheme = prompt.replace(/(cria|campanha|anúncio|anuncio|meta ads|de r\$\s*[0-9]+|por dia)/gi, '').trim() || 'Destaques da Temporada';
+      const titleCaseTheme = cleanTheme.charAt(0).toUpperCase() + cleanTheme.slice(1);
+
+      const campaignTitle = `Campanha: ${titleCaseTheme} • ${storeName}`;
+      const headline = `${titleCaseTheme} em ${city} — ${storeName}`;
+      const bodyCopy = `Aproveite as melhores condições e novidades exclusivas da ${storeName} em ${city}. Clique abaixo para conferir ofertas imperdíveis e atendimento rápido via WhatsApp.`;
+      const destinationUrl = `https://usewaesy.pages.dev/c/${storeRow?.slug || storeId}`;
+
+      const blockPayload = {
+        blockType: 'CAMPAIGN_PROPOSAL_CARD',
+        blockId: `mcp-camp-${Date.now()}`,
+        version: '1.0',
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          sourcePrompt: prompt,
+          modelPersona: 'AdTech-Optimizer-V4'
+        },
+        payload: {
+          campaignTitle,
+          platform,
+          status: 'draft_pending_approval',
+          budget: {
+            dailyCents,
+            durationDays: 7,
+            totalCents: dailyCents * 7,
+            suggestedBiddingStrategy: 'LOWEST_COST_MAX_CONVERSIONS'
+          },
+          targeting: {
+            locationLabel: `${city}, ${state} e raio de 25 km`,
+            radiusKm: 25,
+            ageRange: [18, 45],
+            interestTags: [storeRow?.settings?.category || 'Comércio Local', 'Compras Online', 'Gastronomia e Lazer'],
+            potentialAudienceReach: {
+              minDailyImpressions: Math.round((dailyCents / 100) * 220),
+              maxDailyImpressions: Math.round((dailyCents / 100) * 380),
+              estimatedCpaCents: 240
+            }
+          },
+          creative: {
+            format: 'feed_square_1x1',
+            headline,
+            bodyCopy,
+            callToActionLabel: 'Comprar Agora',
+            destinationUrl,
+            recommendedImageUrl: storeRow?.logo_url || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+            displayUrlText: `usewaesy.com/c/${storeRow?.slug || 'loja'}`,
+            sponsorHandle: storeName
+          },
+          actionButtons: {
+            primaryAction: {
+              label: 'Aprovar & Ativar Campanha',
+              apiEndpoint: '/api/marketing/campaigns/approve',
+              payloadToken: `sig_${Date.now()}_${storeId.slice(0, 8)}`
+            },
+            secondaryAction: {
+              label: 'Editar Parâmetros',
+              actionType: 'TOGGLE_EXPANDED_EDITOR'
+            }
+          }
+        }
+      };
+
+      return {
+        tool: data.tool,
+        status: 'success',
+        content: [
+          {
+            type: 'json',
+            data: blockPayload
+          },
+          {
+            type: 'text',
+            text: `Proposta de campanha "${campaignTitle}" gerada com sucesso via MCP com orçamento de R$ ${(dailyCents / 100).toFixed(2)}/dia.`
+          }
+        ],
+        executionMetrics: {
+          durationMs: Date.now() - startTime,
+          tier: toolDef.tier,
+          tenantValidated
+        }
+      };
+    }
     if (data.tool === 'analyze_competitor_dna') {
       const storeId = data.storeId || data.arguments.storeId;
       const competitorName = String(data.arguments.competitorName || '').trim();

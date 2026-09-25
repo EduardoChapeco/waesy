@@ -40,6 +40,7 @@ import {
  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -704,7 +705,7 @@ export default function WorkspaceDestinationsPage() {
  )}
 
  <div className="absolute top-3 left-3 flex items-center gap-1.5">
- <Badge className="bg-black/70 backdrop-blur-md text-white border-none text-[10px] font-bold">
+ <Badge className="bg-background/95 text-foreground border border-border/80 text-[10px] font-semibold shadow-xs">
  {dest.state ? `${dest.state} • ${dest.country}` : dest.country}
  </Badge>
  </div>
@@ -725,7 +726,7 @@ export default function WorkspaceDestinationsPage() {
  )}
 
  {dest.sections && dest.sections.length > 0 && (
- <Badge variant="secondary" className="bg-black/60 backdrop-blur-md text-white text-[9px] font-mono border-none gap-1 py-0.5">
+ <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-[9px] font-mono gap-1 py-0.5 shadow-xs">
  <Layers className="size-2.5 text-primary" />
  <span>{dest.sections.length} seções</span>
  </Badge>
@@ -734,7 +735,7 @@ export default function WorkspaceDestinationsPage() {
 
  {dest.gallery_urls && dest.gallery_urls.length > 0 && (
  <div className="absolute bottom-2 right-2">
- <Badge variant="secondary" className="bg-black/60 backdrop-blur-md text-white text-[9px] font-mono border-none gap-1 py-0.5">
+ <Badge variant="secondary" className="bg-background/95 text-foreground border border-border/80 text-[9px] font-mono gap-1 py-0.5 shadow-xs">
  <ImageIcon className="size-2.5" />
  <span>+{dest.gallery_urls.length} fotos</span>
  </Badge>
@@ -811,23 +812,19 @@ export default function WorkspaceDestinationsPage() {
  </Button>
  </div>
 
- <Button
- type="button"
- size="icon"
- variant="ghost"
- onClick={() => {
- if (confirm(`Deseja realmente remover o destino "${dest.name}"?`)) {
- deleteMut.mutate(dest.id);
- }
- }}
- className="size-10 sm:size-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
- title="Remover Destino"
- >
- <Trash2 className="size-3.5" />
- </Button>
- </div>
- </div>
- </Card>
+                  <CrudActionsMenu
+                    entityName="Destino"
+                    onEdit={() => handleOpenEditor(dest)}
+                    onView={() => setPreviewModalDest(dest)}
+                    onDelete={async () => {
+                      await deleteMut.mutateAsync(dest.id);
+                    }}
+                    deleteConfirmTitle={`Excluir destino "${dest.name}"?`}
+                    deleteConfirmDescription="Esta ação removerá permanentemente o destino, seus roteiros e fotos do portal."
+                  />
+                </div>
+              </div>
+            </Card>
  ))}
  </div>
  )}
@@ -974,7 +971,7 @@ export default function WorkspaceDestinationsPage() {
  className="h-9 text-xs rounded-xl bg-background"
  />
  {filteredCanonicalSearchResults.length > 0 && (
- <div className="max-h-36 overflow-y-auto no-scrollbar rounded-xl border border-border bg-background p-1 space-y-1 shadow-md">
+                  <div className="max-h-36 overflow-y-auto no-scrollbar rounded-xl border border-border/80 bg-background p-1 space-y-1 shadow-xs">
  {filteredCanonicalSearchResults.map((dest) => (
  <div
  key={dest.id}
@@ -1694,7 +1691,7 @@ export default function WorkspaceDestinationsPage() {
 
  {/* ── ABA 6: LIVE PREVIEW DA PÁGINA COMPLETA DO DESTINO ── */}
  <TabsContent value="preview" className="m-0 space-y-6">
- <div className="rounded-2xl border border-border overflow-hidden bg-background shadow-md">
+            <div className="rounded-2xl border border-border/80 overflow-hidden bg-background shadow-xs">
  {/* Hero Panorâmico do Destino */}
  <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-muted">
  {coverImageUrl ? (
@@ -1712,7 +1709,7 @@ export default function WorkspaceDestinationsPage() {
  {state} • {country}
  </Badge>
  {iataGateway && (
- <Badge className="bg-white/20 backdrop-blur-md text-white border-none font-mono text-xs">
+ <Badge className="bg-background/95 text-foreground border border-border/80 font-mono text-xs shadow-xs">
  Portão IATA: {iataGateway}
  </Badge>
  )}

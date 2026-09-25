@@ -242,7 +242,7 @@ function AdminProductsPage() {
   const semantics = getNicheSemantics(store);
   const nicheCtx = getNicheCatalogContext(store);
 
-  const [products, setProducts] = useState<AdminProductRow[]>(initialProducts);
+  const [products, setProducts] = useState<AdminProductRow[]>(Array.isArray(initialProducts) ? initialProducts : []);
   const [mainTab, setMainTab] = useState<"products" | "complements">("products");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");

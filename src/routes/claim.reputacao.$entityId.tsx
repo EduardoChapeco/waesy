@@ -74,9 +74,9 @@ function ClaimReputacaoPage() {
  <div className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6">
  <div className="max-w-5xl mx-auto space-y-6">
  {/* Header com Visual Apple HIG */}
- <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card/60 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+ <div className="p-6 sm:p-8 rounded-2xl border border-border bg-card/60 backdrop-blur-xl shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
  <div className="flex items-center gap-4">
- <div className="size-16 rounded-2xl bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-black text-2xl shadow-lg shadow-primary/20">
+ <div className="size-16 rounded-2xl bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-black text-2xl shadow-xs shadow-primary/20">
  {initials}
  </div>
  <div>

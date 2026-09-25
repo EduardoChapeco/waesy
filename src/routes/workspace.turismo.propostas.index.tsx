@@ -37,6 +37,7 @@ import { NewTravelProposalSheet } from "@/components/tourism/new-travel-proposal
 import { formatMoney } from "@/lib/money";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 export const Route = createFileRoute("/workspace/turismo/propostas/")({
  head: () => ({ meta: [{ title: "Propostas de Viagem | Workspace Waesy" }] }),
@@ -147,7 +148,7 @@ function WorkspaceProposalsIndexPage() {
  toolDescription="O criador de lâminas e propostas interativas foi desenvolvido especificamente para agências de turismo e consultores de viagem apresentarem roteiros visuais aos passageiros."
  store={store}
  >
-      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100vh-8.5rem)] overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 flex flex-col gap-4 animate-in fade-in duration-200 min-h-[calc(100dvh-8.5rem)] overflow-x-hidden">
         {/* ── 1. Barra Canônica de Operação Silenciosa ── */}
         <WorkspaceCanonicalToolbar
           tabs={[
@@ -200,7 +201,7 @@ function WorkspaceProposalsIndexPage() {
  return (
  <Card
  key={p.id}
- className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between shadow-xs group"
+ className="p-5 rounded-2xl border border-border/60 bg-card space-y-4 hover:border-primary/40 transition-all flex flex-col justify-between group"
  >
  <div className="space-y-2.5">
  <div className="flex items-center justify-between">
@@ -221,7 +222,36 @@ function WorkspaceProposalsIndexPage() {
  ? "Enviada"
  : "Rascunho"}
  </Badge>
- </div>
+                    <CrudActionsMenu
+                      entityName="Proposta"
+                      editUrl={`/workspace/turismo/propostas/${p.id}`}
+                      viewUrl={`/proposta/${p.public_token}`}
+                      onDuplicate={() => duplicateMutation.mutate(p.id)}
+                      onDelete={async () => {
+                        await deleteMutation.mutateAsync(p.id);
+                      }}
+                      deleteConfirmTitle={`Excluir proposta "${p.title}"?`}
+                      deleteConfirmDescription="Esta ação removerá permanentemente a proposta e seus orçamentos associados."
+                      customActions={[
+                        {
+                          id: "copy-link",
+                          label: "Copiar Link Público",
+                          icon: Copy,
+                          onClick: () => handleCopyLink(p.public_token),
+                        },
+                        ...(p.status !== "approved"
+                          ? [
+                              {
+                                id: "convert-trip",
+                                label: "Converter em Viagem",
+                                icon: Plane,
+                                onClick: () => convertMutation.mutate(p.id),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
+                  </div>
 
  <h3 className="text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
  {p.title}
@@ -266,67 +296,19 @@ function WorkspaceProposalsIndexPage() {
 
  {/* Botão de 1-Clique para Converter em Viagem Operacional */}
  {p.status === "approved" && (
-   <Button
-     type="button"
-     size="sm"
-     onClick={() => convertMutation.mutate(p.id)}
-     disabled={convertMutation.isPending}
-     className="w-full rounded-xl text-xs font-bold h-9 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer shadow-xs"
-   >
-     <Plane className="size-3.5" />
-     {convertMutation.isPending ? "Gerando Viagem..." : "Gerar Viagem & Vouchers"}
-   </Button>
- )}
-
- {/* Ações secundárias táteis */}
- <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
- <button
- type="button"
- onClick={() => handleCopyLink(p.public_token)}
- className="hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"
- >
- <Copy className="size-3" />
- Copiar Link
- </button>
-
- {p.status !== "approved" && (
-   <button
-     type="button"
-     onClick={() => convertMutation.mutate(p.id)}
-     disabled={convertMutation.isPending}
-     className="hover:text-emerald-600 flex items-center gap-1 cursor-pointer transition-colors"
-     title="Converter proposta em viagem operacional"
-   >
-     <Plane className="size-3" />
-     Converter
-   </button>
- )}
-
- <button
- type="button"
- onClick={() => duplicateMutation.mutate(p.id)}
- disabled={duplicateMutation.isPending}
- className="hover:text-foreground flex items-center gap-1 cursor-pointer transition-colors"
- >
- Duplicar
- </button>
-
- <button
- type="button"
- onClick={() => {
- if (confirm("Tem certeza que deseja excluir esta proposta?")) {
- deleteMutation.mutate(p.id);
- }
- }}
- disabled={deleteMutation.isPending}
- className="hover:text-destructive flex items-center gap-1 cursor-pointer transition-colors"
- >
- <Trash2 className="size-3" />
- Excluir
- </button>
- </div>
- </div>
- </Card>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => convertMutation.mutate(p.id)}
+                  disabled={convertMutation.isPending}
+                  className="w-full rounded-xl text-xs font-bold h-9 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+                >
+                  <Plane className="size-3.5" />
+                  {convertMutation.isPending ? "Gerando Viagem..." : "Gerar Viagem & Vouchers"}
+                </Button>
+              )}
+            </div>
+          </Card>
  );
  })}
  </div>

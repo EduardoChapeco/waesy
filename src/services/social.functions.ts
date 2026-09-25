@@ -303,11 +303,34 @@ export const getMuralFeed = createServerFn({ method: "GET" })
 
     const { limit = 20, cursor, post_type, store_id, tab = "for_you" } = input || {};
 
-    // ── 0. Resolve Following Set (se autenticado) ─────────────────────────
+    // ── 0. Strict Single-Store Identity Wall & Slug Resolution ───────────
+    let targetStoreUuid: string | null = null;
+    if (store_id) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(store_id);
+      if (isUuid) {
+        targetStoreUuid = store_id;
+      } else {
+        const { data: storeRow } = await db
+          .from("stores")
+          .select("id")
+          .eq("slug", store_id)
+          .maybeSingle();
+        targetStoreUuid = storeRow?.id || null;
+      }
+
+      // If store_id was passed but does not exist, return empty feed immediately (no cross-store leaks)
+      if (!targetStoreUuid) {
+        return { items: [], hasMore: false, nextCursor: null } as MuralFeedResponse;
+      }
+    }
+
+    const isStoreProfileMode = Boolean(targetStoreUuid);
+
+    // ── 0.5. Resolve Following Set (se autenticado e feed global) ────────
     const followedUserIds = new Set<string>();
     const followedStoreIds = new Set<string>();
 
-    if (profile_id || customer_id) {
+    if (!isStoreProfileMode && (profile_id || customer_id)) {
       try {
         const [userFollows, storeFollows] = await Promise.all([
           db
@@ -327,8 +350,8 @@ export const getMuralFeed = createServerFn({ method: "GET" })
       }
     }
 
-    // Se a aba for "Seguindo", tratar casos especiais (sem login / lista vazia)
-    if (tab === "following") {
+    // Se a aba for "Seguindo" no feed global, tratar casos especiais (sem login / lista vazia)
+    if (!isStoreProfileMode && tab === "following") {
       if (!profile_id && !customer_id) {
         return { items: [], hasMore: false, nextCursor: null, requiresAuth: true } as MuralFeedResponse;
       }
@@ -352,8 +375,9 @@ export const getMuralFeed = createServerFn({ method: "GET" })
       )
       .eq("status", "active");
 
-    if (store_id) {
-      query = query.eq("author_store_id", store_id);
+    // ZERO CONTEXT BLEEDING: Em modo loja, NUNCA permite or(...) nem outros autores
+    if (isStoreProfileMode && targetStoreUuid) {
+      query = query.eq("author_store_id", targetStoreUuid);
     }
 
     if (cursor) {
@@ -369,8 +393,8 @@ export const getMuralFeed = createServerFn({ method: "GET" })
       query = query.or("post_type.eq.news,reference_type.eq.news");
     }
 
-    // Filtro estrito da aba "Seguindo"
-    if (tab === "following") {
+    // Filtro estrito da aba "Seguindo" — APENAS no feed global (nunca em perfil de loja)
+    if (!isStoreProfileMode && tab === "following") {
       const userArr = Array.from(followedUserIds);
       const storeArr = Array.from(followedStoreIds);
       const orParts: string[] = [];
@@ -547,7 +571,8 @@ export const getMuralFeed = createServerFn({ method: "GET" })
     });
 
     // ── 6. BigTech Algorithm Engine (Para Você & Explorar) ───────────────
-    if (tab === "for_you" || tab === "explore") {
+    // Em modo loja, desabilita a dispersão de autores para não penalizar posts da mesma loja
+    if (!isStoreProfileMode && (tab === "for_you" || tab === "explore")) {
       const nowMs = Date.now();
 
       // Cálculo de score algorítmico ponderado

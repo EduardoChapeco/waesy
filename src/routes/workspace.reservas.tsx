@@ -890,7 +890,7 @@ function ReservationForm({
 
  {/* Dropdown de Clientes Encontrados */}
  {isDropdownOpen && searchResults.length > 0 && (
- <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-card border border-border/80 rounded-xl shadow-lg max-h-48 overflow-y-auto no-scrollbar divide-y divide-border/40">
+ <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-card border border-border/80 rounded-xl shadow-xs max-h-48 overflow-y-auto no-scrollbar divide-y divide-border/40">
  {searchResults.map((c: any) => (
  <div
  key={c.id}

@@ -150,7 +150,7 @@ export function QuickCreateModal({
  aria-label="Criar ou Anunciar"
  className={
  asNavButton
- ? "h-11 w-11 shrink-0 rounded-2xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 flex items-center justify-center border border-border/50 active:scale-95 transition-all focus:outline-none cursor-pointer shadow-xs"
+ ? "size-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs active:scale-90 transition-transform focus:outline-none cursor-pointer"
  : "size-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center -mt-5 hover:scale-105 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer border-2 border-background"
  }
  >

@@ -1033,7 +1033,7 @@ function PdvTerminal() {
               size="lg"
               onClick={handleSendItemsToTable}
               disabled={cart.length === 0 || isProcessing}
-              className="w-full h-12 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white gap-2 cursor-pointer shadow-md"
+              className="w-full h-12 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-xs"
             >
               <Utensils className="size-4" />
               <span>Enviar para a Cozinha (Mesa {tableOrComandaNumber})</span>
@@ -1055,7 +1055,7 @@ function PdvTerminal() {
             size="lg"
             onClick={handleOpenCheckout}
             disabled={cart.length === 0}
-            className="w-full h-12 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-md"
+            className="w-full h-12 rounded-xl font-bold text-xs bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs"
           >
             <CreditCard className="size-4" />
             <span>Cobrar [F4]</span>
@@ -1067,7 +1067,7 @@ function PdvTerminal() {
   );
 
  return (
- <div className="flex flex-col h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] overflow-hidden bg-background rounded-2xl border border-border/80 shadow-xs">
+ <div className="flex flex-col h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] overflow-hidden bg-background rounded-2xl border border-border/80 shadow-xs">
  {/* ── BARRA SUPERIOR OPERACIONAL (POS Header) ── */}
  <header className="p-3 px-4 border-b border-border/70 bg-card flex flex-wrap items-center justify-between gap-3 shrink-0">
  <div className="flex items-center gap-3 flex-1 min-w-[280px] max-w-xl">
@@ -1217,7 +1217,7 @@ function PdvTerminal() {
  title="Mapa de Reservas do Salão"
  >
  <Link to="/workspace/reservas">
- <Armchair className="size-3.5 text-blue-500" />
+ <Armchair className="size-3.5 text-primary" />
  <span className="hidden xl:inline">Reservas</span>
  </Link>
  </Button>
@@ -1296,7 +1296,7 @@ function PdvTerminal() {
  <div
  key={`${product.id}-${variant.id || "def"}`}
  onClick={() => handleProductClick(product, variant)}
- className={`relative rounded-2xl bg-card border transition-all cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-md hover:border-primary/50 active:scale-[0.98] ${
+ className={`relative rounded-2xl bg-card border transition-all cursor-pointer flex flex-col justify-between overflow-hidden group select-none hover:shadow-xs hover:border-primary/50 active:scale-[0.98] ${
  inCartQty > 0 ? "border-primary ring-1 ring-primary/40" : "border-border/80"
  }`}
  >
@@ -1317,7 +1317,7 @@ function PdvTerminal() {
 
  {/* Badge de Quantidade no Carrinho */}
  {inCartQty > 0 && (
- <span className="absolute top-2 right-2 size-6 rounded-full bg-primary text-primary-foreground font-black text-xs flex items-center justify-center shadow-md animate-in zoom-in-50">
+ <span className="absolute top-2 right-2 size-6 rounded-full bg-primary text-primary-foreground font-black text-xs flex items-center justify-center shadow-xs animate-in zoom-in-50">
  {inCartQty}
  </span>
  )}
@@ -1586,7 +1586,7 @@ function PdvTerminal() {
  <span>{formatMoney(lastSaleReceipt?.subtotal || 0)}</span>
  </div>
  {lastSaleReceipt?.discount > 0 && (
- <div className="flex justify-between text-emerald-600">
+ <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
  <span>Desconto:</span>
  <span>-{formatMoney(lastSaleReceipt.discount)}</span>
  </div>
@@ -1609,7 +1609,7 @@ function PdvTerminal() {
 							onClick={() => handleGenerateContractFromPOS(lastSaleReceipt.orderId)}
 							disabled={isGeneratingContract}
 							variant="outline"
-							className="w-full h-11 rounded-xl text-xs font-bold gap-2 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 cursor-pointer shadow-2xs"
+							className="w-full h-11 rounded-xl text-xs font-bold gap-2 border-primary/30 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs"
 						>
 							<FileText className="size-4" />
 							<span>{isGeneratingContract ? "Gerando Contrato..." : "Gerar Contrato & Assinatura no Balcão"}</span>
@@ -1778,7 +1778,7 @@ function PdvTerminal() {
 
       {/* ── MODAL DIGITAL COMPANION CARD 9:16 (COMPROVANTE DE BALCÃO / CARNÊ WHATSAPP) ── */}
       <Dialog open={companionCardOpen} onOpenChange={setCompanionCardOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Comprovante Digital 9:16 de Venda</DialogTitle>
           </DialogHeader>
@@ -1801,7 +1801,7 @@ function PdvTerminal() {
 
       {/* ── BARRA FLUTUANTE MOBILE (THUMB ZONE) ── */}
       {cart.length > 0 && (
-        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-2.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 p-2.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-xs flex items-center justify-between gap-3 animate-in slide-in-from-bottom-3">
           <div className="flex items-center gap-2.5 min-w-0 pl-1">
             <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <ShoppingCart className="size-4" />

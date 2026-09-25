@@ -96,6 +96,7 @@ import { getNicheSemantics } from "@/lib/niche-semantics";
 import { WorkspaceAccountSwitcher } from "./workspace-account-switcher";
 import { WorkspaceAllToolsDialog } from "./workspace-all-tools-dialog";
 import { WorkspaceSidebarFlyout } from "./workspace-sidebar-flyout";
+import { WorkspaceAccessDenied } from "./workspace-access-denied";
 
 
 function getStoreContextualAction(storeData: any) {
@@ -222,11 +223,72 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  session?.role === "platform_admin" ||
  session?.user?.user_metadata?.role === "platform_admin";
 
- const activeModules = resolveWorkspaceNavigation(activeStore, {
- isMasterMode: isPlatformAdmin && isMasterAllVerticals,
- userRole: activeStore?.role || session?.role,
- });
- const currentSemantics = getNicheSemantics(activeStore);
+  const effectiveUserRole = isPlatformAdmin
+    ? "owner"
+    : (activeStore?.role || session?.role || "owner").toLowerCase();
+
+  const activeModules = resolveWorkspaceNavigation(activeStore, {
+    isMasterMode: isPlatformAdmin && isMasterAllVerticals,
+    userRole: effectiveUserRole,
+  });
+  const currentSemantics = getNicheSemantics(activeStore);
+
+  // Governança Granular de RBAC: Verificação de Permissão de Acesso à Rota Ativa
+  const isAuthorized = (() => {
+    if (isPlatformAdmin) return true;
+
+    // 1. Proprietário(a) e Administrador(a) Legal possuem autoridade total
+    if (
+      effectiveUserRole === "owner" ||
+      effectiveUserRole === "admin" ||
+      effectiveUserRole === "proprietario"
+    ) {
+      return true;
+    }
+
+    // 2. Rotas estritas de Proprietário (bloqueadas para Gerentes e demais colaboradores)
+    const OWNER_ONLY_ROUTES = [
+      "/workspace/configuracoes/seguranca",
+      "/workspace/configuracoes/excluir",
+      "/workspace/settings/danger-zone",
+      "/workspace/assinatura",
+      "/workspace/faturamento",
+      "/workspace/financeiro/faturas",
+      "/workspace/financeiro/dados-bancarios",
+      "/workspace/financeiro/saques",
+      "/workspace/financeiro/configuracao",
+      "/workspace/configuracoes/integracoes",
+      "/workspace/configuracoes/ai",
+      "/workspace/configuracoes/sessoes",
+      "/workspace/configuracoes/privacidade-loja",
+      "/workspace/configuracoes/parceiros",
+    ];
+
+    if (OWNER_ONLY_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
+      return false;
+    }
+
+    // 3. Gerente Operacional: acesso aos módulos do dia a dia (exceto rotas críticas acima)
+    if (effectiveUserRole === "manager" || effectiveUserRole === "gerente") {
+      return true;
+    }
+
+    // 4. Rotas universais e de onboarding geral do Workspace
+    if (
+      currentPath === "/workspace" ||
+      currentPath === "/workspace/" ||
+      currentPath.startsWith("/workspace/onboarding")
+    ) {
+      return true;
+    }
+
+    // 5. Demais colaboradores: valida se a rota pertence aos módulos autorizados para o cargo
+    return activeModules.some((group) =>
+      group.items.some(
+        (item) => currentPath === item.path || currentPath.startsWith(item.path + "/")
+      )
+    );
+  })();
 
  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
  const initial: Record<string, boolean> = { overview: true };
@@ -468,7 +530,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  <SheetContent side="left" className="w-[290px] p-4">
  <div className="space-y-4">
  <div className="font-bold text-sm text-foreground">Menu Operacional</div>
- <ScrollArea className="h-[calc(100vh-100px)] pr-2">
+ <ScrollArea className="h-[calc(100dvh-100px)] pr-2">
  <NavLinks isMobile={true} />
  </ScrollArea>
  </div>
@@ -640,7 +702,15 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
         <main id="workspace-main-content" className="flex-1 w-full overflow-y-auto no-scrollbar">
           <div className="w-full max-w-7xl mx-auto px-[1px] sm:px-6 lg:px-8 py-2 sm:py-6 pb-24">
-            {children}
+            {isAuthorized ? (
+              children
+            ) : (
+              <WorkspaceAccessDenied
+                role={effectiveUserRole}
+                path={currentPath}
+                storeName={activeStore?.name}
+              />
+            )}
           </div>
         </main>
  </div>

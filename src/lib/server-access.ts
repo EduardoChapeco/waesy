@@ -35,14 +35,26 @@ export async function requireRole(allowedRoles: Role[]): Promise<{ id: string; r
  return mod.requireRole(allowedRoles);
 }
 
+/** Exige acesso estrito de proprietário / administrador societário. Servidor apenas. */
+export async function requireOwner(): Promise<{ id: string; role: Role; store_id: string }> {
+  const mod = await import("@/lib/auth-guards.server");
+  return mod.requireOwner();
+}
+
+/** Exige acesso gerencial ou superior. Servidor apenas. */
+export async function requireManager(): Promise<{ id: string; role: Role; store_id: string }> {
+  const mod = await import("@/lib/auth-guards.server");
+  return mod.requireManager();
+}
+
 /** Exige acesso administrativo/gerencial. Servidor apenas. */
 export async function requireAdmin(): Promise<{ id: string; role: Role; store_id: string }> {
- const mod = await import("@/lib/auth-guards.server");
- return mod.requireAdmin();
+  const mod = await import("@/lib/auth-guards.server");
+  return mod.requireAdmin();
 }
 
 /** Exige acesso administrativo global (master). Servidor apenas. */
 export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; store_id: string }> {
- const mod = await import("@/lib/auth-guards.server");
- return mod.requirePlatformAdmin();
+  const mod = await import("@/lib/auth-guards.server");
+  return mod.requirePlatformAdmin();
 }

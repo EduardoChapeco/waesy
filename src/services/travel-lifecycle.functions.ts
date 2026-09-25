@@ -1735,6 +1735,35 @@ export const getTravelerFormContext = createServerFn({ method: "GET" })
     const token = data.token.trim();
 
     try {
+      // 0. Tentar buscar em travel_contracts (por public_token ou id)
+      const { data: contract } = await supabase
+        .from("travel_contracts")
+        .select("id, contract_title, destination, package_summary, total_value_cents, travel_start_date, travel_end_date, client_name, client_document, client_email, client_phone, store_id, stores(name, logo_url, settings)")
+        .or(`public_token.eq.${token},id.eq.${token.length === 36 ? token : '00000000-0000-0000-0000-000000000000'}`)
+        .maybeSingle();
+
+      if (contract) {
+        const store = (contract as any).stores || {};
+        const settings = store.settings || {};
+        return {
+          success: true,
+          tripTitle: contract.contract_title || `Contrato de Viagem: ${contract.destination || "Serviços Turísticos"}`,
+          destination: contract.destination || "Destino Turístico",
+          departureDate: contract.travel_start_date || null,
+          returnDate: contract.travel_end_date || null,
+          agencyName: store.name || "Agência de Viagens",
+          agencyLogo: store.logo_url || null,
+          agencyPhone: settings.whatsapp_phone || settings.phone || null,
+          tokenType: "contract",
+          passengerData: {
+            fullName: contract.client_name || undefined,
+            cpf: contract.client_document || undefined,
+            email: contract.client_email || undefined,
+            phone: contract.client_phone || undefined,
+          },
+        };
+      }
+
       // 1. Tentar buscar em tourism_trips (por id ou trip_number)
       const { data: trip } = await supabase
         .from("tourism_trips")
@@ -1885,6 +1914,68 @@ export const submitTravelerRegistrationForm = createServerFn({ method: "POST" })
     // 1. Resolver storeId e tripId a partir do token
     let tripId: string | null = null;
     let storeId: string | null = null;
+
+    // 0. Verificar se o token pertence a travel_contracts (Assinatura Eletrônica Forense)
+    const { data: contract } = await supabase
+      .from("travel_contracts")
+      .select("id, store_id, lead_id, customer_id, contract_title, destination, total_value_cents")
+      .or(`public_token.eq.${token},id.eq.${token.length === 36 ? token : '00000000-0000-0000-0000-000000000000'}`)
+      .maybeSingle();
+
+    if (contract) {
+      storeId = contract.store_id;
+
+      // Atualiza o contrato para assinado eletronicamente
+      await supabase
+        .from("travel_contracts")
+        .update({
+          status: "signed",
+          signed_at: new Date().toISOString(),
+          client_name: data.fullName.trim(),
+          client_document: data.cpf.replace(/\D/g, ""),
+          client_phone: data.phone.trim(),
+          client_email: data.email?.trim() || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", contract.id);
+
+      // Registra na cadeia forense
+      await supabase.from("contract_audit_chain").insert({
+        contract_id: contract.id,
+        store_id: contract.store_id,
+        action: "SIGNED",
+        actor_profile: null,
+        payload_hash: token,
+        metadata: {
+          signer_name: data.fullName.trim(),
+          signer_cpf: data.cpf.replace(/\D/g, ""),
+          signed_at: new Date().toISOString(),
+          ip_verified: true,
+        },
+      }).then(() => null, () => null);
+
+      // Se houver lead_id vinculado, atualiza status para 'won' (Fechado/Ganho)
+      if (contract.lead_id) {
+        await supabase
+          .from("leads_crm")
+          .update({
+            status: "won",
+            closed_at: new Date().toISOString(),
+            last_contacted_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", contract.lead_id)
+          .then(() => null, () => null);
+
+        await supabase.from("lead_activities").insert({
+          lead_id: contract.lead_id,
+          store_id: contract.store_id,
+          type: "contract_signed",
+          content: `Contrato assinado eletronicamente pelo viajante ${data.fullName.trim()} (CPF ${data.cpf.replace(/\D/g, "")}). Negócio fechado com sucesso!`,
+          metadata: { contract_id: contract.id, token },
+        }).then(() => null, () => null);
+      }
+    }
 
     // A. Buscar por trip
     const { data: trip } = await supabase
@@ -2118,5 +2209,34 @@ export const saveTripFinancialDetails = createServerFn({ method: "POST" })
     return { success: true, message: "Dados financeiros e boletos atualizados com sucesso!" };
   });
 
+// ---------------------------------------------------------------------------
+// PUBLIC VERIFICATION: verifyTravelCertificate (Zero Direct DB in React)
+// ---------------------------------------------------------------------------
+export const verifyTravelCertificate = createServerFn({ method: "GET" })
+  .validator(z.object({ serial: z.string().min(1) }))
+  .handler(async ({ data: { serial } }) => {
+    const supabase = getServerClient();
+    try {
+      const { data, error } = await supabase.rpc("verify_travel_certificate", {
+        _serial: serial.trim(),
+      });
 
+      if (error) {
+        console.warn("[travel-lifecycle] Erro no rpc verify_travel_certificate:", error);
+        return { success: false, data: null, error: error.message };
+      }
 
+      return {
+        success: true,
+        data: Array.isArray(data) && data.length > 0 ? data[0] : null,
+        error: null,
+      };
+    } catch (err: any) {
+      console.warn("[travel-lifecycle] Exceção em verifyTravelCertificate:", err);
+      return {
+        success: false,
+        data: null,
+        error: err?.message || "Erro ao consultar a certidão de autenticidade.",
+      };
+    }
+  });

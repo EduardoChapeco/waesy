@@ -104,10 +104,12 @@ export const getStoreAdTargets = createServerFn({ method: "GET" }).handler(async
  .single();
 
  return {
- products: products || [],
- storePhone: store?.phone || null,
- storeSlug: store?.slug || "",
- };
+    storeId: identity.store_id,
+    products: products || [],
+    storePhone: store?.phone || null,
+    storeSlug: store?.slug || "",
+    storeName: store?.name || "",
+  };
 });
 
 export const createAdCampaign = createServerFn({ method: "POST" })
@@ -366,4 +368,84 @@ export const generateUtmTrackingLink = createServerFn({ method: "POST" })
     }
 
     return { trackingUrl: url.toString(), cleanCampaign };
+  });
+
+
+export const approveAndPublishAdCampaign = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      campaignTitle: z.string().min(1, "Título obrigatório"),
+      platform: z.enum(["meta_instagram", "meta_facebook", "google_search", "omnichannel_local"]).default("meta_instagram"),
+      dailyBudgetCents: z.number().positive("Orçamento deve ser positivo"),
+      durationDays: z.number().int().positive().default(7),
+      targeting: z.object({
+        locationLabel: z.string(),
+        radiusKm: z.number(),
+        ageRange: z.tuple([z.number(), z.number()]),
+        interestTags: z.array(z.string()),
+      }),
+      creative: z.object({
+        format: z.string(),
+        headline: z.string(),
+        bodyCopy: z.string(),
+        callToActionLabel: z.string(),
+        destinationUrl: z.string(),
+        recommendedImageUrl: z.string(),
+      }),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "content"]);
+
+    const totalBudgetCents = data.dailyBudgetCents * data.durationDays;
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + data.durationDays * 24 * 60 * 60 * 1000);
+
+    const placementMap: Record<string, string[]> = {
+      meta_instagram: ["feed", "story"],
+      meta_facebook: ["feed"],
+      google_search: ["search"],
+      omnichannel_local: ["feed", "banner", "search", "story"],
+    };
+
+    const { data: inserted, error } = await supabase
+      .from("ad_campaigns")
+      .insert({
+        store_id: identity.store_id,
+        title: data.campaignTitle,
+        type: data.platform.startsWith("meta") ? "social_boost" : "featured_placement",
+        budget_cents: totalBudgetCents,
+        status: "active",
+        starts_at: now.toISOString(),
+        ends_at: endsAt.toISOString(),
+        placements: placementMap[data.platform] || ["feed"],
+        settings: {
+          platform: data.platform,
+          daily_budget_cents: data.dailyBudgetCents,
+          duration_days: data.durationDays,
+          targeting: data.targeting,
+          creative: data.creative,
+          approved_by_user_id: identity.id,
+          approved_at: now.toISOString(),
+          created_via: "mcp_ai_voice_command",
+        },
+      })
+      .select("id, title, status, budget_cents, created_at")
+      .single();
+
+    if (error) {
+      console.error("[ads] Erro ao aprovar campanha via MCP:", error);
+      throw new Error(`Falha ao registrar campanha: ${error.message}`);
+    }
+
+    return {
+      success: true,
+      campaignId: inserted.id,
+      title: inserted.title,
+      status: inserted.status,
+      totalBudgetCents: inserted.budget_cents,
+      message: `Campanha "${inserted.title}" aprovada e ativada com sucesso!`,
+    };
   });

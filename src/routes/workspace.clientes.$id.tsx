@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -101,8 +101,13 @@ function CustomerDetailPage() {
         <p className="text-sm text-muted-foreground max-w-sm">
           Este registro pode ter sido removido ou você não tem permissão para visualizá-lo.
         </p>
-        <Button variant="outline" size="sm" onClick={() => router.history.back()}>
-          Voltar
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => (typeof window !== "undefined" && window.history.length > 1 ? router.history.back() : router.navigate({ to: "/workspace/crm" }))}
+          className="cursor-pointer"
+        >
+          Voltar para Clientes
         </Button>
       </div>
     );

@@ -76,9 +76,9 @@ const STATUS_CONFIG: Record<
  occupied: {
  label: "Ocupada",
  badgeVariant: "default",
- cardClass: "border-blue-500/40 bg-blue-500/5 hover:border-blue-500/70",
- textClass: "text-blue-700 dark:text-blue-400",
- dotClass: "bg-blue-500",
+ cardClass: "border-primary/40 bg-primary/5 hover:border-primary/70",
+ textClass: "text-primary",
+ dotClass: "bg-primary",
  },
  awaiting_payment: {
  label: "Conta Solicitada",
@@ -213,7 +213,7 @@ function PdvComandasPage() {
  toolDescription="O controle de mesas físicas, consumo aberto e chamadas de garçom foi projetado especificamente para operações de bares, restaurantes e estabelecimentos gastronômicos."
  store={store}
  >
-      <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
+      <div className="flex flex-col min-h-[calc(100dvh-4rem)] bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
         {/* ── Top Bar ── */}
         <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl">
           <div className="flex items-center gap-3">
@@ -806,7 +806,7 @@ function PdvComandasPage() {
  <div className="flex flex-col items-center justify-center">
  <div
  id="printable-table-tent"
- className="w-full max-w-[240px] p-5 rounded-2xl bg-card border border-border/80 shadow-md text-center space-y-3"
+ className="w-full max-w-[240px] p-5 rounded-2xl bg-card border border-border/80 shadow-xs text-center space-y-3"
  >
  <Badge variant="outline" className="text-[9px] font-mono border-border/80 text-muted-foreground uppercase">
  Cardápio Digital no Salão
@@ -888,7 +888,7 @@ function PdvComandasPage() {
  {/* Botão Flutuante Mobile: Abrir Comanda Rápida (Thumb Zone) */}
  <div className="md:hidden fixed bottom-6 right-6 z-40">
  <Button
- className="size-14 rounded-full shadow-2xl bg-primary text-primary-foreground flex items-center justify-center p-0"
+ className="size-14 rounded-full shadow-xs bg-primary text-primary-foreground flex items-center justify-center p-0"
  onClick={() => {
  const firstFree = salonData?.tables?.find((t: any) => t.status === "free");
  if (firstFree) {

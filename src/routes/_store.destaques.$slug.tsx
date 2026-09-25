@@ -6,6 +6,7 @@ import { Storefront, MagnifyingGlass, SquaresFour, ListDashes, Truck, Flame, Arr
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { NativeMobileHeader } from "@/components/navigation";
 import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/commerce/product-card";
 import { StoreCard } from "@/components/commerce/store-card";
@@ -387,30 +388,24 @@ function DedicatedHotpageView() {
  </div>
  )}
 
- {/* Barra de Navegação Transtranslúcida no Topo do Hero */}
- <div className="relative z-10 max-w-7xl mx-auto flex items-center justify-between gap-3 pb-6">
- <Button
- size="icon"
- variant="ghost"
- onClick={() => window.history.back()}
- className="size-9 rounded-full bg-black/30 hover:bg-black/50 text-white backdrop-blur-md border border-white/15"
- title="Voltar"
- >
- <CaretLeft size={20} weight="bold" />
- </Button>
-
- <div className="flex items-center gap-2">
+ {/* Barra de Navegação Canônica Flutuante no Topo do Hero */}
+ <NativeMobileHeader
+ fallbackHref="/explorar"
+ transparent={true}
+ bordered={false}
+ className="relative z-10 max-w-7xl mx-auto pb-4 text-white"
+ rightActions={
  <Button
  size="icon"
  variant="ghost"
  onClick={handleShare}
- className="size-9 rounded-full bg-black/30 hover:bg-black/50 text-white backdrop-blur-md border border-white/15"
+ className="size-9 sm:size-10 rounded-full bg-black/30 hover:bg-black/50 text-white backdrop-blur-md border border-white/15 cursor-pointer"
  title="Compartilhar"
  >
  <ShareNetwork size={18} weight="bold" />
  </Button>
- </div>
- </div>
+ }
+ />
 
  {/* Conteúdo Central do Hero */}
  <div className="relative z-10 max-w-7xl mx-auto space-y-3 sm:space-y-4">

@@ -167,7 +167,7 @@ function CustomerChatPage() {
   const isClosed = thread?.status === "closed" || thread?.status === "resolved";
 
   return (
-    <section className="flex flex-col h-[calc(100vh-100px)] max-w-4xl mx-auto font-sans text-foreground bg-background">
+    <section className="flex flex-col h-[calc(100dvh-100px)] max-w-4xl mx-auto font-sans text-foreground bg-background">
       {/* ── Header Ultra-Minimalista WhatsApp ── */}
       <div className="flex items-center justify-between gap-3 px-3 py-2.5 border-b border-border/40 bg-background sticky top-0 z-10">
         <div className="flex items-center gap-2.5 min-w-0">

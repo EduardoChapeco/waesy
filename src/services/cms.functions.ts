@@ -975,10 +975,19 @@ export const listStorePublicReviews = createServerFn({ method: "GET" })
   .handler(async ({ data: { storeId } }) => {
     try {
       const db = getServerClient();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storeId);
+      let targetUuid = storeId;
+
+      if (!isUuid) {
+        const { data: st } = await db.from("stores").select("id").eq("slug", storeId).maybeSingle();
+        if (!st?.id) return [];
+        targetUuid = st.id;
+      }
+
       const { data, error } = await db
         .from("reviews")
         .select("id, rating, comment, created_at, products(title)")
-        .eq("store_id", storeId)
+        .eq("store_id", targetUuid)
         .eq("status", "approved")
         .order("created_at", { ascending: false })
         .limit(30);

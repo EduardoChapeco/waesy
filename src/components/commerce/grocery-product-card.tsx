@@ -104,7 +104,7 @@ export function GroceryProductCard({
  return (
  <div
  className={cn(
- "group relative flex items-stretch w-full h-[140px] sm:h-[150px] rounded-2xl bg-card hover:border-foreground/20 transition-all overflow-hidden p-0",
+ "group relative flex items-stretch w-full h-[140px] sm:h-[150px] rounded-2xl bg-card border border-border/60 hover:border-foreground/20 transition-all overflow-hidden p-0",
  className,
  )}
  >
@@ -241,7 +241,7 @@ export function GroceryProductCard({
  return (
  <div
  className={cn(
- "group relative flex flex-col justify-between rounded-2xl bg-card hover:border-foreground/20 hover: transition-all overflow-hidden p-0",
+ "group relative flex flex-col justify-between rounded-2xl bg-card border border-border/60 hover:border-foreground/20 transition-all overflow-hidden p-0",
  className,
  )}
  >

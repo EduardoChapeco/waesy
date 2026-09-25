@@ -139,7 +139,7 @@ function CustomerSupportPage() {
   const selectedTicket = tickets.find((t: any) => t.id === selectedTicketId);
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 flex flex-col h-[calc(100vh-10rem)] min-h-[550px]">
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 flex flex-col h-[calc(100dvh-10rem)] min-h-[550px]">
       {/* ── 1. Clean Minimalist Header ── */}
       <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-2.5">

@@ -371,7 +371,7 @@ function BiolinkPage() {
  return (
  <div
  key={block.id || index}
- className="w-full p-4 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-md space-y-2.5 text-left"
+ className="w-full p-4 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-xs space-y-2.5 text-left"
  >
  <div className="flex items-start gap-2.5">
  <div className="size-7 rounded-lg bg-white/10 flex items-center justify-center text-sky-300 shrink-0">

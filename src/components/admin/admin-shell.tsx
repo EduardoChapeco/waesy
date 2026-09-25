@@ -557,7 +557,7 @@ export function AdminShell({
  <SheetTitle className="sr-only">Menu do painel</SheetTitle>
  <Logo className="h-6" src={logoUrl} />
  </SheetHeader>
- <ScrollArea className="h-[calc(100vh-4rem)] px-3 py-4">
+ <ScrollArea className="h-[calc(100dvh-4rem)] px-3 py-4">
  <div className="space-y-6">
  {viewMode === "subpages" && activeGroupNav ? (
  <div className="space-y-4">

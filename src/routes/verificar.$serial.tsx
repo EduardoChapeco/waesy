@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { ShieldCheck, CheckCircle2, AlertTriangle, FileText, Calendar, Building, Lock } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { verifyTravelCertificate } from '@/services/travel-lifecycle.functions';
 
 export const Route = createFileRoute('/verificar/$serial')({
  component: VerifySerialPage,
@@ -57,8 +57,8 @@ export default function VerifySerialPage() {
  }, [serial]);
 
  return (
- <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
- <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-border p-6 sm:p-8 flex flex-col gap-6">
+ <div className="min-h-[100dvh] bg-slate-50 dark:bg-zinc-950 flex flex-col items-center justify-center p-4">
+ <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-2xl shadow-xs border border-border p-6 sm:p-8 flex flex-col gap-6">
  {/* Header Badge */}
  <div className="flex flex-col items-center text-center gap-3">
  <div className="size-16 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-inner">

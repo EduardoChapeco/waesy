@@ -11,6 +11,7 @@ import {
 import { getUserSession } from "@/services/auth.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
+import { NativeMobileHeader } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -290,26 +291,21 @@ function AffiliateCommissionsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground py-6 sm:py-8 px-0 sm:px-4 md:px-0 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
-      {/* Navegação e Cabeçalho */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs">
-            <Link to="/conta">
-              <ChevronLeft className="h-4 w-4 mr-1" /> Minha Conta
-            </Link>
+            {/* ── NativeMobileHeader Canônico ── */}
+      <NativeMobileHeader
+        fallbackHref="/conta"
+        title="Comissões & Afiliados"
+        rightActions={
+          <Button
+            onClick={handleOpenPayout}
+            disabled={availableBalanceCents < 5000}
+            size="sm"
+            className="h-8.5 px-3 rounded-xl font-semibold bg-foreground text-background cursor-pointer"
+          >
+            <Wallet className="h-3.5 w-3.5 mr-1" /> Sacar
           </Button>
-          <span className="text-muted-foreground text-xs">/</span>
-          <span className="text-xs font-semibold text-foreground">Comissões</span>
-        </div>
-
-        <Button
-          onClick={handleOpenPayout}
-          disabled={availableBalanceCents < 5000}
-          className="min-h-[44px] h-11 sm:h-10 px-4 rounded-xl font-semibold bg-foreground text-background cursor-pointer"
-        >
-          <Wallet className="h-4 w-4 mr-1.5" /> Solicitar Saque PIX
-        </Button>
-      </div>
+        }
+      />
 
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Comissões & Afiliados</h1>

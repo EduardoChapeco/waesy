@@ -306,7 +306,7 @@ function CustomerRmaPage() {
 
       {/* ── 3. Apple HIG Modal: Abertura Direta de Solicitação de RMA ── */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg rounded-2xl p-0 overflow-hidden border border-border/80 shadow-lg">
+        <DialogContent className="sm:max-w-lg rounded-2xl p-0 overflow-hidden border border-border/80 shadow-xs">
           <DialogHeader className="p-5 pb-4 bg-muted/30 border-b border-border/50">
             <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
               <RefreshCw className="size-5 text-primary" />

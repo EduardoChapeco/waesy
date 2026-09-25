@@ -35,6 +35,7 @@ import {
   getBoostPaymentById,
   convertClassifiedToWorkspaceStore,
 } from "@/services/classifieds.functions";
+import { NativeMobileHeader } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -291,26 +292,26 @@ function ClassificadosIndex() {
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Meus Anúncios
-          </h1>
-          {(classifieds || []).length > 0 && (
-            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
+            {/* ── 1. NativeMobileHeader Canônico ── */}
+      <NativeMobileHeader
+        fallbackHref="/conta"
+        title="Meus Anúncios"
+        badge={
+          (classifieds || []).length > 0 ? (
+            <Badge variant="outline" className="text-xs font-mono font-bold bg-muted/30">
               {(classifieds || []).length}
             </Badge>
-          )}
-        </div>
-
-        <Button asChild size="sm" className="rounded-xl h-8 px-3.5 text-xs font-semibold gap-1.5 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer">
-          <Link to="/conta/classificados/novo">
-            <Plus className="size-3.5" />
-            <span>Novo Anúncio</span>
-          </Link>
-        </Button>
-      </div>
+          ) : null
+        }
+        rightActions={
+          <Button asChild size="sm" className="h-8.5 px-3 rounded-xl font-bold gap-1.5 bg-primary text-primary-foreground">
+            <Link to="/conta/classificados/novo">
+              <Plus className="size-4" />
+              <span>Criar</span>
+            </Link>
+          </Button>
+        }
+      />
 
       {/* ── Aviso: Gateway não configurado ──────────────────────── */}
       {!gatewayLoading && !gatewayAvailable && (

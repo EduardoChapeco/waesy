@@ -66,6 +66,10 @@ import {
   type MetricCardItem,
 } from "@/components/workspace/workspace-dashboard-sheet";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
+import { CampaignDynamicBlock } from "@/components/marketing/campaign-dynamic-block";
+import { executeMcpTool } from "@/services/mcp-server.functions";
+import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
+import { Mic, MicOff, Send, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/marketing/anuncios")({
   head: () => ({ meta: [{ title: "Campanhas de Anúncios | Workspace Waesy" }] }),
@@ -103,6 +107,75 @@ function AnunciosWorkspacePage() {
   const { campaigns: initialCampaigns, storeTargets, channelsSettings } = ((Route.useLoaderData?.() as any) || {});
   const [campaigns, setCampaigns] = useState<AdCampaign[]>(initialCampaigns);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Estados do Assistente MCP de Anúncios Dinâmicos
+  const [mcpPrompt, setMcpPrompt] = useState("");
+  const [isGeneratingMcp, setIsGeneratingMcp] = useState(false);
+  const [dynamicBlock, setDynamicBlock] = useState<DynamicRenderableBlock | null>(null);
+  const [isListeningVoice, setIsListeningVoice] = useState(false);
+
+  const handleToggleVoice = () => {
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      toast.info("Reconhecimento de voz não suportado neste navegador. Digite sua ideia!");
+      return;
+    }
+    if (isListeningVoice) {
+      setIsListeningVoice(false);
+      return;
+    }
+    try {
+      const recognition = new SpeechRec();
+      recognition.lang = "pt-BR";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      setIsListeningVoice(true);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setMcpPrompt(transcript);
+        setIsListeningVoice(false);
+        handleGenerateMcp(transcript);
+      };
+      recognition.onerror = () => setIsListeningVoice(false);
+      recognition.onend = () => setIsListeningVoice(false);
+      recognition.start();
+    } catch {
+      setIsListeningVoice(false);
+    }
+  };
+
+  const handleGenerateMcp = async (customPrompt?: string) => {
+    const promptToUse = (customPrompt || mcpPrompt).trim();
+    if (!promptToUse) {
+      toast.error("Digite ou fale um comando para a campanha.");
+      return;
+    }
+    setIsGeneratingMcp(true);
+    try {
+      const targetStoreId = storeTargets?.storeId || campaigns[0]?.store_id || undefined;
+      const res = await executeMcpTool({
+        data: {
+          tool: "generate_ad_campaign_proposal",
+          arguments: {
+            prompt: promptToUse,
+            storeId: targetStoreId,
+          },
+        },
+      });
+
+      if (res.status === "success" && res.content?.[0]?.data?.block) {
+        setDynamicBlock(res.content[0].data.block);
+        toast.success("Proposta de anúncio gerada com IA!");
+      } else {
+        const errMsg = res.content?.[0]?.text || "Não foi possível gerar a campanha.";
+        toast.error(errMsg);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao conectar com assistente MCP.");
+    } finally {
+      setIsGeneratingMcp(false);
+    }
+  };
 
   // Estados da Toolbar Canônica
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -595,6 +668,123 @@ function AnunciosWorkspacePage() {
 
         {/* ── LISTA DE CAMPANHAS DE ANÚNCIOS LOCAIS ── */}
         {["all", "active", "paused"].includes(activeTab) && (
+        <>
+        {/* ── ASSISTENTE IA & PROTOCOLO MCP AD-TECH ── */}
+        <div className="rounded-2xl border border-border/80 bg-card p-3 sm:p-4 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <Wand2 className="size-3.5" />
+              </div>
+              <span className="text-xs font-bold text-foreground">
+                Criador de Anúncios com IA (Protocolo MCP)
+              </span>
+              <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono text-muted-foreground border-border/60">
+                Linguagem Natural & Voz
+              </Badge>
+            </div>
+            {dynamicBlock && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDynamicBlock(null)}
+                className="h-6 text-[11px] text-muted-foreground hover:text-foreground px-2"
+              >
+                Fechar Prévia
+              </Button>
+            )}
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleGenerateMcp();
+            }}
+            className="flex items-center gap-2"
+          >
+            <div className="relative flex-1">
+              <Input
+                value={mcpPrompt}
+                onChange={(e) => setMcpPrompt(e.target.value)}
+                placeholder="Ex: Cria anúncio no Instagram de R$ 50/dia para a Oktoberfest..."
+                disabled={isGeneratingMcp}
+                className="h-11 rounded-xl text-xs bg-muted/20 border-border/60 pr-10 focus-visible:ring-1"
+              />
+              <button
+                type="button"
+                onClick={handleToggleVoice}
+                title={isListeningVoice ? "Parar de ouvir" : "Falar comando por voz"}
+                className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${
+                  isListeningVoice
+                    ? "bg-rose-500 text-white animate-pulse"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                {isListeningVoice ? <MicOff className="size-4" /> : <Mic className="size-4" />}
+              </button>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isGeneratingMcp || !mcpPrompt.trim()}
+              className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 shrink-0"
+            >
+              {isGeneratingMcp ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  <span className="hidden sm:inline">Gerando...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="size-3.5" />
+                  <span className="hidden sm:inline">Gerar Anúncio</span>
+                </>
+              )}
+            </Button>
+          </form>
+
+          {/* Sugestões Rápidas de Prompt em 1 Toque */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+            <span className="text-[11px] text-muted-foreground shrink-0 flex items-center gap-1 mr-1">
+              <Sparkles className="size-3 text-primary" />
+              Sugestões:
+            </span>
+            {[
+              "🍺 Especial Oktoberfest de R$ 50/dia",
+              "🔥 Promoção Relâmpago de R$ 30/dia",
+              "📍 Anúncio no Bairro de R$ 20/dia",
+              "🛍️ Destaque dos Melhores Produtos no Instagram",
+            ].map((sug) => (
+              <button
+                key={sug}
+                type="button"
+                onClick={() => {
+                  setMcpPrompt(sug);
+                  handleGenerateMcp(sug);
+                }}
+                disabled={isGeneratingMcp}
+                className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-lg border border-border/60 bg-muted/10 hover:bg-muted/30 text-foreground transition-colors cursor-pointer shrink-0"
+              >
+                {sug}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── PRÉVIA REALISTA DO BLOCO DINÂMICO GERADO VIA MCP ── */}
+        {dynamicBlock && (
+          <CampaignDynamicBlock
+            block={dynamicBlock}
+            onApproved={async () => {
+              setDynamicBlock(null);
+              toast.success("Campanha integrada ao servidor e veiculada!");
+              await router.invalidate();
+            }}
+            onDismiss={() => setDynamicBlock(null)}
+          />
+        )}
+
+        
         <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-xs">
           <div className="p-4 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40">
             <div className="flex items-center gap-2">
@@ -729,6 +919,7 @@ function AnunciosWorkspacePage() {
             </div>
           )}
         </div>
+        </>
         )}
 
         {/* ── DASHBOARD SHEET EXECUTIVO ── */}

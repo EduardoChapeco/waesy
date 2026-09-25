@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { NativeMobileHeader } from "@/components/navigation";
 import { resetPasswordForEmail } from "@/services/auth.functions";
 
 export const Route = createFileRoute("/_store/recuperar-senha")({
@@ -39,7 +40,12 @@ function Page() {
  };
 
  return (
- <div className="mx-auto max-w-md px-4 py-16">
+    <div className="w-full">
+      <NativeMobileHeader
+        title="Recuperar Senha"
+        fallbackHref="/"
+      />
+      <div className="mx-auto max-w-md px-4 py-8 md:py-16">
  <div className="text-center mb-8">
  <h1 className="text-3xl font-semibold">Recuperar senha</h1>
  <p className="text-muted-foreground mt-2">
@@ -86,6 +92,7 @@ function Page() {
  </div>
  </form>
  )}
+ </div>
  </div>
  );
 }

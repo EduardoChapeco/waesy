@@ -27,6 +27,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import {
  Table,
  TableBody,
@@ -216,7 +217,6 @@ function OptionGroupsPage() {
  };
 
  const handleDelete = async (id: string) => {
- if (!confirm("Tem certeza que deseja excluir este grupo de opções?")) return;
  try {
  await deleteOptionGroup({ data: { id } });
  toast.success("Grupo de opções excluído com sucesso.");
@@ -860,30 +860,14 @@ function OptionGroupTableRow({
  </div>
  </TableCell>
  <TableCell className="pr-4 text-right">
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" className="size-8 rounded-lg">
- <MoreHorizontal className="size-4" />
- </Button>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="rounded-xl">
- <DropdownMenuItem onClick={onEdit} className="text-xs font-medium cursor-pointer">
- <Edit className="size-3.5 mr-2" />
- Editar Grupo
- </DropdownMenuItem>
- <DropdownMenuItem onClick={onDuplicate} className="text-xs font-medium cursor-pointer">
- <Copy className="size-3.5 mr-2" />
- Duplicar Grupo
- </DropdownMenuItem>
- <DropdownMenuItem
- className="text-xs font-medium text-destructive focus:text-destructive cursor-pointer"
- onClick={onDelete}
- >
- <Trash2 className="size-3.5 mr-2" />
- Excluir Grupo
- </DropdownMenuItem>
- </DropdownMenuContent>
- </DropdownMenu>
+ <CrudActionsMenu
+ entityName="Grupo de Opções"
+ onEdit={onEdit}
+ onDuplicate={onDuplicate}
+ onDelete={onDelete}
+ deleteConfirmTitle={`Excluir grupo "${group.display_name}"?`}
+ deleteConfirmDescription="Esta ação removerá o grupo e todas as suas opções de adicionais e variações."
+ />
  </TableCell>
  </TableRow>
 

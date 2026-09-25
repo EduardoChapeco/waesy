@@ -4,6 +4,7 @@ import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeMobileHeader } from "@/components/navigation";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatDate } from "@/lib/datetime";
 import {
@@ -184,7 +185,7 @@ function OrderRow({ order }: { order: any }) {
               {statusLabel}
             </Badge>
             {isReadyPickup && (
-              <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md animate-pulse">
+              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md animate-pulse">
                 Retirar já!
               </span>
             )}
@@ -208,7 +209,7 @@ function OrderRow({ order }: { order: any }) {
           </p>
         )}
         {isShipped && !order.tracking_code && (
-          <p className="text-[10px] text-sky-600 mt-1 flex items-center gap-1">
+          <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-1 flex items-center gap-1">
             <Truck className="size-3" strokeWidth={1.5} />
             A caminho — toque para acompanhar
           </p>
@@ -268,28 +269,31 @@ function CustomerOrdersPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-0 animate-in fade-in duration-200">
-      {/* ── 1. Header Minimalista ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1 px-4 sm:px-0">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-xl font-black tracking-tight text-foreground">Pedidos</h1>
-          {orders.length > 0 && (
+      {/* ── 1. Canonical Navigation Header ── */}
+      <NativeMobileHeader
+        title="Pedidos"
+        fallbackHref="/conta"
+        badge={
+          orders.length > 0 ? (
             <Badge
               variant="secondary"
               className="text-xs font-mono font-bold px-2 py-0.5 rounded-md"
             >
               {orders.length}
             </Badge>
-          )}
-        </div>
-        <Button
-          asChild
-          size="sm"
-          variant="outline"
-          className="rounded-xl text-xs font-semibold h-9 px-3.5 cursor-pointer"
-        >
-          <Link to="/mercado">Explorar Lojas</Link>
-        </Button>
-      </div>
+          ) : null
+        }
+        rightActions={
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="rounded-xl text-xs font-semibold h-8.5 px-3 cursor-pointer"
+          >
+            <Link to="/mercado">Explorar Lojas</Link>
+          </Button>
+        }
+      />
 
       {orders.length === 0 ? (
         /* ── Empty State Honesto ── */

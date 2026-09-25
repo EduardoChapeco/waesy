@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
+import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { encryptSecret, decryptSecret, maskSecret } from "@/lib/crypto-vault.server";
 import { getRequest } from "@tanstack/start-server-core";
 import { extractClientIp } from "@/lib/rate-limiter";
@@ -32,6 +33,18 @@ export const saveSecretKey = createServerFn({ method: "POST" })
   if (!identity?.id) throw new Error("Não autenticado");
 
   const rawKey = input.secretKey.trim();
+
+  // Governança RBAC estrita por escopo no cofre:
+  if (input.scope === "global" && identity.role !== "platform_admin" && identity.role !== "master") {
+    throw new Error("Não autorizado: Apenas administradores globais podem registrar segredos de escopo global.");
+  }
+
+  if (input.scope === "organization") {
+    const serverId = await getServerIdentity().catch(() => null);
+    if (serverId) {
+      assertStoreAccess(serverId, ["owner", "admin"]);
+    }
+  }
 
   // AES-256-GCM real — usa VAULT_MASTER_KEY da env var (nunca base64)
   const encrypted = encryptSecret(rawKey);
@@ -411,3 +424,41 @@ export const testSecretKeyConnection = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data }) => internalTestSecretKeyConnection(data.provider, data.secretKey));
+
+export const deleteSecretKey = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      id: z.string().uuid("ID de credencial inválido"),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getIdentity();
+    if (!identity?.id) throw new Error("Não autenticado");
+
+    const isPlatformAdmin = identity.role === "platform_admin" || identity.role === "master";
+
+    let query = supabase.from("secret_vault").delete().eq("id", input.id);
+    if (!isPlatformAdmin) {
+      query = query.eq("owner_id", identity.id);
+    }
+
+    const { error } = await query;
+    if (error) {
+      console.error("[secret-vault] Error deleting key:", error);
+      throw new Error(`Erro ao remover credencial: ${error.message}`);
+    }
+
+    // Telemetria forense
+    try {
+      await supabase.from("forensic_audit_events").insert({
+        actor_id: identity.id,
+        actor_role: identity.role || "authenticated_user",
+        target_entity_type: "secret_vault",
+        target_entity_id: input.id,
+        action: "VAULT_SECRET_DELETE",
+      });
+    } catch {}
+
+    return { success: true };
+  });

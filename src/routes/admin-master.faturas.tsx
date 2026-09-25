@@ -682,7 +682,7 @@ function MasterFaturasPage() {
           if (!open) setSelectedCompanionInvoice(null);
         }}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
             <DialogTitle>Fatura Digital 9:16 da Plataforma</DialogTitle>
           </DialogHeader>

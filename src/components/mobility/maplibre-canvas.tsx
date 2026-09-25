@@ -103,8 +103,8 @@ export function MapLibreCanvas({
  const map = new maplibregl.Map({
  container: mapContainer.current,
  style: mapStyle,
- center: [center.lng, center.lat],
- zoom: zoom,
+ center: [effectiveCenter.lng, effectiveCenter.lat],
+ zoom: effectiveZoom,
  attributionControl: false,
  });
 

@@ -1721,7 +1721,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  {/* Dropdown de Resultados CRM */}
  {isClientDropdownOpen && clientSearch.trim().length >= 1 && (
- <div className="absolute left-0 right-0 top-11 z-50 rounded-xl bg-card border border-border/80 shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95">
+ <div className="absolute left-0 right-0 top-11 z-50 rounded-xl bg-card border border-border/80 shadow-xs overflow-hidden animate-in fade-in-50 zoom-in-95">
  <div className="p-2 border-b border-border/60 bg-muted/40 flex items-center justify-between text-[11px] text-muted-foreground font-bold">
  <span>Resultados da Carteira de Clientes ({crmCustomers.length})</span>
  <button

@@ -43,6 +43,7 @@ import {
  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/datetime";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 import {
  listProductTypes,
@@ -172,14 +173,7 @@ function ProductTypesPage() {
  };
 
  const handleDelete = async (id: string) => {
- if (
- !confirm(
- "Tem certeza que deseja excluir este tipo de produto? Isso pode quebrar a associação de produtos que usam este tipo.",
- )
- ) {
- return;
- }
- try {
+		try {
  await deleteProductType({ data: { id } });
  toast.success("Tipo de produto excluído!");
  router.invalidate();
@@ -436,27 +430,14 @@ function ProductTypesPage() {
  {formatDate(type.created_at)}
  </TableCell>
  <TableCell className="text-right">
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" className="size-8 rounded-lg" aria-label="Ações do tipo">
- <MoreHorizontal className="size-4" />
- </Button>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="rounded-xl">
- <DropdownMenuItem onClick={() => handleOpenEdit(type)} className="text-xs font-medium cursor-pointer">
- <Edit className="mr-2 size-3.5" />
- Editar Tipo
- </DropdownMenuItem>
- <DropdownMenuItem
- className="text-destructive focus:text-destructive text-xs font-medium cursor-pointer"
- onClick={() => handleDelete(type.id)}
- >
- <Trash2 className="mr-2 size-3.5" />
- Excluir Tipo
- </DropdownMenuItem>
- </DropdownMenuContent>
- </DropdownMenu>
- </TableCell>
+									<CrudActionsMenu
+										entityName="Tipo de Produto"
+										onEdit={() => handleOpenEdit(type)}
+										onDelete={() => handleDelete(type.id)}
+										deleteConfirmTitle={`Excluir tipo "${type.name}"?`}
+										deleteConfirmDescription="Esta ação pode quebrar a associação de produtos que usam este tipo no catálogo."
+									/>
+								</TableCell>
  </TableRow>
  ),
  )}

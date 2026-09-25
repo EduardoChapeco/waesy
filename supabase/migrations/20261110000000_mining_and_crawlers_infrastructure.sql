@@ -1,8 +1,8 @@
--- Migration: 20261110000000_mining_and_crawlers_infrastructure.sql
--- Infraestrutura Unificada de Crawlers, Feeds RSS, Mineradores e Índices Multi-Verticais
--- Harmonização e compatibilização com a migração 20260828060000_mining_pipeline_and_content_factory.sql
+﻿-- Migration: 20261110000000_mining_and_crawlers_infrastructure.sql
+-- Infraestrutura Unificada de Crawlers, Feeds RSS, Mineradores e Ãndices Multi-Verticais
+-- HarmonizaÃ§Ã£o e compatibilizaÃ§Ã£o com a migraÃ§Ã£o 20260828060000_mining_pipeline_and_content_factory.sql
 
--- 1. crawl_queue - Fila Unificada de Exploração Contínua e Curadoria
+-- 1. crawl_queue - Fila Unificada de ExploraÃ§Ã£o ContÃ­nua e Curadoria
 CREATE TABLE IF NOT EXISTS public.crawl_queue (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   url TEXT NOT NULL,
@@ -32,7 +32,7 @@ ALTER TABLE public.crawl_queue
   ADD COLUMN IF NOT EXISTS extracted_data JSONB,
   ADD COLUMN IF NOT EXISTS mined_article_id UUID,
   ADD COLUMN IF NOT EXISTS store_id UUID,
-  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.stores(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
@@ -40,7 +40,7 @@ CREATE INDEX IF NOT EXISTS idx_cq_domain ON public.crawl_queue(domain);
 CREATE INDEX IF NOT EXISTS idx_cq_status ON public.crawl_queue(status);
 CREATE INDEX IF NOT EXISTS idx_cq_priority ON public.crawl_queue(priority DESC, scheduled_for ASC);
 
--- 2. crawl_cache - Cache de Respostas, Conteúdo Limpo e Deduplicação SHA-256
+-- 2. crawl_cache - Cache de Respostas, ConteÃºdo Limpo e DeduplicaÃ§Ã£o SHA-256
 CREATE TABLE IF NOT EXISTS public.crawl_cache (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   url TEXT UNIQUE NOT NULL,
@@ -87,12 +87,12 @@ ALTER TABLE public.rss_feeds
   ADD COLUMN IF NOT EXISTS items_published_count INTEGER NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS items_rejected_count INTEGER NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS store_id UUID,
-  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.stores(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
 CREATE INDEX IF NOT EXISTS idx_rf_active ON public.rss_feeds(is_active);
 
--- 4. scraper_configs - Configurações Unificadas de Scrapers e Seletores por Domínio
+-- 4. scraper_configs - ConfiguraÃ§Ãµes Unificadas de Scrapers e Seletores por DomÃ­nio
 CREATE TABLE IF NOT EXISTS public.scraper_configs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -130,7 +130,7 @@ ALTER TABLE public.scraper_configs
   ADD COLUMN IF NOT EXISTS total_published INTEGER NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS total_failed INTEGER NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS last_scraped_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES public.stores(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
 -- 5. domain_configs - Rate Limits e Respeito a Robots.txt
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS public.domain_configs (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 6. crawl_seeds - Sementes Iniciais de Exploração
+-- 6. crawl_seeds - Sementes Iniciais de ExploraÃ§Ã£o
 CREATE TABLE IF NOT EXISTS public.crawl_seeds (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -162,11 +162,11 @@ CREATE TABLE IF NOT EXISTS public.crawl_seeds (
   is_active BOOLEAN DEFAULT true,
   priority INTEGER DEFAULT 5,
   metadata JSONB DEFAULT '{}'::jsonb,
-  tenant_id UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
+  tenant_id UUID REFERENCES public.stores(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 7. scraper_audit_log - Auditoria, Telemetria e Latência de Execuções
+-- 7. scraper_audit_log - Auditoria, Telemetria e LatÃªncia de ExecuÃ§Ãµes
 CREATE TABLE IF NOT EXISTS public.scraper_audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   scraper_name TEXT NOT NULL,
@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS public.scraper_audit_log (
 CREATE INDEX IF NOT EXISTS idx_sal_created_at ON public.scraper_audit_log(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_sal_scraper_name ON public.scraper_audit_log(scraper_name);
 
--- 8. indexed_businesses - Empresas Mineradas & Diretório Comercial
+-- 8. indexed_businesses - Empresas Mineradas & DiretÃ³rio Comercial
 CREATE TABLE IF NOT EXISTS public.indexed_businesses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   external_id TEXT NOT NULL,
@@ -291,7 +291,7 @@ CREATE TABLE IF NOT EXISTS public.indexed_products (
   UNIQUE(source, external_id)
 );
 
--- 12. mining_schedules - Agendamentos e Configurações por Minerador
+-- 12. mining_schedules - Agendamentos e ConfiguraÃ§Ãµes por Minerador
 CREATE TABLE IF NOT EXISTS public.mining_schedules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   job_type TEXT UNIQUE NOT NULL,
@@ -306,21 +306,33 @@ CREATE TABLE IF NOT EXISTS public.mining_schedules (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- População inicial idempotente
-INSERT INTO public.mining_schedules (job_type, display_name, description, is_active, config)
+-- PopulaÃ§Ã£o inicial idempotente
+ALTER TABLE public.mining_schedules
+  ADD COLUMN IF NOT EXISTS name TEXT DEFAULT '',
+  ADD COLUMN IF NOT EXISTS display_name TEXT NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS cron_expression TEXT,
+  ADD COLUMN IF NOT EXISTS config JSONB DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS last_run_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS next_run_at TIMESTAMPTZ;
+
+ALTER TABLE public.mining_schedules ALTER COLUMN name DROP NOT NULL;
+ALTER TABLE public.mining_schedules ALTER COLUMN name SET DEFAULT '';
+
+INSERT INTO public.mining_schedules (name, job_type, display_name, description, is_active, config)
 VALUES
-  ('continuous-crawler', 'Continuous Crawler', 'Varredura contínua de páginas com seleção de estratégias e análise textual', true, '{"use_firecrawl": false, "max_depth": 2}'::jsonb),
-  ('rss-fetcher', 'RSS Ingester', 'Varredura e parsing de feeds RSS/Atom e detecção de atualizações', true, '{"fetch_interval_min": 30}'::jsonb),
-  ('market-data', 'Market Data Miner (BCB SGS)', 'Mineração de índices econômicos oficiais (IPCA, SELIC, Câmbio Dólar/Euro)', true, '{"refresh_hours": 12}'::jsonb),
-  ('cnpj-enrichment', 'CNPJ & Business Scraper', 'Enriquecimento cadastral via BrasilAPI, ReceitaWS e CNPJ.JA com QSA', true, '{"auto_mine": true, "batch_size": 20}'::jsonb),
-  ('social-miner', 'Social Content Miner', 'Extração de metadados de mídias e perfis públicos', true, '{"platforms": ["instagram", "youtube", "tiktok"]}'::jsonb)
+  ('Continuous Crawler', 'continuous-crawler', 'Continuous Crawler', 'Varredura contÃ­nua de pÃ¡ginas com seleÃ§Ã£o de estratÃ©gias e anÃ¡lise textual', true, '{"use_firecrawl": false, "max_depth": 2}'::jsonb),
+  ('RSS Ingester', 'rss-fetcher', 'RSS Ingester', 'Varredura e parsing de feeds RSS/Atom e detecÃ§Ã£o de atualizaÃ§Ãµes', true, '{"fetch_interval_min": 30}'::jsonb),
+  ('Market Data Miner (BCB SGS)', 'market-data', 'Market Data Miner (BCB SGS)', 'MineraÃ§Ã£o de Ã­ndices econÃ´micos oficiais (IPCA, SELIC, CÃ¢mbio DÃ³lar/Euro)', true, '{"refresh_hours": 12}'::jsonb),
+  ('CNPJ & Business Scraper', 'cnpj-enrichment', 'CNPJ & Business Scraper', 'Enriquecimento cadastral via BrasilAPI, ReceitaWS e CNPJ.JA com QSA', true, '{"auto_mine": true, "batch_size": 20}'::jsonb),
+  ('Social Content Miner', 'social-miner', 'Social Content Miner', 'ExtraÃ§Ã£o de metadados de mÃ­dias e perfis pÃºblicos', true, '{"platforms": ["instagram", "youtube", "tiktok"]}'::jsonb)
 ON CONFLICT (job_type) DO NOTHING;
 
--- Seeds iniciais para bootstrapping da exploração
+-- Seeds iniciais para bootstrapping da exploraÃ§Ã£o
 INSERT INTO public.crawl_seeds (name, seed_url, domain, entity_type, category, region, priority)
 VALUES
   ('G1 Santa Catarina', 'https://g1.globo.com/sc/santa-catarina/', 'g1.globo.com', 'news', 'regional', 'SC', 8),
-  ('ND Mais Notícias', 'https://ndmais.com.br/', 'ndmais.com.br', 'news', 'regional', 'SC', 7),
+  ('ND Mais NotÃ­cias', 'https://ndmais.com.br/', 'ndmais.com.br', 'news', 'regional', 'SC', 7),
   ('Portal DI Regional', 'https://diregional.com.br/', 'diregional.com.br', 'news', 'regional', 'SC', 7)
 ON CONFLICT DO NOTHING;
 
@@ -340,50 +352,67 @@ ALTER TABLE public.mining_schedules ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   DROP POLICY IF EXISTS "crawl_queue_staff_all" ON public.crawl_queue;
-  CREATE POLICY "crawl_queue_staff_all" ON public.crawl_queue FOR ALL USING (true);
+  DROP POLICY IF EXISTS "crawl_queue_staff_all" ON public.crawl_queue;
+CREATE POLICY "crawl_queue_staff_all" ON public.crawl_queue FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "crawl_cache_staff_all" ON public.crawl_cache;
-  CREATE POLICY "crawl_cache_staff_all" ON public.crawl_cache FOR ALL USING (true);
+  DROP POLICY IF EXISTS "crawl_cache_staff_all" ON public.crawl_cache;
+CREATE POLICY "crawl_cache_staff_all" ON public.crawl_cache FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "rss_feeds_staff_all" ON public.rss_feeds;
-  CREATE POLICY "rss_feeds_staff_all" ON public.rss_feeds FOR ALL USING (true);
+  DROP POLICY IF EXISTS "rss_feeds_staff_all" ON public.rss_feeds;
+CREATE POLICY "rss_feeds_staff_all" ON public.rss_feeds FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "scraper_configs_staff_all" ON public.scraper_configs;
-  CREATE POLICY "scraper_configs_staff_all" ON public.scraper_configs FOR ALL USING (true);
+  DROP POLICY IF EXISTS "scraper_configs_staff_all" ON public.scraper_configs;
+CREATE POLICY "scraper_configs_staff_all" ON public.scraper_configs FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "domain_configs_staff_all" ON public.domain_configs;
-  CREATE POLICY "domain_configs_staff_all" ON public.domain_configs FOR ALL USING (true);
+  DROP POLICY IF EXISTS "domain_configs_staff_all" ON public.domain_configs;
+CREATE POLICY "domain_configs_staff_all" ON public.domain_configs FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "crawl_seeds_staff_all" ON public.crawl_seeds;
-  CREATE POLICY "crawl_seeds_staff_all" ON public.crawl_seeds FOR ALL USING (true);
+  DROP POLICY IF EXISTS "crawl_seeds_staff_all" ON public.crawl_seeds;
+CREATE POLICY "crawl_seeds_staff_all" ON public.crawl_seeds FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "scraper_audit_log_staff_all" ON public.scraper_audit_log;
-  CREATE POLICY "scraper_audit_log_staff_all" ON public.scraper_audit_log FOR ALL USING (true);
+  DROP POLICY IF EXISTS "scraper_audit_log_staff_all" ON public.scraper_audit_log;
+CREATE POLICY "scraper_audit_log_staff_all" ON public.scraper_audit_log FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "indexed_businesses_read" ON public.indexed_businesses;
-  CREATE POLICY "indexed_businesses_read" ON public.indexed_businesses FOR SELECT USING (true);
+  DROP POLICY IF EXISTS "indexed_businesses_read" ON public.indexed_businesses;
+CREATE POLICY "indexed_businesses_read" ON public.indexed_businesses FOR SELECT USING (true);
 
   DROP POLICY IF EXISTS "indexed_businesses_write" ON public.indexed_businesses;
-  CREATE POLICY "indexed_businesses_write" ON public.indexed_businesses FOR ALL USING (true);
+  DROP POLICY IF EXISTS "indexed_businesses_write" ON public.indexed_businesses;
+CREATE POLICY "indexed_businesses_write" ON public.indexed_businesses FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "indexed_jobs_read" ON public.indexed_jobs;
-  CREATE POLICY "indexed_jobs_read" ON public.indexed_jobs FOR SELECT USING (true);
+  DROP POLICY IF EXISTS "indexed_jobs_read" ON public.indexed_jobs;
+CREATE POLICY "indexed_jobs_read" ON public.indexed_jobs FOR SELECT USING (true);
 
   DROP POLICY IF EXISTS "indexed_jobs_write" ON public.indexed_jobs;
-  CREATE POLICY "indexed_jobs_write" ON public.indexed_jobs FOR ALL USING (true);
+  DROP POLICY IF EXISTS "indexed_jobs_write" ON public.indexed_jobs;
+CREATE POLICY "indexed_jobs_write" ON public.indexed_jobs FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "indexed_events_read" ON public.indexed_events;
-  CREATE POLICY "indexed_events_read" ON public.indexed_events FOR SELECT USING (true);
+  DROP POLICY IF EXISTS "indexed_events_read" ON public.indexed_events;
+CREATE POLICY "indexed_events_read" ON public.indexed_events FOR SELECT USING (true);
 
   DROP POLICY IF EXISTS "indexed_events_write" ON public.indexed_events;
-  CREATE POLICY "indexed_events_write" ON public.indexed_events FOR ALL USING (true);
+  DROP POLICY IF EXISTS "indexed_events_write" ON public.indexed_events;
+CREATE POLICY "indexed_events_write" ON public.indexed_events FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "indexed_products_read" ON public.indexed_products;
-  CREATE POLICY "indexed_products_read" ON public.indexed_products FOR SELECT USING (true);
+  DROP POLICY IF EXISTS "indexed_products_read" ON public.indexed_products;
+CREATE POLICY "indexed_products_read" ON public.indexed_products FOR SELECT USING (true);
 
   DROP POLICY IF EXISTS "indexed_products_write" ON public.indexed_products;
-  CREATE POLICY "indexed_products_write" ON public.indexed_products FOR ALL USING (true);
+  DROP POLICY IF EXISTS "indexed_products_write" ON public.indexed_products;
+CREATE POLICY "indexed_products_write" ON public.indexed_products FOR ALL USING (true);
 
   DROP POLICY IF EXISTS "mining_schedules_staff_all" ON public.mining_schedules;
-  CREATE POLICY "mining_schedules_staff_all" ON public.mining_schedules FOR ALL USING (true);
+  DROP POLICY IF EXISTS "mining_schedules_staff_all" ON public.mining_schedules;
+CREATE POLICY "mining_schedules_staff_all" ON public.mining_schedules FOR ALL USING (true);
 END $$;
+

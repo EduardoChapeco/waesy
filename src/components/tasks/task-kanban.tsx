@@ -45,7 +45,7 @@ export function TaskKanbanBoard({
     : DEFAULT_COLUMNS;
 
   return (
-    <div className="flex gap-3.5 sm:gap-4 items-stretch h-[calc(100vh-10.5rem)] sm:h-[calc(100vh-9.5rem)] pb-2 overflow-x-auto no-scrollbar select-none">
+    <div className="flex gap-3.5 sm:gap-4 items-stretch h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-9.5rem)] pb-2 overflow-x-auto no-scrollbar select-none">
       {columns.map((col, colIdx) => {
         const colTasks = tasks.filter((t) => t.status === col.id);
 

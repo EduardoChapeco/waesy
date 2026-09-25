@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import {
   WorkspaceDashboardSheet,
@@ -230,14 +231,14 @@ export default function WorkspaceGroupToursIndexPage() {
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-3 left-3">
-                        <Badge className="bg-black/70 backdrop-blur-md text-white border-none text-[10px] font-bold">
+                        <Badge className="bg-background/95 text-foreground border border-border/80 text-[10px] font-semibold shadow-xs">
                           {t.destination}
                         </Badge>
                       </div>
                       <div className="absolute top-3 right-3">
                         <Badge
                           variant="secondary"
-                          className="bg-card/90 backdrop-blur-md text-foreground text-[10px] font-bold uppercase"
+                          className="text-[10px] font-semibold uppercase shadow-xs"
                         >
                           {t.status === "open" ? "Aberto" : t.status === "confirmed" ? "Confirmado" : t.status}
                         </Badge>
@@ -326,20 +327,23 @@ export default function WorkspaceGroupToursIndexPage() {
                         </Link>
                       </Button>
 
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => {
-                          if (confirm(`Deseja excluir a excursão "${t.title}"?`)) {
-                            deleteMutation.mutate(t.id);
-                          }
+                      <CrudActionsMenu
+                        entityName="Excursão"
+                        editUrl={`/workspace/turismo/grupos/${t.id}`}
+                        onDelete={async () => {
+                          await deleteMutation.mutateAsync(t.id);
                         }}
-                        className="size-11 sm:size-8 p-0 rounded-xl text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
-                        title="Excluir excursão"
-                      >
-                        <Trash className="size-4 sm:size-3.5" />
-                      </Button>
+                        deleteConfirmTitle={`Excluir excursão "${t.title}"?`}
+                        deleteConfirmDescription="Esta ação removerá permanentemente a viagem em grupo, suas reservas de poltronas e histórico de embarque."
+                        customActions={[
+                          {
+                            id: "manifesto",
+                            label: "Manifesto & Poltronas",
+                            icon: UserCheck,
+                            href: `/workspace/turismo/grupos/${t.id}`,
+                          },
+                        ]}
+                      />
                     </div>
                   </div>
                 </Card>

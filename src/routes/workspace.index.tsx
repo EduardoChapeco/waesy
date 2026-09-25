@@ -32,6 +32,8 @@ import {
  CarFront,
  Flame,
  ChefHat,
+  BookOpenCheck,
+  Activity,
  UtensilsCrossed,
  CreditCard,
  QrCode,
@@ -82,6 +84,7 @@ export const Route = createFileRoute("/workspace/")({
  lowStockItems: [],
  criticalStockCount: 0,
  newCustomers30d: 0,
+        newLeads30d: 0,
  abandonedCartsCount: 0,
  recentActivities: [],
  activeCashRegister: null,
@@ -271,7 +274,7 @@ export default function WorkspaceDashboardPage() {
  const catalogDetails = getCatalogCardDetails();
 
  return (
- <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+ <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 space-y-4 sm:space-y-6 animate-in fade-in duration-200">
  {/* ── 1. Top Header com Identificação do Negócio ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-card border border-border/60">
  <div className="space-y-1">
@@ -405,7 +408,7 @@ export default function WorkspaceDashboardPage() {
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
  <Link
  to={getOrdersDestination() as any}
- className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all group flex flex-col justify-between"
+ className="p-4 rounded-2xl bg-card hover:border-primary/50 transition-all active:scale-[0.98] group flex flex-col justify-between"
  >
  <div className="flex items-center justify-between">
  <div className="size-10 rounded-xl bg-info/10 text-info flex items-center justify-center">

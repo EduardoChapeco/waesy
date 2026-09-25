@@ -1,3 +1,4 @@
+import { getRealClientIP } from "@/lib/network-telemetry.server";
 import { createServerFn } from "@tanstack/react-start";
 import { getDefaultCity, getDefaultState } from "@/lib/brand.config";
 import { getServerClient } from "@/lib/supabase";
@@ -35,7 +36,11 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
  .order("created_at", { ascending: false })
  .limit(limit);
 
- if (data?.category && data.category !== "todos") {
+	if (data?.storeId) {
+		query = query.eq("store_id", data.storeId);
+	}
+
+	if (data?.category && data.category !== "todos") {
  query = query.eq("category", data.category);
  }
 
@@ -59,6 +64,57 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
 
  return [];
  });
+
+// ---------------------------------------------------------------------------
+// STRICT STORE DATA SCOPING: getAdsByStoreId (Zero Context Bleeding)
+// ---------------------------------------------------------------------------
+export const getAdsByStoreId = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      storeId: z.string().min(1),
+      limit: z.number().int().min(1).max(100).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const limit = data.limit ?? 30;
+
+    try {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.storeId);
+      let targetStoreId = data.storeId;
+
+      if (!isUuid) {
+        // Resolve slug to real UUID
+        const { data: store } = await supabase
+          .from("stores")
+          .select("id")
+          .eq("slug", data.storeId)
+          .maybeSingle();
+
+        if (!store?.id) {
+          return [];
+        }
+        targetStoreId = store.id;
+      }
+
+      // Query strictly scoped by store_id (Never returns global items)
+      const { data: ads, error } = await supabase
+        .from("classifieds")
+        .select("*")
+        .eq("store_id", targetStoreId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (!error && ads) {
+        return ads;
+      }
+    } catch (err) {
+      console.warn("[classifieds] getAdsByStoreId error:", err);
+    }
+
+    return [];
+  });
 
 export const getPublicClassifiedById = createServerFn({ method: "GET" })
  .validator(z.string().uuid())
@@ -1672,7 +1728,7 @@ export const signClassifiedNda = createServerFn({ method: "POST" })
       const { getRequest } = await import("@tanstack/start-server-core");
       const req = getRequest();
       if (req) {
-        ipAddress = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for") || null;
+        ipAddress = getRealClientIP(req);
         userAgent = req.headers.get("user-agent") || null;
       }
     } catch {

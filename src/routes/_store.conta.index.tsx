@@ -8,6 +8,7 @@ import { getProfile, getUserSession, signOut } from "@/services/auth.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { listUserNotifications } from "@/services/notifications.functions";
 import { cn } from "@/lib/utils";
+import { ContextSwitcher } from "@/components/profile/context-switcher";
 import {
   Shield,
   Store,
@@ -279,7 +280,28 @@ function AccountDashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto flex-wrap">
+          {stores.length > 0 && (
+            <ContextSwitcher
+              currentContextType="civil"
+              civilUser={{
+                name: userName,
+                email: userEmail,
+                username: userHandle,
+                avatarUrl: userAvatar,
+              }}
+              stores={stores.map((st: any) => ({
+                store_id: st.id || st.store_id,
+                name: st.name || st.store_name || "Minha Empresa",
+                role: st.role || "owner",
+                logo_url: st.logo_url || st.settings?.logoUrl,
+                slug: st.slug,
+              }))}
+              hasCreatorProfile={profile?.is_creator || false}
+              creatorHandle={profile?.creator_handle || userHandle}
+            />
+          )}
+
           {isMasterAdmin && (
             <Button asChild size="sm" variant="default" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98">
               <Link to="/admin-master">

@@ -74,9 +74,9 @@ export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [
     ],
   },
   { id: "sec_product_rail", type: "product_rail", title: "Produtos Mais Pedidos", enabled: true },
-  { id: "sec_hotpages", type: "hotpages", title: "Acesso Rápido & Botões", enabled: true },
   { id: "sec_brand_story", type: "brand_story", title: "Sobre a Marca & Valores", enabled: true },
-  { id: "sec_infinite_feed", type: "infinite_feed", title: "Mais Produtos", enabled: true },
+  { id: "sec_hotpages", type: "hotpages", title: "Acesso Rápido & Botões", enabled: false },
+  { id: "sec_infinite_feed", type: "infinite_feed", title: "Mais Produtos da Região", enabled: false },
 ];
 
 interface StoreVitrineSectionsEditorProps {

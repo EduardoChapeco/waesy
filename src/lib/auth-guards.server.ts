@@ -32,24 +32,48 @@ export async function requireRole(allowedRoles: Role[]): Promise<{ id: string; r
  return { id: identity.id, role: identity.role as Role, store_id: identity.store_id };
 }
 
+/**
+ * Exige acesso estrito de proprietário / administrador legal (owner / proprietario / admin / master).
+ * Bloqueia gerentes, vendedores e operadores para ações societárias e financeiras críticas (dados bancários de repasse, chaves secretas).
+ */
+export async function requireOwner(): Promise<{ id: string; role: Role; store_id: string }> {
+  return requireRole(["owner", "admin", "proprietario" as any, "platform_admin", "master"]);
+}
+
+/**
+ * Exige acesso gerencial ou superior (owner, admin, manager, gerente, master).
+ * Bloqueia operadores de caixa, estoque e atendentes para gestão tática da loja.
+ */
+export async function requireManager(): Promise<{ id: string; role: Role; store_id: string }> {
+  return requireRole([
+    "owner",
+    "admin",
+    "proprietario" as any,
+    "manager",
+    "gerente" as any,
+    "platform_admin",
+    "master",
+  ]);
+}
+
 export async function requireAdmin() {
- return requireRole([
- "owner",
- "admin",
- "manager",
- "finance",
- "seller",
- "content",
- "support",
- "stock",
- "platform_admin",
- "master",
- ]);
+  return requireRole([
+    "owner",
+    "admin",
+    "manager",
+    "finance",
+    "seller",
+    "content",
+    "support",
+    "stock",
+    "platform_admin",
+    "master",
+  ]);
 }
 
 /**
  * Exige acesso global de plataforma (master/platform_admin).
  */
 export async function requirePlatformAdmin() {
- return requireRole(["platform_admin", "master"]);
+  return requireRole(["platform_admin", "master"]);
 }
