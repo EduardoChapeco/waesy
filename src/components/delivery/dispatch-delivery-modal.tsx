@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Bike, Copy, Check, ExternalLink, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
-import { createDeliveryDispatch } from "@/services/company-delivery.functions";
+import { createDeliveryDispatch, getCompanyDeliverySettings } from "@/services/company-delivery.functions";
 import { formatMoney } from "@/lib/money";
 
 export interface DispatchDeliveryModalProps {
@@ -34,7 +34,7 @@ export function DispatchDeliveryModal({
   const [customerName, setCustomerName] = useState(lead?.customer_name || "");
   const [customerPhone, setCustomerPhone] = useState(lead?.customer_phone || "");
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [deliveryFeeReais, setDeliveryFeeReais] = useState("10,00");
+  const [deliveryFeeReais, setDeliveryFeeReais] = useState("0,00");
   const [orderAmountReais, setOrderAmountReais] = useState(
     lead?.amount_cents ? ((lead.amount_cents) / 100).toFixed(2).replace(".", ",") : "0,00"
   );
@@ -66,7 +66,7 @@ export function DispatchDeliveryModal({
 
     setIsSubmitting(true);
     try {
-      const feeCents = Math.round(parseFloat(deliveryFeeReais.replace(",", ".")) * 100) || 1000;
+      const feeCents = Math.max(0, Math.round(parseFloat(deliveryFeeReais.replace(",", ".")) * 100) || 0);
       const amountCents = Math.round(parseFloat(orderAmountReais.replace(",", ".")) * 100) || 0;
 
       const res = await createDeliveryDispatch({

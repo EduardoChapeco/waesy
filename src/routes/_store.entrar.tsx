@@ -458,22 +458,19 @@ function StepByStepAuthPage() {
  <header className="relative z-10 flex items-center justify-between w-full max-w-5xl mx-auto">
  <Link
  to="/"
- className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-black/50 backdrop-blur-xl border border-white/15 text-white hover:border-white/30 transition-colors min-h-[44px]"
+ className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-card/80 backdrop-blur-xl border border-border/40 text-foreground hover:border-border transition-colors min-h-[44px]"
  >
  <span className="bg-primary text-primary-foreground font-black text-xs px-2 py-0.5 rounded-lg tracking-wider uppercase">
  {brand?.platform_name && brand.platform_name !== "Waesy" ? brand.platform_name : "Waesy"}
- </span>
- <span className="text-xs font-semibold tracking-tight text-white/90 hidden sm:inline">
- Master OS
  </span>
  </Link>
 
  <Link
  to="/"
- className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-black/40 backdrop-blur-xl border border-white/15 text-xs font-semibold text-white/90 hover:text-white hover:border-white/30 transition-all min-h-[44px]"
+ aria-label="Voltar ao início"
+ className="size-11 rounded-xl bg-card/80 backdrop-blur-xl border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all"
  >
- <ArrowLeft className="size-3.5" />
- <span>Voltar ao Início</span>
+ <ArrowLeft className="size-5" />
  </Link>
  </header>
 

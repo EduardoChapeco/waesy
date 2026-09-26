@@ -264,10 +264,20 @@ export const getOrderByToken = createServerFn({ method: "GET" })
  .validator(withDataPayload(z.object({ token: z.string() })))
  .handler(async ({ data: { token } }) => {
  const db = await getServerClient();
+ const req = getRequest();
+ const ua = req?.headers.get("user-agent") || null;
+
+ if (token) {
+   db.rpc("record_order_customer_view", {
+     p_public_token: token,
+     p_user_agent: ua,
+   }).catch(() => null);
+ }
+
  const { data } = await db
  .from("orders")
  .select(
- "id, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents, customer_snapshot, shipping_method, shipping_address, notes, custom_fields, cpf_on_receipt, substitution_policy, receiver_info, checkout_niche_metadata, created_at, stores(id, name, settings), payments(method, status, provider_name), order_items(id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options, notes)",
+ "id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents, customer_snapshot, shipping_method, shipping_address, notes, custom_fields, cpf_on_receipt, substitution_policy, receiver_info, checkout_niche_metadata, created_at, stores(id, name, settings), payments(method, status, provider_name), order_items(id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options, notes)",
  )
  .eq("public_token", token)
  .single();
@@ -390,14 +400,25 @@ export const processCheckout = createServerFn({ method: "POST" })
  return { status: "error" as const, message: "Checkout falhou." };
  }
 
+    let systemicOrderNumber = (result as any).orderNumber || null;
+ if (!systemicOrderNumber && result.orderId) {
+   const { data: dbOrder } = await db.from("orders").select("order_number").eq("id", result.orderId).maybeSingle();
+   systemicOrderNumber = dbOrder?.order_number;
+ }
+ const humanOrderId = systemicOrderNumber || result.orderToken;
+
     // Persist channel_origin, notes, custom fields, and V10 Multi-Nicho dynamic metadata on the created order
     if (result.orderId) {
       try {
         const updatePayload: Record<string, any> = {
-          channel_origin: "storefront",
+          channel_origin: "vitrine_online",
         };
         if (params.notes) updatePayload.notes = params.notes;
-        if (params.customFields) updatePayload.custom_fields = params.customFields;
+        const currentCustomFields = params.customFields || {};
+        updatePayload.custom_fields = {
+          ...currentCustomFields,
+          short_id: humanOrderId,
+        };
         if (params.cpfOnReceipt) updatePayload.cpf_on_receipt = params.cpfOnReceipt;
         if (params.substitutionPolicy) updatePayload.substitution_policy = params.substitutionPolicy;
         if (params.receiverInfo) updatePayload.receiver_info = params.receiverInfo;
@@ -495,6 +516,7 @@ export const processCheckout = createServerFn({ method: "POST" })
  status: "success" as const,
  orderId: result.orderId,
  orderToken: result.orderToken,
+ shortId: humanOrderId,
  };
  } catch (e: unknown) {
  logSystemError({ route: "checkout.functions.processCheckout", error: e, payload: params });
@@ -502,6 +524,6 @@ export const processCheckout = createServerFn({ method: "POST" })
  "[checkout.functions] processCheckout:",
  e instanceof Error ? e.message : String(e),
  );
- return { status: "error" as const, message: (e instanceof Error ? e.message : String(e)) || "Erro no checkout" };
+ return { status: "error" as const, message: (e instanceof Error ? e.message : String(e)) || "Não foi possível concluir seu pedido no momento. Tente novamente." };
  }
  });

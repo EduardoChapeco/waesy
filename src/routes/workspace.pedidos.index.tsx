@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ShoppingBag, Search, MoreVertical, Eye, CheckCircle2, Truck, PackageCheck, XCircle, ReceiptText, Clock, Filter, Volume2, VolumeX, Printer, LayoutGrid, List, ChefHat, ArrowRight, Plane, Compass, FileText, Layers, Users, Calendar, MessageCircle, Store, Ticket, BadgeAlert, ArrowUpRight } from 'lucide-react';
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { formatHumanOrderId } from "@/lib/order-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -152,7 +153,7 @@ function AdminOrdersPage() {
   // Filter orders by search, status tab & sales channel
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      const tokenStr = `#${order.public_token || ""}`.toLowerCase();
+      const tokenStr = `${order.order_number || ""} #${order.public_token || ""}`.toLowerCase();
       const customerName = (order.customer_snapshot?.name || "").toLowerCase();
       const customerEmail = (order.customer_snapshot?.email || "").toLowerCase();
       const customerPhone = (order.customer_snapshot?.phone || "").toLowerCase();
@@ -421,7 +422,7 @@ function AdminOrdersPage() {
  <div>
  <div className="flex items-center gap-2">
  <span className="font-mono font-black text-sm text-foreground">
- #{order.public_token || order.id.slice(0, 6)}
+ {order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)))}
  </span>
  <Badge variant="outline" className="text-[10px] font-bold">
  {order.payment_method?.toUpperCase() || "PIX / RESERVA"}
@@ -464,7 +465,7 @@ function AdminOrdersPage() {
  title="WhatsApp do Cliente"
  >
  <a
- href={`https://wa.me/55${customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${order.customer_snapshot?.name || ""}, confirmamos o recebimento do seu pedido #${order.public_token}!`)}`}
+ href={`https://wa.me/55${customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${order.customer_snapshot?.name || ""}, confirmamos o recebimento do seu pedido ${formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}!`)}`}
  target="_blank"
  rel="noopener noreferrer"
  >
@@ -674,7 +675,7 @@ function AdminOrdersPage() {
  <div className="flex items-start justify-between gap-2">
  <div>
  <span className="font-mono font-bold text-xs text-muted-foreground">
- #{order.public_token || order.id.slice(0, 6)}
+ {order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)))}
  </span>
  <p className="font-bold text-xs text-foreground mt-0.5">
  {order.customer_snapshot?.name || "Passageiro"}
@@ -1069,7 +1070,7 @@ function AdminOrdersPage() {
  e.stopPropagation();
  if (customerPhone) {
  window.open(
- `https://wa.me/55${customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${order.customer_snapshot?.name}, sobre o item "${item.title || "produto"}" do seu pedido #${order.public_token}: gostaríamos de propor uma substituição.`)}`,
+ `https://wa.me/55${customerPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${order.customer_snapshot?.name}, sobre o item "${item.title || "produto"}" do seu pedido ${formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}: gostaríamos de propor uma substituição.`)}`,
  "_blank",
  );
  } else {
@@ -1217,7 +1218,7 @@ function AdminOrdersPage() {
  return (
  <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
  <TableCell className="font-mono text-xs font-bold text-foreground">
- #{order.public_token || order.id.slice(0, 6)}
+ {order.order_number || ("#" + (order.public_token || order.id.slice(0, 6)))}
  </TableCell>
 
  <TableCell>

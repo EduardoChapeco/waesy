@@ -176,9 +176,9 @@ function TourismMasterPage() {
         allowedViewModes={["feed", "grid", "list"]}
       />
 
-      {/* Filtro de Saída por Aeroporto Regional (Padrão Botão Grande) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 border-b border-border/40">
-        <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1">
+      {/* Filtro de Saída por Aeroporto Regional (Padrão Botão Grande com Snap Scroll) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 border-b border-border/40 snap-x snap-mandatory">
+        <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1 snap-start">
           Saída:
         </span>
         {REGIONAL_AIRPORTS.map((air) => {
@@ -189,7 +189,7 @@ function TourismMasterPage() {
               type="button"
               onClick={() => setSelectedAirport(air.id)}
               className={cn(
-                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+                "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98 snap-start",
                 isActive
                   ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                   : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -237,9 +237,10 @@ function TourismMasterPage() {
         /* MODO 1: CARTÕES LIMPOS */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {tourismList.map((item) => {
-            const maxInstallments = item.attributes?.max_installments || item.max_installments || 12;
+            const configuredInstallments = Number(item.attributes?.max_installments || item.max_installments);
+            const maxInstallments = configuredInstallments > 1 ? Math.min(24, configuredInstallments) : 1;
             const priceCents = item.price_cents || 0;
-            const installmentCents = priceCents > 0 ? Math.round(priceCents / maxInstallments) : 0;
+            const installmentCents = (priceCents > 0 && maxInstallments > 1) ? Math.round(priceCents / maxInstallments) : 0;
             const mealPlan = item.attributes?.meal_plan || item.meal_plan || null;
             const durationDays = item.duration_days || item.attributes?.duration_days || null;
 
@@ -306,7 +307,7 @@ function TourismMasterPage() {
                       <span className="text-base font-bold font-mono text-foreground block">
                         {item.price_display || (priceCents > 0 ? formatMoney(priceCents) : "Consulte")}
                       </span>
-                      {installmentCents > 0 && (
+                      {installmentCents > 0 && maxInstallments > 1 && (
                         <span className="text-[11px] text-muted-foreground block">
                           em até {maxInstallments}x de {formatMoney(installmentCents)}
                         </span>
@@ -318,14 +319,14 @@ function TourismMasterPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleOpenQuote(item.title)}
-                        className="rounded-xl text-xs h-8 px-3 font-medium"
+                        className="rounded-xl text-xs h-9 px-3 font-medium cursor-pointer"
                       >
                         Cotar
                       </Button>
                       <Button
                         asChild
                         size="sm"
-                        className="rounded-xl text-xs h-8 px-3.5 font-medium"
+                        className="rounded-xl text-xs h-9 px-3.5 font-medium cursor-pointer"
                       >
                         <Link to="/turismo/$id" params={{ id: item.id }}>
                           <span>Ver</span>

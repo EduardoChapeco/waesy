@@ -28,6 +28,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
   const isStandalonePage =
     location.pathname.startsWith("/entrar") ||
     location.pathname.startsWith("/cadastro") ||
+    location.pathname.startsWith("/cadastroantecipado") ||
     location.pathname.startsWith("/recuperar-senha") ||
     location.pathname.startsWith("/f/") ||
     location.pathname.startsWith("/m/") ||
@@ -95,14 +96,14 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/u/") ||
     location.pathname.includes("/afiliados") ||
     location.pathname.includes("/agenda") ||
-    location.pathname.includes("/pedidos") ||
+    location.pathname.includes("/pedido") ||
     location.pathname.includes("/conversas") ||
     location.pathname.includes("/turismo") ||
     location.pathname.includes("/hospedagem") ||
     location.pathname.includes("/agendar") ||
     location.pathname.includes("/servicos") ||
     location.pathname.includes("/classificados") ||
-    location.pathname.includes("/concursos") ||
+    location.pathname.includes("/concurso") ||
     location.pathname.includes("/diretorio") ||
     location.pathname.includes("/empregos") ||
     location.pathname.includes("/eventos") ||
@@ -130,16 +131,22 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/construcao") ||
     location.pathname.includes("/beleza") ||
     location.pathname.includes("/receitas") ||
-    location.pathname.includes("/voucher");
+    location.pathname.includes("/voucher") ||
+    location.pathname.includes("/curriculo") ||
+    location.pathname.includes("/garcom") ||
+    location.pathname.includes("/mobilidade") ||
+    location.pathname.includes("/match-time") ||
+    location.pathname.includes("/reputacao") ||
+    location.pathname.includes("/reclamar") ||
+    location.pathname.includes("/contato");
 
   const isFeedPage = location.pathname.startsWith("/feed");
-  const isMarketplace = (location.search as any)?.view === "marketplace" || (location.search as any)?.view === "vitrine";
-  const isMarketingLanding = location.pathname === "/" && !isMarketplace;
+  // isMarketingLanding removido (V99/FASE 1) — LP agora em /cadastroantecipado.
 
   return (
     <div className="h-[100dvh] w-full max-w-full bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans antialiased relative flex flex-col overflow-hidden">
       {/* ── Barra de Topo Horizontal (Ocultada no Mobile em Telas Nativas de App, Perfil, Formulário e Afiliados) ── */}
-      <div className={isMarketingLanding ? "hidden" : (isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage ? "hidden md:block" : "")}>
+      <div className={isProfilePage || isFormPage || isCleanMobileAppPage || isDetailPage ? "hidden md:block" : ""}>
         <TopBar
           session={session}
           brandSettings={brandSettings}
@@ -149,7 +156,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       {/* ── Corpo Principal com Scrolls Independentes (Sidebar fixa + Main independente) ── */}
       <div className="flex-1 flex min-w-0 w-full max-w-full relative overflow-hidden">
         {/* Coluna Contextual Fixa com Scroll Próprio (Desktop apenas) */}
-        {!isMarketingLanding && contextConfig.showContextSidebar !== false && (
+        {contextConfig.showContextSidebar !== false && (
           <ContextSidebar config={contextConfig} session={session} />
         )}
 
@@ -179,7 +186,7 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       </div>
 
       {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
-      {!isDetailPage && !isMarketingLanding && <MobileNav session={session} userRole={session?.role} />}
+      {!isDetailPage && <MobileNav session={session} userRole={session?.role} />}
 
  {/* Global Cart Slide-over */}
  <CartSheet />

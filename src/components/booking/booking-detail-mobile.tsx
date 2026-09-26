@@ -58,18 +58,18 @@ export function BookingDetailMobile({
         {/* Gradiente superior para contraste dos botões */}
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 via-black/25 to-transparent pointer-events-none z-10" />
 
-        {/* Botão Circular Flutuante "Voltar" */}
+        {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agendar"
-          className="absolute top-3 left-3 size-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 shadow-md"
+          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 shadow-md"
           aria-label="Voltar para Serviços"
         >
-          <ArrowLeft size={18} weight="bold" />
+          <ArrowLeft size={20} weight="bold" />
         </Link>
 
-        {/* Ações Flutuantes Superior Direito */}
+        {/* Ações Flutuantes Superior Direito (44px Apple HIG) */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
-          <div className="size-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-md">
+          <div className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-md">
             <ContentActionsMenu
               entityType="product"
               entityId={service.id}
@@ -210,7 +210,7 @@ export function BookingDetailMobile({
             </div>
 
             {store.slug && (
-              <Button asChild variant="outline" size="sm" className="w-full rounded-xl text-xs font-bold h-9">
+              <Button asChild variant="outline" size="sm" className="w-full rounded-xl text-xs font-bold h-11">
                 <Link to="/loja/$slug" params={{ slug: store.slug }}>
                   <span>Conhecer o Espaço Completo</span>
                   <CaretRight size={14} className="ml-1" />

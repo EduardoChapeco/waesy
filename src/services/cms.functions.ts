@@ -998,7 +998,7 @@ export const listStorePublicReviews = createServerFn({ method: "GET" })
       }
       return (data || []).map((r: any) => ({
         id: r.id,
-        rating: r.rating || 5,
+        rating: typeof r.rating === "number" ? r.rating : 0,
         comment: r.comment || "",
         created_at: r.created_at,
         product_name: r.products?.title || null,

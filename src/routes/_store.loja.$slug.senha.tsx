@@ -109,15 +109,15 @@ function StorePasswordGatePage() {
           </Button>
         </form>
 
-        <div className="pt-2">
+        <div className="pt-2 flex justify-center">
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => navigate({ to: "/" })}
-            className="text-xs text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer"
+            className="size-11 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+            aria-label="Voltar ao início"
           >
-            <ArrowLeft size={13} />
-            <span>Voltar ao início</span>
+            <ArrowLeft className="size-5" />
           </Button>
         </div>
       </div>

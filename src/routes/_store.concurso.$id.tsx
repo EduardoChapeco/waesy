@@ -143,11 +143,12 @@ function ConcursoDetailPage() {
           asChild
           variant="ghost"
           size="sm"
-          className="rounded-xl text-xs font-semibold gap-1.5 h-9 -ml-2 text-muted-foreground hover:text-foreground"
+          className="size-11 sm:size-auto rounded-full sm:rounded-xl p-0 sm:px-3 text-xs font-semibold gap-1.5 h-11 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all"
+          aria-label="Todos os Sorteios"
         >
           <Link to="/concursos">
-            <ArrowLeft className="size-4" />
-            <span>Todos os Sorteios</span>
+            <ArrowLeft className="size-5 sm:size-4" />
+            <span className="hidden sm:inline">Todos os Sorteios</span>
           </Link>
         </Button>
 
@@ -156,9 +157,9 @@ function ConcursoDetailPage() {
           variant="outline"
           size="sm"
           onClick={handleShare}
-          className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+          className="rounded-xl text-xs font-semibold gap-1.5 h-11 px-3.5"
         >
-          <Share2 className="size-3.5" />
+          <Share2 className="size-4" />
           <span>Compartilhar</span>
         </Button>
       </div>

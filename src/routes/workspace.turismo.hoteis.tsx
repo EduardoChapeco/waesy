@@ -333,20 +333,20 @@ function WorkspaceHotelsPage() {
  state: hotel.state || "",
  country: hotel.country || "Brasil",
  stars: hotel.stars || 4,
- regime_options: hotel.regime_options || ["All Inclusive"],
+ regime_options: hotel.regime_options || [],
  description: hotel.description || "",
  cover_photo_url: hotel.cover_photo_url || "",
  photos: hotel.photos || [],
  website: hotel.website || "",
  phone: hotel.phone || "",
- internal_rating: hotel.internal_rating || 4.8,
+ internal_rating: hotel.internal_rating ?? 0,
  address: hotel.address || "",
  airport_distance: hotel.airport_distance || "",
  google_maps_url: hotel.google_maps_url || "",
  location_lat: hotel.location_lat ?? null,
  location_lng: hotel.location_lng ?? null,
- max_installments: hotel.max_installments ?? 12,
- badges: hotel.badges || ["Eco-friendly", "Pé na Areia"],
+ max_installments: hotel.max_installments ?? 1,
+ badges: hotel.badges || [],
  bio_bullets: hotel.bio_bullets || [],
  room_categories: hotel.room_categories || [],
  policies: {
@@ -600,7 +600,7 @@ function WorkspaceHotelsPage() {
  const fiveStarsCount = hotels.filter((h: HotelBankDTO) => (h.stars || 0) >= 5).length;
  const averageRating =
     totalHotels > 0
-      ? (hotels.reduce((acc: number, h: HotelBankDTO) => acc + (h.internal_rating || 4.8), 0) / totalHotels).toFixed(1)
+      ? (hotels.reduce((acc: number, h: HotelBankDTO) => acc + (h.internal_rating || 0), 0) / (hotels.filter(h => (h.internal_rating || 0) > 0).length || 1)).toFixed(1)
       : "5.0";
   const dashboardMetrics: MetricCardItem[] = useMemo(() => [
     {
@@ -783,7 +783,7 @@ function WorkspaceHotelsPage() {
  </span>
  )}
  <Badge className="bg-emerald-600 text-white font-semibold text-[10px] border-none shadow-xs">
- Nota {hotel.internal_rating || 4.8}
+ {hotel.internal_rating ? `Nota ${hotel.internal_rating}` : "Novo"}
  </Badge>
  </div>
  </div>
@@ -967,7 +967,7 @@ function WorkspaceHotelsPage() {
  <td className="p-3 whitespace-nowrap">
  <div className="flex items-center gap-0.5 text-amber-500 font-bold">
  <span>{hotel.stars}★</span>
- <span className="text-muted-foreground text-[10px] font-normal ml-1">({hotel.internal_rating || 4.8})</span>
+ {(hotel.internal_rating || 0) > 0 ? <span className="text-muted-foreground text-[10px] font-normal ml-1">({hotel.internal_rating})</span> : null}
  </div>
  </td>
  <td className="p-3">
@@ -1060,7 +1060,7 @@ function WorkspaceHotelsPage() {
  <span className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-[10px]">
  {previewHotel.stars || 4} Estrelas
  </span>
- <span className="text-white/80 font-normal ml-1">Nota {previewHotel.internal_rating || 4.8} / 5.0</span>
+ {(previewHotel.internal_rating || 0) > 0 ? <span className="text-white/80 font-normal ml-1">Nota {previewHotel.internal_rating} / 5.0</span> : null}
  </div>
  <h2 className="text-xl font-bold">{previewHotel.name}</h2>
  <p className="text-xs text-white/80 flex items-center gap-1">
@@ -1487,7 +1487,7 @@ function WorkspaceHotelsPage() {
                   min={1}
                   max={24}
                   value={formData.max_installments}
-                  onChange={(e) => setFormData({ ...formData, max_installments: parseInt(e.target.value, 10) || 12 })}
+                  onChange={(e) => setFormData({ ...formData, max_installments: parseInt(e.target.value, 10) || 1 })}
                   className="w-full accent-primary h-2 bg-muted rounded-lg cursor-pointer"
                 />
                 <Input
@@ -1495,7 +1495,7 @@ function WorkspaceHotelsPage() {
                   min={1}
                   max={24}
                   value={formData.max_installments}
-                  onChange={(e) => setFormData({ ...formData, max_installments: Math.min(24, Math.max(1, parseInt(e.target.value, 10) || 12)) })}
+                  onChange={(e) => setFormData({ ...formData, max_installments: Math.min(24, Math.max(1, parseInt(e.target.value, 10) || 1)) })}
                   className="w-16 h-9 text-center font-mono text-xs rounded-xl bg-background"
                 />
               </div>

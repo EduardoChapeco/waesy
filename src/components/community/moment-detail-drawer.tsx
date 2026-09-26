@@ -24,7 +24,7 @@ interface MomentDetailDrawerProps {
 }
 
 export function MomentDetailDrawer({ moment, onClose }: MomentDetailDrawerProps) {
- const [likesCount, setLikesCount] = useState<number>(moment.likes_count || 12);
+  const [likesCount, setLikesCount] = useState<number>(Number(moment.likes_count) || 0);
  const [isLiked, setIsLiked] = useState(false);
  const [isLiking, setIsLiking] = useState(false);
 

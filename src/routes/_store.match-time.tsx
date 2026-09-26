@@ -1,4 +1,4 @@
-﻿import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
+import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { generateMatchTimeOffers } from "@/services/marketing.functions";
 import { useCartContext } from "@/lib/cart-context";
@@ -85,15 +85,16 @@ function MatchTimePage() {
  <div className="w-full max-w-sm mb-6 flex items-center justify-between px-4">
  <Link
  to="/"
- className="text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
+ className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all"
+ aria-label="Voltar para Início"
  >
- <ArrowLeft className="w-6 h-6" />
+ <ArrowLeft className="size-5" />
  </Link>
  <div className="flex items-center text-primary font-semibold text-xl tracking-tight">
  <Layers className="w-5 h-5 mr-1" />
  Match Time
  </div>
- <div className="w-10"></div> {/* spacer */}
+ <div className="w-11" /> {/* spacer 44px */}
  </div>
 
  <div className="relative w-full max-w-sm aspect-[3/4] mx-auto px-4 perspective-1000">

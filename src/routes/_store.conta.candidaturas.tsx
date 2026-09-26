@@ -91,9 +91,17 @@ function MinhasCandidaturasPage() {
           )}
         </div>
 
-        <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
-          <Link to="/empregos">Explorar Vagas</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer gap-1.5">
+            <Link to="/conta/curriculo">
+              <FileText className="size-3.5" />
+              <span>Meu Currículo</span>
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="default" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
+            <Link to="/empregos">Explorar Vagas</Link>
+          </Button>
+        </div>
       </div>
 
  {applications.length === 0 ? (

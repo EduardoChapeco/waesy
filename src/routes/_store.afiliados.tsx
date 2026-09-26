@@ -471,24 +471,24 @@ function AfiliadosPage() {
           <div className="space-y-4 sm:space-y-6">
             {/* Navegação em Tabs (Scroll Suave no Mobile sem Quebra Feia) */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-              <TabsList className="h-10 sm:h-11 p-1 bg-muted/40 rounded-xl border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:grid sm:grid-cols-5">
-                <TabsTrigger value="dashboard" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
+              <TabsList className="h-10 sm:h-11 p-1 bg-muted/40 rounded-xl border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full sm:grid sm:grid-cols-5">
+                <TabsTrigger value="dashboard" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <TrendingUp className="size-3.5" />
                   <span>Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="showcase" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
+                <TabsTrigger value="showcase" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <Layers className="size-3.5" />
                   <span>Minha Vitrine</span>
                 </TabsTrigger>
-                <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
+                <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <Store className="size-3.5" />
                   <span>Lojas & Cupons</span>
                 </TabsTrigger>
-                <TabsTrigger value="referrals" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
+                <TabsTrigger value="referrals" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <Coins className="size-3.5" />
                   <span>Ganhos & Bônus</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 sm:shrink">
+                <TabsTrigger value="settings" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <SlidersHorizontal className="size-3.5" />
                   <span>Configurações</span>
                 </TabsTrigger>

@@ -1336,7 +1336,9 @@ function ClassifiedsMasterPage() {
                         )}
                         {(item.attributes?.accepts_card || item.accepts_card) && (
                           <Badge variant="outline" className="text-[9px] font-mono px-1.5 py-0 rounded-md">
-                            Cartão até {item.attributes?.max_installments || 12}x
+                            {Number(item.attributes?.max_installments) > 1
+                              ? `Cartão até ${item.attributes.max_installments}x`
+                              : "Aceita Cartão"}
                           </Badge>
                         )}
                       </div>

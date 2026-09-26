@@ -1157,7 +1157,7 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.flight_details?.arrival_time || ""
   );
   const [travelMaxInstallments, setTravelMaxInstallments] = useState(
-    initialData?.attributes?.max_installments || 12
+    initialData?.attributes?.max_installments ?? 1
   );
   const [travelStoryHighlights, setTravelStoryHighlights] = useState<StoryHighlight[]>(
     initialData?.attributes?.story_highlights || []
@@ -2167,11 +2167,11 @@ function SpecializedClassifiedEditor({
         accepts_boleto: acceptsBoleto,
         boleto_due_days: acceptsBoleto ? boletoDueDays : undefined,
         accepts_boleto_installments: acceptsBoletoInstallments,
-        max_boleto_installments: acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 12 : undefined,
+        max_boleto_installments: acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 1 : undefined,
         boleto_min_down_payment_cents: acceptsBoletoInstallments ? boletoMinDownPaymentCents : undefined,
         boleto_notes: acceptsBoletoInstallments ? boletoNotes.trim() : undefined,
         accepts_carne: acceptsCarne,
-        max_carne_installments: acceptsCarne ? Number(maxCarneInstallments) || 12 : undefined,
+        max_carne_installments: acceptsCarne ? Number(maxCarneInstallments) || 1 : undefined,
         carne_grace_days: acceptsCarne ? carneGraceDays : undefined,
         carne_min_down_payment_cents: acceptsCarne ? carneMinDownPaymentCents : undefined,
         carne_notes: acceptsCarne ? carneNotes.trim() : undefined,
@@ -2184,7 +2184,7 @@ function SpecializedClassifiedEditor({
           accepts_pix: acceptsPix,
           pix_discount_percent: acceptsPix ? Number(pixDiscountPercent) || 0 : 0,
           accepts_card: acceptsCard,
-          max_installments: acceptsCard ? Number(maxInstallments) || 12 : 1,
+          max_installments: acceptsCard ? Number(maxInstallments) || 1 : 1,
           card_interest_free: cardInterestFree,
           accepts_boleto: acceptsBoleto,
           boleto_due_days: boletoDueDays,
@@ -2215,7 +2215,7 @@ function SpecializedClassifiedEditor({
         ],
         installments_available: acceptsCard || acceptsBoletoInstallments || acceptsCarne,
         cancellation_policy: cancellationPolicy,
-        max_installments: acceptsCard ? Number(maxInstallments) || 12 : (acceptsCarne ? maxCarneInstallments : (acceptsBoletoInstallments ? maxBoletoInstallments : 1)),
+        max_installments: acceptsCard ? Number(maxInstallments) || 1 : (acceptsCarne ? Number(maxCarneInstallments) || 1 : (acceptsBoletoInstallments ? Number(maxBoletoInstallments) || 1 : 1)),
         free_shipping_local: niche.id === "desapego" ? freeShippingLocal : false,
         template_style: templateStyle,
         volume: convenienceVolume || undefined,
@@ -2895,7 +2895,7 @@ function SpecializedClassifiedEditor({
         accepts_pix: acceptsPix,
         pix_discount_percent: pixDiscountPercent,
         accepts_card: acceptsCard,
-        max_installments: acceptsCard ? (niche.id === "viagem" ? Number(travelMaxInstallments) || 12 : Number(maxInstallments) || 12) : 1,
+        max_installments: acceptsCard ? (niche.id === "viagem" ? Number(travelMaxInstallments) || 1 : Number(maxInstallments) || 1) : 1,
         card_interest_free: cardInterestFree,
         accepts_boleto: acceptsBoleto,
         boleto_due_days: boletoDueDays,
@@ -3187,12 +3187,12 @@ function SpecializedClassifiedEditor({
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={onBack}
-            className="rounded-xl text-xs gap-1.5 h-9 font-bold text-muted-foreground hover:text-foreground"
+            className="rounded-xl size-11 sm:size-9 font-bold text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+            aria-label="Voltar"
           >
-            <ArrowLeft className="size-4" />
-            <span>Retornar</span>
+            <ArrowLeft className="size-5 sm:size-4" />
           </Button>
 
           <div className="hidden sm:flex items-center gap-2">

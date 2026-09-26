@@ -240,7 +240,7 @@ function CustomerAgendaPage() {
  </span>
  </div>
 
- <div className="flex items-center gap-2">
+ <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
  <Button
    type="button"
    variant="outline"

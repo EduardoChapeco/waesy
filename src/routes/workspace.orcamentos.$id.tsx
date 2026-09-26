@@ -303,7 +303,7 @@ function QuoteDetailPage() {
  <div className="flex items-center justify-between text-muted-foreground">
  <span>Quarto: {h.room_type}</span>
  <Badge variant="outline" className="text-[10px] font-semibold capitalize">
- {h.board_basis?.replace("_", " ") || "All Inclusive"}
+ {h.board_basis?.replace("_", " ") || "Regime a definir"}
  </Badge>
  </div>
  <p className="text-[11px] text-muted-foreground">🌙 {h.nights_count} noites de hospedagem</p>

@@ -31,7 +31,8 @@ export function TravelPackageHero({
  onReserveClick,
  whatsappNumber = "49991448651",
 }: TravelPackageHeroProps) {
- const installmentCents = Math.round(priceCents / (installmentsCount || 12));
+ const count = Math.max(1, installmentsCount || 1);
+ const installmentCents = Math.round(priceCents / count);
 
  const handleBooking = () => {
  if (onReserveClick) {
@@ -39,8 +40,11 @@ export function TravelPackageHero({
  return;
  }
  const cleanPhone = whatsappNumber.replace(/\D/g, "");
+ const installmentText = count > 1
+   ? `por ${count}x de ${formatMoney(installmentCents)}`
+   : `por ${formatMoney(priceCents)}`;
  const msg = encodeURIComponent(
- `Olá! Gostaria de informações sobre a reserva do pacote *${title}* (${destination}) por 12x de ${formatMoney(installmentCents)}.`
+ `Olá! Gostaria de informações sobre a reserva do pacote *${title}* (${destination}) ${installmentText}.`
  );
  window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
  };
@@ -99,11 +103,11 @@ export function TravelPackageHero({
  A partir de (para 2 pessoas)
  </span>
  <div className="flex items-baseline gap-1.5">
- <span className="text-sm font-semibold text-white/80">12x</span>
+ {count > 1 && <span className="text-sm font-semibold text-white/80">{count}x</span>}
  <span className="text-2xl sm:text-3xl font-black text-white font-mono">
- {formatMoney(installmentCents)}
+ {formatMoney(count > 1 ? installmentCents : priceCents)}
  </span>
- <span className="text-xs text-white/70">ou {formatMoney(priceCents)} à vista</span>
+ {count > 1 && <span className="text-xs text-white/70">ou {formatMoney(priceCents)} à vista</span>}
  </div>
  </div>
 

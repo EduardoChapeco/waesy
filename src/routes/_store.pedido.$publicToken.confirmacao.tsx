@@ -18,11 +18,13 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { ErrorState } from "@/components/state/states";
 import { getOrderByToken } from "@/services/checkout.functions";
 import { formatMoney } from "@/lib/money";
+import { formatHumanOrderId } from "@/lib/order-id";
 import { PostOrderAuditModal } from "@/components/commerce/post-order-audit-modal";
 import { getBrowserClient } from "@/lib/supabase";
 import { trackPurchaseEvent } from "@/components/commerce/product-telemetry";
 import { generateContractFromOrder } from "@/services/contracts.functions";
 import { toast } from "sonner";
+import { sanitizeWhatsAppPhone } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/_store/pedido/$publicToken/confirmacao")({
  head: () => ({
@@ -180,7 +182,7 @@ function ConfirmationPage() {
  storeSettings.whatsapp ||
  storeSettings.contact_phone ||
  "";
- const whatsappPhone = rawPhone.replace(/\D/g, "");
+ const whatsappPhone = sanitizeWhatsAppPhone(rawPhone);
 
  const handleCopyPix = () => {
  navigator.clipboard.writeText(pixKey);
@@ -194,7 +196,7 @@ function ConfirmationPage() {
  <PageHeader title="Pedido Realizado com Sucesso" />
  <p className="mt-2 text-sm text-muted-foreground">
  Código do pedido:{" "}
- <span className="font-mono font-medium text-foreground">{order.public_token}</span>
+ <span className="font-mono font-medium text-foreground">{order.order_number || formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}</span>
  </p>
  </div>
 
@@ -634,7 +636,7 @@ function ConfirmationPage() {
  className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-sm gap-2"
  >
  <a
- href={`https://wa.me/55${whatsappPhone}?text=${encodeURIComponent(
+ href={`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
  `Olá! Acabei de fazer o pedido #${order.public_token} no valor de ${formatMoney(total)} pelo app. Gostaria de acompanhar!`
  )}`}
  target="_blank"

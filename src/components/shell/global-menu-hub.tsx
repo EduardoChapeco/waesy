@@ -460,7 +460,7 @@ export function GlobalMenuHub({
                   </div>
                   <div className="min-w-0">
                     <span className="text-sm font-semibold text-foreground block">
-                      Eventos & Shows (Circuito 2027)
+                      Eventos & Shows
                     </span>
                     <span className="text-xs text-muted-foreground block truncate">
                       Ingressos digitais e atrações confirmadas

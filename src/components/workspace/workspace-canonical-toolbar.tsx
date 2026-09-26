@@ -162,7 +162,7 @@ export function WorkspaceCanonicalToolbar({
       {hasTabs && (
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
           {/* LADO ESQUERDO: Abas Segmentadas */}
-          <div className="flex items-center p-1 rounded-2xl bg-muted/40 border border-border/60 shrink-0 gap-0.5 overflow-x-auto no-scrollbar max-w-full">
+          <div className="flex items-center p-1 rounded-2xl bg-muted/40 border border-border/60 shrink-0 gap-0.5 overflow-x-auto no-scrollbar max-w-full snap-x snap-mandatory">
             {effectiveTabs.map((item) => {
               const Icon = item.icon;
               const isActive = currentActive === item.id;
@@ -174,7 +174,7 @@ export function WorkspaceCanonicalToolbar({
                   type="button"
                   onClick={() => handleTabSelect?.(item.id)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 min-h-[34px]",
+                    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 snap-start min-h-[34px]",
                     isActive
                       ? "bg-background text-foreground shadow-2xs font-bold"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/40"

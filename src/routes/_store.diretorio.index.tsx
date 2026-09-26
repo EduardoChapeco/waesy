@@ -338,15 +338,16 @@ function DirectoryMobileWhatsAppItem({ item }: { item: DirectoryListingDTO }) {
             niche={item.category}
             variant="ghost"
             size="sm"
-            className="size-9 p-0 rounded-full hover:bg-muted/40 text-foreground"
+            className="size-11 p-0 rounded-full hover:bg-muted/40 text-foreground active:scale-95 transition-all"
           />
         )}
         <Link
           to="/diretorio/$id"
           params={{ id: item.id }}
-          className="size-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+          className="size-11 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all"
+          aria-label="Ver Detalhes do Local"
         >
-          <ArrowRight size={15} />
+          <ArrowRight size={18} />
         </Link>
       </div>
     </div>

@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
@@ -378,11 +378,11 @@ function MobilityPage() {
  <div className="flex items-center gap-2">
  <Link
  to="/"
- className="size-8 rounded-xl bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center transition-colors"
+ className="size-11 rounded-full bg-muted/60 hover:bg-muted text-foreground flex items-center justify-center transition-colors active:scale-95"
  title="Voltar ao Início"
  aria-label="Voltar ao Início"
  >
- <ArrowLeft className="size-4" />
+ <ArrowLeft className="size-5" />
  </Link>
  <h1 className="text-base font-black tracking-tight text-foreground">
  {activeTabConfig.title}
@@ -391,11 +391,11 @@ function MobilityPage() {
 
  <Link
  to="/"
- className="size-8 rounded-xl bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
+ className="size-11 rounded-full bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors active:scale-95"
  title="Fechar"
  aria-label="Fechar"
  >
- <X className="size-4" />
+ <X className="size-5" />
  </Link>
  </div>
 

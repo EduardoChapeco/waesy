@@ -64,7 +64,7 @@ export default function WorkspaceReviewsPage() {
 
   const reviews = data?.reviews || [];
   const stats = data?.stats || {
-    average_rating: 5.0,
+    average_rating: 0,
     total_reviews: 0,
     count_5_stars: 0,
     count_4_stars: 0,
@@ -143,7 +143,7 @@ export default function WorkspaceReviewsPage() {
               Central de Avaliações & Reputação
             </h1>
             <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-600 bg-amber-500/10">
-              {stats.average_rating.toFixed(1)} ★ ({stats.total_reviews})
+              {stats.total_reviews > 0 ? `${stats.average_rating.toFixed(1)} ★ (${stats.total_reviews})` : "Sem avaliações"}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -179,7 +179,7 @@ export default function WorkspaceReviewsPage() {
                 key={s}
                 className={cn(
                   "w-4 h-4",
-                  s <= Math.round(stats.average_rating) ? "fill-amber-500" : "text-muted-foreground/30"
+                  s <= Math.round(stats.average_rating) && stats.total_reviews > 0 ? "fill-amber-500" : "text-muted-foreground/30"
                 )}
               />
             ))}

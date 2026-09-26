@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useRouter, redirect } from "@tanstack/react-router";
-import { ChevronRight, Eye, EyeOff, ShieldCheck, Layers, ArrowRight } from 'lucide-react';
+import { ChevronRight, Eye, EyeOff, ShieldCheck, Layers, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -128,9 +128,10 @@ function RegisterPage() {
  <div className="flex items-center justify-between">
  <Link
  to="/"
- className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+ className="size-10 rounded-xl bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border transition-all"
+ aria-label="Voltar para o início"
  >
- ← Voltar para o início
+ <ArrowLeft className="size-4" />
  </Link>
  <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs">
  <Link

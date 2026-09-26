@@ -1241,14 +1241,14 @@ function PdvTerminal() {
  {/* Coluna Esquerda: Catálogo Tátil de Produtos */}
  <div className="flex-1 flex flex-col min-w-0 border-r border-border/70 overflow-hidden">
  {/* Carrossel Tátil de Categorias */}
- <div className="p-3 border-b border-border/70 bg-card/60 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0">
+ <div className="p-2.5 sm:p-3 border-b border-border/70 bg-card/60 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0 snap-x snap-mandatory">
  <button
  type="button"
  onClick={() => setSelectedCategory("all")}
- className={`px-3.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
+ className={`px-4 py-2 min-h-[44px] rounded-xl text-xs font-bold shrink-0 snap-start transition-all cursor-pointer ${
  selectedCategory === "all"
  ? "bg-foreground text-background shadow-xs"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
+ : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
  }`}
  >
  Todos ({flatProducts.length})
@@ -1260,10 +1260,10 @@ function PdvTerminal() {
  key={cat}
  type="button"
  onClick={() => setSelectedCategory(cat)}
- className={`px-3.5 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
+ className={`px-4 py-2 min-h-[44px] rounded-xl text-xs font-bold shrink-0 snap-start transition-all cursor-pointer ${
  selectedCategory === cat
  ? "bg-primary text-primary-foreground shadow-xs"
- : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
+ : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-border/40"
  }`}
  >
  {cat} ({count})

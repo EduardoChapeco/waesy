@@ -51,7 +51,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
         listSdrChatSessions().catch(() => ({ sessions: [], metrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 } })),
       ]);
       return {
-        ...(res || { threads: [], metrics: { total: 0, open: 0, closed: 0, avg_rating: 5, sla_first_response_min: 0 } }),
+        ...(res || { threads: [], metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 } }),
         store,
         sdrSessions: sdrData?.sessions || [],
         sdrMetrics: sdrData?.metrics || { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/workspace/atendimento/")({
       console.warn("[workspace.atendimento] Fallback de segurança no loader:", e);
       return {
         threads: [],
-        metrics: { total: 0, open: 0, closed: 0, avg_rating: 5, sla_first_response_min: 0 },
+        metrics: { total: 0, open: 0, closed: 0, avg_rating: 0, sla_first_response_min: 0 },
         store: null,
         sdrSessions: [],
         sdrMetrics: { total: 0, readyToBuy: 0, warm: 0, curious: 0 },
@@ -388,7 +388,7 @@ function WorkspaceAtendimentoPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-muted-foreground">CSAT:</span>
-              <span className="font-extrabold text-emerald-600">⭐ {metrics?.avg_rating} / 5.0</span>
+              <span className="font-extrabold text-emerald-600">⭐ {metrics?.avg_rating && metrics.avg_rating > 0 ? `${metrics.avg_rating} / 5.0` : "—"}</span>
             </div>
           </div>
         )}

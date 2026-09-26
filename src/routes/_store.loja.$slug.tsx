@@ -5,7 +5,7 @@
 
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LockKey } from "@phosphor-icons/react";
+import { LockKey, ArrowLeft } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { getPublicStoreProfile, getStorePublicCatalog } from "@/services/catalog.functions";
 import { listPublicJobs } from "@/services/jobs.functions";
@@ -177,8 +177,11 @@ function StoreSlugCanonicalPage() {
           title="Empresa Não Encontrada"
           description="A loja ou vitrine que você está procurando não existe ou teve seu endereço alterado."
         />
-        <Button asChild variant="outline" className="rounded-xl font-bold text-xs">
-          <Link to="/">← Voltar para o Início</Link>
+        <Button asChild variant="outline" className="rounded-xl font-bold text-xs h-11 px-4 gap-1.5">
+          <Link to="/">
+            <ArrowLeft size={16} weight="bold" />
+            <span>Voltar para o Início</span>
+          </Link>
         </Button>
       </div>
     );

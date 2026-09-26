@@ -54,16 +54,17 @@ function MemberMetricsPage() {
  {/* ── Top Header com Identidade e Voltar ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
  <div className="flex items-center gap-3">
- <Button
- asChild
- size="sm"
- variant="ghost"
- className="size-8 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
- >
- <Link to="/membro/$id" params={{ id: profile.username || profile.id }}>
- <ArrowLeft className="size-4" />
- </Link>
- </Button>
+        <Button
+          asChild
+          size="sm"
+          variant="ghost"
+          className="size-11 rounded-full p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all cursor-pointer"
+          aria-label="Voltar para Perfil"
+        >
+          <Link to="/membro/$id" params={{ id: profile.username || profile.id }}>
+            <ArrowLeft className="size-5" />
+          </Link>
+        </Button>
 
  <Avatar className="size-9 rounded-xl border border-border/60">
  <AvatarImage src={profile.avatar_url || ""} />

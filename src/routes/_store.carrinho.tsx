@@ -11,8 +11,7 @@ import {
   applyCouponToCart,
   updateCartShipping,
 } from "@/services/cart.functions";
-import { calculateShipping } from "@/services/shipping.functions";
-import { Trash2, Plus, Minus, ArrowRight, Ticket, Truck, CheckCircle2, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, Ticket, Truck, CheckCircle2, ShoppingBag } from "lucide-react";
 import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
 import { toast } from "sonner";
@@ -69,9 +68,20 @@ function StoreCartPage() {
     <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 md:px-0 space-y-4 sm:space-y-6 pb-28 lg:pb-16">
       {/* ── Sub-Header Silencioso Nativo ── */}
       <div className="flex items-center justify-between pb-3 border-b border-border/40 pt-1">
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-          Meu Carrinho
-        </h1>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => (window.history.length > 1 ? window.history.back() : router.navigate({ to: "/" }))}
+            className="size-11 sm:hidden rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Meu Carrinho
+          </h1>
+        </div>
         {selectedCart && (
           <span className="text-xs text-muted-foreground font-semibold">
             {selectedCart.itemCount} {selectedCart.itemCount === 1 ? "item" : "itens"}

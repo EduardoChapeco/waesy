@@ -570,7 +570,7 @@ export function MemberPublicProfileView({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-8 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
+                className="h-9 min-h-[44px] px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
               >
                 <Link to="/conta/perfil" search={{ tab: "criador" }}>
                   <Layers className="size-3.5 text-primary" />
@@ -582,7 +582,7 @@ export function MemberPublicProfileView({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-8 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
+                className="h-9 min-h-[44px] px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-border/70 sm:hidden cursor-pointer"
               >
                 <Link to="/conta/perfil" search={{ tab: "dados" }}>
                   <Edit3 className="size-3.5" />
@@ -669,10 +669,10 @@ export function MemberPublicProfileView({
                 <Link
                   to="/conta/perfil"
                   search={{ tab: isCreator ? "criador" : "dados" }}
-                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
+                  className="absolute top-2 right-2 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2 sm:px-2.5 py-1 rounded-xl border border-border/60 text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
                 >
                   <Camera className="size-3" />
-                  <span>Alterar Capa</span>
+                  <span className="hidden sm:inline">Alterar Capa</span>
                 </Link>
               )}
             </div>
@@ -740,15 +740,15 @@ export function MemberPublicProfileView({
  )}
  </div>
 
-          {/* Ações Minimalistas em Linha Compacta (Scroll Horizontal no Mobile sem quebras) */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full sm:flex-wrap">
+          {/* Ações Minimalistas em Linha Compacta (Scroll Horizontal com Snap no Mobile) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full sm:flex-wrap snap-x snap-mandatory">
             {isOwner ? (
               <>
                 <Button
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                 >
                   <Link to="/conta/metricas">
                     <Activity className="size-3.5 text-muted-foreground" />
@@ -758,7 +758,7 @@ export function MemberPublicProfileView({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                  className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                   onClick={() => setEditingSection("availability")}
                 >
                   <span>Disponibilidade</span>
@@ -768,7 +768,7 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 cursor-pointer"
+                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start cursor-pointer"
                   >
                     <Link to="/conta/perfil" search={{ tab: "criador" }}>
                       <Layers className="size-3.5 text-primary" />
@@ -780,7 +780,7 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 cursor-pointer"
+                    className="hidden sm:inline-flex h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start cursor-pointer"
                   >
                     <Link to="/conta/perfil" search={{ tab: "dados" }}>
                       <Edit3 className="size-3.5" />
@@ -794,7 +794,7 @@ export function MemberPublicProfileView({
                 <Button
                   size="sm"
                   className={cn(
-                    "h-8 px-4 rounded-xl font-bold text-xs gap-1.5 shrink-0 cursor-pointer transition-all",
+                    "h-8 px-4 rounded-xl font-bold text-xs gap-1.5 shrink-0 snap-start cursor-pointer transition-all",
                     isFollowing ? "bg-transparent border border-border/60 text-muted-foreground hover:bg-muted/40 hover:text-foreground" : "bg-primary text-primary-foreground "
                   )}
                   onClick={handleToggleFollow}
@@ -817,7 +817,7 @@ export function MemberPublicProfileView({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
+                    className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 snap-start border-border/50 bg-transparent hover:bg-muted/40 text-foreground cursor-pointer"
                   >
                     <a
                       href={`https://wa.me/${profile.phone.replace(/\D/g, "")}`}

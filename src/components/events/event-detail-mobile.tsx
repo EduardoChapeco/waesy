@@ -74,27 +74,27 @@ export function EventDetailMobile({
         {/* Gradiente superior para contraste dos botões */}
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 via-black/25 to-transparent pointer-events-none z-10" />
 
-        {/* Botão Circular Flutuante "Voltar" */}
+        {/* Botão Circular Flutuante "Voltar" (44px Apple HIG) */}
         <Link
           to="/agenda"
-          className="absolute top-3 left-3 size-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 shadow-md"
+          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 active:scale-95 transition-transform z-20 shadow-md"
           aria-label="Voltar para Agenda"
         >
-          <ArrowLeft size={18} weight="bold" />
+          <ArrowLeft size={20} weight="bold" />
         </Link>
 
-        {/* Ações Flutuantes Superior Direito */}
+        {/* Ações Flutuantes Superior Direito (44px Apple HIG) */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
           {isOwner && (
             <Link
               to="/workspace/eventos"
-              className="size-10 rounded-full bg-black/50 backdrop-blur-md text-amber-300 flex items-center justify-center border border-white/20 active:scale-95 transition-transform shadow-md"
+              className="size-11 rounded-full bg-black/50 backdrop-blur-md text-amber-300 flex items-center justify-center border border-white/20 active:scale-95 transition-transform shadow-md"
               aria-label="Editar Evento"
             >
-              <PencilSimple size={18} weight="bold" />
+              <PencilSimple size={20} weight="bold" />
             </Link>
           )}
-          <div className="size-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-md">
+          <div className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-md">
             <ContentActionsMenu
               entityType="event"
               entityId={event.id}

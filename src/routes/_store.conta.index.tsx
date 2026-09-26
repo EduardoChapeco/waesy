@@ -181,10 +181,11 @@ function AccountDashboardPage() {
     {
       title: "Oportunidades",
       items: [
+        { to: "/conta/curriculo", label: "Meu Currículo", icon: FileText },
+        { to: "/conta/candidaturas", label: "Candidaturas", icon: Briefcase },
         { to: "/conta/classificados", label: "Anúncios", icon: Layers },
         { to: "/conta/criadores", label: "Parcerias", icon: Sparkles },
         { to: "/conta/comissoes", label: "Afiliados", icon: Coins },
-        { to: "/conta/candidaturas", label: "Candidaturas", icon: Briefcase },
       ],
     },
     {
@@ -280,7 +281,7 @@ function AccountDashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto flex-wrap">
+        <div className="grid grid-cols-2 sm:flex sm:flex-row items-center gap-2 sm:gap-2 w-full sm:w-auto shrink-0">
           {stores.length > 0 && (
             <ContextSwitcher
               currentContextType="civil"
@@ -303,7 +304,7 @@ function AccountDashboardPage() {
           )}
 
           {isMasterAdmin && (
-            <Button asChild size="sm" variant="default" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98">
+            <Button asChild size="sm" variant="default" className="rounded-xl text-xs h-10 sm:h-11 px-3.5 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98">
               <Link to="/admin-master">
                 <Shield className="size-4" />
                 <span>Admin Master</span>
@@ -311,7 +312,7 @@ function AccountDashboardPage() {
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3.5 sm:px-4 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
+          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 sm:h-11 px-3.5 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
             <Link to="/conta/perfil">Editar Perfil</Link>
           </Button>
 
@@ -320,7 +321,7 @@ function AccountDashboardPage() {
             disabled={isLoggingOut}
             variant="ghost"
             size="sm"
-            className="rounded-xl text-xs sm:text-sm h-10 sm:h-11 px-3 sm:px-3.5 font-semibold text-destructive hover:bg-destructive/10 cursor-pointer active:scale-98"
+            className="rounded-xl text-xs h-10 sm:h-11 px-3 font-semibold text-destructive hover:bg-destructive/10 cursor-pointer active:scale-98"
           >
             <LogOut className="size-4 mr-1.5" />
             <span>Sair</span>

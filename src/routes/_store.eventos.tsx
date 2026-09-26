@@ -588,7 +588,7 @@ function EventosPage() {
         )}
 
         {/* Trilho de Botões Ergonômicos com Contadores */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
           {EVENT_SUBCATEGORIES_BUTTONS.map((sub) => {
             const isSelected = selectedCategory === sub.id;
             const count = eventsCountBySubcategory[sub.id] || 0;
@@ -598,7 +598,7 @@ function EventosPage() {
                 key={sub.id}
                 type="button"
                 onClick={() => setSelectedCategory(isSelected && sub.id !== "todos" ? "todos" : sub.id)}
-                className={`h-10 px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 shrink-0 transition-all cursor-pointer select-none ${
+                className={`h-10 px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 shrink-0 transition-all cursor-pointer select-none snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-sm scale-102"
                     : "bg-card border border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-foreground/20"
@@ -625,13 +625,13 @@ function EventosPage() {
 
       {/* ── 4. Filtro de Data & Calendário Canônico (Apple / Airbnb HIG) ── */}
       <section aria-label="Programação por Data" className="space-y-2 pt-1">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
           {/* Popover com Calendário Interativo */}
           <Popover>
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className={`h-9 px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer select-none ${
+                className={`h-9 px-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer select-none shrink-0 snap-start whitespace-nowrap ${
                   selectedDateFilter !== "all" && selectedDateFilter.includes("-")
                     ? "bg-foreground text-background border-foreground font-bold shadow-xs"
                     : "bg-card border-border/80 text-foreground hover:bg-muted/60"
@@ -677,7 +677,7 @@ function EventosPage() {
                 key={pill.id}
                 type="button"
                 onClick={() => setSelectedDateFilter(pill.id)}
-                className={`h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 ${
+                className={`h-9 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 snap-start whitespace-nowrap ${
                   isSelected
                     ? "bg-foreground text-background font-bold shadow-xs"
                     : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"

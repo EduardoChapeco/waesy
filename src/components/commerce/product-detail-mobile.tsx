@@ -160,7 +160,7 @@ export function ProductDetailMobile({
               navigate({ to: "/mercado" });
             }
           }}
-          className="absolute top-3 left-3 size-10 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center z-20 shadow-md active:scale-95 transition-transform cursor-pointer"
+          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center z-20 shadow-md active:scale-95 transition-transform cursor-pointer"
           aria-label="Voltar"
         >
           <ArrowLeft className="size-5" />
@@ -171,17 +171,17 @@ export function ProductDetailMobile({
           <button
             type="button"
             onClick={handleShare}
-            className="size-10 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer"
+            className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer"
             aria-label="Compartilhar"
           >
-            <Share2 className="size-4" />
+            <Share2 className="size-5" />
           </button>
 
-          <div className="size-10 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-md">
+          <div className="size-11 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-md">
             <FavoriteButton
               itemId={product.id}
               itemType="product"
-              className="size-8 text-white hover:text-white"
+              className="size-9 text-white hover:text-white"
             />
           </div>
         </div>
@@ -189,7 +189,7 @@ export function ProductDetailMobile({
 
       {/* Miniaturas horizontais caso haja mais de 1 foto */}
       {mediaList.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 py-2.5 bg-card border-b border-border/40">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar px-4 py-2.5 bg-card border-b border-border/40 snap-x snap-mandatory">
           {mediaList.map((m: ProductMediaDTO) => {
             const active = activeMedia?.id === m.id;
             return (
@@ -198,7 +198,7 @@ export function ProductDetailMobile({
                 type="button"
                 onClick={() => setActiveMedia(m)}
                 className={cn(
-                  "relative aspect-square size-12 rounded-xl overflow-hidden border shrink-0 transition-all cursor-pointer",
+                  "relative aspect-square size-12 rounded-xl overflow-hidden border shrink-0 snap-start transition-all cursor-pointer",
                   active
                     ? "border-primary ring-2 ring-primary/20 scale-105"
                     : "border-border/60 bg-muted/20"

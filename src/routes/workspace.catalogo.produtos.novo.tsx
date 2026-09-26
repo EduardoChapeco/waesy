@@ -1450,14 +1450,18 @@ export function UnifiedNewProductPage() {
  )}
  <div className="text-2xl font-black text-foreground font-mono">
  {formatMoney(formValues.price_cents || 0)}
- <span className="text-xs text-muted-foreground font-normal ml-1">
- /{formValues.selling_unit}
- </span>
- </div>
- <p className="text-[11px] text-muted-foreground">
- Em até 12x de {formatMoney(Math.round((formValues.price_cents || 0) / 12))} sem juros
- </p>
- </div>
+                <span className="text-xs text-muted-foreground font-normal ml-1">
+                  /{formValues.selling_unit}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {(formValues.price_cents || 0) >= 10000 ? (
+                  `Em até 3x de ${formatMoney(Math.round((formValues.price_cents || 0) / 3))} sem juros`
+                ) : (
+                  "À vista via PIX ou Cartão"
+                )}
+              </p>
+            </div>
 
  {/* Selo de Estoque */}
  <div className="flex items-center gap-2 text-xs">

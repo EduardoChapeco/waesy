@@ -138,6 +138,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  { name: "mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-capable", content: "yes" },
  { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+ { name: "apple-mobile-web-app-title", content: storeName },
+ { name: "application-name", content: storeName },
  { property: "og:title", content: seoTitle },
  {
  property: "og:description",
@@ -161,11 +163,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
  theme?.faviconUrl ||
  "/favicon.svg";
 
+ const appleTouchIcon =
+ brand?.favicon_url ||
+ brand?.logo_url ||
+ "/icons/apple-touch-icon.png";
+
+ const manifestHref = store?.id
+ ? `/api/pwa/manifest.json?storeId=${store.id}`
+ : "/api/pwa/manifest.json";
+
  return {
  meta: metaTags,
  links: [
- { rel: "manifest", href: "/manifest.json" },
- { rel: "apple-touch-icon", href: brand?.logo_url || "/icons/icon-192x192.png" },
+ { rel: "manifest", href: manifestHref },
+ { rel: "apple-touch-icon", href: appleTouchIcon },
+ { rel: "apple-touch-icon", sizes: "180x180", href: appleTouchIcon },
  { rel: "stylesheet", href: appCss },
  { rel: "icon", type: "image/svg+xml", href: faviconUrl },
  { rel: "alternate icon", href: "/favicon.ico" },

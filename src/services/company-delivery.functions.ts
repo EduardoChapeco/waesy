@@ -371,3 +371,57 @@ export const getDispatchByOrderId = createServerFn({ method: "GET" })
       return { dispatch: null };
     }
   });
+
+
+// ============================================================
+// Cálculo Soberano de Taxa de Entrega (Alimentado pelo PostgreSQL)
+// ============================================================
+
+export const CalculateDeliveryFeeSchema = z.object({
+  storeId: z.string().uuid(),
+  subtotalCents: z.number().int().nonnegative().default(0),
+  deliveryMode: z.enum(["pickup", "delivery", "scheduled"]).default("delivery"),
+  neighborhood: z.string().optional().nullable(),
+  classifiedId: z.string().uuid().optional().nullable(),
+});
+
+export const calculateDeliveryFeeReal = createServerFn({ method: "POST" })
+  .validator(CalculateDeliveryFeeSchema)
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    try {
+      const { data: res, error } = await supabase.rpc("calculate_order_delivery_fee", {
+        p_store_id: data.storeId,
+        p_subtotal_cents: data.subtotalCents,
+        p_delivery_mode: data.deliveryMode === "pickup" ? "pickup" : "delivery",
+        p_neighborhood: data.neighborhood || null,
+        p_classified_id: data.classifiedId || null,
+      });
+
+      if (error) {
+        console.warn("[company-delivery] RPC calculate_order_delivery_fee warning:", error);
+        return {
+          feeCents: 0,
+          isFree: false,
+          label: "A calcular",
+          ruleApplied: "fallback",
+        };
+      }
+
+      return {
+        feeCents: Number(res?.fee_cents) || 0,
+        isFree: Boolean(res?.is_free),
+        label: String(res?.label || "Entrega Local"),
+        ruleApplied: String(res?.rule_applied || "calculated"),
+        manualQuote: Boolean(res?.manual_quote),
+      };
+    } catch (e: unknown) {
+      logSystemError({ route: "company-delivery.calculateDeliveryFeeReal", error: e });
+      return {
+        feeCents: 0,
+        isFree: false,
+        label: "A calcular",
+        ruleApplied: "error_fallback",
+      };
+    }
+  });

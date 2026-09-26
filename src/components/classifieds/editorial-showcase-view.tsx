@@ -305,11 +305,11 @@ export function EditorialShowcaseView({
   const acceptsBoleto = !!attrs.accepts_boleto;
   const boletoDueDays = Number(attrs.boleto_due_days) || 3;
   const acceptsBoletoInstallments = !!attrs.accepts_boleto_installments;
-  const maxBoletoInstallments = Math.max(1, Number(attrs.max_boleto_installments) || 12);
+  const maxBoletoInstallments = Math.max(1, Number(attrs.max_boleto_installments) || 1);
   const boletoMinDownPaymentCents = attrs.boleto_min_down_payment_cents;
   const boletoNotes = attrs.boleto_notes || "";
   const acceptsCarne = !!attrs.accepts_carne;
-  const maxCarneInstallments = Math.max(1, Number(attrs.max_carne_installments) || 12);
+  const maxCarneInstallments = Math.max(1, Number(attrs.max_carne_installments) || 1);
   const carneGraceDays = Number(attrs.carne_grace_days) || 30;
   const carneMinDownPaymentCents = attrs.carne_min_down_payment_cents;
   const carneNotes = attrs.carne_notes || "";
@@ -1899,7 +1899,7 @@ export function EditorialShowcaseView({
                         <div>
                           <p className="font-bold text-foreground">Boleto Parcelado Direto</p>
                           <p className="text-[11px] text-muted-foreground">
-                            Em até <strong>{maxBoletoInstallments}x</strong> {boletoMinDownPaymentCents ? `(Entrada ${formatMoney(boletoMinDownPaymentCents)})` : "direto com anunciante"}
+                            {maxBoletoInstallments > 1 ? <>Em até <strong>{maxBoletoInstallments}x</strong></> : "À vista no boleto"} {boletoMinDownPaymentCents ? `(Entrada ${formatMoney(boletoMinDownPaymentCents)})` : "direto com anunciante"}
                           </p>
                         </div>
                       </div>
@@ -1913,7 +1913,7 @@ export function EditorialShowcaseView({
                         <div>
                           <p className="font-bold text-foreground">Carnê Digital da Loja</p>
                           <p className="text-[11px] text-muted-foreground">
-                            Em até <strong>{maxCarneInstallments}x</strong> {carneGraceDays ? `(1ª parcela em ${carneGraceDays}d)` : ""} direto na Waesy
+                            {maxCarneInstallments > 1 ? <>Em até <strong>{maxCarneInstallments}x</strong></> : "À vista no carnê"} {carneGraceDays ? `(1ª parcela em ${carneGraceDays}d)` : ""} direto na Waesy
                           </p>
                         </div>
                       </div>

@@ -43,24 +43,23 @@ function ClaimReputacaoPage() {
 
   const intel = useMemo(() => {
     const raw = entity?.intelligence || {};
+    const hasData = Object.keys(raw).length > 0;
     return {
       entity_name: entity?.name || 'Perfil Comercial',
-      visibility_score: raw.visibility_score || 82,
-      reputation_score: raw.reputation_score || 88,
-      market_share_percent: raw.market_share_percent || 14.5,
-      rank_state: raw.rank_state || 1,
-      verified_claims: raw.verified_claims || 12,
-      solved_rate: raw.solved_rate || 95,
-      avg_reply_hours: raw.avg_reply_hours || 2.5,
-      competitors: Array.isArray(raw.competitors) && raw.competitors.length > 0 ? raw.competitors : [
-        { name: 'Empresa Regional A', visibility: 70, reputation: 78, share: 12.0 },
-        { name: 'Empresa Regional B', visibility: 65, reputation: 72, share: 9.5 },
-      ],
+      visibility_score: typeof raw.visibility_score === 'number' ? raw.visibility_score : 0,
+      reputation_score: typeof raw.reputation_score === 'number' ? raw.reputation_score : 0,
+      market_share_percent: typeof raw.market_share_percent === 'number' ? raw.market_share_percent : 0,
+      rank_state: raw.rank_state || null,
+      verified_claims: typeof raw.verified_claims === 'number' ? raw.verified_claims : 0,
+      solved_rate: typeof raw.solved_rate === 'number' ? raw.solved_rate : 0,
+      avg_reply_hours: typeof raw.avg_reply_hours === 'number' ? raw.avg_reply_hours : 0,
+      competitors: Array.isArray(raw.competitors) ? raw.competitors : [],
       sentiment: raw.sentiment || {
-        positive: 90,
-        neutral: 7,
-        negative: 3,
+        positive: 0,
+        neutral: 0,
+        negative: 0,
       },
+      hasData,
     };
   }, [entity]);
 
@@ -189,29 +188,37 @@ function ClaimReputacaoPage() {
  <h2 className="text-base font-bold flex items-center gap-2">
  <BarChart3 className="size-4 text-primary" /> Concorrentes Diretos no Nicho
  </h2>
- <div className="divide-y divide-border">
- {intel.competitors.map((comp: any) => (
- <div key={comp.name} className="py-3 flex items-center justify-between text-sm">
- <span className="font-semibold text-foreground">{comp.name}</span>
- <div className="flex items-center gap-4 text-xs">
- <span className="text-muted-foreground">Reputação: <b className="text-foreground">{comp.reputation}</b></span>
- <span className="text-muted-foreground">Share: <b className="text-foreground">{comp.share}%</b></span>
- </div>
- </div>
- ))}
- </div>
- </div>
- </TabsContent>
+                <div className="divide-y divide-border">
+                  {intel.competitors.length > 0 ? (
+                    intel.competitors.map((comp: any) => (
+                      <div key={comp.name} className="py-3 flex items-center justify-between text-sm">
+                        <span className="font-semibold text-foreground">{comp.name}</span>
+                        <div className="flex items-center gap-4 text-xs">
+                          <span className="text-muted-foreground">Reputação: <b className="text-foreground">{comp.reputation}</b></span>
+                          <span className="text-muted-foreground">Share: <b className="text-foreground">{comp.share}%</b></span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground py-6 text-center">Nenhum concorrente cadastrado no radar para este segmento.</p>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
 
- <TabsContent value="claims" className="space-y-4">
- <div className="p-6 rounded-2xl border border-border bg-card text-center py-10">
- <CheckCircle2 className="size-10 text-emerald-500 mx-auto mb-2" />
- <h3 className="font-bold text-foreground">Excelente Índice de Solução</h3>
- <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
- 100% das reclamações foram respondidas em até 4 horas úteis, com nota média do consumidor superior a 4.8 / 5.0.
- </p>
- </div>
- </TabsContent>
+            <TabsContent value="claims" className="space-y-4">
+              <div className="p-6 rounded-2xl border border-border bg-card text-center py-10">
+                <CheckCircle2 className="size-10 text-emerald-500 mx-auto mb-2" />
+                <h3 className="font-bold text-foreground">
+                  {intel.verified_claims > 0 ? `${intel.verified_claims} Atendimentos Registrados` : "Nenhum Atendimento Registrado"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                  {intel.verified_claims > 0
+                    ? `Taxa de resolução apurada de ${intel.solved_rate}% com tempo médio de resposta de ${intel.avg_reply_hours}h.`
+                    : "Este perfil não possui registros ou disputas em aberto no canal público de atendimento."}
+                </p>
+              </div>
+            </TabsContent>
  </Tabs>
  </div>
  </div>

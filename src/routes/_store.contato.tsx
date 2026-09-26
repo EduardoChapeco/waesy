@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { getPublicBrandSettings } from "@/services/master.functions";
-import { MessageSquare, Mail, Phone, Clock, MapPin, Send, CheckCircle2, Layers, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Mail, Phone, Clock, MapPin, Send, CheckCircle2, Layers, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,7 +72,23 @@ function ContatoPage() {
  const cleanWhatsapp = brand?.support_whatsapp?.replace(/\D/g, "");
 
  return (
- <div className="mx-auto max-w-5xl px-0 sm:px-4 md:px-0 py-6 md:py-14 space-y-8 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+ <div className="mx-auto max-w-5xl px-0 sm:px-4 md:px-0 py-2 sm:py-6 md:py-14 space-y-6 sm:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+ {/* Mobile Header com botão Voltar Apple HIG */}
+ <div className="flex sm:hidden items-center justify-between px-3 pt-2">
+ <button
+ type="button"
+ onClick={() => (window.history.length > 1 ? window.history.back() : window.location.assign("/"))}
+ className="size-11 rounded-xl bg-card border border-border/40 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+ aria-label="Voltar"
+ >
+ <ArrowLeft className="size-5" />
+ </button>
+ <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
+ Atendimento
+ </span>
+ <div className="size-11" />
+ </div>
+
  {/* Topo Institucional */}
  <div className="text-center max-w-2xl mx-auto space-y-2">
  <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">

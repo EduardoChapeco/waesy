@@ -1,4 +1,4 @@
-﻿import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -652,7 +652,8 @@ export function CheckoutPage() {
  }
  }
 
- toast.success("Pedido realizado com sucesso!");
+ const humanOrderDisplay = (res as any)?.shortId ? `#${(res as any).shortId} ` : "";
+	toast.success(`Pedido ${humanOrderDisplay}realizado com sucesso!`);
  await refreshCart().catch(() => {});
 
  const remainingCarts = globalCarts.filter((c: any) => c.id !== cart.id);
@@ -715,10 +716,10 @@ export function CheckoutPage() {
  <div className="flex items-center gap-2.5">
  <Link
  to="/"
- className="size-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+ className="size-11 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
  aria-label="Voltar"
  >
- <ArrowLeft size={16} />
+ <ArrowLeft className="size-5" />
  </Link>
  <div>
  <div className="flex items-center gap-2">
@@ -1495,7 +1496,7 @@ export function CheckoutPage() {
  </div>
  )}
 
- <div className="pt-3 flex items-center justify-between gap-3">
+ <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">
  <Button
  variant="outline"
  onClick={() => setActiveStep(1)}
@@ -1712,7 +1713,7 @@ export function CheckoutPage() {
  )}
  </div>
 
- <div className="pt-3 flex items-center justify-between gap-3">
+ <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">
  <Button
  variant="outline"
  onClick={() => setActiveStep(2)}
@@ -1800,30 +1801,30 @@ export function CheckoutPage() {
  </div>
  </div>
 
-        <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="pt-3 grid grid-cols-2 sm:flex sm:items-center sm:justify-between gap-3">
           <Button
             variant="outline"
-                  onClick={() => setActiveStep(3)}
-                  disabled={isSubmitting}
-                  className="rounded-xl px-5 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm"
-                >
-                  Voltar
-                </Button>
-                <Button
-                  onClick={handleSubmitOrder}
-                  disabled={isSubmitting}
-                  className="rounded-xl px-8 h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-sm sm:text-base cursor-pointer active:scale-98 transition-all flex items-center justify-center gap-2"
-                >
- {isSubmitting ? (
- <>
- <Loader2 size={16} className="animate-spin mr-2" />
- <span>Processando...</span>
- </>
- ) : (
- <span>Finalizar Pedido • {formatMoney(checkoutTotalCents)}</span>
- )}
- </Button>
- </div>
+            onClick={() => setActiveStep(3)}
+            disabled={isSubmitting}
+            className="rounded-xl px-5 h-11 w-full sm:w-auto font-bold text-xs sm:text-sm"
+          >
+            Voltar
+          </Button>
+          <Button
+            onClick={handleSubmitOrder}
+            disabled={isSubmitting}
+            className="rounded-xl px-4 sm:px-8 h-11 sm:h-12 w-full sm:w-auto bg-primary text-primary-foreground font-bold text-xs sm:text-base cursor-pointer active:scale-98 transition-all flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin mr-2" />
+                <span>Processando...</span>
+              </>
+            ) : (
+              <span>Finalizar • {formatMoney(checkoutTotalCents)}</span>
+            )}
+          </Button>
+        </div>
  </Surface>
  )}
  </div>

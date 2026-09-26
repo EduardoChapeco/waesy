@@ -620,7 +620,7 @@ export const getEmployerProfileInsights = createServerFn({ method: "GET" })
  .filter((r) => r.previous_company_feedback || r.reason_for_leaving)
  .slice(0, 10)
  .map((r) => ({
- rating: r.previous_company_rating || 5,
+ rating: r.previous_company_rating ?? null,
  feedback: r.previous_company_feedback || null,
  reason_for_leaving: r.reason_for_leaving || null,
  date: r.created_at,

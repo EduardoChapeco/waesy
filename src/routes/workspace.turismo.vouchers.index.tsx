@@ -324,7 +324,7 @@ export default function WorkspaceVouchersPage() {
                       <span>{v.hotel_data.hotelName || "Hotel / Resort"}</span>
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      {v.hotel_data.roomType || "Quarto Standard"} · {v.hotel_data.boardBasis || "All Inclusive"}
+                      {[v.hotel_data.roomType, v.hotel_data.boardBasis].filter(Boolean).join(" · ") || "Acomodação conforme reserva"}
                     </p>
                   </div>
                 )}

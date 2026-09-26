@@ -25,6 +25,7 @@ import { Route as StoreBebidasRouteImport } from './routes/_store.bebidas'
 import { Route as StoreBelezaRouteImport } from './routes/_store.beleza'
 import { Route as StoreBuscarRouteImport } from './routes/_store.buscar'
 import { Route as StoreCadastroRouteImport } from './routes/_store.cadastro'
+import { Route as StoreCadastroantecipadoRouteImport } from './routes/_store.cadastroantecipado'
 import { Route as StoreCarrinhoRouteImport } from './routes/_store.carrinho'
 import { Route as StoreCasaRouteImport } from './routes/_store.casa'
 import { Route as StoreCheckoutRouteImport } from './routes/_store.checkout'
@@ -141,6 +142,7 @@ import { Route as StoreContaConcursosRouteImport } from './routes/_store.conta.c
 import { Route as StoreContaContratosRouteImport } from './routes/_store.conta.contratos'
 import { Route as StoreContaCreditosRouteImport } from './routes/_store.conta.creditos'
 import { Route as StoreContaCriadoresRouteImport } from './routes/_store.conta.criadores'
+import { Route as StoreContaCurriculoRouteImport } from './routes/_store.conta.curriculo'
 import { Route as StoreContaEmpresaRouteImport } from './routes/_store.conta.empresa'
 import { Route as StoreContaEnderecosRouteImport } from './routes/_store.conta.enderecos'
 import { Route as StoreContaFinancasRouteImport } from './routes/_store.conta.financas'
@@ -452,6 +454,11 @@ const StoreBuscarRoute = StoreBuscarRouteImport.update({
 const StoreCadastroRoute = StoreCadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreCadastroantecipadoRoute = StoreCadastroantecipadoRouteImport.update({
+  id: '/cadastroantecipado',
+  path: '/cadastroantecipado',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreCarrinhoRoute = StoreCarrinhoRouteImport.update({
@@ -1035,6 +1042,11 @@ const StoreContaCreditosRoute = StoreContaCreditosRouteImport.update({
 const StoreContaCriadoresRoute = StoreContaCriadoresRouteImport.update({
   id: '/criadores',
   path: '/criadores',
+  getParentRoute: () => StoreContaRoute,
+} as any)
+const StoreContaCurriculoRoute = StoreContaCurriculoRouteImport.update({
+  id: '/curriculo',
+  path: '/curriculo',
   getParentRoute: () => StoreContaRoute,
 } as any)
 const StoreContaEmpresaRoute = StoreContaEmpresaRouteImport.update({
@@ -2333,6 +2345,7 @@ export interface FileRoutesByFullPath {
   '/beleza': typeof StoreBelezaRoute
   '/buscar': typeof StoreBuscarRoute
   '/cadastro': typeof StoreCadastroRoute
+  '/cadastroantecipado': typeof StoreCadastroantecipadoRoute
   '/carrinho': typeof StoreCarrinhoRoute
   '/casa': typeof StoreCasaRoute
   '/checkout': typeof StoreCheckoutRoute
@@ -2446,6 +2459,7 @@ export interface FileRoutesByFullPath {
   '/conta/contratos': typeof StoreContaContratosRoute
   '/conta/creditos': typeof StoreContaCreditosRoute
   '/conta/criadores': typeof StoreContaCriadoresRoute
+  '/conta/curriculo': typeof StoreContaCurriculoRoute
   '/conta/empresa': typeof StoreContaEmpresaRoute
   '/conta/enderecos': typeof StoreContaEnderecosRoute
   '/conta/financas': typeof StoreContaFinancasRoute
@@ -2695,6 +2709,7 @@ export interface FileRoutesByTo {
   '/beleza': typeof StoreBelezaRoute
   '/buscar': typeof StoreBuscarRoute
   '/cadastro': typeof StoreCadastroRoute
+  '/cadastroantecipado': typeof StoreCadastroantecipadoRoute
   '/carrinho': typeof StoreCarrinhoRoute
   '/casa': typeof StoreCasaRoute
   '/checkout': typeof StoreCheckoutRoute
@@ -2805,6 +2820,7 @@ export interface FileRoutesByTo {
   '/conta/contratos': typeof StoreContaContratosRoute
   '/conta/creditos': typeof StoreContaCreditosRoute
   '/conta/criadores': typeof StoreContaCriadoresRoute
+  '/conta/curriculo': typeof StoreContaCurriculoRoute
   '/conta/empresa': typeof StoreContaEmpresaRoute
   '/conta/enderecos': typeof StoreContaEnderecosRoute
   '/conta/financas': typeof StoreContaFinancasRoute
@@ -3059,6 +3075,7 @@ export interface FileRoutesById {
   '/_store/beleza': typeof StoreBelezaRoute
   '/_store/buscar': typeof StoreBuscarRoute
   '/_store/cadastro': typeof StoreCadastroRoute
+  '/_store/cadastroantecipado': typeof StoreCadastroantecipadoRoute
   '/_store/carrinho': typeof StoreCarrinhoRoute
   '/_store/casa': typeof StoreCasaRoute
   '/_store/checkout': typeof StoreCheckoutRoute
@@ -3173,6 +3190,7 @@ export interface FileRoutesById {
   '/_store/conta/contratos': typeof StoreContaContratosRoute
   '/_store/conta/creditos': typeof StoreContaCreditosRoute
   '/_store/conta/criadores': typeof StoreContaCriadoresRoute
+  '/_store/conta/curriculo': typeof StoreContaCurriculoRoute
   '/_store/conta/empresa': typeof StoreContaEmpresaRoute
   '/_store/conta/enderecos': typeof StoreContaEnderecosRoute
   '/_store/conta/financas': typeof StoreContaFinancasRoute
@@ -3428,6 +3446,7 @@ export interface FileRouteTypes {
     | '/beleza'
     | '/buscar'
     | '/cadastro'
+    | '/cadastroantecipado'
     | '/carrinho'
     | '/casa'
     | '/checkout'
@@ -3541,6 +3560,7 @@ export interface FileRouteTypes {
     | '/conta/contratos'
     | '/conta/creditos'
     | '/conta/criadores'
+    | '/conta/curriculo'
     | '/conta/empresa'
     | '/conta/enderecos'
     | '/conta/financas'
@@ -3790,6 +3810,7 @@ export interface FileRouteTypes {
     | '/beleza'
     | '/buscar'
     | '/cadastro'
+    | '/cadastroantecipado'
     | '/carrinho'
     | '/casa'
     | '/checkout'
@@ -3900,6 +3921,7 @@ export interface FileRouteTypes {
     | '/conta/contratos'
     | '/conta/creditos'
     | '/conta/criadores'
+    | '/conta/curriculo'
     | '/conta/empresa'
     | '/conta/enderecos'
     | '/conta/financas'
@@ -4153,6 +4175,7 @@ export interface FileRouteTypes {
     | '/_store/beleza'
     | '/_store/buscar'
     | '/_store/cadastro'
+    | '/_store/cadastroantecipado'
     | '/_store/carrinho'
     | '/_store/casa'
     | '/_store/checkout'
@@ -4267,6 +4290,7 @@ export interface FileRouteTypes {
     | '/_store/conta/contratos'
     | '/_store/conta/creditos'
     | '/_store/conta/criadores'
+    | '/_store/conta/curriculo'
     | '/_store/conta/empresa'
     | '/_store/conta/enderecos'
     | '/_store/conta/financas'
@@ -4657,6 +4681,13 @@ declare module '@tanstack/react-router' {
       path: '/cadastro'
       fullPath: '/cadastro'
       preLoaderRoute: typeof StoreCadastroRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/cadastroantecipado': {
+      id: '/_store/cadastroantecipado'
+      path: '/cadastroantecipado'
+      fullPath: '/cadastroantecipado'
+      preLoaderRoute: typeof StoreCadastroantecipadoRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/carrinho': {
@@ -5469,6 +5500,13 @@ declare module '@tanstack/react-router' {
       path: '/criadores'
       fullPath: '/conta/criadores'
       preLoaderRoute: typeof StoreContaCriadoresRouteImport
+      parentRoute: typeof StoreContaRoute
+    }
+    '/_store/conta/curriculo': {
+      id: '/_store/conta/curriculo'
+      path: '/curriculo'
+      fullPath: '/conta/curriculo'
+      preLoaderRoute: typeof StoreContaCurriculoRouteImport
       parentRoute: typeof StoreContaRoute
     }
     '/_store/conta/empresa': {
@@ -7130,6 +7168,7 @@ interface StoreContaRouteChildren {
   StoreContaContratosRoute: typeof StoreContaContratosRoute
   StoreContaCreditosRoute: typeof StoreContaCreditosRoute
   StoreContaCriadoresRoute: typeof StoreContaCriadoresRoute
+  StoreContaCurriculoRoute: typeof StoreContaCurriculoRoute
   StoreContaEmpresaRoute: typeof StoreContaEmpresaRoute
   StoreContaEnderecosRoute: typeof StoreContaEnderecosRoute
   StoreContaFinancasRoute: typeof StoreContaFinancasRoute
@@ -7171,6 +7210,7 @@ const StoreContaRouteChildren: StoreContaRouteChildren = {
   StoreContaContratosRoute: StoreContaContratosRoute,
   StoreContaCreditosRoute: StoreContaCreditosRoute,
   StoreContaCriadoresRoute: StoreContaCriadoresRoute,
+  StoreContaCurriculoRoute: StoreContaCurriculoRoute,
   StoreContaEmpresaRoute: StoreContaEmpresaRoute,
   StoreContaEnderecosRoute: StoreContaEnderecosRoute,
   StoreContaFinancasRoute: StoreContaFinancasRoute,
@@ -7279,6 +7319,7 @@ interface StoreRouteChildren {
   StoreBelezaRoute: typeof StoreBelezaRoute
   StoreBuscarRoute: typeof StoreBuscarRoute
   StoreCadastroRoute: typeof StoreCadastroRoute
+  StoreCadastroantecipadoRoute: typeof StoreCadastroantecipadoRoute
   StoreCarrinhoRoute: typeof StoreCarrinhoRoute
   StoreCasaRoute: typeof StoreCasaRoute
   StoreCheckoutRoute: typeof StoreCheckoutRoute
@@ -7363,6 +7404,7 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreBelezaRoute: StoreBelezaRoute,
   StoreBuscarRoute: StoreBuscarRoute,
   StoreCadastroRoute: StoreCadastroRoute,
+  StoreCadastroantecipadoRoute: StoreCadastroantecipadoRoute,
   StoreCarrinhoRoute: StoreCarrinhoRoute,
   StoreCasaRoute: StoreCasaRoute,
   StoreCheckoutRoute: StoreCheckoutRoute,

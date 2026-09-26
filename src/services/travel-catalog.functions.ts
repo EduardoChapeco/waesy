@@ -220,7 +220,7 @@ export const listDestinations = createServerFn({ method: "GET" }).handler(async 
  sections: Array.isArray(row.sections) ? row.sections : [],
  attractions: Array.isArray(row.attractions) ? row.attractions : [],
  reviews: Array.isArray(row.reviews) ? row.reviews : [],
- average_rating: Number(row.average_rating) || 5.0,
+ average_rating: row.average_rating ? Number(row.average_rating) : (Array.isArray(row.reviews) && row.reviews.length > 0 ? (row.reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / row.reviews.length) : 0),
  reviews_count: Number(row.reviews_count) || (Array.isArray(row.reviews) ? row.reviews.length : 0),
  highlights: row.highlights || [],
  hotels_count: row.hotels_bank?.[0]?.count || 0,
@@ -248,7 +248,7 @@ export const getDestinationById = createServerFn({ method: "GET" })
  sections: Array.isArray(data.sections) ? data.sections : [],
  attractions: Array.isArray(data.attractions) ? data.attractions : [],
  reviews: Array.isArray(data.reviews) ? data.reviews : [],
- average_rating: Number(data.average_rating) || 5.0,
+ average_rating: data.average_rating ? Number(data.average_rating) : (Array.isArray(data.reviews) && data.reviews.length > 0 ? (data.reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / data.reviews.length) : 0),
  reviews_count: Number(data.reviews_count) || (Array.isArray(data.reviews) ? data.reviews.length : 0),
  highlights: data.highlights || [],
  } as DestinationDTO;

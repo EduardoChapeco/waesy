@@ -107,7 +107,7 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
               ? row.working_hours
               : row.working_hours?.weekdays || "Seg a Sex: 08:00 - 18:00",
           is_verified: !!row.is_verified,
-          rating: Number(row.rating || 5.0),
+          rating: row.rating ? Number(row.rating) : 0,
           reviews_count: Number(row.reviews_count || 0),
           avatar_url: row.avatar_url || storeLogo,
           banner_url: row.banner_url || storeSettings.bannerUrl || null,
@@ -155,7 +155,7 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  website_url: row.website_url,
  working_hours: typeof row.working_hours === "string" ? row.working_hours : (row.working_hours?.weekdays || "Seg a Sex: 08:00 - 18:00"),
  is_verified: !!row.is_verified,
- rating: Number(row.rating || 5.0),
+ rating: row.rating ? Number(row.rating) : 0,
  reviews_count: Number(row.reviews_count || 0),
  avatar_url: row.avatar_url || storeLogo,
  banner_url: row.banner_url || storeSettings.bannerUrl || null,

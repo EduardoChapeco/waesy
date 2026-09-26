@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Tag,
@@ -84,6 +84,7 @@ import {
   deleteClassified,
   getDigitalDownloadSignedUrl,
   listClassifiedJobApplications,
+  trackClassifiedView,
 } from "@/services/classifieds.functions";
 import {
   getEducationLabel,
@@ -316,6 +317,22 @@ function ClassifiedDetailPage() {
     (currentProfile?.id && classified?.author_profile_id === currentProfile.id)
   );
 
+  // FASE 1: Rastreio de Visualizações Real com Prevenção Anti-Spam de Refresh (Sessão)
+  useEffect(() => {
+    const targetId = classified?.id;
+    if (!targetId || typeof window === "undefined") return;
+
+    try {
+      const storageKey = `waesy_viewed_ad_${targetId}`;
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, "1");
+
+      trackClassifiedView({ data: { adId: targetId } }).catch((err) => {
+        console.debug("[telemetry] Telemetria de visualização:", err);
+      });
+    } catch {}
+  }, [classified?.id]);
+
  const [activeImage, setActiveImage] = useState(0);
  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
  const [companionModalOpen, setCompanionModalOpen] = useState(false);
@@ -471,7 +488,7 @@ function ClassifiedDetailPage() {
   const isPerPerson = travelPricingMode === "per_person";
 
   const travelTotalCents = isPerPerson ? effectiveTravelUnitPriceCents * travelPassengers : effectiveTravelUnitPriceCents;
-  const maxInstallments = Math.max(1, Number(classified?.attributes?.max_installments) || 12);
+  const maxInstallments = Math.max(1, Number(classified?.attributes?.max_installments || classified?.attributes?.travel?.max_installments) || 1);
   const travelInstallmentCents = Math.round(travelTotalCents / maxInstallments);
 
  // Status Mutation
@@ -1194,16 +1211,16 @@ const handleDownloadDigitalFile = async () => {
                         PIX à Vista {classified?.attributes?.pix_discount_percent ? `(${classified.attributes.pix_discount_percent}% de desconto)` : ""}
                       </SelectItem>
                       <SelectItem value="cartao_credito">
-                        Cartão de Crédito (até {classified?.attributes?.max_installments || 12}x)
+                        Cartão de Crédito {Number(classified?.attributes?.max_installments) > 1 ? `(até ${classified.attributes.max_installments}x)` : ""}
                       </SelectItem>
                       <SelectItem value="boleto">
                         Boleto Bancário à Vista
                       </SelectItem>
                       <SelectItem value="boleto_parcelado">
-                        Boleto Parcelado Direto (até {classified?.attributes?.max_boleto_installments || 12}x)
+                        Boleto Parcelado Direto {Number(classified?.attributes?.max_boleto_installments) > 1 ? `(até ${classified.attributes.max_boleto_installments}x)` : ""}
                       </SelectItem>
                       <SelectItem value="carne_digital">
-                        Carnê Digital da Loja / Crediário (até {classified?.attributes?.max_carne_installments || 12}x)
+                        Carnê Digital da Loja / Crediário {Number(classified?.attributes?.max_carne_installments) > 1 ? `(até ${classified.attributes.max_carne_installments}x)` : ""}
                       </SelectItem>
                       <SelectItem value="dinheiro">
                         Dinheiro em Espécie (na entrega / retirada)
@@ -1235,11 +1252,13 @@ const handleDownloadDigitalFile = async () => {
                         <SelectContent>
                           {Array.from(
                             {
-                              length: proposalPaymentMethod === "carne_digital"
-                                ? (Number(classified?.attributes?.max_carne_installments) || 12)
-                                : proposalPaymentMethod === "boleto_parcelado"
-                                ? (Number(classified?.attributes?.max_boleto_installments) || 12)
-                                : (Number(classified?.attributes?.max_installments) || 12)
+                              length: Math.min(24, Math.max(1,
+                                proposalPaymentMethod === "carne_digital"
+                                  ? (Number(classified?.attributes?.max_carne_installments) || 1)
+                                  : proposalPaymentMethod === "boleto_parcelado"
+                                  ? (Number(classified?.attributes?.max_boleto_installments) || 1)
+                                  : (Number(classified?.attributes?.max_installments) || 1)
+                              ))
                             },
                             (_, i) => i + 1
                           ).map((n) => (

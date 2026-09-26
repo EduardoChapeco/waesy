@@ -28,6 +28,7 @@ import { ReviewModal } from "@/components/commerce/review-modal";
 import { RmaWizard } from "@/components/commerce/rma-wizard";
 import { EmptyState } from "@/components/state/states";
 import { formatMoney } from "@/lib/money";
+import { formatHumanOrderId } from "@/lib/order-id";
 import { formatDate } from "@/lib/datetime";
 import { getCustomerOrder, getOrderPaymentInstructions } from "@/services/order.functions";
 import { uploadPaymentReceipt } from "@/services/payment.functions";
@@ -62,19 +63,19 @@ export const Route = createFileRoute("/_store/conta/pedidos/$id")({
 
 function translateStatus(status: string) {
   const map: Record<string, string> = {
-    draft: "Rascunho",
-    awaiting_payment: "Aguardando Pagamento",
-    payment_processing: "Comprovante em Análise",
-    paid: "Pago",
-    processing: "Em Separação",
+    draft: "Aguardando Confirmação",
+    awaiting_payment: "Aguardando Confirmação",
+    payment_processing: "Em Análise",
+    paid: "Confirmado",
+    processing: "Em Preparação",
     ready_for_pickup: "Pronto para Retirada",
-    shipped: "Enviado",
+    shipped: "A Caminho",
     delivered: "Entregue",
     completed: "Concluído",
     cancelled: "Cancelado",
-    payment_failed: "Pagamento Rejeitado",
+    payment_failed: "Pagamento Não Aprovado",
   };
-  return map[status] || status;
+  return map[status] || "Em Andamento";
 }
 
 function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
@@ -123,7 +124,7 @@ function CustomerOrderDetailPage() {
   const companionData = useMemo(() => {
     if (!order) return null;
     const storeName = order.store?.name || "Loja Oficial Waesy";
-    const publicToken = order.public_token || order.id.slice(0, 8).toUpperCase();
+    const publicToken = order.order_number || order.public_token || order.id.slice(0, 8).toUpperCase();
     const formattedDate = order.created_at ? formatDate(order.created_at) : "Recente";
 
     const sections: any[] = [
@@ -247,7 +248,7 @@ function CustomerOrderDetailPage() {
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 font-sans text-foreground">
       {/* ── 1. Canonical Navigation Header ── */}
       <NativeMobileHeader
-        title={`Pedido #${order.public_token}`}
+        title={`Pedido ${order.order_number || formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}`}
         subtitle={`Realizado em ${formatDate(order.created_at)}`}
         fallbackHref="/conta/pedidos"
         rightActions={

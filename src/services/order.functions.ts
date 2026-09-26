@@ -41,7 +41,7 @@ export async function _listOrders(store_id: string) {
  .from("orders")
  .select(
  `
- id, public_token, status, total_cents, subtotal_cents, shipping_cents, customer_snapshot, created_at, shipping_method,
+ id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, customer_snapshot, created_at, shipping_method,
  shipping_address, channel_origin, prep_started_at, ready_at, table_identifier, notes, custom_fields,
  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options )
  `,
@@ -60,7 +60,7 @@ export async function _getOrderById(orderId: string, store_id: string) {
  .from("orders")
  .select(
  `
- id, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
+ id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
  customer_snapshot, created_at, shipping_method, shipping_address, notes, custom_fields,
  shipped_at, delivered_at,
  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options ),
@@ -84,7 +84,7 @@ export async function _updateOrderStatus(
 
  const { data: order, error: orderError } = await db
  .from("orders")
- .select("id, customer_id, public_token, total_cents, store_id, customer_snapshot, shipping_address")
+ .select("id, order_number, customer_id, public_token, total_cents, store_id, customer_snapshot, shipping_address")
  .eq("id", orderId)
  .eq("store_id", store_id)
  .single();
@@ -328,7 +328,7 @@ export const listCustomerOrders = createServerFn({ method: "GET" }).handler(asyn
  .from("orders")
  .select(
  `
- id, public_token, status, total_cents, created_at,
+ id, order_number, public_token, status, total_cents, custom_fields, created_at,
  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, item_type, item_id, selected_options )
  `,
  )
@@ -1521,3 +1521,28 @@ export const getGastronomyReports = createServerFn({ method: "GET" }).handler(
  };
  },
 );
+
+// ---------------------------------------------------------------------------
+// Telemetria e Linha do Tempo Soberana do Pedido (order_events)
+// ---------------------------------------------------------------------------
+export const getOrderTimelineEvents = createServerFn({ method: "GET" })
+  .validator(withDataPayload(z.object({ orderId: z.string().min(1) })))
+  .handler(async ({ data: { orderId } }) => {
+    try {
+      const db = getServerClient();
+      const { data, error } = await db
+        .from("order_events")
+        .select("id, event_type, from_status, to_status, note, actor_type, metadata, created_at")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.warn("[order.functions] getOrderTimelineEvents warning:", error);
+        return [];
+      }
+      return data || [];
+    } catch (err: unknown) {
+      console.warn("[order.functions] getOrderTimelineEvents error:", err);
+      return [];
+    }
+  });

@@ -174,11 +174,11 @@ function CustomerChatPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="size-8.5 rounded-full shrink-0 text-foreground hover:bg-muted/50"
+            className="size-11 rounded-full shrink-0 text-foreground hover:bg-muted/50 active:scale-95 transition-all"
             asChild
           >
             <Link to="/conta/conversas" aria-label="Voltar para Conversas">
-              <ChevronLeft className="size-5" strokeWidth={1.75} />
+              <ChevronLeft className="size-5.5" strokeWidth={2} />
             </Link>
           </Button>
 
@@ -343,39 +343,39 @@ function CustomerChatPage() {
           onSubmit={handleSend}
           className="p-2 sm:p-2.5 border-t border-border/40 bg-background flex items-center gap-1.5 sticky bottom-0 z-10"
         >
-          {/* Ícone de anexo (clipe/câmera) sem caixa decorativa */}
+          {/* Ícone de anexo (clipe/câmera) sem caixa decorativa (44px) */}
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={() => setRmaModalOpen(true)}
-            className="size-9 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+            className="size-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer active:scale-95 transition-all"
             title="Anexar ou Ocorrência"
             aria-label="Anexar arquivo"
           >
-            <Paperclip className="size-4.5" strokeWidth={1.75} />
+            <Paperclip className="size-5" strokeWidth={1.75} />
           </Button>
 
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Mensagem..."
-            className="flex-1 h-10 rounded-full bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border-none"
+            className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border-none"
             disabled={isSending}
           />
 
-          {/* Botão de envio sem caixa em volta */}
+          {/* Botão de envio sem caixa em volta (44px) */}
           <button
             type="submit"
             disabled={!text.trim() || isSending}
-            className="size-9 flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 transition-opacity cursor-pointer shrink-0"
+            className="size-11 rounded-full flex items-center justify-center text-primary disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 active:scale-95 transition-all cursor-pointer shrink-0"
             title="Enviar"
             aria-label="Enviar mensagem"
           >
             {isSending ? (
-              <Loader2 className="size-4.5 animate-spin" strokeWidth={1.75} />
+              <Loader2 className="size-5 animate-spin" strokeWidth={1.75} />
             ) : (
-              <Send className="size-4.5" strokeWidth={1.75} />
+              <Send className="size-5" strokeWidth={1.75} />
             )}
           </button>
         </form>

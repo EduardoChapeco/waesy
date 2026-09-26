@@ -1,19 +1,25 @@
 {
-  "name": "Waesy",
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "id": "/",
+  "name": "Waesy — Comércio Local, Serviços, Turismo e Comunidade",
   "short_name": "Waesy",
-  "description": "Waesy — Comércio Local, Serviços, Turismo e Comunidade",
+  "description": "Explore mercado, gastronomia, turismo, eventos, classificados e serviços locais com rapidez e praticidade.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f4f4f0",
-  "theme_color": "#1a1a14",
   "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#09090b",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["shopping", "business", "lifestyle", "travel"],
   "theme_color_adaptive": [
     {
-      "color": "#f4f4f0",
+      "color": "#ffffff",
       "media": "(prefers-color-scheme: light)"
     },
     {
-      "color": "#131210",
+      "color": "#09090b",
       "media": "(prefers-color-scheme: dark)"
     }
   ],
@@ -24,16 +30,68 @@
       "type": "image/x-icon"
     },
     {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mercado & Lojas",
+      "short_name": "Mercado",
+      "description": "Explorar vitrines locais e produtos",
+      "url": "/mercado",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Buscar no Waesy",
+      "short_name": "Buscar",
+      "description": "Pesquisar produtos, serviços e lugares",
+      "url": "/buscar",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Turismo & Roteiros",
+      "short_name": "Turismo",
+      "description": "Descobrir destinos e experiências",
+      "url": "/turismo",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Minha Conta",
+      "short_name": "Conta",
+      "description": "Acessar pedidos, perfil e agendamentos",
+      "url": "/conta",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

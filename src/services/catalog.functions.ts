@@ -1130,3 +1130,22 @@ export const getCollectionBySlug = createServerFn({ method: "GET" })
  }
  });
 
+
+export const trackProductView = createServerFn({ method: "POST" })
+  .validator(withDataPayload(z.object({ productId: z.string().uuid() })))
+  .handler(async ({ data: { productId } }) => {
+    try {
+      const db = getServerClient();
+      const { data, error } = await db.rpc("increment_product_view", {
+        p_product_id: productId,
+      });
+      if (error) {
+        console.warn("[catalog.functions] trackProductView rpc warning:", error);
+        return { success: false };
+      }
+      return data || { success: true };
+    } catch (err: unknown) {
+      console.warn("[catalog.functions] trackProductView error:", err);
+      return { success: false };
+    }
+  });

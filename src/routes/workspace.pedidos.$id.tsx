@@ -2,6 +2,7 @@ import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
+import { formatHumanOrderId } from "@/lib/order-id";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,7 +70,7 @@ import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/pedidos/$id")({
   head: ({ loaderData }) => ({
-    meta: [{ title: `Pedido #${loaderData?.order?.public_token?.slice(0, 8) || "Detalhes"} | Workspace Waesy` }],
+    meta: [{ title: `Pedido ${loaderData?.order?.order_number || "#" + (loaderData?.order?.public_token?.slice(0, 8) || "Detalhes")} | Workspace Waesy` }],
   }),
   loader: async ({ params }: { params: { id: string } }) => {
     try {
@@ -206,7 +207,7 @@ function AdminOrderDetailPage() {
         storeName: order.store?.name || "Waesy Platform",
         storeCnpj: order.store?.cnpj,
         storeAddress: order.store?.address_street,
-        orderNumber: order.public_token || order.id.slice(0, 8),
+        orderNumber: order.order_number || order.public_token || order.id.slice(0, 8),
         orderDate: formatDate(order.created_at),
         customerName: customer.name || customer.fullName,
         customerPhone: customer.phone,
@@ -345,7 +346,7 @@ function AdminOrderDetailPage() {
       const res = await createDispatch({
         data: {
           orderId: order.id,
-          orderNumber: order.public_token?.slice(0, 8).toUpperCase() || "PEDIDO",
+          orderNumber: order.order_number || order.public_token?.slice(0, 8).toUpperCase() || "PEDIDO",
           courierName: motolinkCourierName.trim(),
           courierPhone: motolinkCourierPhone.trim() || undefined,
           deliveryAddress: formattedAddress,
@@ -444,7 +445,7 @@ function AdminOrderDetailPage() {
       <div className="flex justify-between items-start flex-wrap gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <PageHeader eyebrow="Vendas" title={`Pedido #${order.public_token}`} />
+            <PageHeader eyebrow="Vendas" title={`Pedido ${order.order_number || "#" + order.public_token}`} />
             <ChannelBadge source={order.channel_source || order.metadata?.channel} />
           </div>
         </div>
@@ -1020,7 +1021,7 @@ function AdminOrderDetailPage() {
                   onClick={() => {
                     const cleanPhone = motolinkCourierPhone.replace(/\D/g, "");
                     const linkUrl = `${window.location.origin}/entrega/${createdDispatchResult.delivery_token}`;
-                    const msg = `Olá ${motolinkCourierName}! Você tem uma nova entrega da Waesy.\nPedido: #${order.public_token?.slice(0, 8).toUpperCase()}\nEndereço: ${createdDispatchResult.delivery_address}\n\nAcesse os detalhes e navegação aqui: ${linkUrl}`;
+                    const msg = `Olá ${motolinkCourierName}! Você tem uma nova entrega da Waesy.\nPedido: ${formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}\nEndereço: ${createdDispatchResult.delivery_address}\n\nAcesse os detalhes e navegação aqui: ${linkUrl}`;
                     window.open(`https://wa.me/55${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
                   }}
                 >

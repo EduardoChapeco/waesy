@@ -434,10 +434,11 @@ function TourismDetailPage() {
         <div className="max-w-6xl mx-auto px-4 pt-3 flex items-center justify-between">
           <Link
             to="/turismo"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground group"
+            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-1.5 hover:bg-muted/80 sm:hover:bg-transparent transition-all"
+            aria-label="Voltar para Turismo"
           >
-            <ArrowLeft size={14} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
-            <span>Voltar para Turismo</span>
+            <ArrowLeft size={18} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
+            <span className="hidden sm:inline">Voltar para Turismo</span>
           </Link>
 
           <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/50 border border-border/60">
@@ -524,10 +525,11 @@ function TourismDetailPage() {
         <div className="flex items-center justify-between pt-2">
           <Link
             to="/turismo"
-            className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors group"
+            className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-bold text-muted-foreground hover:text-foreground transition-colors group gap-2 hover:bg-muted/80 sm:hover:bg-transparent"
+            aria-label="Voltar para Turismo"
           >
-            <ArrowLeft size={16} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
-            <span>Voltar para Turismo</span>
+            <ArrowLeft size={18} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
+            <span className="hidden sm:inline">Voltar para Turismo</span>
           </Link>
 
           <div className="flex items-center gap-2">

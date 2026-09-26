@@ -130,7 +130,7 @@ function CmsAvaliacoesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="inline-flex items-center font-mono font-bold text-xs px-2 py-0.5 rounded-md bg-muted text-foreground">
-                      {review.rating || 5} / 5
+                      {review.rating ?? "—"} / 5
                     </div>
                   </TableCell>
                   <TableCell className="max-w-[300px] truncate text-xs">

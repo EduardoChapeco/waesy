@@ -94,7 +94,7 @@ export function ClassifiedDetailMobile({
   const attrs = classified.attributes || {};
 
   const priceCents = Number(classified.price_cents || 0);
-  const maxInstallments = Math.max(1, Number(attrs.max_installments) || 12);
+  const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
   const installmentCents = Math.round(priceCents / maxInstallments);
 
   const isDonation = classified.category === "donation" || attrs.is_free_donation === true;
@@ -293,40 +293,40 @@ export function ClassifiedDetailMobile({
               navigate({ to: "/classificados" });
             }
           }}
-          className="absolute top-3 left-3 size-10 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center z-20 shadow-md active:scale-95 transition-transform cursor-pointer"
+          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center z-20 shadow-md active:scale-95 transition-transform cursor-pointer"
           aria-label="Voltar aos anúncios"
         >
           <ArrowLeft className="size-5" />
         </button>
 
-        {/* ── AÇÕES FLUTUANTES (Canto Superior Direito: Compartilhar & Favoritar) ── */}
+        {/* ── AÇÕES FLUTUANTES (Canto Superior Direito: Compartilhar & Favoritar - 44px Apple HIG) ── */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
           {onOpenCompanion && (
             <button
               type="button"
               onClick={onOpenCompanion}
-              className="size-10 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer"
+              className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer"
               title="Guia Digital 9:16"
               aria-label="Guia Digital"
             >
-              <Smartphone className="size-4 text-primary" />
+              <Smartphone className="size-5 text-primary" />
             </button>
           )}
 
           <button
             type="button"
             onClick={handleShare}
-            className="size-10 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer"
+            className="size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer"
             aria-label="Compartilhar anúncio"
           >
-            <Share2 className="size-4" />
+            <Share2 className="size-5" />
           </button>
 
-          <div className="size-10 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-md">
+          <div className="size-11 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-md">
             <FavoriteButton
               itemId={classified.id}
               itemType="classified"
-              className="size-8 text-white hover:text-white"
+              className="size-9 text-white hover:text-white"
             />
           </div>
         </div>
@@ -597,7 +597,7 @@ export function ClassifiedDetailMobile({
           <button
             type="button"
             onClick={() => setFullscreenImage(null)}
-            className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/20 text-white flex items-center justify-center"
+            className="absolute top-4 right-4 z-10 size-11 rounded-full bg-white/20 text-white flex items-center justify-center active:scale-95 transition-transform"
             aria-label="Fechar tela cheia"
           >
             <X className="size-6" />

@@ -723,7 +723,7 @@ function WorkspaceComercialPage() {
       />
 
       {/* ── SELETOR MOBILE RÁPIDO DE ETAPAS (TOUCH ERGONÔMICO) ── */}
-      <div className="sm:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
+      <div className="sm:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
         {STAGES.map((s) => {
           const count = filteredLeads.filter((l: any) =>
             s.id === "won"
@@ -738,7 +738,7 @@ function WorkspaceComercialPage() {
                 const el = document.getElementById(`kanban-col-${s.id}`);
                 el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
               }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-[44px]"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 snap-start bg-card border border-border/70 text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer min-h-[44px]"
             >
               <span className={cn("size-2 rounded-full", s.dotColor)} />
               <span>{s.title}</span>

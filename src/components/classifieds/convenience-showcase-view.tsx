@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
+import { createQuickOrder } from "@/services/quick-order.functions";
 import {
   ArrowLeft,
   Share2,
@@ -129,13 +130,30 @@ export function ConvenienceShowcaseView({
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [selectedPrepOption, setSelectedPrepOption] = useState<string>("");
 
-  // Estado do Checkout / Order Drawer
+  // Estado do Checkout / Order Drawer (Persistência Real no Supabase)
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [orderDeliveryMode, setOrderDeliveryMode] = useState<"immediate" | "scheduled" | "pickup">("immediate");
   const [orderScheduledWindow, setOrderScheduledWindow] = useState("today-afternoon");
   const [orderAddress, setOrderAddress] = useState("");
   const [orderPaymentMethod, setOrderPaymentMethod] = useState<"pix" | "card" | "cash">("pix");
   const [cashChangeFor, setCashChangeFor] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+
+  // Carregar dados prévios do comprador para ergonomia de 3 toques
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedName = localStorage.getItem("waesy_customer_name");
+        const savedPhone = localStorage.getItem("waesy_customer_phone");
+        const savedAddress = localStorage.getItem("waesy_customer_address");
+        if (savedName) setCustomerName(savedName);
+        if (savedPhone) setCustomerPhone(savedPhone);
+        if (savedAddress) setOrderAddress(savedAddress);
+      } catch {}
+    }
+  }, []);
 
   // Unificação de dados (Produção vs Prévia no Editor)
   const isPreview = !classified && !!previewData;
@@ -281,10 +299,15 @@ export function ConvenienceShowcaseView({
     previewData?.deliveryEstimate ||
     attrs.delivery_estimate ||
     "30 a 45 min";
+  // Taxa de entrega real: alimentada pelas colunas do anúncio e tabelas da empresa no banco
+  const configuredDeliveryFee = attrs.delivery_fee_cents !== undefined && attrs.delivery_fee_cents !== null && attrs.delivery_fee_cents !== ""
+    ? Number(attrs.delivery_fee_cents)
+    : ((classified as any)?.store?.delivery_settings?.fixed_delivery_fee_cents ?? (classified as any)?.store?.fixed_delivery_fee_cents ?? 0);
+
   const deliveryFeeCents =
     previewData?.deliveryFeeCents !== undefined
       ? previewData.deliveryFeeCents
-      : Number(attrs.delivery_fee_cents) || 500;
+      : (isNaN(configuredDeliveryFee) ? 0 : configuredDeliveryFee);
   const readyDelivery =
     previewData?.readyDelivery !== undefined
       ? previewData.readyDelivery
@@ -444,38 +467,31 @@ export function ConvenienceShowcaseView({
 
   const handleDirectWhatsApp = () => {
     if (isPreview) {
-      toast.info("Esta é uma prévia ao vivo. O botão enviará o pedido para o comerciante.");
+      toast.info("Esta é uma prévia ao vivo do checkout.");
       return;
     }
     if (!cleanPhone) {
       toast.error("Comerciante sem WhatsApp cadastrado.");
       return;
     }
-
-    const freshInfoText = isFreshPricingActive
-      ? `\n• Modo de Compra: *${pricingMode === "weight" ? `${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`} (${formatMoney(baseUnitPriceCents)})` : `${quantity} un`}*`
-      : "";
-    const ripenessText = isRipenessActive
-      ? `\n• Ponto de Maturação: *${DEFAULT_RIPENESS_LABELS[selectedRipeness]?.title || selectedRipeness}*`
-      : "";
-    const prepText = selectedPrepOption ? `\n• Opção de Corte/Preparo: *${selectedPrepOption}*` : "";
-    const discountText = discountResult.totalSavedCents > 0
-      ? `\n• Desconto Progressivo: *Economia de ${formatMoney(discountResult.totalSavedCents)}*`
-      : "";
-
-    const greeting = `Olá, ${advertiserName}!`;
-    const msg = encodeURIComponent(
-      `${greeting} Gostaria de pedir *${quantity}x ${title}* (${formatMoney(subtotalCents)})${freshInfoText}${ripenessText}${prepText}${discountText}\n` +
-      `Local: ${locationName}\n` +
-      `Poderiam me confirmar a disponibilidade para entrega?`
-    );
-    window.open(`https://wa.me/${cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone}?text=${msg}`, "_blank");
+    setIsOrderModalOpen(true);
   };
 
-  const handleConfirmOrder = () => {
+  const handleConfirmOrder = async () => {
     if (isPreview) {
       toast.info("Esta é uma prévia ao vivo do checkout. Pedido simulado com sucesso!");
       setIsOrderModalOpen(false);
+      return;
+    }
+
+    if (!customerName.trim()) {
+      toast.error("Por favor, informe seu nome.");
+      return;
+    }
+
+    const cleanCustPhone = customerPhone.replace(/\D/g, "");
+    if (!cleanCustPhone || cleanCustPhone.length < 8) {
+      toast.error("Por favor, informe um WhatsApp ou telefone válido.");
       return;
     }
 
@@ -484,54 +500,89 @@ export function ConvenienceShowcaseView({
       return;
     }
 
-    const selectedWindowObj = SCHEDULE_WINDOWS.find((w) => w.id === orderScheduledWindow);
-    const deliveryText =
-      orderDeliveryMode === "immediate"
-        ? "🛵 Despacho Sob Demanda via MotoLink (30 a 45 min)"
-        : orderDeliveryMode === "scheduled"
-        ? `📅 Entrega Agendada: ${selectedWindowObj?.label || "Janela programada"}`
-        : "🏬 Retirada Presencial no Balcão da Loja (R$ 0,00)";
+    // Salvar no localStorage para próximos pedidos (agilidade de 3 toques)
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("waesy_customer_name", customerName.trim());
+        localStorage.setItem("waesy_customer_phone", customerPhone.trim());
+        if (orderAddress.trim()) {
+          localStorage.setItem("waesy_customer_address", orderAddress.trim());
+        }
+      } catch {}
+    }
 
-    const paymentText =
-      orderPaymentMethod === "pix"
-        ? `📱 Pix à Vista (${pixDiscountPercent > 0 ? pixDiscountPercent + "% OFF" : "Normal"})`
-        : orderPaymentMethod === "card"
-        ? "💳 Cartão de Crédito/Débito na Entrega (levar maquininha)"
-        : `💵 Dinheiro em Espécie${cashChangeFor ? ` (Troco para R$ ${cashChangeFor})` : " (Valor exato)"}`;
+    setIsSubmittingOrder(true);
+    try {
+      const itemDetails = isFreshPricingActive
+        ? (pricingMode === "weight" ? `${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}` : `${quantity} un`)
+        : undefined;
 
-    const freshInfoText = isFreshPricingActive
-      ? `\n• Modo de Compra: *${pricingMode === "weight" ? `${weightGrams >= 1000 ? `${(weightGrams / 1000).toFixed(1)}kg` : `${weightGrams}g`}` : `${quantity} un`}*`
-      : "";
-    const ripenessText = isRipenessActive
-      ? `\n• Maturação: *${DEFAULT_RIPENESS_LABELS[selectedRipeness]?.title || selectedRipeness}*`
-      : "";
-    const prepText = selectedPrepOption ? `\n• Preparo/Corte: *${selectedPrepOption}*` : "";
-    const bumpText = isOrderBumpAdded && orderBumpOffer
-      ? `\n• Oferta Relâmpago Adicionada: *${orderBumpOffer.target_title}* (+${formatMoney(orderBumpOffer.special_price_cents || 0)})`
-      : "";
-    const discountText = discountResult.totalSavedCents > 0
-      ? `\n• Desconto Progressivo: *Economia de ${formatMoney(discountResult.totalSavedCents)}*`
-      : "";
-    const addressText = orderDeliveryMode !== "pickup" ? `\n• Endereço: *${orderAddress}*` : "";
+      const items = [
+        {
+          title,
+          quantity,
+          unitPriceCents: effectiveUnitPriceCents,
+          totalCents: subtotalCents,
+          imageUrl: images[0] || undefined,
+          itemDetails,
+          selectedOptions: selectedPrepOption || undefined,
+          ripeness: isRipenessActive && selectedRipeness ? (DEFAULT_RIPENESS_LABELS[selectedRipeness]?.title || selectedRipeness) : undefined,
+        },
+      ];
 
-    if (cleanPhone) {
-      const msg = encodeURIComponent(
-        `🛍️ *NOVO PEDIDO DE VAREJO ALIMENTAR / MERCADO*\n` +
-        `${isCompany ? "Loja" : "Vendedor"}: *${advertiserName}* (${advertiserRoleLabel})\n\n` +
-        `• Item: *${quantity}x ${title}* (${formatMoney(effectiveUnitPriceCents)}/un)${freshInfoText}${ripenessText}${prepText}${bumpText}${discountText}\n` +
-        `• Subtotal Itens: ${formatMoney(currentOrderSubtotal)}\n` +
-        `• Modalidade: ${deliveryText}\n` +
-        `• Taxa de Entrega: ${formatMoney(currentDeliveryFeeCents)}${addressText}\n` +
-        `• Forma de Pagamento: ${paymentText}\n\n` +
-        `💰 *TOTAL DO PEDIDO: ${formatMoney(grandTotalCents)}*\n\n` +
-        `Por favor, confirmem o recebimento do pedido!`
-      );
-      window.open(`https://wa.me/${cleanPhone.startsWith("55") ? cleanPhone : "55" + cleanPhone}?text=${msg}`, "_blank");
+      if (isOrderBumpAdded && orderBumpOffer?.enabled) {
+        items.push({
+          title: orderBumpOffer.target_title,
+          quantity: 1,
+          unitPriceCents: orderBumpOffer.special_price_cents || 0,
+          totalCents: orderBumpOffer.special_price_cents || 0,
+          imageUrl: orderBumpOffer.target_image_url || undefined,
+          itemDetails: undefined,
+          selectedOptions: undefined,
+          ripeness: undefined,
+        });
+      }
+
+      const res = await createQuickOrder({
+        data: {
+          storeId: classified?.store_id || previewData?.storeId || undefined,
+          storeSlug: storeSlug || undefined,
+          storeName: advertiserName,
+          sellerPhone: cleanPhone,
+          classifiedId: classified?.id || undefined,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          items,
+          subtotalCents,
+          deliveryFeeCents: currentDeliveryFeeCents,
+          discountCents: discountResult.totalSavedCents || 0,
+          grandTotalCents,
+          deliveryMode: orderDeliveryMode,
+          scheduledWindow: orderDeliveryMode === "scheduled" ? orderScheduledWindow : undefined,
+          deliveryAddress: orderDeliveryMode !== "pickup" ? orderAddress.trim() : undefined,
+          paymentMethod: orderPaymentMethod,
+          cashChangeFor: orderPaymentMethod === "cash" && cashChangeFor ? cashChangeFor : undefined,
+        },
+      });
+
+      if (res.status === "error" || !res.orderId) {
+        toast.error(res.message || "Erro ao registrar o pedido no banco de dados.");
+        return;
+      }
+
+      // Pedido registrado com sucesso absoluto no Supabase!
+      toast.success(`Pedido #${res.shortId} registrado com sucesso!`);
       setIsOrderModalOpen(false);
-      toast.success("Pedido gerado! Redirecionando para o WhatsApp...");
-    } else {
-      setIsOrderModalOpen(false);
-      toast.success("Pedido confirmado com sucesso!");
+
+      // Redireciona para o WhatsApp com mensagem humanizada sem jargões
+      if (res.whatsappUrl) {
+        window.open(res.whatsappUrl, "_blank");
+      }
+    } catch (err: unknown) {
+      console.error("[convenience-showcase] Erro ao submeter pedido:", err);
+      toast.error(err instanceof Error ? err.message : "Falha ao processar o pedido.");
+    } finally {
+      setIsSubmittingOrder(false);
     }
   };
 
@@ -916,7 +967,7 @@ export function ConvenienceShowcaseView({
         <Truck className="size-4 text-primary shrink-0" />
         <div className="truncate">
           <span className="font-semibold">Entrega local</span>
-          <span className="text-muted-foreground ml-1">a partir de {formatMoney(deliveryFeeCents)}</span>
+          <span className="text-muted-foreground ml-1">{deliveryFeeCents > 0 ? `a partir de ${formatMoney(deliveryFeeCents)}` : "Grátis / A combinar com a loja"}</span>
           <span className="text-muted-foreground text-[11px] block">• Estimativa {deliveryEstimate}</span>
         </div>
       </div>
@@ -1481,6 +1532,32 @@ export function ConvenienceShowcaseView({
               </span>
             </div>
 
+            {/* Identificação do Cliente */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-muted/20 border border-border/40">
+              <div className="space-y-1">
+                <Label className="text-[11px] font-semibold text-foreground">
+                  Seu Nome *
+                </Label>
+                <Input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Como podemos te chamar?"
+                  className="h-9 rounded-lg text-xs bg-background"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[11px] font-semibold text-foreground">
+                  WhatsApp / Celular *
+                </Label>
+                <Input
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="(00) 00000-0000"
+                  className="h-9 rounded-lg text-xs bg-background"
+                />
+              </div>
+            </div>
+
             {/* Oferta Relâmpago (Order Bump / Cross-sell no Carrinho) */}
             {orderBumpOffer?.enabled && (
               <div className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2">
@@ -1764,6 +1841,7 @@ export function ConvenienceShowcaseView({
           <div className="p-4 sm:p-5 border-t border-border/50 bg-card flex items-center gap-2">
             <Button
               variant="outline"
+              disabled={isSubmittingOrder}
               onClick={() => setIsOrderModalOpen(false)}
               className="h-11 rounded-xl text-xs font-semibold"
             >
@@ -1771,10 +1849,20 @@ export function ConvenienceShowcaseView({
             </Button>
             <Button
               onClick={handleConfirmOrder}
-              className="flex-1 h-11 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+              disabled={isSubmittingOrder}
+              className="flex-1 h-11 rounded-xl text-xs sm:text-sm font-bold gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer disabled:opacity-50"
             >
-              <ShoppingBag className="size-4" />
-              <span>Confirmar Pedido · {formatMoney(grandTotalCents)}</span>
+              {isSubmittingOrder ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>Gravando Pedido...</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="size-4" />
+                  <span>Confirmar Pedido · {formatMoney(grandTotalCents)}</span>
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>

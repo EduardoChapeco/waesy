@@ -149,15 +149,28 @@ function JobsMasterPage() {
  </section>
  )}
 
-      {/* ── 2.5. Barra de Acesso ao Guia de Carreiras & CBO ── */}
-      <div className="flex items-center justify-between gap-3 px-1">
-        <p className="text-xs font-medium text-muted-foreground hidden sm:block">
-          Consulte faixas salariais oficiais (CBO) e médias de mercado em centavos BRL
-        </p>
+      {/* ── 2.5. Barra de Ações do Candidato & Guia Salarial ── */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold h-9 min-h-[44px] gap-1.5 cursor-pointer">
+            <Link to="/conta/curriculo">
+              <FileText size={16} weight="bold" className="text-primary" />
+              <span>Meu Currículo Digital</span>
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost" className="rounded-xl text-xs font-semibold h-9 min-h-[44px] gap-1.5 cursor-pointer">
+            <Link to="/conta/candidaturas">
+              <UserCheck size={16} weight="bold" />
+              <span className="hidden sm:inline">Minhas Candidaturas</span>
+              <span className="sm:hidden">Candidaturas</span>
+            </Link>
+          </Button>
+        </div>
+
         <button
           type="button"
           onClick={() => setIsProfessionGuideOpen(true)}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all ml-auto cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all ml-auto cursor-pointer min-h-[44px]"
         >
           <Briefcase size={15} weight="bold" />
           <span>Guia Salarial & CBOs</span>

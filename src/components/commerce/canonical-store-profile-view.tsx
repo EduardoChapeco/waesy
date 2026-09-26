@@ -601,11 +601,11 @@ export function CanonicalStoreProfileView({
           <Button
             size="sm"
             variant="ghost"
-            className="size-9 p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+            className="size-11 p-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
             onClick={handleShare}
             aria-label="Compartilhar Perfil"
           >
-            <Share2 className="size-4" />
+            <Share2 className="size-5" />
           </Button>
         }
         centerTitle={true}
@@ -2134,16 +2134,28 @@ export function CanonicalStoreProfileView({
                 <div className="p-5 rounded-2xl bg-card border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="size-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-black text-xl font-mono">
-                      {Number(store.rating || 5.0).toFixed(1)}
+                      {store.rating ? Number(store.rating).toFixed(1) : "—"}
                     </div>
                     <div>
                       <div className="flex items-center text-muted-foreground">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className="size-3.5 fill-amber-500" />
+                          <Star
+                            key={s}
+                            className={cn(
+                              "size-3.5",
+                              store.rating && s <= Math.round(Number(store.rating))
+                                ? "fill-amber-500 text-amber-500"
+                                : "text-muted-foreground/30",
+                            )}
+                          />
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Baseado em {reviews.length > 0 ? reviews.length : store.reviews_count || 12} avaliações de clientes verificados.
+                        {reviews.length > 0
+                          ? `Baseado em ${reviews.length} ${reviews.length === 1 ? "avaliação" : "avaliações"} de clientes verificados.`
+                          : store.reviews_count
+                          ? `Baseado em ${store.reviews_count} avaliações de clientes verificados.`
+                          : "Ainda não há avaliações registradas para esta empresa."}
                       </p>
                     </div>
                   </div>
@@ -2158,7 +2170,7 @@ export function CanonicalStoreProfileView({
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center text-muted-foreground">
-                            {Array.from({ length: r.rating || 5 }).map((_, i) => (
+                            {Array.from({ length: Math.max(1, Math.min(5, Number(r.rating) || 5)) }).map((_, i) => (
                               <Star key={i} className="size-3 fill-amber-500" />
                             ))}
                           </div>
@@ -2216,7 +2228,7 @@ export function CanonicalStoreProfileView({
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center text-muted-foreground">
-                              {Array.from({ length: rev.company_rating || 5 }).map((_, i) => (
+                              {Array.from({ length: Math.max(1, Math.min(5, Number(rev.company_rating) || 5)) }).map((_, i) => (
                                 <Star key={i} className="size-3 fill-amber-500" />
                               ))}
                             </div>

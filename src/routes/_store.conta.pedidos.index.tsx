@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo, type ElementType } from "react";
 import { formatMoney } from "@/lib/money";
+import { formatHumanOrderId } from "@/lib/order-id";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +31,9 @@ const STATUS_VARIANTS: Record<
   string,
   "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info"
 > = {
-  draft: "secondary",
+  draft: "warning",
   awaiting_payment: "warning",
-  paid: "info",
+  paid: "success",
   processing: "info",
   ready_for_pickup: "default",
   shipped: "default",
@@ -44,12 +45,12 @@ const STATUS_VARIANTS: Record<
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  draft: "Rascunho",
-  awaiting_payment: "Aguardando pagamento",
-  paid: "Pago",
-  processing: "Em separação",
+  draft: "Aguardando confirmação",
+  awaiting_payment: "Aguardando confirmação",
+  paid: "Confirmado",
+  processing: "Em preparação",
   ready_for_pickup: "Pronto para retirada",
-  shipped: "Enviado",
+  shipped: "A caminho",
   delivered: "Entregue",
   completed: "Concluído",
   cancelled: "Cancelado",
@@ -165,14 +166,19 @@ function OrderRow({ order }: { order: any }) {
       <div className="flex-1 min-w-0">
         {/* Título e total */}
         <div className="flex items-start justify-between gap-2 mb-1">
-          <p className="text-[13px] font-bold text-foreground truncate leading-snug">
-            {firstItem?.product_title || order.store_name || "Pedido"}
-            {extraCount > 0 && (
-              <span className="text-muted-foreground font-normal text-xs ml-1">
-                +{extraCount} item{extraCount > 1 ? "s" : ""}
-              </span>
-            )}
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-bold text-foreground truncate leading-snug">
+              {firstItem?.product_title || order.store_name || "Pedido"}
+              {extraCount > 0 && (
+                <span className="text-muted-foreground font-normal text-xs ml-1">
+                  +{extraCount} item{extraCount > 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+            <span className="text-[10px] font-mono font-semibold text-muted-foreground">
+              {order.order_number || formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}
+            </span>
+          </div>
           <span className="text-[13px] font-bold text-foreground shrink-0 font-mono">
             {formatMoney(order.total_cents)}
           </span>
@@ -312,7 +318,7 @@ function CustomerOrdersPage() {
       ) : (
         <>
           {/* ── 2. Busca ── */}
-          <div className="px-4 sm:px-0 pt-3 pb-1">
+          <div className="px-2 sm:px-0 pt-3 pb-1">
             <div className="relative">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground"
@@ -330,7 +336,7 @@ function CustomerOrdersPage() {
           </div>
 
           {/* ── 3. Chips de filtro com scroll horizontal ── */}
-          <div className="overflow-x-auto scrollbar-none px-4 sm:px-0 py-2">
+          <div className="overflow-x-auto scrollbar-none px-2 sm:px-0 py-2 snap-x snap-mandatory">
             <div className="flex items-center gap-2 min-w-max">
               {FILTER_CHIPS.map((chip) => {
                 const count = counts[chip.id] || 0;
@@ -342,7 +348,7 @@ function CustomerOrdersPage() {
                     id={`filter-chip-${chip.id}`}
                     type="button"
                     onClick={() => setActiveFilter(chip.id)}
-                    className={`flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer ${
+                    className={`flex items-center gap-1.5 h-8 px-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer snap-start ${
                       isActive
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-background text-muted-foreground border-border/60 hover:border-border hover:text-foreground"

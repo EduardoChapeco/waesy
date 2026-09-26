@@ -99,7 +99,7 @@ function FrotaEntregasPage() {
  }
  const found = pendingOrders.find((o) => o.id === orderId);
  if (found) {
- setOrderNumber(found.public_token ? found.public_token.slice(0, 8).toUpperCase() : found.id.slice(0, 8).toUpperCase());
+ setOrderNumber(found.order_number || (found.public_token ? found.public_token.slice(0, 8).toUpperCase() : found.id.slice(0, 8).toUpperCase()));
  const cName = found.customer_snapshot?.name || "Cliente";
  setRecipientName(cName);
  setRecipientPhone(found.customer_snapshot?.phone || "");
@@ -108,7 +108,7 @@ function FrotaEntregasPage() {
  ? `${addr.street || ""}, ${addr.number || "S/N"}${addr.complement ? ` - ${addr.complement}` : ""}${addr.neighborhood ? ` (${addr.neighborhood})` : ""}, ${addr.city || ""}`
  : "";
  setDeliveryAddress(formatted);
- setFeeReal(found.shipping_cents ? (found.shipping_cents / 100).toFixed(2) : "10.00");
+ setFeeReal(found.shipping_cents ? (found.shipping_cents / 100).toFixed(2) : "0.00");
  }
  };
 

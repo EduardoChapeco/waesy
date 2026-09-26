@@ -39,10 +39,10 @@ export function JobDetailMobile({
       <div className="flex items-center justify-between p-3 border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-30">
         <Link
           to="/empregos"
-          className="size-9 rounded-full bg-muted/70 flex items-center justify-center border border-border/60 text-foreground active:scale-95 transition-transform"
+          className="size-11 rounded-full bg-muted/70 hover:bg-muted flex items-center justify-center border border-border/60 text-foreground active:scale-95 transition-all"
           aria-label="Voltar para Vagas"
         >
-          <ArrowLeft size={16} weight="bold" />
+          <ArrowLeft size={20} weight="bold" />
         </Link>
 
         <div className="flex items-center gap-2">
@@ -50,9 +50,9 @@ export function JobDetailMobile({
             variant="outline"
             size="sm"
             onClick={onShare}
-            className="rounded-full font-semibold text-xs gap-1.5 h-8 px-3 border-border/60"
+            className="rounded-full font-semibold text-xs gap-1.5 h-11 px-4 border-border/60"
           >
-            <ShareNetwork size={14} weight="bold" />
+            <ShareNetwork size={16} weight="bold" />
             <span>Compartilhar</span>
           </Button>
         </div>

@@ -121,6 +121,29 @@ export function ProductTelemetry({
         console.debug("[telemetry] CAPI ViewContent fallback:", err);
       });
     }
+
+    // 3. Incremento Real e Sistêmico de Visualizações no PostgreSQL (Anti-Spam por Sessão)
+    if (productId && typeof window !== "undefined") {
+      try {
+        const sessionKey = `waesy_viewed_item_${productId}`;
+        if (!sessionStorage.getItem(sessionKey)) {
+          sessionStorage.setItem(sessionKey, "1");
+          // Incrementa telemetria no catálogo de produtos ou classificados reais
+          import("@/services/catalog.functions")
+            .then(({ trackProductView }) => {
+              trackProductView({ data: { productId } }).catch(() => {
+                // Fallback para classificados caso o item pertença ao módulo de anúncios
+                import("@/services/classifieds.functions")
+                  .then(({ trackClassifiedView }) => {
+                    trackClassifiedView({ data: { adId: productId } }).catch(() => {});
+                  })
+                  .catch(() => {});
+              });
+            })
+            .catch(() => {});
+        }
+      } catch {}
+    }
   }, [productId, title, priceCents, currency, brandName, categoryName, canonicalUrl, storeId, pixelConfig]);
 
   return (

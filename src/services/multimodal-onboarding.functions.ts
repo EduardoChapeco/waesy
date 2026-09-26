@@ -296,7 +296,7 @@ export const parseMenuImagesMultimodal = createServerFn({ method: "POST" })
 export const approveOnboardingProducts = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      session_id: z.string().uuid(),
+      session_id: z.string().uuid().optional(),
       approved_products: z.array(
         z.object({
           name: z.string().min(1),

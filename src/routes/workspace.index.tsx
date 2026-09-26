@@ -572,9 +572,6 @@ export default function WorkspaceDashboardPage() {
  <Layers className="size-4 text-primary" />
  <span>Departamentos Corporativos</span>
  </h3>
- <p className="text-xs text-muted-foreground">
- Acesso direto aos 6 setores operacionais integrados da sua empresa.
- </p>
  </div>
  </div>
 
@@ -672,30 +669,6 @@ export default function WorkspaceDashboardPage() {
  </Link>
  </div>
  </div>
-
- {/* ── 5. Diretrizes Operacionais de Alta Eficiência (Específicas por Nicho) ── */}
- {semantics.operationalTips && semantics.operationalTips.length > 0 && (
- <div className="p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-card border border-border/70 space-y-2.5 sm:space-y-3">
- <div className="flex items-center gap-2">
- <span className="text-xs font-bold text-foreground">
- Boas Práticas Operacionais • {semantics.name}
- </span>
- </div>
- <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
- {semantics.operationalTips.map((tip, idx) => (
- <div
- key={idx}
- className="p-3.5 rounded-xl bg-muted/20 border border-border/50 text-xs text-muted-foreground leading-relaxed flex items-start gap-2.5"
- >
- <span className="size-5 rounded-lg bg-primary/10 text-primary font-mono text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
- {idx + 1}
- </span>
- <p className="flex-1">{tip}</p>
- </div>
- ))}
- </div>
- </div>
- )}
 
  {/* Modal Canônico de Divulgação da Loja & QR Code */}
  <StoreShareQrModal

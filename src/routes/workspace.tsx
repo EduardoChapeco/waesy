@@ -39,36 +39,39 @@ export const Route = createFileRoute("/workspace")({
 
  return { session };
  },
- loader: async () => {
+ loader: async ({ context }) => {
    try {
- let session: any = null;
- try {
- session = await getUserSession();
- } catch (e) {
- console.warn("[workspace layout] Erro ao carregar sessão:", e);
- session = null;
- }
+     let session: any = (context as any)?.session;
+     if (!session) {
+       try {
+         session = await getUserSession();
+       } catch (e) {
+         console.warn("[workspace layout] Erro ao carregar sessão:", e);
+         session = null;
+       }
+     }
 
- if (!session?.user) {
- throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
- }
+     if (!session?.user) {
+       throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
+     }
 
- const isPlatformAdmin =
- session?.role === "platform_admin" ||
- session?.role === "master" ||
- session?.role === "superadmin" ||
- session?.user?.role === "platform_admin";
+     const isPlatformAdmin =
+       session?.role === "platform_admin" ||
+       session?.role === "master" ||
+       session?.role === "superadmin" ||
+       session?.user?.role === "platform_admin";
 
- const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+     const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
- if (!hasStore) {
- throw redirect({ to: "/criar-negocio" });
- }
+     if (!hasStore) {
+       throw redirect({ to: "/criar-negocio" });
+     }
 
- const onboardingData = await getSystemOnboardingSteps().catch(() => ({ show: false, steps: [] }));
+     const onboardingData = await getSystemOnboardingSteps().catch(() => ({ show: false, steps: [] }));
 
- return { session, onboardingData };
+     return { session, onboardingData };
    } catch (err) {
+     if (isRedirect(err)) throw err;
      console.error("[loader:workspace] Unhandled loader error:", err);
      return { session: null, onboardingData: { show: false, steps: [] } };
    }
@@ -103,15 +106,15 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
  <AlertTriangle className="size-7" />
  </div>
  <div className="space-y-1">
- <h2 className="text-xl font-bold text-foreground">Ajustando Workspace</h2>
+ <h2 className="text-xl font-bold text-foreground">Erro no Workspace</h2>
  <p className="text-xs text-muted-foreground">
  Ocorreu uma instabilidade momentânea ao carregar os dados deste espaço de trabalho.
  </p>
  </div>
 
  {error?.message && (
- <div className="p-3 bg-muted/40 rounded-2xl border border-border/60 text-left text-[11px] font-mono text-muted-foreground space-y-1 max-h-32 overflow-y-auto no-scrollbar">
- <span className="font-bold text-destructive block">Diagnóstico de Falha:</span>
+ <div className="p-3 bg-destructive/5 rounded-xl border border-destructive/20 text-left text-[11px] font-mono text-destructive space-y-1 max-h-40 overflow-y-auto no-scrollbar">
+ <span className="font-bold block">Diagnóstico Técnico:</span>
  <span className="break-all">{error.message}</span>
  </div>
  )}

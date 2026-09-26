@@ -244,12 +244,21 @@ export async function _calculateShipping({
 
     if (motolinkCreds?.is_active) {
       const payload = (motolinkCreds.token_payload as Record<string, any>) || {};
-      const baseFee = Number(payload.base_dispatch_fee_cents) || 1200; // R$ 12,00 base
+      
+      // Consulta regras reais tarifárias cadastradas na tabela courier_surge_pricing_rules
+      const { data: partnerRule } = await supabase
+        .from("courier_surge_pricing_rules")
+        .select("min_fee_cents, peak_multiplier, rain_multiplier, night_fee_cents")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      // Inteligência de Surge Pricing: Horários de pico comercial (almoço 11-14h / jantar 18-21h)
+      const baseFee = Number(payload.base_dispatch_fee_cents) || Number(partnerRule?.min_fee_cents) || 800;
       const currentHour = new Date().getHours();
       const isPeakHour = (currentHour >= 11 && currentHour <= 14) || (currentHour >= 18 && currentHour <= 21);
-      const surgeMultiplier = isPeakHour ? 1.25 : 1.0;
+      const peakMultiplier = Number(partnerRule?.peak_multiplier) || 1.20;
+      const surgeMultiplier = isPeakHour ? peakMultiplier : 1.0;
       const finalPriceCents = Math.round(baseFee * surgeMultiplier);
 
       const alreadyHasMoto = finalQuotes.some((q) => (q.service_name || "").toLowerCase().includes("motolink"));

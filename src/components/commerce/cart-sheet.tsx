@@ -149,78 +149,78 @@ export function CartSheet() {
  <h4 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug">
  {item.productTitle}
  </h4>
- <button
- type="button"
- onClick={() => removeItem(item.id)}
- className="p-1 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 cursor-pointer"
- title="Remover item"
- aria-label="Remover item"
- >
- <X className="size-4" />
- </button>
- </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      className="size-11 -mr-2 -mt-2 rounded-xl text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 cursor-pointer flex items-center justify-center active:scale-95"
+                      title="Remover item"
+                      aria-label="Remover item"
+                    >
+                      <X className="size-4.5" />
+                    </button>
+                  </div>
 
- {/* Variações e Atributos */}
- {Object.entries(item.variantAttributes || {}).length > 0 && (
- <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
- {Object.entries(item.variantAttributes || {})
- .map(([k, v]) => `${k}: ${v}`)
- .join(" • ")}
- </p>
- )}
+                  {/* Variações e Atributos */}
+                  {Object.entries(item.variantAttributes || {}).length > 0 && (
+                    <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
+                      {Object.entries(item.variantAttributes || {})
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(" • ")}
+                    </p>
+                  )}
 
- {/* Modificadores e Adicionais Selecionados */}
- {item.selectedOptionsLabels && item.selectedOptionsLabels.length > 0 && (
- <div className="flex flex-wrap gap-1 mt-1.5">
- {item.selectedOptionsLabels.map((lbl: string, lIdx: number) => (
- <span
- key={lIdx}
- className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20"
- >
- +{lbl}
- </span>
- ))}
- </div>
- )}
+                  {/* Modificadores e Adicionais Selecionados */}
+                  {item.selectedOptionsLabels && item.selectedOptionsLabels.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {item.selectedOptionsLabels.map((lbl: string, lIdx: number) => (
+                        <span
+                          key={lIdx}
+                          className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20"
+                        >
+                          +{lbl}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
- {/* ── BOTÃO DELICADO: EDITAR PRODUTO / ADICIONAIS / OPÇÕES ── */}
- <div className="pt-1.5">
- <button
- type="button"
- onClick={() => setEditingItem(item)}
- className="inline-flex items-center gap-1 text-[11px] font-bold text-foreground/80 hover:text-foreground bg-muted/60 hover:bg-muted px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
- >
- <SlidersHorizontal className="size-3" />
- <span>Editar opções</span>
- </button>
- </div>
- </div>
+                  {/* ── BOTÃO: EDITAR PRODUTO / ADICIONAIS / OPÇÕES ── */}
+                  <div className="pt-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditingItem(item)}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground/80 hover:text-foreground bg-muted/60 hover:bg-muted px-2.5 py-1 rounded-lg transition-colors cursor-pointer min-h-[32px] active:scale-98"
+                    >
+                      <SlidersHorizontal className="size-3.5" />
+                      <span>Editar opções</span>
+                    </button>
+                  </div>
+                </div>
 
- {/* ── CONTROLES DELICADOS DE QUANTIDADE & PREÇO ── */}
- <div className="flex items-center justify-between pt-2 mt-auto ">
- <div className="flex items-center rounded-xl bg-card p-0.5 ">
- <button
- type="button"
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-all cursor-pointer"
- onClick={() => updateQty(item.variantId, -1)}
- disabled={item.qty <= 1}
- aria-label="Diminuir quantidade"
- >
- <Minus className="size-3" />
- </button>
- <span className="w-7 text-center text-xs font-mono font-bold text-foreground">
- {item.qty}
- </span>
- <button
- type="button"
- className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-all cursor-pointer"
- onClick={() => updateQty(item.variantId, 1)}
- disabled={item.isOutOfStock}
- aria-label="Aumentar quantidade"
- >
- <Plus className="size-3" />
- </button>
- </div>
+                {/* ── CONTROLES DE QUANTIDADE & PREÇO ── */}
+                <div className="flex items-center justify-between pt-2 mt-auto">
+                  <div className="flex items-center rounded-xl bg-card border border-border/50 p-0.5">
+                    <button
+                      type="button"
+                      className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-all cursor-pointer"
+                      onClick={() => updateQty(item.variantId, -1)}
+                      disabled={item.qty <= 1}
+                      aria-label="Diminuir quantidade"
+                    >
+                      <Minus className="size-3.5" />
+                    </button>
+                    <span className="w-8 text-center text-xs font-mono font-bold text-foreground">
+                      {item.qty}
+                    </span>
+                    <button
+                      type="button"
+                      className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-all cursor-pointer"
+                      onClick={() => updateQty(item.variantId, 1)}
+                      disabled={item.isOutOfStock}
+                      aria-label="Aumentar quantidade"
+                    >
+                      <Plus className="size-3.5" />
+                    </button>
+                  </div>
 
  <div className="text-right">
  <PriceDisplay

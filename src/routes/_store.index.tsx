@@ -52,7 +52,7 @@ import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functio
 const CANONICAL_PILLARS = [
   {
     slug: "places",
-    title: "Places (Lista Telefônica)",
+    title: "Lugares & Negócios",
     to: "/diretorio",
     isPlacesBadge: true,
   },
@@ -110,7 +110,7 @@ const CANONICAL_PILLARS = [
 
 const DISCOVERY_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Todos os Anúncios", emoji: "✨" },
-  { id: "places", label: "Places (Lista Telefônica)", emoji: "📍" },
+  { id: "places", label: "Lugares & Negócios", emoji: "📍" },
   { id: "classificados", label: "Classificados", emoji: "🏷️" },
   { id: "receitas", label: "Receitas", emoji: "🍲" },
   { id: "turismo", label: "Turismo & Roteiros", emoji: "✈️" },
@@ -126,11 +126,11 @@ const DISCOVERY_CATEGORIES: FilterChipOption[] = [
 export const Route = createFileRoute("/_store/")({
   head: () => ({
     meta: [
-      { title: "Waesy — Seja um Membro Fundador | Circuito 2027" },
+      { title: "Waesy — Vitrine da Cidade | Classificados, Empregos, Eventos e Mais" },
       {
         name: "description",
         content:
-          "Encontre lugares, empresas, vagas de emprego, classificados e notícias da sua cidade.",
+          "Encontre classificados, vagas de emprego, eventos, notícias, receitas e empresas locais em Chapecó e região. Tudo numa vitrine só.",
       },
     ],
   }),
@@ -214,9 +214,13 @@ export const Route = createFileRoute("/_store/")({
 function CommunityHomePage() {
   const data = (Route.useLoaderData?.() as any) || {};
   const routeSearch = (Route.useSearch?.() as any) || {};
-  const isMarketplace = routeSearch.view === "marketplace" || routeSearch.view === "vitrine";
+  // A vitrine é o padrão. A Landing só aparece via ?view=landing (para links legados).
+  const isMarketplace = routeSearch.view !== "landing";
 
-  if (!isMarketplace) {
+  // FASE 1 — Route Swap: Vitrine é a Home canônica.
+  // A Landing de captação ficou em /cadastroantecipado.
+  // Caso alguém acesse /?view=landing (ex: links antigos), mostramos a LP.
+  if (isMarketplace === false && routeSearch.view === "landing") {
     return <EnterpriseLandingView initialSettings={data.launchSettings || null} />;
   }
 

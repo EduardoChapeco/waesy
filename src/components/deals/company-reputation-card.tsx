@@ -55,7 +55,7 @@ export function CompanyReputationCard({
     }
   };
 
-  const avg = stats.average_rating || 5.0;
+  const avg = Number(stats.average_rating) || 0;
   const total = stats.total_reviews || 0;
 
   return (

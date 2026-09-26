@@ -895,35 +895,72 @@ export const updateCartShipping = createServerFn({ method: "POST" })
       z.object({
         zipcode: z.string().min(5),
         method: z.string().min(2),
-        cents: z.number().min(0),
+        cents: z.number().min(0).optional(),
+        neighborhood: z.string().optional(),
       }),
     ),
   )
- .handler(async ({ data: { zipcode, method, cents } }) => {
- const supabase = getServerClient();
- const identity = await getCurrentIdentity();
+  .handler(async ({ data: { zipcode, method, cents, neighborhood } }) => {
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity();
 
- let cartQuery = supabase.from("carts").select("id").eq("status", "active");
- if (identity.customer_id) cartQuery = cartQuery.eq("customer_id", identity.customer_id);
- else cartQuery = cartQuery.eq("session_token", identity.session_token);
+    let cartQuery = supabase.from("carts").select("id, store_id").eq("status", "active");
+    if (identity.customer_id) cartQuery = cartQuery.eq("customer_id", identity.customer_id);
+    else cartQuery = cartQuery.eq("session_token", identity.session_token);
 
- const { data: cart } = await cartQuery
- .order("created_at", { ascending: false })
- .limit(1)
- .maybeSingle();
- if (!cart) return { status: "error" as const, message: "Carrinho não encontrado" };
+    const { data: cart } = await cartQuery
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!cart) return { status: "error" as const, message: "Carrinho não encontrado" };
 
- await supabase
- .from("carts")
- .update({
- shipping_zipcode: zipcode,
- shipping_method: method,
- shipping_cents: cents,
- })
- .eq("id", cart.id);
+    let resolvedCents = cents ?? 0;
 
- return { status: "success", message: "Frete atualizado com sucesso" };
- });
+    // Se for retirada no local, a taxa é sempre zero
+    if (method === "pickup" || method.toLowerCase().includes("retirada")) {
+      resolvedCents = 0;
+    } else if (cart.store_id) {
+      // Revalidação sistêmica soberana no banco de dados via calculate_order_delivery_fee
+      try {
+        const { data: cartItems } = await supabase
+          .from("cart_items")
+          .select("qty, price_snapshot_cents")
+          .eq("cart_id", cart.id);
+
+        const subtotalCents = (cartItems || []).reduce(
+          (sum, it) => sum + (it.qty || 1) * (it.price_snapshot_cents || 0),
+          0
+        );
+
+        const { data: feeRes } = await supabase.rpc("calculate_order_delivery_fee", {
+          p_store_id: cart.store_id,
+          p_subtotal_cents: subtotalCents,
+          p_delivery_mode: "delivery",
+          p_neighborhood: neighborhood || null,
+        });
+
+        if (feeRes && typeof feeRes.fee_cents === "number") {
+          // Se o banco indicar frete grátis ou tiver regra/taxa configurada
+          if (feeRes.is_free || feeRes.fee_cents > 0) {
+            resolvedCents = feeRes.fee_cents;
+          }
+        }
+      } catch (e) {
+        console.warn("[cart.updateCartShipping] Falha ao consultar taxa no banco, mantendo valor cotado:", e);
+      }
+    }
+
+    await supabase
+      .from("carts")
+      .update({
+        shipping_zipcode: zipcode,
+        shipping_method: method,
+        shipping_cents: resolvedCents,
+      })
+      .eq("id", cart.id);
+
+    return { status: "success", message: "Frete atualizado com sucesso", shippingCents: resolvedCents };
+  });
 
 export const updateCartContact = createServerFn({ method: "POST" })
   .validator(

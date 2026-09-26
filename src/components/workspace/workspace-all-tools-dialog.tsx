@@ -339,7 +339,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Operação da loja, horários, equipe e integrações",
     tools: [
       { title: "Identidade da Loja", path: "/workspace/configuracoes", icon: Settings },
-      { title: "Currículo Builder", path: "/workspace/curriculo/editor", icon: FileText, badge: "Office" },
+      { title: "Recrutamento & Vagas", path: "/workspace/empregos/candidatos", icon: Briefcase, badge: "RH" },
       { title: "Tabelas de Frete", path: "/workspace/logistica/tabelas", icon: Truck },
       { title: "Equipe de Trabalho", path: "/workspace/configuracoes/equipe", icon: Users },
       { title: "Unidades e Filiais", path: "/workspace/lojas", icon: Building2 },

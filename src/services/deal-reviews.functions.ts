@@ -197,8 +197,8 @@ export const listStoreDealReviews = createServerFn({ method: "GET" })
     const total = all.length;
     const avg =
       total > 0
-        ? Number((all.reduce((acc, r) => acc + (r.rating || 5), 0) / total).toFixed(1))
-        : 5.0;
+        ? Number((all.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / total).toFixed(1))
+        : 0;
 
     const stats = {
       average_rating: avg,

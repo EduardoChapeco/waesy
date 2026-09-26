@@ -95,7 +95,7 @@ export function ClassifiedDetailDesktop({
   const attrs = classified.attributes || {};
 
   const priceCents = Number(classified.price_cents || 0);
-  const maxInstallments = Math.max(1, Number(attrs.max_installments) || 12);
+  const maxInstallments = Math.max(1, Number(attrs.max_installments) || 1);
   const installmentCents = Math.round(priceCents / maxInstallments);
 
   const isDonation = classified.category === "donation" || attrs.is_free_donation === true;

@@ -1568,7 +1568,7 @@ function KDSPage() {
  }}
  >
  <span>TOTAL:</span>
- <span>R$ {(selectedOrder.total_cents / 100).toFixed(2).replace(".", ",")}</span>
+ <span>{formatMoney(selectedOrder.total_cents)}</span>
  </div>
  </div>
  )}

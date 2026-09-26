@@ -123,9 +123,15 @@ function CreatorProfilesManagementPage() {
       <div className="border-b border-border/40 bg-card/60 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="icon" className="size-9 rounded-xl">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="size-11 rounded-full hover:bg-muted/80 active:scale-95 transition-all"
+              aria-label="Voltar para Minha Conta"
+            >
               <Link to="/conta">
-                <ArrowLeft className="size-4" />
+                <ArrowLeft className="size-5" />
               </Link>
             </Button>
             <div>

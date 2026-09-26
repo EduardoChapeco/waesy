@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, isRedirect, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, isRedirect } from "@tanstack/react-router";
 import { getNavigationMenus, getPublicStoreSettings } from "@/services/cms.functions";
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { getCart, getGlobalCarts } from "@/services/cart.functions";
@@ -173,24 +173,9 @@ function StoreLayout() {
  platform_name: brand?.platform_name || storeData?.name || "Waesy",
  };
 
- const routerState = useRouterState();
-  const searchParams = (routerState.location.search as any) || {};
-  const isMarketplace = searchParams.view === "marketplace" || searchParams.view === "vitrine";
-  const isMarketingLanding = routerState.location.pathname === "/" && !isMarketplace;
-
-  if (isMarketingLanding) {
-    return (
-      <div className="w-full min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/20">
-        <StoreAnalyticsInjector storeSettings={storeData?.settings} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        <Outlet />
-        <GlobalPopupRenderer popups={popups} />
-      </div>
-    );
-  }
+  // FASE 1 (V99): isMarketingLanding removido — a LP de captação
+  // está em /cadastroantecipado com wrapper full-screen próprio.
+  // A rota / agora é sempre a Vitrine canônica dentro do AppShell.
 
   return (
     <AppShell session={session} brandSettings={brandSettings}>

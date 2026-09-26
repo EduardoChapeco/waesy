@@ -83,9 +83,11 @@ function GarcomTerminalPage() {
  variant="ghost" 
  size="sm" 
  onClick={() => setSelectedTable(null)}
- className="min-h-[44px] text-xs font-semibold"
+ className="min-h-[44px] h-11 px-3 text-xs font-semibold gap-1.5"
+ aria-label="Voltar ao Mapa"
  >
- <ArrowLeft className="h-4 w-4 mr-1" /> Voltar ao Mapa
+ <ArrowLeft className="size-4" />
+ <span className="hidden sm:inline">Voltar ao Mapa</span>
  </Button>
  )}
  </div>

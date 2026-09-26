@@ -955,8 +955,8 @@ export const getStorePublicProfileWithSections = createServerFn({ method: "GET" 
     const reviews = reviewsRes.data || [];
     const avgRating =
       reviews.length > 0
-        ? Number((reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / reviews.length).toFixed(1))
-        : 5.0;
+        ? Number((reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / reviews.length).toFixed(1))
+        : 0;
 
     return {
       store,

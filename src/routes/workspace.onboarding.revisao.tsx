@@ -160,11 +160,8 @@ export function OnboardingReviewPage() {
     }
     setIsApproving(true);
     try {
-      // Simula ID canônico de sessão para persistência segura
-      const fakeSessionId = "00000000-0000-0000-0000-000000000001";
       await approveOnboardingProducts({
         data: {
-          session_id: fakeSessionId,
           approved_products: items.map((it) => ({
             name: it.name,
             category: it.category,
@@ -174,7 +171,7 @@ export function OnboardingReviewPage() {
             dietary_tags: it.dietary_tags,
           })),
         },
-      }).catch(() => null);
+      });
 
       toast.success(`${items.length} produtos aprovados e cadastrados com sucesso!`);
       navigate({ to: "/workspace/catalogo/produtos/novo" as any });

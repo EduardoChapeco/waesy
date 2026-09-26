@@ -1,5 +1,14 @@
-const CACHE_NAME = "waesy-v1";
-const STATIC_ASSETS = ["/", "/manifest.json", "/favicon.ico"];
+const CACHE_NAME = "waesy-v3-brand-pwa-sync";
+const STATIC_ASSETS = [
+  "/",
+  "/manifest.json",
+  "/favicon.ico",
+  "/favicon.svg",
+  "/icons/icon-192x192.png",
+  "/icons/icon-512x512.png",
+  "/icons/apple-touch-icon.png",
+  "/apple-touch-icon.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
