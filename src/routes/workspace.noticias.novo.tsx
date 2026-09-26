@@ -18,6 +18,7 @@ import {
  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -177,12 +178,7 @@ function WorkspaceNovaMateriaPage() {
  title="Nova Matéria"
  actions={
  <div className="flex items-center gap-2">
- <Button asChild variant="outline" size="sm" className="rounded-xl font-bold text-xs">
- <Link to="/workspace/noticias">
- <ArrowLeft className="size-3.5 mr-1.5" />
- Voltar
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/noticias" />
  <Button
  type="button"
  variant="outline"

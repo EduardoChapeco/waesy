@@ -13,6 +13,7 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
 import { listStoreAllNdaSignatures } from "@/services/classifieds.functions";
@@ -44,19 +45,14 @@ function WorkspaceCaptacaoNdasPage() {
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
       {/* ── CABEÇALHO & VOLTAR ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="h-8 px-2 rounded-xl text-xs -ml-2 text-muted-foreground hover:text-foreground">
-              <Link to="/workspace/captacao">
-                <ArrowLeft className="size-4 mr-1" />
-                <span>Voltar à Captação</span>
-              </Link>
-            </Button>
+        <div className="flex items-start gap-3">
+          <NativeBackButton fallbackHref="/workspace/captacao" />
+          <div className="space-y-1">
+            <PageHeader title="NDAs & Termos de Confidencialidade" />
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Auditoria jurídica de investidores e compradores qualificados que assinaram termo digital de sigilo para ver métricas e DREs restritos.
+            </p>
           </div>
-          <PageHeader title="NDAs & Termos de Confidencialidade" />
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Auditoria jurídica de investidores e compradores qualificados que assinaram termo digital de sigilo para ver métricas e DREs restritos.
-          </p>
         </div>
 
         <Badge variant="outline" className="text-xs font-mono px-3 py-1 gap-1.5 self-start sm:self-auto border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">

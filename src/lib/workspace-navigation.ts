@@ -1080,9 +1080,12 @@ export function resolveWorkspaceNavigation(
       "/workspace/financeiro/configuracao",
       "/workspace/configuracoes/integracoes",
       "/workspace/configuracoes/ai",
+      "/workspace/configuracoes/inteligencia-artificial",
       "/workspace/configuracoes/sessoes",
       "/workspace/configuracoes/privacidade-loja",
       "/workspace/configuracoes/parceiros",
+      "/workspace/configuracoes/tokens",
+      "/workspace/faturamento/tokens",
     ];
 
     return resolvedGroups

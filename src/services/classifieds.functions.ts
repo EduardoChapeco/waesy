@@ -5,6 +5,7 @@ import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { requireAdmin } from "@/lib/server-access";
 import { z } from "zod";
+import { withDataPayload } from "@/services/cart-helpers";
 import { classifiedSchema } from "@/types/community";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 
@@ -116,154 +117,243 @@ export const getAdsByStoreId = createServerFn({ method: "GET" })
     return [];
   });
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+async function getSimilarClassifiedsFallback(
+  supabase: any,
+  category?: string,
+  excludeId?: string,
+) {
+  try {
+    let query = supabase
+      .from("classifieds")
+      .select("id, title, price_cents, images, city, location_name, category, deal_type, status, created_at")
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(4);
+
+    if (category && category !== "todos") {
+      query = query.eq("category", category);
+    }
+    if (excludeId) {
+      query = query.neq("id", excludeId);
+    }
+
+    const { data } = await query;
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
 export const getPublicClassifiedById = createServerFn({ method: "GET" })
- .validator(z.string().uuid())
- .handler(async ({ data: id }) => {
- const supabase = getServerClient();
- const identity = await getIdentity().catch(() => null);
+  .validator(
+    z.union([
+      z.string(),
+      z.object({ data: z.string() }).transform((v) => v.data),
+      z.object({ id: z.string() }).transform((v) => v.id),
+      z.object({ data: z.object({ id: z.string() }) }).transform((v) => v.data.id),
+    ]),
+  )
+  .handler(async ({ data: inputId }) => {
+    const supabase = getServerClient();
+    const rawId = typeof inputId === "string" ? inputId.trim() : "";
 
- try {
- const { data, error } = await supabase
- .from("classifieds")
- .select("*")
- .eq("id", id)
- .maybeSingle();
-
- if (error) {
- console.warn("[classifieds] getPublicClassifiedById db error:", error);
- }
-
- let classifiedData: any = data;
- if (!classifiedData) return null;
-
- // Busca perfil do autor de forma desacoplada para evitar quebras por nome de constraint FK
- if (classifiedData.author_profile_id && !classifiedData.profiles) {
- let profile = null;
- try {
- const { data: prof } = await supabase
- .from("profiles")
- .select("id, full_name, avatar_url, phone")
- .eq("id", classifiedData.author_profile_id)
- .maybeSingle();
- profile = prof;
- } catch {
- profile = null;
- }
-
-      classifiedData.profiles = profile || {
-        id: classifiedData.author_profile_id,
-        full_name: classifiedData.contact_name || "Anunciante",
-        avatar_url: null,
-        phone: classifiedData.contact_whatsapp || classifiedData.whatsapp,
+    // Validação estrita de UUID na entrada — aborta imediatamente sem bater no banco se inválido
+    if (!rawId || !UUID_REGEX.test(rawId)) {
+      const similarAds = await getSimilarClassifiedsFallback(supabase);
+      return {
+        classified: null,
+        status: "invalid_id" as const,
+        isOwner: false,
+        canManage: false,
+        viewerContext: "anonymous" as const,
+        similarAds,
       };
-  }
+    }
 
-    // Busca informações da loja associada e perguntas personalizadas de atendimento
-    if (classifiedData.store_id) {
-      try {
-        const { data: storeData } = await supabase
-          .from("stores")
-          .select("id, name, slug, logo_url, phone, pix_key, payment_instructions, settings")
-          .eq("id", classifiedData.store_id)
-          .maybeSingle();
+    const identity = await getIdentity().catch(() => null);
 
-        if (storeData) {
-          classifiedData.store = {
-            id: storeData.id,
-            name: storeData.name,
-            slug: storeData.slug,
-            logo_url: storeData.logo_url,
-            phone: storeData.phone,
-            pix_key: storeData.pix_key || storeData.settings?.pix_key || null,
-            payment_instructions: storeData.payment_instructions || storeData.settings?.payment_instructions || null,
-            custom_inquiry_fields: storeData.settings?.custom_inquiry_fields || [],
-          };
+    try {
+      const { data, error } = await supabase
+        .from("classifieds")
+        .select("*")
+        .eq("id", rawId)
+        .maybeSingle();
 
-          // Sincronização estrita de pagamentos com o Workspace da Loja
-          if (classifiedData.sync_payment_with_store !== false && classifiedData.attributes) {
-            const rules = { ...(classifiedData.attributes.payment_rules || {}) };
-            const effectivePix = storeData.pix_key || storeData.settings?.pix_key;
-            if (effectivePix) {
-              rules.pix_key = effectivePix;
-              if (rules.pix_enabled === undefined) rules.pix_enabled = true;
+      if (error) {
+        console.warn("[classifieds] getPublicClassifiedById db error:", error);
+      }
+
+      let classifiedData: any = data;
+      if (!classifiedData) {
+        const similarAds = await getSimilarClassifiedsFallback(supabase);
+        return {
+          classified: null,
+          status: "not_found" as const,
+          isOwner: false,
+          canManage: false,
+          viewerContext: "anonymous" as const,
+          similarAds,
+        };
+      }
+
+      // Busca perfil do autor de forma desacoplada para evitar quebras por nome de constraint FK
+      if (classifiedData.author_profile_id && !classifiedData.profiles) {
+        let profile = null;
+        try {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("id, full_name, avatar_url, phone")
+            .eq("id", classifiedData.author_profile_id)
+            .maybeSingle();
+          profile = prof;
+        } catch {
+          profile = null;
+        }
+
+        classifiedData.profiles = profile || {
+          id: classifiedData.author_profile_id,
+          full_name: classifiedData.contact_name || "Anunciante",
+          avatar_url: null,
+          phone: classifiedData.contact_whatsapp || classifiedData.whatsapp,
+        };
+      }
+
+      // Busca informações da loja associada e perguntas personalizadas de atendimento
+      if (classifiedData.store_id) {
+        try {
+          const { data: storeData } = await supabase
+            .from("stores")
+            .select("id, name, slug, logo_url, phone, pix_key, payment_instructions, settings")
+            .eq("id", classifiedData.store_id)
+            .maybeSingle();
+
+          if (storeData) {
+            classifiedData.store = {
+              id: storeData.id,
+              name: storeData.name,
+              slug: storeData.slug,
+              logo_url: storeData.logo_url,
+              phone: storeData.phone,
+              pix_key: storeData.pix_key || storeData.settings?.pix_key || null,
+              payment_instructions: storeData.payment_instructions || storeData.settings?.payment_instructions || null,
+              custom_inquiry_fields: storeData.settings?.custom_inquiry_fields || [],
+            };
+
+            // Sincronização estrita de pagamentos com o Workspace da Loja
+            if (classifiedData.sync_payment_with_store !== false && classifiedData.attributes) {
+              const rules = { ...(classifiedData.attributes.payment_rules || {}) };
+              const effectivePix = storeData.pix_key || storeData.settings?.pix_key;
+              if (effectivePix) {
+                rules.pix_key = effectivePix;
+                if (rules.pix_enabled === undefined) rules.pix_enabled = true;
+              }
+              const instructions = storeData.payment_instructions || storeData.settings?.payment_instructions;
+              if (instructions) {
+                rules.store_payment_instructions = instructions;
+              }
+              classifiedData.attributes.payment_rules = rules;
             }
-            const instructions = storeData.payment_instructions || storeData.settings?.payment_instructions;
-            if (instructions) {
-              rules.store_payment_instructions = instructions;
-            }
-            classifiedData.attributes.payment_rules = rules;
           }
+        } catch (storeErr) {
+          console.warn("[classifieds] Erro ao buscar store associada:", storeErr);
         }
-      } catch (storeErr) {
-        console.warn("[classifieds] Erro ao buscar store associada:", storeErr);
       }
-    }
 
-    // Busca lead_form vinculado ao anúncio se existir
-    if (classifiedData.form_id) {
-      try {
-        const { data: formData } = await supabase
-          .from("lead_forms")
-          .select("id, title, slug, headline, subheadline, submit_button_text, after_submit_action, trigger_mode, scroll_trigger_pct")
-          .eq("id", classifiedData.form_id)
-          .eq("status", "active")
-          .maybeSingle();
-        if (formData) {
-          classifiedData.lead_form = formData;
+      // Busca lead_form vinculado ao anúncio se existir
+      if (classifiedData.form_id) {
+        try {
+          const { data: formData } = await supabase
+            .from("lead_forms")
+            .select("id, title, slug, headline, subheadline, submit_button_text, after_submit_action, trigger_mode, scroll_trigger_pct")
+            .eq("id", classifiedData.form_id)
+            .eq("status", "active")
+            .maybeSingle();
+          if (formData) {
+            classifiedData.lead_form = formData;
+          }
+        } catch (fErr) {
+          console.warn("[classifieds] Erro ao carregar lead_form vinculado:", fErr);
         }
-      } catch (fErr) {
-        console.warn("[classifieds] Erro ao carregar lead_form vinculado:", fErr);
       }
+
+      const isOwner = !!(identity?.id && classifiedData.author_profile_id === identity.id);
+      const isAdmin = !!(identity?.role === "admin" || identity?.role === "master" || identity?.role === "platform_admin" || identity?.role === "owner");
+      const canManage = isOwner || isAdmin;
+
+      const viewerContext: "owner" | "admin" | "visitor" | "anonymous" = isOwner
+        ? "owner"
+        : isAdmin
+        ? "admin"
+        : identity?.id
+        ? "visitor"
+        : "anonymous";
+
+      // Se o anúncio está pausado ou arquivado e o visitante não é gestor/dono, não exibe
+      if ((classifiedData.status === "paused" || classifiedData.status === "archived") && !canManage) {
+        const similarAds = await getSimilarClassifiedsFallback(supabase, classifiedData.category, rawId);
+        return {
+          classified: null,
+          status: "not_found" as const,
+          isOwner: false,
+          canManage: false,
+          viewerContext,
+          similarAds,
+        };
+      }
+
+      // LGPD: Blindagem server-side de endereço quando a privacidade estiver ativada
+      const isPrivacyHidden = Boolean(
+        classifiedData.hide_location ||
+        classifiedData.attributes?.hide_location ||
+        classifiedData.attributes?.hide_address ||
+        classifiedData.attributes?.hide_exact_address ||
+        classifiedData.attributes?.location_privacy === "hidden"
+      );
+
+      if (!canManage && isPrivacyHidden) {
+        classifiedData.location_lat = null;
+        classifiedData.location_lng = null;
+        classifiedData.location_name = null;
+        classifiedData.city = null;
+        classifiedData.state = null;
+        classifiedData.neighborhood = null;
+        if (classifiedData.attributes) {
+          classifiedData.attributes.city = null;
+          classifiedData.attributes.state = null;
+          classifiedData.attributes.neighborhood = null;
+          classifiedData.attributes.location_lat = null;
+          classifiedData.attributes.location_lng = null;
+        }
+      }
+
+      const similarAds = await getSimilarClassifiedsFallback(supabase, classifiedData.category, rawId);
+
+      const computedStatus: "active" | "sold" | "paused" | "reserved" | "archived" =
+        classifiedData.status === "completed" ? "sold" : (classifiedData.status || "active");
+
+      return {
+        classified: classifiedData,
+        status: computedStatus,
+        isOwner,
+        canManage,
+        viewerContext,
+        similarAds,
+      };
+    } catch (err: any) {
+      console.error("[classifieds] Falha em getPublicClassifiedById:", err);
+      return {
+        classified: null,
+        status: "error" as const,
+        isOwner: false,
+        canManage: false,
+        viewerContext: "anonymous" as const,
+        similarAds: [],
+        errorMessage: err?.message || "Erro de conexão",
+      };
     }
-
- const isOwner = !!(identity?.id && classifiedData.author_profile_id === identity.id);
- const isAdmin = !!(identity?.role === "admin" || identity?.role === "master" || identity?.role === "platform_admin" || identity?.role === "owner");
- const canManage = isOwner || isAdmin;
-
- const viewerContext: "owner" | "admin" | "visitor" | "anonymous" = isOwner
- ? "owner"
- : isAdmin
- ? "admin"
- : identity?.id
- ? "visitor"
- : "anonymous";
-
-  // LGPD & Micro-fase 7.4: Blindagem server-side de endereço quando a privacidade estiver ativada
-  const isPrivacyHidden = Boolean(
-    classifiedData.hide_location ||
-    classifiedData.attributes?.hide_location ||
-    classifiedData.attributes?.hide_address ||
-    classifiedData.attributes?.hide_exact_address ||
-    classifiedData.attributes?.location_privacy === "hidden"
-  );
-
-  if (!canManage && isPrivacyHidden) {
-    classifiedData.location_lat = null;
-    classifiedData.location_lng = null;
-    classifiedData.location_name = null;
-    classifiedData.city = null;
-    classifiedData.state = null;
-    classifiedData.neighborhood = null;
-    if (classifiedData.attributes) {
-      classifiedData.attributes.city = null;
-      classifiedData.attributes.state = null;
-      classifiedData.attributes.neighborhood = null;
-      classifiedData.attributes.location_lat = null;
-      classifiedData.attributes.location_lng = null;
-    }
-  }
-
- return {
- classified: classifiedData,
- isOwner,
- canManage,
- viewerContext,
- };
- } catch (err) {
- console.error("[classifieds] Falha em getPublicClassifiedById:", err);
- return null;
- }
- });
+  });
 
 export const updateClassifiedStatus = createServerFn({ method: "POST" })
  .validator(
@@ -1131,7 +1221,7 @@ export const recordSubscriptionPayment = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 export const trackClassifiedView = createServerFn({ method: "POST" })
-  .validator(z.object({ adId: z.string().uuid() }))
+  .validator(withDataPayload(z.object({ adId: z.string().uuid() })))
   .handler(async ({ data: { adId } }) => {
     const supabase = getServerClient();
     try {
@@ -1155,7 +1245,7 @@ export const trackClassifiedView = createServerFn({ method: "POST" })
   });
 
 export const trackClassifiedWhatsAppClick = createServerFn({ method: "POST" })
-  .validator(z.object({ adId: z.string().uuid() }))
+  .validator(withDataPayload(z.object({ adId: z.string().uuid() })))
   .handler(async ({ data: { adId } }) => {
     const supabase = getServerClient();
     try {

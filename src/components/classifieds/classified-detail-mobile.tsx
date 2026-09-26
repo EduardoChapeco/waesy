@@ -44,6 +44,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
+import { NativeBackButton } from "@/components/navigation";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel } from "@/lib/classifieds/semantics";
 import { toast } from "sonner";
@@ -284,20 +285,11 @@ export function ClassifiedDetailMobile({
         )}
 
         {/* ── BOTÃO FLUTUANTE VOLTAR (Nativo iOS/Android - Canto Superior Esquerdo) ── */}
-        <button
-          type="button"
-          onClick={() => {
-            if (window.history.length > 1) {
-              window.history.back();
-            } else {
-              navigate({ to: "/classificados" });
-            }
-          }}
-          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center z-20 shadow-md active:scale-95 transition-transform cursor-pointer"
-          aria-label="Voltar aos anúncios"
-        >
-          <ArrowLeft className="size-5" />
-        </button>
+        <NativeBackButton
+          variant="floating"
+          fallbackHref="/classificados"
+          className="absolute top-3 left-3 z-20"
+        />
 
         {/* ── AÇÕES FLUTUANTES (Canto Superior Direito: Compartilhar & Favoritar - 44px Apple HIG) ── */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">

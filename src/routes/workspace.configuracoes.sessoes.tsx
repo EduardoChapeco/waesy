@@ -19,6 +19,7 @@ import {
 } from "@/services/auth.functions";
 import { getStoreAuditLogs, type StoreAuditLogItem } from "@/services/admin-logs.functions";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -164,22 +165,16 @@ function WorkspaceSessionsAndAuditPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       {/* Header Canônico */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Link
-              to="/workspace/configuracoes"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="size-3.5" />
-              Configurações
-            </Link>
+        <div className="flex items-center gap-3">
+          <NativeBackButton fallbackHref="/workspace/configuracoes" />
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
+              Sessões & Auditoria da Loja
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Governança bilateral: consulte o histórico de alterações da equipe e gerencie dispositivos conectados.
+            </p>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Sessões & Auditoria da Loja
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Governança bilateral: consulte o histórico de alterações da equipe e gerencie dispositivos conectados.
-          </p>
         </div>
 
         <Button

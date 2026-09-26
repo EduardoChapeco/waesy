@@ -21,6 +21,7 @@ import {
  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -167,11 +168,7 @@ function WorkspaceGroupTourDetailPage() {
  {/* ── 1. TOP HEADER DA VIAGEM ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80">
  <div className="flex items-center gap-3">
- <Button asChild size="icon" variant="ghost" className="size-11 sm:size-8 p-0 rounded-xl shrink-0 cursor-pointer">
- <Link to="/workspace/turismo/grupos">
- <ArrowLeft className="size-4" />
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/turismo/grupos" />
 
  <div className="space-y-0.5 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">

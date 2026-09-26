@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertOwnerAccess, assertManagerAccess } from "@/lib/server-access";
 
 // ============================================================
 // Schemas e Tipos
@@ -49,7 +49,7 @@ export const getStorePrivacySettings = createServerFn({ method: "GET" })
     if (!targetStoreId) {
       throw new Error("Nenhuma loja ativa selecionada.");
     }
-    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+    assertManagerAccess(identity, targetStoreId);
 
     const supabase = getServerClient();
     const { data: store, error } = await supabase
@@ -81,7 +81,7 @@ export const updateStorePrivacySettings = createServerFn({ method: "POST" })
   .validator(updateStorePrivacySchema)
   .handler(async ({ data }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin"]);
+    assertOwnerAccess(identity, data.storeId);
 
     const supabase = getServerClient();
 

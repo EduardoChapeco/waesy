@@ -1,5 +1,5 @@
-import React from "react";
-import { Search, BarChart3, Settings2, X } from "lucide-react";
+import React, { useState } from "react";
+import { Search, BarChart3, Settings2, X, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { FilterBottomSheet, FilterTriggerButton } from "./filter-bottom-sheet";
 import { cn } from "@/lib/utils";
 
 export interface WorkspaceCanonicalAction {
@@ -141,6 +148,11 @@ export function WorkspaceCanonicalToolbar({
   const effectiveSearch = searchValue ?? searchQuery ?? searchTerm;
   const effectiveDashboardLabel = dashboardLabel || dashboardButtonLabel || "Métricas";
 
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const activeFiltersCount = (filters || []).filter(
+    (f) => f.value !== "all" && f.value !== ""
+  ).length;
+
   const handleDashboard = onOpenDashboard || onMetricsClick;
   const handleColumns = onConfigureColumns || onColumnsClick;
 
@@ -248,12 +260,12 @@ export function WorkspaceCanonicalToolbar({
 
       {/* ── TIER 2: Busca Rápida, Filtros e Ação Primária da Tela ── */}
       {hasControls && (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+        <div className="flex flex-row items-center justify-between gap-2 w-full">
           {/* LADO ESQUERDO: Campo de Busca com Lupa e Filtros */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {/* Campo de Busca */}
             {onSearchChange && (
-              <div className="relative flex-1 sm:max-w-xs md:max-w-md min-w-[200px] w-full">
+              <div className="relative flex-1 min-w-0">
                 <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <Input
                   value={effectiveSearch || ""}
@@ -265,7 +277,7 @@ export function WorkspaceCanonicalToolbar({
                   <button
                     type="button"
                     onClick={() => onSearchChange("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
                     title="Limpar busca"
                   >
                     <X className="size-3.5" />
@@ -274,9 +286,19 @@ export function WorkspaceCanonicalToolbar({
               </div>
             )}
 
-            {/* Filtros Dropdown */}
+            {/* BOTÃO DE FILTROS NO MOBILE (Abre Bottom Sheet - Erradica empilhamento de selects) */}
             {filters && filters.length > 0 && (
-              <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+              <div className="flex sm:hidden">
+                <FilterTriggerButton
+                  onClick={() => setIsFilterSheetOpen(true)}
+                  activeCount={activeFiltersCount}
+                />
+              </div>
+            )}
+
+            {/* FILTROS DROPDOWN NO DESKTOP */}
+            {filters && filters.length > 0 && (
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
                 {filters.map((f) => (
                   <Select key={f.id} value={f.value} onValueChange={f.onChange}>
                     <SelectTrigger className="h-10 px-3 text-xs rounded-xl bg-card border-border/60 font-medium min-w-[130px] shadow-none">
@@ -294,20 +316,20 @@ export function WorkspaceCanonicalToolbar({
               </div>
             )}
 
-            {/* Slot Contextual */}
-            {filterSlot && <div className="flex items-center gap-1.5 shrink-0">{filterSlot}</div>}
+            {/* Slot Contextual no Desktop */}
+            {filterSlot && <div className="hidden sm:flex items-center gap-1.5 shrink-0">{filterSlot}</div>}
           </div>
 
-          {/* LADO DIREITO: Ações Secundárias, Métricas (se não houver abas) e CTA Primário */}
-          <div className="flex items-center gap-2 shrink-0 justify-start sm:justify-end flex-wrap sm:flex-nowrap">
-            {/* Se NÃO houver abas, exibimos Métricas e Colunas aqui na linha única */}
+          {/* LADO DIREITO: Ações Secundárias, Métricas e CTA Primário */}
+          <div className="flex items-center gap-2 shrink-0 justify-end">
+            {/* Se NÃO houver abas, exibimos Métricas e Colunas aqui no Desktop */}
             {!hasTabs && handleColumns && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleColumns}
-                className="h-10 px-3 rounded-xl text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none"
+                className="h-10 px-3 rounded-xl text-xs font-semibold border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none hidden sm:inline-flex"
                 title="Personalizar Colunas do Kanban"
               >
                 <Settings2 className="size-3.5 text-muted-foreground" />
@@ -321,7 +343,7 @@ export function WorkspaceCanonicalToolbar({
                 variant="outline"
                 size="sm"
                 onClick={handleDashboard}
-                className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative"
+                className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-2 cursor-pointer shadow-none relative hidden sm:inline-flex"
               >
                 <BarChart3 className="size-3.5 text-primary" />
                 <span>{effectiveDashboardLabel}</span>
@@ -335,7 +357,7 @@ export function WorkspaceCanonicalToolbar({
               </Button>
             )}
 
-            {/* Ação Secundária */}
+            {/* Ações Secundárias no Desktop */}
             {secondaryAction && (
               <Button
                 type="button"
@@ -343,14 +365,13 @@ export function WorkspaceCanonicalToolbar({
                 size="sm"
                 disabled={secondaryAction.disabled}
                 onClick={secondaryAction.onClick}
-                className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none"
+                className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none hidden sm:inline-flex"
               >
                 {secondaryAction.icon && <secondaryAction.icon className="size-3.5" />}
                 <span>{secondaryAction.label}</span>
               </Button>
             )}
 
-            {/* Lista de Ações Secundárias */}
             {secondaryActions &&
               secondaryActions.map((act) => (
                 <Button
@@ -360,12 +381,71 @@ export function WorkspaceCanonicalToolbar({
                   size="sm"
                   disabled={act.disabled}
                   onClick={act.onClick}
-                  className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none"
+                  className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/60 gap-1.5 cursor-pointer shadow-none hidden sm:inline-flex"
                 >
                   {act.icon && <act.icon className="size-3.5" />}
                   <span>{act.label}</span>
                 </Button>
               ))}
+
+            {/* Menu Kebab no Mobile para Ações Secundárias (Evita quebra em múltiplas linhas) */}
+            {(secondaryAction || secondaryActions?.length || (!hasTabs && (handleColumns || handleDashboard))) && (
+              <div className="sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-10 w-10 p-0 rounded-xl border-border/70 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                      title="Mais opções"
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="rounded-xl min-w-[170px]">
+                    {secondaryAction && (
+                      <DropdownMenuItem
+                        onClick={secondaryAction.onClick}
+                        disabled={secondaryAction.disabled}
+                        className="text-xs gap-2 cursor-pointer font-medium"
+                      >
+                        {secondaryAction.icon && <secondaryAction.icon className="size-3.5" />}
+                        <span>{secondaryAction.label}</span>
+                      </DropdownMenuItem>
+                    )}
+                    {secondaryActions?.map((act) => (
+                      <DropdownMenuItem
+                        key={act.label}
+                        onClick={act.onClick}
+                        disabled={act.disabled}
+                        className="text-xs gap-2 cursor-pointer font-medium"
+                      >
+                        {act.icon && <act.icon className="size-3.5" />}
+                        <span>{act.label}</span>
+                      </DropdownMenuItem>
+                    ))}
+                    {!hasTabs && handleDashboard && (
+                      <DropdownMenuItem
+                        onClick={handleDashboard}
+                        className="text-xs gap-2 cursor-pointer font-medium"
+                      >
+                        <BarChart3 className="size-3.5 text-primary" />
+                        <span>{effectiveDashboardLabel}</span>
+                      </DropdownMenuItem>
+                    )}
+                    {!hasTabs && handleColumns && (
+                      <DropdownMenuItem
+                        onClick={handleColumns}
+                        className="text-xs gap-2 cursor-pointer font-medium"
+                      >
+                        <Settings2 className="size-3.5 text-muted-foreground" />
+                        <span>Personalizar Colunas</span>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
 
             {/* Ação Primária da Tela (Botão Principal) */}
             {React.isValidElement(primaryAction) ? (
@@ -376,15 +456,24 @@ export function WorkspaceCanonicalToolbar({
                 size="sm"
                 disabled={(primaryAction as WorkspaceCanonicalAction).disabled}
                 onClick={(primaryAction as WorkspaceCanonicalAction).onClick}
-                className="h-10 px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-none min-h-[40px]"
+                className="h-10 px-3 sm:px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-none shrink-0"
               >
                 {(primaryAction as WorkspaceCanonicalAction).icon &&
                   React.createElement((primaryAction as WorkspaceCanonicalAction).icon!, { className: "size-3.5" })}
-                <span>{(primaryAction as WorkspaceCanonicalAction).label}</span>
+                <span className="hidden xs:inline sm:inline">{(primaryAction as WorkspaceCanonicalAction).label}</span>
               </Button>
             ) : null}
           </div>
         </div>
+      )}
+
+      {/* ── BOTTOM SHEET DE FILTROS PARA MOBILE ── */}
+      {filters && filters.length > 0 && (
+        <FilterBottomSheet
+          open={isFilterSheetOpen}
+          onOpenChange={setIsFilterSheetOpen}
+          filters={filters}
+        />
       )}
     </div>
   );

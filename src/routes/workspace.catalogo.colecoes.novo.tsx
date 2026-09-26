@@ -2,7 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ArrowLeft, Layers, Check, Tag } from "lucide-react";
+import { Layers, Check, Tag } from "lucide-react";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -105,14 +106,7 @@ function NewCollectionPage() {
  <PageHeader
  eyebrow="Catálogo"
  title="Nova Coleção"
- actions={
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5 shrink-0">
- <Link to="/workspace/catalogo/colecoes">
- <ArrowLeft className="size-3.5" />
- <span>Voltar</span>
- </Link>
- </Button>
- }
+ actions={<NativeBackButton fallbackHref="/workspace/catalogo/colecoes" />}
  />
 
  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

@@ -47,6 +47,24 @@ export const STAFF_ROLES = [
  "stock",
 ] as const;
 
+export const OWNER_ROLES = [
+  "owner",
+  "admin",
+  "proprietario",
+  "platform_admin",
+  "master",
+] as const;
+
+export const MANAGER_ROLES = [
+  "owner",
+  "admin",
+  "proprietario",
+  "manager",
+  "gerente",
+  "platform_admin",
+  "master",
+] as const;
+
 /**
  * Asserts que o usuário tem acesso de staff à loja ou é platform_admin global.
  * Lança Error se não autorizado.
@@ -99,3 +117,26 @@ export function assertStoreAccess(
 
   (identity as any).role = effectiveRole;
 }
+
+/**
+ * Asserts que o usuário possui acesso estrito de proprietário / titular da loja.
+ * Bloqueia gerentes, operadores e terceiros para ações societárias, bancárias e destrutivas.
+ */
+export function assertOwnerAccess(
+  identity: ServerIdentity,
+  targetStoreId?: string | null,
+): asserts identity is ServerIdentity & { id: string; store_id: string } {
+  assertStoreAccess(identity, OWNER_ROLES, targetStoreId);
+}
+
+/**
+ * Asserts que o usuário possui acesso gerencial ou superior (owner/admin/manager).
+ * Bloqueia operadores operacionais (vendedor, caixa, estoque) para gestão tática da loja.
+ */
+export function assertManagerAccess(
+  identity: ServerIdentity,
+  targetStoreId?: string | null,
+): asserts identity is ServerIdentity & { id: string; store_id: string } {
+  assertStoreAccess(identity, MANAGER_ROLES, targetStoreId);
+}
+

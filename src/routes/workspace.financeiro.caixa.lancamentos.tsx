@@ -18,6 +18,7 @@ import {
 import { Link } from "@tanstack/react-router";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
@@ -167,11 +168,8 @@ function CaixaLancamentosPage() {
   if (!register) {
     return (
       <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-3.5" />
-          <Link to="/workspace/financeiro/caixa" className="hover:underline font-semibold">
-            Voltar ao Caixa
-          </Link>
+        <div>
+          <NativeBackButton fallbackHref="/workspace/financeiro/caixa" />
         </div>
         <PageHeader title="Lançamentos do Caixa" />
         <EmptyState
@@ -269,11 +267,8 @@ function CaixaLancamentosPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-3.5" />
-        <Link to="/workspace/financeiro/caixa" className="hover:underline font-semibold">
-          Voltar ao Painel do Caixa
-        </Link>
+      <div>
+        <NativeBackButton fallbackHref="/workspace/financeiro/caixa" />
       </div>
 
       <PageHeader

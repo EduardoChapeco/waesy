@@ -15,6 +15,7 @@ import {
  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -190,11 +191,7 @@ function WorkspaceProposalStudioPage() {
  <header className="h-14 px-4 border-b border-border/80 flex items-center justify-between shrink-0 bg-card z-30 shadow-2xs">
  {/* Esquerda: Voltar + Identificação da Proposta + Status */}
  <div className="flex items-center gap-3">
- <Button asChild size="sm" variant="ghost" className="size-8 p-0 rounded-xl" title="Voltar para Cotações">
- <Link to="/workspace/turismo/cotacoes">
- <ArrowLeft className="size-4" />
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/turismo/cotacoes" />
 
  <div className="h-4 w-px bg-border/80" />
 

@@ -29,6 +29,7 @@ import {
  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -1654,12 +1655,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  title="Novo Orçamento Comercial"
  actions={
  <div className="flex items-center gap-2">
- <Button variant="outline" asChild size="sm" className="rounded-xl text-xs font-bold">
- <Link to="/workspace/orcamentos">
- <ArrowLeft className="mr-1.5 size-3.5" />
- Voltar aos Orçamentos
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/orcamentos" />
  <Button
  onClick={handleSubmit}
  disabled={isSubmitting}

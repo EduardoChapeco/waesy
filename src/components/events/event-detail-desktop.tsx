@@ -18,6 +18,8 @@ import {
 } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 
+import { NativeBackButton } from "@/components/ui/native-back-button";
+
 export interface EventDetailDesktopProps {
   event: any;
   lots: any[];
@@ -68,13 +70,7 @@ export function EventDetailDesktop({
 
       {/* ── Breadcrumb & Ações Topo ── */}
       <div className="flex items-center justify-between">
-        <Link
-          to="/agenda"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
-        >
-          <ArrowLeft size={16} weight="bold" className="group-hover:-translate-x-0.5 transition-transform" />
-          <span>Voltar para Agenda</span>
-        </Link>
+        <NativeBackButton fallbackHref="/agenda" />
         <div className="flex items-center gap-2">
           {isOwner && (
             <Button

@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { CurrencyField } from "@/components/ui/currency-field";
 import {
   Dialog,
@@ -205,6 +206,7 @@ function NegociacoesPage() {
       {/* ── 1. Top Header Limpo & Direto (Apple HIG) ── */}
       <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-2.5">
+          <NativeBackButton fallbackHref="/conta" />
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
             Negociações
           </h1>

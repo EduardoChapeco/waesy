@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, assertOwnerAccess } from "@/lib/server-access";
 
 // --- DADOS DA LOJA ---
 
@@ -824,11 +824,8 @@ export const updateStoreDetails = createServerFn({ method: "POST" })
  const identity = await getServerIdentity();
  const db = getServerClient();
 
- // Permissão: verifica se o usuário é owner ou admin da store específica
- const userRole = identity.memberships.find((m) => m.store_id === data.store_id)?.role || identity.role;
- if (!["owner", "admin"].includes(userRole)) {
- throw new Error("Acesso negado: Você precisa ser proprietário ou administrador para alterar os dados desta loja.");
- }
+ // Permissão estrita de proprietário com isolamento multi-tenant
+ assertOwnerAccess(identity, data.store_id);
 
  const { data: currentStore } = await db
  .from("stores")

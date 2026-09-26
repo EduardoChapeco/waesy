@@ -225,7 +225,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
   const effectiveUserRole = isPlatformAdmin
     ? "owner"
-    : (activeStore?.role || session?.role || "owner").toLowerCase();
+    : (activeStore?.role || session?.role || "collaborator").toLowerCase();
 
   const activeModules = resolveWorkspaceNavigation(activeStore, {
     isMasterMode: isPlatformAdmin && isMasterAllVerticals,
@@ -259,21 +259,52 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       "/workspace/financeiro/configuracao",
       "/workspace/configuracoes/integracoes",
       "/workspace/configuracoes/ai",
+      "/workspace/configuracoes/inteligencia-artificial",
       "/workspace/configuracoes/sessoes",
       "/workspace/configuracoes/privacidade-loja",
       "/workspace/configuracoes/parceiros",
+      "/workspace/configuracoes/tokens",
+      "/workspace/faturamento/tokens",
     ];
 
     if (OWNER_ONLY_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
       return false;
     }
 
-    // 3. Gerente Operacional: acesso aos módulos do dia a dia (exceto rotas críticas acima)
+    // 3. Rotas restritas de Gestão de Equipe, Cargos e Folha (bloqueadas para vendedores, caixas, expedição)
+    const TEAM_MANAGEMENT_ROUTES = [
+      "/workspace/configuracoes/equipe",
+    ];
+    if (TEAM_MANAGEMENT_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
+      const allowedRoles = ["owner", "admin", "proprietario", "manager", "gerente", "rh", "recruiter"];
+      if (!allowedRoles.includes(effectiveUserRole)) {
+        return false;
+      }
+    }
+
+    // 4. Rotas restritas Financeiras e de Repasse (bloqueadas para vendedores, atendentes e operadores gerais)
+    const FINANCE_RESTRICTED_ROUTES = [
+      "/workspace/financeiro/contas-pagar",
+      "/workspace/financeiro/comissoes",
+      "/workspace/financeiro/afiliados",
+      "/workspace/financeiro/recebiveis",
+      "/workspace/financeiro/relatorios-canal",
+      "/workspace/financeiro/faturas",
+      "/workspace/financeiro/funcionarios",
+    ];
+    if (FINANCE_RESTRICTED_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
+      const allowedFinanceRoles = ["owner", "admin", "proprietario", "manager", "gerente", "finance"];
+      if (!allowedFinanceRoles.includes(effectiveUserRole)) {
+        return false;
+      }
+    }
+
+    // 5. Gerente Operacional: acesso aos módulos do dia a dia (exceto rotas críticas de proprietário)
     if (effectiveUserRole === "manager" || effectiveUserRole === "gerente") {
       return true;
     }
 
-    // 4. Rotas universais e de onboarding geral do Workspace
+    // 6. Rotas universais e de onboarding geral do Workspace
     if (
       currentPath === "/workspace" ||
       currentPath === "/workspace/" ||
@@ -282,7 +313,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       return true;
     }
 
-    // 5. Demais colaboradores: valida se a rota pertence aos módulos autorizados para o cargo
+    // 7. Demais colaboradores: valida se a rota pertence aos módulos autorizados para o cargo
     return activeModules.some((group) =>
       group.items.some(
         (item) => currentPath === item.path || currentPath.startsWith(item.path + "/")

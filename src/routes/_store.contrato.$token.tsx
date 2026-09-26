@@ -110,7 +110,7 @@ function PublicTravelContractSignaturePage() {
  };
 
  return (
- <div className="max-w-3xl mx-auto py-6 px-4 space-y-6 animate-in fade-in duration-200">
+ <div className="max-w-3xl mx-auto py-6 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
  {/* ── 1. TOPO FLUTUANTE DE STATUS ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/80 sticky top-4 z-20 shadow-xs">
  <div className="space-y-0.5">

@@ -1869,7 +1869,7 @@ export const adminListPayoutRequests = createServerFn({ method: "GET" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    const isPlatformAdmin = identity.role === "platform_admin" || identity.role === "admin";
+    const isPlatformAdmin = Boolean(identity.isPlatformAdmin || identity.role === "platform_admin" || identity.role === "master");
     if (!isPlatformAdmin) {
       assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
     }
@@ -1924,7 +1924,7 @@ export const adminProcessPayoutRequest = createServerFn({ method: "POST" })
     const supabase = getServerClient();
     const identity = await getServerIdentity();
 
-    const isPlatformAdmin = identity.role === "platform_admin" || identity.role === "admin";
+    const isPlatformAdmin = Boolean(identity.isPlatformAdmin || identity.role === "platform_admin" || identity.role === "master");
     if (!isPlatformAdmin) {
       assertStoreAccess(identity, ["owner", "admin", "manager", "finance"]);
     }

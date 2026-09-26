@@ -11,7 +11,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import crypto from "node:crypto";
-import { getServerIdentity, getSSRClient } from "@/lib/server-access";
+import { getServerIdentity, getSSRClient, assertOwnerAccess } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { getCurrentIdentity, withDataPayload } from "./cart-helpers";
@@ -169,19 +169,8 @@ export const updateStoreCheckoutConfig = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: { storeId, checkoutConfig } }) => {
     const identity = await getServerIdentity();
-    if (!identity) throw new Error("Não autenticado.");
+    assertOwnerAccess(identity, storeId);
     const db = await getServerClient();
-
-    const { data: member } = await db
-      .from("store_members")
-      .select("role")
-      .eq("store_id", storeId)
-      .eq("profile_id", identity.id)
-      .maybeSingle();
-
-    if (!member && !identity.isPlatformAdmin) {
-      throw new Error("Sem autorização para alterar as configurações desta loja.");
-    }
 
     const { data: store } = await db
       .from("stores")

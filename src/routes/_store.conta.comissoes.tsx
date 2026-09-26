@@ -12,6 +12,7 @@ import { getUserSession } from "@/services/auth.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { NativeMobileHeader } from "@/components/navigation";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,11 +170,7 @@ function AffiliateCommissionsPage() {
     return (
       <div className="min-h-screen bg-background text-foreground py-6 sm:py-10 px-0 sm:px-4 md:px-0 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 px-3 rounded-xl text-xs">
-            <Link to="/conta">
-              <ChevronLeft className="h-4 w-4 mr-1" /> Minha Conta
-            </Link>
-          </Button>
+          <NativeBackButton fallbackHref="/conta" />
         </div>
 
         <div className="bg-card border border-border/80 rounded-2xl p-6 sm:p-8 text-center space-y-4">

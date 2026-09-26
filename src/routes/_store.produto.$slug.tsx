@@ -27,6 +27,7 @@ import { getIdentity } from "@/services/identity.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { ProductTelemetry, trackAddToCartEvent } from "@/components/commerce/product-telemetry";
 import { toast } from "sonner";
+import { humanizeErrorMessage } from "@/lib/humanize-error";
 import { playMessageChime } from "@/lib/audio-chimes";
 
 import { useState, useMemo, useEffect } from "react";
@@ -668,11 +669,7 @@ function ProductContent({
  });
  } catch (error: unknown) {
  console.error("[PDP] Erro ao adicionar ao carrinho:", error);
- toast.error(
- error instanceof Error
- ? error.message
- : "Erro ao adicionar ao carrinho.",
- );
+ toast.error(humanizeErrorMessage(error, "Não foi possível adicionar este item à sacola no momento. Tente novamente."));
  } finally {
  setIsAdding(false);
  }

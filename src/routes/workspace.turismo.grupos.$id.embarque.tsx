@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -247,11 +248,7 @@ function GroupTourBoardingPage() {
       {/* ── 1. Top Bar & Ações ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
         <div className="flex items-center gap-3">
-          <Button asChild variant="outline" size="icon" className="size-11 sm:size-10 rounded-xl cursor-pointer shrink-0">
-            <Link to={"/workspace/turismo/grupos/$id" as any} params={{ id: tour.id } as any}>
-              <ArrowLeft className="size-4" />
-            </Link>
-          </Button>
+          <NativeBackButton fallbackHref={`/workspace/turismo/grupos/${tour.id}`} />
 
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">

@@ -15,7 +15,14 @@ import type { Role } from "@/types/domain";
 import type { ServerIdentity } from "@/lib/identity-core";
 
 export type { ServerIdentity };
-export { assertStoreAccess, STAFF_ROLES } from "@/lib/identity-core";
+export {
+  assertStoreAccess,
+  assertOwnerAccess,
+  assertManagerAccess,
+  STAFF_ROLES,
+  OWNER_ROLES,
+  MANAGER_ROLES,
+} from "@/lib/identity-core";
 
 /** Cliente Supabase SSR (anon key + cookies do usuário). Servidor apenas. */
 export async function getSSRClient(): Promise<SupabaseClient> {

@@ -1,4 +1,4 @@
-﻿import { createFileRoute, useNavigate, isRedirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -270,18 +271,7 @@ function StudioWorkspacePage() {
  {/* ── 1. HEADER DO ESTÚDIO FULLPAGE: Título + Modos + Salvar/Exportar ── */}
  <header className="h-14 border-b border-border/80 bg-card/95 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
  <div className="flex items-center gap-2 sm:gap-3">
- <Button
- variant="ghost"
- size="sm"
- onClick={() => navigate({ to: "/workspace" })}
- className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/80"
- title="Voltar ao Workspace"
- >
- <ArrowLeft className="size-4" />
- <span className="hidden sm:inline">Workspace</span>
- </Button>
-
- <span className="hidden sm:inline text-muted-foreground/50 text-xs">/</span>
+ <NativeBackButton fallbackHref="/workspace" />
 
  <div className="flex items-center gap-2">
  <Input

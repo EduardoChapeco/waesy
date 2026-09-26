@@ -21,6 +21,8 @@ import {
 } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 
+import { NativeBackButton } from "@/components/ui/native-back-button";
+
 export interface BookingDetailDesktopProps {
   service: any;
   categoryLabel: string;
@@ -46,13 +48,7 @@ export function BookingDetailDesktop({
     <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-4 space-y-6 pb-16 font-sans">
       {/* ── 1. Top Breadcrumb & Share ── */}
       <div className="flex items-center justify-between">
-        <Link
-          to="/agendar"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
-        >
-          <ArrowLeft size={16} weight="bold" className="group-hover:-translate-x-0.5 transition-transform" />
-          <span>Voltar para Serviços & Agendamentos</span>
-        </Link>
+        <NativeBackButton fallbackHref="/agendar" />
 
         <ContentActionsMenu
           entityType="product"

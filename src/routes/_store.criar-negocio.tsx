@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Store, ArrowLeft, ArrowRight, Loader2, Check, Sliders, Clock, Truck, FileText, Trash2, Plus, Users, Mail, Shield, CheckCircle2, Search, CheckCircle, Building2, ChevronRight, UserPlus, Bike, ShieldCheck, Zap, BadgePercent, Star, MapPin, Phone, Eye, Layers } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
@@ -352,12 +353,7 @@ function CriarNegocioPage() {
   <div className="w-full max-w-6xl mx-auto py-2 space-y-6 animate-in fade-in duration-200">
   {/* ── Top Bar de Retorno / Atalho ao Workspace ou Início + Seletor de Modo ── */}
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-  <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground min-h-[44px] sm:min-h-[36px] h-11 sm:h-9">
-  <Link to={session?.memberships && session.memberships.length > 0 ? "/workspace" : "/"}>
-  <ArrowLeft className="size-3.5" />
-  <span>{session?.memberships && session.memberships.length > 0 ? "Voltar ao Workspace" : "Voltar ao Início"}</span>
-  </Link>
-  </Button>
+  <NativeBackButton fallbackHref={session?.memberships && session.memberships.length > 0 ? "/workspace" : "/"} />
 
   {/* SELETOR DE MODO APPLE HIG (Expresso vs Avançado) */}
   <div className="flex items-center p-1 bg-muted/60 rounded-xl border border-border/60 self-start sm:self-auto">

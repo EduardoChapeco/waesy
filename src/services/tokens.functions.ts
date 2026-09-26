@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getServerClient } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { getServerIdentity, assertOwnerAccess, assertManagerAccess } from "@/lib/server-access";
 import { z } from "zod";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 import { requireTokensOrTollbooth } from "@/lib/token-tollbooth.server";
@@ -98,6 +98,7 @@ export const getStoreTokenWallet = createServerFn({ method: "GET" }).handler(asy
   if (!identity.store_id) {
     throw new Error("Nenhuma loja ativa selecionada.");
   }
+  assertManagerAccess(identity, identity.store_id);
 
   const db = getServerClient();
 
@@ -173,6 +174,7 @@ export const purchaseTokenPackage = createServerFn({ method: "POST" })
     if (!identity.store_id) {
       throw new Error("Nenhuma loja ativa selecionada.");
     }
+    assertManagerAccess(identity, identity.store_id);
 
     const pkg = TOKEN_PACKAGES.find((p) => p.id === data.package_id);
     if (!pkg) {
@@ -937,6 +939,7 @@ export const updateStoreTokenBillingConfig = createServerFn({ method: "POST" })
  if (!identity.store_id) {
  throw new Error("Nenhuma loja ativa selecionada.");
  }
+ assertOwnerAccess(identity, identity.store_id);
 
  const db = getServerClient();
 

@@ -1,4 +1,4 @@
-﻿import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -276,11 +277,7 @@ function ContractEditorPage() {
       {/* Barra de Topo do Editor */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/70 pb-4">
         <div className="flex items-center gap-3">
-          <Button asChild variant="outline" size="sm" className="rounded-xl h-9 w-9 p-0">
-            <Link to="/workspace/contratos">
-              <ArrowLeft className="size-4" />
-            </Link>
-          </Button>
+          <NativeBackButton fallbackHref="/workspace/contratos" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base sm:text-xl font-bold tracking-tight text-foreground truncate max-w-md">

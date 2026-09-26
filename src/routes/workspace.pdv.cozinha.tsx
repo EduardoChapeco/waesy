@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -308,11 +309,7 @@ function KDSDashboard() {
  {/* Linha 1: Identidade + Ações */}
  <div className="flex items-center justify-between gap-3 flex-wrap">
  <div className="flex items-center gap-3">
- <Button variant="ghost" size="icon" asChild className="size-9 rounded-xl">
- <Link to="/workspace/pdv">
- <ArrowLeft className="size-5" />
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/pdv" />
 
  <div className="size-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
  <ChefHat className="size-6" />

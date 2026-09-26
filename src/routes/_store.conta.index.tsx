@@ -258,8 +258,19 @@ function AccountDashboardPage() {
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-6 animate-in fade-in duration-200">
       {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
-      <div className="bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4 min-w-0">
+      <div className="relative bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {/* Ação de Logout Minimalista no Top-Right (Não polui o grid central de ações) */}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={isLoggingOut}
+          className="absolute right-3 top-3 sm:right-4 sm:top-4 p-2 rounded-xl text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+          title="Encerrar Sessão"
+        >
+          <LogOut className="size-4" />
+        </button>
+
+        <div className="flex items-center gap-4 min-w-0 pr-8 sm:pr-0">
           <div className="size-14 rounded-2xl bg-muted overflow-hidden shrink-0 flex items-center justify-center border border-border/40">
             {userAvatar ? (
               <img src={userAvatar} alt={userName} className="size-full object-cover" />
@@ -281,7 +292,7 @@ function AccountDashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:flex sm:flex-row items-center gap-2 sm:gap-2 w-full sm:w-auto shrink-0">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto shrink-0">
           {stores.length > 0 && (
             <ContextSwitcher
               currentContextType="civil"
@@ -304,27 +315,16 @@ function AccountDashboardPage() {
           )}
 
           {isMasterAdmin && (
-            <Button asChild size="sm" variant="default" className="rounded-xl text-xs h-10 sm:h-11 px-3.5 font-bold bg-primary text-primary-foreground gap-2 cursor-pointer active:scale-98">
+            <Button asChild size="sm" variant="default" className="rounded-xl text-xs h-10 px-3.5 font-bold bg-primary text-primary-foreground gap-1.5 cursor-pointer active:scale-98">
               <Link to="/admin-master">
-                <Shield className="size-4" />
-                <span>Admin Master</span>
+                <Shield className="size-3.5" />
+                <span>Master</span>
               </Link>
             </Button>
           )}
 
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 sm:h-11 px-3.5 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
+          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 px-3.5 font-semibold border-border/70 bg-card hover:bg-muted/50 cursor-pointer active:scale-98">
             <Link to="/conta/perfil">Editar Perfil</Link>
-          </Button>
-
-          <Button
-            onClick={handleSignOut}
-            disabled={isLoggingOut}
-            variant="ghost"
-            size="sm"
-            className="rounded-xl text-xs h-10 sm:h-11 px-3 font-semibold text-destructive hover:bg-destructive/10 cursor-pointer active:scale-98"
-          >
-            <LogOut className="size-4 mr-1.5" />
-            <span>Sair</span>
           </Button>
         </div>
       </div>

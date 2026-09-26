@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import {
  ArrowLeft,
  CheckCircle2,
@@ -535,12 +536,7 @@ export function UnifiedNewProductPage() {
  <Store className="size-3.5" />
  <span>Copiar Loja Antiga</span>
  </Button>
- <Button variant="outline" asChild size="sm" className="rounded-xl text-xs font-bold">
- <Link to="/workspace/catalogo/produtos">
- <ArrowLeft className="mr-1.5 size-3.5" />
- Voltar
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
  <Button
  onClick={handleSubmit(onSubmit)}
  disabled={isSubmitting}

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -348,11 +349,7 @@ function VehicleLayoutEditorPage() {
  {/* ── 1. Top Bar & Ações (Apple HIG Elevado) ── */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/60">
  <div className="flex items-center gap-3">
- <Button asChild variant="outline" size="icon" className="size-10 rounded-xl cursor-pointer">
- <Link to={"/workspace/turismo/frota" as any}>
- <ArrowLeft className="size-4" />
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/turismo/frota" />
 
  <div>
  <div className="flex items-center gap-2">

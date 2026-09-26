@@ -49,6 +49,7 @@ import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-cano
 import { EmptyState } from '@/components/state/states';
 import { FileAttachmentUpload } from '@/components/ui/file-attachment-upload';
 import { toast } from 'sonner';
+import { humanizeErrorMessage } from '@/lib/humanize-error';
 import { getStoreSettings } from '@/services/store.functions';
 import {
   listDepartureCards,
@@ -251,7 +252,7 @@ function WorkspaceBoardingPage() {
       setFlightNumber(''); setAirlineLocator(''); setHotelName('');
       qc.invalidateQueries({ queryKey: ['travel-departures', storeId] });
     },
-    onError: (err: any) => toast.error(err.message || 'Erro ao criar embarque'),
+    onError: (err: any) => toast.error(humanizeErrorMessage(err, 'Não foi possível criar o embarque')),
   });
 
   const toggleMutation = useMutation({
@@ -276,7 +277,7 @@ function WorkspaceBoardingPage() {
       setNewItemLabel('');
       qc.invalidateQueries({ queryKey: ['departure-detail', selectedDepartureId] });
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => toast.error(humanizeErrorMessage(err, 'Não foi possível adicionar o item à lista')),
   });
 
   const uploadDocMutation = useMutation({
@@ -293,7 +294,7 @@ function WorkspaceBoardingPage() {
       setDocUrl('');
       qc.invalidateQueries({ queryKey: ['departure-detail', selectedDepartureId] });
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => toast.error(humanizeErrorMessage(err, 'Não foi possível registrar o documento')),
   });
 
   const stageMutation = useMutation({
@@ -1206,7 +1207,7 @@ function WorkspaceBoardingPage() {
                             qc.invalidateQueries({ queryKey: ['departure-detail', selectedDepartureId] });
                             qc.invalidateQueries({ queryKey: ['travel-departures', storeId] });
                           } catch(err: any) {
-                            toast.error(err.message);
+                            toast.error(humanizeErrorMessage(err, 'Não foi possível salvar os dados de voo e hotel'));
                           }
                         }}
                       >

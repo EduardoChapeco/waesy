@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -395,11 +396,7 @@ function WorkspaceTripDetailPage() {
       <div className="flex flex-col gap-4 p-4 sm:p-5 rounded-2xl bg-card border border-border/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Button asChild size="icon" variant="ghost" className="size-11 sm:size-8 p-0 rounded-xl shrink-0 cursor-pointer">
-              <Link to="/workspace/turismo/viagens">
-                <ArrowLeft className="size-4" />
-              </Link>
-            </Button>
+            <NativeBackButton fallbackHref="/workspace/turismo/viagens" />
 
             <div className="space-y-0.5 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

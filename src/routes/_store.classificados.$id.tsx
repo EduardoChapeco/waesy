@@ -23,6 +23,7 @@ import {
   Edit3,
   Truck,
   Package,
+  PackageCheck,
   CreditCard,
   QrCode,
   RefreshCw,
@@ -47,6 +48,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { EditorialShowcaseView } from "@/components/classifieds/editorial-showcase-view";
 import { UniversalClassifiedShowcase } from "@/components/classifieds/universal-classified-showcase";
@@ -191,22 +193,55 @@ export const Route = createFileRoute("/_store/classificados/$id")({
  },
 
  loader: async ({
- params,
- }): Promise<{ classified: any; isOwner: boolean; canManage: boolean; viewerContext: string; currentProfile: any }> => {
- const [result, profileRes] = await Promise.all([
- getPublicClassifiedById({ data: params.id }).catch(() => null),
- getProfile().catch(() => null),
- ]);
- return {
- classified: result?.classified || null,
- isOwner: result?.isOwner || false,
- canManage: result?.canManage || false,
- viewerContext: result?.viewerContext || "anonymous",
- currentProfile: profileRes || null,
- };
- },
- component: ClassifiedDetailPage,
- errorComponent: ClassifiedDetailError,
+    params,
+  }): Promise<{
+    classified: any;
+    status: "active" | "sold" | "paused" | "reserved" | "archived" | "not_found" | "invalid_id" | "error";
+    isOwner: boolean;
+    canManage: boolean;
+    viewerContext: string;
+    currentProfile: any;
+    similarAds: any[];
+    errorMessage?: string;
+  }> => {
+    try {
+      const [result, profileRes] = await Promise.all([
+        getPublicClassifiedById({ data: params.id }).catch((err) => ({
+          classified: null,
+          status: "error" as const,
+          errorMessage: err?.message || "Falha de conexão com o servidor.",
+          isOwner: false,
+          canManage: false,
+          viewerContext: "anonymous",
+          similarAds: [],
+        })),
+        getProfile().catch(() => null),
+      ]);
+      return {
+        classified: result?.classified || null,
+        status: result?.status || (result?.classified ? "active" : "not_found"),
+        isOwner: result?.isOwner || false,
+        canManage: result?.canManage || false,
+        viewerContext: result?.viewerContext || "anonymous",
+        currentProfile: profileRes || null,
+        similarAds: result?.similarAds || [],
+        errorMessage: result?.errorMessage,
+      };
+    } catch (err: any) {
+      return {
+        classified: null,
+        status: "error",
+        isOwner: false,
+        canManage: false,
+        viewerContext: "anonymous",
+        currentProfile: null,
+        similarAds: [],
+        errorMessage: err?.message || "Erro inesperado ao buscar anúncio.",
+      };
+    }
+  },
+  component: ClassifiedDetailPage,
+  errorComponent: ClassifiedDetailError,
 });
 
 function ClassifiedDetailError({ error }: { error: Error }) {
@@ -215,34 +250,41 @@ function ClassifiedDetailError({ error }: { error: Error }) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 text-center space-y-4">
-      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-2">
-        <Tag className="size-8 text-primary" />
+    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5 animate-in fade-in duration-200">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+        <AlertTriangle className="size-8" />
       </div>
-      <h1 className="text-xl font-bold text-foreground">Anúncio Indisponível</h1>
-      <p className="text-xs text-muted-foreground max-w-md mx-auto">
-        Não foi possível carregar os dados deste anúncio no momento. Tente novamente em instantes.
-      </p>
-      {/* [REQ-18] Erro técnico transparente para diagnóstico - padrão BigTech / No-Blackbox Mandate */}
+      <div className="space-y-1.5">
+        <h1 className="text-xl font-bold text-foreground">Falha Temporária de Conexão</h1>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Não foi possível carregar os dados deste anúncio no momento. Tente recarregar ou volte aos classificados.
+        </p>
+      </div>
+
       {error?.message && error.message !== "" && (
         <details className="mx-auto max-w-md text-left">
-          <summary className="cursor-pointer text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+          <summary className="cursor-pointer text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors font-mono">
             Detalhes técnicos
           </summary>
-          <pre className="mt-2 rounded-xl bg-muted/50 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 whitespace-pre-wrap break-all">
+          <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 whitespace-pre-wrap break-all font-mono">
             {error.message}
           </pre>
         </details>
       )}
+
       <div className="pt-2 flex items-center justify-center gap-3">
-        <Button asChild variant="outline" className="rounded-xl text-xs">
+        <Button asChild variant="outline" className="rounded-xl text-xs h-11 px-5 font-semibold">
           <Link to="/classificados">
-            <ArrowLeft className="size-4 mr-1.5" />
             <span>Voltar aos Classificados</span>
           </Link>
         </Button>
-        <Button variant="ghost" className="rounded-xl text-xs" onClick={() => window.location.reload()}>
-          Tentar novamente
+        <Button
+          variant="default"
+          className="rounded-xl text-xs h-11 px-5 font-bold cursor-pointer"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCw className="size-3.5 mr-1.5" />
+          <span>Tentar Novamente</span>
         </Button>
       </div>
     </div>
@@ -309,7 +351,7 @@ function formatBookingCompanions(companions: any[]) {
 function ClassifiedDetailPage() {
  const navigate = useNavigate();
  const queryClient = useQueryClient();
- const { classified, isOwner, canManage, viewerContext, currentProfile } = ((Route.useLoaderData?.() as any) || {});
+ const { classified, status = "active", isOwner, canManage, viewerContext, currentProfile, similarAds = [], errorMessage } = ((Route.useLoaderData?.() as any) || {});
 
   const effectiveIsOwner = Boolean(
     isOwner ||
@@ -737,27 +779,114 @@ const handleDownloadDigitalFile = async () => {
   const featureCards = useMemo(() => (classified ? getClassifiedFeatureCards(classified) : []), [classified]);
   const paymentMethods = useMemo(() => (classified ? getClassifiedPaymentMethods(classified) : []), [classified]);
 
- if (!classified) {
- return (
- <div className="mx-auto max-w-4xl px-4 py-16 text-center">
- <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-4">
- <Tag className="size-8" />
- </div>
- <h1 className="text-2xl font-bold text-foreground">Anúncio não encontrado</h1>
- <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
- Este anúncio pode ter sido pausado, vendido ou encerrado pelo proprietário.
- </p>
- <div className="mt-6 flex items-center justify-center gap-3">
- <Button asChild variant="outline" className="rounded-xl">
- <Link to="/mercado">
- <ArrowLeft className="size-4 mr-2" />
- Voltar ao Mercado
- </Link>
- </Button>
- </div>
- </div>
- );
- }
+ if (status === "error") {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5 animate-in fade-in duration-200">
+        <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+          <AlertTriangle className="size-8" />
+        </div>
+        <div className="space-y-1.5">
+          <h1 className="text-xl font-bold text-foreground">Falha de Conexão</h1>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+            {errorMessage || "Não conseguimos carregar este anúncio no momento. Verifique sua conexão e tente recarregar."}
+          </p>
+        </div>
+        <div className="pt-2 flex items-center justify-center gap-3">
+          <Button asChild variant="outline" className="rounded-xl text-xs h-11 px-5 font-semibold">
+            <Link to="/classificados">Voltar aos Classificados</Link>
+          </Button>
+          <Button
+            variant="default"
+            className="rounded-xl text-xs h-11 px-5 font-bold cursor-pointer"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCw className="size-3.5 mr-1.5" />
+            Tentar Novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!classified || status === "not_found" || status === "invalid_id") {
+    return (
+      <div className="mx-auto max-w-5xl px-0 sm:px-4 md:px-0 py-12 space-y-8 animate-in fade-in duration-200">
+        <div className="max-w-md mx-auto text-center space-y-4 px-4">
+          <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-1">
+            <Tag className="size-8 text-primary" />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+            {status === "invalid_id" ? "Identificador Inválido" : "Este anúncio não existe ou foi removido"}
+          </h1>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {status === "invalid_id"
+              ? "O endereço deste anúncio contém um código inválido ou corrompido."
+              : "O anúncio que você procura foi finalizado pelo autor, expirou ou o endereço foi digitado incorretamente."}
+          </p>
+          <div className="pt-2 flex items-center justify-center gap-2.5">
+            <NativeBackButton fallbackHref="/classificados" />
+            <Button asChild variant="default" className="rounded-xl text-xs h-11 px-6 font-bold shadow-xs">
+              <Link to="/classificados">Explorar Todos os Anúncios</Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Grid de Anúncios Semelhantes (Destruição do Dead-End / Zero Mock) */}
+        {similarAds && similarAds.length > 0 && (
+          <div className="space-y-4 pt-8 border-t border-border/60 px-4 sm:px-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-foreground">Anúncios Semelhantes para Você</h2>
+                <p className="text-xs text-muted-foreground">Confira outras oportunidades ativas na comunidade</p>
+              </div>
+              <Button asChild variant="ghost" size="sm" className="text-xs font-semibold text-primary">
+                <Link to="/classificados">Ver catálogo completo</Link>
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {similarAds.map((item: any) => {
+                const itemImg = item.images?.[0] || null;
+                return (
+                  <Link
+                    key={item.id}
+                    to="/classificados/$id"
+                    params={{ id: item.id }}
+                    className="group flex flex-col rounded-2xl bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-all shadow-xs cursor-pointer"
+                  >
+                    <div className="aspect-[4/3] w-full bg-muted/40 relative overflow-hidden">
+                      {itemImg ? (
+                        <img
+                          src={itemImg}
+                          alt={item.title}
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="size-full flex items-center justify-center text-muted-foreground/40">
+                          <ImageIcon className="size-8" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3.5 space-y-1.5 flex flex-col flex-1 justify-between">
+                      <div>
+                        <h3 className="text-xs font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{item.city || item.location_name || "Brasil"}</p>
+                      </div>
+                      <p className="text-sm font-black text-foreground font-mono pt-1">
+                        {item.price_cents > 0 ? formatMoney(item.price_cents) : "Sob Consulta"}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const images: string[] =
     (Array.isArray(classified.images) && classified.images.length > 0 ? classified.images : null) ||
@@ -1509,6 +1638,41 @@ const handleDownloadDigitalFile = async () => {
         sku={classified?.id}
         inStock={classified?.status === "active"}
       />
+      {status === "sold" && (
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-1">
+          <div className="rounded-2xl p-4 sm:p-5 bg-amber-500/10 border-2 border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-2xs">
+            <div className="flex items-center gap-3.5">
+              <div className="size-12 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <PackageCheck className="size-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 justify-center sm:justify-start">
+                  <h2 className="text-base font-bold text-foreground">Poxa, chegou tarde! Este item já foi vendido.</h2>
+                  <Badge className="bg-amber-600 text-white text-[10px] font-bold uppercase">Esgotado</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  O anunciante já concluiu a negociação deste item. Veja abaixo outras oportunidades semelhantes!
+                </p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="rounded-xl h-10 px-4 text-xs font-bold shrink-0">
+              <Link to="/classificados">Ver Outros Anúncios</Link>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {status === "reserved" && (
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-1">
+          <div className="rounded-2xl p-4 bg-blue-500/10 border border-blue-500/30 flex items-center gap-3 text-blue-700 dark:text-blue-300">
+            <Clock className="size-5 shrink-0" />
+            <div className="text-xs">
+              <strong className="font-bold">Item Reservado:</strong> Uma proposta foi aceita e a negociação está em processo de conclusão pelo anunciante.
+            </div>
+          </div>
+        </div>
+      )}
+
       <UniversalClassifiedShowcase
         classified={classified}
         isOwner={effectiveIsOwner}
@@ -1541,6 +1705,60 @@ const handleDownloadDigitalFile = async () => {
       {renderBookingDialog()}
       {renderProposalDialog()}
       {renderCompanionDialog()}
+      {/* Grid de Anúncios Semelhantes no rodapé */}
+      {similarAds && similarAds.length > 0 && (
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 pt-10 pb-16 space-y-4 border-t border-border/60 mt-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-foreground">Outras Oportunidades Semelhantes</h2>
+              <p className="text-xs text-muted-foreground">Itens ativos relacionados para você explorar</p>
+            </div>
+            <Button asChild variant="ghost" size="sm" className="text-xs font-semibold text-primary">
+              <Link to="/classificados">Ver catálogo completo</Link>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {similarAds.map((item: any) => {
+              const itemImg = item.images?.[0] || null;
+              return (
+                <Link
+                  key={item.id}
+                  to="/classificados/$id"
+                  params={{ id: item.id }}
+                  className="group flex flex-col rounded-2xl bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-all shadow-xs cursor-pointer"
+                >
+                  <div className="aspect-[4/3] w-full bg-muted/40 relative overflow-hidden">
+                    {itemImg ? (
+                      <img
+                        src={itemImg}
+                        alt={item.title}
+                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="size-full flex items-center justify-center text-muted-foreground/40">
+                        <ImageIcon className="size-8" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3.5 space-y-1.5 flex flex-col flex-1 justify-between">
+                    <div>
+                      <h3 className="text-xs font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{item.city || item.location_name || "Brasil"}</p>
+                    </div>
+                    <p className="text-sm font-black text-foreground font-mono pt-1">
+                      {item.price_cents > 0 ? formatMoney(item.price_cents) : "Sob Consulta"}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {classified?.ai_agent_enabled && (
         <AiSdrChat
           classifiedId={classified.id}

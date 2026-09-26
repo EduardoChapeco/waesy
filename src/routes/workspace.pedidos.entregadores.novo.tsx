@@ -12,6 +12,7 @@ import {
  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -91,14 +92,7 @@ function NovoEntregadorPage() {
  return (
  <div className="flex flex-col h-full">
  <div className="flex items-center gap-3 mb-6">
- <Button
- variant="ghost"
- size="icon"
- onClick={() => navigate({ to: "/workspace/pedidos/entregadores" })}
- className="rounded-xl size-9"
- >
- <ArrowLeft className="size-4" />
- </Button>
+ <NativeBackButton fallbackHref="/workspace/pedidos/entregadores" />
  <div>
  <h1 className="text-lg font-semibold text-foreground">
  Novo Entregador

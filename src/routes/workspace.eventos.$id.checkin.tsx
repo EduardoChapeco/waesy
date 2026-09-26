@@ -18,6 +18,7 @@ import { useRef, useEffect } from "react";
 
 import { validateTicketCheckin, validateCredentialCheckin, getEventWithLots } from "@/services/events.functions";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { playCheckinSuccessSound, playWarningAlert } from "@/lib/audio-chimes";
@@ -307,11 +308,7 @@ function EventCheckinPage() {
  {/* Topbar Operacional */}
  <header className="h-16 bg-card px-4 flex items-center justify-between sticky top-0 z-30 border-b border-border/60">
  <div className="flex items-center gap-3">
- <Button variant="ghost" size="icon" asChild>
- <Link to="/workspace">
- <ArrowLeft className="size-5" />
- </Link>
- </Button>
+ <NativeBackButton fallbackHref={event?.id ? `/workspace/eventos/${event.id}` : "/workspace/eventos"} />
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-base font-bold leading-tight truncate max-w-xs md:max-w-md">

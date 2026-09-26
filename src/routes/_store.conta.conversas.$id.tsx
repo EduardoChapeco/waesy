@@ -4,6 +4,7 @@ import { getCustomerChatThread, sendCustomerChatMessage } from "@/services/chat.
 import { getBrowserClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NativeBackButton } from "@/components/navigation";
 import {
   ChevronLeft,
   Send,
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/_store/conta/conversas/$id")({
       return res;
     } catch (err) {
       console.error("[loader:_store.conta.conversas.$id] Unhandled loader error:", err);
-      return null as any;
+      return { thread: null, messages: [], tickets: [] };
     }
   },
   component: CustomerChatPage,
@@ -171,16 +172,7 @@ function CustomerChatPage() {
       {/* ── Header Ultra-Minimalista WhatsApp ── */}
       <div className="flex items-center justify-between gap-3 px-3 py-2.5 border-b border-border/40 bg-background sticky top-0 z-10">
         <div className="flex items-center gap-2.5 min-w-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-11 rounded-full shrink-0 text-foreground hover:bg-muted/50 active:scale-95 transition-all"
-            asChild
-          >
-            <Link to="/conta/conversas" aria-label="Voltar para Conversas">
-              <ChevronLeft className="size-5.5" strokeWidth={2} />
-            </Link>
-          </Button>
+          <NativeBackButton fallbackHref="/conta/conversas" />
 
           <div className="flex items-center gap-2.5 min-w-0">
             {storeData?.logo_url ? (

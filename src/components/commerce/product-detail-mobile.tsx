@@ -24,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/money";
 import { PriceDisplay } from "@/components/commerce/price-display";
 import { FavoriteButton } from "@/components/common/favorite-button";
+import { NativeBackButton } from "@/components/navigation";
+import { ProductQuickOrderDialog } from "./product-quick-order-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { ProductDetailDTO, ProductMediaDTO, VariantDTO } from "@/types/catalog";
@@ -91,6 +93,7 @@ export function ProductDetailMobile({
 }: ProductDetailViewProps) {
   const navigate = useNavigate();
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -151,20 +154,11 @@ export function ProductDetailMobile({
         )}
 
         {/* ── BOTÃO CIRCULAR VOLTAR (Nativo iOS/Android - Canto Superior Esquerdo) ── */}
-        <button
-          type="button"
-          onClick={() => {
-            if (window.history.length > 1) {
-              window.history.back();
-            } else {
-              navigate({ to: "/mercado" });
-            }
-          }}
-          className="absolute top-3 left-3 size-11 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center z-20 shadow-md active:scale-95 transition-transform cursor-pointer"
-          aria-label="Voltar"
-        >
-          <ArrowLeft className="size-5" />
-        </button>
+        <NativeBackButton
+          variant="floating"
+          fallbackHref="/mercado"
+          className="absolute top-3 left-3 z-20"
+        />
 
         {/* ── AÇÕES FLUTUANTES (Canto Superior Direito) ── */}
         <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
@@ -526,7 +520,7 @@ export function ProductDetailMobile({
           </button>
         </div>
 
-        {/* Botão de Compra com Preço Total Multiplicado */}
+        {/* Botões de Ação com Física Anti-Esmagamento (Apple HIG) */}
         {isOutOfStock ? (
           <Button
             size="lg"
@@ -537,22 +531,46 @@ export function ProductDetailMobile({
             <span>Avise-me quando chegar</span>
           </Button>
         ) : (
-          <Button
-            size="lg"
-            className="flex-1 rounded-xl font-bold text-xs h-11 px-4 bg-primary text-primary-foreground flex items-center justify-between cursor-pointer active:scale-95 transition-all shadow-sm"
-            onClick={handleAddToCart}
-            disabled={Boolean(isAdding)}
-          >
-            <span className="flex items-center gap-1.5">
-              <ShoppingBag className="size-4" />
-              <span>{isAdding ? "Adicionando..." : isBackorder ? "Encomendar" : "Adicionar"}</span>
-            </span>
-            <span className="font-mono font-black text-xs">
-              {formatMoney((currentPriceCents || 0) * (quantity || 1))}
-            </span>
-          </Button>
+          <div className="flex-1 grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-xl font-bold text-xs h-11 px-2 border-border/80 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all text-foreground hover:bg-muted"
+              onClick={handleAddToCart}
+              disabled={Boolean(isAdding)}
+            >
+              <ShoppingBag className="size-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">{isAdding ? "Adicionando..." : "Carrinho"}</span>
+            </Button>
+            <Button
+              size="lg"
+              className="rounded-xl font-bold text-xs h-11 px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all shadow-sm"
+              onClick={() => setIsQuickOrderOpen(true)}
+            >
+              <MessageCircle className="size-4 shrink-0" />
+              <span className="truncate">Pedir Agora</span>
+            </Button>
+          </div>
         )}
       </div>
+
+      {/* Diálogo Canônico de Compra Expressa via WhatsApp (Anti-Ghost Orders) */}
+      <ProductQuickOrderDialog
+        open={isQuickOrderOpen}
+        onOpenChange={setIsQuickOrderOpen}
+        product={{
+          id: product.id,
+          title: product.title,
+          priceCents: currentPriceCents || product.priceCents || 0,
+          image: activeMedia?.url || product.media?.[0]?.url,
+          storeId: product.store_id || (product as any)?.store?.id,
+          storeName: (product as any)?.store?.name,
+          storeSlug: (product as any)?.store?.slug,
+          storePhone: storePhone,
+        }}
+        selectedVariant={selectedVariant}
+        quantity={quantity}
+      />
     </div>
   );
 }

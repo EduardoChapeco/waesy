@@ -406,7 +406,7 @@ function ProfilePage() {
         }
       />
 
-      <form onSubmit={handleSubmit} className="space-y-6 px-4 sm:px-0">
+      <form onSubmit={handleSubmit} className="space-y-6 px-0 sm:px-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center overflow-x-auto no-scrollbar pb-1">
             <TabsList className="bg-transparent p-0 gap-1.5 h-auto flex flex-nowrap">
@@ -1204,27 +1204,27 @@ function ProfilePage() {
         </TabsContent>
         </Tabs>
 
- {/* ── Botão Salvar Principal ── */}
- <div className="flex items-center justify-end gap-3 pt-2">
- <Button
- type="submit"
- disabled={isSubmitting}
- className="rounded-xl px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer"
- >
- {isSubmitting ? (
- <>
- <Loader2 className="size-4 animate-spin" />
- <span>Salvando...</span>
- </>
- ) : (
- <>
- <Check className="size-4 stroke-[2.5]" />
- <span>Salvar Todas as Alterações</span>
- </>
- )}
- </Button>
- </div>
- </form>
+        {/* ── Botão Salvar Principal ── */}
+        <div className="flex items-center justify-end gap-3 pt-2 w-full">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto rounded-xl px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm active:scale-98"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                <span>Salvando...</span>
+              </>
+            ) : (
+              <>
+                <Check className="size-4 stroke-[2.5]" />
+                <span>Salvar Todas as Alterações</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
 
  {/* Modal de Recorte de Imagem */}
  {cropperSrc && (

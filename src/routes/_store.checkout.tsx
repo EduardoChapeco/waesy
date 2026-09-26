@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { humanizeErrorMessage } from "@/lib/humanize-error";
 import { DocumentField } from "@/components/ui/document-field";
 import { CepField } from "@/components/ui/cep-field";
 import { PhoneField } from "@/components/ui/phone-field";
@@ -553,7 +554,7 @@ export function CheckoutPage() {
 
  toast.error("Cupom ou Vale-presente inválido.");
  } catch (err: unknown) {
- toast.error((err instanceof Error ? err.message : String(err)) || "Código inválido.");
+ toast.error(humanizeErrorMessage(err, "Código promocional ou vale-presente inválido."));
  } finally {
  setIsApplyingPromo(false);
  }
@@ -667,7 +668,7 @@ export function CheckoutPage() {
  });
  }
  } catch (err: unknown) {
- toast.error((err instanceof Error ? err.message : String(err)) || "Erro ao finalizar pedido.");
+ toast.error(humanizeErrorMessage(err, "Não foi possível finalizar seu pedido no momento. Tente novamente em instantes."));
  } finally {
  setIsSubmitting(false);
  }

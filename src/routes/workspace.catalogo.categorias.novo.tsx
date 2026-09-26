@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -82,14 +82,7 @@ function NewCategoryPage() {
  <PageHeader
  eyebrow="Catálogo"
  title="Nova Categoria"
- actions={
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5 shrink-0">
- <Link to="/workspace/catalogo/categorias">
- <ArrowLeft className="size-3.5" />
- <span>Voltar</span>
- </Link>
- </Button>
- }
+ actions={<NativeBackButton fallbackHref="/workspace/catalogo/categorias" />}
  />
 
  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

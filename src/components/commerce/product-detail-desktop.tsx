@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ImageOff,
@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/money";
 import { PriceDisplay } from "@/components/commerce/price-display";
 import { FavoriteButton } from "@/components/common/favorite-button";
+import { ProductQuickOrderDialog } from "./product-quick-order-dialog";
 import { cn } from "@/lib/utils";
 import type { ProductMediaDTO, VariantDTO } from "@/types/catalog";
 import type { ProductDetailViewProps } from "./product-detail-mobile";
@@ -59,6 +60,7 @@ export function ProductDetailDesktop({
 }: ProductDetailViewProps) {
   const isBackorder = selectedVariant && selectedVariant.availableQty <= 0 && selectedVariant.allowBackorder;
   const isOutOfStock = Boolean(allOutOfStock) || Boolean(selectedVariant && selectedVariant.availableQty <= 0 && !selectedVariant.allowBackorder);
+  const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
 
   const mediaList = product.media || [];
 
@@ -400,19 +402,27 @@ export function ProductDetailDesktop({
                     </button>
                   </div>
 
-                  {/* Botão Adicionar ao Carrinho */}
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "flex-1 font-bold text-sm uppercase rounded-xl h-12 transition-all cursor-pointer gap-2",
-                      isBackorder ? "bg-foreground text-background" : "bg-primary text-primary-foreground hover:bg-primary/90"
-                    )}
-                    onClick={handleAddToCart}
-                    disabled={Boolean(isAdding)}
-                  >
-                    <ShoppingBag className="size-4" />
-                    {isAdding ? "Adicionando..." : isBackorder ? "Encomendar" : "Adicionar ao carrinho"}
-                  </Button>
+                  {/* Botões Duplos com Física Anti-Esmagamento (Apple HIG) */}
+                  <div className="flex-1 grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="font-bold text-xs uppercase rounded-xl h-12 transition-all cursor-pointer gap-2 border-border/80 hover:bg-muted text-foreground"
+                      onClick={handleAddToCart}
+                      disabled={Boolean(isAdding)}
+                    >
+                      <ShoppingBag className="size-4 text-muted-foreground" />
+                      <span className="truncate">{isAdding ? "Adicionando..." : "Carrinho"}</span>
+                    </Button>
+                    <Button
+                      size="lg"
+                      className="font-bold text-xs uppercase rounded-xl h-12 transition-all cursor-pointer gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                      onClick={() => setIsQuickOrderOpen(true)}
+                    >
+                      <MessageCircle className="size-4" />
+                      <span className="truncate">Pedir Agora</span>
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -494,6 +504,24 @@ export function ProductDetailDesktop({
           </div>
         </div>
       </div>
+
+      {/* Diálogo Canônico de Compra Expressa via WhatsApp (Anti-Ghost Orders) */}
+      <ProductQuickOrderDialog
+        open={isQuickOrderOpen}
+        onOpenChange={setIsQuickOrderOpen}
+        product={{
+          id: product.id,
+          title: product.title,
+          priceCents: currentPriceCents || product.priceCents || 0,
+          image: activeMedia?.url || product.media?.[0]?.url,
+          storeId: product.store_id || (product as any)?.store?.id,
+          storeName: (product as any)?.store?.name,
+          storeSlug: (product as any)?.store?.slug,
+          storePhone: storePhone,
+        }}
+        selectedVariant={selectedVariant}
+        quantity={quantity}
+      />
     </div>
   );
 }

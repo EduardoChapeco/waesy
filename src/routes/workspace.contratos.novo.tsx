@@ -22,7 +22,7 @@ import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
-import { PageHeader } from "@/components/commerce/page-header";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -567,17 +567,17 @@ function NovoContratoPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-6 space-y-6 animate-in fade-in duration-200">
       {/* Topo do Fluxo */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/70 pb-4">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Novo Contrato Digital</h1>
-          <p className="text-xs text-muted-foreground">
-            Criação de minutas, importação de arquivos e despacho com validade jurídica
-          </p>
+        <div className="flex items-center gap-3">
+          <NativeBackButton fallbackHref="/workspace/contratos" />
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Novo Contrato Digital</h1>
+            <p className="text-xs text-muted-foreground">
+              Criação de minutas, importação de arquivos e despacho com validade jurídica
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 px-4">
-            <Link to="/workspace/contratos">Voltar</Link>
-          </Button>
           <Button
             type="button"
             onClick={handleSubmit}

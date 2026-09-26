@@ -52,6 +52,7 @@ const migrationsToApply = [
   "supabase/migrations/20261114000001_ghost_tenants_and_claiming_engine.sql",
   "supabase/migrations/20261115000000_crawler_resilience_and_mined_products.sql",
   "supabase/migrations/20261116000000_support_tickets_rls_and_bilateral.sql",
+  "supabase/migrations/20260926150000_classifieds_rls_zero_crash.sql",
 ];
 
 async function run() {

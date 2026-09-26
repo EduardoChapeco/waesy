@@ -537,7 +537,19 @@ export function CanonicalStoreProfileView({
     ""
   ).replace(/\D/g, "");
 
-  // Endereço Canônico Sanitizado (Sem loops e sem repetição de cidade/estado)
+// Função auxiliar para purificação e limpeza de separadores órfãos (Master Prompt V102)
+function cleanAddressSegment(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/,\s*,+/g, ", ")
+    .replace(/-\s*-+/g, " - ")
+    .replace(/,\s*-\s*,?/g, " - ")
+    .replace(/^[,\s-]+|[,\s-]+$/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+  // Endereço Canônico Sanitizado (Sem loops, vírgulas duplas ou repetição de cidade/estado)
   const formattedAddress = useMemo(() => {
     if (!store) return null;
     const isHidden = Boolean(
@@ -549,42 +561,63 @@ export function CanonicalStoreProfileView({
 
     let raw = store.address || store.settings?.address || store.location || "";
     let street = "";
-    let neighborhood = store.neighborhood || store.settings?.neighborhood || "";
+    let neighborhood = (store.neighborhood || store.settings?.neighborhood || "").trim();
 
     if (Array.isArray(raw)) {
       raw = raw.filter(Boolean).join(", ");
     } else if (typeof raw === "object" && raw !== null) {
-      neighborhood = raw.neighborhood || neighborhood;
+      neighborhood = (raw.neighborhood || neighborhood).trim();
       raw = [raw.street, raw.number].filter(Boolean).join(", ");
     }
 
     if (typeof raw === "string") {
-      street = raw.trim();
+      street = cleanAddressSegment(raw);
     }
 
     const city = (store.city || store.settings?.city || "").trim();
-    const state = (store.state || store.settings?.state || "SC").trim();
+    const state = (store.state || store.settings?.state || "").trim();
 
-    const segments = [];
-    if (street) segments.push(street);
-    if (neighborhood && !street.toLowerCase().includes(neighborhood.toLowerCase())) {
-      segments.push(neighborhood);
+    // Elimina pontuações órfãs ou ", S/N" solto no início
+    street = street.replace(/^[,\s-]+/, "");
+
+    const segments: string[] = [];
+    if (street) {
+      segments.push(street);
     }
 
-    const cityState = [city, state].filter(Boolean).join(" - ");
-    if (cityState && !street.toLowerCase().includes(city.toLowerCase())) {
-      segments.push(cityState);
+    if (neighborhood) {
+      const alreadyHasNeighborhood = segments.some((s) =>
+        s.toLowerCase().includes(neighborhood.toLowerCase())
+      );
+      if (!alreadyHasNeighborhood) {
+        segments.push(neighborhood);
+      }
     }
 
-    if (segments.length === 0) return null;
+    const cityStateParts = [city, state].filter(Boolean);
+    if (cityStateParts.length > 0) {
+      const cityState = cityStateParts.join(" - ");
+      const alreadyHasCity = segments.some((s) =>
+        city && s.toLowerCase().includes(city.toLowerCase())
+      );
+      if (!alreadyHasCity) {
+        segments.push(cityState);
+      }
+    }
+
+    const cleanSegments = segments
+      .map(cleanAddressSegment)
+      .filter((s) => s.length > 0);
+
+    if (cleanSegments.length === 0) return null;
 
     return {
-      display: segments.join(" • "),
-      mapsQuery: [street, neighborhood, city, state].filter(Boolean).join(", "),
+      display: cleanSegments.join(" • "),
+      mapsQuery: cleanSegments.join(", "),
     };
   }, [store]);
 
-  const hasSponsors = sponsors && sponsors.length > 0;
+    const hasSponsors = sponsors && sponsors.length > 0;
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-20 md:pb-12 animate-in fade-in duration-200">
@@ -663,86 +696,6 @@ export function CanonicalStoreProfileView({
         }}
       />
 
-      {/* ── BARRA DO PROPRIETÁRIO (ADMIN BAR SECUNDÁRIA — REGRA 23 & MASTER PROMPT V5) ── */}
-      {isOwner && (
-        <div className="rounded-2xl bg-muted/20 border border-border/50 p-3 sm:px-4 sm:py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-none">
-          <div className="flex items-center gap-2.5">
-            <div className="size-7 sm:size-8 rounded-lg bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0">
-              <Store className="size-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <span>Painel do Proprietário</span>
-                <Badge variant="outline" className="text-[9px] uppercase font-mono py-0 px-1.5 border-border/50 text-muted-foreground bg-transparent">
-                  Gestão Ativa
-                </Badge>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Visível exclusivamente para você e sua equipe.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-            <Button
-              asChild
-              size="sm"
-              variant="default"
-              className="h-7 px-2.5 rounded-lg font-medium text-xs gap-1.5 shrink-0 border border-border/60 hover:bg-card text-foreground cursor-pointer shadow-none"
-            >
-              <Link to="/workspace" search={{ storeId: store.id }}>
-                <Store className="size-3.5" />
-                <span>Abrir Workspace</span>
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              <Link to="/workspace/marketing/brand-kit" search={{ storeId: store.id }}>
-                <Camera className="size-3.5" />
-                <span>Editar Marca & Fotos</span>
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              <Link to="/portal-completo">
-                <Award className="size-3.5 text-muted-foreground" />
-                <span>Gestão Pro</span>
-              </Link>
-            </Button>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsEditCompanyModalOpen(true)}
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              <Edit3 className="size-3.5 text-muted-foreground" />
-              <span>Editar Empresa</span>
-            </Button>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsSocialStudioOpen(true)}
-              className="h-8 px-3 rounded-xl font-semibold text-xs gap-1.5 shrink-0 border-border/40 hover:bg-muted/40 text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              <Sparkles className="size-3.5 text-muted-foreground" />
-              <span>Social Studio</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* ── 2. CABEÇALHO DO PERFIL: FOTO 1:1 + CAPA 21:9 NA MESMA ALTURA SEM BORDAS PESADAS ── */}
       <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4">
         {/* Faixa Superior: Foto 1:1 + Capa 21:9 com Mesma Altura */}
@@ -811,14 +764,26 @@ export function CanonicalStoreProfileView({
               )}
             </div>
             {isOwner && (
-              <Link
-                to="/workspace/marketing/brand-kit"
-                search={{ storeId: store.id }}
-                className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors z-20"
-              >
-                <Camera className="size-3 sm:size-3.5" />
-                <span>Alterar Capa</span>
-              </Link>
+              <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 flex items-center gap-1.5 z-20">
+                <Link
+                  to="/workspace/marketing/brand-kit"
+                  search={{ storeId: store.id }}
+                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                  title="Editar Capa e Marca"
+                >
+                  <Camera className="size-3 sm:size-3.5" />
+                  <span className="hidden sm:inline">Capa & Marca</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsSectionsEditorOpen(true)}
+                  className="bg-background/85 hover:bg-background text-foreground backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] sm:text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                  title="Personalizar Vitrine"
+                >
+                  <SlidersHorizontal className="size-3 sm:size-3.5" />
+                  <span className="hidden sm:inline">Personalizar</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -871,6 +836,12 @@ export function CanonicalStoreProfileView({
                 {store.name || store.business_name}
               </h1>
               <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
+              {isOwner && (
+                <Badge variant="secondary" className="h-5 px-2 text-[10px] font-bold rounded-full border border-border/60 bg-muted/60 text-foreground gap-1">
+                  <Shield className="size-2.5 text-primary" />
+                  <span>Admin</span>
+                </Badge>
+              )}
               {store.slug && (
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground font-mono">
                   @{store.slug}
@@ -998,7 +969,16 @@ export function CanonicalStoreProfileView({
                   className="flex-1 h-9 sm:h-10 px-3 rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center gap-1.5 shadow-none cursor-pointer"
                 >
                   <Edit3 className="size-3.5" />
-                  <span>Editar Perfil</span>
+                  <span>Editar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsSocialStudioOpen(true)}
+                  className="size-9 sm:size-10 p-0 sm:px-3 sm:w-auto rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
+                  title="Social Studio"
+                >
+                  <Sparkles className="size-3.5" />
+                  <span className="hidden sm:inline ml-1.5">Studio</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -1163,21 +1143,22 @@ export function CanonicalStoreProfileView({
         </div>
       </div>
 
-      {/* ── 3. NAVEGAÇÃO POR ABAS NO PADRÃO DO PERFIL DE MEMBRO (Apple HIG) ── */}
-        <div className="space-y-6 pt-2">
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 text-xs font-semibold overflow-x-auto no-scrollbar border border-border/40">
+{/* ── 3. NAVEGAÇÃO POR ABAS SILENCIOSA COM FÍSICA DE SCROLL (Apple HIG) ── */}
+      <div className="space-y-6 pt-2">
+        <div className="relative w-full">
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 text-xs font-semibold overflow-x-auto snap-x snap-mandatory scrollbar-hide border border-border/40 scroll-smooth">
             {/* Aba 1: Vitrine / Início */}
             <button
               type="button"
               onClick={() => setActiveTab("vitrine")}
               className={cn(
-                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vitrine"
-                  ? "bg-background text-foreground font-bold "
+                  ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <LayoutGrid className="size-4" />
+              <LayoutGrid className="size-3.5 sm:size-4" />
               <span>Vitrine</span>
             </button>
 
@@ -1186,13 +1167,13 @@ export function CanonicalStoreProfileView({
               type="button"
               onClick={() => setActiveTab("catalogo")}
               className={cn(
-                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "catalogo"
-                  ? "bg-background text-foreground font-bold "
+                  ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <CatalogIcon className="size-4" />
+              <CatalogIcon className="size-3.5 sm:size-4" />
               <span>{catalogTabTitle}</span>
               {catalog.length > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1201,18 +1182,18 @@ export function CanonicalStoreProfileView({
               )}
             </button>
 
-            {/* Aba 3: Sobre & Atendimento (Posição Natural e Ergonômica) */}
+            {/* Aba 3: Sobre & Atendimento */}
             <button
               type="button"
               onClick={() => setActiveTab("sobre")}
               className={cn(
-                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "sobre"
-                  ? "bg-background text-foreground font-bold "
+                  ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Building2 className="size-4" />
+              <Building2 className="size-3.5 sm:size-4" />
               <span>Sobre & Atendimento</span>
             </button>
 
@@ -1221,13 +1202,13 @@ export function CanonicalStoreProfileView({
               type="button"
               onClick={() => setActiveTab("posts")}
               className={cn(
-                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "posts"
-                  ? "bg-background text-foreground font-bold "
+                  ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <MessageSquare className="size-4" />
+              <MessageSquare className="size-3.5 sm:size-4" />
               <span>Posts</span>
               {posts.length > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1241,13 +1222,13 @@ export function CanonicalStoreProfileView({
               type="button"
               onClick={() => setActiveTab("avaliacoes")}
               className={cn(
-                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "avaliacoes"
-                  ? "bg-background text-foreground font-bold "
+                  ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Star className="size-4" />
+              <Star className="size-3.5 sm:size-4" />
               <span>Avaliações</span>
               {reviews.length > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1261,13 +1242,13 @@ export function CanonicalStoreProfileView({
               type="button"
               onClick={() => setActiveTab("vagas")}
               className={cn(
-                "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                 activeTab === "vagas"
-                  ? "bg-background text-foreground font-bold "
+                  ? "bg-background text-foreground font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Briefcase className="size-4" />
+              <Briefcase className="size-3.5 sm:size-4" />
               <span>Vagas</span>
               {jobs.length > 0 && (
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
@@ -1276,19 +1257,19 @@ export function CanonicalStoreProfileView({
               )}
             </button>
 
-            {/* Aba 7: Classificados da Empresa (Zero Context Bleeding) */}
+            {/* Aba 7: Classificados da Empresa */}
             {ads.length > 0 && (
               <button
                 type="button"
                 onClick={() => setActiveTab("classificados")}
                 className={cn(
-                  "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                  "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "classificados"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Tag className="size-4" />
+                <Tag className="size-3.5 sm:size-4" />
                 <span>Classificados</span>
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {ads.length}
@@ -1296,46 +1277,49 @@ export function CanonicalStoreProfileView({
               </button>
             )}
 
-            {/* Aba 7: Sorteios & Prêmios (Condicional) */}
+            {/* Aba 8: Sorteios & Prêmios */}
             {concursos.length > 0 && (
               <button
                 type="button"
                 onClick={() => setActiveTab("concursos")}
                 className={cn(
-                  "px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer",
+                  "px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer snap-start shrink-0 text-xs",
                   activeTab === "concursos"
-                    ? "bg-background text-foreground font-bold "
+                    ? "bg-background text-foreground font-bold shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Ticket className="size-4" />
+                <Ticket className="size-3.5 sm:size-4" />
                 <span>Sorteios & Prêmios</span>
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {concursos.length}
                 </span>
               </button>
-            )}          </div>
+            )}
+          </div>
+
+          {/* Fade-out visual de affordance no mobile */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/90 to-transparent rounded-r-2xl sm:hidden" />
+        </div>
 
           {/* ── CONTEÚDO DA ABA 1: VITRINE MODULAR (WIX / APP BUILDER STYLE COM SCROLL INFINITO FINAL) ── */}
           {activeTab === "vitrine" && (
             <div className="space-y-8 animate-in fade-in duration-150">
-              {/* Barra de Gestão do Lojista */}
+              {/* Gestão Silenciosa (Apple HIG — Zero Texto Conversacional) */}
               {isOwner && (
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/60">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="size-4 text-primary" />
-                    <span className="text-xs font-semibold text-foreground">
-                      Modo Gestor Ativo: Você pode reorganizar e personalizar as seções desta vitrine.
-                    </span>
+                <div className="flex items-center justify-between py-1 px-0.5">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Sparkles className="size-3.5 text-primary" />
+                    <span className="font-semibold text-foreground">Vitrine Modular</span>
                   </div>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => setIsSectionsEditorOpen(true)}
-                    className="h-8 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/70"
+                    className="h-7 px-2.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer hover:bg-muted/60 text-muted-foreground hover:text-foreground"
                   >
-                    <Layers className="size-3.5 text-primary" />
-                    <span>Personalizar Vitrine</span>
+                    <SlidersHorizontal className="size-3.5 text-primary" />
+                    <span>Personalizar</span>
                   </Button>
                 </div>
               )}
@@ -1500,8 +1484,8 @@ export function CanonicalStoreProfileView({
                             return (
                               <Link
                                 key={p.id}
-                                to="/classificados/$id"
-                                params={{ id: p.slug || p.id }}
+                                to="/produto/$slug"
+                                params={{ slug: p.slug || p.id }}
                                 className="w-56 shrink-0 rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all flex flex-col justify-between group cursor-pointer"
                               >
                                 {/* PLACEHOLDER OBRIGATÓRIO — nunca exibe card sem imagem */}
@@ -2078,7 +2062,7 @@ export function CanonicalStoreProfileView({
                   return (
                     <Link
                       key={ad.id}
-                      to="/_store/classificados/$id"
+                      to="/classificados/$id"
                       params={{ id: ad.id }}
                       className="group flex flex-col rounded-2xl bg-card border border-border/70 overflow-hidden hover:border-primary/50 transition-all cursor-pointer shadow-xs"
                     >

@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { getProfile, updateProfile } from "@/services/auth.functions";
 import { updateMemberResumeData } from "@/services/social.functions";
 import { Button } from "@/components/ui/button";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -267,16 +268,7 @@ export default function MeuCurriculoPage() {
       {/* ── Top Bar Canônica: Meu Currículo Digital ── */}
       <header className="h-14 px-3 sm:px-6 border-b border-border/50 bg-background/95 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="size-10 min-h-[44px] p-0 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            <Link to="/conta">
-              <ArrowLeft className="size-4.5" />
-            </Link>
-          </Button>
+          <NativeBackButton fallbackHref="/conta" />
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-foreground">Meu Currículo</span>
             <span className="text-xs text-muted-foreground hidden sm:inline">•</span>

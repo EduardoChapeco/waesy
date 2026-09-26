@@ -42,6 +42,7 @@ import { EventoAuditoria } from "@/components/eventos/evento-auditoria";
 import { EventoCredenciais } from "@/components/eventos/evento-credenciais";
 import { AlocarEquipeSheet } from "@/components/eventos/alocar-equipe-sheet";
 import { PageHeader } from "@/components/commerce/page-header";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -268,11 +269,7 @@ function SubPainelEventoPage() {
  {/* Topbar & Breadcrumb */}
  <div className="flex items-center justify-between gap-4">
  <div className="flex items-center gap-3">
- <Button variant="ghost" size="icon" asChild>
- <Link to="/workspace/eventos">
- <ArrowLeft className="size-4" />
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/eventos" />
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-xl font-bold text-foreground">{event.title}</h1>

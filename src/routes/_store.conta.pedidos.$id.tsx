@@ -23,7 +23,7 @@ import { DigitalCompanionCard } from "@/components/documents/digital-companion-c
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { NativeMobileHeader } from "@/components/navigation";
+import { NativeMobileHeader, NativeBackButton } from "@/components/navigation";
 import { ReviewModal } from "@/components/commerce/review-modal";
 import { RmaWizard } from "@/components/commerce/rma-wizard";
 import { EmptyState } from "@/components/state/states";
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/_store/conta/pedidos/$id")({
       };
     } catch (err) {
       console.error("[loader:_store.conta.pedidos.$id] Unhandled loader error:", err);
-      return null as any;
+      return { order: null, paymentInstructions: { pix_key: null, payment_instructions: null }, proofs: [] };
     }
   },
   component: CustomerOrderDetailPage,
@@ -87,7 +87,7 @@ function getStatusVariant(status: string): "default" | "secondary" | "destructiv
 }
 
 function CustomerOrderDetailPage() {
-  const { order, paymentInstructions, proofs } = Route.useLoaderData() as {
+  const { order, paymentInstructions, proofs } = ((Route.useLoaderData?.() as any) || {}) as {
     order: any;
     paymentInstructions: { pix_key: string | null; payment_instructions: string | null };
     proofs: DeliveryProof[];
@@ -100,12 +100,7 @@ function CustomerOrderDetailPage() {
   if (!order) {
     return (
       <div className="w-full max-w-5xl mx-auto space-y-4 py-8 px-0 sm:px-4 md:px-0">
-        <Link
-          to="/conta/pedidos"
-          className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="size-4" /> Voltar para pedidos
-        </Link>
+        <NativeBackButton fallbackHref="/conta/pedidos" />
         <EmptyState title="Pedido não encontrado" />
       </div>
     );

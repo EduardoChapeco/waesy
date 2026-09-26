@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -217,11 +218,7 @@ function PdvComandasPage() {
         {/* ── Top Bar ── */}
         <div className="border-b border-border/80 bg-card/60 backdrop-blur-md px-3 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl">
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" asChild className="size-11 sm:size-9 rounded-xl cursor-pointer shrink-0">
-              <Link to="/workspace/pdv">
-                <ArrowLeft className="size-4" />
-              </Link>
-            </Button>
+            <NativeBackButton fallbackHref="/workspace/pdv" />
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-xl font-bold tracking-tight text-foreground">Comandas & Mesas</h1>

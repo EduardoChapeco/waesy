@@ -2,6 +2,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import {
  ArrowLeft,
  ArrowRight,
@@ -403,12 +404,7 @@ function EditProductPage() {
  return (
  <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  <div className="flex items-center gap-3">
- <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold">
- <Link to="/workspace/catalogo/produtos">
- <ArrowLeft className="mr-2 size-3.5" />
- Voltar ao Catálogo
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
  </div>
  <div className="p-12 text-center border-0 rounded-2xl bg-card">
  <h2 className="text-base font-bold text-foreground">{nicheCtx.entityName} não encontrado</h2>
@@ -441,12 +437,7 @@ function EditProductPage() {
  <Sparkles className="size-3.5" />
  <span>Sincronizar Catálogo Central</span>
  </Button>
- <Button variant="outline" asChild size="sm">
- <Link to="/workspace/catalogo/produtos">
- <ArrowLeft className="mr-1.5 size-4" />
- Voltar ao Catálogo
- </Link>
- </Button>
+ <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
  <Button variant="outline" asChild size="sm">
  <Link to={`/produto/${product.slug}` as never} target="_blank">
  <Eye className="mr-1.5 size-4" />
