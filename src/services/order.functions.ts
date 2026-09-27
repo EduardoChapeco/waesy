@@ -1546,3 +1546,70 @@ export const getOrderTimelineEvents = createServerFn({ method: "GET" })
       return [];
     }
   });
+
+// ---------------------------------------------------------------------------
+// Protocolo Criptográfico de PIN de Entrega (BigTech Delivery Security)
+// ---------------------------------------------------------------------------
+export const generateDeliveryPin = createServerFn({ method: "POST" })
+  .validator(
+    withDataPayload(
+      z.object({
+        orderId: z.string().uuid(),
+        storeId: z.string().uuid(),
+      }),
+    ),
+  )
+  .handler(async ({ data: { orderId, storeId } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, storeId);
+
+    const db = getServerClient();
+    const { data, error } = await db.rpc("generate_delivery_pin", {
+      p_order_id: orderId,
+      p_store_id: storeId,
+    });
+
+    if (error) {
+      console.error("[order.functions] generateDeliveryPin error:", error);
+      throw new Error(error.message || "Erro ao gerar PIN criptográfico de entrega.");
+    }
+
+    return data as { success: boolean; pin_code: string; expires_at: string; certificate_id: string };
+  });
+
+export const validateDeliveryPin = createServerFn({ method: "POST" })
+  .validator(
+    withDataPayload(
+      z.object({
+        orderId: z.string().uuid(),
+        pinCode: z.string().min(4).max(8),
+      }),
+    ),
+  )
+  .handler(async ({ data: { orderId, pinCode } }) => {
+    let clientIp = "127.0.0.1";
+    try {
+      const { getRealClientIP } = await import("@/lib/network-telemetry.server");
+      clientIp = getRealClientIP();
+    } catch {
+      // Fallback
+    }
+
+    const db = getServerClient();
+    const { data, error } = await db.rpc("validate_delivery_pin", {
+      p_order_id: orderId,
+      p_pin_code: pinCode.trim(),
+      p_ip_address: clientIp,
+    });
+
+    if (error) {
+      console.error("[order.functions] validateDeliveryPin error:", error);
+      throw new Error(error.message || "Erro ao validar PIN de entrega.");
+    }
+
+    if ((data as any)?.success === false) {
+      throw new Error((data as any)?.error || "PIN de entrega inválido ou expirado.");
+    }
+
+    return data as { success: boolean; order_id: string; delivered_at: string; certificate_id?: string };
+  });

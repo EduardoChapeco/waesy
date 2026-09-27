@@ -122,32 +122,6 @@ export const builderRegistry: Record<string, BlockManifest> = {
  },
  },
 
- rich_text: {
- type: "rich_text",
- version: "1.0.0",
- name: "Texto Formatado",
- description: "Bloco de texto com suporte a HTML semântico e estilos mistos",
- category: "content",
- icon: "Type",
- allowedBuilderProfiles: "all",
- allowedParentTypes: ["container", "composition"],
- allowedChildTypes: "none",
-
- contentSchema: z.object({
- html: z.string(),
- }),
-
- inspector: {
- content: [{ name: "html", label: "Conteúdo", type: "textarea" }],
- },
-
- defaultProps: {
- node_type: "element",
- block_type: "rich_text",
- content: { html: "<p>Digite seu texto aqui...</p>" },
- },
- },
-
  hero_carousel: {
  type: "hero_carousel",
  version: "2.0.0",
@@ -519,37 +493,6 @@ export const builderRegistry: Record<string, BlockManifest> = {
  surfaceVariant: "default",
  text_color: "#ffffff",
  },
- },
- },
-
- video_section: {
- type: "video_section",
- version: "1.0.0",
- name: "Vídeo",
- description: "Embed de vídeo do YouTube, Vimeo ou arquivo MP4",
- category: "content",
- icon: "Video",
- allowedBuilderProfiles: "all",
- allowedParentTypes: ["container", "section"],
- allowedChildTypes: "none",
- contentSchema: z.object({
- title: z.string().optional(),
- video_url: z.string().url(),
- auto_play: z.boolean().default(false),
- loop: z.boolean().default(true),
- }),
- inspector: {
- content: [
- { name: "title", label: "Título do Vídeo", type: "text" },
- { name: "video_url", label: "URL do Vídeo (YouTube/Vimeo/MP4)", type: "text" },
- { name: "auto_play", label: "Reprodução Automática", type: "boolean" },
- { name: "loop", label: "Repetir Vídeo", type: "boolean" },
- ],
- },
- defaultProps: {
- node_type: "element",
- block_type: "video_section",
- content: { video_url: "", auto_play: false, loop: true },
  },
  },
 

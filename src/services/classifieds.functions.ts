@@ -409,6 +409,11 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
       }
     }
 
+    // Auto-cura de autoria órfã se o usuário estiver alterando anúncio ou for gestor
+    if (!hasAuthority && !existing.author_profile_id) {
+      hasAuthority = true;
+    }
+
     if (!hasAuthority) {
       throw new Error("Você não tem permissão para alterar o estado deste anúncio.");
     }
@@ -439,25 +444,38 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 export const getClassifieds = createServerFn({ method: "GET" }).handler(async () => {
- const supabase = getServerClient();
- const identity = await getIdentity();
+	const supabase = getServerClient();
+	const identity = await getIdentity();
 
- if (!identity || !identity.id) {
- throw new Error("Unauthorized");
- }
+	if (!identity || !identity.id) {
+		throw new Error("Unauthorized");
+	}
 
- const { data, error } = await supabase
- .from("classifieds")
- .select("*")
- .eq("author_profile_id", identity.id)
- .order("created_at", { ascending: false });
+	const userStoreIds = Array.isArray(identity.memberships)
+		? identity.memberships.map((m: any) => m.store_id).filter(Boolean)
+		: [];
+	if (identity.store_id && !userStoreIds.includes(identity.store_id)) {
+		userStoreIds.push(identity.store_id);
+	}
 
- if (error) {
- console.error("Error fetching classifieds:", error);
- throw new Error("Failed to fetch classifieds");
- }
+	let query = supabase.from("classifieds").select("*");
 
- return data;
+	if (userStoreIds.length > 0) {
+		query = query.or(
+			`author_profile_id.eq.${identity.id},store_id.in.(${userStoreIds.join(",")})`
+		);
+	} else {
+		query = query.eq("author_profile_id", identity.id);
+	}
+
+	const { data, error } = await query.order("created_at", { ascending: false });
+
+	if (error) {
+		console.error("Error fetching classifieds:", error);
+		throw new Error("Failed to fetch classifieds");
+	}
+
+	return data;
 });
 
 export const getClassified = createServerFn({ method: "GET" })

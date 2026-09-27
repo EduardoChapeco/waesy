@@ -28,6 +28,7 @@ import {
   Sparkles,
   MoreVertical,
   MousePointer,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -37,6 +38,7 @@ import {
   initiateBoostPayment,
   getBoostPaymentById,
   convertClassifiedToWorkspaceStore,
+  deleteClassified,
 } from "@/services/classifieds.functions";
 import { NativeMobileHeader } from "@/components/navigation";
 import { BoostBottomSheet } from "@/components/commerce/boost-bottom-sheet";
@@ -237,6 +239,21 @@ function ClassificadosIndex() {
 
   // Estado de Migração para Loja no Workspace Pro (Fase 5)
   const [migratingAd, setMigratingAd] = useState<any | null>(null);
+  const [adToDelete, setAdToDelete] = useState<any | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await deleteClassified({ data: id });
+    },
+    onSuccess: () => {
+      toast.success("Anúncio excluído com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["classifieds"] });
+      setAdToDelete(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erro ao excluir anúncio.");
+    },
+  });
   const [isMigrating, setIsMigrating] = useState(false);
 
   const handleMigrateToPro = async () => {
@@ -601,6 +618,30 @@ function ClassificadosIndex() {
                             )}
                           </DropdownMenuItem>
 
+                          {ad.status !== "completed" && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                toggleStatusMutation.mutate({
+                                  id: ad.id,
+                                  newStatus: "completed" as any,
+                                })
+                              }
+                              disabled={toggleStatusMutation.isPending}
+                              className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-blue-600 dark:text-blue-400"
+                            >
+                              <CheckCircle2 className="size-3.5 mr-2" />
+                              <span>Marcar como Vendido</span>
+                            </DropdownMenuItem>
+                          )}
+
+                          <DropdownMenuItem
+                            onClick={() => setAdToDelete(ad)}
+                            className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-destructive"
+                          >
+                            <Trash2 className="size-3.5 mr-2" />
+                            <span>Excluir Anúncio</span>
+                          </DropdownMenuItem>
+
                           <DropdownMenuSeparator />
 
                           {ad.store_id ? (
@@ -797,6 +838,30 @@ function ClassificadosIndex() {
                               <span>Pausar Anúncio</span>
                             </>
                           )}
+                        </DropdownMenuItem>
+
+                        {ad.status !== "completed" && (
+                          <DropdownMenuItem
+                            onClick={() =>
+                              toggleStatusMutation.mutate({
+                                id: ad.id,
+                                newStatus: "completed" as any,
+                              })
+                            }
+                            disabled={toggleStatusMutation.isPending}
+                            className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-blue-600 dark:text-blue-400"
+                          >
+                            <CheckCircle2 className="size-3.5 mr-2" />
+                            <span>Marcar como Vendido</span>
+                          </DropdownMenuItem>
+                        )}
+
+                        <DropdownMenuItem
+                          onClick={() => setAdToDelete(ad)}
+                          className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-destructive"
+                        >
+                          <Trash2 className="size-3.5 mr-2" />
+                          <span>Excluir Anúncio</span>
                         </DropdownMenuItem>
 
                         <DropdownMenuSeparator />
