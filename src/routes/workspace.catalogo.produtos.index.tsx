@@ -1,3 +1,4 @@
+import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";

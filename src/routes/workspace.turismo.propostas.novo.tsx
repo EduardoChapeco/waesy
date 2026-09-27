@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/workspace/turismo/propostas/novo")({
-  loader: () => {
+  beforeLoad: () => {
     throw redirect({
       to: "/workspace/turismo/propostas",
       search: { new: true },

@@ -114,10 +114,10 @@ export function ProfessionSearchDialog({
             </button>
           </div>
           <SheetTitle className="text-xl font-bold tracking-tight text-foreground mt-1">
-            Autopreenchimento Inteligente de Cargos & Vagas
+            Autopreenchimento de Cargos & Ocupações
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
-            Selecione uma profissão oficial com código CBO, benchmarks salariais de Júnior a Lead e competências. Todos os dados são 100% editáveis no formulário.
+            Selecione uma ocupação oficial para carregar automaticamente faixas salariais de mercado e competências recomendadas.
           </SheetDescription>
 
           {/* BARRA DE PESQUISA */}
@@ -126,7 +126,7 @@ export function ProfessionSearchDialog({
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por cargo, código CBO ou competência..."
+              placeholder="Buscar por cargo, área ou competência..."
               className="pl-9 pr-4 h-10 text-sm bg-background border-border/60 focus:border-primary/60 rounded-lg shadow-sm"
               autoFocus
             />
@@ -163,14 +163,14 @@ export function ProfessionSearchDialog({
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
               <Loader2 className="w-7 h-7 animate-spin text-primary" />
-              <p className="text-xs">Consultando banco central de profissões CBO/MTE...</p>
+              <p className="text-xs">Consultando catálogo de ocupações e remuneração...</p>
             </div>
           ) : professions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
               <Briefcase className="w-10 h-10 stroke-1 mb-2 opacity-40" />
               <p className="text-sm font-medium text-foreground">Nenhuma profissão encontrada</p>
               <p className="text-xs mt-1 max-w-xs">
-                Tente buscar por termos mais genéricos como "desenvolvedor", "analista", "gerente", "cozinheiro" ou "vendedor".
+                Tente buscar por termos como "desenvolvedor", "analista", "gerente", "cozinheiro" ou "vendedor".
               </p>
             </div>
           ) : (
@@ -180,15 +180,15 @@ export function ProfessionSearchDialog({
                 onClick={() => handleSelect(prof)}
                 className="group p-4 rounded-xl border border-border/40 hover:border-primary/50 bg-card/60 hover:bg-muted/20 transition-all cursor-pointer flex flex-col gap-2.5 shadow-sm"
               >
-                {/* TOPO: TÍTULO & CBO */}
+                {/* TOPO: TÍTULO & CATEGORIA */}
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                         {prof.title}
                       </h4>
-                      <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 h-4 border-border/60">
-                        CBO {prof.cbo_code}
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border/60">
+                        {prof.sector}
                       </Badge>
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
                         {prof.category}

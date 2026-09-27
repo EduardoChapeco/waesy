@@ -1226,9 +1226,18 @@ export const updateMemberResumeData = createServerFn({ method: "POST" })
  const userId = (identity as any)?.id || (identity as any)?.customer_id;
  if (!userId) throw new Error("Não autorizado. Faça login para editar seu perfil.");
 
+ // Normalização matemática de experiências e telemetria de permanência (Data Core)
+ const normalizedResumeData = { ...resumeData };
+ if (Array.isArray(normalizedResumeData.experiences)) {
+ const { enrichExperienceMath } = await import("@/lib/schemas/resume-experience.schema");
+ normalizedResumeData.experiences = normalizedResumeData.experiences.map((exp: any) =>
+ enrichExperienceMath(exp)
+ );
+ }
+
  const { error } = await db
  .from("profiles")
- .update({ resume_data: resumeData, updated_at: new Date().toISOString() })
+ .update({ resume_data: normalizedResumeData, updated_at: new Date().toISOString() })
  .eq("id", userId);
 
  if (error) {

@@ -38,6 +38,8 @@ function normalizeTemplateId(id: string): string {
  *  - vertical-premium     → TemplateVerticalPremium
  *  - group-catalog        → TemplateGroupCatalog
  */
+import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
+
 export function ProposalCanvasRenderer({ proposal }: ProposalCanvasRendererProps) {
   const rawTemplate = (proposal as any)?.template || "editorial-flat";
   const templateId = normalizeTemplateId(rawTemplate);
@@ -55,5 +57,12 @@ export function ProposalCanvasRenderer({ proposal }: ProposalCanvasRendererProps
   };
 
   const TemplateComponent = getProposalTemplate(templateId);
-  return <TemplateComponent proposal={proposal as any} agency={agency} />;
+  return (
+    <div className="w-full space-y-4">
+      <TemplateComponent proposal={proposal as any} agency={agency} />
+      <div className="pt-2 pb-6 flex justify-center">
+        <PoweredByWaesyBadge variant="minimal" shortUrl="waesy.me/propostas" />
+      </div>
+    </div>
+  );
 }

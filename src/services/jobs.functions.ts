@@ -468,6 +468,7 @@ export const createStoreJob = createServerFn({ method: "POST" })
  benefits: z.array(z.string()).default([]),
  contact_whatsapp: z.string().optional().nullable(),
  contact_email: z.string().email().optional().nullable(),
+    syndicate_to_linkedin: z.boolean().optional(),
  }),
  )
  .handler(async ({ data }) => {
@@ -493,6 +494,7 @@ export const createStoreJob = createServerFn({ method: "POST" })
  benefits: data.benefits,
  contact_whatsapp: data.contact_whatsapp || null,
  contact_email: data.contact_email || null,
+        syndicate_to_linkedin: Boolean(data.syndicate_to_linkedin),
  status: "active",
  is_featured: false,
  })
@@ -541,7 +543,12 @@ export const listMyStoreJobs = createServerFn({ method: "GET" }).handler(async (
  status: row.status,
  created_at: row.created_at,
  applications_count: row.job_applications?.length || 0,
- }));
+    syndicate_to_linkedin: Boolean(row.syndicate_to_linkedin),
+    linkedin_published_urn: row.linkedin_published_urn || null,
+    linkedin_sync_status: row.linkedin_sync_status || null,
+    linkedin_tracking_code: row.linkedin_tracking_code || null,
+    linkedin_last_error: row.linkedin_last_error || null,
+  }));
 });
 
 

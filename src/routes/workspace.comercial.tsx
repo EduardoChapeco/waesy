@@ -28,6 +28,7 @@ import {
   Upload,
   Calculator,
   FileText,
+  ExternalLink,
   BarChart3,
   Settings2,
   Brain,

@@ -20,6 +20,7 @@ import {
  Clock,
  ShareNetwork,
  ArrowSquareOut,
+ FileText,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,17 +44,17 @@ import { ProfessionSearchDialog } from "@/components/admin/professions/professio
 
 const JOB_CATEGORY_CHIPS: FilterChipOption[] = [
  { id: "todos", label: "Todas as Vagas", emoji: "💼", icon: Tag },
- { id: "clt", label: "CLT & Comércio", emoji: "🏪", icon: Storefront },
- { id: "estagio", label: "Estágios & Trainee", emoji: "🎓", icon: GraduationCap },
- { id: "tech", label: "TI & Home Office", emoji: "💻", icon: Laptop },
- { id: "saude", label: "Saúde & Clínicas", emoji: "🩺", icon: Heartbeat },
- { id: "operacional", label: "Logística & Frota", emoji: "🚚", icon: Truck },
+ { id: "clt", label: "Comércio e Varejo", emoji: "🏪", icon: Storefront },
+ { id: "estagio", label: "Estágio e Trainee", emoji: "🎓", icon: GraduationCap },
+ { id: "tech", label: "Tecnologia", emoji: "💻", icon: Laptop },
+ { id: "saude", label: "Saúde", emoji: "🩺", icon: Heartbeat },
+ { id: "operacional", label: "Logística", emoji: "🚚", icon: Truck },
 ];
 
 export const Route = createFileRoute("/_store/empregos/")({
  head: () => ({
  meta: [
- { title: "Vagas de Emprego, Carreiras & Estágios" },
+ { title: "Vagas de Emprego" },
  {
  name: "description",
  content:
@@ -173,7 +174,7 @@ function JobsMasterPage() {
           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold transition-all ml-auto cursor-pointer min-h-[44px]"
         >
           <Briefcase size={15} weight="bold" />
-          <span>Guia Salarial & CBOs</span>
+          <span>Guia Salarial</span>
         </button>
       </div>
 
@@ -404,10 +405,10 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
                 {matchedProfession && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] font-mono border-primary/20 text-muted-foreground font-semibold px-2 py-0.5"
-                    title={`CBO ${matchedProfession.cbo_code} • Piso ${formatMoney(matchedProfession.junior_salary_cents)} até ${formatMoney(matchedProfession.senior_salary_cents)}`}
+                    className="text-[10px] border-primary/20 text-muted-foreground font-medium px-2 py-0.5"
+                    title={`Faixa de mercado: ${formatMoney(matchedProfession.junior_salary_cents)} até ${formatMoney(matchedProfession.senior_salary_cents)}`}
                   >
-                    CBO {matchedProfession.cbo_code}
+                    {matchedProfession.sector}
                   </Badge>
                 )}
               </div>
@@ -477,7 +478,7 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
             className="rounded-xl font-bold text-xs h-9 px-4 flex-1 bg-foreground text-background hover:bg-foreground/90 transition-all gap-1.5"
           >
             <Link to="/empregos/$id" params={{ id: job.id }}>
-              <span>Ver Vaga & Candidatar</span>
+              <span>Ver Vaga</span>
               <ArrowRight size={14} weight="bold" />
             </Link>
           </Button>
@@ -549,7 +550,7 @@ function JobListItem({ job }: { job: JobItemDTO }) {
  className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold"
  title={`CBO ${matchedProfession.cbo_code} • Piso ${formatMoney(matchedProfession.junior_salary_cents)}`}
  >
- CBO {matchedProfession.cbo_code}
+ {matchedProfession.sector}
  </span>
  </>
  )}

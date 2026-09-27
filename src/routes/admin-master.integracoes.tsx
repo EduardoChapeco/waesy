@@ -17,13 +17,18 @@ import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Check, Compass, Navigation, Search, Cpu, Building2, Globe2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plug, MapPin, CreditCard, Mail, Truck, Sliders, Eye, EyeOff, CheckCircle2, AlertCircle, Clock, ShieldCheck, RefreshCw, Save, Radio, Layers, Plus, Trash2, Terminal, Activity, Zap } from 'lucide-react';
+import { Plug, MapPin, CreditCard, Mail, Truck, Sliders, Eye, EyeOff, CheckCircle2, AlertCircle, Clock, ShieldCheck, RefreshCw, Save, Radio, Layers, Plus, Trash2, Terminal, Activity, Zap, Linkedin, Copy, ExternalLink, Lock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import {
+  getLinkedInMasterCredentials,
+  saveLinkedInMasterCredentials,
+  type LinkedInMasterCredentialsDTO,
+} from "@/services/linkedin-integrations.functions";
 import {
  Dialog,
  DialogContent,
@@ -85,10 +90,19 @@ export const Route = createFileRoute("/admin-master/integracoes")({
  })),
  listApiKeyPools().catch(() => []),
  listMasterPrompts().catch(() => []),
+        getLinkedInMasterCredentials().catch(() => ({
+          clientId: "",
+          clientSecretMasked: "",
+          redirectUri: "https://waesy.com.br/api/auth/linkedin/callback",
+          defaultCompanyId: "",
+          scopes: ["openid", "profile", "email", "w_member_social", "w_organization_social"],
+          isActive: true,
+          hasSecretConfigured: false,
+        })),
  ]);
 
  const gov = await getPublicApiGovernanceSettings().catch(() => DEFAULT_PUBLIC_API_GOVERNANCE);
-      return { integrations, pools, prompts, gov: gov || DEFAULT_PUBLIC_API_GOVERNANCE };
+      return { integrations, pools, prompts, gov: gov || DEFAULT_PUBLIC_API_GOVERNANCE, linkedInCreds };
  } catch {
  return {
  integrations: {
@@ -107,16 +121,25 @@ export const Route = createFileRoute("/admin-master/integracoes")({
  },
  pools: [],
  prompts: [],
- };
+        linkedInCreds: {
+          clientId: "",
+          clientSecretMasked: "",
+          redirectUri: "https://waesy.com.br/api/auth/linkedin/callback",
+          defaultCompanyId: "",
+          scopes: ["openid", "profile", "email", "w_member_social", "w_organization_social"],
+          isActive: true,
+          hasSecretConfigured: false,
+        },
+      };
  }
  },
  component: AdminMasterIntegracoesPage,
 });
 
-type TabType = "pools" | "prompts" | "maps" | "payments" | "comms" | "logistics" | "webhooks";
+type TabType = "pools" | "prompts" | "maps" | "payments" | "comms" | "logistics" | "webhooks" | "linkedin";
 
 function AdminMasterIntegracoesPage() {
- const { integrations: initialData, pools: initialPools, prompts: initialPrompts, gov: initialGov } = ((Route.useLoaderData?.() as any) || {});
+ const { integrations: initialData, pools: initialPools, prompts: initialPrompts, gov: initialGov, linkedInCreds: initialLinkedIn } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
 
  const [activeTab, setActiveTab] = useState<TabType>("pools");
@@ -127,6 +150,14 @@ function AdminMasterIntegracoesPage() {
  const [formData, setFormData] = useState<PlatformApiIntegrationsDTO>(initialData);
  const [pools, setPools] = useState<ApiKeyPoolDTO[]>(initialPools);
  const [prompts, setPrompts] = useState<MasterPromptDTO[]>(initialPrompts);
+
+ // LinkedIn Omni-Bridge State
+ const [liClientId, setLiClientId] = useState(initialLinkedIn?.clientId || "");
+ const [liClientSecret, setLiClientSecret] = useState(initialLinkedIn?.clientSecretMasked || "");
+ const [liRedirectUri, setLiRedirectUri] = useState(initialLinkedIn?.redirectUri || "https://waesy.com.br/api/auth/linkedin/callback");
+ const [liCompanyId, setLiCompanyId] = useState(initialLinkedIn?.defaultCompanyId || "");
+ const [liIsActive, setLiIsActive] = useState(initialLinkedIn?.isActive ?? true);
+ const [isSavingLinkedIn, setIsSavingLinkedIn] = useState(false);
 
  // Modal: Nova Chave na Pool
  const [isNewKeyModalOpen, setIsNewKeyModalOpen] = useState(false);
@@ -415,7 +446,7 @@ function AdminMasterIntegracoesPage() {
  <Zap className="size-5" />
  </div>
  <h1 className="text-2xl font-black tracking-tight text-foreground">
- Integrações & APIs
+ Integrações
  </h1>
  </div>
  <p className="text-xs text-muted-foreground mt-1">
@@ -469,7 +500,7 @@ function AdminMasterIntegracoesPage() {
  }`}
  >
  <MapPin className="size-4" />
- <span>Mapas & APIs Públicas (OSM)</span>
+ <span>Serviços de Mapas</span>
  </button>
 
  <button
@@ -482,7 +513,7 @@ function AdminMasterIntegracoesPage() {
  }`}
  >
  <CreditCard className="size-4" />
- <span>Pagamentos (Asaas & Stripe)</span>
+ <span>Gateways de Pagamento</span>
  </button>
 
  <button
@@ -495,7 +526,7 @@ function AdminMasterIntegracoesPage() {
  }`}
  >
  <Mail className="size-4" />
- <span>E-mail & WhatsApp</span>
+ <span>Mensageria</span>
  </button>
 
  <button
@@ -508,8 +539,22 @@ function AdminMasterIntegracoesPage() {
  }`}
  >
  <Radio className="size-4" />
- <span>Webhooks & Segurança</span>
- </button>
+ <span>Webhooks</span>
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setActiveTab("linkedin")}
+    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+      activeTab === "linkedin"
+        ? "bg-foreground text-background shadow-xs"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+    }`}
+  >
+    <Linkedin className="size-4 text-[#0A66C2]" />
+    <span>LinkedIn Omni-Bridge</span>
+    <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-blue-500/40 text-blue-500 bg-blue-500/10">OAuth 2.0</Badge>
+  </button>
  </div>
 
  {/* ── ABA 1: POOL DE CHAVES & ROTAÇÃO ── */}
@@ -693,7 +738,7 @@ function AdminMasterIntegracoesPage() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-bold text-foreground">
-                    Mapas Reais (OpenStreetMap / MapLibre) & APIs Públicas Zero-Cost
+                    Serviços de Mapas
                   </h2>
                   <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1 font-bold text-[11px]">
                     <CheckCircle2 className="size-3" /> MapLibre Ativo (Zero Key)
@@ -836,7 +881,7 @@ function AdminMasterIntegracoesPage() {
             <div className="flex items-center justify-between pb-3 border-b border-border/40">
               <div>
                 <h3 className="text-sm font-bold text-foreground">
-                  Governança & Controle de Autopreenchimento
+                  Governança de IA
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Ative ou desative cada integração individualmente de acordo com a política da sua rede.
@@ -1190,7 +1235,7 @@ function AdminMasterIntegracoesPage() {
  <form onSubmit={handleSave} className="space-y-6">
  <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
  <div>
- <h3 className="text-sm font-bold text-foreground">Gateways de Pagamento (PIX & Cartão)</h3>
+ <h3 className="text-sm font-bold text-foreground">Gateways de Pagamento</h3>
  <p className="text-xs text-muted-foreground mt-0.5">
    Configure as credenciais de liquidação central dos gateways de pagamento. Taxas da plataforma sempre usam as chaves Master.
  </p>
@@ -1304,7 +1349,7 @@ function AdminMasterIntegracoesPage() {
  <form onSubmit={handleSave} className="space-y-6">
  <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
  <div>
- <h3 className="text-sm font-bold text-foreground">Comunicação & Mensageria</h3>
+ <h3 className="text-sm font-bold text-foreground">Mensageria</h3>
  <p className="text-xs text-muted-foreground mt-0.5">
  Envio transacional de comprovantes e alertas por E-mail (Resend) e WhatsApp.
  </p>
@@ -1363,9 +1408,247 @@ function AdminMasterIntegracoesPage() {
  </div>
  </div>
  </form>
- )}
+  )}
 
- {/* Modal: Adicionar Chave à Pool */}
+  {/* ── ABA 7: LINKEDIN OMNI-BRIDGE (ROOT CREDENTIALS) ── */}
+  {activeTab === "linkedin" && (
+    <div className="space-y-6">
+      {/* Frosted Header Card */}
+      <div className="p-6 rounded-2xl bg-background/80 backdrop-blur-md border border-border/70 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="size-11 rounded-2xl bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center border border-[#0A66C2]/20">
+              <Linkedin className="size-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-foreground">LinkedIn Omni-Bridge</h3>
+                <Badge variant="outline" className="text-[10px] font-bold border-blue-500/40 text-blue-600 bg-blue-500/10">
+                  OAuth 2.0 Master
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Chaves mestres do App LinkedIn Developer. Habilita importação de currículos para candidatos e sindicação B2B de vagas para empresas.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-emerald-600 text-xs font-semibold">
+              <ShieldCheck className="size-4" />
+              <span>AES-256-GCM Server Vault</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Informações de Arquitetura & Diretrizes */}
+        <div className="p-4 rounded-xl bg-muted/30 border border-border/40 text-xs text-muted-foreground flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Lock className="size-4 text-primary shrink-0" />
+            <span>O Client Secret é armazenado com criptografia simétrica de 256 bits (NIST SP 800-38D). Nunca exposto no front-end.</span>
+          </div>
+          <a
+            href="https://www.linkedin.com/developers/apps"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline shrink-0"
+          >
+            <span>LinkedIn Developer Portal</span>
+            <ExternalLink className="size-3" />
+          </a>
+        </div>
+      </div>
+
+      {/* Formulário Frosted de Credenciais */}
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!liClientId.trim()) {
+            toast.error("Preencha o Client ID do LinkedIn.");
+            return;
+          }
+          setIsSavingLinkedIn(true);
+          try {
+            const res = await saveLinkedInMasterCredentials({
+              data: {
+                clientId: liClientId.trim(),
+                clientSecret: liClientSecret,
+                redirectUri: liRedirectUri.trim(),
+                defaultCompanyId: liCompanyId.trim() || undefined,
+                isActive: liIsActive,
+              },
+            });
+            toast.success(res.message || "Credenciais salvas com sucesso no cofre!");
+            if (res.maskedSecret) setLiClientSecret(res.maskedSecret);
+            router.invalidate();
+          } catch (err: any) {
+            toast.error(err.message || "Erro ao salvar credenciais do LinkedIn.");
+          } finally {
+            setIsSavingLinkedIn(false);
+          }
+        }}
+        className="space-y-6"
+      >
+        <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Client ID */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="li_client_id" className="text-xs font-bold text-foreground">
+                  LinkedIn Client ID
+                </Label>
+                <Badge variant="outline" className="text-[10px] font-mono">App Client ID</Badge>
+              </div>
+              <Input
+                id="li_client_id"
+                value={liClientId}
+                onChange={(e) => setLiClientId(e.target.value)}
+                placeholder="Ex: 77a0bcde123456"
+                className="h-10 text-xs font-mono rounded-xl bg-background"
+                required
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Encontrado em LinkedIn Developers → Auth → Application credentials.
+              </p>
+            </div>
+
+            {/* Client Secret */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="li_client_secret" className="text-xs font-bold text-foreground">
+                  LinkedIn Client Secret (AES-256-GCM)
+                </Label>
+                <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 border-emerald-500/30">
+                  Criptografado
+                </Badge>
+              </div>
+              <div className="relative">
+                <Input
+                  id="li_client_secret"
+                  type={visibleKeys["linkedin_secret"] ? "text" : "password"}
+                  value={liClientSecret}
+                  onChange={(e) => setLiClientSecret(e.target.value)}
+                  placeholder="••••••••••••••••"
+                  className="h-10 text-xs font-mono rounded-xl pr-10 bg-background"
+                />
+                <button
+                  type="button"
+                  onClick={() => setVisibleKeys((v) => ({ ...v, linkedin_secret: !v.linkedin_secret }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {visibleKeys["linkedin_secret"] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                </button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Deixe com as bolinhas para manter o segredo atual ou insira a nova chave para atualizar.
+              </p>
+            </div>
+
+            {/* Redirect URI */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="li_redirect_uri" className="text-xs font-bold text-foreground">
+                  Authorized Redirect URL
+                </Label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(liRedirectUri);
+                    toast.success("Redirect URI copiada para a área de transferência!");
+                  }}
+                  className="text-[11px] font-semibold text-primary flex items-center gap-1 hover:underline cursor-pointer"
+                >
+                  <Copy className="size-3" />
+                  <span>Copiar</span>
+                </button>
+              </div>
+              <Input
+                id="li_redirect_uri"
+                value={liRedirectUri}
+                onChange={(e) => setLiRedirectUri(e.target.value)}
+                placeholder="https://waesy.com.br/api/auth/linkedin/callback"
+                className="h-10 text-xs font-mono rounded-xl bg-background"
+                required
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Cadastre exatamente este endereço no campo <span className="font-semibold">Authorized redirect URLs</span> no portal de desenvolvedores.
+              </p>
+            </div>
+
+            {/* Default Company URN / ID */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="li_company_id" className="text-xs font-bold text-foreground">
+                  Default Organization URN / ID (Opcional)
+                </Label>
+                <Badge variant="outline" className="text-[10px]">Página Padrão</Badge>
+              </div>
+              <Input
+                id="li_company_id"
+                value={liCompanyId}
+                onChange={(e) => setLiCompanyId(e.target.value)}
+                placeholder="Ex: 104523912 ou waesy-brasil"
+                className="h-10 text-xs font-mono rounded-xl bg-background"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                ID da Company Page do Waesy para postagens institucionais de vagas sindicadas.
+              </p>
+            </div>
+          </div>
+
+          {/* Escopos Configurados */}
+          <div className="space-y-3 pt-4 border-t border-border/50">
+            <Label className="text-xs font-bold text-foreground">Escopos de Permissão OAuth 2.0 Ativos</Label>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+                openid (Autenticação OIDC)
+              </Badge>
+              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+                profile (Nome, foto, headline do candidato)
+              </Badge>
+              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+                email (Validação cadastral segura)
+              </Badge>
+              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+                w_member_social (Publicação de vagas pelo membro)
+              </Badge>
+              <Badge variant="outline" className="px-2.5 py-1 text-xs font-mono bg-muted/40 border-border/60">
+                w_organization_social (Sindicação de vagas na Company Page)
+              </Badge>
+            </div>
+          </div>
+
+          {/* Toggle de Ativação Geral */}
+          <div className="flex items-center justify-between pt-4 border-t border-border/50">
+            <div>
+              <p className="text-xs font-bold text-foreground">Status do LinkedIn Omni-Bridge</p>
+              <p className="text-[11px] text-muted-foreground">
+                Quando ativado, os botões de importação e publicação no LinkedIn ficam disponíveis na plataforma.
+              </p>
+            </div>
+            <Switch
+              checked={liIsActive}
+              onCheckedChange={setLiIsActive}
+            />
+          </div>
+
+          {/* Ações */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/50">
+            <Button
+              type="submit"
+              disabled={isSavingLinkedIn}
+              className="rounded-xl font-bold text-xs h-9 gap-1.5 bg-[#0A66C2] hover:bg-[#084e96] text-white"
+            >
+              <Save className="size-3.5" />
+              <span>{isSavingLinkedIn ? "Criptografando..." : "Salvar Credenciais no Cofre"}</span>
+            </Button>
+          </div>
+        </div>
+      </form>
+    </div>
+  )}
+
+  {/* Modal: Adicionar Chave à Pool */}
  <Dialog open={isNewKeyModalOpen} onOpenChange={setIsNewKeyModalOpen}>
  <DialogContent className="sm:max-w-md sm:rounded-2xl">
  <DialogHeader>
@@ -1459,7 +1742,7 @@ function AdminMasterIntegracoesPage() {
  <DialogContent className="sm:max-w-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto no-scrollbar">
  <DialogHeader>
  <DialogTitle className="text-lg font-bold">
- {editingPrompt ? "Editar Prompt Master" : "Novo Prompt Master de IA"}
+ {editingPrompt ? "Editar Prompt" : "Novo Prompt"}
  </DialogTitle>
  <DialogDescription className="text-xs">
  Defina as instruções de sistema e o template de extração de dados.

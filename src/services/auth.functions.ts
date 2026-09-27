@@ -877,8 +877,15 @@ export async function _updateProfile(data: UpdateProfileInput) {
  if (data.gender !== undefined) profileUpdate.gender = data.gender;
  if (data.newsletterOptIn !== undefined) profileUpdate.newsletter_opt_in = data.newsletterOptIn;
  if (data.biolinks !== undefined) profileUpdate.biolinks = data.biolinks;
- if (data.resumeData !== undefined) profileUpdate.resume_data = data.resumeData;
  if (data.featuredBannerUrl !== undefined) profileUpdate.featured_banner_url = data.featuredBannerUrl || null;
+ if (data.resumeData !== undefined) {
+ const normalized = { ...data.resumeData };
+ if (Array.isArray(normalized.experiences)) {
+ const { enrichExperienceMath } = await import("@/lib/schemas/resume-experience.schema");
+ normalized.experiences = normalized.experiences.map((exp: any) => enrichExperienceMath(exp));
+ }
+ profileUpdate.resume_data = normalized;
+ }
  if (data.featuredBannerLink !== undefined) profileUpdate.featured_banner_link = data.featuredBannerLink || null;
  if (data.isAnonymous !== undefined) profileUpdate.is_anonymous = data.isAnonymous;
  if (data.privacyMode !== undefined) profileUpdate.privacy_mode = data.privacyMode;

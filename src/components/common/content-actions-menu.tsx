@@ -42,7 +42,7 @@ import { ReportDialog } from "@/components/common/report-dialog";
 import { toggleFavorite, getFavoriteStatus } from "@/services/favorites.functions";
 
 export interface ContentActionsMenuProps {
- entityType: "classified" | "post" | "event" | "product";
+  entityType: "classified" | "post" | "event" | "product" | "service";
  entityId: string;
  isOwner: boolean;
  status?: string;
@@ -79,9 +79,10 @@ export function ContentActionsMenu({
  const [isPerformingAction, setIsPerformingAction] = useState(false);
 
  // Status real no banco de dados de favoritos
+ const backendEntityType = (entityType === "service" ? "product" : entityType) as "classified" | "post" | "event" | "product";
  const { data: isSavedData } = useQuery({
- queryKey: ["is-favorited", entityType, entityId],
- queryFn: () => getFavoriteStatus({ data: { entityType, entityId } }),
+ queryKey: ["is-favorited", backendEntityType, entityId],
+ queryFn: () => getFavoriteStatus({ data: { entityType: backendEntityType, entityId } }),
  staleTime: 60000,
  });
 
@@ -90,7 +91,7 @@ export function ContentActionsMenu({
  const favoriteMutation = useMutation({
  mutationFn: toggleFavorite,
  onSuccess: (res) => {
- queryClient.invalidateQueries({ queryKey: ["is-favorited", entityType, entityId] });
+ queryClient.invalidateQueries({ queryKey: ["is-favorited", backendEntityType, entityId] });
  queryClient.invalidateQueries({ queryKey: ["user-favorites"] });
  toast.success(res.favorited ? "Salvo nos seus favoritos!" : "Item removido dos favoritos.");
  },
@@ -102,7 +103,7 @@ export function ContentActionsMenu({
  const handleToggleSave = () => {
  favoriteMutation.mutate({
  data: {
- entityType,
+ entityType: backendEntityType,
  entityId,
  },
  });

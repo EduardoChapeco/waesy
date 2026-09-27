@@ -192,8 +192,8 @@ export function CurriculoGeneratorModal({
         <div className="px-6 py-4 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20 shrink-0">
           <div>
             <DialogTitle className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="size-5 text-primary" />
-              <span>Gerador de Currículo Digital & Portfólio</span>
+              <FileText className="size-5 text-primary" />
+              <span>Gerador de Currículo Digital</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Exporte em ultra-qualidade para impressão formal (A4) ou compartilhamento social (Story 9:16).
@@ -277,7 +277,7 @@ export function CurriculoGeneratorModal({
             {/* 2. Seletor de Template */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-foreground uppercase tracking-wider">
-                Estilo & Template
+                Modelo Visual
               </label>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
@@ -400,7 +400,7 @@ export function CurriculoGeneratorModal({
                     onChange={(e) => setShowCertifications(e.target.checked)}
                     className="size-4 rounded border-border text-primary focus:ring-primary/20"
                   />
-                  <span>Licenças & Certificados</span>
+                  <span>Certificações</span>
                 </label>
 
                 <label className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -410,7 +410,7 @@ export function CurriculoGeneratorModal({
                     onChange={(e) => setShowProjects(e.target.checked)}
                     className="size-4 rounded border-border text-primary focus:ring-primary/20"
                   />
-                  <span>Projetos & Portfólio</span>
+                  <span>Projetos</span>
                 </label>
 
                 <label className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -650,7 +650,7 @@ export function CurriculoGeneratorModal({
                     className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-100 pb-0.5"
                     style={{ color: accentColor.hex }}
                   >
-                    Certificações & Licenças
+                    Certificações
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     {certifications.map((cert: any, i: number) => (

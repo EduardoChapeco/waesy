@@ -252,7 +252,9 @@ import { Route as WorkspaceContratosIndexRouteImport } from './routes/workspace.
 import { Route as WorkspaceContratosNovoRouteImport } from './routes/workspace.contratos.novo'
 import { Route as WorkspaceCurriculoEditorRouteImport } from './routes/workspace.curriculo.editor'
 import { Route as WorkspaceDoacoesIndexRouteImport } from './routes/workspace.doacoes.index'
+import { Route as WorkspaceEmpregosIndexRouteImport } from './routes/workspace.empregos.index'
 import { Route as WorkspaceEmpregosCandidatosRouteImport } from './routes/workspace.empregos.candidatos'
+import { Route as WorkspaceEmpregosNovoRouteImport } from './routes/workspace.empregos.novo'
 import { Route as WorkspaceEstoqueIndexRouteImport } from './routes/workspace.estoque.index'
 import { Route as WorkspaceEstoqueAlertasRouteImport } from './routes/workspace.estoque.alertas'
 import { Route as WorkspaceEstoqueMovimentosRouteImport } from './routes/workspace.estoque.movimentos'
@@ -344,6 +346,7 @@ import { Route as StoreLojaSlugSenhaRouteImport } from './routes/_store.loja.$sl
 import { Route as StorePedidoPublicTokenConfirmacaoRouteImport } from './routes/_store.pedido.$publicToken.confirmacao'
 import { Route as AdminMasterSegurancaCertificadosIdRouteImport } from './routes/admin-master.seguranca.certificados.$id'
 import { Route as ApiAuthGovbrCallbackRouteImport } from './routes/api.auth.govbr.callback'
+import { Route as ApiAuthLinkedinCallbackRouteImport } from './routes/api.auth.linkedin.callback'
 import { Route as ApiAuthMarketplaceCallbackRouteImport } from './routes/api.auth.marketplace.callback'
 import { Route as WorkspaceAgendaServicosIndexRouteImport } from './routes/workspace.agenda.servicos.index'
 import { Route as WorkspaceBuilderDocumentIdEditorRouteImport } from './routes/workspace.builder.$documentId.editor'
@@ -1622,12 +1625,22 @@ const WorkspaceDoacoesIndexRoute = WorkspaceDoacoesIndexRouteImport.update({
   path: '/doacoes/',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceEmpregosIndexRoute = WorkspaceEmpregosIndexRouteImport.update({
+  id: '/empregos/',
+  path: '/empregos/',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceEmpregosCandidatosRoute =
   WorkspaceEmpregosCandidatosRouteImport.update({
     id: '/empregos/candidatos',
     path: '/empregos/candidatos',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceEmpregosNovoRoute = WorkspaceEmpregosNovoRouteImport.update({
+  id: '/empregos/novo',
+  path: '/empregos/novo',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceEstoqueIndexRoute = WorkspaceEstoqueIndexRouteImport.update({
   id: '/estoque/',
   path: '/estoque/',
@@ -2139,6 +2152,11 @@ const ApiAuthGovbrCallbackRoute = ApiAuthGovbrCallbackRouteImport.update({
   path: '/api/auth/govbr/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthLinkedinCallbackRoute = ApiAuthLinkedinCallbackRouteImport.update({
+  id: '/api/auth/linkedin/callback',
+  path: '/api/auth/linkedin/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthMarketplaceCallbackRoute =
   ApiAuthMarketplaceCallbackRouteImport.update({
     id: '/api/auth/marketplace/callback',
@@ -2591,6 +2609,7 @@ export interface FileRoutesByFullPath {
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
   '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
+  '/workspace/empregos/novo': typeof WorkspaceEmpregosNovoRoute
   '/workspace/estoque/alertas': typeof WorkspaceEstoqueAlertasRoute
   '/workspace/estoque/movimentos': typeof WorkspaceEstoqueMovimentosRoute
   '/workspace/eventos/$id': typeof WorkspaceEventosIdRouteWithChildren
@@ -2679,6 +2698,7 @@ export interface FileRoutesByFullPath {
   '/workspace/contador/': typeof WorkspaceContadorIndexRoute
   '/workspace/contratos/': typeof WorkspaceContratosIndexRoute
   '/workspace/doacoes/': typeof WorkspaceDoacoesIndexRoute
+  '/workspace/empregos/': typeof WorkspaceEmpregosIndexRoute
   '/workspace/estoque/': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio/': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos/': typeof WorkspaceEventosIndexRoute
@@ -2698,6 +2718,7 @@ export interface FileRoutesByFullPath {
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
+  '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -2957,6 +2978,7 @@ export interface FileRoutesByTo {
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
   '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
+  '/workspace/empregos/novo': typeof WorkspaceEmpregosNovoRoute
   '/workspace/estoque/alertas': typeof WorkspaceEstoqueAlertasRoute
   '/workspace/estoque/movimentos': typeof WorkspaceEstoqueMovimentosRoute
   '/workspace/eventos/$id': typeof WorkspaceEventosIdRouteWithChildren
@@ -3045,6 +3067,7 @@ export interface FileRoutesByTo {
   '/workspace/contador': typeof WorkspaceContadorIndexRoute
   '/workspace/contratos': typeof WorkspaceContratosIndexRoute
   '/workspace/doacoes': typeof WorkspaceDoacoesIndexRoute
+  '/workspace/empregos': typeof WorkspaceEmpregosIndexRoute
   '/workspace/estoque': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos': typeof WorkspaceEventosIndexRoute
@@ -3064,6 +3087,7 @@ export interface FileRoutesByTo {
   '/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
+  '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -3333,6 +3357,7 @@ export interface FileRoutesById {
   '/workspace/contratos/novo': typeof WorkspaceContratosNovoRoute
   '/workspace/curriculo/editor': typeof WorkspaceCurriculoEditorRoute
   '/workspace/empregos/candidatos': typeof WorkspaceEmpregosCandidatosRoute
+  '/workspace/empregos/novo': typeof WorkspaceEmpregosNovoRoute
   '/workspace/estoque/alertas': typeof WorkspaceEstoqueAlertasRoute
   '/workspace/estoque/movimentos': typeof WorkspaceEstoqueMovimentosRoute
   '/workspace/eventos/$id': typeof WorkspaceEventosIdRouteWithChildren
@@ -3421,6 +3446,7 @@ export interface FileRoutesById {
   '/workspace/contador/': typeof WorkspaceContadorIndexRoute
   '/workspace/contratos/': typeof WorkspaceContratosIndexRoute
   '/workspace/doacoes/': typeof WorkspaceDoacoesIndexRoute
+  '/workspace/empregos/': typeof WorkspaceEmpregosIndexRoute
   '/workspace/estoque/': typeof WorkspaceEstoqueIndexRoute
   '/workspace/estudio/': typeof WorkspaceEstudioIndexRoute
   '/workspace/eventos/': typeof WorkspaceEventosIndexRoute
@@ -3440,6 +3466,7 @@ export interface FileRoutesById {
   '/_store/pedido/$publicToken/confirmacao': typeof StorePedidoPublicTokenConfirmacaoRoute
   '/admin-master/seguranca/certificados/$id': typeof AdminMasterSegurancaCertificadosIdRoute
   '/api/auth/govbr/callback': typeof ApiAuthGovbrCallbackRoute
+  '/api/auth/linkedin/callback': typeof ApiAuthLinkedinCallbackRoute
   '/api/auth/marketplace/callback': typeof ApiAuthMarketplaceCallbackRoute
   '/workspace/builder/$documentId/editor': typeof WorkspaceBuilderDocumentIdEditorRoute
   '/workspace/catalogo/categorias/$id': typeof WorkspaceCatalogoCategoriasIdRoute
@@ -3709,6 +3736,7 @@ export interface FileRouteTypes {
     | '/workspace/contratos/novo'
     | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
+    | '/workspace/empregos/novo'
     | '/workspace/estoque/alertas'
     | '/workspace/estoque/movimentos'
     | '/workspace/eventos/$id'
@@ -3797,6 +3825,7 @@ export interface FileRouteTypes {
     | '/workspace/contador/'
     | '/workspace/contratos/'
     | '/workspace/doacoes/'
+    | '/workspace/empregos/'
     | '/workspace/estoque/'
     | '/workspace/estudio/'
     | '/workspace/eventos/'
@@ -3816,6 +3845,7 @@ export interface FileRouteTypes {
     | '/pedido/$publicToken/confirmacao'
     | '/admin-master/seguranca/certificados/$id'
     | '/api/auth/govbr/callback'
+    | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -4075,6 +4105,7 @@ export interface FileRouteTypes {
     | '/workspace/contratos/novo'
     | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
+    | '/workspace/empregos/novo'
     | '/workspace/estoque/alertas'
     | '/workspace/estoque/movimentos'
     | '/workspace/eventos/$id'
@@ -4163,6 +4194,7 @@ export interface FileRouteTypes {
     | '/workspace/contador'
     | '/workspace/contratos'
     | '/workspace/doacoes'
+    | '/workspace/empregos'
     | '/workspace/estoque'
     | '/workspace/estudio'
     | '/workspace/eventos'
@@ -4182,6 +4214,7 @@ export interface FileRouteTypes {
     | '/pedido/$publicToken/confirmacao'
     | '/admin-master/seguranca/certificados/$id'
     | '/api/auth/govbr/callback'
+    | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -4450,6 +4483,7 @@ export interface FileRouteTypes {
     | '/workspace/contratos/novo'
     | '/workspace/curriculo/editor'
     | '/workspace/empregos/candidatos'
+    | '/workspace/empregos/novo'
     | '/workspace/estoque/alertas'
     | '/workspace/estoque/movimentos'
     | '/workspace/eventos/$id'
@@ -4538,6 +4572,7 @@ export interface FileRouteTypes {
     | '/workspace/contador/'
     | '/workspace/contratos/'
     | '/workspace/doacoes/'
+    | '/workspace/empregos/'
     | '/workspace/estoque/'
     | '/workspace/estudio/'
     | '/workspace/eventos/'
@@ -4557,6 +4592,7 @@ export interface FileRouteTypes {
     | '/_store/pedido/$publicToken/confirmacao'
     | '/admin-master/seguranca/certificados/$id'
     | '/api/auth/govbr/callback'
+    | '/api/auth/linkedin/callback'
     | '/api/auth/marketplace/callback'
     | '/workspace/builder/$documentId/editor'
     | '/workspace/catalogo/categorias/$id'
@@ -4636,6 +4672,7 @@ export interface RootRouteChildren {
   VerifyDocumentCodeRoute: typeof VerifyDocumentCodeRoute
   ViajanteViagemIdRoute: typeof ViajanteViagemIdRoute
   ApiAuthGovbrCallbackRoute: typeof ApiAuthGovbrCallbackRoute
+  ApiAuthLinkedinCallbackRoute: typeof ApiAuthLinkedinCallbackRoute
   ApiAuthMarketplaceCallbackRoute: typeof ApiAuthMarketplaceCallbackRoute
   WorkspacePedidosIdReciboRoute: typeof WorkspacePedidosIdReciboRoute
   ApiMcpV1ToolsCallRoute: typeof ApiMcpV1ToolsCallRoute
@@ -6344,11 +6381,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceDoacoesIndexRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/empregos/': {
+      id: '/workspace/empregos/'
+      path: '/empregos'
+      fullPath: '/workspace/empregos/'
+      preLoaderRoute: typeof WorkspaceEmpregosIndexRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/empregos/candidatos': {
       id: '/workspace/empregos/candidatos'
       path: '/empregos/candidatos'
       fullPath: '/workspace/empregos/candidatos'
       preLoaderRoute: typeof WorkspaceEmpregosCandidatosRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/empregos/novo': {
+      id: '/workspace/empregos/novo'
+      path: '/empregos/novo'
+      fullPath: '/workspace/empregos/novo'
+      preLoaderRoute: typeof WorkspaceEmpregosNovoRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/estoque/': {
@@ -6986,6 +7037,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/govbr/callback'
       fullPath: '/api/auth/govbr/callback'
       preLoaderRoute: typeof ApiAuthGovbrCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/linkedin/callback': {
+      id: '/api/auth/linkedin/callback'
+      path: '/api/auth/linkedin/callback'
+      fullPath: '/api/auth/linkedin/callback'
+      preLoaderRoute: typeof ApiAuthLinkedinCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/marketplace/callback': {
@@ -7811,6 +7869,7 @@ interface WorkspaceRouteChildren {
   WorkspaceContratosNovoRoute: typeof WorkspaceContratosNovoRoute
   WorkspaceCurriculoEditorRoute: typeof WorkspaceCurriculoEditorRoute
   WorkspaceEmpregosCandidatosRoute: typeof WorkspaceEmpregosCandidatosRoute
+  WorkspaceEmpregosNovoRoute: typeof WorkspaceEmpregosNovoRoute
   WorkspaceEstoqueAlertasRoute: typeof WorkspaceEstoqueAlertasRoute
   WorkspaceEstoqueMovimentosRoute: typeof WorkspaceEstoqueMovimentosRoute
   WorkspaceEventosIdRoute: typeof WorkspaceEventosIdRouteWithChildren
@@ -7888,6 +7947,7 @@ interface WorkspaceRouteChildren {
   WorkspaceContadorIndexRoute: typeof WorkspaceContadorIndexRoute
   WorkspaceContratosIndexRoute: typeof WorkspaceContratosIndexRoute
   WorkspaceDoacoesIndexRoute: typeof WorkspaceDoacoesIndexRoute
+  WorkspaceEmpregosIndexRoute: typeof WorkspaceEmpregosIndexRoute
   WorkspaceEstoqueIndexRoute: typeof WorkspaceEstoqueIndexRoute
   WorkspaceEstudioIndexRoute: typeof WorkspaceEstudioIndexRoute
   WorkspaceEventosIndexRoute: typeof WorkspaceEventosIndexRoute
@@ -7974,6 +8034,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceContratosNovoRoute: WorkspaceContratosNovoRoute,
   WorkspaceCurriculoEditorRoute: WorkspaceCurriculoEditorRoute,
   WorkspaceEmpregosCandidatosRoute: WorkspaceEmpregosCandidatosRoute,
+  WorkspaceEmpregosNovoRoute: WorkspaceEmpregosNovoRoute,
   WorkspaceEstoqueAlertasRoute: WorkspaceEstoqueAlertasRoute,
   WorkspaceEstoqueMovimentosRoute: WorkspaceEstoqueMovimentosRoute,
   WorkspaceEventosIdRoute: WorkspaceEventosIdRouteWithChildren,
@@ -8052,6 +8113,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceContadorIndexRoute: WorkspaceContadorIndexRoute,
   WorkspaceContratosIndexRoute: WorkspaceContratosIndexRoute,
   WorkspaceDoacoesIndexRoute: WorkspaceDoacoesIndexRoute,
+  WorkspaceEmpregosIndexRoute: WorkspaceEmpregosIndexRoute,
   WorkspaceEstoqueIndexRoute: WorkspaceEstoqueIndexRoute,
   WorkspaceEstudioIndexRoute: WorkspaceEstudioIndexRoute,
   WorkspaceEventosIndexRoute: WorkspaceEventosIndexRoute,
@@ -8137,6 +8199,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyDocumentCodeRoute: VerifyDocumentCodeRoute,
   ViajanteViagemIdRoute: ViajanteViagemIdRoute,
   ApiAuthGovbrCallbackRoute: ApiAuthGovbrCallbackRoute,
+  ApiAuthLinkedinCallbackRoute: ApiAuthLinkedinCallbackRoute,
   ApiAuthMarketplaceCallbackRoute: ApiAuthMarketplaceCallbackRoute,
   WorkspacePedidosIdReciboRoute: WorkspacePedidosIdReciboRoute,
   ApiMcpV1ToolsCallRoute: ApiMcpV1ToolsCallRoute,

@@ -46,7 +46,7 @@ import {
  SheetDescription,
 } from "@/components/ui/sheet";
 import { getPublicJobById, applyToJob, getEmployerProfileInsights, type JobItemDTO, type EmployerProfileInsightsDTO } from "@/services/jobs.functions";
-import { getUserSession } from "@/services/auth.functions";
+import { getUserSession, getProfile } from "@/services/auth.functions";
 import { formatDate } from "@/lib/datetime";
 import { findProfessionByTitle } from "@/lib/data/professions-catalog";
 import { formatMoney } from "@/lib/money";
@@ -71,9 +71,10 @@ export const Route = createFileRoute("/_store/empregos/$id")({
   }),
   loader: async ({ params }) => {
     try {
-      const [job, session] = await Promise.all([
+      const [job, session, profile] = await Promise.all([
         getPublicJobById({ data: { jobId: params.id } }).catch(() => null),
         getUserSession().catch(() => null),
+        getProfile().catch(() => null),
       ]);
 
       let employerInsights: EmployerProfileInsightsDTO | null = null;
@@ -83,7 +84,7 @@ export const Route = createFileRoute("/_store/empregos/$id")({
         }).catch(() => null);
       }
 
-      return { job, session, employerInsights };
+      return { job, session, profile, employerInsights };
    } catch (err) {
      console.error("[loader:_store.empregos.$id] Unhandled error:", err);
      return { job: null, session: null, employerInsights: null };
@@ -92,7 +93,7 @@ export const Route = createFileRoute("/_store/empregos/$id")({
  component: JobDetailPage,
 });
 function JobDetailPage() {
-  const { job, session, employerInsights } = ((Route.useLoaderData?.() as any) || {});
+  const { job, session, profile, employerInsights } = ((Route.useLoaderData?.() as any) || {});
   const matchedProfession = useMemo(() => (job?.title ? findProfessionByTitle(job.title) : null), [job?.title]);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
  const [candidateName, setCandidateName] = useState(session?.user_metadata?.full_name || "");

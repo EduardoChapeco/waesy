@@ -11,6 +11,7 @@ import {
  SheetTrigger,
 } from "@/components/ui/sheet";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { ExperienceMediaCarousel } from "@/components/profile/experience-media-carousel";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAffiliateShowcaseProducts, getAvailablePartnerStores, upsertCreatorProfile } from "@/services/affiliates.functions";
@@ -1098,7 +1099,7 @@ export function MemberPublicProfileView({
  </div>
  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
  <span>
- {exp.start_date} – {exp.is_current ? "o momento" : exp.end_date}
+ {exp.start_date || "Início"} – {exp.is_current ? "o momento" : exp.end_date || "Presente"}{exp.duration_text ? ` · ${exp.duration_text}` : ""}
  </span>
  {exp.location && (
  <>
@@ -1134,18 +1135,15 @@ export function MemberPublicProfileView({
  </p>
  )}
 
- {/* Mídias & Documentos Anexados */}
- {exp.media_urls && exp.media_urls.length > 0 && (
- <div className="flex flex-wrap gap-2 pl-15 pt-1">
- {exp.media_urls.map((url: string, mIdx: number) => (
- <div
- key={mIdx}
- className="size-16 rounded-xl overflow-hidden bg-muted/40 cursor-pointer hover:opacity-90 transition-opacity"
- onClick={() => setPreviewMediaUrl(url)}
- >
- <img src={url} alt="Anexo de experiência" className="size-full object-cover" />
- </div>
- ))}
+ {/* Mídias & Documentos Anexados (LinkedIn-Style Experience Rail com Snap Scroll) */}
+ {((exp.media_urls && exp.media_urls.length > 0) || (exp.media && exp.media.length > 0)) && (
+ <div className="pl-15 pt-2">
+ <ExperienceMediaCarousel
+ mediaUrls={exp.media_urls}
+ media={exp.media}
+ itemTitle={exp.title}
+ companyName={exp.company}
+ />
  </div>
  )}
 

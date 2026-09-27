@@ -18,12 +18,14 @@ import {
   LinkSimple,
   ChatText,
   Briefcase,
+  Lightning,
 } from "@phosphor-icons/react";
 
 export interface JobApplySheetProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   job: any;
+  userProfile?: any;
   candidateName: string;
   setCandidateName: (v: string) => void;
   candidateEmail: string;
@@ -53,6 +55,7 @@ export function JobApplySheet({
   isOpen,
   onOpenChange,
   job,
+  userProfile,
   candidateName,
   setCandidateName,
   candidateEmail,
@@ -77,6 +80,18 @@ export function JobApplySheet({
   isPending,
   onSubmit,
 }: JobApplySheetProps) {
+  const handlePrefillWithProfile = () => {
+    if (!userProfile) return;
+    if (userProfile.full_name) setCandidateName(userProfile.full_name);
+    if (userProfile.email) setCandidateEmail(userProfile.email);
+    if (userProfile.phone) setCandidatePhone(userProfile.phone);
+    const host = typeof window !== "undefined" ? window.location.origin : "https://usewaesy.pages.dev";
+    setResumeUrl(`${host}/u/${userProfile.username || userProfile.id}`);
+    if (userProfile.resume_data?.availability?.salaryExpectationCents) {
+      setSalaryExpectationStr((userProfile.resume_data.availability.salaryExpectationCents / 100).toFixed(2).replace('.', ','));
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
@@ -112,6 +127,16 @@ export function JobApplySheet({
             </div>
           ) : (
             <form onSubmit={onSubmit} className="space-y-4">
+              {userProfile && (
+                <button
+                  type="button"
+                  onClick={handlePrefillWithProfile}
+                  className="w-full py-2 px-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Lightning size={14} weight="fill" className="text-primary" />
+                  <span>Preencher com meu Perfil Waesy</span>
+                </button>
+              )}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <User size={14} className="text-muted-foreground" />
@@ -175,7 +200,7 @@ export function JobApplySheet({
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <ChatText size={14} className="text-muted-foreground" />
-                  Mensagem de Apresentação / Carta de Motivação
+                  Carta de Apresentação
                 </label>
                 <Textarea
                   placeholder="Fale brevemente sobre sua experiência e por que se interessou por esta vaga..."
@@ -190,7 +215,7 @@ export function JobApplySheet({
               <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 space-y-3">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Briefcase size={14} weight="bold" className="text-primary" />
-                  Histórico Profissional & Pretensão
+                  Pretensão Salarial
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">

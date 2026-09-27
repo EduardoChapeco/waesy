@@ -42,7 +42,7 @@ export function JobDetailDesktop({
           className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors group"
         >
           <ArrowLeft size={16} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
-          <span>Voltar para Vagas & Carreiras</span>
+          <span>Voltar para Vagas</span>
         </Link>
 
         <Button
@@ -140,7 +140,7 @@ export function JobDetailDesktop({
           {/* Requisitos & Benefícios */}
           {job.requirements && job.requirements.length > 0 && (
             <div className="rounded-2xl border border-border/70 bg-card p-6 space-y-3 shadow-xs">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisitos & Qualificações</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisitos</h2>
               <ul className="space-y-2 text-sm text-foreground/85">
                 {job.requirements.map((req: string, i: number) => (
                   <li key={i} className="flex items-start gap-2.5">

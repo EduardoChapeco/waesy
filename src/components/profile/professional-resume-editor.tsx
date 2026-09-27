@@ -1,6 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { Briefcase, Star, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck, Sparkles } from 'lucide-react';
+import { Briefcase, Star, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck , Linkedin, ArrowRight, Loader2, FileJson, Check } from 'lucide-react';
 import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
+import { ExperienceMediaCarousel } from "@/components/profile/experience-media-carousel";
+import { MediaUploader } from "@/components/ui/media-uploader";
+import { ExperienceDateRangeGroup } from "@/components/profile/month-year-picker";
+import { enrichExperienceMath } from "@/lib/schemas/resume-experience.schema";
 import type { ProfessionDefinition } from "@/lib/data/professions-catalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +31,8 @@ import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { getPostMediaSignedUrl } from "@/services/storage.functions";
 import { searchStoresForCompanyAutocomplete } from "@/services/social.functions";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { getLinkedInAuthRedirectUrl, parseAndImportLinkedInJson } from "@/services/linkedin-integrations.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -193,6 +199,143 @@ export function ProfessionalResumeEditor({
  const [newSkillInput, setNewSkillInput] = useState("");
  const [isProfessionSearchOpen, setIsProfessionSearchOpen] = useState(false);
 
+  // ── LinkedIn Omni-Bridge Candidate State ──
+  const [isLinkedInModalOpen, setIsLinkedInModalOpen] = useState(false);
+  const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false);
+  const [isParsingLinkedIn, setIsParsingLinkedIn] = useState(false);
+  const [linkedInJsonText, setLinkedInJsonText] = useState("");
+  const [linkedInPreview, setLinkedInPreview] = useState<ResumeDataDTO | null>(null);
+  const [linkedInActiveTab, setLinkedInActiveTab] = useState<"oauth" | "json">("oauth");
+
+  const handleStartLinkedInOAuth = async () => {
+    setIsConnectingLinkedIn(true);
+    try {
+      const res = await getLinkedInAuthRedirectUrl({
+        data: { returnTo: typeof window !== "undefined" ? window.location.pathname : "/conta/curriculo", mode: "candidate" },
+      });
+      if (res?.authUrl) {
+        window.location.href = res.authUrl;
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao conectar com LinkedIn.");
+    } finally {
+      setIsConnectingLinkedIn(false);
+    }
+  };
+
+  const handleParseLinkedInJson = async () => {
+    if (!linkedInJsonText.trim()) {
+      toast.error("Cole o JSON do perfil exportado do LinkedIn.");
+      return;
+    }
+    setIsParsingLinkedIn(true);
+    try {
+      const res = await parseAndImportLinkedInJson({
+        data: { rawJson: linkedInJsonText.trim(), autoSaveToProfile: false },
+      });
+      if (res?.translatedResume) {
+        setLinkedInPreview(res.translatedResume);
+        toast.success(`Perfil traduzido! ${res.stats.experiencesCount} experiências e ${res.stats.skillsCount} competências encontradas.`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao analisar o JSON do LinkedIn.");
+    } finally {
+      setIsParsingLinkedIn(false);
+    }
+  };
+
+  const handleApplyLinkedInData = () => {
+    if (!linkedInPreview) return;
+    const merged: ResumeDataDTO = {
+      ...resumeData,
+      headline: linkedInPreview.headline || resumeData.headline,
+      summary: linkedInPreview.summary || resumeData.summary,
+      skills: Array.from(new Set([...(resumeData.skills || []), ...(linkedInPreview.skills || [])])),
+      experiences: [
+        ...(linkedInPreview.experiences || []),
+        ...(resumeData.experiences || []).filter(
+          (ex) => !linkedInPreview.experiences?.some((lEx) => lEx.title.toLowerCase() === ex.title.toLowerCase() && lEx.company.toLowerCase() === ex.company.toLowerCase())
+        ),
+      ],
+      educations: [
+        ...(linkedInPreview.educations || []),
+        ...(resumeData.educations || []),
+      ],
+      certifications: [
+        ...(linkedInPreview.certifications || []),
+        ...(resumeData.certifications || []),
+      ],
+      languages: [
+        ...(linkedInPreview.languages || []),
+        ...(resumeData.languages || []),
+      ],
+      availability: {
+        ...resumeData.availability,
+        ...(linkedInPreview.availability || {}),
+      },
+    };
+
+    onChange(merged);
+    setIsLinkedInModalOpen(false);
+    setLinkedInPreview(null);
+    setLinkedInJsonText("");
+    toast.success("Mágica realizada! Seu currículo foi atualizado com seus dados do LinkedIn.");
+  };
+
+  const handleLoadSampleLinkedInJson = () => {
+    const sample = {
+      name: fullName || "Profissional de Tecnologia",
+      headline: "Engenheiro de Software & Arquiteto de Sistemas",
+      summary: "Especialista em ecossistemas de alta escala, TypeScript, React, APIs resilientes e arquitetura distribuída.",
+      location: { name: "São Paulo, SP" },
+      positions: [
+        {
+          title: "Tech Lead & Arquiteto de Software",
+          companyName: "Waesy Platform",
+          employmentType: "Full-time",
+          location: "São Miguel do Oeste, SC",
+          isCurrent: true,
+          startDate: { month: 1, year: 2023 },
+          endDate: null,
+          description: "Liderança técnica, arquitetura de microsserviços e governança de dados em alta disponibilidade.",
+        },
+        {
+          title: "Desenvolvedor Sênior Full Stack",
+          companyName: "Tech Hub Brasil",
+          employmentType: "CLT",
+          location: "Florianópolis, SC",
+          isCurrent: false,
+          startDate: { month: 3, year: 2020 },
+          endDate: { month: 12, year: 2022 },
+          description: "Desenvolvimento de produtos digitais, migração de bancos relacionais e integração de pagamentos.",
+        }
+      ],
+      educations: [
+        {
+          schoolName: "Universidade do Estado de Santa Catarina",
+          degreeName: "Bacharelado",
+          fieldOfStudy: "Ciência da Computação",
+          startDate: { year: 2016 },
+          endDate: { year: 2020 },
+        }
+      ],
+      skills: ["TypeScript", "React", "Node.js", "PostgreSQL", "Supabase", "Docker", "Tailwind CSS", "Arquitetura de Software"],
+      certifications: [
+        {
+          name: "AWS Certified Solutions Architect",
+          authority: "Amazon Web Services (AWS)",
+          startDate: { month: 6, year: 2022 },
+        }
+      ],
+      languages: [
+        { name: "Português", proficiency: "Nativo" },
+        { name: "Inglês", proficiency: "Avançado" }
+      ]
+    };
+    setLinkedInJsonText(JSON.stringify(sample, null, 2));
+    toast.info("JSON de demonstração do LinkedIn carregado. Clique em 'Processar e Validar'.");
+  };
+
  const handleSelectProfession = (prof: ProfessionDefinition) => {
  onChange({
  ...resumeData,
@@ -306,144 +449,12 @@ export function ProfessionalResumeEditor({
 
  return (
  <div className="space-y-8 animate-in fade-in duration-200">
- {/* ── 1. Barra de Força do Currículo (Padrão Executivo Waesy) ── */}
- <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/5 via-card to-primary/10 border border-border/60 space-y-3">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
- <div className="space-y-0.5">
- <div className="flex items-center gap-2">
- <Layers className="size-4 text-primary fill-primary/20" />
- <h3 className="text-sm font-bold text-foreground">Força do Currículo & Visibilidade para Vagas</h3>
- </div>
- <p className="text-xs text-muted-foreground">
- Currículos completos têm 7x mais chances de serem selecionados por empresas e recrutadores no Waesy.
- </p>
- </div>
- <div className="flex items-center gap-2 self-start sm:self-auto">
- <span className="text-sm font-mono font-black text-foreground">{profileStrength.score}%</span>
- <Badge variant="outline" className="text-[10px] font-bold py-0.5 px-2 bg-background border-primary/30 text-primary">
- {profileStrength.badge}
- </Badge>
- </div>
- </div>
-
- {/* Barra de Progresso Visual */}
- <div className="w-full h-2.5 rounded-full bg-muted/60 overflow-hidden border border-border/40">
- <div
- className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500 transition-all duration-500"
- style={{ width: `${profileStrength.score}%` }}
- />
- </div>
-
- {/* Dicas para 100% Campeão */}
- {profileStrength.tips.length > 0 && (
- <div className="pt-2 border-t border-border/40 space-y-1.5">
- <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
- O que falta para alcançar 100%:
- </span>
- <div className="flex flex-wrap gap-1.5">
- {profileStrength.tips.map((tip, idx) => (
- <span
- key={idx}
- className="text-[11px] font-medium px-2 py-0.5 rounded-lg bg-background/80 border border-border/60 text-muted-foreground flex items-center gap-1"
- >
- <Target className="size-3 text-primary shrink-0" />
- <span>{tip}</span>
- </span>
- ))}
- </div>
- </div>
- )}
- </div>
-
- {/* ── 2. Metas de Vagas, Pretensão & Status de Carreira (Matching Algorítmico) ── */}
- <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
- <div>
- <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
- <Target className="size-4 text-primary" />
- <span>Metas Profissionais & Disponibilidade para Vagas</span>
- </h3>
- <p className="text-xs text-muted-foreground">
- Dados estruturados para cruzamento automático com vagas de empresas da região.
- </p>
- </div>
- <Button
- type="button"
- size="sm"
- variant="outline"
- onClick={() => setActiveModal("availability")}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-3 cursor-pointer"
- >
- <Edit3 className="size-3.5" />
- <span>Editar Metas & Pretensão</span>
- </Button>
- </div>
-
- {/* Grid de Resumo das Metas */}
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
- <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Status de Busca</span>
- <div className="flex items-center gap-1.5">
- <span
- className={cn(
- "size-2 rounded-full",
- resumeData.hiringStatus === "open_to_work"
- ? "bg-emerald-500"
- : resumeData.hiringStatus === "hiring"
- ? "bg-blue-500"
- : "bg-muted-foreground"
- )}
- />
- <span className="font-bold text-foreground truncate">
- {resumeData.hiringStatus === "open_to_work"
- ? "🟢 #OpenToWork"
- : resumeData.hiringStatus === "hiring"
- ? "🔵 #Contratando"
- : "Aberto a Propostas"}
- </span>
- </div>
- </div>
-
- <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Cargo Alvo</span>
- <span className="font-bold text-foreground block truncate">
- {availability.jobTitle || "Não informado"}
- </span>
- </div>
-
- <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Senioridade / Modelo</span>
- <span className="font-bold text-foreground block truncate">
- {[
- availability.seniority ? SENIORITY_LABELS[availability.seniority] : null,
- availability.workplacePreference === "remote"
- ? "Remoto"
- : availability.workplacePreference === "hybrid"
- ? "Híbrido"
- : availability.workplacePreference === "on_site"
- ? "Presencial"
- : "Qualquer",
- ]
- .filter(Boolean)
- .join(" • ") || "Flexível"}
- </span>
- </div>
-
- <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 space-y-1">
- <span className="text-[10px] font-bold text-muted-foreground uppercase">Pretensão Salarial</span>
- <span className="font-bold text-foreground block font-mono">
- {availability.salaryExpectationCents
- ? formatMoney(availability.salaryExpectationCents)
- : "A Combinar"}
- </span>
- </div>
- </div>
- </div>
+       
 
  {/* ── 3. Headline & Resumo (Sobre Mim) ── */}
  <div className="p-5 rounded-2xl bg-card border border-border/60 space-y-4 shadow-none">
  <div className="flex items-center justify-between pb-3 border-b border-border/40">
- <h3 className="text-sm font-bold text-foreground">Título & Resumo de Apresentação</h3>
+ <h3 className="text-sm font-bold text-foreground">Apresentação Profissional</h3>
  <Button
  type="button"
  variant="outline"
@@ -451,7 +462,7 @@ export function ProfessionalResumeEditor({
  onClick={() => setIsProfessionSearchOpen(true)}
  className="h-8 rounded-xl text-xs gap-1.5 font-bold border-border/60 hover:bg-muted/30 text-foreground"
  >
- <Sparkles className="size-3.5 text-amber-500" />
+ <Search className="size-3.5 text-primary" />
  <span>Buscar Cargo CBO</span>
  </Button>
  </div>
@@ -1324,6 +1335,170 @@ export function ProfessionalResumeEditor({
  toast.success(isDelete ? "Idioma removido!" : "Idioma salvo com sucesso!");
  }}
  />
+
+      {/* ── MODAL: IMPORTAR DO LINKEDIN (OMNI-BRIDGE B2C) ── */}
+      <Dialog open={isLinkedInModalOpen} onOpenChange={setIsLinkedInModalOpen}>
+        <DialogContent className="sm:max-w-xl sm:rounded-2xl p-0 overflow-hidden bg-background border border-border">
+          <DialogHeader className="p-6 pb-4 border-b border-border/40">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-xl bg-[#0A66C2] text-white flex items-center justify-center shrink-0">
+                <Linkedin className="size-5 fill-current" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold text-foreground">Importar do LinkedIn</DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">Sincronize experiências e formação diretamente para o seu currículo.</DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {/* Abas do Modal */}
+          <div className="flex border-b border-border/40 px-6 pt-2 bg-muted/20">
+            <button
+              type="button"
+              onClick={() => setLinkedInActiveTab("oauth")}
+              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+                linkedInActiveTab === "oauth"
+                  ? "border-[#0A66C2] text-[#0A66C2]"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Conexão Direta (OAuth 2.0)
+            </button>
+            <button
+              type="button"
+              onClick={() => setLinkedInActiveTab("json")}
+              className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+                linkedInActiveTab === "json"
+                  ? "border-[#0A66C2] text-[#0A66C2]"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Colar Dados / JSON
+            </button>
+          </div>
+
+          <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
+            {linkedInActiveTab === "oauth" ? (
+              <div className="space-y-4 text-center py-4">
+                <div className="size-16 rounded-3xl bg-[#0A66C2]/10 text-[#0A66C2] flex items-center justify-center mx-auto border border-[#0A66C2]/20">
+                  <Linkedin className="size-8 fill-current" />
+                </div>
+                <div className="space-y-1.5 max-w-sm mx-auto">
+                  <h4 className="text-sm font-bold text-foreground">Conectar Perfil</h4>
+                  <p className="text-xs text-muted-foreground">Autorize a importação direta dos seus cargos e formações.</p>
+                </div>
+
+                
+
+                <Button
+                  type="button"
+                  onClick={handleStartLinkedInOAuth}
+                  disabled={isConnectingLinkedIn}
+                  className="w-full h-11 rounded-xl font-bold text-xs gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                >
+                  {isConnectingLinkedIn ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Conectando ao LinkedIn...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Linkedin className="size-4 fill-current" />
+                      <span>Entrar e Importar com LinkedIn</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold text-foreground">JSON do Perfil do LinkedIn</Label>
+                  <button
+                    type="button"
+                    onClick={handleLoadSampleLinkedInJson}
+                    className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    Usar exemplo de teste
+                  </button>
+                </div>
+
+                <Textarea
+                  value={linkedInJsonText}
+                  onChange={(e) => {
+                    setLinkedInJsonText(e.target.value);
+                    setLinkedInPreview(null);
+                  }}
+                  placeholder="Cole aqui o JSON do perfil ou exportação do LinkedIn..."
+                  className="h-32 text-xs font-mono rounded-xl bg-background border-border resize-none"
+                />
+
+                {!linkedInPreview ? (
+                  <Button
+                    type="button"
+                    onClick={handleParseLinkedInJson}
+                    disabled={isParsingLinkedIn || !linkedInJsonText.trim()}
+                    className="w-full h-10 rounded-xl font-bold text-xs gap-2 bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+                  >
+                    {isParsingLinkedIn ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        <span>Validando e Calculando Datas...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileJson className="size-4" />
+                        <span>Processar e Validar Dados (Zod)</span>
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Check className="size-4 text-emerald-600" />
+                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                          Dados Extraídos com Sucesso!
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600 font-mono">
+                        {linkedInPreview.experiences?.length || 0} cargos
+                      </Badge>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p><strong>Título:</strong> {linkedInPreview.headline || "Profissional"}</p>
+                      <p><strong>Competências:</strong> {linkedInPreview.skills?.slice(0, 6).join(", ")}...</p>
+                      <p><strong>Formação:</strong> {linkedInPreview.educations?.[0]?.school || "Graduação"}</p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={handleApplyLinkedInData}
+                      className="w-full h-10 rounded-xl font-bold text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                    >
+                      <ArrowRight className="size-4" />
+                      <span>Aplicar ao Meu Currículo Waesy (1s)</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="p-4 border-t border-border/40 bg-muted/10 flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsLinkedInModalOpen(false)}
+              className="rounded-xl text-xs h-9"
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
  </div>
  );
 }
@@ -1386,7 +1561,7 @@ function AvailabilityEditSheet({
  <Sheet open={open} onOpenChange={onOpenChange}>
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
- <SheetTitle className="text-base font-bold">Metas Profissionais & Vagas</SheetTitle>
+ <SheetTitle className="text-base font-bold">Objetivos Profissionais</SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
  Defina suas pretensões salariais e modelo de trabalho para cruzamento com oportunidades.
  </SheetDescription>
@@ -1546,6 +1721,11 @@ function ExperienceEditSheet({
   const [isCurrent, setIsCurrent] = useState(item?.is_current !== false);
   const [startDate, setStartDate] = useState(item?.start_date || "");
   const [endDate, setEndDate] = useState(item?.end_date || "");
+  const [startMonth, setStartMonth] = useState<number | undefined>(item?.start_month);
+  const [startYear, setStartYear] = useState<number | undefined>(item?.start_year);
+  const [endMonth, setEndMonth] = useState<number | undefined>(item?.end_month);
+  const [endYear, setEndYear] = useState<number | undefined>(item?.end_year);
+  const [mediaUrls, setMediaUrls] = useState<string[]>(item?.media_urls || []);
   const [description, setDescription] = useState(item?.description || "");
   const [suggestions, setSuggestions] = useState<any[]>([]);
 
@@ -1570,6 +1750,11 @@ function ExperienceEditSheet({
       setIsCurrent(item?.is_current !== false);
       setStartDate(item?.start_date || "");
       setEndDate(item?.end_date || "");
+      setStartMonth(item?.start_month);
+      setStartYear(item?.start_year);
+      setEndMonth(item?.end_month);
+      setEndYear(item?.end_year);
+      setMediaUrls(item?.media_urls || []);
       setDescription(item?.description || "");
       setSalaryCents(item?.salary_cents);
       setExitReason(item?.exit_reason || "");
@@ -1611,7 +1796,7 @@ function ExperienceEditSheet({
       return;
     }
 
-    onSave({
+    const enriched = enrichExperienceMath({
       id: item?.id || `exp_${Date.now()}`,
       title: title.trim(),
       company: company.trim(),
@@ -1623,8 +1808,12 @@ function ExperienceEditSheet({
       is_current: isCurrent,
       start_date: startDate.trim() || undefined,
       end_date: isCurrent ? "Atual" : endDate.trim() || undefined,
+      start_month: startMonth,
+      start_year: startYear,
+      end_month: isCurrent ? undefined : endMonth,
+      end_year: isCurrent ? undefined : endYear,
       description: description.trim() || undefined,
-      media_urls: item?.media_urls || [],
+      media_urls: mediaUrls,
       salary_cents: salaryCents || undefined,
       exit_reason: isCurrent ? undefined : (exitReason.trim() || undefined),
       company_rating: companyRating > 0 ? companyRating : undefined,
@@ -1632,6 +1821,7 @@ function ExperienceEditSheet({
       review_text: reviewText.trim() || undefined,
       is_anonymous: isAnonymous,
     });
+    onSave(enriched);
   };
 
   return (
@@ -1639,7 +1829,7 @@ function ExperienceEditSheet({
       <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
         <div className="p-6 pb-4 border-b border-border/40 shrink-0">
           <SheetTitle className="text-base font-bold">
-            {item ? "Editar Experiência" : "Nova Experiência Profissional"}
+            {item ? "Editar Experiência" : "Nova Experiência"}
           </SheetTitle>
         </div>
 
@@ -1710,38 +1900,24 @@ function ExperienceEditSheet({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Data Início</Label>
-                <Input
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  placeholder="Ex: Jan 2022"
-                  className="h-9 rounded-xl text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Data Fim</Label>
-                <Input
-                  disabled={isCurrent}
-                  value={isCurrent ? "Atual" : endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  placeholder="Ex: Dez 2024"
-                  className="h-9 rounded-xl text-xs"
-                />
-              </div>
-            </div>
-
-            <label className="flex items-center gap-2 cursor-pointer pt-1">
-              <input
-                type="checkbox"
-                checked={isCurrent}
-                onChange={(e) => setIsCurrent(e.target.checked)}
-                className="size-4 rounded-md accent-primary"
-              />
-              <span className="text-xs font-medium text-foreground">Trabalho atualmente nesta empresa</span>
-            </label>
+            <ExperienceDateRangeGroup
+              startMonth={startMonth}
+              startYear={startYear}
+              endMonth={endMonth}
+              endYear={endYear}
+              isCurrent={isCurrent}
+              onStartDateChange={({ month, year, formatted }) => {
+                setStartMonth(month);
+                setStartYear(year);
+                setStartDate(formatted);
+              }}
+              onEndDateChange={({ month, year, formatted }) => {
+                setEndMonth(month);
+                setEndYear(year);
+                setEndDate(formatted);
+              }}
+              onCurrentToggle={setIsCurrent}
+            />
 
             <div className="space-y-1.5 pt-2">
               <Label className="text-xs font-bold">Descrição das Realizações e Atividades</Label>
@@ -1751,6 +1927,25 @@ function ExperienceEditSheet({
                 rows={4}
                 placeholder="Destaque seus projetos liderados, metas alcançadas e tecnologias utilizadas..."
                 className="rounded-xl text-xs resize-none"
+              />
+            </div>
+
+            {/* Mídias da Experiência (Padrão LinkedIn) */}
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold flex items-center gap-1.5">
+                  <span>Mídias & Portfólio do Cargo</span>
+                </Label>
+                <span className="text-[10px] text-muted-foreground">Fotos do local, certificados, projetos</span>
+              </div>
+              <MediaUploader
+                value={mediaUrls}
+                onChange={setMediaUrls}
+                maxFiles={6}
+                bucket="post-media"
+                folder="experiences"
+                accept="image"
+                className="w-full"
               />
             </div>
 
@@ -2008,7 +2203,7 @@ export function ProfessionalLicenseEditSheet({
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col h-full bg-background border-l border-border">
         <div className="p-6 pb-4 border-b border-border/40 shrink-0">
           <SheetTitle className="text-base font-bold">
-            {item ? "Editar Carteira / Alvará" : "Nova Carteira Profissional ou Alvará"}
+            {item ? "Editar Registro" : "Novo Registro de Classe"}
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
             Cadastre seu número de OAB, CRM, CREA, CRC ou alvará com comprovação documental.
@@ -2216,7 +2411,7 @@ function EducationEditSheet({
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
- {item ? "Editar Formação" : "Nova Formação Acadêmica"}
+ {item ? "Editar Formação" : "Nova Formação"}
  </SheetTitle>
  </div>
 
@@ -2373,7 +2568,7 @@ function CertificationEditSheet({
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
- {item ? "Editar Certificação" : "Nova Licença ou Certificado"}
+ {item ? "Editar Certificação" : "Nova Certificação"}
  </SheetTitle>
  </div>
 
@@ -2539,7 +2734,7 @@ function ProjectEditSheet({
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
- {item ? "Editar Projeto" : "Novo Projeto / Portfólio"}
+ {item ? "Editar Projeto" : "Novo Projeto"}
  </SheetTitle>
  </div>
 
@@ -2705,7 +2900,7 @@ function VolunteeringEditSheet({
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0">
  <SheetTitle className="text-base font-bold">
- {item ? "Editar Voluntariado" : "Novo Trabalho Voluntário"}
+ {item ? "Editar Voluntariado" : "Novo Voluntariado"}
  </SheetTitle>
  </div>
 

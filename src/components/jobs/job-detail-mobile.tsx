@@ -149,7 +149,7 @@ export function JobDetailMobile({
         {/* ── 4. Requisitos e Benefícios ── */}
         {job.requirements && job.requirements.length > 0 && (
           <div className="p-4 rounded-xl border border-border/70 bg-card space-y-2.5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisitos & Qualificações</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisitos</h2>
             <ul className="space-y-1.5 text-xs text-foreground/85">
               {job.requirements.map((req: string, i: number) => (
                 <li key={i} className="flex items-start gap-2">

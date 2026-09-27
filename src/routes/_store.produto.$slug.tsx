@@ -249,10 +249,10 @@ export const Route = createFileRoute("/_store/produto/$slug")({
   loader: async ({ params }) => {
     try {
       const [productRes, templateRes, identityRes] = await Promise.all([
-        getProductBySlug({ data: { slug: params.slug } }),
+        getProductBySlug({ data: { slug: params.slug } }).catch(() => null),
         getPublicExperienceDocumentBySlug({
           data: { slug: "default-product-template", document_type: "product_template" },
-        }),
+        }).catch(() => null),
         getIdentity().catch(() => null),
       ]);
       return {

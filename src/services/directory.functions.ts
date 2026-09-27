@@ -50,7 +50,7 @@ export const getPublicDirectory = createServerFn({ method: "GET" })
 
     let query = supabase
       .from("directory_listings")
-      .select("*, stores(id, name, slug, settings, is_hidden_from_directory, access_type)")
+      .select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings, is_hidden_from_directory, access_type)")
       .eq("status", "active")
       .order("is_verified", { ascending: false })
       .order("rating", { ascending: false })
@@ -123,7 +123,7 @@ export const getPublicDirectoryById = createServerFn({ method: "GET" })
  const supabase = getServerClient();
 
  // 1. Tenta buscar em directory_listings por ID ou store_id
- let query = supabase.from("directory_listings").select("*, stores(id, name, slug, settings)");
+  let query = supabase.from("directory_listings").select("*, stores:stores!directory_listings_store_id_fkey(id, name, slug, settings)");
  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(listingId);
 
  if (isUuid) {

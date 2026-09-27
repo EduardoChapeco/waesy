@@ -27,6 +27,7 @@ import {
 import { SignaturePad } from "@/components/tourism/contract/signature-pad";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
+import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
 
 export const Route = createFileRoute("/_store/contrato/$token")({
  head: ({ loaderData }: { loaderData?: { contract: TravelContractDTO | null } }) => ({

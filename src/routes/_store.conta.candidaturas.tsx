@@ -12,6 +12,7 @@ import {
  Trash2,
  Building,
  ArrowRight,
+ FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/_store/conta/candidaturas")({
 function MinhasCandidaturasPage() {
  const { applications: initialApps } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
- const [applications, setApplications] = useState<any[]>(initialApps);
+ const [applications, setApplications] = useState<any[]>(Array.isArray(initialApps) ? initialApps : []);
 
  const handleWithdraw = async (appId: string, jobTitle: string) => {
  if (!confirm(`Deseja cancelar sua candidatura para a vaga "${jobTitle}"?`)) {

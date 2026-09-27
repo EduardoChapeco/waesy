@@ -1,7 +1,6 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Save,
+import { Save,
   CheckCircle2,
   Trash2,
   Key,
@@ -10,8 +9,7 @@ import {
   MessageCircle,
   MapPin,
   Layers,
-  ShieldCheck,
-  Sparkles,
+  ShieldCheck ,
   Store,
   FileText,
   Truck,
@@ -22,8 +20,7 @@ import {
   Zap,
   CreditCard,
   Globe2,
-  Terminal,
-} from "lucide-react";
+  Terminal, Bot, Cpu } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
@@ -67,26 +64,34 @@ import {
   syncGmbStoreProfile,
   type GmbLocationDTO,
 } from "@/services/gmb.functions";
+import {
+  getWorkspaceLinkedInStatus,
+  getLinkedInAuthRedirectUrl,
+  disconnectLinkedInCompanyPage,
+} from "@/services/linkedin-integrations.functions";
+import { Linkedin, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
   head: () => ({ meta: [{ title: "Central de Integrações & APIs | Workspace Waesy" }] }),
   loader: async () => {
     try {
-      const [integrations, secrets, marketplaceConnectors, gmbStatus] = await Promise.all([
+      const [integrations, secrets, marketplaceConnectors, gmbStatus, linkedInStatus] = await Promise.all([
         listIntegrationSettings().catch(() => []),
         listConfiguredSecrets().catch(() => []),
         listMarketplaceConnectors().catch(() => []),
         getGmbStatus().catch(() => null),
+        getWorkspaceLinkedInStatus().catch(() => null),
       ]);
       return {
         integrations: integrations || [],
         secrets: secrets || [],
         marketplaceConnectors: marketplaceConnectors || [],
         gmbStatus: gmbStatus || null,
+        linkedInStatus: linkedInStatus || null,
       };
     } catch (err) {
       console.error("[loader:workspace.configuracoes.integracoes] Erro no loader:", err);
-      return { integrations: [], secrets: [], marketplaceConnectors: [], gmbStatus: null };
+      return { integrations: [], secrets: [], marketplaceConnectors: [], gmbStatus: null, linkedInStatus: null };
     }
   },
   component: UnifiedIntegrationsHubPage,
@@ -494,7 +499,43 @@ function UnifiedIntegrationsHubPage() {
     secrets = [],
     marketplaceConnectors = [],
     gmbStatus = null,
+    linkedInStatus = null,
   } = (Route.useLoaderData?.() as any) || {};
+
+  const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false);
+  const [isDisconnectingLinkedIn, setIsDisconnectingLinkedIn] = useState(false);
+
+  const handleConnectLinkedIn = async () => {
+    setIsConnectingLinkedIn(true);
+    try {
+      const res = await getLinkedInAuthRedirectUrl({
+        data: {
+          returnTo: "/workspace/configuracoes/integracoes",
+          mode: "company",
+        },
+      });
+      if (res?.authUrl) {
+        window.location.href = res.authUrl;
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao conectar LinkedIn Company Page.");
+    } finally {
+      setIsConnectingLinkedIn(false);
+    }
+  };
+
+  const handleDisconnectLinkedIn = async () => {
+    setIsDisconnectingLinkedIn(true);
+    try {
+      await disconnectLinkedInCompanyPage();
+      toast.success("Página do LinkedIn desconectada com sucesso.");
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao desconectar.");
+    } finally {
+      setIsDisconnectingLinkedIn(false);
+    }
+  };
 
   const router = useRouter();
 
@@ -715,7 +756,7 @@ function UnifiedIntegrationsHubPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <PageHeader title="Central de Integrações & Conectores" />
+          <PageHeader title="Central de Integrações" />
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Gestão unificada de Marketplaces, Inteligência Artificial (BYOK), ERPs Fiscais, Logística de Envio, Mensageria e Tracking.
           </p>
@@ -739,7 +780,7 @@ function UnifiedIntegrationsHubPage() {
           </TabsTrigger>
 
           <TabsTrigger value="ai_vault" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
-            <Sparkles className="size-3.5 text-primary" />
+            <Bot className="size-3.5 text-primary" />
             Cofre IA (BYOK)
           </TabsTrigger>
 
@@ -750,12 +791,12 @@ function UnifiedIntegrationsHubPage() {
 
           <TabsTrigger value="erp_fiscal" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <FileText className="size-3.5 text-blue-500" />
-            ERPs & Fiscal
+            Emissão Fiscal & ERP
           </TabsTrigger>
 
           <TabsTrigger value="logistics" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <Truck className="size-3.5 text-amber-500" />
-            Logística & Frete
+            Logística
           </TabsTrigger>
 
           <TabsTrigger value="messaging" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
@@ -770,7 +811,7 @@ function UnifiedIntegrationsHubPage() {
 
           <TabsTrigger value="maps" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <MapPin className="size-3.5 text-teal-500" />
-            Mapas & Rotas
+            Mapas
           </TabsTrigger>
         </TabsList>
 
@@ -782,7 +823,7 @@ function UnifiedIntegrationsHubPage() {
                 <CreditCard className="size-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-foreground">Gateways & Meios de Pagamento</h4>
+                <h4 className="text-sm font-bold text-foreground">Gateways de Pagamento</h4>
                 <p className="text-xs text-muted-foreground">
                   Configure suas contas em adquirentes e processadores reais. Os tokens são armazenados com criptografia no cofre de credenciais e validados via ping oficial.
                 </p>
@@ -938,7 +979,7 @@ function UnifiedIntegrationsHubPage() {
                 <Zap className="size-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-foreground">Orquestrador de IA & Arquitetura BYOK</h4>
+                <h4 className="text-sm font-bold text-foreground">Cofre de Inteligência Artificial</h4>
                 <p className="text-xs text-muted-foreground">
                   Ao salvar sua chave pessoal, a plataforma prioriza sua cota. Caso ela expire ou sofra rate-limit, o pool orquestrado da Waesy assume automaticamente.
                 </p>
@@ -947,8 +988,8 @@ function UnifiedIntegrationsHubPage() {
             <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-auto">
               <Link to="/workspace/configuracoes/inteligencia-artificial">
                 <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-xl font-medium cursor-pointer gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
-                  <Sparkles className="size-3.5 text-primary" />
-                  Modelos & Base de Conhecimento
+                  <Bot className="size-3.5 text-primary" />
+                  Modelos de IA
                   <ExternalLink className="size-3 text-muted-foreground" />
                 </Button>
               </Link>
@@ -1011,7 +1052,7 @@ function UnifiedIntegrationsHubPage() {
               provider="anthropic"
               title="Anthropic Claude"
               description="Modelos Claude 3.5 Sonnet para redação de contratos complexos e raciocínio analítico avançado."
-              icon={Sparkles}
+              icon={Bot}
               modelsLabel="claude-3-5-sonnet, claude-3-haiku"
               existingSecret={secrets.find((s: any) => s.provider === "anthropic" && s.is_active)}
               onSave={handleSaveSecret}
@@ -1049,7 +1090,7 @@ function UnifiedIntegrationsHubPage() {
         <TabsContent value="marketplaces" className="space-y-4 outline-none">
           <div className="p-4 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h4 className="text-sm font-bold text-foreground">Hub de Canais Externos & Marketplaces</h4>
+              <h4 className="text-sm font-bold text-foreground">Marketplaces Conectados</h4>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Publique anúncios, sincronize preços/estoques e importe pedidos de canais terceiros diretamente no catálogo.
               </p>
@@ -1378,6 +1419,100 @@ function UnifiedIntegrationsHubPage() {
         {/* 6. ABA PIXELS & GROWTH */}
         <TabsContent value="growth_pixels" className="space-y-4 outline-none">
           <div className="grid lg:grid-cols-2 gap-6">
+            {/* LinkedIn Company Page Integration Card */}
+            <Card className="bg-card rounded-2xl border border-border/70 shadow-none flex flex-col justify-between">
+              <div>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-[#0A66C2]/10 rounded-xl text-[#0A66C2] shrink-0">
+                        <Linkedin className="size-5 fill-current" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          LinkedIn Company Page
+                          {linkedInStatus?.isConnected ? (
+                            <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600">
+                              Conectado Ativo
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                              Não Conectado
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <CardDescription className="text-xs mt-0.5">
+                          Sindicação simultânea de vagas de emprego e postagens corporativas na página oficial da empresa.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-3 pt-1">
+                  <div className="text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/50 flex items-center justify-between">
+                    <span>Status da Sindicação:</span>
+                    <span className="font-semibold text-foreground">
+                      {linkedInStatus?.isPro ? "Plano PRO Ativo (Habilitado)" : "Requer Plano PRO"}
+                    </span>
+                  </div>
+
+                  {linkedInStatus?.isConnected ? (
+                    <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
+                          <CheckCircle2 className="size-4 text-emerald-600" />
+                          <span>Página Vinculada com Sucesso</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={isDisconnectingLinkedIn}
+                          onClick={handleDisconnectLinkedIn}
+                          className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                        >
+                          Desconectar
+                        </Button>
+                      </div>
+                      <p className="text-muted-foreground text-[11px]">
+                        <strong>Empresa:</strong> {linkedInStatus.companyName || "LinkedIn Organization"} ({linkedInStatus.companyId || "N/A"})
+                      </p>
+                      {linkedInStatus.lastSyncedAt && (
+                        <p className="text-muted-foreground text-[10px]">
+                          Última sincronização: {new Date(linkedInStatus.lastSyncedAt).toLocaleString("pt-BR")}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-3 pt-1">
+                      <p className="text-xs text-muted-foreground">
+                        Autorize o Waesy a publicar oportunidades de emprego diretamente na timeline e página de carreiras da sua empresa no LinkedIn.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleConnectLinkedIn}
+                        disabled={isConnectingLinkedIn}
+                        className="w-full h-10 rounded-xl text-xs font-bold gap-2 bg-[#0A66C2] hover:bg-[#084e96] text-white shadow-xs cursor-pointer"
+                      >
+                        {isConnectingLinkedIn ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            <span>Conectando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Linkedin className="size-4 fill-current" />
+                            <span>Conectar LinkedIn Company Page</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </div>
+            </Card>
+
             <IntegrationCard
               provider="meta_pixel"
               title="Meta Pixel & Conversions API"

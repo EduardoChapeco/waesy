@@ -1,6 +1,10 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, redirect } from "@tanstack/react-router";
 import { useState, useRef } from "react";
-import { getProfile, updateProfile } from "@/services/auth.functions";
+import { getProfile, updateProfile, getUserSession } from "@/services/auth.functions";
+import { PoweredByWaesyBadge } from "@/components/common/powered-by-waesy-badge";
+import { MonthYearSelect } from "@/components/profile/month-year-select";
+import { LinkedInProfileImportModal } from "@/components/profile/linkedin-profile-import-modal";
+import { OccupationAutocomplete } from "@/components/profile/occupation-autocomplete";
 import { updateMemberResumeData } from "@/services/social.functions";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -10,14 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  ArrowLeft,
+import { ArrowLeft,
   Save,
   Printer,
   Download,
   Plus,
-  Trash2,
-  Sparkles,
+  Trash2 ,
   FileText,
   Smartphone,
   Eye,
@@ -33,13 +35,12 @@ import {
   Briefcase,
   Layers,
   QrCode,
-  User,
-} from "lucide-react";
+  User, Linkedin } from "lucide-react";
 
 export const Route = createFileRoute("/_store/conta/curriculo")({
   head: () => ({
     meta: [
-      { title: "Meu Currículo Profissional & Portfólio | Waesy" },
+      { title: "Currículo Profissional | Waesy" },
       {
         name: "description",
         content:
@@ -47,6 +48,15 @@ export const Route = createFileRoute("/_store/conta/curriculo")({
       },
     ],
   }),
+  beforeLoad: async ({ location }) => {
+    const session = await getUserSession().catch(() => null);
+    if (!session) {
+      throw redirect({
+        to: "/entrar",
+        search: { returnUrl: location.pathname + (location.searchStr || "") },
+      });
+    }
+  },
   loader: async () => {
     try {
       const profile = await getProfile();
@@ -65,6 +75,7 @@ export default function MeuCurriculoPage() {
   const [activeMobileView, setActiveMobileView] = useState<"edit" | "preview">("edit");
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isLinkedInImportOpen, setIsLinkedInImportOpen] = useState(false);
   const [format, setFormat] = useState<"a4" | "story">("a4");
   const [template, setTemplate] = useState<"minimal" | "modern" | "editorial">("minimal");
 
@@ -86,6 +97,9 @@ export default function MeuCurriculoPage() {
   );
   const [certifications, setCertifications] = useState<any[]>(
     Array.isArray(profile?.resume_data?.certifications) ? profile.resume_data.certifications : []
+  );
+  const [licenses, setLicenses] = useState<any[]>(
+    Array.isArray(profile?.resume_data?.licenses) ? profile.resume_data.licenses : []
   );
   const [skills, setSkills] = useState<string[]>(
     Array.isArray(profile?.resume_data?.skills) ? profile.resume_data.skills : []
@@ -242,10 +256,24 @@ export default function MeuCurriculoPage() {
     setNewSkill("");
   };
 
-  const handleRemoveSkill = (skillToRemove: string) => {
+    const handleRemoveSkill = (skillToRemove: string) => {
     setSkills(skills.filter((s) => s !== skillToRemove));
   };
 
+  const handleLinkedInImport = (data: any) => {
+    if (data.headline && !occupation) setOccupation(data.headline);
+    if (data.summary) setSummary(data.summary);
+    if (Array.isArray(data.experiences) && data.experiences.length > 0) {
+      setExperiences((prev) => [...data.experiences, ...prev]);
+    }
+    if (Array.isArray(data.educations) && data.educations.length > 0) {
+      setEducations((prev) => [...data.educations, ...prev]);
+    }
+    if (Array.isArray(data.skills) && data.skills.length > 0) {
+      setSkills((prev) => Array.from(new Set([...prev, ...data.skills])));
+    }
+    toast.success("Dados do LinkedIn incorporados ao currículo com sucesso!");
+  };
   if (!profile) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center space-y-4">
@@ -270,9 +298,41 @@ export default function MeuCurriculoPage() {
         <div className="flex items-center gap-3">
           <NativeBackButton fallbackHref="/conta" />
           <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (profile?.resume_data) {
+                  if (Array.isArray(profile.resume_data.experiences)) setExperiences(profile.resume_data.experiences);
+                  if (Array.isArray(profile.resume_data.educations)) setEducations(profile.resume_data.educations);
+                  if (Array.isArray(profile.resume_data.certifications)) setCertifications(profile.resume_data.certifications);
+    if (Array.isArray(profile.resume_data.licenses)) setLicenses(profile.resume_data.licenses);
+                  if (Array.isArray(profile.resume_data.skills)) setSkills(profile.resume_data.skills);
+                  if (profile.resume_data.summary) setSummary(profile.resume_data.summary);
+                  toast.success("Dados sincronizados com seu Perfil Profissional!");
+                } else {
+                  toast.info("Nenhum dado profissional encontrado no perfil.");
+                }
+              }}
+              className="h-8 rounded-xl text-xs gap-1.5 font-bold cursor-pointer"
+            >
+              <RefreshCw className="size-3 text-primary" />
+              <span>Sincronizar do Perfil</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsLinkedInImportOpen(true)}
+              className="h-8 rounded-xl text-xs gap-1.5 font-bold border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+            >
+              <Linkedin className="size-3 text-[#0A66C2] fill-current" />
+              <span>Importar LinkedIn</span>
+            </Button>
             <span className="text-sm font-bold text-foreground">Meu Currículo</span>
             <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
-            <span className="text-xs text-muted-foreground hidden sm:inline">Portfólio & PDF Digital</span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">Portfólio Profissional</span>
           </div>
         </div>
 
@@ -426,7 +486,7 @@ export default function MeuCurriculoPage() {
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
               <span>2. Resumo Profissional</span>
-              <Sparkles className="size-3.5 text-primary" />
+              
             </h3>
             <Textarea
               value={summary}
@@ -550,7 +610,7 @@ export default function MeuCurriculoPage() {
           {/* Seção 5: Competências & Habilidades */}
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              5. Competências & Especialidades
+              5. Competências
             </h3>
             <div className="flex gap-2">
               <Input
@@ -591,7 +651,7 @@ export default function MeuCurriculoPage() {
           {/* Seção 6: Personalização Visual */}
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              6. Personalização & Layout
+              6. Personalização
             </h3>
             <div className="space-y-2 text-xs">
               <Label className="text-[11px]">Template Visual</Label>
@@ -712,7 +772,7 @@ export default function MeuCurriculoPage() {
                   Trajetória Profissional
                 </h2>
                 <div className="space-y-2.5 divide-y divide-zinc-100">
-                  {experiences.map((exp: any, i: number) => (
+                  {experiences.filter((exp: any) => exp.is_included !== false).map((exp: any, i: number) => (
                     <div key={exp.id || i} className={cn("space-y-0.5", i > 0 && "pt-2")}>
                       <div className="flex items-start justify-between text-xs">
                         <span className="font-bold text-zinc-900">{exp.title}</span>
@@ -750,6 +810,28 @@ export default function MeuCurriculoPage() {
               </div>
             )}
 
+            {/* Registros de Classe (OAB, CRM, CREA, etc.) */}
+            {licenses.length > 0 && (
+              <div className="space-y-2">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-950 border-b border-zinc-100 pb-0.5">
+                  Registros de Classe
+                </h2>
+                <div className="space-y-1.5">
+                  {licenses.map((lic: any, i: number) => (
+                    <div key={lic.id || i} className="flex items-start justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-zinc-900">{lic.council}</span>
+                        {lic.specialty && <p className="text-zinc-600 text-[11px]">{lic.specialty}</p>}
+                      </div>
+                      <span className="text-zinc-800 font-mono text-[11px] font-bold">
+                        {lic.register_number} / {lic.uf}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Competências */}
             {skills.length > 0 && (
               <div className="space-y-1.5">
@@ -777,6 +859,13 @@ export default function MeuCurriculoPage() {
           </div>
         </div>
       </div>
+    
+      {/* Modal de Importação do LinkedIn */}
+      <LinkedInProfileImportModal
+        open={isLinkedInImportOpen}
+        onOpenChange={setIsLinkedInImportOpen}
+        onImport={handleLinkedInImport}
+      />
     </div>
   );
 }
