@@ -141,7 +141,7 @@ function ColaboradorPortalPage() {
       .join("") || "CL";
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-[100dvh] bg-background text-foreground pb-20">
       {/* Header Estilo Apple HIG com Blur e Elevação */}
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 sm:px-6 py-3 sm:py-4">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

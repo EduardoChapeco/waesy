@@ -111,10 +111,10 @@ export default function WorkspaceTokensPage() {
  Boolean((wallet as any).auto_recharge_enabled)
  );
  const [thresholdTokens, setThresholdTokens] = useState(
- (wallet as any).auto_recharge_threshold_tokens || 20000
+ Number((wallet as any).auto_recharge_threshold_tokens) || 0
  );
  const [monthlyLimitBrl, setMonthlyLimitBrl] = useState(
- (wallet as any).spending_limit_monthly_brl || 500
+ Number((wallet as any).spending_limit_monthly_brl) || 0
  );
  const [isSavingBilling, setIsSavingBilling] = useState(false);
 

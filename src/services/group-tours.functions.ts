@@ -307,7 +307,7 @@ export const createGroupTour = createServerFn({ method: "POST" })
 // ─── 2. Buscar Grupo Terrestre por ID (Workspace) ─────────────────────────────
 
 export const getGroupTourById = createServerFn({ method: "GET" })
- .validator(z.object({ id: z.string().min(1) }))
+ .validator(z.object({ id: z.string().uuid("ID de excursão inválido.") }))
  .handler(async ({ data }): Promise<GroupTourDTO | null> => {
  const supabase = getServerClient();
  const identity = await getServerIdentity();
@@ -369,7 +369,7 @@ export const getGroupTourById = createServerFn({ method: "GET" })
 export const updateGroupTourAllocations = createServerFn({ method: "POST" })
  .validator(
  z.object({
- id: z.string().min(1),
+ id: z.string().uuid("ID de excursão inválido."),
  seats: z.array(z.any()).optional(),
  rooms: z.array(z.any()).optional(),
  busCompanyName: z.string().optional().nullable(),
@@ -617,7 +617,7 @@ export const getGroupTourBudgetSummary = createServerFn({ method: "GET" })
 // ─── 6. Excluir Excursão / Viagem em Grupo ────────────────────────────────────
 
 export const deleteGroupTour = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().min(1) }))
+  .validator(z.object({ id: z.string().uuid("ID de excursão inválido.") }))
   .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();

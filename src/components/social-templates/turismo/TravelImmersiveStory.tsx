@@ -121,9 +121,9 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
               <div className="text-4xl lg:text-5xl font-black text-white tracking-tight">
                 {priceFormatted || "Sob Consulta"}
               </div>
-              {installmentFormatted && (
+              {installmentFormatted && data.maxInstallments && data.maxInstallments > 1 && (
                 <span className="text-emerald-400 text-base font-bold block mt-1">
-                  ou {data.maxInstallments || 12}x de {installmentFormatted}
+                  ou {data.maxInstallments}x de {installmentFormatted}
                 </span>
               )}
             </div>

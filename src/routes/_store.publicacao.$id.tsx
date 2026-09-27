@@ -153,7 +153,7 @@ function PostThreadPage() {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-xl font-bold mb-2">Publicação não encontrada</h2>
         <p className="text-sm text-muted-foreground mb-6">
           Esta publicação pode ter sido removida pelo autor ou não está disponível.

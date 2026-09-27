@@ -720,7 +720,7 @@ function BuilderEditorPage() {
  const selectedBlockManifest = selectedNode ? (builderRegistry as any)[selectedNode.block_type] : null;
 
  return (
- <div className="flex flex-col h-screen w-screen bg-background overflow-hidden select-none font-sans">
+ <div className="flex flex-col h-[100dvh] w-screen bg-background overflow-hidden select-none font-sans">
  {/* ── 1. BARRA SUPERIOR CANÔNICA (Wix Studio / Editor X Standard) ── */}
  <BuilderTopBar
  document={document}

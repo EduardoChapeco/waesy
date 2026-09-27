@@ -3,26 +3,26 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
- Receipt,
- FileText,
- CreditCard,
- ArrowRight,
- CheckCircle2,
- Clock,
- AlertCircle,
- Handshake,
- UploadCloud,
- Loader2,
+  Receipt,
+  FileText,
+  CreditCard,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Handshake,
+  UploadCloud,
+  Loader2,
 } from "lucide-react";
 
-import { PageHeader } from "@/components/commerce/page-header";
+import { NativeBackButton } from "@/components/ui/native-back-button";
 import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/state/states";
 import { ImageUpload } from "@/components/ui/image-upload";
@@ -46,460 +46,547 @@ import { Surface } from "@/components/ui/surface";
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/_store/conta/pagamentos")({
- head: () => ({ meta: [{ title: "Central de Pagamentos & Parcelas | Waesy" }] }),
- loader: async () => {
-   try {
- const [plans, orders, receivables] = await Promise.all([
- getCustomerInstallments().catch(() => []),
- getCustomerOrderPayments().catch(() => []),
- listUserReceivables().catch(() => []),
- ]);
- return { plans, orders, receivables };
-   } catch (err) {
-     console.error("[loader:_store.conta.pagamentos] Unhandled error:", err);
-     return { plans: null, orders: null, receivables: null };
-   }
- },
- component: CustomerInstallmentsPage,
+  head: () => ({ meta: [{ title: "Central de Pagamentos & Parcelas | Waesy" }] }),
+  loader: async () => {
+    try {
+      const [plans, orders, receivables] = await Promise.all([
+        getCustomerInstallments().catch(() => []),
+        getCustomerOrderPayments().catch(() => []),
+        listUserReceivables().catch(() => []),
+      ]);
+      return {
+        plans: Array.isArray(plans) ? plans : [],
+        orders: Array.isArray(orders) ? orders : [],
+        receivables: Array.isArray(receivables) ? receivables : [],
+      };
+    } catch (err) {
+      console.error("[loader:_store.conta.pagamentos] Unhandled error:", err);
+      return { plans: [], orders: [], receivables: [] };
+    }
+  },
+  component: CustomerInstallmentsPage,
 });
 
 function translatePaymentStatus(status: string) {
- switch (status) {
- case "awaiting_payment":
- case "pending":
- return { label: "Aguardando Pagamento", variant: "secondary" as const, icon: Clock };
- case "paid":
- case "approved":
- case "completed":
- return { label: "Aprovado", variant: "default" as const, icon: CheckCircle2 };
- case "cancelled":
- case "failed":
- return { label: "Falha / Cancelado", variant: "destructive" as const, icon: AlertCircle };
- default:
- return { label: status, variant: "outline" as const, icon: FileText };
- }
+  switch (status) {
+    case "awaiting_payment":
+    case "pending":
+      return { label: "Aguardando Pagamento", variant: "secondary" as const, icon: Clock };
+    case "paid":
+    case "approved":
+    case "completed":
+      return { label: "Aprovado", variant: "default" as const, icon: CheckCircle2 };
+    case "cancelled":
+    case "failed":
+      return { label: "Falha / Cancelado", variant: "destructive" as const, icon: AlertCircle };
+    default:
+      return { label: status, variant: "outline" as const, icon: FileText };
+  }
 }
 
 function translatePaymentMethod(method?: string) {
- switch (method) {
- case "pix":
- return "PIX";
- case "credit_card":
- return "Cartão de Crédito";
- case "boleto":
- return "Boleto Bancário";
- case "manual":
- return "Transferência / Manual";
- default:
- return "Online";
- }
+  switch (method) {
+    case "pix":
+      return "PIX";
+    case "credit_card":
+      return "Cartão de Crédito";
+    case "boleto":
+      return "Boleto Bancário";
+    case "manual":
+      return "Transferência / Manual";
+    default:
+      return "Online";
+  }
 }
 
 function CustomerInstallmentsPage() {
- const { plans, orders, receivables } = ((Route.useLoaderData?.() as any) || {});
- const queryClient = useQueryClient();
- const router = useRouter();
+  const { plans, orders, receivables } = ((Route.useLoaderData?.() as any) || {});
+  const safePlans = Array.isArray(plans) ? plans : [];
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const safeReceivables = Array.isArray(receivables) ? receivables : [];
 
- const [paymentModalOpen, setPaymentModalOpen] = useState(false);
- const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
- const [paymentProofUrl, setPaymentProofUrl] = useState("");
- const [notes, setNotes] = useState("");
+  const router = useRouter();
 
- const payInstallmentMutation = useMutation({
- mutationFn: registerInstallmentPayment,
- onSuccess: () => {
- toast.success("Pagamento da parcela registrado com sucesso!");
- setPaymentModalOpen(false);
- setSelectedInstallment(null);
- setPaymentProofUrl("");
- setNotes("");
- router.invalidate();
- },
- onError: (err: any) => {
- toast.error(err?.message || "Erro ao registrar quitação da parcela.");
- },
- });
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
+  const [paymentProofUrl, setPaymentProofUrl] = useState("");
+  const [notes, setNotes] = useState("");
 
- const handleOpenPay = (inst: any) => {
- setSelectedInstallment(inst);
- setPaymentModalOpen(true);
- };
+  const payInstallmentMutation = useMutation({
+    mutationFn: registerInstallmentPayment,
+    onSuccess: () => {
+      toast.success("Pagamento da parcela registrado com sucesso!");
+      setPaymentModalOpen(false);
+      setSelectedInstallment(null);
+      setPaymentProofUrl("");
+      setNotes("");
+      router.invalidate();
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao registrar quitação da parcela.");
+    },
+  });
 
- const handleConfirmPay = () => {
- if (!selectedInstallment) return;
- payInstallmentMutation.mutate({
- data: {
- installmentId: selectedInstallment.id,
- paymentMethod: "PIX",
- paymentProofUrl: paymentProofUrl.trim() || undefined,
- notes: notes.trim() || undefined,
- },
- });
- };
+  const handleOpenPay = (inst: any) => {
+    setSelectedInstallment(inst);
+    setPaymentModalOpen(true);
+  };
 
- const hasAnyData =
- plans.length > 0 || orders.length > 0 || (receivables && receivables.length > 0);
+  const handleConfirmPay = () => {
+    if (!selectedInstallment) return;
+    payInstallmentMutation.mutate({
+      data: {
+        installmentId: selectedInstallment.id,
+        paymentMethod: "PIX",
+        paymentProofUrl: paymentProofUrl.trim() || undefined,
+        notes: notes.trim() || undefined,
+      },
+    });
+  };
 
- if (!hasAnyData) {
- return (
- <div className="space-y-6">
- <EmptyState title="Nenhum histórico de pagamento ou cobrança" />
- </div>
- );
- }
+  const hasAnyData =
+    safePlans.length > 0 || safeOrders.length > 0 || safeReceivables.length > 0;
 
- return (
- <div className="space-y-10">
- {/* Seção 1: Pagamentos de Pedidos */}
- {orders.length > 0 && (
- <section className="space-y-4">
- <div>
- <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
- <CreditCard className="h-5 w-5 text-primary" />
- Pagamentos de Pedidos
- </h2>
- <p className="text-sm text-muted-foreground">
- Status de pagamentos PIX, Cartões e transferências de seus pedidos mais recentes.
- </p>
- </div>
+  return (
+    <div className="min-h-[100dvh] bg-background text-foreground w-full max-w-5xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      {/* ── 1. Clean Minimalist Header (Apple HIG / Native Back) ── */}
+      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1 px-4 sm:px-0">
+        <div className="flex items-center gap-3">
+          <NativeBackButton fallbackHref="/conta" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Pagamentos
+          </h1>
+        </div>
+      </div>
 
- <Surface variant="default" padding="none">
- <Table>
- <TableHeader>
- <TableRow>
- <TableHead>Pedido</TableHead>
- <TableHead>Data</TableHead>
- <TableHead>Método</TableHead>
- <TableHead>Valor</TableHead>
- <TableHead>Status do Pagamento</TableHead>
- <TableHead className="text-right">Ações</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {orders.map((order: any) => {
- const payment = order.payments?.[0] || {};
- const statusInfo = translatePaymentStatus(payment.status || order.status);
- const Icon = statusInfo.icon;
- const needsPayment =
- order.status === "awaiting_payment" || payment.status === "pending";
+      {!hasAnyData ? (
+        <div className="px-4 sm:px-0 py-8">
+          <EmptyState title="Nenhum histórico de pagamento ou cobrança" />
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {/* Seção 1: Pagamentos de Pedidos */}
+          {safeOrders.length > 0 && (
+            <section className="space-y-3">
+              <div className="px-4 sm:px-0">
+                <h2 className="text-base sm:text-lg font-bold tracking-tight flex items-center gap-2 text-foreground">
+                  <CreditCard className="size-4 text-primary" />
+                  Pagamentos de Pedidos
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Histórico de transações dos seus pedidos recentes.
+                </p>
+              </div>
 
- return (
- <TableRow key={order.id}>
- <TableCell className="font-mono font-medium">#{order.public_token}</TableCell>
- <TableCell className="text-muted-foreground">
- {formatDate(order.created_at)}
- </TableCell>
- <TableCell>
- {translatePaymentMethod(order.payment_method || payment.method)}
- </TableCell>
- <TableCell className="font-semibold">
- {formatMoney(order.total_cents)}
- </TableCell>
- <TableCell>
- <Badge
- variant={statusInfo.variant}
- className="inline-flex items-center gap-1.5"
- >
- <Icon className="h-3.5 w-3.5" />
- {statusInfo.label}
- </Badge>
- </TableCell>
- <TableCell className="text-right">
- <Button
- asChild
- size="sm"
- variant={needsPayment ? "default" : "outline"}
- className="font-medium"
- >
- <Link to="/conta/pedidos/$id" params={{ id: order.id }}>
- {needsPayment ? "Pagar / Anexar Comprovante" : "Ver Detalhes"}
- <ArrowRight className="ml-2 h-3.5 w-3.5" />
- </Link>
- </Button>
- </TableCell>
- </TableRow>
- );
- })}
- </TableBody>
- </Table>
- </Surface>
- </section>
- )}
+              {/* Mobile View: WhatsApp List Pattern */}
+              <div className="block md:hidden bg-card border-y border-border/40 divide-y divide-border/30">
+                {safeOrders.map((order: any) => {
+                  const payment = order.payments?.[0] || {};
+                  const statusInfo = translatePaymentStatus(payment.status || order.status);
+                  return (
+                    <div
+                      key={order.id}
+                      className="p-4 min-h-[56px] space-y-2 active:bg-muted/30 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          #{order.public_token}
+                        </span>
+                        <Badge variant={statusInfo.variant} className="text-[10px] px-2 py-0.5">
+                          {statusInfo.label}
+                        </Badge>
+                      </div>
 
-        {/* Seção 2: Recebíveis e Parcelas de Negociações Diretas */}
-        {receivables && receivables.length > 0 && (
-          <section className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
-                <Handshake className="h-5 w-5 text-primary" />
-                Recebíveis & Parcelas de Negociações Diretas
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Acompanhe as parcelas de vendas parceladas, contratos e acordos comerciais.
-              </p>
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="text-muted-foreground">
+                          {formatDate(order.created_at)} • {translatePaymentMethod(order.payment_method || payment.method)}
+                        </span>
+                        <span className="font-bold text-foreground">
+                          {formatMoney(order.total_cents)}
+                        </span>
+                      </div>
+
+                      <div className="pt-1 flex justify-end">
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 text-xs font-semibold px-2 text-primary"
+                        >
+                          <Link to="/_store/conta/pedidos" search={{ orderId: order.id } as any}>
+                            Ver Detalhes
+                            <ArrowRight className="size-3.5 ml-1" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop View: Table */}
+              <div className="hidden md:block rounded-2xl border border-border/60 overflow-hidden bg-card">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Pedido</TableHead>
+                      <TableHead className="text-xs">Data</TableHead>
+                      <TableHead className="text-xs">Método</TableHead>
+                      <TableHead className="text-xs">Valor</TableHead>
+                      <TableHead className="text-xs">Status</TableHead>
+                      <TableHead className="text-xs text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {safeOrders.map((order: any) => {
+                      const payment = order.payments?.[0] || {};
+                      const statusInfo = translatePaymentStatus(payment.status || order.status);
+                      return (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-mono font-medium text-xs">#{order.public_token}</TableCell>
+                          <TableCell className="text-muted-foreground text-xs">{formatDate(order.created_at)}</TableCell>
+                          <TableCell className="text-xs">{translatePaymentMethod(order.payment_method || payment.method)}</TableCell>
+                          <TableCell className="font-semibold text-xs">{formatMoney(order.total_cents)}</TableCell>
+                          <TableCell>
+                            <Badge variant={statusInfo.variant} className="text-[10px]">
+                              {statusInfo.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button asChild size="sm" variant="outline" className="h-8 text-xs rounded-xl">
+                              <Link to="/_store/conta/pedidos" search={{ orderId: order.id } as any}>
+                                Detalhes
+                              </Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
+          )}
+
+          {/* Seção 2: Contratos e Parcelas P2P (Recebíveis / Locações) */}
+          {safeReceivables.length > 0 && (
+            <section className="space-y-4">
+              <div className="px-4 sm:px-0">
+                <h2 className="text-base sm:text-lg font-bold tracking-tight flex items-center gap-2 text-foreground">
+                  <Handshake className="size-4 text-primary" />
+                  Contratos & Parcelas de Negociações
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Parcelas decorrentes de contratos, acordos de aluguel ou compras diretas.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {safeReceivables.map((rec: any) => (
+                  <div key={rec.id} className="bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden">
+                    <div className="flex flex-row items-center justify-between p-4 bg-muted/20 border-b border-border/40">
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground">
+                          {rec.contract?.title || rec.title || "Contrato de Negociação"}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Total: <strong className="text-foreground">{formatMoney(rec.total_amount_cents)}</strong> • {rec.total_installments} parcelas
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          rec.status === "settled"
+                            ? "default"
+                            : rec.status === "defaulted"
+                            ? "destructive"
+                            : "outline"
+                        }
+                        className="uppercase text-[10px]"
+                      >
+                        {rec.status === "settled" ? "Quitado" : rec.status === "active" ? "Em Aberto" : rec.status}
+                      </Badge>
+                    </div>
+
+                    {/* Mobile View: Parcelas agrupadas */}
+                    <div className="block md:hidden divide-y divide-border/30">
+                      {(rec.installments || []).map((inst: any) => {
+                        const isLate = inst.status === "pending" && new Date(inst.due_date) < new Date();
+                        const isPaid = inst.status === "paid";
+                        return (
+                          <div key={inst.id} className="p-3.5 flex items-center justify-between gap-3 text-xs">
+                            <div className="space-y-0.5">
+                              <p className="font-medium text-foreground">
+                                {inst.installment_number}ª Parcela • {formatDate(inst.due_date)}
+                              </p>
+                              <p className="font-mono font-semibold text-foreground">
+                                {formatMoney(inst.amount_cents)}
+                              </p>
+                              {inst.paid_at && (
+                                <p className="text-[10px] text-muted-foreground">
+                                  Paga em {formatDate(inst.paid_at)}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              {isPaid ? (
+                                <Badge variant="default" className="bg-emerald-600 text-white text-[10px]">
+                                  Paga
+                                </Badge>
+                              ) : isLate ? (
+                                <Badge variant="destructive" className="text-[10px]">Atrasada</Badge>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleOpenPay(inst)}
+                                  className="h-8 text-xs font-semibold rounded-xl"
+                                >
+                                  Quitar
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Desktop View: Table */}
+                    <div className="hidden md:block p-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-xs">Parcela</TableHead>
+                            <TableHead className="text-xs">Vencimento</TableHead>
+                            <TableHead className="text-xs">Valor</TableHead>
+                            <TableHead className="text-xs">Status</TableHead>
+                            <TableHead className="text-xs">Data de Pagamento</TableHead>
+                            <TableHead className="text-xs text-right">Ação</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {(rec.installments || []).map((inst: any) => {
+                            const isLate = inst.status === "pending" && new Date(inst.due_date) < new Date();
+                            const isPaid = inst.status === "paid";
+
+                            return (
+                              <TableRow key={inst.id}>
+                                <TableCell className="font-medium text-xs">{inst.installment_number}ª Parcela</TableCell>
+                                <TableCell className="text-xs">{formatDate(inst.due_date)}</TableCell>
+                                <TableCell className="font-semibold font-mono text-xs">{formatMoney(inst.amount_cents)}</TableCell>
+                                <TableCell>
+                                  {isPaid ? (
+                                    <Badge variant="default" className="bg-emerald-600 text-[10px]">Paga</Badge>
+                                  ) : isLate ? (
+                                    <Badge variant="destructive" className="text-[10px]">Em Atraso</Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="text-[10px]">Pendente</Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-xs">
+                                  {inst.paid_at ? formatDate(inst.paid_at) : "—"}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {!isPaid && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleOpenPay(inst)}
+                                      className="h-8 text-xs font-semibold rounded-xl"
+                                    >
+                                      Quitar Parcela
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Seção 3: Carnês e Crediário */}
+          {safePlans.length > 0 && (
+            <section className="space-y-4">
+              <div className="px-4 sm:px-0">
+                <h2 className="text-base sm:text-lg font-bold tracking-tight flex items-center gap-2 text-foreground">
+                  <Receipt className="size-4 text-primary" />
+                  Carnês e Crediário
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Parcelamentos ativos via crediário e faturas de carnê.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {safePlans.map((plan: any) => (
+                  <div key={plan.id} className="bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden">
+                    <div className="flex flex-row items-center justify-between p-4 bg-muted/20 border-b border-border/40">
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground">
+                          Pedido #{plan.orderToken}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Gerado em {formatDate(plan.createdAt)} — Total: {formatMoney(plan.totalCents)}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          plan.status === "active"
+                            ? "default"
+                            : plan.status === "paid_off"
+                            ? "secondary"
+                            : "destructive"
+                        }
+                        className="text-[10px]"
+                      >
+                        {plan.status === "active" ? "Ativo" : plan.status === "paid_off" ? "Quitado" : "Em Atraso"}
+                      </Badge>
+                    </div>
+
+                    <div className="p-4">
+                      <div className="block md:hidden divide-y divide-border/30">
+                        {plan.installments.map((inst: any, idx: number) => {
+                          const isLate = inst.status === "pending" && new Date(inst.dueDate) < new Date();
+                          return (
+                            <div key={inst.id} className="py-2.5 flex items-center justify-between text-xs">
+                              <div>
+                                <p className="font-medium text-foreground">{idx + 1}ª Parcela • {formatDate(inst.dueDate)}</p>
+                                <p className="font-mono font-semibold">{formatMoney(inst.amountCents)}</p>
+                              </div>
+                              <Badge
+                                variant={inst.status === "paid" ? "default" : isLate ? "destructive" : "secondary"}
+                                className="text-[10px]"
+                              >
+                                {inst.status === "paid" ? "Paga" : isLate ? "Atrasada" : "Pendente"}
+                              </Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="hidden md:block">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-xs">Parcela</TableHead>
+                              <TableHead className="text-xs">Vencimento</TableHead>
+                              <TableHead className="text-xs">Valor</TableHead>
+                              <TableHead className="text-xs">Status</TableHead>
+                              <TableHead className="text-xs">Data de Pagamento</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {plan.installments.map((inst: any, idx: number) => {
+                              const isLate = inst.status === "pending" && new Date(inst.dueDate) < new Date();
+                              return (
+                                <TableRow key={inst.id}>
+                                  <TableCell className="font-medium text-xs">{idx + 1}ª</TableCell>
+                                  <TableCell className="text-xs">{formatDate(inst.dueDate)}</TableCell>
+                                  <TableCell className="text-xs font-mono font-semibold">{formatMoney(inst.amountCents)}</TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      variant={inst.status === "paid" ? "default" : isLate ? "destructive" : "secondary"}
+                                      className="text-[10px]"
+                                    >
+                                      {inst.status === "paid" ? "Paga" : isLate ? "Atrasada" : "Pendente"}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-xs text-muted-foreground">{inst.paidAt ? formatDate(inst.paidAt) : "-"}</TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+
+      {/* Modal de Quitação de Parcela (16px Mandate para evitar iOS Zoom) */}
+      {selectedInstallment && (
+        <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
+          <DialogContent className="sm:max-w-md rounded-2xl p-5 sm:p-6">
+            <DialogHeader className="space-y-1">
+              <DialogTitle className="text-base font-bold text-foreground">
+                Quitar {selectedInstallment.installment_number}ª Parcela
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Valor:{" "}
+                <strong className="text-foreground">
+                  {formatMoney(selectedInstallment.amount_cents)}
+                </strong>{" "}
+                • Vencimento: {formatDate(selectedInstallment.due_date)}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">
+                  Comprovante de Pagamento (Foto / Anexo)
+                </Label>
+                <ImageUpload
+                  value={paymentProofUrl}
+                  onChange={(url) => setPaymentProofUrl(url)}
+                  onRemove={() => setPaymentProofUrl("")}
+                  bucket="cms-media"
+                  aspectPreset="square"
+                  className="w-24 h-24"
+                  helperText="Foto do comprovante"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Observações / Código da Transação</Label>
+                <Textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ex: Pago via PIX pelo banco às 14:30"
+                  rows={3}
+                  className="rounded-xl text-base sm:text-xs bg-background resize-none"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPaymentModalOpen(false)}
+                  className="rounded-xl text-xs h-10 px-4"
+                >
+                  Cancelar
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={handleConfirmPay}
+                  disabled={payInstallmentMutation.isPending}
+                  className="rounded-xl text-xs font-bold gap-1.5 h-10 px-4 bg-primary text-primary-foreground"
+                >
+                  {payInstallmentMutation.isPending ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" />
+                      <span>Registrando...</span>
+                    </>
+                  ) : (
+                    <span>Confirmar Pagamento</span>
+                  )}
+                </Button>
+              </div>
             </div>
-
-            <div className="space-y-6">
-              {receivables.map((rec: any) => (
-                <Surface variant="default" padding="none" key={rec.id}>
-                  <div className="flex flex-row items-center justify-between p-6 bg-muted/30 ">
-                    <div>
-                      <h3 className="text-lg flex items-center font-bold">
-                        <FileText className="mr-2 h-5 w-5 text-primary" />
-                        {rec.title || "Acordo Comercial"}
-                      </h3>
- <p className="text-sm text-muted-foreground mt-1">
- Total:{" "}
- <strong className="text-foreground">
- {formatMoney(rec.total_amount_cents)}
- </strong>{" "}
- • {rec.total_installments} parcelas
- </p>
- </div>
- <Badge
- variant={
- rec.status === "settled"
- ? "default"
- : rec.status === "defaulted"
- ? "destructive"
- : "outline"
- }
- className="uppercase text-[10px]"
- >
- {rec.status === "settled"
- ? "Quitado"
- : rec.status === "active"
- ? "Em Aberto"
- : rec.status}
- </Badge>
- </div>
-
- <div className="p-6">
- <Table>
- <TableHeader>
- <TableRow>
- <TableHead>Parcela</TableHead>
- <TableHead>Vencimento</TableHead>
- <TableHead>Valor</TableHead>
- <TableHead>Status</TableHead>
- <TableHead>Data de Pagamento</TableHead>
- <TableHead className="text-right">Ação</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {(rec.installments || []).map((inst: any) => {
- const isLate =
- inst.status === "pending" && new Date(inst.due_date) < new Date();
- const isPaid = inst.status === "paid";
-
- return (
- <TableRow key={inst.id}>
- <TableCell className="font-medium">
- {inst.installment_number}ª Parcela
- </TableCell>
- <TableCell>{formatDate(inst.due_date)}</TableCell>
- <TableCell className="font-semibold font-mono">
- {formatMoney(inst.amount_cents)}
- </TableCell>
- <TableCell>
- {isPaid ? (
- <Badge variant="default" className="bg-emerald-600">
- Paga
- </Badge>
- ) : isLate ? (
- <Badge variant="destructive">Em Atraso</Badge>
- ) : (
- <Badge variant="secondary">Pendente</Badge>
- )}
- </TableCell>
- <TableCell className="text-muted-foreground text-xs">
- {inst.paid_at ? formatDate(inst.paid_at) : "—"}
- </TableCell>
- <TableCell className="text-right">
- {!isPaid && (
- <Button
- size="sm"
- variant="outline"
- onClick={() => handleOpenPay(inst)}
- className="h-8 text-xs font-semibold rounded-xl"
- >
- Quitar Parcela
- </Button>
- )}
- </TableCell>
- </TableRow>
- );
- })}
- </TableBody>
- </Table>
- </div>
- </Surface>
- ))}
- </div>
- </section>
- )}
-
- {/* Seção 3: Carnês e Crediário */}
- {plans.length > 0 && (
- <section className="space-y-4">
- <div>
- <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
- <Receipt className="h-5 w-5 text-primary" />
- Carnês e Crediário da Loja
- </h2>
- <p className="text-sm text-muted-foreground">
- Seus parcelamentos ativos via crediário e faturas de carnê.
- </p>
- </div>
-
- <div className="space-y-6">
- {plans.map((plan: any) => (
- <Surface variant="default" padding="none" key={plan.id}>
- <div className="flex flex-row items-center justify-between p-6 bg-muted/30 ">
- <div>
- <h3 className="text-lg flex items-center font-bold">
- <FileText className="mr-2 h-5 w-5" />
- Pedido #{plan.orderToken}
- </h3>
- <p className="text-sm text-muted-foreground mt-1">
- Gerado em {formatDate(plan.createdAt)} — Total: {formatMoney(plan.totalCents)}
- </p>
- </div>
- <Badge
- variant={
- plan.status === "active"
- ? "default"
- : plan.status === "paid_off"
- ? "secondary"
- : "destructive"
- }
- >
- {plan.status === "active"
- ? "Ativo"
- : plan.status === "paid_off"
- ? "Quitado"
- : "Em Atraso"}
- </Badge>
- </div>
- <div className="p-6">
- <Table>
- <TableHeader>
- <TableRow>
- <TableHead>Parcela</TableHead>
- <TableHead>Vencimento</TableHead>
- <TableHead>Valor</TableHead>
- <TableHead>Status</TableHead>
- <TableHead>Data de Pagamento</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {plan.installments.map((inst: any, idx: number) => {
- const isLate =
- inst.status === "pending" && new Date(inst.dueDate) < new Date();
- return (
- <TableRow key={inst.id}>
- <TableCell className="font-medium">{idx + 1}ª</TableCell>
- <TableCell>{formatDate(inst.dueDate)}</TableCell>
- <TableCell>{formatMoney(inst.amountCents)}</TableCell>
- <TableCell>
- {inst.status === "paid" ? (
- <Badge variant="default" className="bg-success hover:bg-success">
- Paga
- </Badge>
- ) : isLate ? (
- <Badge variant="destructive">Atrasada</Badge>
- ) : (
- <Badge variant="secondary">Pendente</Badge>
- )}
- </TableCell>
- <TableCell>{inst.paidAt ? formatDate(inst.paidAt) : "-"}</TableCell>
- </TableRow>
- );
- })}
- </TableBody>
- </Table>
- </div>
- </Surface>
- ))}
- </div>
- </section>
- )}
-
- {/* Modal de Quitação de Parcela */}
- {selectedInstallment && (
- <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
- <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6">
- <DialogHeader className="space-y-1">
- <DialogTitle className="text-base font-bold text-foreground">
- Quitar {selectedInstallment.installment_number}ª Parcela
- </DialogTitle>
- <DialogDescription className="text-xs text-muted-foreground">
- Valor:{" "}
- <strong className="text-foreground">
- {formatMoney(selectedInstallment.amount_cents)}
- </strong>{" "}
- • Vencimento: {formatDate(selectedInstallment.due_date)}
- </DialogDescription>
- </DialogHeader>
-
- <div className="space-y-4 py-2 text-xs">
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold">
- Comprovante de Pagamento (Foto / Anexo)
- </Label>
- <ImageUpload
- value={paymentProofUrl}
- onChange={(url) => setPaymentProofUrl(url)}
- onRemove={() => setPaymentProofUrl("")}
- bucket="cms-media"
- aspectPreset="square"
- className="w-24 h-24"
- helperText="Foto do comprovante"
- />
- </div>
-
- <div className="space-y-1.5">
- <Label className="text-xs font-semibold">Observações / Código da Transação</Label>
- <Textarea
- value={notes}
- onChange={(e) => setNotes(e.target.value)}
- placeholder="Ex: Pago via PIX pelo banco Nubank às 14:30"
- rows={3}
- className="rounded-xl text-xs bg-background resize-none"
- />
- </div>
-
- <div className="pt-2 flex items-center justify-end gap-2">
- <Button
- type="button"
- variant="ghost"
- size="sm"
- onClick={() => setPaymentModalOpen(false)}
- className="rounded-xl text-xs"
- >
- Cancelar
- </Button>
-
- <Button
- type="button"
- onClick={handleConfirmPay}
- disabled={payInstallmentMutation.isPending}
- className="rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground"
- >
- {payInstallmentMutation.isPending ? (
- <>
- <Loader2 className="size-3.5 animate-spin" />
- <span>Registrando...</span>
- </>
- ) : (
- <span>Confirmar Pagamento</span>
- )}
- </Button>
- </div>
- </div>
- </DialogContent>
- </Dialog>
- )}
- </div>
- );
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
 }

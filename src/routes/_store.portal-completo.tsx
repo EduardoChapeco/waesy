@@ -171,7 +171,7 @@ function PortalCompletoPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-[100dvh] bg-background pb-24">
       {/* Hero Silencioso Apple HIG */}
       <section className="relative overflow-hidden pt-10 pb-12 border-b border-border/60 bg-muted/20">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-3">

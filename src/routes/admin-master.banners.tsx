@@ -39,19 +39,51 @@ const SearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/admin-master/banners")({
- validateSearch: (search: Record<string, unknown>) => SearchSchema.parse(search),
- head: () => ({ meta: [{ title: "Banners & Vitrines | Admin Master" }] }),
- loader: async () => {
-   try {
- const banners = await listActiveBanners({ data: { placement: "all" } }).catch(() => []);
- return { banners };
-   } catch (err) {
-     console.error("[loader:admin-master.banners] Unhandled loader error:", err);
-     return { banners: null };
-   }
- },
- component: AdminMasterBannersPage,
+  validateSearch: (search: Record<string, unknown>) => SearchSchema.parse(search),
+  head: () => ({ meta: [{ title: "Banners & Vitrines | Admin Master" }] }),
+  loader: async () => {
+    try {
+      const banners = await listActiveBanners({ data: { placement: "all" } }).catch(() => []);
+      return { banners: Array.isArray(banners) ? banners : [] };
+    } catch (err) {
+      console.error("[loader:admin-master.banners] Unhandled loader error:", err);
+      return { banners: [] };
+    }
+  },
+  errorComponent: AdminMasterBannersErrorComponent,
+  component: AdminMasterBannersPage,
 });
+
+function AdminMasterBannersErrorComponent({ error }: { error: any }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-4">
+      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+        <ImageIcon className="size-7" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="text-lg font-bold text-foreground">Falha ao Carregar Banners de Anúncios</h2>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto">
+          Não foi possível sincronizar os banners das vitrines públicas.
+        </p>
+      </div>
+      {error?.message && (
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+          {error.message}
+        </pre>
+      )}
+      <div className="pt-2 flex items-center justify-center gap-3">
+        <Button
+          variant="default"
+          size="sm"
+          className="rounded-xl text-xs h-10 px-5 font-bold cursor-pointer"
+          onClick={() => window.location.reload()}
+        >
+          Recarregar Página
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export const PLACEMENT_OPTIONS: { id: BannerPlacement; label: string }[] = [
   { id: "all", label: "Todas as Vitrines" },

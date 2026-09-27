@@ -30,7 +30,7 @@ function ReceiptPrintPage() {
 
   if (!order || !order.id) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+      <div className="min-h-[100dvh] flex items-center justify-center p-6 text-center">
         <p className="text-muted-foreground text-sm">Pedido não localizado para impressão do recibo.</p>
       </div>
     );
@@ -41,7 +41,7 @@ function ReceiptPrintPage() {
   const hasNFe = Boolean((order as any).danfe_pdf_url || (order as any).nfe_key);
 
   return (
-    <div className="bg-white text-black p-8 max-w-3xl mx-auto min-h-screen font-mono text-xs">
+    <div className="bg-white text-black p-8 max-w-3xl mx-auto min-h-[100dvh] font-mono text-xs">
       {/* Botão de Impressão na visualização em tela */}
       <div className="flex justify-end gap-2 mb-6 print:hidden">
         <button

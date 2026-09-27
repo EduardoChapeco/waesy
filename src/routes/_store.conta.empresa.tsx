@@ -289,7 +289,7 @@ function PainelEmpresaPage() {
 
   if (!store) {
     return (
-      <div className="min-h-screen bg-background py-10 sm:py-16 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      <div className="min-h-[100dvh] bg-background py-10 sm:py-16 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
         <div className="max-w-md mx-auto text-center space-y-4">
           <div className="size-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <Store className="size-8" />
@@ -315,7 +315,7 @@ function PainelEmpresaPage() {
   const pendingCount = leads.filter((l: any) => l.status === "pending" || l.status === "contacted").length;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-[100dvh] bg-background pb-20">
             {/* Top Bar Operacional Nativa */}
       <NativeMobileHeader
         fallbackHref="/conta"

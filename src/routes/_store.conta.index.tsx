@@ -7,6 +7,7 @@ import { listCustomerOrders } from "@/services/order.functions";
 import { getProfile, getUserSession, signOut } from "@/services/auth.functions";
 import { getMyStoresList } from "@/services/store.functions";
 import { listUserNotifications } from "@/services/notifications.functions";
+import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
 import { cn } from "@/lib/utils";
 import { ContextSwitcher } from "@/components/profile/context-switcher";
 import {
@@ -52,11 +53,12 @@ export const Route = createFileRoute("/_store/conta/")({
   loader: async () => {
     try {
       const session = await getUserSession().catch(() => null);
-      const [ordersRes, profileRes, storesRes, notificationsRes] = await Promise.all([
+      const [ordersRes, profileRes, storesRes, notificationsRes, creatorsRes] = await Promise.all([
         listCustomerOrders().catch(() => []),
         getProfile().catch(() => null),
         getMyStoresList().catch(() => []),
         listUserNotifications().catch(() => []),
+        getMyCreatorProfilesList().catch(() => []),
       ]);
       return {
         orders: ordersRes || [],
@@ -64,6 +66,7 @@ export const Route = createFileRoute("/_store/conta/")({
         session: session || null,
         stores: storesRes || [],
         notifications: notificationsRes || [],
+        creatorProfiles: creatorsRes || [],
       };
     } catch {
       return {
@@ -72,6 +75,7 @@ export const Route = createFileRoute("/_store/conta/")({
         session: null,
         stores: [],
         notifications: [],
+        creatorProfiles: [],
       };
     }
   },
@@ -109,7 +113,17 @@ function AccountDashboardPage() {
       ? sessionMemberships
       : profileMemberships;
 
-  const navigate = useNavigate();
+  const creatorProfiles = (loaderData.creatorProfiles as any[]) || [];
+
+  const activeContextFromCookie = typeof window !== "undefined"
+    ? (document.cookie.match(/waesy_active_context=([^;]+)/)?.[1] as any) || "civil"
+    : "civil";
+  const activeTenantFromCookie = typeof window !== "undefined"
+    ? document.cookie.match(/waesy_active_tenant=([^;]+)/)?.[1] || null
+    : null;
+  const activeCreatorFromCookie = typeof window !== "undefined"
+    ? document.cookie.match(/waesy_active_creator=([^;]+)/)?.[1] || null
+    : null;
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isAuthenticated = !!(session?.user || profile?.id);
@@ -293,26 +307,33 @@ function AccountDashboardPage() {
         </div>
 
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto shrink-0">
-          {stores.length > 0 && (
-            <ContextSwitcher
-              currentContextType="civil"
-              civilUser={{
-                name: userName,
-                email: userEmail,
-                username: userHandle,
-                avatarUrl: userAvatar,
-              }}
-              stores={stores.map((st: any) => ({
-                store_id: st.id || st.store_id,
-                name: st.name || st.store_name || "Minha Empresa",
-                role: st.role || "owner",
-                logo_url: st.logo_url || st.settings?.logoUrl,
-                slug: st.slug,
-              }))}
-              hasCreatorProfile={profile?.is_creator || false}
-              creatorHandle={profile?.creator_handle || userHandle}
-            />
-          )}
+          <ContextSwitcher
+            currentContextType={activeContextFromCookie}
+            activeProfileId={activeCreatorFromCookie || activeTenantFromCookie}
+            currentStoreId={activeTenantFromCookie}
+            civilUser={{
+              name: userName,
+              email: userEmail,
+              username: userHandle,
+              avatarUrl: userAvatar,
+            }}
+            personas={creatorProfiles.map((cp: any) => ({
+              id: cp.id || cp.handle,
+              name: cp.stage_name || cp.name || cp.handle,
+              handle: cp.handle,
+              avatarUrl: cp.avatar_url,
+              category: cp.category || cp.niche,
+            }))}
+            stores={stores.map((st: any) => ({
+              store_id: st.id || st.store_id,
+              name: st.name || st.store_name || "Minha Empresa",
+              role: st.role || "owner",
+              logo_url: st.logo_url || st.settings?.logoUrl,
+              slug: st.slug,
+            }))}
+            hasCreatorProfile={profile?.is_creator || creatorProfiles.length > 0}
+            creatorHandle={profile?.creator_handle || (creatorProfiles[0]?.handle) || userHandle}
+          />
 
           {isMasterAdmin && (
             <Button asChild size="sm" variant="default" className="rounded-xl text-xs h-10 px-3.5 font-bold bg-primary text-primary-foreground gap-1.5 cursor-pointer active:scale-98">
@@ -487,30 +508,30 @@ function AccountDashboardPage() {
         </div>
       )}
 
-      {/* ── 3. Categorias & Hub de Serviços Agrupados (Apple HIG & Ultra-Minimalista) ── */}
+      {/* ── 3. Categorias & Hub de Serviços Agrupados (WhatsApp List & Apple HIG Nativo) ── */}
       <div className="space-y-4">
         {ACCOUNT_GROUPS.map((group) => (
           <div
             key={group.title}
-            className="bg-card rounded-2xl border border-border/40 overflow-hidden p-2 sm:p-3 shadow-2xs"
+            className="bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden shadow-2xs"
           >
-            <div className="px-3 py-2 border-b border-border/20 mb-1">
-              <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="px-4 py-2.5 bg-muted/15 border-b border-border/30">
+              <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
                 {group.title}
               </h2>
             </div>
 
-            <div className="divide-y divide-border/20">
+            <div className="divide-y divide-border/30">
               {group.items.map((sec) => {
                 const Icon = sec.icon;
                 return (
                   <Link
                     key={sec.to}
                     to={sec.to}
-                    className="flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-muted/40 transition-colors cursor-pointer group min-h-[44px]"
+                    className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/40 active:bg-muted/60 transition-colors cursor-pointer group min-h-[48px]"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <Icon className="size-4.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" strokeWidth={1.75} />
+                      <Icon className="size-5 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" strokeWidth={1.75} />
                       <span className="text-xs sm:text-sm font-medium text-foreground truncate">
                         {sec.label}
                       </span>

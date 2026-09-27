@@ -264,7 +264,7 @@ export default function MeuCurriculoPage() {
   }
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-background font-sans text-foreground">
+    <div className="w-full min-h-[100dvh] flex flex-col bg-background font-sans text-foreground">
       {/* ── Top Bar Canônica: Meu Currículo Digital ── */}
       <header className="h-14 px-3 sm:px-6 border-b border-border/50 bg-background/95 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">

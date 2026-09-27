@@ -1078,7 +1078,7 @@ function WorkspaceLeadFormsPage() {
                               : sub.crm_status === "won"
                               ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
                               : sub.crm_status === "lost"
-                              ? "bg-red-500/10 text-red-700 border-red-500/20"
+                              ? "bg-destructive/10 text-destructive border-destructive/20"
                               : "bg-muted/40 text-foreground border-border/50"
                           }`}
                         >

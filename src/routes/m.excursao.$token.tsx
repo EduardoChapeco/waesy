@@ -58,7 +58,7 @@ function PublicPassengerRegistrationPage() {
 
  if (!formData || formData.error) {
  return (
- <div className="min-h-screen bg-background flex items-center justify-center p-4">
+ <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
  <div className="max-w-md w-full p-6 rounded-2xl bg-card border border-border/80 text-center space-y-4">
  <div className="size-12 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center mx-auto">
  <AlertCircle className="size-6" />
@@ -112,7 +112,7 @@ function PublicPassengerRegistrationPage() {
 
  if (submitted) {
  return (
- <div className="min-h-screen bg-background flex items-center justify-center p-4">
+ <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
  <div className="max-w-md w-full p-8 rounded-2xl bg-card border border-border/80 text-center space-y-4 shadow-sm">
  <div className="size-16 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-500/20">
  <CheckCircle2 className="size-8" />
@@ -151,7 +151,7 @@ function PublicPassengerRegistrationPage() {
  }
 
  return (
- <div className="min-h-screen bg-muted/20 py-8 px-4 flex justify-center">
+ <div className="min-h-[100dvh] bg-muted/20 py-8 px-4 flex justify-center">
  <div className="max-w-lg w-full space-y-6">
  {/* Header da Viagem */}
  <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-3 shadow-xs">
@@ -202,7 +202,7 @@ function PublicPassengerRegistrationPage() {
  value={name}
  onChange={(e) => setName(e.target.value)}
  placeholder="Nome como consta no documento"
- className="h-11 rounded-xl text-xs"
+ className="h-11 rounded-xl text-base sm:text-xs"
  required
  />
  </div>
@@ -214,7 +214,7 @@ function PublicPassengerRegistrationPage() {
  value={doc}
  onChange={(e) => setDoc(e.target.value)}
  placeholder="000.000.000-00"
- className="h-11 rounded-xl text-xs font-mono"
+ className="h-11 rounded-xl text-base sm:text-xs font-mono"
  required
  />
  </div>
@@ -225,7 +225,7 @@ function PublicPassengerRegistrationPage() {
  type="date"
  value={birthDate}
  onChange={(e) => setBirthDate(e.target.value)}
- className="h-11 rounded-xl text-xs font-mono"
+ className="h-11 rounded-xl text-base sm:text-xs font-mono"
  required
  />
  </div>
@@ -238,7 +238,7 @@ function PublicPassengerRegistrationPage() {
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
  placeholder="(00) 00000-0000"
- className="h-11 rounded-xl text-xs font-mono"
+ className="h-11 rounded-xl text-base sm:text-xs font-mono"
  required
  />
  </div>
@@ -258,7 +258,7 @@ function PublicPassengerRegistrationPage() {
  value={emergencyName}
  onChange={(e) => setEmergencyName(e.target.value)}
  placeholder="Ex: Parente / Amigo"
- className="h-11 rounded-xl text-xs"
+ className="h-11 rounded-xl text-base sm:text-xs"
  required
  />
  </div>
@@ -270,7 +270,7 @@ function PublicPassengerRegistrationPage() {
  value={emergencyPhone}
  onChange={(e) => setEmergencyPhone(e.target.value)}
  placeholder="(00) 00000-0000"
- className="h-11 rounded-xl text-xs font-mono"
+ className="h-11 rounded-xl text-base sm:text-xs font-mono"
  required
  />
  </div>
@@ -287,7 +287,7 @@ function PublicPassengerRegistrationPage() {
  value={boardingPoint}
  onChange={(e) => setBoardingPoint(e.target.value)}
  placeholder="Ex: Posto Ipiranga Centro, Rodoviária..."
- className="h-11 rounded-xl text-xs"
+ className="h-11 rounded-xl text-base sm:text-xs"
  />
  </div>
 
@@ -299,7 +299,7 @@ function PublicPassengerRegistrationPage() {
  value={dietary}
  onChange={(e) => setDietary(e.target.value)}
  placeholder="Ex: Vegetariano, intolerante a lactose..."
- className="h-11 rounded-xl text-xs"
+ className="h-11 rounded-xl text-base sm:text-xs"
  />
  </div>
  </div>

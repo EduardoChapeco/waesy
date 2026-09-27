@@ -239,7 +239,7 @@ export function BookingDrawerSheet({
                       placeholder="Nome do cliente"
                       value={guestName}
                       onChange={(e) => setGuestName(e.target.value)}
-                      className="h-10 text-xs rounded-xl"
+                      className="h-10 text-base sm:text-xs rounded-xl"
                     />
                   </div>
                   <div>
@@ -253,7 +253,7 @@ export function BookingDrawerSheet({
                       placeholder="(00) 00000-0000"
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
-                      className="h-10 text-xs rounded-xl"
+                      className="h-10 text-base sm:text-xs rounded-xl"
                     />
                   </div>
                   <div>
@@ -266,7 +266,7 @@ export function BookingDrawerSheet({
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       rows={2}
-                      className="text-xs rounded-xl resize-none"
+                      className="text-base sm:text-xs rounded-xl resize-none"
                     />
                   </div>
                 </div>

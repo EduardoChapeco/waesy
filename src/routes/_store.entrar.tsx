@@ -434,7 +434,7 @@ function StepByStepAuthPage() {
  <main
  role="main"
  aria-label="Autenticação Waesy"
- className="min-h-screen w-full relative select-none flex flex-col justify-between p-4 sm:p-6 md:p-8 bg-background text-foreground overflow-x-hidden"
+ className="min-h-[100dvh] w-full relative select-none flex flex-col justify-between p-4 sm:p-6 md:p-8 bg-background text-foreground overflow-x-hidden"
  >
  {/* ── 1. Background com Mídia Responsiva (Apenas se cadastrado no Master) ── */}
  {hasCustomBg ? (

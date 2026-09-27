@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-rout
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Smartphone } from "lucide-react";
+import { Smartphone, AlertCircle } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,8 +46,31 @@ export const Route = createFileRoute("/_store/conta/agendamentos")({
       return { initialAppointments: [], session: null };
     }
   },
+  errorComponent: CustomerAgendamentosErrorComponent,
  component: CustomerAgendaPage,
 });
+
+function CustomerAgendamentosErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <AlertCircle className="size-8" />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar agendamentos</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar seus agendamentos no momento."}
+      </p>
+      <div className="flex items-center justify-center gap-3">
+        <Button onClick={reset} className="rounded-xl font-bold">
+          Tentar Novamente
+        </Button>
+        <Button asChild variant="outline" className="rounded-xl font-bold">
+          <Link to="/conta">Voltar para Conta</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function getStatusBadge(status: string) {
   switch (status) {

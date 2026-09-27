@@ -102,7 +102,7 @@ function AdminSimLabsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
+    <div className="min-h-[100dvh] bg-background p-4 sm:p-6">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header Apple HIG */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-4">

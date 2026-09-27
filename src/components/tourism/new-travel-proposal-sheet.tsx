@@ -476,7 +476,7 @@ export function NewTravelProposalSheet({
               hotel_name: selectedHotel.name,
               room_type: selectedHotelRoomType || selectedHotel.room_categories?.[0]?.name || "Standard",
               nights_count: nightsCount || 1,
-              board_type: selectedHotelRegime || selectedHotel.regime_options?.[0] || "All Inclusive",
+              board_type: selectedHotelRegime || selectedHotel.regime_options?.[0] || "",
               stars: selectedHotel.stars || null,
             },
           ]
@@ -1183,7 +1183,7 @@ export function NewTravelProposalSheet({
  </div>
  {selectedHotel && (
  <Badge variant="secondary" className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
- {selectedHotel.stars ? `${selectedHotel.stars}★ ` : ""}{selectedHotel.regime_options?.[0] || "All Inclusive"}
+ {selectedHotel.stars ? `${selectedHotel.stars}★ ` : ""}{selectedHotel.regime_options?.[0] || "Regime sob consulta"}
  </Badge>
  )}
  </div>
@@ -1256,7 +1256,7 @@ export function NewTravelProposalSheet({
  type="button"
  onClick={() => {
  setSelectedHotel(h);
- setSelectedHotelRegime(h.regime_options?.[0] || "All Inclusive");
+ setSelectedHotelRegime(h.regime_options?.[0] || "");
  setSelectedHotelRoomType(h.room_categories?.[0]?.name || "Standard");
  setIsHotelDropdownOpen(false);
  setHotelSearch("");
@@ -1271,7 +1271,7 @@ export function NewTravelProposalSheet({
  </p>
  </div>
  <Badge variant="outline" className="text-[9px] font-mono">
- {h.regime_options?.[0] || "All Inclusive"}
+ {h.regime_options?.[0] || "Regime sob consulta"}
  </Badge>
  </button>
  ))}

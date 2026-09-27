@@ -255,8 +255,29 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  }
  }
 
- // ── Passo 4: Resolver loja ativa pelo cookie de tenant
+ // ── Passo 4: Resolver contexto ativo (Civil vs Creator vs Store)
+ let activeContext = "civil";
  let activeStoreId: string | null = null;
+
+ try {
+ const { getCookie, getRequestHeader } = await import("@tanstack/start-server-core");
+ let ctxCookie = getCookie("waesy_active_context");
+ if (!ctxCookie) {
+ const rawCookie = getRequestHeader("cookie") || "";
+ const match = rawCookie.match(/waesy_active_context=([^;]+)/);
+ if (match && match[1]) {
+ ctxCookie = decodeURIComponent(match[1].trim());
+ }
+ }
+ if (ctxCookie) {
+ activeContext = ctxCookie;
+ }
+ } catch {}
+
+ // Se o contexto for civil ou creator, activeStoreId DEVE ser estritamente nulo (Zero-Trust Civil Root)
+ if (activeContext === "civil" || activeContext === "creator") {
+ activeStoreId = null;
+ } else {
  try {
  const { resolveTenantStoreId } = await import("@/lib/tenant.server");
  activeStoreId = (await resolveTenantStoreId()) ?? null;
@@ -264,29 +285,36 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  activeStoreId = null;
  }
 
- // Valida se o activeStoreId do cookie pertence aos memberships do usuário
  const matchedMembership = activeStoreId
  ? memberships.find((m) => m.store_id === activeStoreId)
  : null;
 
  if (matchedMembership) {
- // Cookie aponta para loja válida do usuário — manter
  activeStoreId = matchedMembership.store_id;
  } else if (isPlatformAdmin && activeStoreId) {
  // Platform admin pode operar qualquer loja via cookie — manter
- } else {
- // Fallback: primeira loja da lista de memberships
+ } else if (activeContext === "store") {
  activeStoreId = memberships[0]?.store_id || null;
+ } else {
+ activeStoreId = null;
+ }
  }
 
- const currentMembership = memberships.find((m) => m.store_id === activeStoreId);
+ const currentMembership = activeStoreId
+ ? memberships.find((m) => m.store_id === activeStoreId)
+ : null;
  const storeRole = (currentMembership?.role as any) || "customer";
  const finalRole = isPlatformAdmin ? "platform_admin" : storeRole;
 
  return {
  id: user.id,
+ userId: user.id,
  role: finalRole,
  store_id: activeStoreId,
+ storeId: activeStoreId,
+ isPlatformAdmin,
+ isCivilContext: activeStoreId === null || activeContext === "civil",
+ activeContext: activeContext || (activeStoreId ? "store" : "civil"),
  memberships,
  };
 }

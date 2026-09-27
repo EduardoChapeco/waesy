@@ -230,7 +230,7 @@ export function ClassifiedDetailDesktop({
   }, [classified, attrs]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-16">
+    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-16">
       {/* ── BREADCRUMBS & TOP BAR ACTIONS (Desktop) ── */}
       <div className="w-full max-w-7xl mx-auto px-6 pt-5 pb-4 flex items-center justify-between gap-4">
         {/* Breadcrumb Limpo */}

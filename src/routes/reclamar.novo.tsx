@@ -83,7 +83,7 @@ function ReclamarNovoPage() {
 
  if (isSuccess) {
  return (
- <div className="min-h-screen bg-background flex items-center justify-center p-4">
+ <div className="min-h-[100dvh] bg-background flex items-center justify-center p-4">
  <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-card shadow-xs text-center flex flex-col items-center">
  <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-4">
  <CheckCircle2 className="size-8" />
@@ -105,7 +105,7 @@ function ReclamarNovoPage() {
  }
 
  return (
- <div className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6">
+ <div className="min-h-[100dvh] bg-background text-foreground py-12 px-4 sm:px-6">
  <div className="max-w-2xl mx-auto">
  <div className="text-center mb-8">
  <Badge variant="outline" className="px-3 py-1 mb-3 rounded-full text-xs font-semibold gap-1.5 border-rose-500/30 text-rose-500">

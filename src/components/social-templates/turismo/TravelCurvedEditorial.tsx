@@ -122,9 +122,9 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
                 {priceFormatted || "Consulte"}
               </span>
             </div>
-            {installmentFormatted && (
+            {installmentFormatted && data.maxInstallments && data.maxInstallments > 1 && (
               <span className="text-slate-600 text-base font-semibold block mt-1">
-                em até {data.maxInstallments || 12}x de <strong className="text-emerald-700">{installmentFormatted}</strong>
+                em até {data.maxInstallments}x de <strong className="text-emerald-700">{installmentFormatted}</strong>
               </span>
             )}
           </div>

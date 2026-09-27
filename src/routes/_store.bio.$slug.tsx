@@ -144,7 +144,7 @@ function BiolinkPage() {
 
  return (
  <main
- className={`w-full min-h-screen ${theme.bg} ${theme.text} flex flex-col items-center justify-between py-10 px-4 transition-colors duration-300 font-sans`}
+ className={`w-full min-h-[100dvh] ${theme.bg} ${theme.text} flex flex-col items-center justify-between py-10 px-4 transition-colors duration-300 font-sans`}
  >
  <div className="w-full max-w-md flex flex-col items-center gap-6">
  {/* ── 1. Top Avatar & Bio com Slogan e Status ── */}

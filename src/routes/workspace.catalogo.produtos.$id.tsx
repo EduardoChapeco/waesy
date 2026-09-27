@@ -484,12 +484,12 @@ function EditProductPage() {
  subCategory: liveBrand,
  brand: liveBrand,
  barcodeEan: foodSpecs.barcodeEan || product?.ean,
- stockQty: product?.stock || 10,
+ stockQty: product?.stock ?? (product?.inventory?.quantity ?? 0),
  groceryFreshPricing: foodSpecs.isFreshPricingActive ? {
  supports_fresh_pricing: true,
  default_pricing_mode: foodSpecs.freshPricingMode || "unit",
- avg_piece_weight_grams: foodSpecs.avgPieceWeightGrams || 500,
- price_per_kg_cents: foodSpecs.pricePerKgCents || (livePriceCents ? livePriceCents * 2 : 990),
+ avg_piece_weight_grams: Number(foodSpecs.avgPieceWeightGrams) || 0,
+ price_per_kg_cents: foodSpecs.pricePerKgCents || (livePriceCents ? livePriceCents * 2 : 0),
  price_per_unit_cents: livePriceCents || 0,
  } : undefined,
  groceryRipenessConfig: foodSpecs.ripenessEnabled ? {

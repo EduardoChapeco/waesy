@@ -352,7 +352,7 @@ function CustomerChatPage() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Mensagem..."
-            className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border-none"
+            className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border-none"
             disabled={isSending}
           />
 

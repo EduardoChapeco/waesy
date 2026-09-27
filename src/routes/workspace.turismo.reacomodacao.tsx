@@ -179,7 +179,7 @@ export default function ReaccommodationPage() {
 
   const getPriorityBadge = (p: ReaccommodationPriority) => {
     switch (p) {
-      case 'urgent': return 'bg-red-500/10 text-red-600 border-red-500/20';
+      case 'urgent': return 'bg-destructive/10 text-destructive border-destructive/20';
       case 'high':   return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
       case 'normal': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
       default:       return 'bg-slate-500/10 text-slate-600 border-slate-500/20';
@@ -235,7 +235,7 @@ export default function ReaccommodationPage() {
         </div>
 
         <div className="p-4 rounded-2xl border border-border bg-card flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-red-500/10 text-red-500">
+          <div className="p-2.5 rounded-xl bg-destructive/10 text-destructive">
             <ShieldAlert className="size-4" />
           </div>
           <div>

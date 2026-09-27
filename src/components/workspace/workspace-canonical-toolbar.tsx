@@ -219,7 +219,7 @@ export function WorkspaceCanonicalToolbar({
 
           {/* LADO DIREITO DO TIER 1: Métricas & Customização de Colunas */}
           {(handleDashboard || handleColumns) && (
-            <div className="flex items-center gap-2 shrink-0 justify-end">
+            <div className="hidden sm:flex items-center gap-2 shrink-0 justify-end">
               {handleColumns && (
                 <Button
                   type="button"
@@ -271,7 +271,7 @@ export function WorkspaceCanonicalToolbar({
                   value={effectiveSearch || ""}
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="h-10 pl-9 pr-8 text-xs rounded-xl bg-card border-border/60 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/40 w-full shadow-none"
+                  className="h-10 pl-9 pr-8 text-base sm:text-xs rounded-xl bg-card border-border/60 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/40 w-full shadow-none"
                 />
                 {effectiveSearch && (
                   <button
@@ -323,7 +323,7 @@ export function WorkspaceCanonicalToolbar({
           {/* LADO DIREITO: Ações Secundárias, Métricas e CTA Primário */}
           <div className="flex items-center gap-2 shrink-0 justify-end">
             {/* Se NÃO houver abas, exibimos Métricas e Colunas aqui no Desktop */}
-            {!hasTabs && handleColumns && (
+            {handleColumns && (
               <Button
                 type="button"
                 variant="outline"
@@ -337,7 +337,7 @@ export function WorkspaceCanonicalToolbar({
               </Button>
             )}
 
-            {!hasTabs && handleDashboard && (
+            {handleDashboard && (
               <Button
                 type="button"
                 variant="outline"
@@ -389,7 +389,7 @@ export function WorkspaceCanonicalToolbar({
               ))}
 
             {/* Menu Kebab no Mobile para Ações Secundárias (Evita quebra em múltiplas linhas) */}
-            {(secondaryAction || secondaryActions?.length || (!hasTabs && (handleColumns || handleDashboard))) && (
+            {(secondaryAction || secondaryActions?.length || handleColumns || handleDashboard) && (
               <div className="sm:hidden">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

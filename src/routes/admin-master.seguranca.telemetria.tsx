@@ -237,7 +237,7 @@ function SecurityTelemetryPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="min-h-[100dvh] bg-background text-foreground space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
       {/* ── Sub-navegação Canônica de Segurança ── */}
       <div className="flex items-center gap-2 border-b border-border/60 pb-3 text-xs overflow-x-auto no-scrollbar">
         <Link

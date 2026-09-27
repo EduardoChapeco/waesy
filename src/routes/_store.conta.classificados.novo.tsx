@@ -110,10 +110,45 @@ const ClassifiedSearchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_store/conta/classificados/novo")({
- validateSearch: ClassifiedSearchSchema,
- head: () => ({ meta: [{ title: "Criar Classificado | Waesy" }] }),
- component: NovoClassificadoPage,
+  validateSearch: ClassifiedSearchSchema,
+  head: () => ({ meta: [{ title: "Criar Classificado | Waesy" }] }),
+  errorComponent: ContaClassificadoNovoErrorComponent,
+  component: NovoClassificadoPage,
 });
+
+function ContaClassificadoNovoErrorComponent({ error }: { error: any }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+        <Tag className="size-8" />
+      </div>
+      <div className="space-y-1.5">
+        <h1 className="text-xl font-bold text-foreground">Falha ao Carregar Formulário de Anúncio</h1>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Não foi possível preparar o assistente de publicação no momento.
+        </p>
+      </div>
+      {error?.message && (
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+          {error.message}
+        </pre>
+      )}
+      <div className="pt-2 flex items-center justify-center gap-3">
+        <Button asChild variant="outline" className="rounded-xl text-xs h-11 px-5 font-semibold">
+          <Link to="/conta/classificados">Voltar aos Anúncios</Link>
+        </Button>
+        <Button
+          variant="default"
+          className="rounded-xl text-xs h-11 px-5 font-bold cursor-pointer"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCw className="size-3.5 mr-1.5" />
+          <span>Tentar Novamente</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 // ─── 1. Taxonomia Canônica de Tipos ────────────
 export type ClassifiedNicheType =
@@ -1047,6 +1082,17 @@ function SpecializedClassifiedEditor({
    initialData?.price_cents ?? undefined
  );
  const [negotiable, setNegotiable] = useState(true);
+
+  // FASE 1: Lifecycle & Regras de Validade e Estoque
+  const [validityDays, setValidityDays] = useState<30 | 60 | 90>(
+    (initialData?.attributes?.validity_days as any) || 30
+  );
+  const [stockLimit, setStockLimit] = useState<string>(
+    initialData?.stock_limit != null ? String(initialData.stock_limit) : ""
+  );
+  const [offerLimit, setOfferLimit] = useState<string>(
+    initialData?.offer_limit != null ? String(initialData.offer_limit) : ""
+  );
  const [locationName, setLocationName] = useState("");
  const [structuredLoc, setStructuredLoc] = useState<StructuredLocationValue | null>(null);
  const [whatsapp, setWhatsapp] = useState("");
@@ -1542,10 +1588,10 @@ function SpecializedClassifiedEditor({
     Array.isArray(initialData?.attributes?.prep_options) ? initialData.attributes.prep_options : []
   );
   const [groceryDeliveryEstimate, setGroceryDeliveryEstimate] = useState<string>(
-    initialData?.attributes?.delivery_estimate || "30 a 45 min"
+    initialData?.attributes?.delivery_estimate || ""
   );
   const [groceryDeliveryFeeCents, setGroceryDeliveryFeeCents] = useState<number>(
-    Number(initialData?.attributes?.delivery_fee_cents) || 500
+    Number(initialData?.attributes?.delivery_fee_cents) || 0
   );
 
   // FASE 1: Hortifrúti Fresco & Maturação
@@ -1557,7 +1603,7 @@ function SpecializedClassifiedEditor({
     initialData?.attributes?.grocery_fresh_pricing?.default_pricing_mode || "unit"
   );
   const [groceryAvgPieceWeightGrams, setGroceryAvgPieceWeightGrams] = useState<number>(
-    initialData?.attributes?.grocery_fresh_pricing?.avg_piece_weight_grams || 500
+    Number(initialData?.attributes?.grocery_fresh_pricing?.avg_piece_weight_grams) || 0
   );
   const [groceryPricePerKgCents, setGroceryPricePerKgCents] = useState<number>(
     initialData?.attributes?.grocery_fresh_pricing?.price_per_kg_cents || 0
@@ -2500,6 +2546,9 @@ function SpecializedClassifiedEditor({
           cancellation_policy: cancellationPolicy,
           store_id: selectedStoreId || undefined,
           sub_category: niche.id === "desapego" ? desapegoCategory : undefined,
+          validity_days: validityDays,
+          stock_limit: stockLimit ? parseInt(stockLimit) : undefined,
+          offer_limit: offerLimit ? parseInt(offerLimit) : undefined,
           content: description.trim(),
           ai_instructions: aiInstructions.trim() || undefined,
           ai_agent_enabled: aiAgentEnabled,
@@ -3710,6 +3759,61 @@ function SpecializedClassifiedEditor({
                   </div>
                 </div>
               )}
+
+              {/* FASE 1: Lifecycle & Regras de Validade e Estoque */}
+              <div className="p-4 rounded-xl border border-border/60 bg-muted/20 space-y-3 mt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="size-4 text-primary shrink-0" />
+                    <span className="text-xs font-bold text-foreground">Validade do Anúncio (Obrigatório)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-background p-1 rounded-lg border border-border/50">
+                    {([30, 60, 90] as const).map((days) => (
+                      <button
+                        key={days}
+                        type="button"
+                        onClick={() => setValidityDays(days)}
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
+                          validityDays === days
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {days} dias
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-semibold text-muted-foreground">
+                      Limite de Pedidos / Oferta (Opcional)
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Ex: 5 pedidos"
+                      value={offerLimit}
+                      onChange={(e) => setOfferLimit(e.target.value)}
+                      className="h-9 rounded-xl text-xs bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[11px] font-semibold text-muted-foreground">
+                      Estoque Físico Disponível (Opcional)
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Ex: 10 unidades"
+                      value={stockLimit}
+                      onChange={(e) => setStockLimit(e.target.value)}
+                      className="h-9 rounded-xl text-xs bg-background"
+                    />
+                  </div>
+                </div>
+              </div>
 
               {pricingType === "starting_at" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

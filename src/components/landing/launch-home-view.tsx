@@ -152,7 +152,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
   }, [createdProfile]);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 pb-20 sm:pb-28">
+    <div className="w-full max-w-full overflow-x-hidden min-h-[100dvh] bg-background text-foreground flex flex-col selection:bg-primary/20 pb-20 sm:pb-28">
       {/* ── HEADER SUPERIOR ELEGANTE (APPLE HIG) ── */}
       <header className="sticky top-0 z-40 w-full max-w-full bg-background/85 backdrop-blur-md border-b border-border/70">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">

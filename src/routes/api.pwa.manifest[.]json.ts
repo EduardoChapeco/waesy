@@ -34,12 +34,32 @@ export const Route = createFileRoute("/api/pwa/manifest.json")({
               start_url: "/",
               scope: "/",
               display: "standalone",
+              display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
               orientation: "portrait-primary",
               background_color: "#ffffff",
               theme_color: "#09090b",
               lang: "pt-BR",
               dir: "ltr",
               categories: ["shopping", "business", "lifestyle", "travel"],
+              launch_handler: {
+                client_mode: "focus-existing",
+              },
+              handle_links: "preferred",
+              share_target: {
+                action: "/conta/classificados/novo",
+                method: "GET",
+                params: {
+                  title: "title",
+                  text: "text",
+                  url: "url",
+                },
+              },
+              protocol_handlers: [
+                {
+                  protocol: "web+waesy",
+                  url: "/?intent=%s",
+                },
+              ],
               theme_color_adaptive: [
                 {
                   color: "#ffffff",
@@ -185,11 +205,16 @@ export const Route = createFileRoute("/api/pwa/manifest.json")({
             start_url: storeStartUrl,
             scope: `/`,
             display: "standalone",
+            display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
             background_color: "#ffffff",
             theme_color: primaryColor,
             orientation: "portrait-primary",
             lang: "pt-BR",
             categories: ["shopping", "business"],
+            launch_handler: {
+              client_mode: "focus-existing",
+            },
+            handle_links: "preferred",
             icons: [
               {
                 src: logoUrl,

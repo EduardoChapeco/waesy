@@ -80,13 +80,49 @@ export const Route = createFileRoute("/workspace/marketing/anuncios")({
         getStoreAdTargets().catch(() => ({ products: [], storePhone: null, storeSlug: "" })),
         getStoreAdChannelsSettings().catch(() => null),
       ]);
-      return { campaigns, storeTargets, channelsSettings };
+      return {
+        campaigns: Array.isArray(campaigns) ? campaigns : [],
+        storeTargets: storeTargets || { products: [], storePhone: null, storeSlug: "" },
+        channelsSettings,
+      };
     } catch {
       return { campaigns: [], storeTargets: { products: [], storePhone: null, storeSlug: "" }, channelsSettings: null };
     }
   },
+  errorComponent: WorkspaceAnunciosErrorComponent,
   component: AnunciosWorkspacePage,
 });
+
+function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-4">
+      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+        <Megaphone className="size-7" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="text-lg font-bold text-foreground">Falha ao Carregar Campanhas de Anúncios</h2>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto">
+          Não foi possível sincronizar o módulo de anúncios no momento.
+        </p>
+      </div>
+      {error?.message && (
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+          {error.message}
+        </pre>
+      )}
+      <div className="pt-2 flex items-center justify-center gap-3">
+        <Button
+          variant="default"
+          size="sm"
+          className="rounded-xl text-xs h-10 px-5 font-bold cursor-pointer"
+          onClick={() => window.location.reload()}
+        >
+          Recarregar Página
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 const FORMAT_LABELS: Record<string, string> = {
   post_patrocinado: "Post no Feed",
@@ -105,7 +141,9 @@ const QUICK_FORMATS = [
 function AnunciosWorkspacePage() {
   const router = useRouter();
   const { campaigns: initialCampaigns, storeTargets, channelsSettings } = ((Route.useLoaderData?.() as any) || {});
-  const [campaigns, setCampaigns] = useState<AdCampaign[]>(initialCampaigns);
+  const [campaigns, setCampaigns] = useState<AdCampaign[]>(() =>
+    Array.isArray(initialCampaigns) ? initialCampaigns : []
+  );
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // Estados do Assistente MCP de Anúncios Dinâmicos
@@ -212,16 +250,17 @@ function AnunciosWorkspacePage() {
   const [formObjective, setFormObjective] = useState<"whatsapp_leads" | "direct_sales" | "brand_awareness">("whatsapp_leads");
 
   // Métricas Consolidadas
-  const totalImpressions = campaigns.reduce((acc, c) => acc + (c.impressions_count || 0), 0);
-  const totalClicks = campaigns.reduce((acc, c) => acc + (c.clicks_count || 0), 0);
-  const totalSpent = campaigns.reduce((acc, c) => acc + (c.spent_cents || 0), 0);
+  const safeCampaigns = Array.isArray(campaigns) ? campaigns : [];
+  const totalImpressions = safeCampaigns.reduce((acc, c) => acc + (c?.impressions_count || 0), 0);
+  const totalClicks = safeCampaigns.reduce((acc, c) => acc + (c?.clicks_count || 0), 0);
+  const totalSpent = safeCampaigns.reduce((acc, c) => acc + (c?.spent_cents || 0), 0);
   const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : "0.0";
 
-  const activeCount = campaigns.filter((c) => c.status === "active").length;
-  const pausedCount = campaigns.filter((c) => c.status === "paused").length;
+  const activeCount = safeCampaigns.filter((c) => c?.status === "active").length;
+  const pausedCount = safeCampaigns.filter((c) => c?.status === "paused").length;
 
   const tabs: WorkspaceToolbarTab[] = [
-    { id: "all", label: "Todas", count: campaigns.length },
+    { id: "all", label: "Todas", count: safeCampaigns.length },
     { id: "active", label: "Veiculando", count: activeCount },
     { id: "paused", label: "Pausadas", count: pausedCount },
     { id: "meta_ads", label: "Meta Ads & Instagram" },
@@ -230,18 +269,19 @@ function AnunciosWorkspacePage() {
   ];
 
   const filteredCampaigns = useMemo(() => {
-    return campaigns.filter((c) => {
+    return safeCampaigns.filter((c) => {
+      if (!c) return false;
       if (activeTab === "active" && c.status !== "active") return false;
       if (activeTab === "paused" && c.status !== "paused") return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchesTitle = c.title.toLowerCase().includes(q);
-        const matchesLocation = c.target_location.toLowerCase().includes(q);
+        const matchesTitle = (c.title || "").toLowerCase().includes(q);
+        const matchesLocation = (c.target_location || "").toLowerCase().includes(q);
         if (!matchesTitle && !matchesLocation) return false;
       }
       return true;
     });
-  }, [campaigns, activeTab, searchQuery]);
+  }, [safeCampaigns, activeTab, searchQuery]);
 
   const dashboardMetrics: MetricCardItem[] = [
     {

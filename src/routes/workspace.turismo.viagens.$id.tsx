@@ -2040,7 +2040,7 @@ function WorkspaceTripDetailPage() {
                         setLocatorForm((prev) => ({
                           ...prev,
                           providerName: preset.name,
-                          notes: `${preset.city}/${preset.state} · ${preset.regime_options[0] || "All Inclusive"} · ⭐ ${preset.stars} estrelas`,
+                          notes: `${preset.city}/${preset.state}${preset.regime_options?.[0] ? ` · ${preset.regime_options[0]}` : ""} · ⭐ ${preset.stars} estrelas`,
                         }));
                         toast.success(`Dados de ${preset.name} carregados com sucesso!`);
                       }

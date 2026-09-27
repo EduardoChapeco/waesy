@@ -352,7 +352,7 @@ export function ConvenienceShowcaseView({
     attrs.grocery_fresh_pricing || {
       supports_fresh_pricing: isFreshPricingActive,
       default_pricing_mode: "unit",
-      avg_piece_weight_grams: Number(attrs.avg_piece_weight_grams) || 500,
+      avg_piece_weight_grams: Number(attrs.avg_piece_weight_grams) || 0,
       price_per_kg_cents: Number(attrs.price_per_kg_cents) || (priceCents > 0 ? priceCents * 2 : 990),
       price_per_unit_cents: priceCents,
     };
@@ -379,23 +379,14 @@ export function ConvenienceShowcaseView({
   const orderBumpOffer: OrderBumpOffer | undefined =
     previewData?.orderBumpOffer ||
     attrs.order_bump_offer ||
-    (isFreshPricingActive
-      ? {
-          enabled: true,
-          mode: "category_related",
-          target_title: "Maçã Gala Selecionada (1kg)",
-          original_price_cents: 1290,
-          special_price_cents: 890,
-          badge_text: "Oferta Relâmpago",
-        }
-      : undefined);
+    undefined;
 
   // Estados Interativos de Varejo Alimentar Pro
   const [pricingMode, setPricingMode] = useState<"unit" | "weight">(
     freshPricingConfig.default_pricing_mode || "unit"
   );
   const [weightGrams, setWeightGrams] = useState<number>(
-    freshPricingConfig.avg_piece_weight_grams || 500
+    freshPricingConfig.avg_piece_weight_grams || 0
   );
   const [selectedRipeness, setSelectedRipeness] = useState<RipenessStage>(
     ripenessConfig.default_stage || "maduro"

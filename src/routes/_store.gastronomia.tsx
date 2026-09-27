@@ -244,7 +244,7 @@ function GastronomiaVerticalPage() {
               description="Tente escolher outro tipo de culinária ou busque por restaurantes específicos."
             />
           ) : viewMode === "list" ? (
-            <div className="flex flex-col gap-3">
+            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
               {allProducts.map((product: any) => (
                 <GroceryProductCard key={product.id} product={product} viewMode="list" />
               ))}

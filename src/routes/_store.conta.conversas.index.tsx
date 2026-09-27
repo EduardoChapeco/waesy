@@ -39,8 +39,31 @@ export const Route = createFileRoute("/_store/conta/conversas/")({
       return [];
     }
   },
+  errorComponent: CustomerConversationsErrorComponent,
   component: CustomerConversationsIndexPage,
 } as any);
+
+function CustomerConversationsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <MessageCircle className="size-8" />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar mensagens</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar as conversas e mensagens no momento."}
+      </p>
+      <div className="flex items-center justify-center gap-3">
+        <Button onClick={reset} className="rounded-xl font-bold">
+          Tentar Novamente
+        </Button>
+        <Button asChild variant="outline" className="rounded-xl font-bold">
+          <Link to="/conta">Voltar para Conta</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 const STATUS_CONFIG: Record<
   string,
@@ -214,7 +237,7 @@ function CustomerConversationsIndexPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar em mensagens, lojas ou pessoas..."
-              className="w-full h-10 pl-9 pr-8 rounded-xl text-xs bg-muted/60 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+              className="w-full h-10 pl-9 pr-8 rounded-xl text-base sm:text-xs bg-muted/60 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
             />
             {searchQuery && (
               <button
@@ -379,7 +402,7 @@ function CustomerConversationsIndexPage() {
                   value={contactSearch}
                   onChange={(e) => setContactSearch(e.target.value)}
                   placeholder="Buscar membros ou lojas parceiras..."
-                  className="w-full h-10 pl-9 pr-3 rounded-xl text-xs bg-muted/60 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+                  className="w-full h-10 pl-9 pr-3 rounded-xl text-base sm:text-xs bg-muted/60 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -495,7 +518,7 @@ function CustomerConversationsIndexPage() {
                   value={initialMsg}
                   onChange={(e) => setInitialMsg(e.target.value)}
                   placeholder={`Olá! Gostaria de conversar com você...`}
-                  className="w-full p-3 rounded-2xl text-xs bg-muted/40 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground resize-none"
+                  className="w-full p-3 rounded-2xl text-base sm:text-xs bg-muted/40 border border-border/60 outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground resize-none"
                 />
               </div>
 

@@ -53,11 +53,13 @@ import { Route as StoreLivrosRouteImport } from './routes/_store.livros'
 import { Route as StoreMapaRouteImport } from './routes/_store.mapa'
 import { Route as StoreMatchTimeRouteImport } from './routes/_store.match-time'
 import { Route as StoreMercadoRouteImport } from './routes/_store.mercado'
+import { Route as StoreMeusPerfisRouteImport } from './routes/_store.meus-perfis'
 import { Route as StoreMobilidadeRouteImport } from './routes/_store.mobilidade'
 import { Route as StoreModaRouteImport } from './routes/_store.moda'
 import { Route as StoreMuralRouteImport } from './routes/_store.mural'
 import { Route as StoreOfertasRouteImport } from './routes/_store.ofertas'
 import { Route as StorePerfilDaLojaRouteImport } from './routes/_store.perfil-da-loja'
+import { Route as StorePersonasRouteImport } from './routes/_store.personas'
 import { Route as StorePetRouteImport } from './routes/_store.pet'
 import { Route as StorePortalCompletoRouteImport } from './routes/_store.portal-completo'
 import { Route as StorePrivacidadeRouteImport } from './routes/_store.privacidade'
@@ -69,6 +71,7 @@ import { Route as StoreTermosRouteImport } from './routes/_store.termos'
 import { Route as StoreTrocasEDevolucoesRouteImport } from './routes/_store.trocas-e-devolucoes'
 import { Route as StoreTurismoRouteImport } from './routes/_store.turismo'
 import { Route as AdminMasterIndexRouteImport } from './routes/admin-master.index'
+import { Route as AdminMasterAdsNetworkRouteImport } from './routes/admin-master.ads-network'
 import { Route as AdminMasterAlgoritmoRouteImport } from './routes/admin-master.algoritmo'
 import { Route as AdminMasterAuditoriaForenseRouteImport } from './routes/admin-master.auditoria-forense'
 import { Route as AdminMasterBannersRouteImport } from './routes/admin-master.banners'
@@ -205,6 +208,7 @@ import { Route as ApiFeedXmlRouteImport } from './routes/api.feed.xml'
 import { Route as ApiMiningWorkerRouteImport } from './routes/api.mining.worker'
 import { Route as ApiPwaManifestDotjsonRouteImport } from './routes/api.pwa.manifest[.]json'
 import { Route as ApiWebhooksMarketplacesRouteImport } from './routes/api.webhooks.marketplaces'
+import { Route as ApiWebhooksMetaAdsRouteImport } from './routes/api.webhooks.meta-ads'
 import { Route as ApiWebhooksPixRouteImport } from './routes/api.webhooks.pix'
 import { Route as ApiWebhooksShipmentRouteImport } from './routes/api.webhooks.shipment'
 import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api.webhooks.whatsapp'
@@ -222,6 +226,7 @@ import { Route as WorkspaceCaptacaoIndexRouteImport } from './routes/workspace.c
 import { Route as WorkspaceCaptacaoNdasRouteImport } from './routes/workspace.captacao.ndas'
 import { Route as WorkspaceCatalogoIndexRouteImport } from './routes/workspace.catalogo.index'
 import { Route as WorkspaceCatalogoAtributosRouteImport } from './routes/workspace.catalogo.atributos'
+import { Route as WorkspaceCatalogoColecoesRouteImport } from './routes/workspace.catalogo.colecoes'
 import { Route as WorkspaceCatalogoTabelasRouteImport } from './routes/workspace.catalogo.tabelas'
 import { Route as WorkspaceCatalogoTiposRouteImport } from './routes/workspace.catalogo.tipos'
 import { Route as WorkspaceClientesIndexRouteImport } from './routes/workspace.clientes.index'
@@ -296,6 +301,7 @@ import { Route as WorkspaceMarketingVitrineRouteImport } from './routes/workspac
 import { Route as WorkspaceMasterInfluencersRouteImport } from './routes/workspace.master.influencers'
 import { Route as WorkspaceModeracaoIndexRouteImport } from './routes/workspace.moderacao.index'
 import { Route as WorkspaceModeracaoKycRouteImport } from './routes/workspace.moderacao.kyc'
+import { Route as WorkspaceMuralNovoRouteImport } from './routes/workspace.mural.novo'
 import { Route as WorkspaceNoticiasIndexRouteImport } from './routes/workspace.noticias.index'
 import { Route as WorkspaceNoticiasNovoRouteImport } from './routes/workspace.noticias.novo'
 import { Route as WorkspaceOnboardingIndexRouteImport } from './routes/workspace.onboarding.index'
@@ -596,6 +602,11 @@ const StoreMercadoRoute = StoreMercadoRouteImport.update({
   path: '/mercado',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreMeusPerfisRoute = StoreMeusPerfisRouteImport.update({
+  id: '/meus-perfis',
+  path: '/meus-perfis',
+  getParentRoute: () => StoreRoute,
+} as any)
 const StoreMobilidadeRoute = StoreMobilidadeRouteImport.update({
   id: '/mobilidade',
   path: '/mobilidade',
@@ -619,6 +630,11 @@ const StoreOfertasRoute = StoreOfertasRouteImport.update({
 const StorePerfilDaLojaRoute = StorePerfilDaLojaRouteImport.update({
   id: '/perfil-da-loja',
   path: '/perfil-da-loja',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StorePersonasRoute = StorePersonasRouteImport.update({
+  id: '/personas',
+  path: '/personas',
   getParentRoute: () => StoreRoute,
 } as any)
 const StorePetRoute = StorePetRouteImport.update({
@@ -674,6 +690,11 @@ const StoreTurismoRoute = StoreTurismoRouteImport.update({
 const AdminMasterIndexRoute = AdminMasterIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminMasterRoute,
+} as any)
+const AdminMasterAdsNetworkRoute = AdminMasterAdsNetworkRouteImport.update({
+  id: '/ads-network',
+  path: '/ads-network',
   getParentRoute: () => AdminMasterRoute,
 } as any)
 const AdminMasterAlgoritmoRoute = AdminMasterAlgoritmoRouteImport.update({
@@ -1364,6 +1385,11 @@ const ApiWebhooksMarketplacesRoute = ApiWebhooksMarketplacesRouteImport.update({
   path: '/api/webhooks/marketplaces',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksMetaAdsRoute = ApiWebhooksMetaAdsRouteImport.update({
+  id: '/api/webhooks/meta-ads',
+  path: '/api/webhooks/meta-ads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebhooksPixRoute = ApiWebhooksPixRouteImport.update({
   id: '/api/webhooks/pix',
   path: '/api/webhooks/pix',
@@ -1450,6 +1476,12 @@ const WorkspaceCatalogoAtributosRoute =
   WorkspaceCatalogoAtributosRouteImport.update({
     id: '/catalogo/atributos',
     path: '/catalogo/atributos',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
+const WorkspaceCatalogoColecoesRoute =
+  WorkspaceCatalogoColecoesRouteImport.update({
+    id: '/catalogo/colecoes',
+    path: '/catalogo/colecoes',
     getParentRoute: () => WorkspaceRoute,
   } as any)
 const WorkspaceCatalogoTabelasRoute =
@@ -1874,6 +1906,11 @@ const WorkspaceModeracaoKycRoute = WorkspaceModeracaoKycRouteImport.update({
   path: '/moderacao/kyc',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceMuralNovoRoute = WorkspaceMuralNovoRouteImport.update({
+  id: '/mural/novo',
+  path: '/mural/novo',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceNoticiasIndexRoute = WorkspaceNoticiasIndexRouteImport.update({
   id: '/noticias/',
   path: '/noticias/',
@@ -2140,21 +2177,21 @@ const WorkspaceCatalogoCategoriasNovoRoute =
   } as any)
 const WorkspaceCatalogoColecoesIndexRoute =
   WorkspaceCatalogoColecoesIndexRouteImport.update({
-    id: '/catalogo/colecoes/',
-    path: '/catalogo/colecoes/',
-    getParentRoute: () => WorkspaceRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => WorkspaceCatalogoColecoesRoute,
   } as any)
 const WorkspaceCatalogoColecoesIdRoute =
   WorkspaceCatalogoColecoesIdRouteImport.update({
-    id: '/catalogo/colecoes/$id',
-    path: '/catalogo/colecoes/$id',
-    getParentRoute: () => WorkspaceRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => WorkspaceCatalogoColecoesRoute,
   } as any)
 const WorkspaceCatalogoColecoesNovoRoute =
   WorkspaceCatalogoColecoesNovoRouteImport.update({
-    id: '/catalogo/colecoes/novo',
-    path: '/catalogo/colecoes/novo',
-    getParentRoute: () => WorkspaceRoute,
+    id: '/novo',
+    path: '/novo',
+    getParentRoute: () => WorkspaceCatalogoColecoesRoute,
   } as any)
 const WorkspaceCatalogoProdutosIndexRoute =
   WorkspaceCatalogoProdutosIndexRouteImport.update({
@@ -2373,11 +2410,13 @@ export interface FileRoutesByFullPath {
   '/mapa': typeof StoreMapaRoute
   '/match-time': typeof StoreMatchTimeRoute
   '/mercado': typeof StoreMercadoRoute
+  '/meus-perfis': typeof StoreMeusPerfisRoute
   '/mobilidade': typeof StoreMobilidadeRoute
   '/moda': typeof StoreModaRoute
   '/mural': typeof StoreMuralRoute
   '/ofertas': typeof StoreOfertasRoute
   '/perfil-da-loja': typeof StorePerfilDaLojaRoute
+  '/personas': typeof StorePersonasRoute
   '/pet': typeof StorePetRoute
   '/portal-completo': typeof StorePortalCompletoRoute
   '/privacidade': typeof StorePrivacidadeRoute
@@ -2388,6 +2427,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof StoreTermosRoute
   '/trocas-e-devolucoes': typeof StoreTrocasEDevolucoesRoute
   '/turismo': typeof StoreTurismoRouteWithChildren
+  '/admin-master/ads-network': typeof AdminMasterAdsNetworkRoute
   '/admin-master/algoritmo': typeof AdminMasterAlgoritmoRoute
   '/admin-master/auditoria-forense': typeof AdminMasterAuditoriaForenseRoute
   '/admin-master/banners': typeof AdminMasterBannersRoute
@@ -2516,6 +2556,7 @@ export interface FileRoutesByFullPath {
   '/api/mining/worker': typeof ApiMiningWorkerRoute
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
+  '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
@@ -2528,6 +2569,7 @@ export interface FileRoutesByFullPath {
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
+  '/workspace/catalogo/colecoes': typeof WorkspaceCatalogoColecoesRouteWithChildren
   '/workspace/catalogo/tabelas': typeof WorkspaceCatalogoTabelasRoute
   '/workspace/catalogo/tipos': typeof WorkspaceCatalogoTiposRoute
   '/workspace/clientes/$id': typeof WorkspaceClientesIdRoute
@@ -2592,6 +2634,7 @@ export interface FileRoutesByFullPath {
   '/workspace/marketing/vitrine': typeof WorkspaceMarketingVitrineRoute
   '/workspace/master/influencers': typeof WorkspaceMasterInfluencersRoute
   '/workspace/moderacao/kyc': typeof WorkspaceModeracaoKycRoute
+  '/workspace/mural/novo': typeof WorkspaceMuralNovoRoute
   '/workspace/noticias/novo': typeof WorkspaceNoticiasNovoRoute
   '/workspace/onboarding/revisao': typeof WorkspaceOnboardingRevisaoRoute
   '/workspace/orcamentos/$id': typeof WorkspaceOrcamentosIdRoute
@@ -2734,11 +2777,13 @@ export interface FileRoutesByTo {
   '/mapa': typeof StoreMapaRoute
   '/match-time': typeof StoreMatchTimeRoute
   '/mercado': typeof StoreMercadoRoute
+  '/meus-perfis': typeof StoreMeusPerfisRoute
   '/mobilidade': typeof StoreMobilidadeRoute
   '/moda': typeof StoreModaRoute
   '/mural': typeof StoreMuralRoute
   '/ofertas': typeof StoreOfertasRoute
   '/perfil-da-loja': typeof StorePerfilDaLojaRoute
+  '/personas': typeof StorePersonasRoute
   '/pet': typeof StorePetRoute
   '/portal-completo': typeof StorePortalCompletoRoute
   '/privacidade': typeof StorePrivacidadeRoute
@@ -2748,6 +2793,7 @@ export interface FileRoutesByTo {
   '/stories': typeof StoreStoriesRoute
   '/termos': typeof StoreTermosRoute
   '/trocas-e-devolucoes': typeof StoreTrocasEDevolucoesRoute
+  '/admin-master/ads-network': typeof AdminMasterAdsNetworkRoute
   '/admin-master/algoritmo': typeof AdminMasterAlgoritmoRoute
   '/admin-master/auditoria-forense': typeof AdminMasterAuditoriaForenseRoute
   '/admin-master/banners': typeof AdminMasterBannersRoute
@@ -2877,6 +2923,7 @@ export interface FileRoutesByTo {
   '/api/mining/worker': typeof ApiMiningWorkerRoute
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
+  '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
@@ -2953,6 +3000,7 @@ export interface FileRoutesByTo {
   '/workspace/marketing/vitrine': typeof WorkspaceMarketingVitrineRoute
   '/workspace/master/influencers': typeof WorkspaceMasterInfluencersRoute
   '/workspace/moderacao/kyc': typeof WorkspaceModeracaoKycRoute
+  '/workspace/mural/novo': typeof WorkspaceMuralNovoRoute
   '/workspace/noticias/novo': typeof WorkspaceNoticiasNovoRoute
   '/workspace/onboarding/revisao': typeof WorkspaceOnboardingRevisaoRoute
   '/workspace/orcamentos/$id': typeof WorkspaceOrcamentosIdRoute
@@ -3103,11 +3151,13 @@ export interface FileRoutesById {
   '/_store/mapa': typeof StoreMapaRoute
   '/_store/match-time': typeof StoreMatchTimeRoute
   '/_store/mercado': typeof StoreMercadoRoute
+  '/_store/meus-perfis': typeof StoreMeusPerfisRoute
   '/_store/mobilidade': typeof StoreMobilidadeRoute
   '/_store/moda': typeof StoreModaRoute
   '/_store/mural': typeof StoreMuralRoute
   '/_store/ofertas': typeof StoreOfertasRoute
   '/_store/perfil-da-loja': typeof StorePerfilDaLojaRoute
+  '/_store/personas': typeof StorePersonasRoute
   '/_store/pet': typeof StorePetRoute
   '/_store/portal-completo': typeof StorePortalCompletoRoute
   '/_store/privacidade': typeof StorePrivacidadeRoute
@@ -3118,6 +3168,7 @@ export interface FileRoutesById {
   '/_store/termos': typeof StoreTermosRoute
   '/_store/trocas-e-devolucoes': typeof StoreTrocasEDevolucoesRoute
   '/_store/turismo': typeof StoreTurismoRouteWithChildren
+  '/admin-master/ads-network': typeof AdminMasterAdsNetworkRoute
   '/admin-master/algoritmo': typeof AdminMasterAlgoritmoRoute
   '/admin-master/auditoria-forense': typeof AdminMasterAuditoriaForenseRoute
   '/admin-master/banners': typeof AdminMasterBannersRoute
@@ -3247,6 +3298,7 @@ export interface FileRoutesById {
   '/api/mining/worker': typeof ApiMiningWorkerRoute
   '/api/pwa/manifest.json': typeof ApiPwaManifestDotjsonRoute
   '/api/webhooks/marketplaces': typeof ApiWebhooksMarketplacesRoute
+  '/api/webhooks/meta-ads': typeof ApiWebhooksMetaAdsRoute
   '/api/webhooks/pix': typeof ApiWebhooksPixRoute
   '/api/webhooks/shipment': typeof ApiWebhooksShipmentRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
@@ -3259,6 +3311,7 @@ export interface FileRoutesById {
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
   '/workspace/captacao/ndas': typeof WorkspaceCaptacaoNdasRoute
   '/workspace/catalogo/atributos': typeof WorkspaceCatalogoAtributosRoute
+  '/workspace/catalogo/colecoes': typeof WorkspaceCatalogoColecoesRouteWithChildren
   '/workspace/catalogo/tabelas': typeof WorkspaceCatalogoTabelasRoute
   '/workspace/catalogo/tipos': typeof WorkspaceCatalogoTiposRoute
   '/workspace/clientes/$id': typeof WorkspaceClientesIdRoute
@@ -3323,6 +3376,7 @@ export interface FileRoutesById {
   '/workspace/marketing/vitrine': typeof WorkspaceMarketingVitrineRoute
   '/workspace/master/influencers': typeof WorkspaceMasterInfluencersRoute
   '/workspace/moderacao/kyc': typeof WorkspaceModeracaoKycRoute
+  '/workspace/mural/novo': typeof WorkspaceMuralNovoRoute
   '/workspace/noticias/novo': typeof WorkspaceNoticiasNovoRoute
   '/workspace/onboarding/revisao': typeof WorkspaceOnboardingRevisaoRoute
   '/workspace/orcamentos/$id': typeof WorkspaceOrcamentosIdRoute
@@ -3474,11 +3528,13 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/match-time'
     | '/mercado'
+    | '/meus-perfis'
     | '/mobilidade'
     | '/moda'
     | '/mural'
     | '/ofertas'
     | '/perfil-da-loja'
+    | '/personas'
     | '/pet'
     | '/portal-completo'
     | '/privacidade'
@@ -3489,6 +3545,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/trocas-e-devolucoes'
     | '/turismo'
+    | '/admin-master/ads-network'
     | '/admin-master/algoritmo'
     | '/admin-master/auditoria-forense'
     | '/admin-master/banners'
@@ -3617,6 +3674,7 @@ export interface FileRouteTypes {
     | '/api/mining/worker'
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
+    | '/api/webhooks/meta-ads'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
@@ -3629,6 +3687,7 @@ export interface FileRouteTypes {
     | '/workspace/agenda/recursos'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
+    | '/workspace/catalogo/colecoes'
     | '/workspace/catalogo/tabelas'
     | '/workspace/catalogo/tipos'
     | '/workspace/clientes/$id'
@@ -3693,6 +3752,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/vitrine'
     | '/workspace/master/influencers'
     | '/workspace/moderacao/kyc'
+    | '/workspace/mural/novo'
     | '/workspace/noticias/novo'
     | '/workspace/onboarding/revisao'
     | '/workspace/orcamentos/$id'
@@ -3835,11 +3895,13 @@ export interface FileRouteTypes {
     | '/mapa'
     | '/match-time'
     | '/mercado'
+    | '/meus-perfis'
     | '/mobilidade'
     | '/moda'
     | '/mural'
     | '/ofertas'
     | '/perfil-da-loja'
+    | '/personas'
     | '/pet'
     | '/portal-completo'
     | '/privacidade'
@@ -3849,6 +3911,7 @@ export interface FileRouteTypes {
     | '/stories'
     | '/termos'
     | '/trocas-e-devolucoes'
+    | '/admin-master/ads-network'
     | '/admin-master/algoritmo'
     | '/admin-master/auditoria-forense'
     | '/admin-master/banners'
@@ -3978,6 +4041,7 @@ export interface FileRouteTypes {
     | '/api/mining/worker'
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
+    | '/api/webhooks/meta-ads'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
@@ -4054,6 +4118,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/vitrine'
     | '/workspace/master/influencers'
     | '/workspace/moderacao/kyc'
+    | '/workspace/mural/novo'
     | '/workspace/noticias/novo'
     | '/workspace/onboarding/revisao'
     | '/workspace/orcamentos/$id'
@@ -4203,11 +4268,13 @@ export interface FileRouteTypes {
     | '/_store/mapa'
     | '/_store/match-time'
     | '/_store/mercado'
+    | '/_store/meus-perfis'
     | '/_store/mobilidade'
     | '/_store/moda'
     | '/_store/mural'
     | '/_store/ofertas'
     | '/_store/perfil-da-loja'
+    | '/_store/personas'
     | '/_store/pet'
     | '/_store/portal-completo'
     | '/_store/privacidade'
@@ -4218,6 +4285,7 @@ export interface FileRouteTypes {
     | '/_store/termos'
     | '/_store/trocas-e-devolucoes'
     | '/_store/turismo'
+    | '/admin-master/ads-network'
     | '/admin-master/algoritmo'
     | '/admin-master/auditoria-forense'
     | '/admin-master/banners'
@@ -4347,6 +4415,7 @@ export interface FileRouteTypes {
     | '/api/mining/worker'
     | '/api/pwa/manifest.json'
     | '/api/webhooks/marketplaces'
+    | '/api/webhooks/meta-ads'
     | '/api/webhooks/pix'
     | '/api/webhooks/shipment'
     | '/api/webhooks/whatsapp'
@@ -4359,6 +4428,7 @@ export interface FileRouteTypes {
     | '/workspace/agenda/recursos'
     | '/workspace/captacao/ndas'
     | '/workspace/catalogo/atributos'
+    | '/workspace/catalogo/colecoes'
     | '/workspace/catalogo/tabelas'
     | '/workspace/catalogo/tipos'
     | '/workspace/clientes/$id'
@@ -4423,6 +4493,7 @@ export interface FileRouteTypes {
     | '/workspace/marketing/vitrine'
     | '/workspace/master/influencers'
     | '/workspace/moderacao/kyc'
+    | '/workspace/mural/novo'
     | '/workspace/noticias/novo'
     | '/workspace/onboarding/revisao'
     | '/workspace/orcamentos/$id'
@@ -4554,6 +4625,7 @@ export interface RootRouteChildren {
   ApiMiningWorkerRoute: typeof ApiMiningWorkerRoute
   ApiPwaManifestDotjsonRoute: typeof ApiPwaManifestDotjsonRoute
   ApiWebhooksMarketplacesRoute: typeof ApiWebhooksMarketplacesRoute
+  ApiWebhooksMetaAdsRoute: typeof ApiWebhooksMetaAdsRoute
   ApiWebhooksPixRoute: typeof ApiWebhooksPixRoute
   ApiWebhooksShipmentRoute: typeof ApiWebhooksShipmentRoute
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRoute
@@ -4879,6 +4951,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreMercadoRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/meus-perfis': {
+      id: '/_store/meus-perfis'
+      path: '/meus-perfis'
+      fullPath: '/meus-perfis'
+      preLoaderRoute: typeof StoreMeusPerfisRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/mobilidade': {
       id: '/_store/mobilidade'
       path: '/mobilidade'
@@ -4912,6 +4991,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil-da-loja'
       fullPath: '/perfil-da-loja'
       preLoaderRoute: typeof StorePerfilDaLojaRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/personas': {
+      id: '/_store/personas'
+      path: '/personas'
+      fullPath: '/personas'
+      preLoaderRoute: typeof StorePersonasRouteImport
       parentRoute: typeof StoreRoute
     }
     '/_store/pet': {
@@ -4989,6 +5075,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin-master/'
       preLoaderRoute: typeof AdminMasterIndexRouteImport
+      parentRoute: typeof AdminMasterRoute
+    }
+    '/admin-master/ads-network': {
+      id: '/admin-master/ads-network'
+      path: '/ads-network'
+      fullPath: '/admin-master/ads-network'
+      preLoaderRoute: typeof AdminMasterAdsNetworkRouteImport
       parentRoute: typeof AdminMasterRoute
     }
     '/admin-master/algoritmo': {
@@ -5943,6 +6036,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiWebhooksMarketplacesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhooks/meta-ads': {
+      id: '/api/webhooks/meta-ads'
+      path: '/api/webhooks/meta-ads'
+      fullPath: '/api/webhooks/meta-ads'
+      preLoaderRoute: typeof ApiWebhooksMetaAdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/webhooks/pix': {
       id: '/api/webhooks/pix'
       path: '/api/webhooks/pix'
@@ -6060,6 +6160,13 @@ declare module '@tanstack/react-router' {
       path: '/catalogo/atributos'
       fullPath: '/workspace/catalogo/atributos'
       preLoaderRoute: typeof WorkspaceCatalogoAtributosRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/catalogo/colecoes': {
+      id: '/workspace/catalogo/colecoes'
+      path: '/catalogo/colecoes'
+      fullPath: '/workspace/catalogo/colecoes'
+      preLoaderRoute: typeof WorkspaceCatalogoColecoesRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/catalogo/tabelas': {
@@ -6580,6 +6687,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceModeracaoKycRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/mural/novo': {
+      id: '/workspace/mural/novo'
+      path: '/mural/novo'
+      fullPath: '/workspace/mural/novo'
+      preLoaderRoute: typeof WorkspaceMuralNovoRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/noticias/': {
       id: '/workspace/noticias/'
       path: '/noticias'
@@ -6918,24 +7032,24 @@ declare module '@tanstack/react-router' {
     }
     '/workspace/catalogo/colecoes/': {
       id: '/workspace/catalogo/colecoes/'
-      path: '/catalogo/colecoes'
+      path: '/'
       fullPath: '/workspace/catalogo/colecoes/'
       preLoaderRoute: typeof WorkspaceCatalogoColecoesIndexRouteImport
-      parentRoute: typeof WorkspaceRoute
+      parentRoute: typeof WorkspaceCatalogoColecoesRoute
     }
     '/workspace/catalogo/colecoes/$id': {
       id: '/workspace/catalogo/colecoes/$id'
-      path: '/catalogo/colecoes/$id'
+      path: '/$id'
       fullPath: '/workspace/catalogo/colecoes/$id'
       preLoaderRoute: typeof WorkspaceCatalogoColecoesIdRouteImport
-      parentRoute: typeof WorkspaceRoute
+      parentRoute: typeof WorkspaceCatalogoColecoesRoute
     }
     '/workspace/catalogo/colecoes/novo': {
       id: '/workspace/catalogo/colecoes/novo'
-      path: '/catalogo/colecoes/novo'
+      path: '/novo'
       fullPath: '/workspace/catalogo/colecoes/novo'
       preLoaderRoute: typeof WorkspaceCatalogoColecoesNovoRouteImport
-      parentRoute: typeof WorkspaceRoute
+      parentRoute: typeof WorkspaceCatalogoColecoesRoute
     }
     '/workspace/catalogo/produtos/': {
       id: '/workspace/catalogo/produtos/'
@@ -7347,11 +7461,13 @@ interface StoreRouteChildren {
   StoreMapaRoute: typeof StoreMapaRoute
   StoreMatchTimeRoute: typeof StoreMatchTimeRoute
   StoreMercadoRoute: typeof StoreMercadoRoute
+  StoreMeusPerfisRoute: typeof StoreMeusPerfisRoute
   StoreMobilidadeRoute: typeof StoreMobilidadeRoute
   StoreModaRoute: typeof StoreModaRoute
   StoreMuralRoute: typeof StoreMuralRoute
   StoreOfertasRoute: typeof StoreOfertasRoute
   StorePerfilDaLojaRoute: typeof StorePerfilDaLojaRoute
+  StorePersonasRoute: typeof StorePersonasRoute
   StorePetRoute: typeof StorePetRoute
   StorePortalCompletoRoute: typeof StorePortalCompletoRoute
   StorePrivacidadeRoute: typeof StorePrivacidadeRoute
@@ -7432,11 +7548,13 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreMapaRoute: StoreMapaRoute,
   StoreMatchTimeRoute: StoreMatchTimeRoute,
   StoreMercadoRoute: StoreMercadoRoute,
+  StoreMeusPerfisRoute: StoreMeusPerfisRoute,
   StoreMobilidadeRoute: StoreMobilidadeRoute,
   StoreModaRoute: StoreModaRoute,
   StoreMuralRoute: StoreMuralRoute,
   StoreOfertasRoute: StoreOfertasRoute,
   StorePerfilDaLojaRoute: StorePerfilDaLojaRoute,
+  StorePersonasRoute: StorePersonasRoute,
   StorePetRoute: StorePetRoute,
   StorePortalCompletoRoute: StorePortalCompletoRoute,
   StorePrivacidadeRoute: StorePrivacidadeRoute,
@@ -7499,6 +7617,7 @@ const AdminMasterSegurancaCertificadosRouteWithChildren =
   )
 
 interface AdminMasterRouteChildren {
+  AdminMasterAdsNetworkRoute: typeof AdminMasterAdsNetworkRoute
   AdminMasterAlgoritmoRoute: typeof AdminMasterAlgoritmoRoute
   AdminMasterAuditoriaForenseRoute: typeof AdminMasterAuditoriaForenseRoute
   AdminMasterBannersRoute: typeof AdminMasterBannersRoute
@@ -7536,6 +7655,7 @@ interface AdminMasterRouteChildren {
 }
 
 const AdminMasterRouteChildren: AdminMasterRouteChildren = {
+  AdminMasterAdsNetworkRoute: AdminMasterAdsNetworkRoute,
   AdminMasterAlgoritmoRoute: AdminMasterAlgoritmoRoute,
   AdminMasterAuditoriaForenseRoute: AdminMasterAuditoriaForenseRoute,
   AdminMasterBannersRoute: AdminMasterBannersRoute,
@@ -7589,6 +7709,24 @@ const WorkspaceRelatoriosRouteChildren: WorkspaceRelatoriosRouteChildren = {
 
 const WorkspaceRelatoriosRouteWithChildren =
   WorkspaceRelatoriosRoute._addFileChildren(WorkspaceRelatoriosRouteChildren)
+
+interface WorkspaceCatalogoColecoesRouteChildren {
+  WorkspaceCatalogoColecoesIdRoute: typeof WorkspaceCatalogoColecoesIdRoute
+  WorkspaceCatalogoColecoesNovoRoute: typeof WorkspaceCatalogoColecoesNovoRoute
+  WorkspaceCatalogoColecoesIndexRoute: typeof WorkspaceCatalogoColecoesIndexRoute
+}
+
+const WorkspaceCatalogoColecoesRouteChildren: WorkspaceCatalogoColecoesRouteChildren =
+  {
+    WorkspaceCatalogoColecoesIdRoute: WorkspaceCatalogoColecoesIdRoute,
+    WorkspaceCatalogoColecoesNovoRoute: WorkspaceCatalogoColecoesNovoRoute,
+    WorkspaceCatalogoColecoesIndexRoute: WorkspaceCatalogoColecoesIndexRoute,
+  }
+
+const WorkspaceCatalogoColecoesRouteWithChildren =
+  WorkspaceCatalogoColecoesRoute._addFileChildren(
+    WorkspaceCatalogoColecoesRouteChildren,
+  )
 
 interface WorkspaceEventosIdRouteChildren {
   WorkspaceEventosIdCheckinRoute: typeof WorkspaceEventosIdCheckinRoute
@@ -7651,6 +7789,7 @@ interface WorkspaceRouteChildren {
   WorkspaceAgendaRecursosRoute: typeof WorkspaceAgendaRecursosRoute
   WorkspaceCaptacaoNdasRoute: typeof WorkspaceCaptacaoNdasRoute
   WorkspaceCatalogoAtributosRoute: typeof WorkspaceCatalogoAtributosRoute
+  WorkspaceCatalogoColecoesRoute: typeof WorkspaceCatalogoColecoesRouteWithChildren
   WorkspaceCatalogoTabelasRoute: typeof WorkspaceCatalogoTabelasRoute
   WorkspaceCatalogoTiposRoute: typeof WorkspaceCatalogoTiposRoute
   WorkspaceClientesIdRoute: typeof WorkspaceClientesIdRoute
@@ -7715,6 +7854,7 @@ interface WorkspaceRouteChildren {
   WorkspaceMarketingVitrineRoute: typeof WorkspaceMarketingVitrineRoute
   WorkspaceMasterInfluencersRoute: typeof WorkspaceMasterInfluencersRoute
   WorkspaceModeracaoKycRoute: typeof WorkspaceModeracaoKycRoute
+  WorkspaceMuralNovoRoute: typeof WorkspaceMuralNovoRoute
   WorkspaceNoticiasNovoRoute: typeof WorkspaceNoticiasNovoRoute
   WorkspaceOnboardingRevisaoRoute: typeof WorkspaceOnboardingRevisaoRoute
   WorkspaceOrcamentosIdRoute: typeof WorkspaceOrcamentosIdRoute
@@ -7763,8 +7903,6 @@ interface WorkspaceRouteChildren {
   WorkspaceBuilderDocumentIdEditorRoute: typeof WorkspaceBuilderDocumentIdEditorRoute
   WorkspaceCatalogoCategoriasIdRoute: typeof WorkspaceCatalogoCategoriasIdRoute
   WorkspaceCatalogoCategoriasNovoRoute: typeof WorkspaceCatalogoCategoriasNovoRoute
-  WorkspaceCatalogoColecoesIdRoute: typeof WorkspaceCatalogoColecoesIdRoute
-  WorkspaceCatalogoColecoesNovoRoute: typeof WorkspaceCatalogoColecoesNovoRoute
   WorkspaceCatalogoProdutosIdRoute: typeof WorkspaceCatalogoProdutosIdRoute
   WorkspaceCatalogoProdutosNovoRoute: typeof WorkspaceCatalogoProdutosNovoRoute
   WorkspaceConfiguracoesFretesCotacoesRoute: typeof WorkspaceConfiguracoesFretesCotacoesRoute
@@ -7780,7 +7918,6 @@ interface WorkspaceRouteChildren {
   WorkspaceTurismoViagensIdRoute: typeof WorkspaceTurismoViagensIdRoute
   WorkspaceAgendaServicosIndexRoute: typeof WorkspaceAgendaServicosIndexRoute
   WorkspaceCatalogoCategoriasIndexRoute: typeof WorkspaceCatalogoCategoriasIndexRoute
-  WorkspaceCatalogoColecoesIndexRoute: typeof WorkspaceCatalogoColecoesIndexRoute
   WorkspaceCatalogoProdutosIndexRoute: typeof WorkspaceCatalogoProdutosIndexRoute
   WorkspaceCmsPaginasIndexRoute: typeof WorkspaceCmsPaginasIndexRoute
   WorkspaceFinanceiroCaixaIndexRoute: typeof WorkspaceFinanceiroCaixaIndexRoute
@@ -7812,6 +7949,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceAgendaRecursosRoute: WorkspaceAgendaRecursosRoute,
   WorkspaceCaptacaoNdasRoute: WorkspaceCaptacaoNdasRoute,
   WorkspaceCatalogoAtributosRoute: WorkspaceCatalogoAtributosRoute,
+  WorkspaceCatalogoColecoesRoute: WorkspaceCatalogoColecoesRouteWithChildren,
   WorkspaceCatalogoTabelasRoute: WorkspaceCatalogoTabelasRoute,
   WorkspaceCatalogoTiposRoute: WorkspaceCatalogoTiposRoute,
   WorkspaceClientesIdRoute: WorkspaceClientesIdRoute,
@@ -7880,6 +8018,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceMarketingVitrineRoute: WorkspaceMarketingVitrineRoute,
   WorkspaceMasterInfluencersRoute: WorkspaceMasterInfluencersRoute,
   WorkspaceModeracaoKycRoute: WorkspaceModeracaoKycRoute,
+  WorkspaceMuralNovoRoute: WorkspaceMuralNovoRoute,
   WorkspaceNoticiasNovoRoute: WorkspaceNoticiasNovoRoute,
   WorkspaceOnboardingRevisaoRoute: WorkspaceOnboardingRevisaoRoute,
   WorkspaceOrcamentosIdRoute: WorkspaceOrcamentosIdRoute,
@@ -7928,8 +8067,6 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceBuilderDocumentIdEditorRoute: WorkspaceBuilderDocumentIdEditorRoute,
   WorkspaceCatalogoCategoriasIdRoute: WorkspaceCatalogoCategoriasIdRoute,
   WorkspaceCatalogoCategoriasNovoRoute: WorkspaceCatalogoCategoriasNovoRoute,
-  WorkspaceCatalogoColecoesIdRoute: WorkspaceCatalogoColecoesIdRoute,
-  WorkspaceCatalogoColecoesNovoRoute: WorkspaceCatalogoColecoesNovoRoute,
   WorkspaceCatalogoProdutosIdRoute: WorkspaceCatalogoProdutosIdRoute,
   WorkspaceCatalogoProdutosNovoRoute: WorkspaceCatalogoProdutosNovoRoute,
   WorkspaceConfiguracoesFretesCotacoesRoute:
@@ -7947,7 +8084,6 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceTurismoViagensIdRoute: WorkspaceTurismoViagensIdRoute,
   WorkspaceAgendaServicosIndexRoute: WorkspaceAgendaServicosIndexRoute,
   WorkspaceCatalogoCategoriasIndexRoute: WorkspaceCatalogoCategoriasIndexRoute,
-  WorkspaceCatalogoColecoesIndexRoute: WorkspaceCatalogoColecoesIndexRoute,
   WorkspaceCatalogoProdutosIndexRoute: WorkspaceCatalogoProdutosIndexRoute,
   WorkspaceCmsPaginasIndexRoute: WorkspaceCmsPaginasIndexRoute,
   WorkspaceFinanceiroCaixaIndexRoute: WorkspaceFinanceiroCaixaIndexRoute,
@@ -7990,6 +8126,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMiningWorkerRoute: ApiMiningWorkerRoute,
   ApiPwaManifestDotjsonRoute: ApiPwaManifestDotjsonRoute,
   ApiWebhooksMarketplacesRoute: ApiWebhooksMarketplacesRoute,
+  ApiWebhooksMetaAdsRoute: ApiWebhooksMetaAdsRoute,
   ApiWebhooksPixRoute: ApiWebhooksPixRoute,
   ApiWebhooksShipmentRoute: ApiWebhooksShipmentRoute,
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRoute,

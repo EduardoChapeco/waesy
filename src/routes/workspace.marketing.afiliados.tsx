@@ -217,7 +217,7 @@ function WorkspaceAffiliatesPage() {
                     pending: { label: "Pendente", badge: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
                     processing: { label: "Processando", badge: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: Clock },
                     paid: { label: "Pago", badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
-                    rejected: { label: "Rejeitado", badge: "bg-red-500/10 text-red-600 border-red-500/20", icon: XCircle },
+                    rejected: { label: "Rejeitado", badge: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
                   };
                   const currentStatus = statusMap[payout.status] || statusMap.pending;
                   const StatusIcon = currentStatus.icon;

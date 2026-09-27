@@ -348,7 +348,7 @@ function CarteiraClientesPage() {
       ) : (
         <>
           {/* ── 1. Mobile List Layout (Zero-Cramping, Large Text & 44px Controls) ── */}
-          <div className="space-y-3.5 block md:hidden">
+          <div className="block md:hidden bg-card border-y border-border/40 divide-y divide-border/30">
             {filteredCustomers.map((c: any) => {
               const isCompany = c.kind === "company";
               const hasExpiredDocs = (c.docAlerts?.expired || 0) > 0;
@@ -357,7 +357,7 @@ function CarteiraClientesPage() {
               return (
                 <div
                   key={c.id}
-                  className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-3.5 transition-all"
+                  className="px-4 py-3.5 min-h-[56px] space-y-2.5 active:bg-muted/30 transition-colors"
                 >
                   {/* Top: Avatar, Nome, Tipo & Status */}
                   <div className="flex items-start justify-between gap-3">

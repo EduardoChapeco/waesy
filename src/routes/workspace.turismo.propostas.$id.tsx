@@ -135,7 +135,7 @@ function WorkspaceProposalStudioPage() {
 
  if (!proposal) {
  return (
- <div className="h-screen w-screen flex flex-col items-center justify-center bg-background space-y-4">
+ <div className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-background space-y-4">
  <h2 className="text-sm font-bold text-foreground">Proposta não encontrada</h2>
  <Button asChild size="sm" variant="outline" className="rounded-xl">
  <Link to="/workspace/turismo/cotacoes">Voltar para Cotações</Link>
@@ -186,7 +186,7 @@ function WorkspaceProposalStudioPage() {
  const displayZoom = Math.round((zoomScale !== null ? zoomScale : autoFitScale) * 100);
 
  return (
- <div className="flex h-screen w-screen flex-col overflow-hidden bg-background select-none font-sans">
+ <div className="flex h-[100dvh] w-screen flex-col overflow-hidden bg-background select-none font-sans">
  {/* ── 1. BARRA SUPERIOR CANÔNICA (Studio Toolbar Fixo 56px) ── */}
  <header className="h-14 px-4 border-b border-border/80 flex items-center justify-between shrink-0 bg-card z-30 shadow-2xs">
  {/* Esquerda: Voltar + Identificação da Proposta + Status */}

@@ -120,7 +120,7 @@ export function ProductDetailMobile({
   const currentMediaIndex = mediaList.findIndex((m: any) => m.id === activeMedia?.id);
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-28 select-none">
+    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-28 select-none">
       {/* ── 1. HERO EDGE-TO-EDGE NO TOPO (Sem Header, toca nos limites do display) ── */}
       <div className="relative w-full aspect-square bg-muted/20 overflow-hidden">
         {activeMedia ? (

@@ -466,8 +466,8 @@ function WorkspaceSessionsAndAuditPage() {
                         <div
                           className={`size-8 rounded-lg flex items-center justify-center shrink-0 ${
                             log.event_type === "login_success"
-                              ? "bg-green-500/10 text-green-600"
-                              : "bg-amber-500/10 text-amber-600"
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                              : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                           }`}
                         >
                           {log.event_type === "login_success" ? (

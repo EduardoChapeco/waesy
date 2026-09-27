@@ -35,16 +35,48 @@ import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/marketing/anuncios/novo")({
- head: () => ({ meta: [{ title: "Criar Campanha de Anúncio | Waesy" }] }),
- loader: async () => {
- try {
- return await getStoreAdTargets();
- } catch {
- return { products: [], storePhone: null, storeSlug: "" };
- }
- },
- component: NovoAnuncioPage,
+  head: () => ({ meta: [{ title: "Criar Campanha de Anúncio | Waesy" }] }),
+  loader: async () => {
+    try {
+      const res = await getStoreAdTargets();
+      return {
+        products: Array.isArray(res?.products) ? res.products : [],
+        storePhone: res?.storePhone || null,
+        storeSlug: res?.storeSlug || "",
+      };
+    } catch {
+      return { products: [], storePhone: null, storeSlug: "" };
+    }
+  },
+  errorComponent: WorkspaceAnunciosNovoErrorComponent,
+  component: NovoAnuncioPage,
 });
+
+function WorkspaceAnunciosNovoErrorComponent({ error }: { error: any }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-4">
+      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+        <Megaphone className="size-7" />
+      </div>
+      <div className="space-y-1">
+        <h2 className="text-lg font-bold text-foreground">Falha ao Abrir Criador de Campanha</h2>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto">
+          Ocorreu um erro ao carregar os dados de produtos e alvos da loja.
+        </p>
+      </div>
+      {error?.message && (
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+          {error.message}
+        </pre>
+      )}
+      <div className="pt-2 flex items-center justify-center gap-3">
+        <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-10 px-5 font-semibold">
+          <Link to="/workspace/marketing/anuncios">Voltar às Campanhas</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 const AD_FORMATS = [
   {
@@ -111,25 +143,26 @@ const AD_OBJECTIVES = [
 ] as const;
 
 function NovoAnuncioPage() {
- const navigate = useNavigate();
- const { products, storePhone, storeSlug } = ((Route.useLoaderData?.() as any) || {});
+  const navigate = useNavigate();
+  const { products, storePhone, storeSlug } = ((Route.useLoaderData?.() as any) || {});
+  const safeProducts = Array.isArray(products) ? products : [];
 
- const [title, setTitle] = useState("");
- const [headline, setHeadline] = useState("");
- const [format, setFormat] = useState<any>("post_patrocinado");
- const [mediaUrls, setMediaUrls] = useState<string[]>([]);
- const [objective, setObjective] = useState<"whatsapp_leads" | "direct_sales" | "brand_awareness">("whatsapp_leads");
- const [destinationType, setDestinationType] = useState<"product" | "post" | "whatsapp" | "custom_url">("whatsapp");
- const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.id || "");
- const [customUrl, setCustomUrl] = useState("");
- const [location, setLocation] = useState("Toda a Região de Cobertura");
- const [radiusKm, setRadiusKm] = useState(15);
- const [dailyBudgetCents, setDailyBudgetCents] = useState<number | undefined>(2000);
- const [totalBudgetCents, setTotalBudgetCents] = useState<number | undefined>(10000);
- const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState("");
+  const [headline, setHeadline] = useState("");
+  const [format, setFormat] = useState<any>("post_patrocinado");
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+  const [objective, setObjective] = useState<"whatsapp_leads" | "direct_sales" | "brand_awareness">("whatsapp_leads");
+  const [destinationType, setDestinationType] = useState<"product" | "post" | "whatsapp" | "custom_url">("whatsapp");
+  const [selectedProductId, setSelectedProductId] = useState<string>(safeProducts[0]?.id || "");
+  const [customUrl, setCustomUrl] = useState("");
+  const [location, setLocation] = useState("Toda a Região de Cobertura");
+  const [radiusKm, setRadiusKm] = useState(15);
+  const [dailyBudgetCents, setDailyBudgetCents] = useState<number | undefined>(2000);
+  const [totalBudgetCents, setTotalBudgetCents] = useState<number | undefined>(10000);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
- const selectedFormatConfig = AD_FORMATS.find((f) => f.id === format) || AD_FORMATS[0];
- const selectedProduct = products.find((p: any) => p.id === selectedProductId);
+  const selectedFormatConfig = AD_FORMATS.find((f) => f.id === format) || AD_FORMATS[0];
+  const selectedProduct = safeProducts.find((p: any) => p.id === selectedProductId);
 
  // Estimativa de alcance baseada no orçamento diário
  const dailyNum = (dailyBudgetCents || 0) / 100;
@@ -334,13 +367,13 @@ function NovoAnuncioPage() {
  {objective === "direct_sales" && (
  <div className="space-y-1.5 pt-2 border-t border-border/40">
  <Label className="text-xs font-semibold">Selecione o Produto de Destino</Label>
- {products.length > 0 ? (
+ {safeProducts.length > 0 ? (
  <Select value={selectedProductId} onValueChange={setSelectedProductId}>
  <SelectTrigger className="h-10 text-xs rounded-xl">
  <SelectValue placeholder="Selecione um produto cadastrado" />
  </SelectTrigger>
  <SelectContent>
- {products.map((p: any) => (
+ {safeProducts.map((p: any) => (
  <SelectItem key={p.id} value={p.id} className="text-xs">
  {p.title} • {formatMoney(p.price_cents || 0)}
  </SelectItem>

@@ -447,7 +447,7 @@ export function CheckoutPage() {
 
  const paymentSettings = storeProfile?.settings?.payment_settings || {};
  const pixDiscountPercent = Number(paymentSettings.pix_discount_percentage || 0);
- const maxInstallments = Number(paymentSettings.max_installments || 12);
+ const maxInstallments = Number(paymentSettings.max_installments || 1);
  const interestFreeInstallments = Number(paymentSettings.interest_free_installments || 3);
  const installmentInterestRate = Number(paymentSettings.installment_interest_rate || 2.99);
 

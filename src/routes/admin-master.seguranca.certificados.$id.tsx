@@ -100,7 +100,7 @@ function CertificateDetailPage() {
 
  if (!loaderData?.success || !loaderData?.certificate) {
  return (
- <div className="min-h-screen bg-background flex items-center justify-center">
+ <div className="min-h-[100dvh] bg-background flex items-center justify-center">
  <div className="text-center">
  <XCircle className="size-10 mx-auto text-destructive mb-3" />
  <h2 className="text-base font-semibold">Certificado não encontrado</h2>
@@ -115,7 +115,7 @@ function CertificateDetailPage() {
  const { user, telemetry, cryptography, timestamps, status } = cert;
 
  return (
- <div className="min-h-screen bg-background">
+ <div className="min-h-[100dvh] bg-background">
  {/* Header */}
  <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-10">
  <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">

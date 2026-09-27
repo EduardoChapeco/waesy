@@ -902,18 +902,18 @@ function EventosPage() {
         </div>
       )}
 
-      {/* MODO 3: LISTA CRONOLÓGICA ELEGANTE */}
+      {/* MODO 3: LISTA CRONOLÓGICA ELEGANTE (WhatsApp List no Mobile / Lista Rica no Desktop) */}
       {!isLoading && !isError && filteredEvents.length > 0 && viewMode === "list" && (
-        <div className="divide-y divide-border/50 rounded-2xl border border-border/60 bg-card overflow-hidden shadow-xs">
+        <div className="divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden shadow-xs">
           {filteredEvents.map((event) => (
             <Link
               key={event.id}
               to="/evento/$id"
               params={{ id: event.id }}
-              className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors group"
+              className="px-3 sm:px-4 py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors group cursor-pointer w-full"
             >
-              <div className="flex items-start sm:items-center gap-4 min-w-0">
-                <div className="size-16 sm:size-20 rounded-xl overflow-hidden bg-muted shrink-0 relative">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                <div className="size-16 sm:size-20 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-border/40">
                   <img
                     src={getEventCover(event)}
                     alt={event.title}
@@ -924,17 +924,17 @@ function EventosPage() {
                   />
                 </div>
 
-                <div className="space-y-1 min-w-0">
+                <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono font-bold text-primary uppercase">
                       {formatDate(event.event_date)}
                     </span>
                   </div>
-                  <h3 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
                     {event.title}
                   </h3>
                   {event.location && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                    <div className="flex items-center gap-1 text-[11px] sm:text-xs text-muted-foreground truncate">
                       <MapPin size={12} weight="bold" className="shrink-0" />
                       <span className="truncate">{event.location}</span>
                     </div>
@@ -942,12 +942,13 @@ function EventosPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 self-end sm:self-center shrink-0">
-                <span className="text-sm font-bold text-primary">
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-4 shrink-0 pl-1">
+                <span className="text-xs sm:text-sm font-bold text-primary font-mono">
                   {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Gratuito"}
                 </span>
-                <Button size="sm" variant="outline" className="h-9 px-4 rounded-xl text-xs font-semibold gap-1">
-                  Ingressos <CaretRight size={12} weight="bold" />
+                <Button size="sm" variant="outline" className="h-7 sm:h-9 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-semibold gap-1 cursor-pointer">
+                  <span>Ingressos</span>
+                  <CaretRight size={12} weight="bold" />
                 </Button>
               </div>
             </Link>

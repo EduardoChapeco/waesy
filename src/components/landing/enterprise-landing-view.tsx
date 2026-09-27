@@ -63,7 +63,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
   };
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 overflow-x-hidden">
+    <div className="w-full min-h-[100dvh] bg-background text-foreground flex flex-col selection:bg-primary/20 overflow-x-hidden">
       {/* ── 1. HEADER ENTERPRISE (APPLE HIG & STRIPE STANDARD - TOPO ÚNICO) ── */}
       <header className="sticky top-0 z-50 w-full bg-background/85 backdrop-blur-xl border-b border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">

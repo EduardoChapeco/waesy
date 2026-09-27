@@ -23,7 +23,7 @@ export function GlobalRail({ session }: GlobalRailProps) {
 
  return (
  <TooltipProvider delayDuration={150}>
- <aside className="hidden md:flex flex-col items-center justify-between w-[68px] shrink-0 h-screen sticky top-0 py-4 bg-background z-30 select-none">
+ <aside className="hidden md:flex flex-col items-center justify-between w-[68px] shrink-0 h-[100dvh] sticky top-0 py-4 bg-background z-30 select-none">
  {/* 1. Topo: Logo Waesy */}
  <div className="flex flex-col items-center gap-3">
  <Link

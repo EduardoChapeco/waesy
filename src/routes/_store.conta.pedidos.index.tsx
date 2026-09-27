@@ -91,8 +91,31 @@ export const Route = createFileRoute("/_store/conta/pedidos/")({
       return [];
     }
   },
+  errorComponent: CustomerOrdersErrorComponent,
   component: CustomerOrdersPage,
 } as any);
+
+function CustomerOrdersErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <AlertCircle className="size-8" />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar pedidos</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar seu histórico de pedidos no momento."}
+      </p>
+      <div className="flex items-center justify-center gap-3">
+        <Button onClick={reset} className="rounded-xl font-bold">
+          Tentar Novamente
+        </Button>
+        <Button asChild variant="outline" className="rounded-xl font-bold">
+          <Link to="/conta">Voltar para Conta</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -330,7 +353,7 @@ function CustomerOrdersPage() {
                 placeholder="Buscar por produto, loja ou código de rastreio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8.5 h-10 text-xs rounded-xl border-border/60 bg-muted/30 focus:bg-background transition-colors"
+                className="pl-8.5 h-10 text-base sm:text-xs rounded-xl border-border/60 bg-muted/30 focus:bg-background transition-colors"
               />
             </div>
           </div>
@@ -389,7 +412,7 @@ function CustomerOrdersPage() {
                   </div>
 
                   {/* Cards do mês — WhatsApp list style */}
-                  <div className="bg-card border border-border/40 rounded-2xl overflow-hidden divide-y divide-border/20 mx-0">
+                  <div className="w-full bg-card border-y border-border/40 sm:border sm:rounded-2xl overflow-hidden divide-y divide-border/30 mx-0 shadow-2xs">
                     {group.orders.map((order: any) => (
                       <OrderRow key={order.id} order={order} />
                     ))}

@@ -243,7 +243,7 @@ function PublicTravelVoucherPage() {
     (voucher.passenger_name ? [voucher.passenger_name] : []);
 
   return (
-    <div className="min-h-screen bg-muted/20 py-4 sm:py-8 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
+    <div className="min-h-[100dvh] bg-muted/20 py-4 sm:py-8 px-0 sm:px-4 md:px-0 space-y-6 animate-in fade-in duration-200">
       {/* ── BARRA DE AÇÕES SUPERIOR (OCULTA NA IMPRESSÃO) ── */}
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/80 print:hidden">
         <div className="flex items-center gap-2">

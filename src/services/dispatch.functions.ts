@@ -166,6 +166,20 @@ export const createDispatch = createServerFn({ method: "POST" })
  throw new Error("Erro ao criar despacho no banco de dados.");
  }
 
+ // Sincroniza tabela soberana delivery_runs do Waesy Go / Motolink
+ if (input.orderId && input.orderId.length === 36) {
+ await supabase.from("delivery_runs").insert({
+ order_id: input.orderId,
+ store_id: identity.store_id,
+ magic_token: deliveryToken,
+ pin_code: pin,
+ status: "link_generated",
+ courier_name: input.courierName,
+ courier_phone: input.courierPhone,
+ delivery_fee_cents: input.deliveryFeeCents || 0,
+ }).catch((e: any) => console.warn("[dispatch] delivery_runs sync notice:", e?.message));
+ }
+
  // Se o pedido informado existir no banco, atualiza status para 'shipped'
  if (input.orderId && input.orderId.length === 36) {
  try {
@@ -464,3 +478,208 @@ export const updateDeliveryPaymentMethod = createServerFn({ method: "POST" })
 
  return { success: true };
  });
+
+
+// ---------------------------------------------------------------------------
+// FASE 3: Waesy Go / Motolink — Telemetria GPS em Tempo Real & Aceite
+// ---------------------------------------------------------------------------
+export const recordDeliveryTelemetry = createServerFn({ method: "POST" })
+ .validator(
+ z.object({
+ token: z.string(),
+ latitude: z.number(),
+ longitude: z.number(),
+ batteryLevel: z.number().optional(),
+ }),
+ )
+ .handler(async ({ data: { token, latitude, longitude, batteryLevel } }) => {
+ const supabase = getServerClient();
+ const now = new Date().toISOString();
+
+ const { data: run } = await supabase
+ .from("delivery_runs")
+ .select("id")
+ .eq("magic_token", token)
+ .maybeSingle();
+
+ if (run?.id) {
+ await Promise.all([
+ supabase
+ .from("delivery_runs")
+ .update({
+ current_lat: latitude,
+ current_lng: longitude,
+ last_ping_at: now,
+ status: "in_transit",
+ })
+ .eq("id", run.id),
+ supabase.from("delivery_events").insert({
+ run_id: run.id,
+ event_type: "telemetry_ping",
+ latitude,
+ longitude,
+ battery_level: batteryLevel ?? null,
+ }),
+ ]);
+ }
+
+ return { success: true, timestamp: now };
+ });
+
+export const acceptDeliveryRun = createServerFn({ method: "POST" })
+ .validator(
+ z.object({
+ token: z.string(),
+ courierId: z.string().uuid().optional(),
+ courierName: z.string().optional(),
+ courierPhone: z.string().optional(),
+ }),
+ )
+ .handler(async ({ data: { token, courierId, courierName, courierPhone } }) => {
+ const supabase = getServerClient();
+ const now = new Date().toISOString();
+
+ const { data: run, error } = await supabase
+ .from("delivery_runs")
+ .update({
+ status: "accepted",
+ courier_id: courierId || null,
+ courier_name: courierName || undefined,
+ courier_phone: courierPhone || undefined,
+ updated_at: now,
+ })
+ .eq("magic_token", token)
+ .select("id, order_id, store_id")
+ .maybeSingle();
+
+ if (!error && run?.id) {
+ await supabase.from("delivery_events").insert({
+ run_id: run.id,
+ event_type: "accepted",
+ metadata: { courier_name: courierName, courier_phone: courierPhone },
+ });
+ }
+
+ return { success: true, acceptedAt: now };
+ });
+
+export const getDeliveryTrackingForOrder = createServerFn({ method: "GET" })
+  .validator(z.object({ orderId: z.string() }))
+  .handler(async ({ data: { orderId } }) => {
+    const supabase = getServerClient();
+
+    try {
+      // 1. Tenta buscar em delivery_runs (Waesy Go / Motolink v2)
+      const { data: run, error: runError } = await supabase
+        .from("delivery_runs")
+        .select(`
+          id, order_id, store_id, courier_id, magic_token, pin_code, status,
+          current_lat, current_lng, last_ping_at, courier_name, courier_phone,
+          delivery_fee_cents, created_at, updated_at
+        `)
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!runError && run) {
+        // Busca os últimos pings de telemetria
+        const { data: events } = await supabase
+          .from("delivery_events")
+          .select("id, event_type, latitude, longitude, created_at")
+          .eq("run_id", run.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        // Busca nome e logo da loja
+        let storeInfo: { name?: string; logo_url?: string; phone?: string } = {};
+        if (run.store_id) {
+          const { data: store } = await supabase
+            .from("stores")
+            .select("name, logo_url, phone")
+            .eq("id", run.store_id)
+            .maybeSingle();
+          if (store) storeInfo = store;
+        }
+
+        // Busca dados de entrega do pedido
+        let orderAddress = "";
+        let orderNeighborhood = "";
+        let orderCity = "";
+        const { data: ord } = await supabase
+          .from("orders")
+          .select("shipping_address")
+          .eq("id", orderId)
+          .maybeSingle();
+
+        if (ord?.shipping_address) {
+          const addr = ord.shipping_address as any;
+          orderAddress = `${addr.street || ""}, ${addr.number || "S/N"}${addr.complement ? ` - ${addr.complement}` : ""}`;
+          orderNeighborhood = addr.neighborhood || "";
+          orderCity = addr.city || "";
+        }
+
+        return {
+          tracking: {
+            id: run.id,
+            orderId: run.order_id,
+            status: run.status as "pending" | "accepted" | "in_transit" | "delivered" | "cancelled",
+            courierName: run.courier_name,
+            courierPhone: run.courier_phone,
+            currentLat: run.current_lat ? Number(run.current_lat) : null,
+            currentLng: run.current_lng ? Number(run.current_lng) : null,
+            lastPingAt: run.last_ping_at,
+            confirmationPin: run.pin_code,
+            token: run.magic_token,
+            deliveryAddress: orderAddress,
+            deliveryNeighborhood: orderNeighborhood,
+            deliveryCity: orderCity,
+            store: storeInfo,
+            events: events || [],
+            source: "delivery_runs" as const,
+          },
+        };
+      }
+
+      // 2. Fallback para classified_delivery_dispatches
+      const { data: dispatch } = await (supabase as any)
+        .from("classified_delivery_dispatches")
+        .select(`
+          *,
+          store:stores(id, name, logo_url, phone)
+        `)
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (dispatch) {
+        return {
+          tracking: {
+            id: dispatch.id,
+            orderId: dispatch.order_id,
+            status: (dispatch.status === "picked_up" ? "in_transit" : dispatch.status) as any,
+            courierName: dispatch.courier_name,
+            courierPhone: dispatch.courier_phone,
+            currentLat: null,
+            currentLng: null,
+            lastPingAt: null,
+            confirmationPin: dispatch.confirmation_pin,
+            token: dispatch.token,
+            deliveryAddress: dispatch.delivery_address,
+            deliveryNeighborhood: dispatch.delivery_neighborhood,
+            deliveryCity: dispatch.delivery_city,
+            store: dispatch.store || {},
+            events: [],
+            source: "classified_delivery_dispatches" as const,
+          },
+        };
+      }
+
+      return { tracking: null };
+    } catch (e) {
+      console.warn("[dispatch] getDeliveryTrackingForOrder fallback:", e);
+      return { tracking: null };
+    }
+  });
+

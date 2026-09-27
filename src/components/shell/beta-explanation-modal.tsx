@@ -19,7 +19,7 @@ interface BetaExplanationModalProps {
 export function BetaExplanationModal({
   open,
   onOpenChange,
-  supportWhatsApp = "49991448651",
+  supportWhatsApp = "",
 }: BetaExplanationModalProps) {
   const handleOpenWhatsApp = () => {
     const text = encodeURIComponent(

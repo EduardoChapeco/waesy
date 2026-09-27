@@ -13,6 +13,7 @@ import {
   Gift,
   Briefcase,
   Lock,
+  RefreshCw,
 } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
@@ -112,8 +113,40 @@ export const Route = createFileRoute("/_store/classificados/")({
       return { banners: [], hotpages: [], classifieds: [] };
     }
   },
+  errorComponent: ClassifiedsIndexErrorComponent,
   component: ClassifiedsMasterPage,
 });
+
+function ClassifiedsIndexErrorComponent({ error }: { error: any }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+        <Tag className="size-8" />
+      </div>
+      <div className="space-y-1.5">
+        <h1 className="text-xl font-bold text-foreground">Falha ao Carregar Classificados</h1>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Não foi possível sincronizar o catálogo de classificados e desapegos no momento.
+        </p>
+      </div>
+      {error?.message && (
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+          {error.message}
+        </pre>
+      )}
+      <div className="pt-2 flex items-center justify-center gap-3">
+        <Button
+          variant="default"
+          className="rounded-xl text-xs h-11 px-5 font-bold cursor-pointer"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCw className="size-3.5 mr-1.5" />
+          <span>Tentar Novamente</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 const CLASSIFIEDS_HOTPAGES = [
   {

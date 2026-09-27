@@ -101,142 +101,142 @@ export function GroceryProductCard({
  : 0;
 
  if (viewMode === "list") {
- return (
- <div
- className={cn(
- "group relative flex items-stretch w-full h-[140px] sm:h-[150px] rounded-2xl bg-card border border-border/60 hover:border-foreground/20 transition-all overflow-hidden p-0",
- className,
- )}
- >
- <Link
- to="/produto/$slug"
- params={{ slug: product.slug }}
- search={product.variantId ? { v: product.variantId } : undefined}
- className="relative w-36 sm:w-44 h-full bg-muted/40 overflow-hidden shrink-0 block focus-visible:outline-none"
- >
- {product.coverUrl ? (
- <img
- src={product.coverUrl}
- alt={product.coverAlt || product.title}
- loading="lazy"
- className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
- />
- ) : (
- <div className="size-full flex items-center justify-center text-muted-foreground">
- <ImageOff className="size-8" />
- </div>
- )}
+    return (
+      <div
+        className={cn(
+          "group relative flex items-center w-full min-h-[76px] sm:min-h-[96px] rounded-none sm:rounded-2xl bg-card hover:bg-muted/30 transition-all overflow-hidden p-2.5 sm:p-3 gap-3",
+          className,
+        )}
+      >
+        <Link
+          to="/produto/$slug"
+          params={{ slug: product.slug }}
+          search={product.variantId ? { v: product.variantId } : undefined}
+          className="relative size-16 sm:size-20 rounded-xl bg-muted/40 overflow-hidden shrink-0 block focus-visible:outline-none border border-border/40"
+        >
+          {product.coverUrl ? (
+            <img
+              src={product.coverUrl}
+              alt={product.coverAlt || product.title}
+              loading="lazy"
+              className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="size-full flex items-center justify-center text-muted-foreground">
+              <ImageOff className="size-6 sm:size-8" />
+            </div>
+          )}
 
- {hasDiscount && discountPercent > 0 && (
- <div className="absolute top-2 left-2 z-10">
- <Badge className="bg-destructive text-destructive-foreground text-[10px] font-black px-2 py-0.5 rounded-md">
- -{discountPercent}%
- </Badge>
- </div>
- )}
+          {hasDiscount && discountPercent > 0 && (
+            <div className="absolute top-1 left-1 z-10">
+              <Badge className="bg-destructive text-destructive-foreground text-[9px] font-black px-1.5 py-0 rounded-md">
+                -{discountPercent}%
+              </Badge>
+            </div>
+          )}
 
- {product.isOutOfStock && (
- <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center">
- <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground bg-card px-2 py-0.5 rounded-lg ">
- Esgotado
- </span>
- </div>
- )}
- </Link>
+          {product.isOutOfStock && (
+            <div className="absolute inset-0 bg-background/70 backdrop-blur-xs flex items-center justify-center">
+              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground bg-card px-1.5 py-0.5 rounded-lg">
+                Esgotado
+              </span>
+            </div>
+          )}
+        </Link>
 
- <div className="flex-1 flex flex-col justify-between h-full min-w-0 p-3 sm:p-4">
- <Link
- to="/produto/$slug"
- params={{ slug: product.slug }}
- search={product.variantId ? { v: product.variantId } : undefined}
- className="space-y-1 focus-visible:outline-none block"
- >
- {((product as any).store_name || (product as any).storeName || product.brand) && (
- <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate block">
- {(product as any).store_name || (product as any).storeName || product.brand}
- </span>
- )}
+        <div className="flex-1 flex flex-col justify-center min-w-0 space-y-0.5">
+          <Link
+            to="/produto/$slug"
+            params={{ slug: product.slug }}
+            search={product.variantId ? { v: product.variantId } : undefined}
+            className="space-y-0.5 focus-visible:outline-none block"
+          >
+            {((product as any).store_name || (product as any).storeName || product.brand) && (
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate block">
+                {(product as any).store_name || (product as any).storeName || product.brand}
+              </span>
+            )}
 
- <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
- {product.title}
- </h3>
+            <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-1 leading-snug group-hover:text-primary transition-colors">
+              {product.title}
+            </h3>
 
- {unitLabel && (
- <span className="text-[10px] text-muted-foreground font-medium block">
- {unitLabel}
- </span>
- )}
- </Link>
+            {unitLabel && (
+              <span className="text-[10px] text-muted-foreground font-medium block">
+                {unitLabel}
+              </span>
+            )}
+          </Link>
+        </div>
 
- <div className="pt-2 flex items-center justify-between gap-2">
- <div className="flex flex-col min-w-0">
- {hasDiscount && typeof compareAtCents === "number" && (
- <span className="text-[10px] text-muted-foreground line-through font-mono">
- {formatMoney(compareAtCents)}
- </span>
- )}
- <span className="font-mono font-black text-xs sm:text-sm text-foreground truncate">
- {formatMoney(priceCents)}
- </span>
- </div>
+        <div className="shrink-0 flex flex-col items-end gap-1.5 pl-1">
+          <div className="flex flex-col items-end min-w-0">
+            {hasDiscount && typeof compareAtCents === "number" && (
+              <span className="text-[9px] text-muted-foreground line-through font-mono">
+                {formatMoney(compareAtCents)}
+              </span>
+            )}
+            <span className="font-mono font-black text-xs sm:text-sm text-foreground">
+              {formatMoney(priceCents)}
+            </span>
+          </div>
 
- <div>
- {currentQty > 0 ? (
- <div className="flex items-center gap-1 border border-primary/30 bg-primary/10 text-primary rounded-xl p-0.5">
- <button
- type="button"
- onClick={handleDecrement}
- disabled={isAdding}
- className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
- aria-label="Diminuir quantidade"
- >
- <Minus className="size-2.5" />
- </button>
+          <div>
+            {currentQty > 0 ? (
+              <div className="flex items-center gap-1 border border-primary/30 bg-primary/10 text-primary rounded-xl p-0.5">
+                <button
+                  type="button"
+                  onClick={handleDecrement}
+                  disabled={isAdding}
+                  className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+                  aria-label="Diminuir quantidade"
+                >
+                  <Minus className="size-2.5" />
+                </button>
 
- <span className="font-mono font-bold text-xs px-1 min-w-[16px] text-center">
- {currentQty}
- </span>
+                <span className="font-mono font-bold text-xs px-1 min-w-[16px] text-center">
+                  {currentQty}
+                </span>
 
- <button
- type="button"
- onClick={handleIncrement}
- disabled={isAdding}
- className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
- aria-label="Aumentar quantidade"
- >
- <Plus className="size-2.5" />
- </button>
- </div>
- ) : product.variantId ? (
- <Button
- size="sm"
- onClick={handleQuickAdd}
- className="rounded-xl h-8 px-2.5 font-bold text-xs gap-1 cursor-pointer"
- >
- <Plus className="size-3.5" />
- <span className="hidden sm:inline">Adicionar</span>
- </Button>
- ) : (
- <Button
- asChild
- size="sm"
- variant="outline"
- className="rounded-xl h-8 px-2.5 font-bold text-xs border-border cursor-pointer"
- >
- <Link
- to="/produto/$slug"
- params={{ slug: product.slug }}
- >
- Opções
- </Link>
- </Button>
- )}
- </div>
- </div>
- </div>
- </div>
- );
- }
+                <button
+                  type="button"
+                  onClick={handleIncrement}
+                  disabled={isAdding}
+                  className="size-5 rounded bg-background hover:bg-background/80 text-primary flex items-center justify-center transition-colors cursor-pointer"
+                  aria-label="Aumentar quantidade"
+                >
+                  <Plus className="size-2.5" />
+                </button>
+              </div>
+            ) : product.variantId ? (
+              <Button
+                size="sm"
+                onClick={handleQuickAdd}
+                className="rounded-xl h-7 sm:h-8 px-2 sm:px-2.5 font-bold text-[11px] sm:text-xs gap-1 cursor-pointer"
+              >
+                <Plus className="size-3" />
+                <span>Pedir</span>
+              </Button>
+            ) : (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="rounded-xl h-7 sm:h-8 px-2 sm:px-2.5 font-bold text-[11px] sm:text-xs border-border cursor-pointer"
+              >
+                <Link
+                  to="/produto/$slug"
+                  params={{ slug: product.slug }}
+                >
+                  Opções
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
  return (
  <div

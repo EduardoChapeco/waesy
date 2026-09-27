@@ -163,7 +163,7 @@ export function TravelPackageDetailView({
  };
 
  return (
- <div className="w-full bg-background text-foreground flex flex-col min-h-screen relative select-none">
+ <div className="w-full bg-background text-foreground flex flex-col min-h-[100dvh] relative select-none">
  {/* ── 1. Barra Superior de Abas (Estilo App Nativo de Viagem) ── */}
  <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/70 shadow-2xs">
  <div className="flex items-center justify-between px-4 h-12 max-w-4xl mx-auto w-full">

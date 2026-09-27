@@ -96,7 +96,7 @@ export default function ViajanteCarteiraPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-start p-4 sm:p-6 pb-24">
+    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-start p-4 sm:p-6 pb-24">
       <div className="w-full max-w-3xl flex flex-col gap-6">
         {/* Top Bar Sóbria */}
         <div className="flex items-center justify-between">

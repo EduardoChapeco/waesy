@@ -267,7 +267,7 @@ function StudioWorkspacePage() {
  };
 
  return (
- <div className="fixed inset-0 w-screen h-screen z-50 flex flex-col bg-background text-foreground overflow-hidden font-sans select-none">
+ <div className="fixed inset-0 w-screen h-[100dvh] z-50 flex flex-col bg-background text-foreground overflow-hidden font-sans select-none">
  {/* ── 1. HEADER DO ESTÚDIO FULLPAGE: Título + Modos + Salvar/Exportar ── */}
  <header className="h-14 border-b border-border/80 bg-card/95 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
  <div className="flex items-center gap-2 sm:gap-3">

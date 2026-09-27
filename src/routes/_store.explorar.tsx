@@ -514,32 +514,6 @@ function CommunityHomePage() {
 
   return (
     <div className="w-full space-y-3.5 sm:space-y-4 pb-14">
-      {/* ── 0. BANNER CONVITE MEMBRO FUNDADOR CIRCUITO 2027 ── */}
-      <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-primary/5 to-transparent p-3 sm:p-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="size-9 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-            <Sparkle className="size-4.5" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-foreground">Circuito Internacional Waesy 2027</span>
-              <Badge variant="outline" className="text-[9px] font-bold bg-amber-500/20 text-amber-600 border-amber-500/30">
-                Fundadores
-              </Badge>
-            </div>
-            <p className="text-[11px] text-muted-foreground truncate">
-              Chapecó & São Miguel do Oeste • Garanta sua vaga de Membro Fundador e concorra a viagens em 2027.
-            </p>
-          </div>
-        </div>
-        <Button asChild size="sm" className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-3.5 shrink-0">
-          <Link to="/home">
-            <span>Conhecer</span>
-            <ArrowRight className="size-3.5 ml-1" />
-          </Link>
-        </Button>
-      </div>
-
       {/* ── 1. CARDS COM IMAGENS DO TOPO (Carrossel Horizontal de Categorias Master) ── */}
       <section aria-label="Categorias Principais">
         <HorizontalRail title="Categorias Principais" hideHeader={true}>

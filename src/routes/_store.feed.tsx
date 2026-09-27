@@ -72,7 +72,7 @@ function FeedPage() {
   const emptyFollowing = feed?.emptyFollowing;
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24">
+    <div className="min-h-[100dvh] bg-background text-foreground pb-24">
       {/* ─── Feed Container Central (Largura Padrão Editorial & Padrão 1px Mobile) ───────────── */}
       <div className="max-w-2xl mx-auto px-0 sm:px-4 py-2 sm:py-5 space-y-3 sm:space-y-4">
         {/* ── 1. Menu de Abas Canônicas (Apple HIG) ───────────────────────── */}

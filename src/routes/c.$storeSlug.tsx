@@ -106,7 +106,7 @@ function CustomerPortalWhitelabelPage() {
  const storeLogo = storeSettings.logoUrl || null;
 
  return (
- <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20">
+ <div className="min-h-[100dvh] bg-background text-foreground flex flex-col selection:bg-primary/20">
  {/* Top Header Whitelabel */}
  <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md px-4 py-3 sm:px-6">
  <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">

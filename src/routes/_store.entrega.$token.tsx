@@ -20,7 +20,9 @@ import {
  confirmDeliveryByPin,
  startDeliveryPickup,
  updateDeliveryPaymentMethod,
+ recordDeliveryTelemetry,
 } from "@/services/dispatch.functions";
+import { useEffect } from "react";
 import { formatMoney } from "@/lib/money";
 import {
  Select,
@@ -58,9 +60,34 @@ function DeliveryCourierPage() {
   const [isStartingPickup, setIsStartingPickup] = useState(false);
   const [pickupStarted, setPickupStarted] = useState(delivery?.status === "in_transit" || delivery?.status === "delivered");
 
+  // Telemetria GPS em tempo real (Waesy Go / Motolink)
+  useEffect(() => {
+    if (!pickupStarted || isDelivered || typeof window === "undefined" || !navigator.geolocation) return;
+
+    const sendPing = () => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          recordDeliveryTelemetry({
+            data: {
+              token,
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+            },
+          }).catch(() => null);
+        },
+        () => null,
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    };
+
+    sendPing();
+    const interval = setInterval(sendPing, 15000);
+    return () => clearInterval(interval);
+  }, [pickupStarted, isDelivered, token]);
+
   if (!delivery) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full border border-border/80 bg-card rounded-2xl p-6 text-center space-y-4 shadow-sm">
           <div className="size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <Truck className="size-6" />
@@ -171,7 +198,7 @@ function DeliveryCourierPage() {
  };
 
  return (
- <div className="min-h-screen bg-muted/20 flex flex-col justify-between p-4 max-w-lg mx-auto">
+ <div className="min-h-[100dvh] bg-muted/20 flex flex-col justify-between p-4 max-w-lg mx-auto">
  <div className="space-y-4">
  {/* Header da Corrida */}
  <div className="bg-card rounded-2xl p-4 flex items-center justify-between border border-border/60 shadow-2xs">

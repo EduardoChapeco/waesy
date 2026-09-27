@@ -150,7 +150,7 @@ export function DiscoveryControlBar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9.5 pr-12 h-10 sm:h-11 rounded-xl bg-card border-border/70 text-xs sm:text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary w-full shadow-2xs"
+            className="pl-9.5 pr-12 h-11 rounded-xl bg-card border-border/70 text-base sm:text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary w-full shadow-2xs"
             aria-label="Buscar produtos ou categorias"
           />
           {search ? (

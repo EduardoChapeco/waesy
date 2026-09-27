@@ -813,6 +813,34 @@ export const updateCollection = createServerFn({ method: "POST" })
  });
 
 // ---------------------------------------------------------------------------
+export async function _deleteCollection(id: string) {
+ const db = getServerClient();
+ const { getServerIdentity } = await import("@/lib/server-access");
+ const { store_id } = await getServerIdentity();
+ if (!store_id) throw new Error("No store found");
+
+ const { error } = await db
+ .from("collections")
+ .delete()
+ .eq("id", id)
+ .eq("store_id", store_id);
+
+ if (error) throw error;
+ return { success: true };
+}
+
+export const deleteCollection = createServerFn({ method: "POST" })
+ .validator(z.object({ id: z.string().uuid() }))
+ .handler(async ({ data: { id } }) => {
+ try {
+ await requireAdmin();
+ return await _deleteCollection(id);
+ } catch (e: unknown) {
+ console.error("[admin-catalog] deleteCollection error:", e);
+ throw new Error(e instanceof Error ? e.message : "Erro ao excluir coleção.");
+ }
+ });
+
 // Product Edit & Variants
 // ---------------------------------------------------------------------------
 

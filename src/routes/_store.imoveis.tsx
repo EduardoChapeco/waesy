@@ -263,14 +263,14 @@ function ImoveisVerticalPage() {
       ) : viewMode === "list" ? (
         <section aria-label="Lista de Imóveis">
           {filteredClassifieds.length === 0 ? (
-            <div className="py-12 text-center bg-card rounded-2xl p-6">
+            <div className="py-12 text-center bg-card rounded-2xl p-6 border border-border/40">
               <EmptyState
                 title="Nenhum imóvel encontrado"
                 description="Tente ajustar os filtros ou buscar em outras localidades."
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
               {filteredClassifieds.map((item: any) => (
                 <PropertyListItem key={item.id} item={item} />
               ))}
@@ -415,41 +415,40 @@ function PropertyListItem({ item }: { item: any }) {
     <Link
       to="/classificados/$id"
       params={{ id: item.id }}
-      className="group p-3.5 rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-4"
+      className="group w-full px-3 sm:px-4 py-3 sm:py-3.5 hover:bg-muted/40 transition-colors flex items-center gap-3.5 min-h-[72px] sm:min-h-[84px] cursor-pointer"
     >
-      <div className="relative size-20 sm:size-24 rounded-xl overflow-hidden bg-muted shrink-0">
+      <div className="relative size-16 sm:size-20 rounded-xl overflow-hidden bg-muted/60 shrink-0 border border-border/40">
         {img ? (
-          <img src={img} alt={item.title} className="size-full object-cover group-hover:scale-105 transition-transform" />
+          <img src={img} alt={item.title} className="size-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
         ) : (
           <div className="size-full flex items-center justify-center bg-muted/40">
-            <House size={24} className="text-muted-foreground/30" />
+            <House size={22} className="text-muted-foreground/40" />
           </div>
         )}
+        <Badge variant="secondary" className="absolute top-1 left-1 text-[9px] px-1 py-0 font-bold bg-background/90 backdrop-blur-xs">
+          {isTemporada ? "Temp." : isAluguel ? "Aluguel" : "Venda"}
+        </Badge>
       </div>
 
       <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-[10px] font-bold">
-            {isTemporada ? "Temporada" : isAluguel ? "Aluguel" : "Venda"}
-          </Badge>
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin size={12} /> {item.location_name || "Região"}
-          </span>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MapPin size={12} className="text-primary shrink-0" />
+          <span className="truncate">{item.location_name || item.city || "Região"}</span>
         </div>
-        <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-xs sm:text-sm text-foreground truncate group-hover:text-primary transition-colors">
           {item.title}
         </h3>
-        <p className="text-xs text-muted-foreground line-clamp-1">
+        <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-1">
           {item.content}
         </p>
       </div>
 
-      <div className="text-left sm:text-right shrink-0">
-        <span className="text-base font-black text-foreground font-mono block">
+      <div className="text-right shrink-0 pl-1">
+        <span className="text-sm sm:text-base font-black text-foreground font-mono block">
           {formatMoney(item.price_cents || 0)}
         </span>
-        <span className="text-[11px] text-muted-foreground">
-          {isAluguel ? "por mês" : isTemporada ? "por diária" : "à vista / financia"}
+        <span className="text-[10px] sm:text-[11px] text-muted-foreground block">
+          {isAluguel ? "/mês" : isTemporada ? "/diária" : "à vista"}
         </span>
       </div>
     </Link>

@@ -430,7 +430,7 @@ function TourismDetailPage() {
   // ── Vista Instagram Editorial ─────────────────────────────────────
   if (viewMode === "instagram_editorial" && editorialClassified) {
     return (
-      <div className="w-full min-h-screen bg-background">
+      <div className="w-full min-h-[100dvh] bg-background">
         <div className="max-w-6xl mx-auto px-4 pt-3 flex items-center justify-between">
           <Link
             to="/turismo"

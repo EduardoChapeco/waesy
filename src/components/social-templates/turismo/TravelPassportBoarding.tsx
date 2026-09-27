@@ -138,9 +138,9 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
               <div className="text-4xl font-black text-slate-950 tracking-tight">
                 {priceFormatted || "Sob Consulta"}
               </div>
-              {installmentFormatted && (
+              {installmentFormatted && data.maxInstallments && data.maxInstallments > 1 && (
                 <span className="text-sm font-bold text-sky-700 block">
-                  {data.maxInstallments || 12}x de {installmentFormatted} sem juros
+                  {data.maxInstallments}x de {installmentFormatted} sem juros
                 </span>
               )}
             </div>

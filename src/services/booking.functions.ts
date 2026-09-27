@@ -458,6 +458,23 @@ export const createAppointment = createServerFn({ method: "POST" })
  }
  }
 
+ // Anti-Double Booking Enforcement via PostgreSQL Hold
+ const apptStart = new Date(input.scheduled_at);
+ const apptEnd = new Date(apptStart.getTime() + (service.duration_minutes || 60) * 60000);
+ const { data: holdRes, error: holdErr } = await db.rpc("hold_resource_slot", {
+ p_resource_id: service.id,
+ p_resource_type: "booking_service",
+ p_start_at: apptStart.toISOString(),
+ p_end_at: apptEnd.toISOString(),
+ });
+
+ if (holdErr || (holdRes && !(holdRes as any).success)) {
+ throw new Error(
+ (holdRes as any)?.message ||
+ "Este horário já foi preenchido por outro cliente. Por favor, selecione outro horário."
+ );
+ }
+
  const { data, error } = await db
  .from("booking_appointments")
  .insert({

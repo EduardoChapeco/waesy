@@ -100,7 +100,7 @@ function WorkspaceErrorComponent({ error, reset }: { error: Error; reset: () => 
  }, [error]);
 
  return (
- <div className="min-h-screen flex items-center justify-center bg-background p-4 text-center">
+ <div className="min-h-[100dvh] flex items-center justify-center bg-background p-4 text-center">
  <div className="max-w-md w-full bg-card p-6 sm:p-8 rounded-2xl border border-border/80 space-y-4 shadow-sm">
  <div className="size-14 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
  <AlertTriangle className="size-7" />

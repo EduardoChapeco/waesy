@@ -472,9 +472,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative">
       {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
-      <aside className="hidden lg:flex flex-col w-[268px] shrink-0 sticky top-0 h-screen bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
+      <aside className="hidden lg:flex flex-col w-[268px] shrink-0 sticky top-0 h-[100dvh] bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
         {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}
         <div className="h-14 border-b border-border/60 px-3 flex items-center shrink-0">
           <WorkspaceAccountSwitcher

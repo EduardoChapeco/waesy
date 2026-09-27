@@ -64,7 +64,7 @@ function LeadLandingPage() {
   const store = form.store;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center py-6 sm:py-12 px-3 sm:px-6">
+    <div className="min-h-[100dvh] bg-background flex flex-col items-center py-6 sm:py-12 px-3 sm:px-6">
       <div className="w-full max-w-xl mx-auto flex flex-col gap-6">
         {/* Topo Limpo: Identidade da Loja / Anunciante (Sem Menus Distrativos) */}
         <div className="flex items-center justify-between pb-3 border-b border-border/40">

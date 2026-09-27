@@ -27,6 +27,7 @@ import {
  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/state/states";
+import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
 import { approvePayment } from "@/services/payment.functions";
 import { getStoreSettings } from "@/services/store.functions";
@@ -100,6 +101,7 @@ function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusTab, setStatusTab] = useState<string>("all");
   const [channelFilter, setChannelFilter] = useState<string>("all");
+  const [isChannelSheetOpen, setIsChannelSheetOpen] = useState(false);
 
   const isTourism = semantics.nicheId === "tourism";
   const isGastro = semantics.nicheId === "gastronomy";
@@ -1160,33 +1162,44 @@ function AdminOrdersPage() {
  </TabsList>
  </Tabs>
 
- <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
- <select
- value={channelFilter}
- onChange={(e) => setChannelFilter(e.target.value)}
- className="h-8 rounded-xl border border-border bg-card px-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full sm:w-40 shrink-0"
- >
- <option value="all">Todos os Canais</option>
- <option value="mercadolivre">Mercado Livre</option>
- <option value="ifood">iFood</option>
- <option value="shopee">Shopee</option>
- <option value="amazon">Amazon</option>
- <option value="magalu">Magalu</option>
- <option value="online_store">Loja Online</option>
- <option value="pos">Balcão / PDV</option>
- </select>
+ <div className="flex items-center gap-2 w-full sm:w-auto">
+              {/* Select visível apenas no Desktop */}
+              <select
+                value={channelFilter}
+                onChange={(e) => setChannelFilter(e.target.value)}
+                className="hidden sm:inline-flex h-8 rounded-xl border border-border bg-card px-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-40 shrink-0"
+              >
+                <option value="all">Todos os Canais</option>
+                <option value="mercadolivre">Mercado Livre</option>
+                <option value="ifood">iFood</option>
+                <option value="shopee">Shopee</option>
+                <option value="amazon">Amazon</option>
+                <option value="magalu">Magalu</option>
+                <option value="online_store">Loja Online</option>
+                <option value="pos">Balcão / PDV</option>
+              </select>
 
- <div className="relative w-full sm:w-64">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
- <Input
- placeholder={isTourism ? "Buscar passageiro, roteiro ou token..." : "Buscar por código, cliente ou item..."}
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- className="pl-9 h-8 text-xs rounded-xl"
- />
- </div>
- </div>
- </div>
+              {/* Input de busca flexível */}
+              <div className="relative flex-1 min-w-0 sm:w-64 sm:flex-initial">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input
+                  placeholder={isTourism ? "Buscar passageiro ou token..." : "Buscar por código ou cliente..."}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8 text-xs rounded-xl w-full"
+                />
+              </div>
+
+              {/* Botão de Filtros no Mobile (Abre Bottom Sheet) */}
+              <div className="sm:hidden">
+                <FilterTriggerButton
+                  onClick={() => setIsChannelSheetOpen(true)}
+                  activeCount={channelFilter !== "all" ? 1 : 0}
+                  className="h-8 px-2.5 text-xs rounded-xl border border-border shrink-0 shadow-none"
+                />
+              </div>
+            </div>
+          </div>
 
  <div className="bg-card overflow-hidden rounded-2xl border border-border">
  <Table>

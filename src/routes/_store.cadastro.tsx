@@ -103,7 +103,7 @@ function RegisterPage() {
  };
 
  return (
- <div className="min-h-screen w-full flex flex-col lg:flex-row bg-background">
+ <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-background">
  {/* ── Left Side: Minimal Brand Screen (Desktop) ────────── */}
  <div className="relative hidden lg:flex lg:w-[45%] bg-zinc-950 text-white flex-col justify-between p-12 overflow-hidden">
  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(120,50,255,0.10),transparent_60%)]" />

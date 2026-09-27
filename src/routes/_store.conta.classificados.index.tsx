@@ -11,6 +11,7 @@ import {
   Edit3,
   Image as ImageIcon,
   Flame,
+  Zap,
   MessageCircle,
   Handshake,
   PauseCircle,
@@ -25,6 +26,8 @@ import {
   RefreshCw,
   Building2,
   Sparkles,
+  MoreVertical,
+  MousePointer,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -36,7 +39,15 @@ import {
   convertClassifiedToWorkspaceStore,
 } from "@/services/classifieds.functions";
 import { NativeMobileHeader } from "@/components/navigation";
+import { BoostBottomSheet } from "@/components/commerce/boost-bottom-sheet";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -55,10 +66,87 @@ function isVideoUrl(url?: string | null): boolean {
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
 }
 
+
+// ─── Ad-Tech: Mini-Sparkline Monocromático 7 Dias (Design Silencioso) ─────────
+function AdSparkline({ data, className = "h-7 w-20" }: { data: number[]; className?: string }) {
+  const safeData = Array.isArray(data) && data.length >= 2 ? data : [0, 0, 0, 0, 0, 0, 0];
+  const allZeros = safeData.every((v) => v === 0);
+  const max = allZeros ? 1 : Math.max(...safeData);
+  const min = 0;
+  const range = max - min || 1;
+  const width = 100;
+  const height = 28;
+  const points = safeData.map((val, idx) => {
+    const x = (idx / (safeData.length - 1)) * width;
+    const y = allZeros
+      ? height - 4
+      : height - ((val - min) / range) * (height - 8) - 4;
+    return `${x},${y}`;
+  });
+  const pathD = `M ${points.join(" L ")}`;
+
+  return (
+    <div className={cn("relative flex items-center shrink-0", className)} title="Tendência de acessos nos últimos 7 dias">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+        <path
+          d={pathD}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={allZeros ? "1" : "2"}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={allZeros ? "text-muted-foreground/30 stroke-dashed" : "text-primary/75"}
+        />
+        {!allZeros && points.length > 0 && (
+          <circle
+            cx={points[points.length - 1].split(",")[0]}
+            cy={points[points.length - 1].split(",")[1]}
+            r="2.5"
+            className="fill-primary"
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+
 export const Route = createFileRoute("/_store/conta/classificados/")({
   head: () => ({ meta: [{ title: "Meus Anúncios | Waesy" }] }),
+  errorComponent: ContaClassificadosErrorComponent,
   component: ClassificadosIndex,
 });
+
+function ContaClassificadosErrorComponent({ error }: { error: any }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-16 text-center space-y-5">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
+        <Tag className="size-8" />
+      </div>
+      <div className="space-y-1.5">
+        <h1 className="text-xl font-bold text-foreground">Falha ao Carregar Seus Anúncios</h1>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Não foi possível sincronizar sua lista de anúncios gerenciados no momento.
+        </p>
+      </div>
+      {error?.message && (
+        <pre className="mt-2 rounded-xl bg-muted/40 border border-border/50 p-3 text-[10px] text-muted-foreground overflow-auto max-h-32 text-left font-mono">
+          {error.message}
+        </pre>
+      )}
+      <div className="pt-2 flex items-center justify-center gap-3">
+        <Button
+          variant="default"
+          className="rounded-xl text-xs h-11 px-5 font-bold cursor-pointer"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCw className="size-3.5 mr-1.5" />
+          <span>Tentar Novamente</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   sale: "Desapego",
@@ -85,6 +173,7 @@ const STATUS_CONFIG: Record<
   negotiating: { label: "Negociando", className: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400" },
   completed: { label: "Finalizado", className: "border-border/60 bg-muted/40 text-muted-foreground" },
   archived: { label: "Arquivado", className: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400" },
+  expired: { label: "Expirado", className: "border-border/60 bg-muted/40 text-muted-foreground" },
 };
 
 const BOOST_PLANS = [
@@ -330,7 +419,7 @@ function ClassificadosIndex() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por título, categoria..."
-            className="h-11 sm:h-9 rounded-xl text-xs bg-background border-border/70"
+            className="h-11 sm:h-9 rounded-xl text-base sm:text-xs bg-background border-border/70"
           />
         </div>
       )}
@@ -342,488 +431,460 @@ function ClassificadosIndex() {
           <span className="text-xs">Carregando seus anúncios...</span>
         </div>
       ) : filtered.length > 0 ? (
-        <div className="space-y-3">
-          {filtered.map((ad: any) => {
-            const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
-            const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
-            const isPaused = ad.status === "paused";
-            const thumbUrl = ad.images?.[0] || null;
-            const isVideo = isVideoUrl(thumbUrl);
-            const niche = resolveClassifiedNiche(ad);
-            const NicheIcon = niche.icon;
+        <>
+          {/* ── BIFURCAÇÃO MOBILE: Padrão WhatsApp List Edge-to-Edge ── */}
+          <div className="block md:hidden w-full bg-card divide-y divide-border/40 border-y border-border/40 overflow-hidden">
+            {filtered.map((ad: any) => {
+              const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
+              const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
+              const isPaused = ad.status === "paused";
+              const thumbUrl = ad.images?.[0] || null;
+              const isVideo = isVideoUrl(thumbUrl);
+              const niche = resolveClassifiedNiche(ad);
+              const NicheIcon = niche.icon;
+              const viewsCount = ad.views_count || 0;
+              const clicksCount = ad.clicks_count || 0;
+              const whatsappCount = ad.whatsapp_clicks_count || ad.proposals_count || 0;
 
-            return (
-              <div
-                key={ad.id}
-                className="rounded-2xl border border-border/60 bg-card overflow-hidden"
-              >
-                <div className="flex gap-3 p-3">
-                  {/* Thumbnail */}
-                  <div className="size-16 sm:size-20 rounded-xl bg-muted shrink-0 overflow-hidden border border-border/40 flex items-center justify-center">
-                    {thumbUrl ? (
-                      isVideo ? (
-                        <video src={thumbUrl} className="size-full object-cover" muted />
+              return (
+                <div key={ad.id} className="p-3.5 space-y-2.5 transition-colors hover:bg-muted/20">
+                  {/* Linha Superior: Foto à esquerda + Infos à direita */}
+                  <div className="flex items-start gap-3">
+                    {/* Thumbnail Squircle */}
+                    <div className="size-16 rounded-xl bg-muted shrink-0 overflow-hidden border border-border/40 flex items-center justify-center relative">
+                      {thumbUrl ? (
+                        isVideo ? (
+                          <video src={thumbUrl} className="size-full object-cover" muted />
+                        ) : (
+                          <img src={thumbUrl} alt={ad.title} className="size-full object-cover" />
+                        )
                       ) : (
-                        <img src={thumbUrl} alt={ad.title} className="size-full object-cover" />
-                      )
-                    ) : (
-                      <ImageIcon className="size-6 text-muted-foreground/40" />
-                    )}
-                  </div>
+                        <ImageIcon className="size-6 text-muted-foreground/40" />
+                      )}
+                      {isBoosted && (
+                        <span className="absolute top-1 left-1 size-2 rounded-full bg-amber-500 animate-pulse" />
+                      )}
+                    </div>
 
-                  {/* Conteúdo */}
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-bold text-foreground truncate leading-tight">
-                        {ad.title}
-                      </p>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {isBoosted && (
-                          <Badge className="text-[9px] font-mono px-1.5 py-0 bg-amber-500 text-black border-none">
-                            DESTAQUE
+                    {/* Título, Preço e Status */}
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                      <div className="flex items-start justify-between gap-1.5">
+                        <h2 className="text-xs font-bold text-foreground truncate leading-snug">
+                          {ad.title}
+                        </h2>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {isBoosted && (
+                            <Badge className="text-[8px] font-mono px-1 py-0 h-3.5 bg-amber-500 text-black border-none font-black">
+                              BOOST
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className={cn("text-[8px] font-mono px-1 py-0 h-3.5", statusConf.className)}>
+                            {statusConf.label}
                           </Badge>
+                        </div>
+                      </div>
+
+                      {ad.price_cents != null && (
+                        <p className="text-sm font-black font-mono text-foreground">
+                          {formatMoney(ad.price_cents)}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-0.5 truncate">
+                          <NicheIcon className="size-2.5 shrink-0 text-muted-foreground/70" />
+                          {niche.shortLabel}
+                        </span>
+                        {ad.location_city && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate">{ad.location_city}</span>
+                          </>
                         )}
-                        <Badge variant="outline" className={cn("text-[9px] font-mono px-1.5 py-0", statusConf.className)}>
-                          {statusConf.label}
-                        </Badge>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                        <NicheIcon className="size-3 text-muted-foreground/70" />
-                        {niche.shortLabel}
+                  {/* Linha Inferior: Micro-Pills Silenciosas + Ações Diretas */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    {/* Micro-Pills de Performance */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[10px] font-mono text-muted-foreground" title="Visualizações">
+                        <Eye className="size-2.5" />
+                        <span>{viewsCount}</span>
                       </span>
-                      {ad.ai_agent_enabled && (
-                        <Badge variant="outline" className="text-[9px] font-mono px-1.5 py-0 gap-1 border-primary/30 text-primary bg-primary/5">
-                          <Sparkles className="size-2.5" />
-                          SDR Ativo
-                        </Badge>
-                      )}
-                      {ad.location_city && (
-                        <>
-                          <span className="text-[10px] text-muted-foreground/40">·</span>
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                            <MapPin className="size-2.5" />
-                            {ad.location_city}
-                          </span>
-                        </>
+
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[10px] font-mono text-muted-foreground" title="Cliques">
+                        <MousePointer className="size-2.5 text-sky-600 dark:text-sky-400" />
+                        <span>{clicksCount}</span>
+                      </span>
+
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[10px] font-mono text-muted-foreground" title="Contatos WhatsApp">
+                        <MessageCircle className="size-2.5 text-emerald-600 dark:text-emerald-400" />
+                        <span>{whatsappCount}</span>
+                      </span>
+
+                      {viewsCount > 0 && (
+                        <div className="hidden xs:flex items-center pl-1 border-l border-border/40" title="Tendência 7 dias">
+                          <AdSparkline data={ad.sparkline_7d || [0, 0, 0, 0, 0, 0, 0]} className="h-5 w-12" />
+                        </div>
                       )}
                     </div>
 
-                    {ad.price_cents != null && (
-                      <p className="text-sm font-black font-mono text-foreground">
-                        {formatMoney(ad.price_cents)}
-                      </p>
-                    )}
+                    {/* Ação Primária: Impulsionar + Menu Contextual (3 pontos) */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleOpenBoostModal(ad)}
+                        disabled={!gatewayAvailable || gatewayLoading}
+                        className={cn(
+                          "h-9 px-3 rounded-xl font-bold text-xs gap-1 cursor-pointer transition-all active:scale-95 shadow-2xs",
+                          !gatewayAvailable
+                            ? "bg-muted text-muted-foreground border border-border/50 cursor-not-allowed opacity-60"
+                            : isBoosted
+                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
+                            : "bg-amber-500 text-black hover:bg-amber-400"
+                        )}
+                      >
+                        <Zap className="size-3 fill-current" />
+                        <span>{isBoosted ? "Renovar" : "Impulsionar"}</span>
+                      </Button>
 
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                      {ad.views_count != null && (
-                        <span className="flex items-center gap-0.5">
-                          <Eye className="size-2.5" />
-                          {ad.views_count}
-                        </span>
-                      )}
-                      {ad.proposals_count != null && ad.proposals_count > 0 && (
-                        <span className="flex items-center gap-0.5">
-                          <Handshake className="size-2.5" />
-                          {ad.proposals_count} proposta{ad.proposals_count !== 1 ? "s" : ""}
-                        </span>
-                      )}
-                      {isBoosted && ad.boosted_until && (
-                        <span className="text-amber-600 font-medium flex items-center gap-0.5">
-                          <Flame className="size-2.5" />
-                          até {formatDate(ad.boosted_until)}
-                        </span>
-                      )}
+                      {/* Dropdown de Ações Secundárias (Anti-Esmagamento Apple HIG) */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                            aria-label="Mais opções"
+                          >
+                            <MoreVertical className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1.5 border-border/80">
+                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
+                            <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
+                              <Edit3 className="size-3.5 mr-2 text-muted-foreground" />
+                              <span>Editar Anúncio</span>
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
+                            <Link to="/classificados/$id" params={{ id: ad.id }}>
+                              <ExternalLink className="size-3.5 mr-2 text-muted-foreground" />
+                              <span>Ver na Vitrine</span>
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() =>
+                              toggleStatusMutation.mutate({
+                                id: ad.id,
+                                newStatus: isPaused ? "active" : "paused",
+                              })
+                            }
+                            disabled={toggleStatusMutation.isPending}
+                            className="rounded-xl cursor-pointer text-xs font-semibold py-2"
+                          >
+                            {isPaused ? (
+                              <>
+                                <PlayCircle className="size-3.5 mr-2 text-emerald-600" />
+                                <span>Reativar Anúncio</span>
+                              </>
+                            ) : (
+                              <>
+                                <PauseCircle className="size-3.5 mr-2 text-amber-600" />
+                                <span>Pausar Anúncio</span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+
+                          <DropdownMenuSeparator />
+
+                          {ad.store_id ? (
+                            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary">
+                              <Link to="/workspace">
+                                <Building2 className="size-3.5 mr-2" />
+                                <span>Acessar Loja Pro</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => setMigratingAd(ad)}
+                              className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary"
+                            >
+                              <Sparkles className="size-3.5 mr-2" />
+                              <span>Migrar para Loja Pro</span>
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Ações */}
-                <div className="border-t border-border/40 bg-muted/10 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl text-xs h-9 sm:h-8 border-border/70 cursor-pointer"
-                    >
-                      <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
-                        <Edit3 className="size-3.5 mr-1" />
-                        <span>Editar</span>
-                      </Link>
-                    </Button>
+          {/* ── BIFURCAÇÃO DESKTOP: Bento Grid com Sparklines Silenciosos ── */}
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((ad: any) => {
+              const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
+              const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
+              const isPaused = ad.status === "paused";
+              const thumbUrl = ad.images?.[0] || null;
+              const isVideo = isVideoUrl(thumbUrl);
+              const niche = resolveClassifiedNiche(ad);
+              const NicheIcon = niche.icon;
+              const viewsCount = ad.views_count || 0;
+              const clicksCount = ad.clicks_count || 0;
+              const whatsappCount = ad.whatsapp_clicks_count || ad.proposals_count || 0;
+              const sparklinePoints = (ad.sparkline_7d && Array.isArray(ad.sparkline_7d) && ad.sparkline_7d.length >= 2)
+                ? ad.sparkline_7d
+                : [0, 0, 0, 0, 0, 0, 0];
 
-                    {ad.store_id ? (
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl text-xs h-9 sm:h-8 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer gap-1"
-                      >
-                        <Link to="/workspace">
-                          <Building2 className="size-3.5" />
-                          <span>Loja Pro</span>
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setMigratingAd(ad)}
-                        className="rounded-xl text-xs h-9 sm:h-8 border-border/70 hover:border-primary/50 text-foreground hover:text-primary cursor-pointer gap-1"
-                        title="Transformar este anúncio em uma empresa profissional no Workspace"
-                      >
-                        <Sparkles className="size-3.5 text-primary" />
-                        <span>Migrar Pro</span>
-                      </Button>
-                    )}
+              return (
+                <div
+                  key={ad.id}
+                  className="rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col justify-between hover:border-border transition-all shadow-xs group"
+                >
+                  <div className="p-3.5 space-y-3">
+                    {/* Imagem / Capa Panorâmica */}
+                    <div className="h-36 w-full rounded-xl bg-muted overflow-hidden border border-border/40 relative flex items-center justify-center">
+                      {thumbUrl ? (
+                        isVideo ? (
+                          <video src={thumbUrl} className="size-full object-cover" muted />
+                        ) : (
+                          <img src={thumbUrl} alt={ad.title} className="size-full object-cover group-hover:scale-102 transition-transform duration-300" />
+                        )
+                      ) : (
+                        <ImageIcon className="size-8 text-muted-foreground/30" />
+                      )}
+
+                      {/* Badges Flutuantes */}
+                      <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                        <Badge variant="outline" className={cn("text-[9px] font-mono px-2 py-0.5 backdrop-blur-md bg-background/90 shadow-2xs", statusConf.className)}>
+                          {statusConf.label}
+                        </Badge>
+                        {isBoosted && (
+                          <Badge className="text-[9px] font-mono px-2 py-0.5 bg-amber-500 text-black border-none font-black shadow-xs gap-1">
+                            <Zap className="size-2.5 fill-current" />
+                            DESTAQUE
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Sparkline no Canto Inferior Direito da Imagem */}
+                      {viewsCount > 0 && (
+                        <div className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-background/90 backdrop-blur-md border border-border/50 flex items-center gap-2 shadow-2xs">
+                          <span className="text-[9px] font-mono text-muted-foreground font-semibold">7d</span>
+                          <AdSparkline data={sparklinePoints} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Metadados do Anúncio */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 uppercase tracking-wider">
+                          <NicheIcon className="size-3 text-muted-foreground/70" />
+                          {niche.shortLabel}
+                        </span>
+                        {ad.location_city && (
+                          <span className="text-[10px] text-muted-foreground truncate flex items-center gap-0.5">
+                            <MapPin className="size-2.5" />
+                            {ad.location_city}
+                          </span>
+                        )}
+                      </div>
+
+                      <h2 className="text-sm font-bold text-foreground line-clamp-1 leading-snug group-hover:text-primary transition-colors">
+                        {ad.title}
+                      </h2>
+
+                      {ad.price_cents != null && (
+                        <p className="text-base font-black font-mono text-foreground pt-0.5">
+                          {formatMoney(ad.price_cents)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Micro-Pills Silenciosas de Métricas */}
+                    <div className="flex items-center gap-2 pt-1 border-t border-border/30">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground" title="Visualizações">
+                        <Eye className="size-3" />
+                        <span>{viewsCount}</span>
+                      </span>
+
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground" title="Cliques">
+                        <MousePointer className="size-3 text-sky-600 dark:text-sky-400" />
+                        <span>{clicksCount}</span>
+                      </span>
+
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground" title="Contatos WhatsApp">
+                        <MessageCircle className="size-3 text-emerald-600 dark:text-emerald-400" />
+                        <span>{whatsappCount}</span>
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {/* Botão Impulsionar / Destacar */}
+                  {/* Barra de Ações Inferior no Desktop */}
+                  <div className="border-t border-border/40 bg-muted/10 px-3.5 py-2.5 flex items-center justify-between gap-2">
                     <Button
                       type="button"
                       size="sm"
                       onClick={() => handleOpenBoostModal(ad)}
                       disabled={!gatewayAvailable || gatewayLoading}
-                      title={
-                        !gatewayAvailable
-                          ? "Pagamento não configurado na plataforma"
-                          : isBoosted
-                          ? "Renovar destaque"
-                          : "Impulsionar anúncio"
-                      }
-                      className={`rounded-xl text-xs h-9 sm:h-8 flex-1 font-bold gap-1 cursor-pointer transition-all ${
+                      className={cn(
+                        "h-9 px-3.5 rounded-xl font-bold text-xs gap-1.5 cursor-pointer flex-1 transition-all active:scale-95 shadow-2xs",
                         !gatewayAvailable
                           ? "bg-muted text-muted-foreground border border-border/50 cursor-not-allowed opacity-60"
                           : isBoosted
                           ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
-                          : "bg-amber-500 text-black hover:bg-amber-400 shadow-xs"
-                      }`}
+                          : "bg-amber-500 text-black hover:bg-amber-400"
+                      )}
                     >
-                      <Flame className="size-3.5 fill-current" />
-                      <span>
-                        {!gatewayAvailable
-                          ? "Indisponível"
-                          : isBoosted
-                          ? "Renovar Destaque"
-                          : "Impulsionar"}
-                      </span>
+                      <Zap className="size-3.5 fill-current" />
+                      <span>{isBoosted ? "Renovar Destaque" : "Impulsionar Anúncio"}</span>
                     </Button>
 
-                    {/* Botão Pausar / Reativar */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        toggleStatusMutation.mutate({
-                          id: ad.id,
-                          newStatus: isPaused ? "active" : "paused",
-                        })
-                      }
-                      disabled={toggleStatusMutation.isPending}
-                      className="rounded-xl text-xs h-9 sm:h-8 px-2.5 text-muted-foreground hover:text-foreground cursor-pointer"
-                      title={isPaused ? "Reativar Anúncio" : "Pausar Anúncio"}
-                    >
-                      {isPaused ? (
-                        <PlayCircle className="size-4 text-emerald-600" />
-                      ) : (
-                        <PauseCircle className="size-4" />
-                      )}
-                    </Button>
+                    {/* Dropdown de Ações Secundárias */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="size-9 rounded-xl border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                        >
+                          <MoreVertical className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1.5 border-border/80">
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
+                          <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
+                            <Edit3 className="size-3.5 mr-2 text-muted-foreground" />
+                            <span>Editar Anúncio</span>
+                          </Link>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
+                          <Link to="/classificados/$id" params={{ id: ad.id }}>
+                            <ExternalLink className="size-3.5 mr-2 text-muted-foreground" />
+                            <span>Ver na Vitrine</span>
+                          </Link>
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() =>
+                            toggleStatusMutation.mutate({
+                              id: ad.id,
+                              newStatus: isPaused ? "active" : "paused",
+                            })
+                          }
+                          disabled={toggleStatusMutation.isPending}
+                          className="rounded-xl cursor-pointer text-xs font-semibold py-2"
+                        >
+                          {isPaused ? (
+                            <>
+                              <PlayCircle className="size-3.5 mr-2 text-emerald-600" />
+                              <span>Reativar Anúncio</span>
+                            </>
+                          ) : (
+                            <>
+                              <PauseCircle className="size-3.5 mr-2 text-amber-600" />
+                              <span>Pausar Anúncio</span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+
+                        <DropdownMenuSeparator />
+
+                        {ad.store_id ? (
+                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary">
+                            <Link to="/workspace">
+                              <Building2 className="size-3.5 mr-2" />
+                              <span>Acessar Loja Pro</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => setMigratingAd(ad)}
+                            className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary"
+                          >
+                            <Sparkles className="size-3.5 mr-2" />
+                            <span>Migrar para Loja Pro</span>
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="border border-border/60 bg-card rounded-2xl p-10 text-center space-y-3">
-          <div className="size-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center mx-auto">
-            <Tag className="size-6" />
+              );
+            })}
           </div>
-          <h2 className="text-base font-bold text-foreground">
-            {searchTerm
-              ? "Nenhum anúncio corresponde à sua busca"
-              : "Você ainda não publicou nenhum anúncio"}
-          </h2>
+        </>
+      ) : (
+        <div className="w-full rounded-2xl border border-border/60 bg-card p-8 text-center space-y-3">
+          <p className="text-sm font-semibold text-foreground">
+            {searchTerm ? "Nenhum anúncio encontrado para sua busca" : "Você ainda não possui anúncios ativos"}
+          </p>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             {searchTerm
-              ? "Tente buscar por outras palavras-chave ou limpe o campo de busca."
-              : "Desapegue de itens, anuncie imóveis, veículos, vagas ou ofereça seus serviços na plataforma."}
+              ? "Tente buscar por outro termo ou limpe o campo de busca."
+              : "Publique produtos, veículos, imóveis ou serviços para alcançar milhares de pessoas na sua cidade."}
           </p>
-          {!searchTerm && (
-            <Button asChild size="sm" className="rounded-xl text-xs font-bold gap-1.5 mt-2 h-11 px-5">
+          <div className="pt-2">
+            <Button asChild className="rounded-xl text-xs font-bold h-9 bg-primary text-primary-foreground">
               <Link to="/conta/classificados/novo">
-                <Plus className="size-4" />
-                <span>Criar Anúncio</span>
+                <Plus className="size-4 mr-1.5" />
+                <span>Criar Primeiro Anúncio</span>
               </Link>
             </Button>
-          )}
+          </div>
         </div>
       )}
 
-      {/* ── MODAL DE IMPULSIONAMENTO (CHECKOUT REAL) ── */}
-      <Dialog open={!!boostingAd} onOpenChange={(open) => !open && handleCloseBoostModal()}>
-        <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden">
-          {/* ─── ETAPA 1: Seleção de Plano ─── */}
-          {boostStep === "plan_select" && (
-            <div className="p-6 space-y-4">
-              <DialogHeader className="space-y-1.5 text-left">
-                <div className="flex items-center gap-2">
-                  <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                    <Flame className="size-4 fill-amber-500 text-amber-500" />
-                  </div>
-                  <DialogTitle className="text-base font-bold">Impulsionar Anúncio</DialogTitle>
-                </div>
-                <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-                  Destaque <strong>"{boostingAd?.title}"</strong> no topo da categoria e receba até 3x mais contatos.
-                </DialogDescription>
-              </DialogHeader>
-
-              {/* Provider badge */}
-              {gatewayStatus?.provider && (
-                <div className="flex items-center gap-2 rounded-xl bg-emerald-500/8 border border-emerald-500/20 px-3 py-2">
-                  <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
-                  <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
-                    {gatewayStatus.provider === "asaas"
-                      ? "Pagamento via PIX · Asaas"
-                      : "Pagamento via Cartão · Stripe"}
-                  </span>
-                </div>
-              )}
-
-              {/* Vantagens */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-2 text-xs">
-                {[
-                  "Prioridade no topo das buscas da sua cidade",
-                  "Selo dourado de Destaque visível a todos",
-                  "Mais cliques diretos para o seu WhatsApp",
-                ].map((benefit) => (
-                  <div key={benefit} className="flex items-center gap-2 text-foreground">
-                    <Check className="size-3.5 text-emerald-600 shrink-0" />
-                    <span>{benefit}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Seleção de Planos */}
-              <div className="space-y-2">
-                <span className="text-xs font-bold font-mono uppercase text-muted-foreground tracking-wider block">
-                  Escolha o Período
-                </span>
-                <div className="space-y-2">
-                  {BOOST_PLANS.map((plan) => {
-                    const isSelected = selectedPlan === plan.days;
-                    return (
-                      <button
-                        key={plan.id}
-                        type="button"
-                        onClick={() => setSelectedPlan(plan.days)}
-                        className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                          isSelected
-                            ? "border-amber-500 bg-amber-500/10 shadow-xs"
-                            : "border-border/60 bg-card hover:bg-muted/30"
-                        }`}
-                      >
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-foreground">{plan.title}</span>
-                            {plan.badge && (
-                              <Badge
-                                variant={isSelected ? "default" : "outline"}
-                                className={`text-[9px] font-mono px-1.5 py-0 ${
-                                  isSelected ? "bg-amber-500 text-black border-none" : ""
-                                }`}
-                              >
-                                {plan.badge}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-muted-foreground">{plan.description}</p>
-                        </div>
-                        <span className="text-sm font-black font-mono text-foreground shrink-0 ml-3">
-                          {formatMoney(plan.priceCents)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Botões */}
-              <div className="pt-2 flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCloseBoostModal}
-                  className="rounded-xl text-xs h-11 flex-1 cursor-pointer"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() =>
-                    boostingAd &&
-                    initiateBoostMutation.mutate({ adId: boostingAd.id, planDays: selectedPlan })
-                  }
-                  disabled={initiateBoostMutation.isPending}
-                  className="rounded-xl text-xs h-11 flex-1 font-bold bg-amber-500 text-black hover:bg-amber-400 gap-1.5 cursor-pointer shadow-sm"
-                >
-                  {initiateBoostMutation.isPending ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Gerando cobrança...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Flame className="size-4" />
-                      <span>Ir para Pagamento</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* ─── ETAPA 2: Aguardando Pagamento ─── */}
-          {boostStep === "checkout_pending" && activeBoostPayment && (
-            <div className="p-6 space-y-4">
-              <div className="text-center space-y-1">
-                <div className="size-12 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto">
-                  <QrCode className="size-6 text-amber-600" />
-                </div>
-                <h3 className="font-black text-base text-foreground">Pague com PIX</h3>
-                <p className="text-xs text-muted-foreground">
-                  Escaneie o QR Code ou copie o código abaixo.
-                  <br />O destaque é ativado automaticamente após confirmação.
-                </p>
-              </div>
-
-              {/* Valor */}
-              <div className="flex items-center justify-between rounded-xl bg-muted/30 border border-border/50 px-4 py-3">
-                <div>
-                  <p className="text-xs text-muted-foreground">{activeBoostPayment.planName}</p>
-                  <p className="text-xs text-muted-foreground truncate max-w-[180px]">"{activeBoostPayment.adTitle}"</p>
-                </div>
-                <p className="text-xl font-black font-mono text-foreground">
-                  {formatMoney(activeBoostPayment.amountCents)}
-                </p>
-              </div>
-
-              {/* QR Code PIX */}
-              {activeBoostPayment.pixQrCode ? (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="rounded-xl border border-border/60 bg-white p-3 inline-block">
-                    <img
-                      src={`data:image/png;base64,${activeBoostPayment.pixQrCode}`}
-                      alt="QR Code PIX"
-                      className="size-44 object-contain"
-                    />
-                  </div>
-
-                  {activeBoostPayment.pixCopyPaste && (
-                    <button
-                      type="button"
-                      onClick={handleCopyPix}
-                      className="w-full flex items-center gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2.5 text-left hover:bg-muted/40 transition-colors cursor-pointer"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">PIX Copia e Cola</p>
-                        <p className="text-xs text-foreground font-mono truncate">
-                          {activeBoostPayment.pixCopyPaste.slice(0, 40)}...
-                        </p>
-                      </div>
-                      {copiedPix ? (
-                        <Check className="size-4 text-emerald-600 shrink-0" />
-                      ) : (
-                        <Copy className="size-4 text-muted-foreground shrink-0" />
-                      )}
-                    </button>
-                  )}
-                </div>
-              ) : activeBoostPayment.paymentLink ? (
-                // Fallback: link de pagamento (Stripe ou Asaas invoice)
-                <div className="space-y-2">
-                  <a
-                    href={activeBoostPayment.paymentLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full h-11 rounded-xl bg-amber-500 text-black text-xs font-bold hover:bg-amber-400 transition-colors"
-                  >
-                    <ExternalLink className="size-4" />
-                    Abrir Página de Pagamento
-                  </a>
-                  <p className="text-center text-[10px] text-muted-foreground">
-                    Você será redirecionado ao portal seguro do gateway.
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center text-xs text-muted-foreground py-4">
-                  <Loader2 className="size-5 animate-spin mx-auto mb-2" />
-                  Carregando instrução de pagamento...
-                </div>
-              )}
-
-              {/* Status polling */}
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <RefreshCw className="size-3 animate-spin" />
-                <span>Verificando pagamento automaticamente...</span>
-              </div>
-
-              {/* Expiração */}
-              {activeBoostPayment.expiresAt && (
-                <div className="flex items-center gap-1.5 justify-center text-[10px] text-muted-foreground">
-                  <Clock className="size-3" />
-                  <span>
-                    Link expira em{" "}
-                    {new Date(activeBoostPayment.expiresAt).toLocaleString("pt-BR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-              )}
-
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleCloseBoostModal}
-                className="w-full rounded-xl text-xs h-9 text-muted-foreground cursor-pointer"
-              >
-                Fechar (pagamento pendente)
-              </Button>
-            </div>
-          )}
-
-          {/* ─── ETAPA 3: Pagamento Confirmado ─── */}
-          {boostStep === "paid" && (
-            <div className="p-6 space-y-4 text-center">
-              <div className="size-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="size-8 text-emerald-600" />
-              </div>
-              <div>
-                <h3 className="font-black text-lg text-foreground">Destaque Ativado!</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Seu anúncio agora aparece com prioridade no topo das buscas.
-                  <br />O destaque foi confirmado após o pagamento.
-                </p>
-              </div>
-              <Button
-                type="button"
-                onClick={handleCloseBoostModal}
-                className="w-full rounded-xl text-xs h-11 font-bold bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
-              >
-                Concluído
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* ── BOOST BOTTOM SHEET CANÔNICO (MOBILE & DESKTOP SPATIAL UI) ── */}
+      <BoostBottomSheet
+        open={!!boostingAd}
+        onOpenChange={(open) => {
+          if (!open) handleCloseBoostModal();
+        }}
+        targetItem={
+          boostingAd
+            ? {
+                id: boostingAd.id,
+                title: boostingAd.title,
+                priceCents: boostingAd.price_cents,
+                imageUrl: boostingAd.images?.[0] || boostingAd.image_url,
+                category: boostingAd.category,
+                locationCity: boostingAd.location_city,
+              }
+            : null
+        }
+        onConfirmBoost={async (planDays) => {
+          if (!boostingAd) return;
+          setSelectedPlan(planDays);
+          await initiateBoostMutation.mutateAsync({ adId: boostingAd.id, planDays });
+        }}
+        isLoading={initiateBoostMutation.isPending}
+        paymentResult={
+          boostStep === "checkout_pending" && activeBoostPayment
+            ? {
+                pixQrCode: activeBoostPayment.pixQrCode,
+                pixCopyPaste: activeBoostPayment.pixCopyPaste,
+                paymentLink: activeBoostPayment.paymentLink,
+                provider: activeBoostPayment.provider,
+              }
+            : null
+        }
+        onResetPayment={() => {
+          setActiveBoostPayment(null);
+          setBoostStep("plan_select");
+        }}
+      />
 
       {/* Modal de Migração de Anúncio para Loja no Workspace Pro */}
       <Dialog open={!!migratingAd} onOpenChange={(open) => !open && setMigratingAd(null)}>

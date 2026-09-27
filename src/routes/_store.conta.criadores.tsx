@@ -74,6 +74,23 @@ function CreatorProfilesManagementPage() {
   const [isEditorNew, setIsEditorNew] = useState(false);
   const [copiedHandle, setCopiedHandle] = useState<string | null>(null);
 
+  const [activeCreator, setActiveCreator] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const match = document.cookie.match(/waesy_active_creator=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  });
+
+  const handleActivatePersona = (cp: any) => {
+    const handleOrId = cp.id || cp.handle;
+    if (typeof window !== "undefined") {
+      window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
+      window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleOrId)}; path=/; max-age=31536000; SameSite=Lax`;
+      window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+    }
+    setActiveCreator(handleOrId);
+    toast.success(`Identidade ativa alterada para @${cp.handle} (Persona Criador)!`);
+  };
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedHandle(text);
@@ -118,7 +135,7 @@ function CreatorProfilesManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24">
+    <div className="min-h-[100dvh] bg-background text-foreground pb-24">
       {/* ─── Top Bar Executiva Apple HIG ────────────────────────────── */}
       <div className="border-b border-border/40 bg-card/60 backdrop-blur-md px-4 sm:px-6 py-4 sticky top-0 z-20">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
@@ -223,6 +240,27 @@ function CreatorProfilesManagementPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 self-start sm:self-auto flex-wrap">
+                      {activeCreator === (cp.id || handle) || activeCreator === handle ? (
+                        <Badge
+                          variant="outline"
+                          className="h-9 px-3 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 border-amber-500/30 gap-1.5 shrink-0"
+                        >
+                          <CheckCircle2 className="size-3.5 text-amber-600" />
+                          <span>Persona Ativa</span>
+                        </Badge>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleActivatePersona(cp)}
+                          className="h-9 px-3 rounded-xl text-xs gap-1.5 font-medium cursor-pointer shrink-0"
+                        >
+                          <Sparkles className="size-3.5 text-amber-500" />
+                          <span>Ativar Persona</span>
+                        </Button>
+                      )}
+
                       <Button
                         type="button"
                         variant="outline"

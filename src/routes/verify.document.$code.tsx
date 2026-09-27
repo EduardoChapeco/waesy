@@ -59,7 +59,7 @@ function DocumentVerificationPage() {
 
   if (error || !result) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-2xl p-6 text-center space-y-4">
           <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
             <AlertTriangle className="size-6" />
@@ -92,7 +92,7 @@ function DocumentVerificationPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-8 px-0 sm:px-4 md:px-0 flex flex-col justify-center items-center animate-in fade-in duration-200">
+    <div className="min-h-[100dvh] bg-background text-foreground py-8 px-0 sm:px-4 md:px-0 flex flex-col justify-center items-center animate-in fade-in duration-200">
       <div className="max-w-3xl w-full space-y-6">
         {/* Banner Superior de Sucesso e Autenticidade */}
         <div className="bg-card border border-border/80 rounded-2xl p-6 md:p-8 space-y-4 shadow-2xs text-center">

@@ -449,3 +449,436 @@ export const approveAndPublishAdCampaign = createServerFn({ method: "POST" })
       message: `Campanha "${inserted.title}" aprovada e ativada com sucesso!`,
     };
   });
+
+
+/**
+ * 4. GLOBAL AD-NETWORK ARBITRAGE & SPLIT ENGINE (V109 SPEC)
+ * ==========================================================
+ * Regra A: Conta Própria (Pro/Agências) -> 100% Budget repassado diretamente via OAuth.
+ * Regra B: Express Boost (Arbitragem) -> Divide o valor: 20% Waesy Software Fee / 80% Meta/Google API.
+ */
+
+export interface AdSplitResult {
+  total_budget_cents: number;
+  waesy_take_rate: number;
+  waesy_revenue_cents: number;
+  external_ad_spend_cents: number;
+  routing_mode: "client_own_account" | "waesy_global_arbitrage";
+  destination_platform: "meta_ads" | "google_ads" | "waesy_network";
+}
+
+export const calculateAdBudgetSplit = (
+  totalBudgetCents: number,
+  hasOwnAdAccount: boolean,
+  destinationPlatform: "meta_ads" | "google_ads" | "waesy_network" = "meta_ads"
+): AdSplitResult => {
+  if (hasOwnAdAccount) {
+    return {
+      total_budget_cents: totalBudgetCents,
+      waesy_take_rate: 0,
+      waesy_revenue_cents: 0,
+      external_ad_spend_cents: totalBudgetCents,
+      routing_mode: "client_own_account",
+      destination_platform: destinationPlatform,
+    };
+  }
+
+  // Regra B: Express Boost Arbitrage (Padrão 20% Waesy / 80% Meta Ads)
+  const takeRate = Number(process.env.WAESY_AD_TAKE_RATE || 0.20);
+  const waesyRevenueCents = Math.round(totalBudgetCents * takeRate);
+  const externalSpendCents = totalBudgetCents - waesyRevenueCents;
+
+  return {
+    total_budget_cents: totalBudgetCents,
+    waesy_take_rate: takeRate,
+    waesy_revenue_cents: waesyRevenueCents,
+    external_ad_spend_cents: externalSpendCents,
+    routing_mode: "waesy_global_arbitrage",
+    destination_platform: destinationPlatform,
+  };
+};
+
+export const getAdNetworkTreasuryMetrics = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+
+  if (!identity.isPlatformAdmin) {
+    throw new Error("Acesso exclusivo para administradores da rede.");
+  }
+
+  const { data: campaigns, error } = await supabase
+    .from("ad_campaigns")
+    .select("id, budget_cents, status, created_at, settings");
+
+  if (error) {
+    console.error("[ads] Erro ao buscar métricas de tesouraria de ads:", error);
+    return {
+      total_processed_cents: 0,
+      waesy_revenue_cents: 0,
+      external_ad_spend_cents: 0,
+      active_campaigns_count: 0,
+      total_campaigns_count: 0,
+    };
+  }
+
+  let totalProcessed = 0;
+  let waesyRevenue = 0;
+  let externalSpend = 0;
+  let activeCount = 0;
+
+  (campaigns || []).forEach((c: any) => {
+    const budget = c.budget_cents || 0;
+    totalProcessed += budget;
+
+    const hasOwn = Boolean(c.settings?.has_own_ad_account);
+    const split = calculateAdBudgetSplit(budget, hasOwn);
+
+    waesyRevenue += split.waesy_revenue_cents;
+    externalSpend += split.external_ad_spend_cents;
+
+    if (c.status === "active") {
+      activeCount++;
+    }
+  });
+
+  return {
+    total_processed_cents: totalProcessed,
+    waesy_revenue_cents: waesyRevenue,
+    external_ad_spend_cents: externalSpend,
+    active_campaigns_count: activeCount,
+    total_campaigns_count: (campaigns || []).length,
+  };
+});
+
+export const listAllNetworkCampaignsAdmin = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      status: z.enum(["all", "active", "paused", "completed"]).default("all"),
+      limit: z.number().int().min(1).max(100).default(50),
+    }).default({})
+  )
+  .handler(async ({ data: { status, limit } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+
+    if (!identity.isPlatformAdmin) {
+      throw new Error("Acesso exclusivo para administradores da rede.");
+    }
+
+    let query = supabase
+      .from("ad_campaigns")
+      .select("id, store_id, title, type, budget_cents, status, created_at, starts_at, ends_at, settings, store:store_id (id, name, slug)")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (status !== "all") {
+      query = query.eq("status", status);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("[ads] Erro ao listar campanhas admin:", error);
+      return [];
+    }
+
+    return (data || []).map((c: any) => {
+      const hasOwn = Boolean(c.settings?.has_own_ad_account);
+      const split = calculateAdBudgetSplit(c.budget_cents || 0, hasOwn);
+
+      return {
+        id: c.id,
+        store_id: c.store_id,
+        store_name: c.store?.name || "Loja da Rede",
+        store_slug: c.store?.slug || "",
+        title: c.title || "Impulsionamento",
+        status: c.status,
+        total_budget_cents: c.budget_cents || 0,
+        waesy_revenue_cents: split.waesy_revenue_cents,
+        external_spend_cents: split.external_ad_spend_cents,
+        routing_mode: split.routing_mode,
+        created_at: c.created_at,
+        ends_at: c.ends_at,
+      };
+    });
+  });
+
+/**
+ * 5. PERSISTÊNCIA ATÔMICA DE ARBITRAGEM & AD-LEDGER (V109 SPEC)
+ * =============================================================
+ * Registra a transação no livro-razão (ad_ledger) e cria/atualiza
+ * a ad_campaign correspondente.
+ */
+export async function recordAdCampaignAndLedgerSplit(params: {
+  storeId?: string | null;
+  classifiedId?: string | null;
+  title: string;
+  totalBudgetCents: number;
+  hasOwnAdAccount: boolean;
+  destinationPlatform?: "meta_ads" | "google_ads" | "waesy_network";
+  startsAt?: string;
+  endsAt?: string;
+  description?: string;
+  metadata?: Record<string, any>;
+}) {
+  const supabase = getServerClient();
+  const split = calculateAdBudgetSplit(
+    params.totalBudgetCents,
+    params.hasOwnAdAccount,
+    params.destinationPlatform || "meta_ads"
+  );
+
+  const now = new Date().toISOString();
+
+  // 1. Cria campanha na ad-network
+  const { data: campaign, error: campaignErr } = await supabase
+    .from("ad_campaigns")
+    .insert({
+      store_id: params.storeId || null,
+      classified_id: params.classifiedId || null,
+      title: params.title,
+      type: "express_boost",
+      budget_cents: params.totalBudgetCents,
+      waesy_fee_cents: split.waesy_revenue_cents,
+      external_ad_spend_cents: split.external_ad_spend_cents,
+      routing_mode: split.routing_mode,
+      external_platform: split.destination_platform,
+      status: "active",
+      starts_at: params.startsAt || now,
+      ends_at: params.endsAt || null,
+      placements: ["feed", "search", "story"],
+    })
+    .select("id")
+    .single();
+
+  if (campaignErr) {
+    console.error("[ads] Erro ao registrar ad_campaign:", campaignErr);
+  }
+
+  const campaignId = campaign?.id || null;
+
+  // 2. Insere no ad_ledger (Double-entry / Livro-razão)
+  const ledgerEntries = [
+    {
+      campaign_id: campaignId,
+      store_id: params.storeId || null,
+      classified_id: params.classifiedId || null,
+      entry_type: "boost_payment",
+      amount_cents: params.totalBudgetCents,
+      routing_mode: split.routing_mode,
+      description: params.description || `Recebimento bruto de impulsionamento: ${params.title}`,
+      metadata: params.metadata || {},
+    },
+    {
+      campaign_id: campaignId,
+      store_id: params.storeId || null,
+      classified_id: params.classifiedId || null,
+      entry_type: "waesy_fee_retention",
+      amount_cents: split.waesy_revenue_cents,
+      routing_mode: split.routing_mode,
+      description: `Retenção de software Waesy Ads (${Math.round(split.waesy_take_rate * 100)}%)`,
+      metadata: { take_rate: split.waesy_take_rate },
+    },
+    {
+      campaign_id: campaignId,
+      store_id: params.storeId || null,
+      classified_id: params.classifiedId || null,
+      entry_type: "external_ad_spend",
+      amount_cents: split.external_ad_spend_cents,
+      routing_mode: split.routing_mode,
+      description: `Injeção de saldo em leilão via API (${split.destination_platform})`,
+      metadata: { platform: split.destination_platform },
+    },
+  ];
+
+  const { error: ledgerErr } = await supabase.from("ad_ledger").insert(ledgerEntries);
+  if (ledgerErr) {
+    console.error("[ads] Erro ao registrar entradas no ad_ledger:", ledgerErr);
+  }
+
+  return {
+    campaignId,
+    split,
+  };
+}
+
+/**
+ * 6. HUB DE CONFIGURAÇÃO DE TOKENS GLOBAIS (ADMIN MASTER)
+ * =======================================================
+ * Permite ao Master configurar o Take Rate e as chaves de API da Ad-Network
+ */
+export const getGlobalAdNetworkConfig = createServerFn({ method: "GET" }).handler(async () => {
+  const supabase = getServerClient();
+  const identity = await getServerIdentity();
+  if (!identity.isPlatformAdmin) {
+    throw new Error("Acesso exclusivo para administradores da rede.");
+  }
+
+  const { data: store } = await supabase
+    .from("stores")
+    .select("id, settings")
+    .or("is_platform_root.eq.true,slug.eq.waesy,slug.eq.waesy-matriz,slug.eq.matriz")
+    .limit(1)
+    .maybeSingle();
+
+  const settings = (store?.settings as Record<string, any>) || {};
+  const adConfig = (settings.global_ad_network as Record<string, any>) || {};
+
+  const metaToken = adConfig.meta_access_token || process.env.META_ADS_ACCESS_TOKEN || "";
+  const googleToken = adConfig.google_developer_token || process.env.GOOGLE_ADS_DEVELOPER_TOKEN || "";
+
+  return {
+    take_rate: Number(adConfig.take_rate || process.env.WAESY_AD_TAKE_RATE || 0.20),
+    meta_configured: !!(metaToken && metaToken.length > 8),
+    meta_access_token_masked: metaToken ? `${metaToken.slice(0, 6)}••••••••${metaToken.slice(-4)}` : "",
+    meta_ad_account_id: adConfig.meta_ad_account_id || "",
+    meta_pixel_id: adConfig.meta_pixel_id || "",
+    google_configured: !!(googleToken && googleToken.length > 5),
+    google_developer_token_masked: googleToken ? `${googleToken.slice(0, 4)}••••••••` : "",
+    google_customer_id: adConfig.google_customer_id || "",
+  };
+});
+
+export const updateGlobalAdNetworkConfig = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      take_rate: z.number().min(0.01).max(0.99),
+      meta_access_token: z.string().optional(),
+      meta_ad_account_id: z.string().optional(),
+      meta_pixel_id: z.string().optional(),
+      google_developer_token: z.string().optional(),
+      google_customer_id: z.string().optional(),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.isPlatformAdmin) {
+      throw new Error("Acesso exclusivo para administradores da rede.");
+    }
+
+    const { data: store } = await supabase
+      .from("stores")
+      .select("id, settings")
+      .or("is_platform_root.eq.true,slug.eq.waesy,slug.eq.waesy-matriz,slug.eq.matriz")
+      .limit(1)
+      .maybeSingle();
+
+    if (!store?.id) throw new Error("Loja matriz da plataforma não encontrada.");
+
+    const currentSettings = (store.settings as Record<string, any>) || {};
+    const currentAdConfig = (currentSettings.global_ad_network as Record<string, any>) || {};
+
+    const updatedAdConfig = {
+      ...currentAdConfig,
+      take_rate: input.take_rate,
+      meta_access_token: input.meta_access_token?.trim() || currentAdConfig.meta_access_token || "",
+      meta_ad_account_id: input.meta_ad_account_id?.trim() || currentAdConfig.meta_ad_account_id || "",
+      meta_pixel_id: input.meta_pixel_id?.trim() || currentAdConfig.meta_pixel_id || "",
+      google_developer_token: input.google_developer_token?.trim() || currentAdConfig.google_developer_token || "",
+      google_customer_id: input.google_customer_id?.trim() || currentAdConfig.google_customer_id || "",
+      updated_at: new Date().toISOString(),
+      updated_by: identity.id,
+    };
+
+    const { error } = await supabase
+      .from("stores")
+      .update({
+        settings: {
+          ...currentSettings,
+          global_ad_network: updatedAdConfig,
+        },
+      })
+      .eq("id", store.id);
+
+    if (error) {
+      console.error("[ads] Erro ao atualizar configurações de ads:", error);
+      throw new Error("Erro ao salvar credenciais globais de anúncio.");
+    }
+
+    return { success: true };
+  });
+
+/**
+ * 7. AUDITORIA FORENSE DO LIVRO-RAZÃO (AD-LEDGER)
+ * ===============================================
+ * Consulta os lançamentos contábeis em partidas dobradas da Ad-Network.
+ */
+export const listAdLedgerEntries = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      campaignId: z.string().uuid().optional(),
+      limit: z.number().int().min(1).max(100).default(50),
+    }).default({})
+  )
+  .handler(async ({ data: { campaignId, limit } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.isPlatformAdmin) {
+      throw new Error("Acesso exclusivo para administradores da rede.");
+    }
+
+    let query = supabase
+      .from("ad_ledger")
+      .select("id, campaign_id, store_id, classified_id, entry_type, amount_cents, currency, routing_mode, description, metadata, created_at")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (campaignId) {
+      query = query.eq("campaign_id", campaignId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("[ads] Erro ao listar lançamentos do ad_ledger:", error);
+      return [];
+    }
+
+    return (data || []).map((entry: any) => ({
+      id: entry.id,
+      campaign_id: entry.campaign_id,
+      store_id: entry.store_id,
+      classified_id: entry.classified_id,
+      entry_type: entry.entry_type,
+      amount_cents: Number(entry.amount_cents) || 0,
+      currency: entry.currency || "BRL",
+      routing_mode: entry.routing_mode || "waesy_global_arbitrage",
+      description: entry.description || "Lançamento de anúncio",
+      metadata: entry.metadata || {},
+      created_at: entry.created_at,
+    }));
+  });
+
+/**
+ * 8. GESTÃO OPERACIONAL DE CAMPANHAS PELO ADMIN MASTER
+ * ====================================================
+ */
+export const toggleAdCampaignStatusAdmin = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      campaignId: z.string().uuid(),
+      status: z.enum(["active", "paused", "completed"]),
+    })
+  )
+  .handler(async ({ data: { campaignId, status } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    if (!identity.isPlatformAdmin) {
+      throw new Error("Acesso exclusivo para administradores da rede.");
+    }
+
+    const { data: updated, error } = await supabase
+      .from("ad_campaigns")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", campaignId)
+      .select("id, status, title")
+      .single();
+
+    if (error) {
+      console.error("[ads] Erro ao alterar status de campanha (admin):", error);
+      throw new Error("Erro ao atualizar status da campanha.");
+    }
+
+    return updated;
+  });
+
+

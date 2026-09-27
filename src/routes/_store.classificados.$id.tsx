@@ -359,6 +359,24 @@ function ClassifiedDetailPage() {
     (currentProfile?.id && classified?.author_profile_id === currentProfile.id)
   );
 
+  // FASE 1: Lifecycle & Validade / Limite de Oferta
+  const isOfferExpired = useMemo(() => {
+    if (status === "expired" || classified?.status === "expired") return true;
+    if (classified?.expires_at) {
+      return new Date(classified.expires_at).getTime() < Date.now();
+    }
+    return false;
+  }, [status, classified?.status, classified?.expires_at]);
+
+  const isOfferLimitReached = useMemo(() => {
+    const claimed = Number(classified?.claimed_count) || 0;
+    if (classified?.offer_limit != null && claimed >= Number(classified.offer_limit)) return true;
+    if (classified?.stock_limit != null && claimed >= Number(classified.stock_limit)) return true;
+    return false;
+  }, [classified?.claimed_count, classified?.offer_limit, classified?.stock_limit]);
+
+  const isAvailableToOrder = classified?.status === "active" && !isOfferExpired && !isOfferLimitReached && status !== "sold" && status !== "reserved";
+
   // FASE 1: Rastreio de Visualizações Real com Prevenção Anti-Spam de Refresh (Sessão)
   useEffect(() => {
     const targetId = classified?.id;
@@ -1549,7 +1567,7 @@ const handleDownloadDigitalFile = async () => {
           brandName={classified?.store_name || "Comunidade Waesy"}
           categoryName="Conveniência"
           sku={classified?.id}
-          inStock={classified?.status === "active"}
+          inStock={isAvailableToOrder}
         />
         <ConvenienceShowcaseView
           classified={classified}
@@ -1593,7 +1611,7 @@ const handleDownloadDigitalFile = async () => {
           brandName={classified?.store_name || "Comunidade Waesy"}
           categoryName={classified?.category || "Turismo"}
           sku={classified?.id}
-          inStock={classified?.status === "active"}
+          inStock={isAvailableToOrder}
         />
         <EditorialShowcaseView
           classified={classified}
@@ -1636,8 +1654,42 @@ const handleDownloadDigitalFile = async () => {
         brandName={classified?.store_name || "Comunidade Waesy"}
         categoryName={classified?.category || "Classificados"}
         sku={classified?.id}
-        inStock={classified?.status === "active"}
+        inStock={isAvailableToOrder}
       />
+      {isOfferExpired && (
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-1">
+          <div className="rounded-2xl p-4 bg-muted/60 border border-border/60 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Clock className="size-5 text-muted-foreground shrink-0" />
+              <div>
+                <span className="text-xs font-bold text-foreground">Oferta Expirada</span>
+                <p className="text-[11px] text-muted-foreground">O prazo de validade deste anúncio encerrou.</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold shrink-0">
+              <Link to="/classificados">Explorar Outros</Link>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {isOfferLimitReached && !isOfferExpired && (
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-1">
+          <div className="rounded-2xl p-4 bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Package className="size-5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <div>
+                <span className="text-xs font-bold text-foreground">Oferta Esgotada</span>
+                <p className="text-[11px] text-muted-foreground">O limite de pedidos disponibilizado pelo anunciante foi atingido.</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold shrink-0">
+              <Link to="/classificados">Ver Similares</Link>
+            </Button>
+          </div>
+        </div>
+      )}
+
       {status === "sold" && (
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-1">
           <div className="rounded-2xl p-4 sm:p-5 bg-amber-500/10 border-2 border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-2xs">

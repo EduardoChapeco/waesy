@@ -109,7 +109,7 @@ function PublicTravelerFormPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col items-center justify-center p-4 selection:bg-primary selection:text-primary-foreground font-sans">
+    <div className="min-h-[100dvh] bg-slate-950 text-slate-50 flex flex-col items-center justify-center p-4 selection:bg-primary selection:text-primary-foreground font-sans">
       <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
         {/* Header com Identidade da Agência */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -169,26 +169,26 @@ function PublicTravelerFormPage() {
               <div className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">Nome Completo (Conforme RG/Passaporte) *</label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ex: Lucas Gabriel Oliveira" className="bg-slate-950 border-slate-800 text-xs rounded-xl" autoFocus />
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ex: Lucas Gabriel Oliveira" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" autoFocus />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">CPF *</label>
-                    <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="bg-slate-950 border-slate-800 text-xs rounded-xl font-mono" />
+                    <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">RG / Órgão Emissor</label>
-                    <Input value={rg} onChange={(e) => setRg(e.target.value)} placeholder="1234567 SSP/SC" className="bg-slate-950 border-slate-800 text-xs rounded-xl font-mono" />
+                    <Input value={rg} onChange={(e) => setRg(e.target.value)} placeholder="1234567 SSP/SC" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Data de Nascimento</label>
-                    <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-slate-950 border-slate-800 text-xs rounded-xl" />
+                    <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Gênero</label>
-                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-slate-800 bg-slate-950 text-xs text-slate-300">
+                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-slate-800 bg-slate-950 text-base sm:text-xs text-slate-300">
                       <option value="Masculino">Masculino</option>
                       <option value="Feminino">Feminino</option>
                       <option value="Outro">Outro</option>
@@ -207,16 +207,16 @@ function PublicTravelerFormPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Nº do Passaporte</label>
-                    <Input value={passportNumber} onChange={(e) => setPassportNumber(e.target.value)} placeholder="Ex: FY123456" className="bg-slate-950 border-slate-800 text-xs rounded-xl uppercase font-mono" />
+                    <Input value={passportNumber} onChange={(e) => setPassportNumber(e.target.value)} placeholder="Ex: FY123456" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl uppercase font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Validade do Passaporte</label>
-                    <Input type="date" value={passportExpiry} onChange={(e) => setPassportExpiry(e.target.value)} className="bg-slate-950 border-slate-800 text-xs rounded-xl" />
+                    <Input type="date" value={passportExpiry} onChange={(e) => setPassportExpiry(e.target.value)} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">Preferência de Assento no Voo</label>
-                  <select value={seatPreference} onChange={(e) => setSeatPreference(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-slate-800 bg-slate-950 text-xs text-slate-300">
+                  <select value={seatPreference} onChange={(e) => setSeatPreference(e.target.value)} className="w-full h-10 px-3 rounded-xl border border-slate-800 bg-slate-950 text-base sm:text-xs text-slate-300">
                     <option value="Janela">Janela</option>
                     <option value="Corredor">Corredor</option>
                     <option value="Meio">Meio / Sem Preferência</option>
@@ -230,26 +230,26 @@ function PublicTravelerFormPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">WhatsApp *</label>
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(49) 99999-9999" className="bg-slate-950 border-slate-800 text-xs rounded-xl font-mono" />
+                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(49) 99999-9999" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">E-mail</label>
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" className="bg-slate-950 border-slate-800 text-xs rounded-xl" />
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Contato de Emergência (Nome)</label>
-                    <Input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} placeholder="Ex: Pai, Mãe, Cônjuge" className="bg-slate-950 border-slate-800 text-xs rounded-xl" />
+                    <Input value={emergencyName} onChange={(e) => setEmergencyName(e.target.value)} placeholder="Ex: Pai, Mãe, Cônjuge" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-300">Telefone de Emergência</label>
-                    <Input value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="(00) 00000-0000" className="bg-slate-950 border-slate-800 text-xs rounded-xl font-mono" />
+                    <Input value={emergencyPhone} onChange={(e) => setEmergencyPhone(e.target.value)} placeholder="(00) 00000-0000" className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl font-mono" />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">Restrições Alimentares / Saúde</label>
-                  <Textarea value={specialNeeds} onChange={(e) => setSpecialNeeds(e.target.value)} placeholder="Ex: Alergia a frutos do mar, vegetariano, necessidade de cadeira de rodas..." rows={2} className="bg-slate-950 border-slate-800 text-xs rounded-xl" />
+                  <Textarea value={specialNeeds} onChange={(e) => setSpecialNeeds(e.target.value)} placeholder="Ex: Alergia a frutos do mar, vegetariano, necessidade de cadeira de rodas..." rows={2} className="bg-slate-950 border-slate-800 text-base sm:text-xs rounded-xl" />
                 </div>
               </div>
             )}

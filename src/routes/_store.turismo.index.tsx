@@ -341,21 +341,21 @@ function TourismMasterPage() {
           })}
         </div>
       ) : layoutMode === "compact" ? (
-        /* MODO 2: COMPACTO */
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        /* MODO 2: COMPACTO (WhatsApp List no Mobile / Grade Compacta no Desktop) */
+        <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden sm:divide-y-0 sm:border-0 sm:bg-transparent sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4">
           {tourismList.map((item) => {
             const priceCents = item.price_cents || 0;
             return (
               <div
                 key={item.id}
-                className="rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-border transition-all flex flex-col justify-between group"
+                className="group w-full px-3 sm:px-3 py-3 sm:py-0 hover:bg-muted/40 sm:hover:bg-transparent transition-colors flex sm:flex-col items-center sm:items-stretch gap-3.5 sm:gap-0 sm:rounded-2xl sm:border sm:border-border/60 sm:bg-card sm:overflow-hidden sm:hover:border-border cursor-pointer sm:cursor-default"
               >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                <div className="relative size-16 sm:size-auto sm:aspect-[4/3] sm:w-full overflow-hidden bg-muted rounded-xl sm:rounded-none shrink-0 border border-border/40 sm:border-0">
                   {item.cover_image ? (
                     <img
                       src={item.cover_image}
                       alt={item.title}
-                      className="size-full object-cover"
+                      className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
                   ) : (
@@ -364,18 +364,18 @@ function TourismMasterPage() {
                     </div>
                   )}
                   {item.departure_city && (
-                    <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-1.5 py-0.5 rounded text-foreground font-medium">
+                    <span className="hidden sm:inline-block absolute bottom-2 left-2 text-[9px] bg-background/90 px-1.5 py-0.5 rounded text-foreground font-medium">
                       {item.departure_city}
                     </span>
                   )}
                 </div>
 
-                <div className="p-3 space-y-2 flex-1 flex flex-col justify-between">
+                <div className="flex-1 min-w-0 sm:p-3 space-y-1 sm:space-y-2 flex flex-col justify-between">
                   <div>
                     <span className="text-[10px] text-muted-foreground block truncate">
-                      {item.location_name || "Regional"}
+                      {item.location_name || item.destination || "Regional"}
                     </span>
-                    <h4 className="font-semibold text-xs text-foreground line-clamp-1">
+                    <h4 className="font-semibold text-xs sm:text-xs text-foreground line-clamp-1">
                       {item.title}
                     </h4>
                   </div>
@@ -388,7 +388,7 @@ function TourismMasterPage() {
                       asChild
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-[11px] rounded-lg font-medium"
+                      className="h-7 px-2 text-[11px] rounded-lg font-medium cursor-pointer"
                     >
                       <Link to="/turismo/$id" params={{ id: item.id }}>
                         Ver

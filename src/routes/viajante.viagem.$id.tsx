@@ -33,7 +33,7 @@ export default function TripPortalPage() {
  const [activeTab, setActiveTab] = useState<TabType>('resumo');
 
  return (
- <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col items-center">
+ <div className="min-h-[100dvh] bg-slate-50 dark:bg-zinc-950 flex flex-col items-center">
  {/* Hero Banner */}
  <div className="w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-12 px-6 shadow-xs border-b border-border/20">
  <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">

@@ -23,6 +23,11 @@ import {
   ShieldCheck,
   MoreHorizontal,
   SlidersHorizontal,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Globe,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,25 +77,32 @@ export default function WorkspaceCrmPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [channelFilter, setChannelFilter] = useState<string>("all");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [showMetricsMobile, setShowMetricsMobile] = useState(false);
 
-  const { data: customers = initialCustomers, isLoading } = useQuery({
-    queryKey: ["workspace-crm-customers", statusFilter],
-    queryFn: () => listCustomers({ data: { status: statusFilter } }),
+  const { data: customers = initialCustomers } = useQuery({
+    queryKey: ["workspace-crm-customers", statusFilter, channelFilter],
+    queryFn: () => listCustomers({ data: { status: statusFilter, channel: channelFilter } }),
     initialData: initialCustomers,
   });
 
   const filteredCustomers = useMemo(() => {
-    if (!search.trim()) return customers;
+    let list = customers;
+    if (channelFilter !== "all") {
+      list = list.filter((c: any) => (c.channel || "").toLowerCase() === channelFilter.toLowerCase());
+    }
+    if (!search.trim()) return list;
     const q = search.toLowerCase();
-    return customers.filter(
+    return list.filter(
       (c: any) =>
         c.full_name?.toLowerCase().includes(q) ||
         c.email?.toLowerCase().includes(q) ||
         c.phone?.includes(q) ||
-        c.document?.includes(q)
+        c.document?.includes(q) ||
+        c.city?.toLowerCase().includes(q)
     );
-  }, [customers, search]);
+  }, [customers, search, channelFilter]);
 
   const metrics = useMemo(() => {
     const total = customers.length;
@@ -106,29 +118,26 @@ export default function WorkspaceCrmPage() {
     };
   }, [customers, dashboardMetrics]);
 
+  const activeFiltersCount = (statusFilter !== "all" ? 1 : 0) + (channelFilter !== "all" ? 1 : 0);
+
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-      {/* ── 1. TopBar Direta (Silêncio Operacional & Layout Compacto) ── */}
+    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
+      {/* ── 1. TopBar Direta (Linha 1 no Mobile: Título + Badge + Menu Kebab) ── */}
       <div className="flex flex-row items-center justify-between gap-2 border-b border-border/40 pb-3 pt-1">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-xl bg-primary/10 text-primary">
-              <Users className="size-4 sm:size-5" />
-            </span>
-            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
-              Central de CRM
-            </h1>
-            <Badge variant="outline" className="text-[11px] sm:text-xs font-mono py-0 px-2 border-primary/30 text-primary">
-              {metrics.total} contatos
-            </Badge>
-          </div>
-          <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Gestão de relacionamento, carteira de clientes e histórico de interações.
-          </p>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="p-1.5 rounded-xl bg-primary/10 text-primary shrink-0">
+            <Users className="size-4 sm:size-5" />
+          </span>
+          <h1 className="text-base sm:text-2xl font-bold tracking-tight text-foreground truncate">
+            Central de CRM
+          </h1>
+          <Badge variant="outline" className="text-[11px] sm:text-xs font-mono py-0 px-2 border-primary/30 text-primary shrink-0">
+            {metrics.total} contatos
+          </Badge>
         </div>
 
         {/* Ações no Desktop */}
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
           <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-10 px-3.5">
             <Link to="/workspace/comercial">
               <Kanban className="size-3.5 text-primary" />
@@ -142,24 +151,29 @@ export default function WorkspaceCrmPage() {
               <span>Base Completa</span>
             </Link>
           </Button>
-
-          <Button asChild size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-10 px-4 bg-primary text-primary-foreground">
-            <Link to="/workspace/clientes" search={{ novo: true } as any}>
-              <Plus className="size-4" />
-              <span>Novo Cliente</span>
-            </Link>
-          </Button>
         </div>
 
-        {/* Ações no Mobile (Linha Única Compacta com Kebab) */}
-        <div className="flex sm:hidden items-center gap-1.5">
+        {/* Ações Secundárias no Mobile (Kebab + Toggle de Métricas) */}
+        <div className="flex sm:hidden items-center gap-1.5 shrink-0">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowMetricsMobile((prev) => !prev)}
+            className="h-9 px-2 text-[11px] text-muted-foreground font-medium gap-1 rounded-xl"
+            title="Alternar resumo de métricas"
+          >
+            <span>Métricas</span>
+            {showMetricsMobile ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 className="h-9 w-9 p-0 rounded-xl border-border/70 text-muted-foreground"
-                title="Mais ações"
+                title="Mais opções"
               >
                 <MoreHorizontal className="size-4" />
               </Button>
@@ -179,18 +193,11 @@ export default function WorkspaceCrmPage() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Button asChild size="sm" className="rounded-xl text-xs font-bold h-9 px-3 bg-primary text-primary-foreground">
-            <Link to="/workspace/clientes" search={{ novo: true } as any}>
-              <Plus className="size-3.5 mr-1" />
-              <span>Novo</span>
-            </Link>
-          </Button>
         </div>
       </div>
 
-      {/* ── 2. Grid de Métricas Reais ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* ── 2. Grid de Métricas (Visível sempre no Desktop; Alternável no Mobile) ── */}
+      <div className={showMetricsMobile ? "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" : "hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"}>
         <Card className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Clientes Cadastrados</span>
@@ -213,7 +220,7 @@ export default function WorkspaceCrmPage() {
           </div>
           <div className="mt-3">
             <p className="text-2xl font-black text-foreground font-mono">{metrics.active}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Compras e contatos regulares</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Compras regulares</p>
           </div>
         </Card>
 
@@ -232,7 +239,7 @@ export default function WorkspaceCrmPage() {
 
         <Card className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">LTV Médio por Cliente</span>
+            <span className="text-xs font-medium text-muted-foreground">LTV Médio</span>
             <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
               <DollarSign className="size-4" />
             </div>
@@ -244,55 +251,54 @@ export default function WorkspaceCrmPage() {
         </Card>
       </div>
 
-      {/* ── 3. Barra de Busca e Filtros (Linha Única Cravada) ── */}
-      <div className="flex flex-row items-center justify-between gap-2 bg-card p-2 sm:p-3 rounded-2xl border border-border/60">
-        <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+      {/* ── 3. Barra de Busca + Filtro + CTA Primário (Linha 2 Única Cravada em h-10) ── */}
+      <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-center w-full">
+        {/* Input de Busca Fluido */}
+        <div className="relative min-w-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           <Input
-            placeholder="Buscar por nome, telefone, email ou documento..."
+            placeholder="Buscar por nome, telefone, email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9.5 h-10 rounded-xl text-xs bg-background border-border/60 w-full"
+            className="pl-9 pr-8 h-10 rounded-xl text-xs bg-card border-border/60 w-full placeholder:text-muted-foreground/60 shadow-none focus-visible:ring-1 focus-visible:ring-primary/40"
           />
-        </div>
-
-        {/* Gatilho de Filtro no Mobile (Abre Bottom Sheet) */}
-        <div className="flex sm:hidden">
-          <FilterTriggerButton
-            onClick={() => setIsFilterSheetOpen(true)}
-            activeCount={statusFilter !== "all" ? 1 : 0}
-          />
-        </div>
-
-        {/* Filtros em Linha no Desktop */}
-        <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-          {[
-            { id: "all", label: "Todos" },
-            { id: "active", label: "Ativos" },
-            { id: "inactive", label: "Inativos" },
-          ].map((f) => (
+          {search && (
             <button
-              key={f.id}
               type="button"
-              onClick={() => setStatusFilter(f.id as any)}
-              className={`h-9 px-3.5 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-                statusFilter === f.id
-                  ? "bg-foreground text-background font-bold"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground border border-border/40"
-              }`}
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+              title="Limpar busca"
             >
-              {f.label}
+              <X className="size-3.5" />
             </button>
-          ))}
+          )}
         </div>
+
+        {/* Botão de Filtros (Abre Bottom Sheet - Erradica empilhamento de selects) */}
+        <FilterTriggerButton
+          onClick={() => setIsFilterSheetOpen(true)}
+          activeCount={activeFiltersCount}
+          className="h-10 px-3 rounded-xl border-border/60 shrink-0 shadow-none text-xs"
+        />
+
+        {/* Botão Primário "+ Novo Cliente" Cravado em h-10 */}
+        <Button
+          asChild
+          className="h-10 px-3 sm:px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 shrink-0 shadow-none cursor-pointer"
+        >
+          <Link to="/workspace/clientes" search={{ novo: true } as any}>
+            <Plus className="size-4 shrink-0" />
+            <span className="hidden xs:inline sm:inline">Novo Cliente</span>
+          </Link>
+        </Button>
       </div>
 
-      {/* Bottom Sheet de Filtros para Mobile */}
+      {/* ── BOTTOM SHEET DE FILTROS (Compactação Nativa Mobile & Desktop) ── */}
       <FilterBottomSheet
         open={isFilterSheetOpen}
         onOpenChange={setIsFilterSheetOpen}
         title="Filtros do CRM"
-        description="Filtre os contatos por status e disponibilidade."
+        description="Filtre os contatos por status e canal de aquisição."
         filters={[
           {
             id: "status",
@@ -306,17 +312,36 @@ export default function WorkspaceCrmPage() {
             ],
             onChange: (val) => setStatusFilter(val as any),
           },
+          {
+            id: "channel",
+            label: "Canal de Aquisição",
+            value: channelFilter,
+            defaultValue: "all",
+            options: [
+              { label: "Todos os Canais", value: "all", icon: Globe },
+              { label: "WhatsApp", value: "whatsapp", icon: MessageCircle },
+              { label: "Balcão / Direto", value: "direct", icon: Building2 },
+              { label: "Site / E-commerce", value: "site", icon: ExternalLink },
+              { label: "Indicação", value: "indicacao", icon: Share2 },
+              { label: "Instagram", value: "instagram", icon: Tag },
+            ],
+            onChange: (val) => setChannelFilter(val),
+          },
         ]}
+        onReset={() => {
+          setStatusFilter("all");
+          setChannelFilter("all");
+        }}
       />
 
       {/* ── 4. Tabela / Listagem de Clientes ── */}
       {filteredCustomers.length === 0 ? (
         <EmptyState
           icon={Users}
-          title={search ? "Nenhum contato encontrado" : "Nenhum cliente cadastrado ainda"}
+          title={search || activeFiltersCount > 0 ? "Nenhum contato encontrado" : "Nenhum cliente cadastrado ainda"}
           description={
-            search
-              ? "Tente buscar com outro termo ou limpe os filtros."
+            search || activeFiltersCount > 0
+              ? "Tente buscar com outro termo ou redefinir os filtros."
               : "Cadastre novos clientes ou importe sua base para gerenciar contatos e histórico."
           }
           actionLabel="Cadastrar Primeiro Cliente"

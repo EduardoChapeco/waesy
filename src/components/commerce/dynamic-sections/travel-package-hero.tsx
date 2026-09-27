@@ -19,17 +19,17 @@ export interface TravelPackageHeroProps {
 }
 
 export function TravelPackageHero({
- title = "Natal Luz em Gramado com Aéreo e Hospedagem",
- destination = "Gramado, Serra Gaúcha",
- country = "Brasil",
- durationText = "5 Dias / 4 Noites",
- mealPlan = "Café da Manhã Incluso",
- priceCents = 389000,
- installmentsCount = 12,
- coverImageUrl = "",
- inclusions = ["Aéreo Ida e Volta", "Hotel 4 Estrelas", "Transfer In/Out", "City Tour Histórico"],
- onReserveClick,
- whatsappNumber = "49991448651",
+  title = "",
+  destination = "",
+  country = "",
+  durationText = "",
+  mealPlan = "",
+  priceCents = 0,
+  installmentsCount = 1,
+  coverImageUrl = "",
+  inclusions = [],
+  onReserveClick,
+  whatsappNumber = "",
 }: TravelPackageHeroProps) {
  const count = Math.max(1, installmentsCount || 1);
  const installmentCents = Math.round(priceCents / count);

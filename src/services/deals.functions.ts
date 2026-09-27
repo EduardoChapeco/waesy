@@ -198,6 +198,27 @@ export const respondToDealProposal = createServerFn({ method: "POST" })
 
  if (updateErr) throw new Error("Erro ao atualizar negociação.");
 
+  // Capability 4 (ROADMAP): Sincronização de Estado de Inventário do Anúncio
+  if (deal.classified_id) {
+    let adNextStatus: string | null = null;
+    if (input.action === "accept" || input.action === "confirm_dates") {
+      adNextStatus = "reserved";
+    } else if (input.action === "complete") {
+      adNextStatus = "completed";
+    } else if (input.action === "reject" || input.action === "cancel") {
+      adNextStatus = "active";
+    }
+
+    if (adNextStatus) {
+      await supabase
+        .from("classifieds")
+        .update({ status: adNextStatus, updated_at: new Date().toISOString() })
+        .eq("id", deal.classified_id)
+        .catch((e: any) => console.warn("[deals] Falha ao sincronizar status do classificado:", e?.message));
+    }
+  }
+
+
  // Registra o evento de resposta
  await supabase.from("deal_events").insert({
  deal_id: deal.id,

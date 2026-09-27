@@ -227,7 +227,7 @@ export function ClassifiedDetailMobile({
   }, [classified, attrs]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-28 select-none">
+    <div className="w-full min-h-[100dvh] bg-background text-foreground pb-28 select-none">
       {/* ── 1. HERO DE MÍDIA NATIVO EDGE-TO-EDGE (Sem margens, toca no topo absoluto) ── */}
       <div className="relative w-full aspect-[4/3] bg-muted/30 overflow-hidden">
         {images.length > 0 ? (

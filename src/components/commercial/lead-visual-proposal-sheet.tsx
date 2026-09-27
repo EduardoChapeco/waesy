@@ -665,7 +665,7 @@ export function LeadVisualProposalSheet({
                               <p className="text-[10px] text-muted-foreground">{h.city}, {h.state || h.country} {h.stars ? `• ${h.stars}★` : ""}</p>
                             </div>
                             <Badge variant="outline" className="text-[9px] font-mono">
-                              {h.regime_options?.[0] || "All Inclusive"}
+                              {h.regime_options?.[0] || "Regime sob consulta"}
                             </Badge>
                           </button>
                         ))}

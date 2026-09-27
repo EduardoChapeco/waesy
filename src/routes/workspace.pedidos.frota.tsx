@@ -90,7 +90,7 @@ function FrotaEntregasPage() {
  const [recipientName, setRecipientName] = useState("");
  const [recipientPhone, setRecipientPhone] = useState("");
  const [deliveryAddress, setDeliveryAddress] = useState("");
- const [feeReal, setFeeReal] = useState("10.00");
+ const [feeReal, setFeeReal] = useState("0.00");
 
  const handleSelectPendingOrder = (orderId: string) => {
  setSelectedOrderId(orderId);

@@ -38,8 +38,31 @@ export const Route = createFileRoute("/_store/conta/salvos")({
       return { initialFavorites: [] };
     }
   },
+  errorComponent: SavedItemsErrorComponent,
   component: SavedItemsPage,
 });
+
+function SavedItemsErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <Bookmark className="size-8" />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar itens salvos</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar sua lista de itens salvos no momento."}
+      </p>
+      <div className="flex items-center justify-center gap-3">
+        <Button onClick={reset} className="rounded-xl font-bold">
+          Tentar Novamente
+        </Button>
+        <Button asChild variant="outline" className="rounded-xl font-bold">
+          <Link to="/conta">Voltar para Conta</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 const TYPE_TABS = [
   { id: "all", label: "Todos", icon: Layers },

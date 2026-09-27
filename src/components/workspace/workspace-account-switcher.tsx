@@ -127,7 +127,7 @@ export function WorkspaceAccountSwitcher({
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="Procurar um ativo de negócios..."
- className="h-9 pl-9 pr-3 text-xs rounded-xl bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary"
+ className="h-10 pl-9 pr-3 text-base sm:text-xs rounded-xl bg-card border-border/60 focus-visible:ring-1 focus-visible:ring-primary"
  />
  </div>
  </div>

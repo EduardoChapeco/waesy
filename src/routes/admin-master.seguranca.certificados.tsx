@@ -113,7 +113,7 @@ function TransactionCertificatesPage() {
  const highRiskCount = certs.filter((c: any) => c.risk_score >= 70).length;
 
  return (
- <div className="min-h-screen bg-background">
+ <div className="min-h-[100dvh] bg-background">
  {/* Header */}
  <div className="border-b border-border/50 bg-card/30 backdrop-blur-sm">
  <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">

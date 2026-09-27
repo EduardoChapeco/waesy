@@ -7,6 +7,8 @@ import { MobileNav } from "./mobile-nav";
 import { CartSheet } from "@/components/commerce/cart-sheet";
 import { InterestPickerModal } from "@/components/onboarding/interest-picker-modal";
 import { GeolocationPermissionSheet } from "@/components/location/geolocation-permission-sheet";
+import { PWAInstallBanner } from "@/components/commerce/pwa-install-banner";
+import { OfflineIndicator } from "./offline-indicator";
 
 export interface AppShellProps {
  children: ReactNode;
@@ -33,7 +35,8 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.startsWith("/f/") ||
     location.pathname.startsWith("/m/") ||
     location.pathname.startsWith("/assinar/") ||
-    location.pathname.startsWith("/proposta/");
+    location.pathname.startsWith("/proposta/") ||
+    location.pathname.startsWith("/entrega/");
 
   if (isStandalonePage) {
     return (
@@ -138,6 +141,10 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
     location.pathname.includes("/match-time") ||
     location.pathname.includes("/reputacao") ||
     location.pathname.includes("/reclamar") ||
+    location.pathname.includes("/admin-master") ||
+    location.pathname.includes("/veiculos") ||
+    location.pathname.includes("/vagas") ||
+    location.pathname.includes("/entrega") ||
     location.pathname.includes("/contato");
 
   const isFeedPage = location.pathname.startsWith("/feed");
@@ -188,14 +195,23 @@ export function AppShell({ children, session, brandSettings }: AppShellProps) {
       {/* Mobile Bottom Navigation com Botão Criar Flutuante & Action Sheet (Ocultado em páginas de detalhe para liberar a barra de compra/conversão) */}
       {!isDetailPage && <MobileNav session={session} userRole={session?.role} />}
 
- {/* Global Cart Slide-over */}
- <CartSheet />
+      {/* Indicador Flutuante de Conexão Offline */}
+      <OfflineIndicator />
 
- {/* Onboarding de Interesses da Comunidade */}
- <InterestPickerModal />
+      {/* Global Cart Slide-over */}
+      <CartSheet />
 
- {/* Solicitação Canônica de Localização (GPS Geolocation Sheet) */}
- <GeolocationPermissionSheet />
- </div>
- );
+      {/* Onboarding de Interesses da Comunidade */}
+      <InterestPickerModal />
+
+      {/* Solicitação Canônica de Localização (GPS Geolocation Sheet) */}
+      <GeolocationPermissionSheet />
+
+      {/* Banner Não-Intrusivo de Instalação PWA (Dispensável / Snooze 24h) */}
+      <PWAInstallBanner
+        storeName={brandSettings?.platform_name || "Waesy"}
+        storeLogoUrl={brandSettings?.favicon_url || brandSettings?.logo_url || undefined}
+      />
+    </div>
+  );
 }

@@ -406,7 +406,7 @@ export default function WorkspaceMarketingEncartesPage() {
         <TabsContent value={activeTab} className="space-y-4 m-0">
           {filteredFlyers.length === 0 ? (
             <div className="py-16 text-center border border-dashed border-border/80 rounded-2xl p-8 space-y-3 bg-muted/20">
-              <div className="size-12 rounded-full bg-red-500/10 text-red-600 flex items-center justify-center mx-auto">
+              <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
                 <Flame className="size-6" />
               </div>
               <h3 className="text-base font-bold text-foreground">

@@ -48,7 +48,7 @@ function SellerShowcasePage() {
  if (!document) return null;
 
  return (
- <main className="w-full flex flex-col gap-0 min-h-screen">
+ <main className="w-full flex flex-col gap-0 min-h-[100dvh]">
  <ExperienceRenderer nodes={tree} />
  </main>
  );

@@ -1,5 +1,3 @@
-import { getLaunchLandingSettings } from "@/services/launch.functions";
-import { EnterpriseLandingView } from "@/components/landing/enterprise-landing-view";
 import React, { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -148,7 +146,6 @@ export const Route = createFileRoute("/_store/")({
         }
       }
       const filteredCity = activeCity && activeCity !== "Global" ? activeCity : undefined;
-      const launchSettings = await getLaunchLandingSettings().catch(() => null);
 
       const [
         banners,
@@ -177,7 +174,6 @@ export const Route = createFileRoute("/_store/")({
       ]);
 
       return {
-        launchSettings: launchSettings || null,
         banners: banners || [],
         middleBanners: middleBanners || [],
         footerBanners: footerBanners || [],
@@ -193,7 +189,6 @@ export const Route = createFileRoute("/_store/")({
     } catch (err) {
       console.error("[loader:_store.index] Unhandled loader error:", err);
       return {
-        launchSettings: null,
         banners: [],
         middleBanners: [],
         footerBanners: [],
@@ -208,22 +203,11 @@ export const Route = createFileRoute("/_store/")({
       };
     }
   },
-  component: CommunityHomePage,
+  component: VitrineHome,
 });
 
-function CommunityHomePage() {
+export function VitrineHome() {
   const data = (Route.useLoaderData?.() as any) || {};
-  const routeSearch = (Route.useSearch?.() as any) || {};
-  // A vitrine é o padrão. A Landing só aparece via ?view=landing (para links legados).
-  const isMarketplace = routeSearch.view !== "landing";
-
-  // FASE 1 — Route Swap: Vitrine é a Home canônica.
-  // A Landing de captação ficou em /cadastroantecipado.
-  // Caso alguém acesse /?view=landing (ex: links antigos), mostramos a LP.
-  if (isMarketplace === false && routeSearch.view === "landing") {
-    return <EnterpriseLandingView initialSettings={data.launchSettings || null} />;
-  }
-
   return <CommunityMarketplaceView data={data} />;
 }
 
@@ -547,32 +531,6 @@ function CommunityMarketplaceView({ data }: { data: any }) {
 
   return (
     <div className="w-full space-y-3.5 sm:space-y-4 pb-14">
-      {/* ── 0. BANNER CONVITE MEMBRO FUNDADOR CIRCUITO 2027 (Padrão Silencioso Apple HIG) ── */}
-      <div className="rounded-2xl border border-border/50 bg-muted/20 hover:bg-muted/30 p-3 sm:p-4 flex items-center justify-between gap-3 transition-colors">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="size-8 sm:size-9 rounded-xl bg-card border border-border/40 text-foreground flex items-center justify-center shrink-0">
-            <Sparkle className="size-4" weight="bold" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-foreground tracking-tight">Circuito Internacional Waesy 2027</span>
-              <Badge variant="outline" className="text-[9px] font-mono text-muted-foreground border-border/60 bg-transparent px-1.5 py-0">
-                Fundadores
-              </Badge>
-            </div>
-            <p className="text-[11px] text-muted-foreground truncate">
-              Chapecó & São Miguel do Oeste • Vagas de Membro Fundador e benefícios exclusivos.
-            </p>
-          </div>
-        </div>
-        <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold h-8 sm:h-9 px-3 shrink-0 border-border/70 hover:bg-card">
-          <Link to="/home">
-            <span>Conhecer</span>
-            <ArrowRight className="size-3.5 ml-1" />
-          </Link>
-        </Button>
-      </div>
-
       {/* ── 1. CARDS COM IMAGENS DO TOPO (Categorias Master com Separação Rigorosa de Breakpoint) ── */}
       <section aria-label="Categorias Principais">
         <HorizontalRail title="Categorias Principais" hideHeader={true}>

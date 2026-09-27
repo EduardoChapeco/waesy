@@ -1406,7 +1406,7 @@ function WorkspaceHotelsPage() {
  <div className="space-y-1.5">
  <Label className="font-semibold text-foreground">Regime Alimentar Principal</Label>
  <Select
- value={formData.regime_options[0] || "All Inclusive"}
+ value={formData.regime_options[0] || ""}
  onValueChange={(val) => setFormData({ ...formData, regime_options: [val] })}
  >
  <SelectTrigger className="h-10 rounded-xl bg-background">

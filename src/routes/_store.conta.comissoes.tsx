@@ -152,7 +152,7 @@ function AffiliateCommissionsPage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
         <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
         <h2 className="text-xl font-bold mb-2">Acesso Restrito</h2>
         <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -168,7 +168,7 @@ function AffiliateCommissionsPage() {
   // Se o usuário ainda não possui cadastro de afiliado
   if (!profile && !isProfileLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground py-6 sm:py-10 px-0 sm:px-4 md:px-0 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
+      <div className="min-h-[100dvh] bg-background text-foreground py-6 sm:py-10 px-0 sm:px-4 md:px-0 max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
         <div className="flex items-center gap-2">
           <NativeBackButton fallbackHref="/conta" />
         </div>
@@ -287,7 +287,7 @@ function AffiliateCommissionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-6 sm:py-8 px-0 sm:px-4 md:px-0 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
+    <div className="min-h-[100dvh] bg-background text-foreground py-6 sm:py-8 px-0 sm:px-4 md:px-0 max-w-4xl mx-auto space-y-6 animate-in fade-in duration-200">
             {/* ── NativeMobileHeader Canônico ── */}
       <NativeMobileHeader
         fallbackHref="/conta"

@@ -17,6 +17,7 @@ import {
   PawPrint,
   Barbell,
   Storefront,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import { Tag } from "lucide-react";
 import {
@@ -74,8 +75,26 @@ export const Route = createFileRoute("/_store/agendar/")({
       return { banners: [], hotpages: [] };
     }
   },
+  errorComponent: BookingIndexErrorComponent,
   component: BookingIndexPage,
 });
+
+function BookingIndexErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <WarningCircle size={32} />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar agendamentos</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar os serviços e agendamentos no momento."}
+      </p>
+      <Button onClick={reset} className="rounded-xl font-bold">
+        Tentar Novamente
+      </Button>
+    </div>
+  );
+}
 
 const BOOKING_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Tudo", icon: Tag },
@@ -747,7 +766,7 @@ function BookingIndexPage() {
                           placeholder="Seu nome completo"
                           value={guestName}
                           onChange={(e) => setGuestName(e.target.value)}
-                          className="pl-9 h-10 rounded-xl text-xs"
+                          className="pl-9 h-10 rounded-xl text-base sm:text-xs"
                           required
                         />
                       </div>
@@ -757,7 +776,7 @@ function BookingIndexPage() {
                           placeholder="WhatsApp (ex: 49 99999-9999)"
                           value={guestPhone}
                           onChange={(e) => setGuestPhone(e.target.value)}
-                          className="pl-9 h-10 rounded-xl text-xs"
+                          className="pl-9 h-10 rounded-xl text-base sm:text-xs"
                           required
                         />
                       </div>
@@ -765,7 +784,7 @@ function BookingIndexPage() {
                         placeholder="Observações ou preferências para o profissional (opcional)"
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="rounded-xl text-xs min-h-16 resize-none"
+                        className="rounded-xl text-base sm:text-xs min-h-16 resize-none"
                       />
                     </div>
                   </div>

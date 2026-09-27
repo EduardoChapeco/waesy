@@ -117,7 +117,7 @@ export const getAdsByStoreId = createServerFn({ method: "GET" })
     return [];
   });
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function getSimilarClassifiedsFallback(
   supabase: any,
@@ -359,7 +359,7 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
  .validator(
  z.object({
  id: z.string().uuid(),
- status: z.enum(["active", "paused", "reserved", "completed", "archived"]),
+ status: z.enum(["active", "paused", "reserved", "completed", "archived", "expired"]),
  reason: z.string().optional(),
  }),
  )
@@ -390,8 +390,11 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
  const { data: updated, error: updateErr } = await supabase
  .from("classifieds")
  .update({
- status,
- updated_at: new Date().toISOString(),
+       status,
+      updated_at: new Date().toISOString(),
+      ...(status === "active"
+        ? { expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() }
+        : {}),
  })
  .eq("id", id)
  .select()
@@ -548,6 +551,23 @@ export const upsertClassified = createServerFn({ method: "POST" })
  const { id, ...rest } = input;
  const isUpdating = !!id;
 
+    // FASE 1: Limite Soberano de Ofertas Ativas por Usuário (Prevenção de Spam & Lifecycle)
+    if (!isUpdating && !rest.store_id) {
+      const { count, error: countErr } = await supabase
+        .from("classifieds")
+        .select("id", { count: "exact", head: true })
+        .eq("author_profile_id", identity.id)
+        .eq("status", "active");
+
+      const MAX_ACTIVE_FREE_OFFERS = 20;
+      if (!countErr && count !== null && count >= MAX_ACTIVE_FREE_OFFERS) {
+        throw new Error(
+          `Você atingiu o limite de ${MAX_ACTIVE_FREE_OFFERS} anúncios ativos simultâneos. Pause ou exclua anúncios antigos para publicar novos.`
+        );
+      }
+    }
+
+
  // Sanitiza e mapeia os campos para colunas existentes estritamente na tabela classifieds
  const payload: Record<string, any> = {
  title: rest.title,
@@ -623,6 +643,18 @@ export const upsertClassified = createServerFn({ method: "POST" })
  delivery_type: rest.delivery_type || rest.delivery_mode || rest.attributes?.delivery_type || "pickup",
  author_profile_id: identity.id,
  store_id: rest.store_id || null,
+ // FASE 1: Lifecycle & Validade Obrigatória (30, 60 ou 90 dias)
+ expires_at: rest.expires_at || new Date(
+ Date.now() + ([30, 60, 90].includes(Number(rest.validity_days || rest.attributes?.validity_days))
+ ? Number(rest.validity_days || rest.attributes?.validity_days)
+ : 30) * 24 * 60 * 60 * 1000
+ ).toISOString(),
+ stock_limit: rest.stock_limit !== undefined && rest.stock_limit !== null
+ ? Number(rest.stock_limit)
+ : (rest.attributes?.stock_limit ? Number(rest.attributes.stock_limit) : null),
+ offer_limit: rest.offer_limit !== undefined && rest.offer_limit !== null
+ ? Number(rest.offer_limit)
+ : (rest.attributes?.offer_limit ? Number(rest.attributes.offer_limit) : null),
  };
 
   let savedRecord: any = null;
@@ -1225,17 +1257,46 @@ export const trackClassifiedView = createServerFn({ method: "POST" })
   .handler(async ({ data: { adId } }) => {
     const supabase = getServerClient();
     try {
-      // Tenta via RPC atômico primeiro
-      const { error: rpcErr } = await supabase.rpc("increment_classified_view", { ad_id: adId });
-      if (rpcErr) {
-        // Fallback defensivo com update direto
-        const { data: current } = await supabase.from("classifieds").select("views_count").eq("id", adId).single();
-        if (current) {
-          await supabase
-            .from("classifieds")
-            .update({ views_count: (current.views_count || 0) + 1 })
-            .eq("id", adId);
+      const todayStr = new Date().toISOString().split("T")[0];
+
+      // Busca dados atuais para atualizar série temporal real em attributes
+      const { data: current } = await supabase
+        .from("classifieds")
+        .select("views_count, attributes, store_id")
+        .eq("id", adId)
+        .single();
+
+      if (current) {
+        const attrs = (current.attributes as Record<string, any>) || {};
+        const dailyViews = (attrs.daily_views as Record<string, number>) || {};
+        dailyViews[todayStr] = (dailyViews[todayStr] || 0) + 1;
+
+        // Mantém janela de 14 dias para controle de tamanho
+        const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+        const prunedViews: Record<string, number> = {};
+        for (const [k, v] of Object.entries(dailyViews)) {
+          if (k >= cutoff) prunedViews[k] = v;
         }
+        attrs.daily_views = prunedViews;
+
+        await supabase
+          .from("classifieds")
+          .update({
+            views_count: (current.views_count || 0) + 1,
+            attributes: attrs,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", adId);
+
+        // Telemetria imutável em ad_telemetry_events
+        supabase
+          .from("ad_telemetry_events")
+          .insert({
+            article_id: adId,
+            event_type: "view",
+            store_id: current.store_id || null,
+          })
+          .catch(() => null);
       }
       return { success: true };
     } catch (err) {
@@ -1253,11 +1314,11 @@ export const trackClassifiedWhatsAppClick = createServerFn({ method: "POST" })
       const { error: rpcErr } = await supabase.rpc("increment_classified_click", { ad_id: adId });
       if (rpcErr) {
         // Fallback defensivo com update direto
-        const { data: current } = await supabase.from("classifieds").select("clicks_count").eq("id", adId).single();
+        const { data: current } = await supabase.from("classifieds").select("clicks_count, whatsapp_clicks_count").eq("id", adId).single();
         if (current) {
           await supabase
             .from("classifieds")
-            .update({ clicks_count: (current.clicks_count || 0) + 1 })
+            .update({ clicks_count: (current.clicks_count || 0) + 1, whatsapp_clicks_count: ((current as any).whatsapp_clicks_count || 0) + 1 })
             .eq("id", adId);
         }
       }
@@ -1570,7 +1631,7 @@ export const confirmBoostPaymentAdmin = createServerFn({ method: "POST" })
     // Busca o boost payment
     const { data: bp, error: bpErr } = await supabase
       .from("classified_boost_payments")
-      .select("id, classified_id, plan_days, plan_name, status")
+      .select("id, classified_id, plan_days, plan_name, status, amount_cents, provider")
       .eq("id", boostPaymentId)
       .single();
 
@@ -1609,6 +1670,35 @@ export const confirmBoostPaymentAdmin = createServerFn({ method: "POST" })
     if (boostErr) {
       console.error("[boost] activate classified error:", boostErr);
       throw new Error("Pagamento confirmado mas erro ao ativar o destaque. Contate o suporte.");
+    }
+
+    // Registra Campanha na Ad-Network e faz o Split no ad_ledger (V109 Split Engine)
+    try {
+      const { data: classifiedInfo } = await supabase
+        .from("classifieds")
+        .select("title, store_id")
+        .eq("id", bp.classified_id)
+        .maybeSingle();
+
+      const { recordAdCampaignAndLedgerSplit } = await import("./ads.functions");
+      await recordAdCampaignAndLedgerSplit({
+        classifiedId: bp.classified_id,
+        storeId: classifiedInfo?.store_id || null,
+        title: `Destaque: ${classifiedInfo?.title || bp.plan_name}`,
+        totalBudgetCents: bp.amount_cents || 0,
+        hasOwnAdAccount: false,
+        destinationPlatform: "meta_ads",
+        startsAt: now,
+        endsAt: boostedUntil,
+        description: `Impulsionamento classificado (${bp.plan_name})`,
+        metadata: {
+          boost_payment_id: bp.id,
+          plan_days: bp.plan_days,
+          provider: bp.provider,
+        },
+      });
+    } catch (ledgerErr) {
+      console.error("[boost] Erro ao gravar split no ad_ledger:", ledgerErr);
     }
 
     return {
@@ -2311,3 +2401,18 @@ export const linkClassifiedToStore = createServerFn({ method: "POST" })
       isStoreOfficial: Boolean(data.storeId),
     };
   });
+
+
+// ---------------------------------------------------------------------------
+// FASE 1: Cron / Server Action de Expiração Automática de Anúncios
+// ---------------------------------------------------------------------------
+export const checkAndExpireClassifieds = createServerFn({ method: "POST" })
+ .handler(async () => {
+ const supabase = getServerClient();
+ const { data, error } = await supabase.rpc("expire_classifieds_cron");
+ if (error) {
+ console.error("[classifieds] Erro ao expirar anúncios:", error);
+ return { success: false, expiredCount: 0 };
+ }
+ return { success: true, expiredCount: Number(data) || 0 };
+ });

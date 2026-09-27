@@ -2,7 +2,7 @@ import { useIsDesktop } from "@/hooks/use-mobile";
 import { BookingDetailMobile } from "@/components/booking/booking-detail-mobile";
 import { BookingDetailDesktop } from "@/components/booking/booking-detail-desktop";
 import { BookingDrawerSheet } from "@/components/booking/booking-drawer-sheet";
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatMoney } from "@/lib/money";
@@ -78,6 +78,7 @@ export const Route = createFileRoute("/_store/agendar/$id")({
       return null as any;
     }
   },
+  errorComponent: ServiceDetailErrorComponent,
   component: ServiceDetailPage,
 });
 
@@ -90,6 +91,28 @@ const CATEGORY_LABELS: Record<string, string> = {
   pet_shop: "Pet Shop & Banho",
   personal_fitness: "Personal & Aulas",
 };
+
+function ServiceDetailErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <WarningCircle size={32} />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Não foi possível carregar o serviço</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Ocorreu uma instabilidade momentânea ao carregar os dados deste serviço."}
+      </p>
+      <div className="flex items-center justify-center gap-3">
+        <Button onClick={reset} className="rounded-xl font-bold">
+          Tentar Novamente
+        </Button>
+        <Button asChild variant="outline" className="rounded-xl font-bold">
+          <Link to="/agendar">Voltar para Serviços</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function ServiceDetailPage() {
   const service = Route.useLoaderData();
@@ -107,7 +130,7 @@ function ServiceDetailPage() {
   // 1. Horários disponíveis para a data selecionada
   const { data: slotsResult, isLoading: isLoadingSlots } = useQuery({
     queryKey: ["service-slots", service?.id, selectedDate],
-    queryFn: () => getAvailableSlots({ data: { service_id: service!.id, date: selectedDate } }),
+    queryFn: () => getAvailableSlots({ data: { service_id: service?.id || "", date: selectedDate } }),
     enabled: Boolean(isBookingOpen && service?.id && selectedDate),
   });
 
@@ -116,7 +139,7 @@ function ServiceDetailPage() {
   // 2. Passes de sessões do usuário
   const { data: activePasses } = useQuery({
     queryKey: ["my-service-passes", service?.id],
-    queryFn: () => listMyPassesForService({ data: { service_id: service!.id } }),
+    queryFn: () => listMyPassesForService({ data: { service_id: service?.id || "" } }),
     enabled: Boolean(isBookingOpen && service?.id),
   });
 

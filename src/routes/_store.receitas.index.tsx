@@ -140,7 +140,7 @@ function PublicRecipesPage() {
             placeholder="Buscar receita ou ingrediente..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 sm:h-10 text-xs rounded-xl bg-card border-border/60"
+            className="pl-9 h-10 text-base sm:text-xs rounded-xl bg-card border-border/60"
           />
         </div>
       </div>

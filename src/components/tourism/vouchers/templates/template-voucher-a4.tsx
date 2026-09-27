@@ -71,40 +71,40 @@ export function TemplateVoucherA4({
  <div className="grid grid-cols-4 gap-4 text-xs">
  <div>
  <span className="text-[10px] text-slate-500">COMPANHIA</span>
- <p className="font-bold text-sm">{voucher.flight_data?.airline || 'LATAM Airlines'}</p>
+ <p className="font-bold text-sm">{voucher.flight_data?.airline || 'Companhia Aérea'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">Nº VOO</span>
- <p className="font-mono font-bold text-sm">{voucher.flight_data?.flightNumber || 'LA3241'}</p>
+ <p className="font-mono font-bold text-sm">{voucher.flight_data?.flightNumber || '-'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">ORIGEM</span>
- <p className="font-mono font-bold text-sm">{voucher.flight_data?.origin || 'GRU (São Paulo)'}</p>
+ <p className="font-mono font-bold text-sm">{voucher.flight_data?.origin || '-'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">DESTINO</span>
- <p className="font-mono font-bold text-sm">{voucher.flight_data?.destination || 'REC (Recife)'}</p>
+ <p className="font-mono font-bold text-sm">{voucher.flight_data?.destination || '-'}</p>
  </div>
  </div>
 
  <div className="grid grid-cols-4 gap-4 text-xs border-t border-sky-200/60 pt-4">
  <div>
  <span className="text-[10px] text-slate-500">EMBARQUE / SAÍDA</span>
- <p className="font-mono font-bold text-sm">{voucher.flight_data?.departureTime || '08:30'}</p>
+ <p className="font-mono font-bold text-sm">{voucher.flight_data?.departureTime || '-'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">PORTÃO / TERMINAL</span>
  <p className="font-mono font-bold text-sm">
- {voucher.flight_data?.gate || 'B12'} / T{voucher.flight_data?.terminal || '2'}
+ {voucher.flight_data?.gate || '-'} / T{voucher.flight_data?.terminal || '-'}
  </p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">ASSENTO</span>
- <p className="font-mono font-bold text-sm text-sky-700">{voucher.flight_data?.seat || '12A'}</p>
+ <p className="font-mono font-bold text-sm text-sky-700">{voucher.flight_data?.seat || '-'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">FRANQUIA BAGAGEM</span>
- <p className="font-medium text-xs">{voucher.flight_data?.baggage || '1x 10kg + Mochila'}</p>
+ <p className="font-medium text-xs">{voucher.flight_data?.baggage || 'Sob Consulta'}</p>
  </div>
  </div>
  </div>
@@ -122,30 +122,30 @@ export function TemplateVoucherA4({
  <div className="grid grid-cols-3 gap-4 text-xs">
  <div>
  <span className="text-[10px] text-slate-500">HOTEL / RESORT</span>
- <p className="font-bold text-sm">{voucher.hotel_data?.hotelName || 'Grand Palladium Imbassaí'}</p>
+ <p className="font-bold text-sm">{voucher.hotel_data?.hotelName || 'Hospedagem Confirmada'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">CATEGORIA QUARTO</span>
- <p className="font-medium text-xs">{voucher.hotel_data?.roomType || 'Suíte Master Casal'}</p>
+ <p className="font-medium text-xs">{voucher.hotel_data?.roomType || 'Sob Consulta'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">REGIME DE ALIMENTAÇÃO</span>
- <p className="font-bold text-xs text-emerald-700">{voucher.hotel_data?.boardBasis || 'All Inclusive'}</p>
+ <p className="font-bold text-xs text-emerald-700">{voucher.hotel_data?.boardBasis || 'Sob Consulta'}</p>
  </div>
  </div>
 
  <div className="grid grid-cols-3 gap-4 text-xs border-t border-emerald-200/60 pt-4">
  <div>
  <span className="text-[10px] text-slate-500">CHECK-IN</span>
- <p className="font-mono font-bold text-sm">{voucher.hotel_data?.checkInDate || '10/11/2026 às 14:00'}</p>
+ <p className="font-mono font-bold text-sm">{voucher.hotel_data?.checkInDate || '-'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">CHECK-OUT</span>
- <p className="font-mono font-bold text-sm">{voucher.hotel_data?.checkOutDate || '15/11/2026 até 12:00'}</p>
+ <p className="font-mono font-bold text-sm">{voucher.hotel_data?.checkOutDate || '-'}</p>
  </div>
  <div>
  <span className="text-[10px] text-slate-500">CÓDIGO DE RESERVA HOTEL</span>
- <p className="font-mono font-bold text-sm text-slate-900">{voucher.hotel_data?.confirmationCode || 'CONF-88992'}</p>
+ <p className="font-mono font-bold text-sm text-slate-900">{voucher.hotel_data?.confirmationCode || (voucher.code ? voucher.code.toUpperCase() : '-')}</p>
  </div>
  </div>
  </div>

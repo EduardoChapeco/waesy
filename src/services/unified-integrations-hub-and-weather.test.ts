@@ -207,7 +207,7 @@ describe("Unified Integrations Hub, AI Orchestration & Real-time Weather Tests",
     it("deve consultar CNPJ e executar fallback para ReceitaWS se BrasilAPI der erro", async () => {
       global.fetch = vi.fn().mockImplementation(async (url: string) => {
         if (url.includes("brasilapi.com.br")) {
-          return { ok: false, status: 504 } as Response; // Gateway Timeout na BrasilAPI
+          return { ok: false, status: 404 } as Response; // Não encontrado na BrasilAPI -> Fallback imediato
         }
         if (url.includes("receitaws.com.br")) {
           return {

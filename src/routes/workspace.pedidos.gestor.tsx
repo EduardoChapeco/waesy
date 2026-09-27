@@ -358,7 +358,7 @@ function KDSPage() {
  toolDescription="O painel KDS (Kitchen Display System) em tempo real, com divisão de praças e tempos de cocção, é projetado especificamente para restaurantes e delivery de alimentação."
  store={store}
  >
- <div className="fixed inset-0 z-50 bg-background flex flex-col h-screen overflow-hidden text-foreground">
+ <div className="fixed inset-0 z-50 bg-background flex flex-col h-[100dvh] overflow-hidden text-foreground">
  {/* Estilos de Impressão (Bobina 80mm) */}
  <style>{`
  @media print {

@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, isRedirect } from "@tanstack/react-router";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target, Lock, Sparkles } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target, Lock, Sparkles, Zap } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/admin-master")({
     }
   },
   errorComponent: ({ error, reset }: { error: any; reset: () => void }) => (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
       <div className="max-w-md w-full p-6 rounded-2xl bg-card border border-border space-y-4 shadow-sm">
         <div className="size-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
           <ShieldAlert className="size-6" />
@@ -92,6 +92,7 @@ const NAV_SECTIONS = [
       { to: "/admin-master/usuarios", label: "Usuários", icon: Users },
       { to: "/admin-master/logistica", label: "Logística", icon: Truck },
       { to: "/admin-master/entregadores/auditoria", label: "Auditoria Entregadores", icon: ShieldCheck },
+      { to: "/admin-master/ads-network", label: "Ad-Network Arbitrage", icon: Zap },
       { to: "/admin-master/boost-payments", label: "Boost Classificados", icon: Flame },
       { to: "/admin-master/mining", label: "Mineração", icon: Cpu },
       { to: "/admin-master/simlabs", label: "SimLabs", icon: FlaskConical },
@@ -118,7 +119,7 @@ function AdminMasterLayout() {
  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
  return (
- <div className="h-screen w-screen overflow-hidden bg-background text-foreground flex">
+ <div className="h-[100dvh] w-screen overflow-hidden bg-background text-foreground flex">
  {/* Desktop Fixed Sidebar */}
  <aside className="w-64 border-r border-border/50 bg-card/40 backdrop-blur-sm flex-col hidden md:flex shrink-0 h-full">
  {/* Header */}

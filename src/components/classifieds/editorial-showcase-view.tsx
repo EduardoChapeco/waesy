@@ -641,7 +641,7 @@ export function EditorialShowcaseView({
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-28 font-sans select-none">
+    <div className="min-h-[100dvh] bg-background text-foreground pb-28 font-sans select-none">
       {/* ── Top Bar Fixo de Navegação (Apenas Mobile) ── */}
       <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40 px-3 py-2.5 flex items-center justify-between">
         <button

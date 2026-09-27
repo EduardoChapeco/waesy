@@ -355,7 +355,7 @@ export function AdminShell({
  });
 
  return (
- <div data-shell="admin" className="min-h-screen bg-background text-foreground">
+ <div data-shell="admin" className="min-h-[100dvh] bg-background text-foreground">
  {/* Desktop sidebar - Vertical Island Pill Layout */}
  <aside
  onMouseEnter={() => setCollapsed(false)}
@@ -539,7 +539,7 @@ export function AdminShell({
  {/* Main column */}
  <div
  className={cn(
- "flex min-h-screen flex-col transition-all duration-300",
+ "flex min-h-[100dvh] flex-col transition-all duration-300",
  collapsed ? "md:pl-[84px]" : "md:pl-[280px]",
  )}
  >

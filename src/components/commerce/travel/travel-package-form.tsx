@@ -171,7 +171,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  resort: {
  ...resort,
  name: hotel.name,
- meal_plan: hotel.regime_options?.[0] || resort.meal_plan || "All Inclusive",
+ meal_plan: hotel.regime_options?.[0] || resort.meal_plan || "",
  cover_image_url: hotel.cover_photo_url || resort.cover_image_url,
  badges: hotel.badges && hotel.badges.length > 0 ? hotel.badges : resort.badges,
  bio_bullets: hotel.bio_bullets && hotel.bio_bullets.length > 0 ? hotel.bio_bullets : resort.bio_bullets,
@@ -788,7 +788,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  <div className="space-y-1.5">
  <Label className="text-[11px] font-semibold text-muted-foreground">Regime de Alimentação</Label>
  <Select
- value={resort.meal_plan || "All Inclusive"}
+ value={resort.meal_plan || ""}
  onValueChange={(val) => updateResort("meal_plan", val)}
  >
  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">

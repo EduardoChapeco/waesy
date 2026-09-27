@@ -166,7 +166,7 @@ function WorkspaceAiSettingsPage() {
  };
 
  const configuredMap = new Map<string, TenantAiProviderItem>(
- providers.map((p) => [p.provider, p])
+ (providers || []).map((p) => [p.provider, p])
  );
 
  return (
@@ -363,7 +363,7 @@ function WorkspaceAiSettingsPage() {
  value={modelName}
  onChange={(e) => setModelName(e.target.value)}
  placeholder="Ex: gpt-4o ou claude-3-5-sonnet"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-base sm:text-xs rounded-xl font-mono"
  required
  />
  </div>
@@ -375,7 +375,7 @@ function WorkspaceAiSettingsPage() {
  value={apiKey}
  onChange={(e) => setApiKey(e.target.value)}
  placeholder="sk-proj-..."
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-base sm:text-xs rounded-xl font-mono"
  required
  autoFocus
  />
@@ -393,7 +393,7 @@ function WorkspaceAiSettingsPage() {
  value={tokenLimitStr}
  onChange={(e) => setTokenLimitStr(e.target.value)}
  placeholder="Ex: 500000"
- className="h-10 text-xs rounded-xl font-mono"
+ className="h-10 text-base sm:text-xs rounded-xl font-mono"
  />
  </div>
 

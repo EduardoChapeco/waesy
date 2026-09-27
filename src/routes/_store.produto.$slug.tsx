@@ -324,8 +324,7 @@ function ProductPage() {
     const storePhone =
       product.store?.phone ||
       product.store?.whatsapp ||
-      (product as any)?.seller?.phone ||
-      "49991448651";
+      (product as any)?.seller?.phone || "";
 
     const { setIsCartOpen } = useCartContext();
 
@@ -345,7 +344,11 @@ function ProductPage() {
           toast.error(err?.message || "Erro ao adicionar pacote ao carrinho.");
         }
       } else {
-        const cleanPhone = storePhone ? storePhone.replace(/\D/g, "") : "49991448651";
+        const cleanPhone = storePhone ? storePhone.replace(/\D/g, "") : "";
+        if (!cleanPhone) {
+          toast.error("Contato de atendimento da loja não informado.");
+          return;
+        }
         const depInfo = selectedDeparture && selectedDeparture.departure_date
           ? ` para a saída de ${new Date(selectedDeparture.departure_date + "T00:00:00").toLocaleDateString("pt-BR")}`
           : "";
@@ -398,7 +401,7 @@ function ProductPage() {
       store?.phone ||
       store?.whatsapp ||
       (product as any)?.seller?.phone ||
-      "49991448651";
+      "";
 
     return (
       <ConvenienceShowcaseView
@@ -407,7 +410,7 @@ function ProductPage() {
           description: product.description || undefined,
           priceCents: product.priceCents || 0,
           images: mediaUrls.length > 0 ? mediaUrls : currentThumbnailUrl ? [currentThumbnailUrl] : [],
-          locationName: store?.city || "São Miguel do Oeste e Região",
+          locationName: store?.city || "",
           whatsapp: storePhone,
           storeName: store?.name || "Loja Oficial",
           storeSlug: store?.slug,
@@ -418,12 +421,12 @@ function ProductPage() {
           department: (product as any)?.category?.name || "Mercado & Varejo",
           brand: product.brand || undefined,
           barcodeEan: product.ean || foodSpecs.barcode_ean,
-          stockQty: 10,
+          stockQty: (product as any)?.inventory?.quantity ?? (product as any)?.stock_quantity ?? (product as any)?.stock ?? 0,
           groceryFreshPricing: foodSpecs.is_fresh_pricing_active ? {
             supports_fresh_pricing: true,
             default_pricing_mode: foodSpecs.fresh_pricing_mode || "unit",
-            avg_piece_weight_grams: foodSpecs.avg_piece_weight_grams || 500,
-            price_per_kg_cents: foodSpecs.price_per_kg_cents || ((product.priceCents || 0) > 0 ? (product.priceCents || 0) * 2 : 990),
+            avg_piece_weight_grams: Number(foodSpecs.avg_piece_weight_grams) || 0,
+            price_per_kg_cents: foodSpecs.price_per_kg_cents || ((product.priceCents || 0) > 0 ? (product.priceCents || 0) * 2 : 0),
             price_per_unit_cents: product.priceCents || 0,
           } : undefined,
           groceryRipenessConfig: foodSpecs.ripeness_enabled ? {

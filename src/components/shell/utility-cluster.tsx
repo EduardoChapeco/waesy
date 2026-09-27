@@ -23,6 +23,7 @@ import {
  MessageSquare,
  Ticket,
  Calendar,
+ Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,8 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "@/services/auth.functions";
 import { setTenantContext } from "@/services/identity.functions";
 import { useCartContext } from "@/lib/cart-context";
+import { useQuery } from "@tanstack/react-query";
+import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
 import { toast } from "sonner";
 
 export interface UtilityClusterProps {
@@ -96,20 +99,57 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  });
  };
 
+ const { data: creatorProfiles = [] } = useQuery({
+   queryKey: ["my-creator-profiles-list"],
+   queryFn: () => getMyCreatorProfilesList(),
+   enabled: Boolean(session),
+   staleTime: 60_000,
+ });
+
+ const activeContext = typeof window !== "undefined"
+   ? (document.cookie.match(/waesy_active_context=([^;]+)/)?.[1] as any) || "civil"
+   : "civil";
+ const activeCreatorId = typeof window !== "undefined"
+   ? document.cookie.match(/waesy_active_creator=([^;]+)/)?.[1] || null
+   : null;
+
+ const handleSwitchCreator = (persona: any) => {
+   const handleOrId = persona.id || persona.handle;
+   if (typeof window !== "undefined") {
+     window.document.cookie = "waesy_active_context=creator; path=/; max-age=31536000; SameSite=Lax";
+     window.document.cookie = `waesy_active_creator=${encodeURIComponent(handleOrId)}; path=/; max-age=31536000; SameSite=Lax`;
+     window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+   }
+   toast.success(`Contexto ativo: @${persona.handle}`);
+   router.navigate({ to: "/conta/criadores" });
+ };
+
+ const handleSwitchCivil = () => {
+   if (typeof window !== "undefined") {
+     window.document.cookie = "waesy_active_context=civil; path=/; max-age=31536000; SameSite=Lax";
+     window.document.cookie = "waesy_active_tenant=; path=/; max-age=0; SameSite=Lax";
+     window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+   }
+   toast.success(`Contexto ativo: ${userName} (Conta Civil)`);
+   router.navigate({ to: "/conta" });
+ };
+
  const handleSwitchStore = async (storeId: string) => {
- if (isSwitching) return;
- setIsSwitching(true);
- try {
- if (typeof window !== "undefined") {
- window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
- }
- await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
- toast.success("Acessando painel da empresa...");
- window.location.href = "/workspace";
- } catch {
- toast.error("Erro ao alternar loja.");
- setIsSwitching(false);
- }
+   if (isSwitching) return;
+   setIsSwitching(true);
+   try {
+     if (typeof window !== "undefined") {
+       window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
+       window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
+       window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
+     }
+     await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
+     toast.success("Acessando painel da empresa...");
+     window.location.href = "/workspace";
+   } catch {
+     toast.error("Erro ao alternar loja.");
+     setIsSwitching(false);
+   }
  };
 
  const handleLogout = async () => {
@@ -213,6 +253,37 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  </div>
  </DropdownMenuLabel>
 
+ {/* Pill de Contexto Ativo (Civil, Criador ou Empresa) */}
+ <div className="px-2 pb-1.5">
+ <div className="p-1.5 rounded-xl bg-muted/60 border border-border/60 flex items-center justify-between text-xs">
+ <div className="flex items-center gap-1.5 px-1 min-w-0">
+ {activeContext === "creator" ? (
+ <Sparkles className="size-3.5 text-amber-500 shrink-0" />
+ ) : activeContext === "store" ? (
+ <Store className="size-3.5 text-primary shrink-0" />
+ ) : (
+ <User className="size-3.5 text-muted-foreground shrink-0" />
+ )}
+ <span className="text-[11px] font-semibold truncate text-foreground">
+ {activeContext === "creator"
+ ? `Criador: @${activeCreatorId || "ativo"}`
+ : activeContext === "store"
+ ? "Empresa Ativa"
+ : "Conta Civil / Pessoal"}
+ </span>
+ </div>
+ {activeContext !== "civil" && (
+ <button
+ type="button"
+ onClick={handleSwitchCivil}
+ className="text-[10px] font-bold text-primary hover:underline px-1.5 py-0.5 rounded cursor-pointer shrink-0"
+ >
+ Mudar p/ Civil
+ </button>
+ )}
+ </div>
+ </div>
+
  <DropdownMenuSeparator className="my-1" />
 
  {/* Ações da Conta Pessoal (1 Palavra / Rótulo Direto) */}
@@ -303,6 +374,61 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  </DropdownMenuItem>
  )}
  </div>
+
+ {/* ── Gestão de Personas de Criador & Vitrines ── */}
+ {creatorProfiles.length > 0 && (
+ <div className="py-1 border-t border-border/40">
+ <div className="px-3 py-1.5 flex items-center justify-between">
+ <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+ Vitrines & Criadores ({creatorProfiles.length})
+ </span>
+ <Link
+ to="/conta/criadores"
+ className="text-[10px] font-bold text-primary hover:underline flex items-center gap-0.5"
+ >
+ <span>Gerenciar</span>
+ <ArrowUpRight className="size-2.5" />
+ </Link>
+ </div>
+
+ <div className="space-y-0.5 px-1">
+ {creatorProfiles.slice(0, 3).map((cp: any) => {
+ const isCurrent = activeCreatorId === cp.id || activeCreatorId === cp.handle;
+ return (
+ <button
+ key={cp.id || cp.handle}
+ type="button"
+ onClick={() => handleSwitchCreator(cp)}
+ className={cn(
+ "w-full px-2.5 py-1.5 rounded-xl text-left flex items-center justify-between transition-colors cursor-pointer",
+ isCurrent
+ ? "bg-amber-500/10 text-amber-600 font-bold"
+ : "hover:bg-muted/60 text-foreground/90 font-medium"
+ )}
+ >
+ <div className="flex items-center gap-2 min-w-0">
+ <div className="size-5 rounded-md bg-amber-500/10 text-amber-600 flex items-center justify-center overflow-hidden shrink-0">
+ {cp.avatar_url ? (
+ <img src={cp.avatar_url} alt={cp.handle} className="size-full object-cover" />
+ ) : (
+ <Sparkles className="size-3" />
+ )}
+ </div>
+ <p className="text-xs truncate leading-tight">@{cp.handle}</p>
+ </div>
+ {isCurrent ? (
+ <span className="text-[9px] font-bold text-amber-600 px-1.5 py-0.5 rounded-md bg-amber-500/20 shrink-0">
+ Ativo
+ </span>
+ ) : (
+ <ArrowUpRight className="size-3 text-muted-foreground/70 shrink-0" />
+ )}
+ </button>
+ );
+ })}
+ </div>
+ </div>
+ )}
 
  {/* ── Gestão de Negócios & Espaços (Multiloja Transparente) ── */}
  {memberships.length > 0 && (

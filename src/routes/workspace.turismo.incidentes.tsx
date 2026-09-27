@@ -108,7 +108,7 @@ function EventIcon({ type }: { type: TourismEventType }) {
 
 function priorityBadgeClass(p: TourismIncidentPriority) {
   switch (p) {
-    case 'urgent': return 'bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400';
+    case 'urgent': return 'bg-destructive/10 text-destructive border-destructive/20';
     case 'high':   return 'bg-amber-500/10 text-amber-700 border-amber-500/30 dark:text-amber-400';
     case 'normal': return 'bg-blue-500/10 text-blue-700 border-blue-500/30 dark:text-blue-400';
     default:       return 'bg-muted text-muted-foreground border-border';

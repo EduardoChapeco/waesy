@@ -305,6 +305,34 @@ function AfiliadosPage() {
     }
   };
 
+  const handleFastAffiliateActivation = async () => {
+    const cleanHandle = (onboardingHandle || defaultHandle).trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    if (!cleanHandle || cleanHandle.length < 3) {
+      toast.error("O identificador de indicação deve ter no mínimo 3 caracteres.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await registerAffiliate({
+        data: {
+          handle: cleanHandle,
+          displayName: loaderProfile?.full_name || cleanHandle,
+          category: "geral",
+          socialChannel: "other",
+        },
+      });
+
+      toast.success("Conta de Afiliado ativada! Seus links de indicação e comissões via PIX já estão disponíveis.");
+      await queryClient.invalidateQueries({ queryKey: ["my-affiliate-overview"] });
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao ativar conta de afiliado.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleOnboardingSubmit = async () => {
     if (!onboardingHandle.trim() || onboardingHandle.length < 3) {
       toast.error("O identificador único deve ter no mínimo 3 caracteres.");
@@ -422,7 +450,7 @@ function AfiliadosPage() {
   const connectedStoresList = partnerStores.filter((s: any) => connectedStoreIds.includes(s.id));
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-28">
+    <div className="min-h-[100dvh] bg-background text-foreground pb-28">
       {/* ─── Top Bar Nativa Apple HIG (Direta, Comercial e Silenciosa) ─── */}
       <div className="border-b border-border/40 bg-card/70 backdrop-blur-md px-2.5 sm:px-6 py-2.5 sm:py-3.5 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
@@ -478,7 +506,7 @@ function AfiliadosPage() {
                 </TabsTrigger>
                 <TabsTrigger value="showcase" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <Layers className="size-3.5" />
-                  <span>Minha Vitrine</span>
+                  <span>Vitrine (Opcional)</span>
                 </TabsTrigger>
                 <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <Store className="size-3.5" />
@@ -1525,9 +1553,49 @@ function AfiliadosPage() {
               ))}
             </div>
 
-            {/* Passo 1: Identidade da Marca */}
+            {/* Passo 1: Identidade da Marca ou Apenas Links */}
             {onboardingStep === 1 && (
               <div className="space-y-4">
+                {/* ── CARD EXPRESS: APENAS LINKS & COMISSÕES (SEM VITRINE) ── */}
+                <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Coins className="size-4 text-emerald-600" />
+                      <h3 className="text-xs font-bold text-foreground">Ativação Rápida: Apenas Links & Comissões</h3>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Não quer uma vitrine pública de criador? Ative seu link de parceiro agora para divulgar lojas e produtos e receber comissões diretamente no seu CPF via PIX.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                    <div className="relative w-full sm:flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-muted-foreground">@</span>
+                      <Input
+                        value={onboardingHandle}
+                        onChange={(e) => setOnboardingHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+                        placeholder="seu_codigo_indicacao"
+                        className="h-10 pl-7 text-xs font-mono rounded-xl bg-background"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={isSubmitting || !onboardingHandle}
+                      onClick={handleFastAffiliateActivation}
+                      className="w-full sm:w-auto h-10 px-4 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shrink-0"
+                    >
+                      {isSubmitting ? "Ativando..." : "Ativar Links Imediatamente"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="relative flex items-center justify-center my-1">
+                  <div className="border-t border-border/60 w-full" />
+                  <span className="bg-card px-3 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider shrink-0">
+                    Ou configure uma vitrine pública de criador
+                  </span>
+                </div>
+
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-3">
                   <div className="space-y-0.5">
                     <h2 className="text-base font-bold text-foreground">Defina sua Identidade de Criador</h2>

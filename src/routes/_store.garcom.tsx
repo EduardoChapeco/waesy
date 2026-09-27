@@ -65,7 +65,7 @@ function GarcomTerminalPage() {
  };
 
  return (
- <div className="min-h-screen bg-background text-foreground pb-20">
+ <div className="min-h-[100dvh] bg-background text-foreground pb-20">
  {/* Header Fixo Mobile-First */}
  <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border px-4 py-3.5 flex items-center justify-between">
  <div className="flex items-center gap-2.5">
