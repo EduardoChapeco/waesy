@@ -63,6 +63,124 @@ function findPrimaryContentChild(node: any): any | null {
  return node.children[0] || null;
 }
 
+function RichTextInspectorField({
+  value,
+  onChange,
+  label,
+  placeholder,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  label?: string;
+  placeholder?: string;
+}) {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  const insertFormatting = (prefix: string, suffix: string = "") => {
+    const el = textareaRef.current;
+    if (!el) {
+      onChange((value || "") + prefix + "texto" + suffix);
+      return;
+    }
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const currentVal = value || "";
+    const selected = currentVal.substring(start, end) || "texto";
+    const newVal = currentVal.substring(0, start) + prefix + selected + suffix + currentVal.substring(end);
+    onChange(newVal);
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+    }, 10);
+  };
+
+  return (
+    <div className="space-y-1.5 p-2.5 rounded-xl bg-muted/20 border border-border/60">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs font-bold text-foreground">
+          {label || "Texto Formatado (Markdown)"}
+        </Label>
+        <span className="text-[10px] font-mono text-muted-foreground">
+          {(value || "").length} caracteres
+        </span>
+      </div>
+
+      {/* Barra de Ferramentas do Editor */}
+      <div className="flex items-center gap-1 p-1 bg-background border border-border/70 rounded-lg flex-wrap">
+        <button
+          type="button"
+          onClick={() => insertFormatting("**", "**")}
+          title="Negrito (**texto**)"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted font-black text-xs cursor-pointer text-foreground"
+        >
+          B
+        </button>
+        <button
+          type="button"
+          onClick={() => insertFormatting("*", "*")}
+          title="Itálico (*texto*)"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted italic font-serif text-xs cursor-pointer text-foreground"
+        >
+          I
+        </button>
+        <div className="w-[1px] h-4 bg-border/60 mx-0.5" />
+        <button
+          type="button"
+          onClick={() => insertFormatting("## ")}
+          title="Título Principal (H2)"
+          className="px-1.5 h-6 flex items-center justify-center rounded hover:bg-muted font-bold text-[10px] cursor-pointer text-foreground"
+        >
+          H2
+        </button>
+        <button
+          type="button"
+          onClick={() => insertFormatting("### ")}
+          title="Subtítulo (H3)"
+          className="px-1.5 h-6 flex items-center justify-center rounded hover:bg-muted font-semibold text-[10px] cursor-pointer text-foreground"
+        >
+          H3
+        </button>
+        <div className="w-[1px] h-4 bg-border/60 mx-0.5" />
+        <button
+          type="button"
+          onClick={() => insertFormatting("- ")}
+          title="Lista com marcadores (- item)"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground"
+        >
+          •
+        </button>
+        <button
+          type="button"
+          onClick={() => insertFormatting("> ")}
+          title="Citação (> destaque)"
+          className="size-6 flex items-center justify-center rounded hover:bg-muted text-xs cursor-pointer text-foreground"
+        >
+          ”
+        </button>
+        <button
+          type="button"
+          onClick={() => insertFormatting("[link](", ")")}
+          title="Inserir Link ([texto](url))"
+          className="px-1 h-6 flex items-center justify-center rounded hover:bg-muted text-[10px] font-mono cursor-pointer text-primary"
+        >
+          🔗
+        </button>
+      </div>
+
+      <Textarea
+        ref={textareaRef}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="rounded-lg text-xs min-h-[90px] bg-background font-sans leading-relaxed resize-y border-border/80"
+        placeholder={placeholder || "Escreva o texto aqui... Suporta **negrito**, *itálico*, links e listas."}
+      />
+      <p className="text-[10px] text-muted-foreground/80 leading-tight">
+        Formatação ao vivo renderizada na vitrine e preview.
+      </p>
+    </div>
+  );
+}
+
 export function BuilderInspector({
  selectedNodeId,
  selectedNode,
@@ -446,7 +564,19 @@ export function BuilderInspector({
  );
  }
 
- if (field.type === "textarea") {
+ if (field.type === "richtext" || field.type === "markdown" || field.type === "advanced_text") {
+			return (
+				<RichTextInspectorField
+					key={field.name}
+					value={val}
+					onChange={(v) => handleContentChange(field.name, v)}
+					label={field.label || humanizeLabel(field.name)}
+					placeholder={field.placeholder}
+				/>
+			);
+		}
+
+		if (field.type === "textarea") {
  return (
  <div key={field.name} className="space-y-1.5">
  <Label className="text-xs font-bold text-foreground">
@@ -462,7 +592,7 @@ export function BuilderInspector({
  );
  }
 
- if (field.type === "image" || field.type === "media") {
+ if (field.type === "image" || field.type === "media" || field.type === "video") {
  return (
  <div key={field.name} className="space-y-1.5">
  <Label className="text-xs font-bold text-foreground">
@@ -582,7 +712,7 @@ export function BuilderInspector({
  );
  }
 
- if (typeof v === "string" && (k.toLowerCase().includes("image") || k.toLowerCase().includes("cover") || k.toLowerCase().includes("banner"))) {
+ if (typeof v === "string" && (k.toLowerCase().includes("image") || k.toLowerCase().includes("cover") || k.toLowerCase().includes("banner") || k.toLowerCase().includes("video") || k.toLowerCase().includes("media") || k.toLowerCase().includes("gif"))) {
  return (
  <div key={k} className="space-y-1.5">
  <Label className="text-xs font-bold text-foreground">{humanizeLabel(k)}</Label>

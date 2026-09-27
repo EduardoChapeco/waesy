@@ -126,7 +126,8 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  label: "Galeria e Mídia",
  icon: Film,
  subcategories: [
- { id: "media_galeria", label: "Mural e Fotos", templateIds: ["gallery_grid"] },
+ { id: "media_video", label: "Vídeo Imersivo / GIF", templateIds: ["video_section"] },
+				{ id: "media_galeria", label: "Mural e Fotos", templateIds: ["gallery_grid"] },
  { id: "media_comparador", label: "Antes e Depois", templateIds: ["before_after_slider"] },
  { id: "media_stories", label: "Stories no Topo", templateIds: ["stories_ring"] },
  ],
@@ -136,7 +137,8 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  label: "Conteúdo e Layout",
  icon: AlignLeft,
  subcategories: [
- { id: "content_bento", label: "Bento Grid", templateIds: ["bento_grid"] },
+ { id: "content_rich", label: "Artigo & Texto Editorial", templateIds: ["rich_text"] },
+				{ id: "content_bento", label: "Bento Grid", templateIds: ["bento_grid"] },
  { id: "content_passos", label: "Passo a Passo", templateIds: ["routine_steps"] },
  { id: "content_location", label: "Localização e Mapa", templateIds: ["location_map_card"] },
  ],

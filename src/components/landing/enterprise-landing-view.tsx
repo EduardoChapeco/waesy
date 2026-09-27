@@ -30,11 +30,16 @@ import {
   TrendingUp,
   Sliders,
   Share2,
+  LayoutDashboard,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { FounderSignupSheet } from "@/components/landing/founder-signup-sheet";
+import { getProfile } from "@/services/auth.functions";
+import { useQuery } from "@tanstack/react-query";
 import type { LaunchLandingSettingsDTO } from "@/services/launch.functions";
 import type { CnpjCompanyDTO } from "@/services/public-apis.functions";
 
@@ -53,6 +58,23 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
     city: string;
     companyDetails: CnpjCompanyDTO | null;
   } | null>(null);
+
+  const { data: profile } = useQuery({
+    queryKey: ["current-user-profile"],
+    queryFn: () => getProfile().catch(() => null),
+    staleTime: 60_000,
+  });
+
+  const currentUser = (profile as any)?.user || (profile as any);
+  const userName =
+    currentUser?.user_metadata?.full_name ||
+    currentUser?.name ||
+    currentUser?.email?.split("@")[0] ||
+    "";
+  const userInitial = userName ? userName.charAt(0).toUpperCase() : "W";
+  const userAvatar =
+    currentUser?.user_metadata?.avatar_url || currentUser?.avatar_url || "";
+  const isLoggedIn = Boolean(currentUser?.id || (profile as any)?.id);
 
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
@@ -142,28 +164,61 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               </Link>
             </Button>
 
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="text-xs font-bold rounded-xl border-border/80 hover:bg-muted text-foreground h-9 px-3.5 gap-1.5 shadow-2xs cursor-pointer"
-            >
-              <Link to="/entrar">
-                <LogIn className="size-3.5 text-primary" />
-                <span>Entrar</span>
-              </Link>
-            </Button>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-bold rounded-xl border-border/80 hover:bg-muted text-foreground h-9 px-3 gap-2 shadow-2xs cursor-pointer"
+                >
+                  <Link to="/workspace">
+                    <LayoutDashboard className="size-3.5 text-primary" />
+                    <span className="hidden sm:inline">Workspace</span>
+                  </Link>
+                </Button>
+                <Link
+                  to="/conta"
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border border-border/80 hover:bg-muted/70 transition-colors"
+                  title="Minha Conta"
+                >
+                  <Avatar className="size-7 rounded-lg">
+                    {userAvatar && <AvatarImage src={userAvatar} alt={userName} />}
+                    <AvatarFallback className="text-[11px] font-bold bg-primary/10 text-primary">
+                      {userInitial}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-semibold max-w-[90px] truncate hidden md:inline">
+                    {userName || "Conta"}
+                  </span>
+                </Link>
+              </div>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-bold rounded-xl border-border/80 hover:bg-muted text-foreground h-9 px-3.5 gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  <Link to="/entrar">
+                    <LogIn className="size-3.5 text-primary" />
+                    <span>Entrar</span>
+                  </Link>
+                </Button>
 
-            <Button
-              asChild
-              size="sm"
-              className="rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 h-9 px-4 gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Link to="/criar-negocio">
-                <span>Criar Negócio</span>
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
+                <Button
+                  asChild
+                  size="sm"
+                  className="rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90 h-9 px-4 gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <Link to="/criar-negocio">
+                    <span>Criar Negócio</span>
+                    <ArrowRight className="size-3.5" />
+                  </Link>
+                </Button>
+              </>
+            )}
 
             {/* Menu Hamburger para Dispositivos Móveis (< lg) */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -231,19 +286,54 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                   </nav>
                 </div>
 
-                <div className="space-y-3 pt-6 border-t border-border/60">
-                  <Button asChild className="w-full h-11 rounded-xl text-xs font-bold gap-2">
-                    <Link to="/criar-negocio">
-                      <span>Criar Meu Negócio</span>
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full h-11 rounded-xl text-xs font-bold gap-2">
-                    <Link to="/entrar">
-                      <LogIn className="size-4 text-primary" />
-                      <span>Acessar Painel Logado</span>
-                    </Link>
-                  </Button>
+                <div className="space-y-2.5 pt-5 border-t border-border/60">
+                  {isLoggedIn ? (
+                    <>
+                      <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/40 border border-border/60">
+                        <Avatar className="size-9 rounded-lg">
+                          {userAvatar && <AvatarImage src={userAvatar} alt={userName} />}
+                          <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+                            {userInitial}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="text-xs font-bold truncate text-foreground">
+                            {userName || "Membro Waesy"}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground truncate">
+                            Sessão Ativa
+                          </span>
+                        </div>
+                      </div>
+                      <Button asChild className="w-full h-10 rounded-xl text-xs font-bold gap-2">
+                        <Link to="/workspace">
+                          <LayoutDashboard className="size-4" />
+                          <span>Acessar Workspace</span>
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" className="w-full h-10 rounded-xl text-xs font-semibold gap-2">
+                        <Link to="/conta">
+                          <User className="size-4 text-muted-foreground" />
+                          <span>Gerenciar Minha Conta</span>
+                        </Link>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button asChild className="w-full h-11 rounded-xl text-xs font-bold gap-2">
+                        <Link to="/criar-negocio">
+                          <span>Criar Meu Negócio</span>
+                          <ArrowRight className="size-4" />
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" className="w-full h-11 rounded-xl text-xs font-bold gap-2">
+                        <Link to="/entrar">
+                          <LogIn className="size-4 text-primary" />
+                          <span>Acessar Painel Logado</span>
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

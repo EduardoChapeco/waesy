@@ -109,6 +109,96 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  },
  ],
  },
+  video_section: {
+    id: "video_section",
+    name: "Vídeo Imersivo / GIF",
+    description: "Seção de vídeo MP4/WebM com moldura Apple HIG, YouTube, Vimeo e legenda rica.",
+    category: "media",
+    previewImageUrl: "",
+    nodes: [
+      {
+        id: genId("section"),
+        node_type: "section",
+        block_type: "section",
+        parent_id: null,
+      },
+      {
+        id: genId("container"),
+        node_type: "container",
+        block_type: "container",
+        parent_id: genId("section"),
+        layout_rules: {
+          maxWidth: "xl",
+          display: "flex",
+          flexDirection: "col",
+          gap: "none",
+          paddingX: "md",
+          paddingY: "xl",
+        },
+      },
+      {
+        id: genId("video"),
+        node_type: "composition",
+        block_type: "video_section",
+        parent_id: genId("container"),
+        content: {
+          badge: "VÍDEO EM DESTAQUE",
+          title: "Experiência Visual Imersiva",
+          subtitle: "Conheça o processo de criação de nossas coleções exclusivas.",
+          video_url: "",
+          aspect_ratio: "16:9",
+          auto_play: false,
+          loop: true,
+          description: "Vídeo em alta definição demonstrando nossos produtos e atendimento.",
+        },
+      },
+    ],
+  },
+
+  rich_text: {
+    id: "rich_text",
+    name: "Texto Editorial & Artigo",
+    description: "Bloco editorial avançado com títulos, subtítulos, suporte a Markdown e botão de ação.",
+    category: "content",
+    previewImageUrl: "",
+    nodes: [
+      {
+        id: genId("section"),
+        node_type: "section",
+        block_type: "section",
+        parent_id: null,
+      },
+      {
+        id: genId("container"),
+        node_type: "container",
+        block_type: "container",
+        parent_id: genId("section"),
+        layout_rules: {
+          maxWidth: "lg",
+          display: "flex",
+          flexDirection: "col",
+          gap: "none",
+          paddingX: "md",
+          paddingY: "xl",
+        },
+      },
+      {
+        id: genId("richtext"),
+        node_type: "composition",
+        block_type: "rich_text",
+        parent_id: genId("container"),
+        content: {
+          badge: "MANIFESTO",
+          title: "Design com Propósito",
+          subtitle: "Valorizamos cada detalhe para entregar uma experiência memorável.",
+          content: "Acreditamos que a simplicidade é o mais alto grau de sofisticação.\n\n## Princípios Fundamentais\n\n- **Autenticidade:** Produtos desenvolvidos com identidade própria e paixão.\n- **Qualidade Superior:** Matérias-primas nobres e durabilidade comprovada.\n- **Agilidade:** Entrega rápida e rastreamento em tempo real.\n\n> \"A verdadeira inovação começa onde o supérfluo é deixado de lado.\"",
+          align: "center",
+          max_width: "lg",
+        },
+      },
+    ],
+  },
+
 
  announcement_bar: {
  id: "announcement_bar",
