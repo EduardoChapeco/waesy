@@ -973,7 +973,7 @@ export const listClinicalRecords = createServerFn({ method: "GET" })
  const db = getServerClient();
  const { data, error } = await db
  .from("crm_clinical_records")
- .select("*, author:author_id(email, raw_user_meta_data)")
+ .select("*, author:profiles!crm_clinical_records_author_id_fkey(id, full_name, avatar_url)")
  .eq("appointment_id", appointment_id)
  .eq("store_id", storeId)
  .order("created_at", { ascending: false });

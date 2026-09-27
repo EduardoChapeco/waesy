@@ -301,58 +301,7 @@ function ImoveisVerticalPage() {
         </section>
       )}
 
-      {/* ── 6. Oportunidades & Categorias Rápidas ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-        <div className="p-6 rounded-2xl bg-card space-y-4 border border-border/40 shadow-none">
-          <div className="flex items-center justify-between">
-            <Badge variant="secondary">
-              Locação Residencial
-            </Badge>
-            <span className="text-xs font-mono font-bold text-primary">A partir de R$ 1.200/mês</span>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-foreground">Apartamentos & Casas para Alugar</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Imóveis prontos para morar no Centro e bairros residenciais com garantia simplificada.
-            </p>
-          </div>
-          <div className="pt-2 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Contratos anuais e garantia caução/fiança</span>
-            <Link
-              to="/classificados"
-              search={{ category: "real_estate", dealType: "aluguel" }}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:underline"
-            >
-              Explorar Ofertas <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
 
-        <div className="p-6 rounded-2xl bg-card space-y-4 border border-border/40 shadow-none">
-          <div className="flex items-center justify-between">
-            <Badge variant="secondary">
-              Venda & Lançamentos
-            </Badge>
-            <span className="text-xs font-mono font-bold text-primary">Financiamento Caixa / Bancos</span>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-foreground">Casas, Sobrados & Lotes à Venda</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Oportunidades para morar ou investir com assessoria jurídica e documentação regularizada.
-            </p>
-          </div>
-          <div className="pt-2 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Avaliação gratuita de imóveis</span>
-            <Link
-              to="/classificados"
-              search={{ category: "real_estate", dealType: "venda" }}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:underline"
-            >
-              Ver Imóveis à Venda <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -107,7 +107,7 @@ function ClinicalRecordDrawer({
  <div key={r.id} className="bg-muted/40 p-3.5 rounded-xl text-xs space-y-1.5">
  <div className="flex justify-between items-center text-[11px] text-muted-foreground font-mono">
  <span>{format(new Date(r.created_at), "dd/MM/yyyy HH:mm")}</span>
- <span>{r.author?.email || "Profissional"}</span>
+ <span>{r.author?.full_name || r.author?.email || "Profissional"}</span>
  </div>
  <p className="whitespace-pre-wrap text-foreground">{r.content}</p>
  </div>

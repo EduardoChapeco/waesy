@@ -341,7 +341,8 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  customer_id: identity?.id || null,
  origin_type: "mobility" as const,
  status: assignedCourierProfileId ? "processing" : "draft",
- driver_id: assignedCourierProfileId || null,
+ driver_id: null,
+      courier_profile_id: assignedCourierProfileId || null,
  public_token: payload.magic_token,
  customer_snapshot: {
  name: data.customer_name || "Cliente Waesy",
@@ -379,7 +380,7 @@ export const createMobilityRequest = createServerFn({ method: "POST" })
  const { data: order, error } = await supabase
  .from("orders")
  .insert(orderPayload)
- .select("*, courier_profiles:driver_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+ .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
  .single();
 
  if (error) {
@@ -434,7 +435,7 @@ export const listCustomerMobilityRequests = createServerFn({ method: "GET" }).ha
  const supabase = getServerClient();
  const { data: rows, error } = await supabase
  .from("orders")
- .select("*, courier_profiles:driver_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+ .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
  .eq("customer_id", identity.id)
  .eq("origin_type", "mobility")
  .order("created_at", { ascending: false })
@@ -493,7 +494,7 @@ export const getMobilityRequestDetails = createServerFn({ method: "GET" })
 
  let query = supabase
  .from("orders")
- .select("*, courier_profiles:driver_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+ .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
  .eq("origin_type", "mobility");
 
  if (idOrToken.startsWith("req_")) {
@@ -555,7 +556,7 @@ export const listOpenMobilityRequests = createServerFn({ method: "GET" })
 
  let query = supabase
  .from("orders")
- .select("*, courier_profiles:driver_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+ .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
  .eq("origin_type", "mobility")
  .in("status", ["draft", "processing", "paid"])
  .order("created_at", { ascending: false })
@@ -620,7 +621,7 @@ export const acceptMobilityRequest = createServerFn({ method: "POST" })
  })
  .eq("id", data.requestId)
  .eq("origin_type", "mobility")
- .select("*, courier_profiles:driver_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
+ .select("*, courier_profiles:courier_profile_id(full_name, phone, vehicle_type, vehicle_model, vehicle_plate, rating)")
  .single();
 
  if (error) throw new Error(`Erro ao aceitar chamado: ${error.message}`);

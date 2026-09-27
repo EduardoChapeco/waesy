@@ -165,7 +165,7 @@ export const validateEventTicketCheckin = createServerFn({ method: "POST" })
 
  const { data: checkin, error } = await supabase
  .from("event_checkins")
- .select("*, event:events(title, date, location)")
+ .select("*, event:events!event_checkins_event_id_fkey(title, event_date, location)")
  .eq("qr_code_hash", data.qr_code_hash)
  .single();
 

@@ -205,7 +205,7 @@ function CustomerAgendaPage() {
  )}
  </div>
  ) : (
- <div className="space-y-3">
+ <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
  {apptList.map((appt: any) => {
  const dateObj = new Date(appt.scheduled_at);
  const isUpcoming = dateObj >= new Date() && appt.status !== "cancelled";

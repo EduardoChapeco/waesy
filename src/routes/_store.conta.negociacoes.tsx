@@ -328,7 +328,7 @@ function NegociacoesPage() {
           <Button variant="outline" size="sm" className="rounded-xl h-9 text-xs" onClick={() => window.location.reload()}>Tentar novamente</Button>
         </div>
       ) : filteredDeals.length > 0 ? (
-        <div className="space-y-4">
+        <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
           {filteredDeals.map((deal: any) => {
             const status = STATUS_CONFIG[deal.status] || { label: deal.status, variant: "outline" };
             const isNegotiating = deal.status === "negotiating";

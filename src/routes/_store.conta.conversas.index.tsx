@@ -297,7 +297,7 @@ function CustomerConversationsIndexPage() {
           </Button>
         </div>
       ) : (
-        <div className="divide-y divide-border/20 rounded-2xl bg-card border border-border/40 overflow-hidden">
+        <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
           {filtered.map((thread: any) => {
             const statusInfo = STATUS_CONFIG[thread.status] || STATUS_CONFIG.open;
             const isP2P = thread.is_p2p;
@@ -549,4 +549,3 @@ function CustomerConversationsIndexPage() {
   );
 }
 
-export default CustomerConversationsIndexPage;

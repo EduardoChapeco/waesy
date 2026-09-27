@@ -60,20 +60,12 @@ export const getMyActiveShift = createServerFn({ method: "GET" }).handler(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Nao autenticado");
 
-    const { data: person } = await supabase
-      .from("pessoas")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!person) return null;
-
     const { data: shift } = await supabase
-      .from("eventos_equipe")
-      .select("*, evento:eventos(titulo, local_evento)")
-      .eq("colaborador_id", person.id)
-      .eq("confirmado", true)
-      .order("data_inicio", { ascending: false })
+      .from("event_staff_allocations")
+      .select("*, event:events(title, location)")
+      .eq("employee_id", user.id)
+      .eq("is_confirmed", true)
+      .order("start_time", { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -84,9 +76,9 @@ export const getMyActiveShift = createServerFn({ method: "GET" }).handler(
 export const registerPunchClock = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      evento_equipe_id: z.string().uuid(),
+      allocation_id: z.string().uuid(),
       tipo: z.enum(["entrada", "saida", "pausa", "retorno"]),
-      localizacao: z.object({ lat: z.number(), lng: z.number(), accuracy: z.number() }).nullable(),
+      localizacao: z.object({ lat: z.number(), lng: z.number(), accuracy: z.number() }).nullable().optional(),
     })
   )
   .handler(async ({ data }) => {
@@ -94,11 +86,15 @@ export const registerPunchClock = createServerFn({ method: "POST" })
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Nao autenticado");
 
-    const { error } = await supabase.from("equipe_ponto_logs").insert({
-      evento_equipe_id: data.evento_equipe_id,
-      tipo: data.tipo,
-      localizacao: data.localizacao,
-    });
+    const now = new Date().toISOString();
+    const updatePayload: Record<string, any> = { updated_at: now };
+    if (data.tipo === "entrada") updatePayload.check_in_at = now;
+    if (data.tipo === "saida") updatePayload.check_out_at = now;
+
+    const { error } = await supabase
+      .from("event_staff_allocations")
+      .update(updatePayload)
+      .eq("id", data.allocation_id);
 
     if (error) throw error;
     return { ok: true };

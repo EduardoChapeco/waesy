@@ -173,7 +173,7 @@ export const listStoreFollowers = createServerFn({ method: "GET" }).handler(asyn
  const db = getServerClient();
  const { data, error } = await db
  .from("store_followers")
- .select("created_at, customer:auth.users(id, raw_user_meta_data)")
+ .select("created_at, customer:profiles!store_followers_customer_id_fkey(id, full_name, avatar_url, username)")
  .eq("store_id", identity.store_id)
  .order("created_at", { ascending: false });
 

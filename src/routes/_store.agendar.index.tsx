@@ -537,11 +537,11 @@ function BookingIndexPage() {
 
           {/* ── MODO 3: LISTA COMPACTA (Largura Máxima) ── */}
           {viewMode === "list" && (
-            <div className="flex flex-col space-y-3 w-full">
+            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
               {services.map((service: any) => (
                 <div
                   key={service.id}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all gap-4 w-full group shadow-xs"
+                  className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-muted/40 transition-colors gap-3.5 sm:gap-4 w-full group cursor-pointer"
                 >
                   <Link
                     to="/agendar/$id"
