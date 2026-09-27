@@ -37,8 +37,33 @@ export const Route = createFileRoute("/verify/document/$code")({
       return { result: null, error: err?.message || "Documento não encontrado." };
     }
   },
+  errorComponent: VerifyDocumentErrorComponent,
   component: DocumentVerificationPage,
 });
+
+function VerifyDocumentErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full border border-destructive/30 bg-destructive/5 rounded-2xl p-6 text-center space-y-4">
+        <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+          <AlertTriangle className="size-6" />
+        </div>
+        <h1 className="text-lg font-bold text-foreground">Instabilidade na Verificação</h1>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {error?.message || "Ocorreu uma instabilidade ao validar o código deste documento."}
+        </p>
+        <div className="flex items-center justify-center gap-3 mt-2">
+          <Button onClick={reset} size="sm" className="rounded-xl font-bold">
+            Tentar Novamente
+          </Button>
+          <Button asChild variant="outline" size="sm" className="rounded-xl">
+            <Link to="/">Voltar ao Início</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   tourism: "Contrato de Prestação de Serviços Turísticos",

@@ -87,9 +87,27 @@ export const Route = createFileRoute("/_store/imoveis")({
       return { banners: null, hotpages: null, marketplaceFeed: null, classifieds: [] };
     }
   },
+  errorComponent: ImoveisErrorComponent,
   component: ImoveisVerticalPage,
   pendingComponent: PageSkeleton,
 });
+
+function ImoveisErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <House size={32} />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar imóveis</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar os imóveis e oportunidades no momento."}
+      </p>
+      <Button onClick={reset} className="rounded-xl font-bold">
+        Tentar Novamente
+      </Button>
+    </div>
+  );
+}
 
 function ImoveisVerticalPage() {
   const { banners, hotpages, marketplaceFeed, classifieds = [] } = ((Route.useLoaderData?.() as any) || {});
@@ -154,34 +172,21 @@ function ImoveisVerticalPage() {
         </section>
       )}
 
-      {/* ── 2. Switcher de Ecossistema: Imóveis vs Temporada ── */}
-      <div className="p-4 rounded-2xl bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border/40">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <House size={22} weight="bold" />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold text-foreground">Imóveis</h2>
-            <p className="text-xs text-muted-foreground">
-              Locação, compra de casas, apartamentos e terrenos na sua região.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/turismo"
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-muted/40 hover:bg-muted text-foreground transition-colors"
-          >
-            Ver Hospedagem & Temporada ↗
-          </Link>
-          <Link
-            to="/classificados"
-            search={{ category: "real_estate" }}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-muted/40 hover:bg-muted text-foreground transition-colors"
-          >
-            Ver Direto com Proprietário ↗
-          </Link>
-        </div>
+      {/* ── 2. Links Rápidos de Ecossistema ── */}
+      <div className="flex items-center justify-end gap-2 text-xs">
+        <Link
+          to="/turismo"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+        >
+          Hospedagem & Temporada ↗
+        </Link>
+        <Link
+          to="/classificados"
+          search={{ category: "real_estate" }}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+        >
+          Direto com Proprietário ↗
+        </Link>
       </div>
 
       {/* ── 2.5 Seções Modulares do CMS ── */}

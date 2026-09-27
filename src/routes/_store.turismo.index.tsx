@@ -51,8 +51,26 @@ export const Route = createFileRoute("/_store/turismo/")({
       return { banners: [], hotpages: [], tourismItems: [] };
     }
   },
+  errorComponent: TourismErrorComponent,
   component: TourismMasterPage,
 });
+
+function TourismErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <AirplaneTilt size={32} />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar viagens & turismo</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar os pacotes e destinos no momento."}
+      </p>
+      <Button onClick={reset} className="rounded-xl font-bold">
+        Tentar Novamente
+      </Button>
+    </div>
+  );
+}
 
 export type TourismLayoutMode = "cards" | "compact" | "rails";
 

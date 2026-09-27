@@ -99,9 +99,28 @@ export const Route = createFileRoute("/_store/gastronomia")({
      return { banners: null, hotpages: null, marketplaceFeed: null, catalogProducts: null };
    }
  },
- component: GastronomiaVerticalPage,
- pendingComponent: PageSkeleton,
+  errorComponent: GastronomiaErrorComponent,
+  component: GastronomiaVerticalPage,
+  pendingComponent: PageSkeleton,
 });
+
+function GastronomiaErrorComponent({ error, reset }: { error: any; reset: () => void }) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center space-y-4">
+      <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
+        <ForkKnife size={32} />
+      </div>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar gastronomia</h2>
+      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        {error?.message || "Não foi possível carregar os restaurantes e cardápios no momento."}
+      </p>
+      <Button onClick={reset} className="rounded-xl font-bold">
+        Tentar Novamente
+      </Button>
+    </div>
+  );
+}
+
 function GastronomiaVerticalPage() {
  const { banners, hotpages, marketplaceFeed, catalogProducts } = ((Route.useLoaderData?.() as any) || {});
  const search = Route.useSearch();

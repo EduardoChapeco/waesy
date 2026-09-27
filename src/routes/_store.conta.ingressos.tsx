@@ -418,4 +418,3 @@ function CustomerTicketsPage() {
   );
 }
 
-export default CustomerTicketsPage;
