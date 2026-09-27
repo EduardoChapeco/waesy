@@ -359,7 +359,7 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
  .validator(
  z.object({
  id: z.string().uuid(),
- status: z.enum(["active", "paused", "reserved", "completed", "archived", "expired"]),
+ status: z.enum(["active", "paused", "draft", "reserved", "completed", "resolved", "archived", "expired"]),
  reason: z.string().optional(),
  }),
  )
@@ -371,21 +371,47 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
  throw new Error("Não autorizado.");
  }
 
- // Busca o anúncio para verificar autoria
- const { data: existing, error: fetchErr } = await supabase
- .from("classifieds")
- .select("id, author_profile_id, status")
- .eq("id", id)
- .single();
+    // Busca o anúncio para verificar autoria e loja
+    const { data: existing, error: fetchErr } = await supabase
+      .from("classifieds")
+      .select("id, author_profile_id, store_id, status")
+      .eq("id", id)
+      .single();
 
- if (fetchErr || !existing) {
- throw new Error("Anúncio não encontrado.");
- }
+    if (fetchErr || !existing) {
+      throw new Error("Anúncio não encontrado.");
+    }
 
- const isAdmin = identity.role === "admin" || identity.role === "master";
- if (existing.author_profile_id !== identity.id && !isAdmin) {
- throw new Error("Você não tem permissão para alterar o estado deste anúncio.");
- }
+    const isAdmin = identity.role === "admin" || identity.role === "master";
+    let hasAuthority = existing.author_profile_id === identity.id || isAdmin;
+
+    if (!hasAuthority && existing.store_id) {
+      if (identity.store_id === existing.store_id) {
+        hasAuthority = true;
+      } else if (Array.isArray(identity.memberships) && identity.memberships.some((m) => m.store_id === existing.store_id)) {
+        hasAuthority = true;
+      } else {
+        const { data: storeMember } = await supabase
+          .from("workspace_members")
+          .select("id")
+          .eq("store_id", existing.store_id)
+          .eq("profile_id", identity.id)
+          .maybeSingle();
+
+        const { data: storeOwner } = await supabase
+          .from("stores")
+          .select("id")
+          .eq("id", existing.store_id)
+          .eq("owner_profile_id", identity.id)
+          .maybeSingle();
+
+        hasAuthority = !!storeMember || !!storeOwner;
+      }
+    }
+
+    if (!hasAuthority) {
+      throw new Error("Você não tem permissão para alterar o estado deste anúncio.");
+    }
 
  const { data: updated, error: updateErr } = await supabase
  .from("classifieds")
@@ -475,8 +501,10 @@ const upsertClassifiedInput = z.object({
     "event",
     "travel",
     "equipment",
+    "business",
+    "food",
   ]),
-  deal_type: z.enum(["venda", "aluguel", "temporada", "servico"]).optional(),
+  deal_type: z.enum(["venda", "aluguel", "temporada", "servico", "repasse", "doacao", "troca"]).optional(),
   property_type: z.string().nullable().optional(),
   bedrooms: z.coerce.number().int().optional(),
   bathrooms: z.coerce.number().int().optional(),
@@ -502,7 +530,7 @@ const upsertClassifiedInput = z.object({
  working_hours_end: z.string().optional(),
  property_tags: z.array(z.string()).optional(),
  is_boosted: z.boolean().optional(),
- delivery_mode: z.enum(["pickup", "local_delivery", "national_shipping", "both"]).optional(),
+ delivery_mode: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both", "digital_download"]).optional(),
  accepts_trade: z.boolean().optional(),
  accepts_card: z.boolean().optional(),
  max_installments: z.coerce.number().int().optional(),
@@ -530,9 +558,9 @@ const upsertClassifiedInput = z.object({
  hide_location: z.boolean().optional(),
  location_privacy: z.enum(["full", "city_only", "hidden"]).optional(),
  attributes: z.record(z.any()).optional().default({}),
- status: z.enum(["draft", "active", "paused", "closed"]).default("active"),
+ status: z.enum(["draft", "active", "paused", "reserved", "completed", "resolved", "archived", "expired"]).default("active"),
  max_discount_pct: z.coerce.number().min(0).max(100).optional().default(0),
- delivery_type: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both"]).optional(),
+ delivery_type: z.enum(["pickup", "local_pickup", "local_delivery", "national_shipping", "both", "digital_download"]).optional(),
  ai_instructions: z.string().optional(),
  ai_agent_enabled: z.boolean().optional(),
  form_id: z.string().uuid().nullable().optional(),
@@ -844,18 +872,58 @@ export const deleteClassified = createServerFn({ method: "POST" })
  throw new Error("Unauthorized");
  }
 
- const { error } = await supabase
- .from("classifieds")
- .delete()
- .eq("id", id)
- .eq("author_profile_id", identity.id);
+    const { data: existing, error: fetchErr } = await supabase
+      .from("classifieds")
+      .select("id, author_profile_id, store_id")
+      .eq("id", id)
+      .single();
 
- if (error) {
- console.error("Error deleting classified:", error);
- throw new Error("Failed to delete classified");
- }
+    if (fetchErr || !existing) {
+      throw new Error("Anúncio não encontrado.");
+    }
 
- return { success: true };
+    const isAdmin = identity.role === "admin" || identity.role === "master";
+    let hasAuthority = existing.author_profile_id === identity.id || isAdmin;
+
+    if (!hasAuthority && existing.store_id) {
+      if (identity.store_id === existing.store_id) {
+        hasAuthority = true;
+      } else if (Array.isArray(identity.memberships) && identity.memberships.some((m) => m.store_id === existing.store_id)) {
+        hasAuthority = true;
+      } else {
+        const { data: storeMember } = await supabase
+          .from("workspace_members")
+          .select("id")
+          .eq("store_id", existing.store_id)
+          .eq("profile_id", identity.id)
+          .maybeSingle();
+
+        const { data: storeOwner } = await supabase
+          .from("stores")
+          .select("id")
+          .eq("id", existing.store_id)
+          .eq("owner_profile_id", identity.id)
+          .maybeSingle();
+
+        hasAuthority = !!storeMember || !!storeOwner;
+      }
+    }
+
+    if (!hasAuthority) {
+      throw new Error("Você não tem permissão para excluir este anúncio.");
+    }
+
+    const { error } = await supabase
+      .from("classifieds")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting classified:", error);
+      throw new Error("Failed to delete classified");
+    }
+
+    return { success: true };
  });
 
 
