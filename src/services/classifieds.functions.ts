@@ -42,8 +42,13 @@ export const getPublicClassifieds = createServerFn({ method: "GET" })
 	}
 
 	if (data?.category && data.category !== "todos") {
- query = query.eq("category", data.category);
- }
+      let cat = data.category.toLowerCase().trim();
+      if (cat === "vehicles" || cat === "veiculos") cat = "vehicle";
+      else if (cat === "services" || cat === "servicos") cat = "service";
+      else if (cat === "imoveis" || cat === "imovel") cat = "real_estate";
+      else if (cat === "desapego" || cat === "eletronicos" || cat === "produtos") cat = "sale";
+      query = query.eq("category", cat);
+    }
 
  if (data?.dealType && data.dealType !== "todos") {
  query = query.eq("deal_type", data.dealType);

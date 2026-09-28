@@ -60,12 +60,18 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
             key={slide.id}
             className="snap-start shrink-0 w-[82vw] sm:w-[320px] rounded-2xl overflow-hidden border border-border/80 bg-card shadow-xs group transition-all duration-300 hover:border-border"
           >
-            {/* Imagem com proporção 16:10 */}
-            <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+            {/* Imagem com proporção 16:10 proporcional */}
+            <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted flex items-center justify-center">
+              <img
+                src={slide.image_url}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 size-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none"
+              />
               <img
                 src={slide.image_url}
                 alt={slide.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="relative size-full object-contain sm:object-cover transition-transform duration-500 group-hover:scale-105 select-none"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />

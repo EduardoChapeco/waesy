@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Layers, ArrowUp, ArrowDown, Plus, Trash2, Edit3, Eye, EyeOff, LayoutGrid } from "lucide-react";
+import { Layers, ArrowUp, ArrowDown, Plus, Trash2, Edit3, Eye, EyeOff, LayoutGrid, MapPin } from "lucide-react";
+import { CANONICAL_CITIES } from "@/lib/constants/cities";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 export interface VitrineCardItem {
@@ -26,6 +28,7 @@ export interface VitrineSectionConfig {
   type: "banners" | "custom_cards" | "product_rail" | "hotpages" | "sponsors" | "brand_story" | "infinite_feed" | "promotional_flyers";
   title: string;
   enabled: boolean;
+  city_filter?: string | null;
   cards?: VitrineCardItem[];
 }
 
@@ -92,6 +95,12 @@ export function StoreVitrineSectionsEditor({
     }
     setSections((prev) =>
       prev.map((s) => (s.id === sectionId ? { ...s, enabled: !s.enabled } : s))
+    );
+  };
+
+  const handleCityFilterChange = (sectionId: string, city: string) => {
+    setSections((prev) =>
+      prev.map((s) => (s.id === sectionId ? { ...s, city_filter: city === "all" ? null : city } : s))
     );
   };
 

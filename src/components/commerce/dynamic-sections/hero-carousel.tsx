@@ -55,7 +55,7 @@ export function HeroCarousel({
       ? "aspect-square"
       : heightMode === "natural"
       ? ""
-      : "aspect-[2.35/1] @md:aspect-[21/9] lg:aspect-[3/1] w-full h-auto"; // Escala proporcional sem cortes no mobile
+      : "aspect-[2/1] @md:aspect-[21/9] lg:aspect-[3/1] w-full h-auto"; // Escala proporcional sem cortes no mobile
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -138,7 +138,7 @@ export function HeroCarousel({
                         className={`block w-full ${
                           heightMode === "natural"
                             ? "h-auto object-contain"
-                            : "h-full object-contain @md:object-cover"
+                            : "h-full object-contain"
                         } transition-transform duration-1000 group-hover:scale-105 select-none`}
                       />
                     </picture>

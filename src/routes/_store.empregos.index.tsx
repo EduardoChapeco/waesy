@@ -21,9 +21,9 @@ import { formatMoney } from "@/lib/money";
 import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
 
 const JOB_CATEGORY_CHIPS: FilterChipOption[] = [
- { id: "todos", label: "Todas as Vagas", emoji: "💼", icon: Tag },
- { id: "clt", label: "Comércio e Varejo", emoji: "🏪", icon: Storefront },
- { id: "estagio", label: "Estágio e Trainee", emoji: "🎓", icon: GraduationCap },
+ { id: "todos", label: "Todas", emoji: "💼", icon: Tag },
+ { id: "clt", label: "Comércio", emoji: "🏪", icon: Storefront },
+ { id: "estagio", label: "Estágio", emoji: "🎓", icon: GraduationCap },
  { id: "tech", label: "Tecnologia", emoji: "💻", icon: Laptop },
  { id: "saude", label: "Saúde", emoji: "🩺", icon: Heartbeat },
  { id: "operacional", label: "Logística", emoji: "🚚", icon: Truck },

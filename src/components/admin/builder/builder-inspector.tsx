@@ -1,5 +1,6 @@
 import * as React from "react";
-import { X, Sliders, Database, Palette, Layout, Maximize2, Minimize2, Move, Type, Square, Link, CheckCircle2, Layers, Image as ImageIcon, Tag, ExternalLink, FileText, Compass, Zap } from 'lucide-react';
+import { X, Sliders, Database, Palette, Layout, Maximize2, Minimize2, Move, Type, Square, Link, CheckCircle2, Layers, Image as ImageIcon, Tag, ExternalLink, FileText, Compass, Zap, MapPin } from 'lucide-react';
+import { CANONICAL_CITIES } from '@/lib/constants/cities';
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -838,7 +839,39 @@ export function BuilderInspector({
  </div>
  </div>
 
- <BuilderDockingMatrix
+ {/* ── Localidade & Direcionamento Geográfico / Cidade Alvo ── */}
+        <div className="space-y-2 p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <MapPin className="size-3.5 text-primary" />
+              Localidade Alvo
+            </span>
+            <Badge variant="outline" className="text-[10px]">
+              {layout.city_filter === 'all' || !layout.city_filter ? 'Global' : layout.city_filter}
+            </Badge>
+          </div>
+          <Select
+            value={layout.city_filter || 'all'}
+            onValueChange={(val) => handleLayoutChange('city_filter', val)}
+          >
+            <SelectTrigger className="h-8 rounded-lg text-xs bg-background">
+              <SelectValue placeholder="Selecione a cidade" />
+            </SelectTrigger>
+            <SelectContent className="max-h-56">
+              <SelectItem value="all">Todas as Cidades (Global)</SelectItem>
+              {CANONICAL_CITIES.map((c) => (
+                <SelectItem key={c.id} value={c.name} className="text-xs">
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground leading-relaxed">
+            Este bloco só será renderizado na vitrine para clientes navegando ou com GPS na cidade selecionada.
+          </p>
+        </div>
+
+        <BuilderDockingMatrix
  value={layout.docking || "center"}
  onChange={(pos) => handleLayoutChange("docking", pos)}
  />

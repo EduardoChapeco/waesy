@@ -102,7 +102,7 @@ export function BannerHeroCarousel({
         <img
           src={banner.media_url}
           alt={banner.title}
-          className="relative size-full object-contain md:object-cover transition-transform duration-500 will-change-transform select-none"
+          className="relative size-full object-contain transition-transform duration-500 will-change-transform select-none"
           loading="eager"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.display = "none";
@@ -122,8 +122,8 @@ export function BannerHeroCarousel({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── Responsive Proportional Aspect Ratio: 2.35:1 mobile, 2.6:1 tablet, 21:9 desktop ── */}
-      <div className="relative w-full aspect-[2.35/1] sm:aspect-[2.6/1] md:aspect-[21/9] overflow-hidden bg-muted">
+      {/* ── Responsive Proportional Aspect Ratio: 2:1 mobile, 2.4:1 tablet, 21:9 desktop ── */}
+      <div className="relative w-full aspect-[2/1] sm:aspect-[2.4/1] md:aspect-[21/9] overflow-hidden bg-muted">
         {/* Render Actual Image / Video */}
         {renderMedia(currentBanner)}
 

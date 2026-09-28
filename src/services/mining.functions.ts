@@ -55,6 +55,52 @@ export const MINING_TOKEN_COSTS = {
  * Evita linhas duplicadas no catálogo global de produtos minerados,
  * atualizando histórico de preços, imagens e metadados quando o produto já existe.
  */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+    .slice(0, 80);
+}
+
+export async function autoPromoteMinedArticle(supabase: any, article: any) {
+  try {
+    const title = article.ai_structured_title || article.raw_title;
+    if (!title || title.length < 5) return;
+
+    const baseSlug = slugify(title);
+    const slug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+    const summary = article.ai_summary || article.raw_description || (article.extracted_markdown ? article.extracted_markdown.slice(0, 250) : "Notícia regional atualizada.");
+    const content = article.extracted_markdown || summary;
+    const coverUrl = article.ai_suggested_cover_url || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&auto=format&fit=crop&q=80";
+
+    const { data: existingNews } = await supabase
+      .from("news_articles")
+      .select("id")
+      .ilike("title", title.trim())
+      .maybeSingle();
+
+    if (!existingNews) {
+      await supabase.from("news_articles").insert({
+        title: title.trim(),
+        slug,
+        summary: summary.slice(0, 350),
+        content,
+        kicker: article.ai_suggested_kicker || "Regional",
+        cover_url: coverUrl,
+        status: "published",
+        published_at: new Date().toISOString(),
+        reading_time_minutes: Math.max(2, Math.ceil((content.length || 500) / 800)),
+        store_id: article.store_id || null,
+      });
+    }
+  } catch (err) {
+    console.warn("[autoPromoteMinedArticle] Non-fatal auto-promote error:", err);
+  }
+}
+
 export async function enrichOrInsertMinedProduct(supabase: any, prodPayload: any) {
   // 1. Busca por source_url exata
   const { data: existingByUrl } = await supabase
@@ -2646,6 +2692,15 @@ export const runScraperFn = createServerFn({ method: "POST" })
                   word_count: pageData.stats.wordCount,
                   crawl_queue_id: queueItemId || undefined,
                 });
+                if (qualityScore >= 55) {
+                  await autoPromoteMinedArticle(supabase, {
+                    raw_title: pageData.title,
+                    ai_structured_title: pageData.title,
+                    ai_suggested_cover_url: pageData.openGraph.image,
+                    ai_summary: pageData.openGraph.description,
+                    extracted_markdown: pageData.cleanText.substring(0, 10000),
+                  });
+                }
               }
             }
 
@@ -2745,6 +2800,7 @@ export const runScraperFn = createServerFn({ method: "POST" })
 
                     if (!existing) {
                       await supabase.from("mined_articles").insert(m);
+                      await autoPromoteMinedArticle(supabase, m);
                     }
                   }
                   totalItemsQueued += queueInserts.length;

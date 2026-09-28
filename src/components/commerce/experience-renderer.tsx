@@ -390,6 +390,18 @@ function ExperienceNodeRenderer({
 }: ExperienceNodeRendererProps) {
  const node = sanitizeNodeProps(rawNode);
  if (!node || (node.is_hidden && !isEditing)) return null;
+
+ // ── Checagem de Localidade / Cidade Alvo (Filtro Geográfico CMS) ────────────
+ const nodeCityFilter = (node.layout_rules as any)?.city_filter || (node.content as any)?.city_filter;
+ if (!isEditing && nodeCityFilter && nodeCityFilter !== "all") {
+   const currentActiveCity = typeof window !== "undefined"
+     ? new URLSearchParams(window.location.search).get("cidade") || localStorage.getItem("waesy_selected_city")
+     : null;
+   if (currentActiveCity && currentActiveCity.toLowerCase() !== nodeCityFilter.toLowerCase()) {
+     return null;
+   }
+ }
+
  const effectiveType = BLOCK_TYPE_ALIASES[node.block_type] || node.block_type;
  const manifest = builderRegistry[node.block_type] || builderRegistry[effectiveType] || {
  type: node.block_type as any,

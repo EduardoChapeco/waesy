@@ -1300,7 +1300,18 @@ function cleanAddressSegment(text: string): string {
 
               {/* Renderização Dinâmica das Seções Configuradas */}
               {vitrineSections
-                .filter((s) => s.enabled)
+                .filter((s) => {
+                  if (!s.enabled) return false;
+                  if (s.city_filter && s.city_filter !== "all") {
+                    const currentCity = typeof window !== "undefined"
+                      ? new URLSearchParams(window.location.search).get("cidade") || localStorage.getItem("waesy_selected_city")
+                      : null;
+                    if (currentCity && s.city_filter.toLowerCase() !== currentCity.toLowerCase()) {
+                      return false;
+                    }
+                  }
+                  return true;
+                })
                 .map((section) => {
                   if (section.type === "banners") {
                     if (!banners || banners.length === 0) return null;

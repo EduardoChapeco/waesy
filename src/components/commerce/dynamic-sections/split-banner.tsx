@@ -141,12 +141,19 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
 
     // Default: Imagem de alta resolução ou GIF animado
     return (
-      <div className="relative w-full h-full min-h-[340px] rounded-2xl overflow-hidden bg-muted/20 shadow-2xs">
+      <div className="relative w-full h-full min-h-[220px] sm:min-h-[340px] aspect-[16/10] sm:aspect-auto rounded-2xl overflow-hidden bg-muted/20 shadow-2xs flex items-center justify-center">
+        {/* Camada Ambiente Desfocada para Preenchimento Limpo */}
+        <img
+          src={mediaUrl}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 size-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none select-none"
+        />
         <img
           src={mediaUrl}
           alt={title || "Banner promocional"}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+          className="relative size-full object-contain sm:object-cover transition-transform duration-700 hover:scale-105 select-none"
         />
       </div>
     );
