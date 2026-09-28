@@ -18,7 +18,16 @@ export interface TourismItemDTO {
  subtitle?: string | null;
  description: string;
  summary?: string | null;
- category: "passeios" | "hospedagens" | "gastronomia_turistica" | "aventura" | "agencias" | "cultura";
+ category: "passeios" | "hospedagens" | "gastronomia_turistica" | "aventura" | "agencias" | "cultura" | "group_tour" | "excursion" | "travel_package" | "resort" | string;
+	destination?: string | null;
+	destination_city?: string | null;
+	departure_city?: string | null;
+	departure_date?: string | null;
+	return_date?: string | null;
+	cover_image_url?: string | null;
+	total_seats?: number | null;
+	available_seats?: number | null;
+	notes?: string | null;
  location: string;
  location_name?: string;
  duration: string;
@@ -90,16 +99,18 @@ export const listPublicTourism = createServerFn({ method: "GET" })
  .select("*")
  .eq("status", "active")
  .not("id", "like", "b0000000-%")
- .not("title", "ilike", "%Catamarã%")
- .not("title", "ilike", "%Rota das Cachoeiras%")
- .not("title", "ilike", "%Trilha Ecológica%")
+ 
  .order("is_featured", { ascending: false })
  .order("created_at", { ascending: false })
  .limit(limit);
 
  if (data?.category && data.category !== "todos") {
- query = query.eq("category", data.category);
- }
+		if (data.category === "pacotes") {
+			query = query.in("category", ["pacotes", "travel_package", "group_tour", "excursion", "resort"]);
+		} else {
+			query = query.eq("category", data.category);
+		}
+	}
 
  if (data?.search && data.search.trim()) {
  const q = `%${data.search.trim()}%`;
@@ -126,6 +137,15 @@ export const listPublicTourism = createServerFn({ method: "GET" })
  category: row.category,
  location: row.location,
  location_name: row.location?.split(",")?.[0] || row.location,
+		destination: row.destination || row.destination_city || row.location,
+		destination_city: row.destination_city || row.destination || row.location,
+		departure_city: row.departure_city || null,
+		departure_date: row.departure_date || null,
+		return_date: row.return_date || null,
+		cover_image_url: row.cover_image_url || row.image_url,
+		total_seats: row.total_seats || null,
+		available_seats: row.available_seats || null,
+		notes: row.notes || null,
  duration: row.duration,
  price_display: row.price_display,
  price_cents: row.price_cents ? Number(row.price_cents) : null,
@@ -187,7 +207,16 @@ export const getPublicTourismById = createServerFn({ method: "GET" })
  badge_label: row.badge_label || "Experiência",
  included_items: row.included_items || [],
  what_to_bring: row.what_to_bring || [],
- itinerary: row.itinerary || row.attributes?.itinerary || row.attributes?.itinerary_days || null,
+ 		destination: row.destination || row.destination_city || row.location,
+		destination_city: row.destination_city || row.destination || row.location,
+		departure_city: row.departure_city || null,
+		departure_date: row.departure_date || null,
+		return_date: row.return_date || null,
+		cover_image_url: row.cover_image_url || row.image_url,
+		total_seats: row.total_seats || null,
+		available_seats: row.available_seats || null,
+		notes: row.notes || null,
+itinerary: row.itinerary || row.attributes?.itinerary || row.attributes?.itinerary_days || null,
  is_featured: row.is_featured ?? false,
  status: row.status,
  created_at: row.created_at,
