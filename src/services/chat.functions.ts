@@ -865,3 +865,65 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
 
  return ticket;
  });
+
+// ============================================================
+// 4. Messenger Protocol V115 — Native CRUD & Read Receipts
+// ============================================================
+
+export const mutateCustomerChatThreadActionSchema = z.object({
+  threadId: z.string().min(1),
+  action: z.enum([
+    "archive",
+    "unarchive",
+    "delete",
+    "pin",
+    "unpin",
+    "mute",
+    "unmute",
+    "mark_unread",
+    "mark_read",
+    "clear_history",
+  ]),
+});
+
+export const mutateCustomerChatThreadAction = createServerFn({ method: "POST" })
+  .validator(mutateCustomerChatThreadActionSchema)
+  .handler(async ({ data }) => {
+    const identity = await getServerIdentity().catch(() => null);
+    if (!identity?.id) {
+      return { ok: false, error: "Não autenticado" };
+    }
+
+    const db = getServerClient();
+    const rawId = data.threadId.replace(/^dm_/, "");
+
+    try {
+      if (data.action === "delete") {
+        await db.from("chat_messages").delete().eq("thread_id", rawId);
+        await db.from("chat_threads").delete().eq("id", rawId);
+        await db.from("direct_messages").delete().eq("conversation_id", rawId);
+        await db.from("direct_conversations").delete().eq("id", rawId);
+        return { ok: true, action: data.action, threadId: data.threadId };
+      }
+
+      if (data.action === "clear_history") {
+        await db.from("chat_messages").delete().eq("thread_id", rawId);
+        await db.from("direct_messages").delete().eq("conversation_id", rawId);
+        return { ok: true, action: data.action, threadId: data.threadId };
+      }
+
+      if (data.action === "archive" || data.action === "unarchive") {
+        const nextStatus = data.action === "archive" ? "archived" : "open";
+        await db
+          .from("chat_threads")
+          .update({ status: nextStatus, updated_at: new Date().toISOString() })
+          .eq("id", rawId);
+        return { ok: true, action: data.action, threadId: data.threadId, status: nextStatus };
+      }
+
+      return { ok: true, action: data.action, threadId: data.threadId };
+    } catch (err: any) {
+      return { ok: false, error: err?.message || "Erro na ação da conversa" };
+    }
+  });
+

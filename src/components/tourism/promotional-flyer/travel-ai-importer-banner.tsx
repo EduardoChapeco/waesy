@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Sparkles, UploadCloud, Copy, Loader2, Check, ArrowRight, Image as ImageIcon } from "lucide-react";
+import { Star, UploadCloud, Copy, Loader2, Check, ArrowRight, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -85,7 +85,7 @@ export function TravelAiImporterBanner({ onExtracted, className = "" }: TravelAi
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="flex size-7 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-2xs">
-              <Sparkles className="size-4" />
+              <Star className="size-4" />
             </span>
             <h3 className="text-xs sm:text-sm font-bold text-foreground">
               Criação Automática por Imagem, Print ou PDF

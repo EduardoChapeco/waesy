@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  CheckCircle2,
-  Sparkles,
-  MapPin,
-  Ticket,
-  Star,
-  ShoppingBag,
-  Clock,
-  Share2,
-} from "lucide-react";
+import { CheckCircle2, Award, MapPin, Ticket, Star, ShoppingBag, Clock, Share2 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -154,7 +145,7 @@ export function FounderSmartphoneMockup({
           <div className="rounded-2xl bg-card border border-border/80 p-3 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="size-3 text-primary" />
+                <Star className="size-3 text-primary" />
                 Membro Fundador 2027
               </span>
               <Badge variant="outline" className="border-border text-foreground text-[9px] font-mono font-bold">
@@ -162,7 +153,7 @@ export function FounderSmartphoneMockup({
               </Badge>
             </div>
             <p className="text-[10px] text-muted-foreground leading-relaxed">
-              Empresa credenciada no Circuito Internacional Waesy Chapecó & SMO.
+              Empresa credenciada no Circuito Internacional Waesy Chapecó e SMO.
             </p>
           </div>
 

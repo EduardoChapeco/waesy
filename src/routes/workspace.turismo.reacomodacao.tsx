@@ -1,45 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  Plus,
-  Search,
-  CheckCircle2,
-  Clock,
-  Send,
-  ShieldAlert,
-  FileText,
-  Utensils,
-  Hotel,
-  RefreshCw,
-  PhoneCall,
-  ExternalLink,
-  Loader2,
-  User,
-  Plane,
-  Hash,
-} from 'lucide-react';
+import { AlertTriangle, Plus, Search, CheckCircle2, Clock, Send, ShieldAlert, FileText, Utensils, Hotel, RefreshCw, PhoneCall, ExternalLink, Loader2, User, Plane, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import { useWorkspaceStore } from '@/lib/store-context';
 import { getStoreSettings } from '@/services/store.functions';
-import {
-  listFlightChangeCases,
-  createFlightChangeCase,
-  updateChangeCaseWorkflow,
-  calculateAnacRights,
-} from '@/services/travel-reaccommodation.functions';
+import { listFlightChangeCases, createFlightChangeCase, updateChangeCaseWorkflow, calculateAnacRights } from '@/services/travel-reaccommodation.functions';
 import { listCustomers } from '@/services/crm.functions';
 import { listFlightItineraries } from '@/services/travel-flights.functions';
 import type {
@@ -50,7 +21,7 @@ import type {
 } from '@/types/travel-reaccommodation';
 
 export const Route = createFileRoute('/workspace/turismo/reacomodacao')({
-  head: () => ({ meta: [{ title: 'Casos ANAC 400 & Reacomodação | Workspace Waesy' }] }),
+  head: () => ({ meta: [{ title: 'Reacomodação ANAC | Workspace Waesy' }] }),
   loader: async () => {
     try {
       const store = await getStoreSettings().catch(() => null);
@@ -198,7 +169,7 @@ export default function ReaccommodationPage() {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <ShieldAlert className="size-5 text-amber-500" />
-            Casos ANAC 400 & Reacomodação Aérea
+            Casos ANAC 400 e Reacomodação Aérea
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Registro e assistência ao passageiro em contingências de voo conforme Resolução ANAC 400/2016.{' '}
@@ -421,7 +392,7 @@ export default function ReaccommodationPage() {
                 <ShieldAlert className="size-5" />
               </div>
               <div>
-                <SheetTitle className="text-base font-bold">Registrar Caso ANAC 400 (Contingência & Reacomodação)</SheetTitle>
+                <SheetTitle className="text-base font-bold">Registrar Caso ANAC 400 (Contingência e Reacomodação)</SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
                   Vincule o passageiro, bilhete aéreo e calcule a assistência material obrigatória por lei.
                 </SheetDescription>

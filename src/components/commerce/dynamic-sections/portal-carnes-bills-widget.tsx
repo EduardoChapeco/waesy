@@ -76,7 +76,7 @@ export function PortalCarnesBillsWidget({ content, design_tokens }: PortalCarnes
  <div className="flex items-center gap-2">
  <QrCode className="w-6 h-6 text-primary" />
  <h2 className="text-xl font-bold tracking-tight text-foreground">
- {content?.title || "Carnê Digital & Parcelas"}
+ {content?.title || "Carnê Digital"}
  </h2>
  </div>
  <p className="text-sm text-muted-foreground mt-1">

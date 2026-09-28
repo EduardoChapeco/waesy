@@ -2,27 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Layers,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  Edit2,
-  Trash2,
-  ExternalLink,
-  CheckCircle2,
-  XCircle,
-  Package,
-  Image as ImageIcon,
-  Sparkles,
-} from "lucide-react";
+import { Layers, Plus, Search, SlidersHorizontal, Edit2, Trash2, ExternalLink, CheckCircle2, XCircle, Package, Image as ImageIcon, Star } from "lucide-react";
 
-import {
-  listCollections,
-  createCollection,
-  updateCollection,
-  deleteCollection,
-} from "@/services/admin-catalog.functions";
+import { listCollections, createCollection, updateCollection, deleteCollection } from "@/services/admin-catalog.functions";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,31 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/state/states";
 import { cn } from "@/lib/utils";
 

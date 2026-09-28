@@ -111,7 +111,7 @@ export async function internalGetStoreCashSafesSummary(targetStoreId?: string | 
     {
       id: "safe_payroll",
       type: "payroll",
-      title: "Cofre Folha Salarial & Benefícios",
+      title: "Cofre Folha Salarial e Benefícios",
       currentAmountCents: payrollCurrent,
       targetAmountCents: payrollTarget,
       retentionPercentage: payrollRetention,
@@ -124,7 +124,7 @@ export async function internalGetStoreCashSafesSummary(targetStoreId?: string | 
     {
       id: "safe_rent",
       type: "rent",
-      title: "Cofre Aluguel & Condomínio Comercial",
+      title: "Cofre Aluguel e Condomínio Comercial",
       currentAmountCents: rentCurrent,
       targetAmountCents: rentTarget,
       retentionPercentage: rentRetention,

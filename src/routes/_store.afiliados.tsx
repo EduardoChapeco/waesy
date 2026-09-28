@@ -2,42 +2,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Copy,
-  Share2,
-  Users,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  Target,
-  Coins,
-  Lock,
-  Eye,
-  EyeOff,
-  ShoppingBag,
-  Store,
-  Layers,
-  ArrowRight,
-  TrendingUp,
-  SlidersHorizontal,
-  Sparkles,
-  Ticket,
-  ChevronRight,
-  Check,
-  PenSquare,
-  Globe,
-  Tag,
-  Percent,
-  ArrowUp,
-  ArrowDown,
-  Calendar,
-  Plus,
-  Trash2,
-  MessageCircle,
-  Send,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Copy, Share2, Users, ShieldCheck, CheckCircle2, Clock, ExternalLink, Target, Coins, Lock, Eye, EyeOff, ShoppingBag, Store, Layers, ArrowRight, TrendingUp, SlidersHorizontal, Star, Ticket, ChevronRight, Check, PenSquare, Globe, Tag, Percent, ArrowUp, ArrowDown, Calendar, Plus, Trash2, MessageCircle, Send, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -45,32 +10,17 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreatorNicheSelect } from "@/components/profile/creator-niche-select";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
-import {
-  getMyAffiliateTokensOverview,
-  registerAffiliate,
-  upsertCreatorProfile,
-  updateProfilePrivacyMode,
-  getAffiliateShowcaseProducts,
-  getAvailablePartnerStores,
-  getCreatorAnalytics,
-  saveCreatorShowcaseSettings,
-  togglePartnerStoreConnection,
-  getCreatorEvents,
-} from "@/services/affiliates.functions";
+import { getMyAffiliateTokensOverview, registerAffiliate, upsertCreatorProfile, updateProfilePrivacyMode, getAffiliateShowcaseProducts, getAvailablePartnerStores, getCreatorAnalytics, saveCreatorShowcaseSettings, togglePartnerStoreConnection, getCreatorEvents } from "@/services/affiliates.functions";
 import { getProfile } from "@/services/auth.functions";
 
 export const Route = createFileRoute("/_store/afiliados")({
   head: () => ({
     meta: [
-      { title: "Parceiros & Criadores de Conteúdo | Waesy" },
+      { title: "Parceiros e Criadores de Conteúdo | Waesy" },
       {
         name: "description",
         content:
@@ -441,7 +391,7 @@ function AfiliadosPage() {
       icon: ShoppingBag,
     },
     events: {
-      label: "Próximos Eventos & Shows",
+      label: "Próximos Eventos e Shows",
       desc: `${creatorEvents.length} evento(s) da marca agendados`,
       icon: Calendar,
     },
@@ -451,12 +401,29 @@ function AfiliadosPage() {
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground pb-28">
-      {/* ─── Top Bar Nativa Apple HIG (Direta, Comercial e Silenciosa) ─── */}
-      <div className="border-b border-border/40 bg-card/70 backdrop-blur-md px-2.5 sm:px-6 py-2.5 sm:py-3.5 sticky top-0 z-20">
+      {/* ─── V117 Universal Header Mobile ─── */}
+      <NativeMobileHeader
+        title="Parceiros"
+        centerTitle
+        backTo="/conta"
+        rightAction={
+          partner ? (
+            <Button asChild variant="outline" size="sm" className="h-8 px-2.5 rounded-xl text-xs gap-1">
+              <Link to="/u/$username" params={{ username: referralHandle }}>
+                <Globe className="size-3.5" />
+                <span>Vitrine</span>
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {/* ─── Top Bar Desktop Apple HIG (Direta, Comercial e Silenciosa) ─── */}
+      <div className="hidden lg:block border-b border-border/40 bg-card/70 backdrop-blur-md px-6 py-3.5 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-sm sm:text-base font-bold tracking-tight text-foreground truncate">
-              Parceiros & Criadores
+            <h1 className="text-base font-bold tracking-tight text-foreground truncate">
+              Parceiros
             </h1>
             {partner && (
               <Badge variant="outline" className="text-[11px] font-mono bg-primary/5 text-primary border-primary/20 shrink-0">
@@ -466,11 +433,11 @@ function AfiliadosPage() {
           </div>
 
           {partner && (
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5">
                 <Link to="/u/$username" params={{ username: referralHandle }}>
                   <Globe className="size-3.5" />
-                  <span className="hidden xs:inline">Minha Vitrine</span>
+                  <span>Minha Vitrine</span>
                 </Link>
               </Button>
 
@@ -485,21 +452,27 @@ function AfiliadosPage() {
         </div>
       </div>
 
-      {/* Container Principal com Padrão 1px Mobile (Edge-to-Edge) */}
-      <div className="max-w-5xl mx-auto px-0 sm:px-4 md:px-6 py-2 sm:py-6">
+      {/* Container Principal com Respiro Anti-Claustrofobia (V117 px-4 sm:px-5) */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-5 md:px-6 py-3 sm:py-6">
         {isLoading && !partner ? (
           <div className="max-w-md mx-auto py-20 text-center space-y-4">
             <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
-              <Sparkles className="size-6" />
+              <Star className="size-6" />
             </div>
             <p className="text-sm font-semibold text-foreground">Carregando painel...</p>
           </div>
         ) : partner ? (
           /* ─── PAINEL COMPLETO DO CRIADOR / PARCEIRO ────────────── */
           <div className="space-y-4 sm:space-y-6">
-            {/* Navegação em Tabs (Scroll Suave no Mobile sem Quebra Feia) */}
+            {/* Navegação em Tabs (Snap & Fade Physics no Mobile) */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-              <TabsList className="h-10 sm:h-11 p-1 bg-muted/40 rounded-xl border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full sm:grid sm:grid-cols-5">
+              <TabsList
+                className="h-10 sm:h-11 p-1 bg-muted/40 rounded-xl border border-border/40 flex items-center gap-1 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full sm:grid sm:grid-cols-5 pr-6 sm:pr-1"
+                style={{
+                  maskImage: "linear-gradient(to right, black 90%, transparent 100%)",
+                  WebkitMaskImage: "linear-gradient(to right, black 90%, transparent 100%)",
+                }}
+              >
                 <TabsTrigger value="dashboard" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <TrendingUp className="size-3.5" />
                   <span>Visão Geral</span>
@@ -510,11 +483,11 @@ function AfiliadosPage() {
                 </TabsTrigger>
                 <TabsTrigger value="stores" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <Store className="size-3.5" />
-                  <span>Lojas & Cupons</span>
+                  <span>Lojas</span>
                 </TabsTrigger>
                 <TabsTrigger value="referrals" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <Coins className="size-3.5" />
-                  <span>Ganhos & Bônus</span>
+                  <span>Ganhos</span>
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="h-8 sm:h-9 px-3 text-xs rounded-lg gap-1.5 font-medium shrink-0 snap-start sm:shrink">
                   <SlidersHorizontal className="size-3.5" />
@@ -1244,7 +1217,7 @@ function AfiliadosPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-foreground">
-                        Seus Ganhos & Extrato
+                        Seus Ganhos e Extrato
                       </h3>
                       <p className="text-xs text-muted-foreground">
                         Comissões e bônus acumulados por indicações e vendas confirmadas.
@@ -1561,7 +1534,7 @@ function AfiliadosPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5">
                       <Coins className="size-4 text-emerald-600" />
-                      <h3 className="text-xs font-bold text-foreground">Ativação Rápida: Apenas Links & Comissões</h3>
+                      <h3 className="text-xs font-bold text-foreground">Ativação Rápida: Apenas Links e Comissões</h3>
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
                       Não quer uma vitrine pública de criador? Ative seu link de parceiro agora para divulgar lojas e produtos e receber comissões diretamente no seu CPF via PIX.
@@ -1617,7 +1590,7 @@ function AfiliadosPage() {
                     }}
                     className="h-8 px-3 rounded-xl text-xs gap-1.5 shrink-0 self-start sm:self-auto font-medium"
                   >
-                    <Sparkles className="size-3.5 text-primary" />
+                    <Star className="size-3.5 text-primary" />
                     <span>Sincronizar meu perfil</span>
                   </Button>
                 </div>
@@ -1792,7 +1765,7 @@ function AfiliadosPage() {
                     onClick={() => setOnboardingStep(4)}
                     className="flex-1 h-11 rounded-xl text-xs font-semibold gap-1.5"
                   >
-                    <span>Revisar & Ativar</span>
+                    <span>Revisar e Ativar</span>
                     <ArrowRight className="size-4" />
                   </Button>
                 </div>

@@ -1,23 +1,9 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Sparkles,
-  Key,
-  ShieldCheck,
-  CheckCircle2,
-  ArrowRight,
-  Zap,
-} from "lucide-react";
+import { Star, Key, ShieldCheck, CheckCircle2, ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export interface AiCurationUpgradeModalProps {
   isOpen: boolean;
@@ -41,7 +27,7 @@ export function AiCurationUpgradeModal({
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-primary/10 text-primary">
-              <Sparkles className="size-5" />
+              <Star className="size-5" />
             </span>
             <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
               RECURSO PREMIUM / BYOK

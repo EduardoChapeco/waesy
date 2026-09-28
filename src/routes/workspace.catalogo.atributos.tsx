@@ -1,24 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import {
- Plus,
- MoreHorizontal,
- Edit,
- Trash2,
- Copy,
- Search,
- ChevronDown,
- ChevronRight,
- Check,
- Image as ImageIcon,
- ImagePlus,
- X,
- Loader2,
- Utensils,
- Coffee,
- PlusCircle,
- Layers,
- Gift,
-} from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, Copy, Search, ChevronDown, ChevronRight, Check, Image as ImageIcon, ImagePlus, X, Loader2, Utensils, Coffee, PlusCircle, Layers, Gift } from "lucide-react";
 import { useState, useMemo, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,39 +9,16 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- listOptionGroups,
- upsertOptionGroup,
- deleteOptionGroup,
- quickUpdateOptionValue,
-} from "@/services/admin-catalog.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listOptionGroups, upsertOptionGroup, deleteOptionGroup, quickUpdateOptionValue } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { uploadStoreMedia } from "@/services/storage.functions";
@@ -95,7 +53,7 @@ type FormValues = z.infer<typeof formSchema>;
 import { getNicheOptionGroupPresets, type OptionGroupPreset } from "@/lib/niche-presets";
 
 export const Route = createFileRoute("/workspace/catalogo/atributos")({
- head: () => ({ meta: [{ title: "Adicionais & Grades | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Adicionais | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const [groupsRes, storeRes] = await Promise.all([
@@ -339,7 +297,7 @@ function OptionGroupsPage() {
  <TableHead className="text-xs font-bold text-foreground">Nome de Exibição</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Tipo de Seleção</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Regras</TableHead>
- <TableHead className="text-xs font-bold text-foreground">Adicionais & Fotos</TableHead>
+ <TableHead className="text-xs font-bold text-foreground">Adicionais e Fotos</TableHead>
  <TableHead className="w-[80px]"></TableHead>
  </TableRow>
  </TableHeader>

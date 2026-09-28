@@ -1,18 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import {
- Plus,
- Trash2,
- Edit3,
- Image as ImageIcon,
- Link as LinkIcon,
- Video,
- ShoppingBag,
- Eye,
- Clock,
- CheckCircle,
- XCircle,
- Share2,
-} from "lucide-react";
+import { Plus, Trash2, Edit3, Image as ImageIcon, Link as LinkIcon, Video, ShoppingBag, Eye, Clock, CheckCircle, XCircle, Share2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -27,26 +14,13 @@ import { listAdminStories, upsertStory, deleteStory } from "@/services/cms.funct
 import { createStory } from "@/services/stories.functions";
 import { listStoreCollabs, respondToStoryCollab, type StoryCollabDTO } from "@/services/creators.functions";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogFooter,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/workspace/cms/stories")({
- head: () => ({ meta: [{ title: "Stories & Collabs (CMS) | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Stories | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const [storiesRes, collabsRes] = await Promise.all([
@@ -401,11 +375,11 @@ function CmsStoriesPage() {
  </SelectTrigger>
  <SelectContent>
  <SelectItem value="geral">Geral (Todas as Vitrines)</SelectItem>
- <SelectItem value="gastronomia">Gastronomia & Delivery</SelectItem>
- <SelectItem value="mercado">Supermercado & Feira</SelectItem>
- <SelectItem value="moda">Moda & Vestuário</SelectItem>
- <SelectItem value="turismo">Turismo & Lazer</SelectItem>
- <SelectItem value="servicos">Serviços & Beleza</SelectItem>
+ <SelectItem value="gastronomia">Gastronomia e Delivery</SelectItem>
+ <SelectItem value="mercado">Supermercado e Feira</SelectItem>
+ <SelectItem value="moda">Moda e Vestuário</SelectItem>
+ <SelectItem value="turismo">Turismo e Lazer</SelectItem>
+ <SelectItem value="servicos">Serviços e Beleza</SelectItem>
  </SelectContent>
  </Select>
  </div>

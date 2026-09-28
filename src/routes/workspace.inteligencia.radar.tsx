@@ -1,42 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Compass,
-  Plus,
-  Globe,
-  Instagram,
-  RefreshCw,
-  Shield,
-  Target,
-  Layers,
-  ArrowUpRight,
-  CheckCircle2,
-  ExternalLink,
-  ChevronRight,
-  TrendingUp,
-  Sliders,
-  DollarSign,
-  AlertCircle,
-  Palette,
-  Eye,
-  FileText,
-} from "lucide-react";
-import {
-  listCompetitors,
-  createCompetitor,
-  captureAndAnalyzeCompetitor,
-  getStoreBrandDna,
-  updateStoreBrandDna,
-} from "@/services/market-radar.functions";
+import { Compass, Plus, Globe, Instagram, RefreshCw, Shield, Target, Layers, ArrowUpRight, CheckCircle2, ExternalLink, ChevronRight, TrendingUp, Sliders, DollarSign, AlertCircle, Palette, Eye, FileText } from "lucide-react";
+import { listCompetitors, createCompetitor, captureAndAnalyzeCompetitor, getStoreBrandDna, updateStoreBrandDna } from "@/services/market-radar.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  MarketCompetitorDTO,
-  CompetitorSnapshotDTO,
-  BrandDnaProfileDTO,
-} from "@/types/squads-and-onboarding";
+import { MarketCompetitorDTO, CompetitorSnapshotDTO, BrandDnaProfileDTO } from "@/types/squads-and-onboarding";
 
 export const Route = createFileRoute("/workspace/inteligencia/radar")({
-  head: () => ({ meta: [{ title: "Radar de Mercado & Brand DNA | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Radar de Mercado e Brand DNA | Waesy" }] }),
   loader: async () => {
     try {
     const store = await getStoreSettings().catch(() => null);
@@ -193,7 +163,7 @@ export function MarketRadarPage() {
                 </span>
               </div>
               <h1 className="text-2xl font-semibold tracking-tight mt-1 text-foreground">
-                Radar de Concorrentes & Brand DNA
+                Radar de Concorrentes e Brand DNA
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
                 Monitoramento de mercado, arquétipos e posicionamento estratégico.
@@ -233,7 +203,7 @@ export function MarketRadarPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              Radar & Concorrentes
+              Radar e Concorrentes
             </button>
             <button
               type="button"
@@ -244,7 +214,7 @@ export function MarketRadarPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              DNA da Sua Marca (Arquétipos & Tom)
+              DNA da Sua Marca (Arquétipos e Tom)
             </button>
             <button
               type="button"
@@ -255,7 +225,7 @@ export function MarketRadarPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              Matriz SWOT & Ganchos de Ataque
+              Matriz SWOT e Ganchos de Ataque
             </button>
           </div>
         </div>

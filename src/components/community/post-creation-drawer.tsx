@@ -2,32 +2,14 @@ import React, { useState, useRef } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
- ImageSquare,
- FilmStrip,
- X,
- Plus,
- Trash,
- MapPin,
- ListBullets,
- CircleNotch,
- ChatCircleText,
-} from "@phosphor-icons/react";
-import {
- Drawer,
- DrawerContent,
- DrawerHeader,
- DrawerTitle,
-} from "@/components/ui/drawer";
+import { ImageSquare, FilmStrip, X, Plus, Trash, MapPin, ListBullets, CircleNotch, ChatCircleText } from "@phosphor-icons/react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { createPost } from "@/services/social.functions";
-import {
- uploadPostMedia,
- getPostMediaSignedUrl,
-} from "@/services/storage.functions";
+import { uploadPostMedia, getPostMediaSignedUrl } from "@/services/storage.functions";
 import { Highlighter } from "lucide-react";
 import { extractMediaFromClipboard, fileToBase64 } from "@/lib/clipboard-media";
 

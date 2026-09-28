@@ -1,12 +1,7 @@
 import React, { useState, useEffect, forwardRef } from "react";
 import { Input } from "./input";
 import { cn } from "@/lib/utils";
-import {
-  maskDocumentProgressive,
-  cleanDocument,
-  validateCpfMod11,
-  validateCnpjMod11,
-} from "@/lib/document-validator";
+import { maskDocumentProgressive, cleanDocument, validateCpfMod11, validateCnpjMod11 } from "@/lib/document-validator";
 import { Check, ShieldCheck, AlertCircle } from "lucide-react";
 
 export interface DocumentFieldProps

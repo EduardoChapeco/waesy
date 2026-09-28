@@ -3,14 +3,7 @@ import { useState } from "react";
 import { Loader2, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getUserSession } from "@/services/auth.functions";
 import { getUserTokenWallet } from "@/services/tokens.functions";
 

@@ -1,22 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  Search,
-  Wrench,
-  Clock,
-  Sparkles,
-  Tag,
-  CheckCircle2,
-  X,
-  Loader2,
-  Layers,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Search, Wrench, Clock, Star, Tag, CheckCircle2, X, Loader2, Layers } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,12 +16,12 @@ interface ServiceSearchDialogProps {
 
 const CATEGORY_TABS = [
   { id: "all", label: "Todos os Serviços" },
-  { id: "Reformas & Reparos", label: "Reformas & Reparos" },
-  { id: "Tecnologia & Programação", label: "Dev & Tecnologia" },
-  { id: "Design & Criação", label: "Design & Criação" },
-  { id: "Marketing & Conteúdo", label: "Marketing & Conteúdo" },
+  { id: "Reformas & Reparos", label: "Reformas e Reparos" },
+  { id: "Tecnologia & Programação", label: "Dev e Tecnologia" },
+  { id: "Design & Criação", label: "Design e Criação" },
+  { id: "Marketing & Conteúdo", label: "Marketing e Conteúdo" },
   { id: "Serviços Domésticos", label: "Serviços Domésticos" },
-  { id: "Saúde & Bem-Estar", label: "Saúde & Fitness" },
+  { id: "Saúde & Bem-Estar", label: "Saúde e Fitness" },
 ];
 
 export function ServiceSearchDialog({
@@ -97,9 +81,9 @@ export function ServiceSearchDialog({
         <SheetHeader className="p-4 sm:p-6 border-b border-border/40 bg-muted/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-primary">
-              <Sparkles className="w-5 h-5 text-amber-500" />
+              <Star className="w-5 h-5 text-amber-500" />
               <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
-                Catálogo de Serviços Sob Demanda (GetNinjas / Workana / 99Freelas)
+                Catálogo de Serviços
               </span>
             </div>
             <button
@@ -110,7 +94,7 @@ export function ServiceSearchDialog({
             </button>
           </div>
           <SheetTitle className="text-xl font-bold tracking-tight text-foreground mt-1">
-            Autopreenchimento de Serviços & Pacotes
+            Catálogo de Serviços
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
             Selecione um serviço com descrição profissional, unidades de cobrança, faixas de preço de mercado e prazos. Você poderá editar todos os campos livremente.

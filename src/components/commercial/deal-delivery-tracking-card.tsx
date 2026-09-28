@@ -1,16 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import {
-  Truck,
-  CheckCircle2,
-  MapPin,
-  KeyRound,
-  ExternalLink,
-  Phone,
-  ShieldCheck,
-  Navigation,
-  Radio,
-} from "lucide-react";
+import { Truck, CheckCircle2, MapPin, KeyRound, ExternalLink, Phone, ShieldCheck, Navigation, Radio } from "lucide-react";
 import { getDispatchByDealId } from "@/services/company-delivery.functions";
 import { getDeliveryTrackingForOrder } from "@/services/dispatch.functions";
 import { Badge } from "@/components/ui/badge";

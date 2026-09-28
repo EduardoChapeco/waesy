@@ -1,39 +1,15 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Layers,
-  Power,
-  Edit2,
-  CheckCircle2,
-  XCircle,
-  ShieldCheck,
-  Loader2,
-  RefreshCw,
-  Tag,
-  Sliders,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { Layers, Power, Edit2, CheckCircle2, XCircle, ShieldCheck, Loader2, RefreshCw, Tag, Sliders, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  adminListPlatformModules,
-  adminTogglePlatformModule,
-  adminUpdatePlatformModule,
-  type PlatformModuleDTO,
-} from "@/services/modules.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { adminListPlatformModules, adminTogglePlatformModule, adminUpdatePlatformModule, type PlatformModuleDTO } from "@/services/modules.functions";
 
 export const Route = createFileRoute("/admin-master/modulos")({
   head: () => ({ meta: [{ title: "Governança Dinâmica de Módulos | Admin Master" }] }),

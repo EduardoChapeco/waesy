@@ -160,6 +160,14 @@ Antes de escrever qualquer linha de código, você DEVE ativar a skill `bigtech-
     - **Comunicação Enxuta:** Não duplicar relatórios de artifacts no corpo do chat. Respostas diretas, com links para os arquivos e sem prolixidade.
     - **Qualidade Inviolável:** A economia de tokens decorre da precisão cirúrgica de engenharia, nunca da omissão de camadas ou inserção de mocks. O build com 0 erros (`npm run build`) e a integridade de banco/BFF permanecem mandatórios.
 
+25. **The 50-Prompt Golden Codex — Propagação Global Anti-Erosão (V124 Codex Mandate).**
+    - **Design Silencioso & Anti-Jargão:** Proibição de títulos compostos em headers, abas e tabelas (usar termos atômicos: "Processo", "Canal", "Método", "Endereços"). Eliminação de cards conversacionais e textos prolixos ("Bem-vindo ao...", "Gerencie facilmente...").
+    - **A Bifurcação Perfeita:** Mobile (<640px) = WhatsApp List Edge-to-Edge (`divide-y divide-border/40`), FAB flutuante, Bottom Sheets (100dvh), touch targets mínimos de 44px (h-11), sem tap-highlight. Tablet/Fold (640-1024px) = 2 Colunas reais Master-Detail. Desktop (>1024px) = Bento Grid e Software UI de alta densidade.
+    - **Respiro Apple HIG & NativeMobileHeader:** Todas as telas de conta civil, área do cliente e subsistemas utilizam `NativeMobileHeader` com fallback href explícito e badges semânticos.
+    - **Zero Hardcode & 100% Server-Side:** Cálculos financeiros, descontos e taxas ocorrem estritamente no Backend/BFF em Integer Cents (`BRL`). Mocks e fallbacks silenciosos são sumariamente proibidos.
+    - **Media-First & AI Extraction:** Construtores iniciam com upload de mídia. O preenchimento com IA utiliza Schemas Zod estruturados completos (título, descrição, preço, logística, SEO, tags).
+    - **Omni-Hub ERP Core:** Todos os pedidos multi-canal deduzem estoque do armazém ativo em `product_location_inventories`, registram `stock_movements.location_id` e lançam recebíveis no caixa aberto (`cash_register_entries`).
+
 ## Fase Atual de Desenvolvimento
 
 Estamos solidificando a **Fase 1** (Zines, Ferramentas de Apresentação, Multi-tenant) e transicionando o núcleo canônico do Builder e do CMS. Siga as orientações de Fases do `MASTER_PLAN.md` e do `ROADMAP.md` rigidamente.

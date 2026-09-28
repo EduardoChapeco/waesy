@@ -1,55 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- Search,
- Loader2,
- RefreshCw,
-} from "lucide-react";
+import { Search, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
- Tabs,
- TabsContent,
- TabsList,
- TabsTrigger,
-} from "@/components/ui/tabs";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- getGlobalTokenStatsAdmin,
- grantBonusTokensAdmin,
- runTokenReconciliationAdmin,
- getSecurityAuditEventsAdmin,
-} from "@/services/tokens.functions";
-import {
-  listPendingInvoiceTokenDiscounts,
-  approveStoreInvoiceDiscount,
-} from "@/services/affiliates.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getGlobalTokenStatsAdmin, grantBonusTokensAdmin, runTokenReconciliationAdmin, getSecurityAuditEventsAdmin } from "@/services/tokens.functions";
+import { listPendingInvoiceTokenDiscounts, approveStoreInvoiceDiscount } from "@/services/affiliates.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/admin-master/tokens")({
@@ -324,7 +287,7 @@ function AdminTokensPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-foreground">Prova Matemática de Solvência & Cadeia SHA-256</span>
+                  <span className="text-sm font-bold text-foreground">Prova Matemática de Solvência e Cadeia SHA-256</span>
                   {reconciliationReport && (
                     <Badge
                       variant="outline"

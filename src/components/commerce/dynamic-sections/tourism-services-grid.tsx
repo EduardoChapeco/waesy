@@ -1,15 +1,5 @@
 import * as React from "react";
-import {
- Plane,
- FileCheck,
- Ship,
- Shield,
- Ticket,
- Building,
- DollarSign,
- Bus,
- ArrowRight,
-} from "lucide-react";
+import { Plane, FileCheck, Ship, Shield, Ticket, Building, DollarSign, Bus, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { recordWhatsAppLead } from "@/services/whatsapp-leads.functions";
 import { toast } from "sonner";

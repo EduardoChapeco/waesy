@@ -1,32 +1,13 @@
 import * as React from "react";
 import { useState } from "react";
-import {
-  Calendar,
-  MapPin,
-  ExternalLink,
-  Plus,
-  Trash2,
-  Edit2,
-  Clock,
-  Zap,
-  Check,
-  Globe,
-  Tag,
-  ImageIcon,
-} from "lucide-react";
+import { Calendar, MapPin, ExternalLink, Plus, Trash2, Edit2, Clock, Zap, Check, Globe, Tag, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ImageUpload } from "@/components/ui/image-upload";
 
 export interface ProfileEventItem {
@@ -140,7 +121,7 @@ export function ProfileEventsManager({
         <div>
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Calendar className="size-4 text-primary" />
-            <span>Galeria de Eventos & Apresentações</span>
+            <span>Galeria de Eventos e Apresentações</span>
           </h3>
           <p className="text-xs text-muted-foreground">
             Exiba workshops, lançamentos, feiras e encontros diretamente no seu perfil público.

@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo } from "react";
-import { Key, MapPin, Sparkles, ShieldCheck, ArrowRight } from "lucide-react";
+import { Key, MapPin, Star, ShieldCheck, ArrowRight } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import type { SocialTemplateProps } from "../types";
 
@@ -42,9 +42,9 @@ export function RealEstateLuxuryDarkGlass({ data, className = "" }: SocialTempla
       {/* ── 1. Header Noturno com Identidade de Luxo ── */}
       <div className="pt-2 text-center space-y-1.5 shrink-0">
         <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.25em] text-amber-300 font-bold">
-          <Sparkles className="size-3.5 text-amber-400" />
+          <Star className="size-3.5 text-amber-400" />
           <span>{storeName || "Private Properties"}</span>
-          <Sparkles className="size-3.5 text-amber-400" />
+          <Star className="size-3.5 text-amber-400" />
         </div>
         <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mx-auto" />
       </div>

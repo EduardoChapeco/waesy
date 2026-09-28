@@ -1,3 +1,4 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
@@ -13,11 +14,8 @@ import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { EmptyState } from "@/components/state/states";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
@@ -37,7 +35,7 @@ const DIRECTORY_CATEGORIES: FilterChipOption[] = [
 export const Route = createFileRoute("/_store/diretorio/")({
  head: () => ({
  meta: [
- { title: "Guia & Diretório de Empresas e Serviços" },
+ { title: "Guia e Diretório de Empresas e Serviços" },
  {
  name: "description",
  content:
@@ -45,10 +43,11 @@ export const Route = createFileRoute("/_store/diretorio/")({
  },
  ],
  }),
-  loader: async () => {
+  loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
     try {
       const [banners, hotpages] = await Promise.all([
-        listActiveBanners({ data: { placement: "diretorio" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "diretorio", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "diretorio" } }).catch(() => []),
       ]);
       return { banners: banners || [], hotpages: hotpages || [] };
@@ -94,7 +93,7 @@ function DirectoryPage() {
  const chip = DIRECTORY_CATEGORIES.find((c) => c.id === catKey);
  return {
  categoryKey: catKey,
- categoryName: chip?.label || "Comércios & Serviços",
+ categoryName: chip?.label || "Comércios e Serviços",
  items: catItems,
  };
  });
@@ -108,7 +107,16 @@ function DirectoryPage() {
  }, [filteredListings]);
 
   return (
-    <div className="w-full space-y-3.5 sm:space-y-4 pb-14">
+    <div className="w-full pb-14">
+      <NativeMobileHeader
+        title="Diretório"
+        centerTitle
+        backTo="/"
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar empresas, clínicas, serviços..."
+      />
+      <div className="px-4 sm:px-5 space-y-4 pt-2 sm:pt-4">
       {/* ── 1. Banners Hero de Topo ── */}
  {banners && banners.length > 0 && (
  <BannerHeroCarousel banners={banners} className="w-full" />
@@ -145,7 +153,7 @@ function DirectoryPage() {
  {/* Trilho de Empresas em Destaque (Mais Bem Avaliadas / Verificadas) */}
  {topRatedListings.length > 0 && (
  <HorizontalRail
- title="Destaques & Mais Bem Avaliados"
+ title="Destaques"
  badge="Top Escolhas"
  actionLabel="Ver grade"
  onAction={() => setViewMode("grid")}
@@ -183,7 +191,7 @@ function DirectoryPage() {
     <div className="flex items-center justify-between">
       <h2 className="text-base font-bold text-foreground flex items-center gap-2">
         <Storefront size={18} weight="bold" className="text-primary" />
-        <span>Todas as Empresas e Serviços da Região</span>
+        <span>Empresas</span>
       </h2>
     </div>
 
@@ -261,23 +269,15 @@ function DirectoryPage() {
               <EmptyState title="Nenhuma empresa encontrada com estes filtros." />
             </div>
           ) : (
-            <>
-              {/* Mobile: WhatsApp Minimalist List */}
-              <div className="block sm:hidden divide-y divide-border/30 rounded-xl border border-border/40 bg-card overflow-hidden">
-                {filteredListings.map((item) => (
-                  <DirectoryMobileWhatsAppItem key={item.id} item={item} />
-                ))}
-              </div>
-              {/* Desktop: Split List */}
-              <div className="hidden sm:flex flex-col space-y-3 w-full">
-                {filteredListings.map((item) => (
-                  <DirectoryListItem key={item.id} item={item} />
-                ))}
-              </div>
-            </>
+            <div className="flex flex-col space-y-3 w-full">
+              {filteredListings.map((item) => (
+                <DirectoryListItem key={item.id} item={item} />
+              ))}
+            </div>
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -525,118 +525,94 @@ function DirectoryBusinessCard({
 
 // ─── COMPONENTE PADRONIZADO: ITEM EM MODO LISTA COM SPLIT HORIZONTAL PERFEITO ──────────────────────────────────
 function DirectoryListItem({ item }: { item: DirectoryListingDTO }) {
- const coverUrl = item.banner_url || item.avatar_url;
+  const coverUrl = item.banner_url || item.avatar_url;
+  const categoryLabel =
+    DIRECTORY_CATEGORIES.find((c) => c.id === item.category)?.label || item.category;
+  const whatsappNumber = (item.contact_whatsapp || item.contact_phone || "").replace(/\D/g, "");
 
- const categoryLabel =
- DIRECTORY_CATEGORIES.find((c) => c.id === item.category)?.label || item.category;
+  return (
+    <div className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[140px] pl-32 sm:pl-44 w-full">
+      <Link
+        to="/diretorio/$id"
+        params={{ id: item.id }}
+        className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted/40 block cursor-pointer"
+      >
+        {coverUrl ? (
+          <img
+            src={coverUrl}
+            alt={item.business_name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted/50">
+            <Briefcase size={24} className="text-primary/30" />
+          </div>
+        )}
 
- const whatsappNumber = (item.contact_whatsapp || item.contact_phone || "").replace(/\D/g, "");
+        <div className="absolute top-2.5 left-2.5">
+          <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[9px] font-bold px-2 py-0.5 rounded-md border border-border/40">
+            {categoryLabel}
+          </Badge>
+        </div>
+      </Link>
 
- return (
- <div className="flex flex-col sm:flex-row items-stretch justify-between rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-foreground/30 transition-all group">
- <Link
- to="/diretorio/$id"
- params={{ id: item.id }}
- className="flex flex-col sm:flex-row items-stretch min-w-0 flex-1 focus-visible:outline-none"
- >
- {/* ── Imagem Split Lateral Completa (Full Split) ── */}
- <div className="relative w-full sm:w-44 md:w-52 aspect-[16/10] sm:aspect-auto sm:h-full min-h-[140px] overflow-hidden bg-muted/30 shrink-0">
- {coverUrl ? (
- <img
- src={coverUrl}
- alt={item.business_name}
- className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
- loading="lazy"
- />
- ) : (
- <div className="size-full flex items-center justify-center bg-muted/50">
- <Briefcase size={24} className="text-primary/30" />
- </div>
- )}
+      <div className="p-3.5 sm:p-4 flex flex-col justify-between min-h-[140px] gap-2">
+        <Link to="/diretorio/$id" params={{ id: item.id }} className="space-y-1 block min-w-0">
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-bold text-sm sm:text-base text-foreground truncate group-hover:text-primary transition-colors">
+              {item.business_name}
+            </h3>
+            {item.is_verified && (
+              <ShieldCheck size={14} weight="fill" className="text-primary shrink-0" />
+            )}
+          </div>
 
- <div className="absolute top-2.5 left-2.5">
- <Badge className="bg-background/90 text-foreground backdrop-blur-md text-[9px] font-bold px-2 py-0.5 rounded-md border border-border/40">
- {categoryLabel}
- </Badge>
- </div>
- </div>
+          {item.rating && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="flex items-center text-amber-500 font-bold font-mono">
+                <Star size={12} weight="fill" className="mr-0.5" />
+                {Number(item.rating).toFixed(1)}
+              </span>
+              <span>•</span>
+              <span className="truncate">{item.address || "Regional"}</span>
+            </div>
+          )}
 
- {/* ── Informações da Empresa ── */}
- <div className="p-4 sm:p-5 flex flex-col justify-between space-y-2 min-w-0 flex-1">
- <div className="space-y-1.5">
- <div className="flex items-center gap-2">
- <h3 className="font-bold text-sm sm:text-base text-foreground truncate group-hover:text-primary transition-colors">
- {item.business_name}
- </h3>
+          {item.description && (
+            <p className="text-xs text-muted-foreground line-clamp-1 leading-relaxed">
+              {item.description}
+            </p>
+          )}
+        </Link>
 
- {item.is_verified && (
- <span className="text-foreground flex items-center text-[10px] font-bold gap-0.5 shrink-0">
- <ShieldCheck size={14} weight="fill" />
- <span className="hidden sm:inline">Verificado</span>
- </span>
- )}
- </div>
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
+          {whatsappNumber && (
+            <ProtectedContactButton
+              phone={whatsappNumber}
+              entityType="directory"
+              entityId={item.id}
+              entityTitle={item.business_name}
+              storeId={(item as any).store_id || null}
+              niche={item.category}
+              variant="outline"
+              size="sm"
+              label="WhatsApp"
+              className="h-8 text-xs px-2.5 rounded-xl"
+            />
+          )}
 
- {item.rating && (
- <div className="flex items-center gap-2 text-xs text-muted-foreground">
- <div className="flex items-center text-amber-500 font-bold font-mono">
- <Star size={13} weight="fill" className="mr-0.5" />
- <span>{Number(item.rating).toFixed(1)}</span>
- </div>
- <span>•</span>
- <span className="truncate">{item.address || "Regional"}</span>
- </div>
- )}
-
- {item.description && (
- <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed pt-0.5">
- {item.description}
- </p>
- )}
- </div>
-
- {item.specialties && item.specialties.length > 0 && (
- <div className="flex flex-wrap gap-1 pt-1">
- {item.specialties.slice(0, 3).map((spec, i) => (
- <span
- key={i}
- className="text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-md"
- >
- {spec}
- </span>
- ))}
- </div>
- )}
- </div>
- </Link>
-
- {/* ── Botões de Ação na Lista (Touch Target 44px) ── */}
- <div className="p-4 sm:p-5 flex sm:flex-col items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 sm:border-l border-border/40 bg-muted/10">
- {whatsappNumber && (
- <ProtectedContactButton
- phone={whatsappNumber}
- entityType="directory"
- entityId={item.id}
- entityTitle={item.business_name}
- storeId={(item as any).store_id || null}
- niche={item.category}
- variant="outline"
- size="sm"
- label="WhatsApp"
- className="h-10 text-xs px-3 w-full sm:w-auto"
- />
- )}
-
- <Button
- asChild
- size="sm"
- className="h-10 px-4 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto cursor-pointer"
- >
- <Link to="/diretorio/$id" params={{ id: item.id }}>
- Ver Perfil
- </Link>
- </Button>
- </div>
- </div>
- );
+          <Button
+            asChild
+            size="sm"
+            className="h-8 px-3 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+          >
+            <Link to="/diretorio/$id" params={{ id: item.id }}>
+              Ver Perfil
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }

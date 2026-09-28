@@ -4,65 +4,8 @@ import { toast } from "sonner";
 import { CampaignDraftCard } from "@/components/adtech/campaign-draft-card";
 import { orchestrateCampaignIntent } from "@/services/mcp-orchestrator.functions";
 import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
-import {
- Search,
- X,
- Package,
- Tags,
- Boxes,
- ClipboardList,
- ShoppingBag,
- Store,
- Truck,
- Users,
- Sliders,
- Calendar,
- MessageSquare,
- Flame,
- Newspaper,
- DollarSign,
- Ticket,
- BarChart3,
- Building2,
- ExternalLink,
- ShieldCheck,
- Zap,
- ArrowRight,
- Settings,
- HelpCircle,
- FileSpreadsheet,
- Globe,
- Coins,
- Scale,
- Receipt,
- Eye,
- Megaphone,
- Share2,
- Star,
- Bell,
- Plane,
- Bus,
- FileText,
- ChefHat,
- Armchair,
- UtensilsCrossed,
- CreditCard,
- Percent,
- Layers,
- Award,
- Target,
-  Sparkles,
-  Mic,
-  MicOff,
-  Send,
-  Loader2,
-} from "lucide-react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { Search, X, Package, Tags, Boxes, ClipboardList, ShoppingBag, Store, Truck, Users, Sliders, Calendar, MessageSquare, Flame, Newspaper, DollarSign, Ticket, BarChart3, Building2, ExternalLink, ShieldCheck, Zap, ArrowRight, Settings, HelpCircle, FileSpreadsheet, Globe, Coins, Scale, Receipt, Eye, Megaphone, Share2, Star, Bell, Plane, Bus, FileText, ChefHat, Armchair, UtensilsCrossed, CreditCard, Percent, Layers, Award, Target, CheckCircle2, Mic, MicOff, Send, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -339,7 +282,7 @@ const SECTOR_TOOL_GROUPS: SectorGroup[] = [
     description: "Operação da loja, horários, equipe e integrações",
     tools: [
       { title: "Identidade da Loja", path: "/workspace/configuracoes", icon: Settings },
-      { title: "Recrutamento & Vagas", path: "/workspace/empregos/candidatos", icon: Briefcase, badge: "RH" },
+      { title: "Recrutamento e Vagas", path: "/workspace/empregos/candidatos", icon: Briefcase, badge: "RH" },
       { title: "Tabelas de Frete", path: "/workspace/logistica/tabelas", icon: Truck },
       { title: "Equipe de Trabalho", path: "/workspace/configuracoes/equipe", icon: Users },
       { title: "Unidades e Filiais", path: "/workspace/lojas", icon: Building2 },
@@ -554,7 +497,7 @@ export function WorkspaceAllToolsDialog({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div className="size-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
-                  <Sparkles className="size-3.5" />
+                  <Layers className="size-3.5" />
                 </div>
                 <div className="truncate">
                   <p className="text-xs font-bold text-foreground truncate">

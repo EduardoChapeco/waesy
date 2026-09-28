@@ -1,26 +1,10 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/money";
 import { createQuickOrder } from "@/services/quick-order.functions";
-import {
-  ShoppingBag,
-  Store,
-  Truck,
-  CheckCircle2,
-  Loader2,
-  QrCode,
-  CreditCard,
-  Banknote,
-  MessageCircle,
-} from "lucide-react";
+import { ShoppingBag, Store, Truck, CheckCircle2, Loader2, QrCode, CreditCard, Banknote, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

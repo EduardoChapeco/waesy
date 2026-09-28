@@ -1,46 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import {
-  listSecurityEvents,
-  getSecurityTelemetryOverview,
-  listSecurityAttackIncidents,
-  blockAttackerIp,
-  unblockAttackerIp,
-  resolveSecurityAttackIncident,
-  recordSecurityAttackIncident,
-} from "@/services/security.functions";
+import { listSecurityEvents, getSecurityTelemetryOverview, listSecurityAttackIncidents, blockAttackerIp, unblockAttackerIp, resolveSecurityAttackIncident, recordSecurityAttackIncident } from "@/services/security.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  ShieldAlert,
-  ShieldCheck,
-  Shield,
-  Globe,
-  Search,
-  RefreshCw,
-  AlertTriangle,
-  Activity,
-  Radio,
-  Clock,
-  Fingerprint,
-  Ban,
-  CheckCircle2,
-  Terminal,
-  ChevronRight,
-  Eye,
-  Layers,
-  FileCode,
-  Zap,
-} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ShieldAlert, ShieldCheck, Shield, Globe, Search, RefreshCw, AlertTriangle, Activity, Radio, Clock, Fingerprint, Ban, CheckCircle2, Terminal, ChevronRight, Eye, Layers, FileCode, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -244,13 +209,13 @@ function SecurityTelemetryPage() {
           to="/admin-master/seguranca"
           className="px-3.5 py-1.5 rounded-xl font-semibold transition-colors hover:bg-muted/60 text-muted-foreground hover:text-foreground"
         >
-          Visão Geral & Autenticações
+          Visão Geral e Autenticações
         </Link>
         <Link
           to="/admin-master/seguranca/telemetria"
           className="px-3.5 py-1.5 rounded-xl font-bold transition-colors bg-primary text-primary-foreground shadow-sm"
         >
-          Telemetria de Ataques & Invasões
+          Telemetria de Ataques e Invasões
         </Link>
         <Link
           to="/admin-master/seguranca/certificados"
@@ -265,7 +230,7 @@ function SecurityTelemetryPage() {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
             <ShieldAlert className="size-6 text-red-500" />
-            Centro Forense & Telemetria de Ataques
+            Centro Forense e Telemetria de Ataques
           </h1>
           <p className="text-xs text-muted-foreground">
             Detecção em tempo real de probes SQLi, bypass de RLS, exploração IDOR e raspadores não autorizados.
@@ -426,10 +391,10 @@ function SecurityTelemetryPage() {
                   <tr>
                     <th className="p-3.5">Severidade</th>
                     <th className="p-3.5">Tipo de Ataque</th>
-                    <th className="p-3.5">IP & Local</th>
+                    <th className="p-3.5">IP e Local</th>
                     <th className="p-3.5">Rota Alvo</th>
                     <th className="p-3.5">Status</th>
-                    <th className="p-3.5">Data & Hora</th>
+                    <th className="p-3.5">Data e Hora</th>
                     <th className="p-3.5 text-right">Ação Forense</th>
                   </tr>
                 </thead>
@@ -519,7 +484,7 @@ function SecurityTelemetryPage() {
                     <th className="p-3.5">Evento Detectado</th>
                     <th className="p-3.5">IP de Origem</th>
                     <th className="p-3.5">Score de Risco</th>
-                    <th className="p-3.5 text-right">Data & Hora</th>
+                    <th className="p-3.5 text-right">Data e Hora</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">

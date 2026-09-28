@@ -1,3 +1,4 @@
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { formatMoney } from "@/lib/money";
@@ -5,42 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/state/states";
 import { listCustomerRmas, requestCustomerRma } from "@/services/rma.functions";
 import { listCustomerOrders } from "@/services/order.functions";
-import {
-  RefreshCw,
-  Package,
-  Truck,
-  FileText,
-  Plus,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  X,
-  Loader2,
-  HelpCircle,
-} from "lucide-react";
+import { RefreshCw, Package, Truck, FileText, Plus, ArrowRight, CheckCircle2, Clock, AlertCircle, X, Loader2, HelpCircle } from "lucide-react";
 import { formatDate } from "@/lib/datetime";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/trocas")({
-  head: () => ({ meta: [{ title: "Trocas e Devoluções (RMA) | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Trocas | Waesy" }] }),
   loader: async () => {
     try {
       const [rmas, orders] = await Promise.all([
@@ -83,9 +59,9 @@ const STATUS_VARIANTS: Record<
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  return: "Devolução & Reembolso",
-  exchange: "Troca por Outro Item",
-  warranty: "Garantia / Avaria",
+  return: "Devolução",
+  exchange: "Troca",
+  warranty: "Garantia",
 };
 
 function CustomerRmaPage() {
@@ -152,11 +128,12 @@ function CustomerRmaPage() {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 pb-24 px-0 sm:px-4 md:px-0">
       {/* ── 1. Header Apple HIG Minimalista ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-5 pt-2">
+      <NativeMobileHeader title="Trocas" fallbackHref="/conta" mobileOnly />
+      <div className="hidden sm:flex items-center justify-between gap-4 border-b border-border/40 pb-5 pt-2">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Trocas & Devoluções
+              Trocas
             </h1>
             {rmas && rmas.length > 0 && (
               <Badge variant="secondary" className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full">
@@ -175,7 +152,7 @@ function CustomerRmaPage() {
           className="rounded-2xl h-11 px-5 text-sm font-semibold gap-2 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
         >
           <Plus className="size-4" />
-          <span>Nova Solicitação</span>
+          <span>Solicitar</span>
         </Button>
       </div>
 
@@ -186,7 +163,7 @@ function CustomerRmaPage() {
             <RefreshCw className="size-7" />
           </div>
           <div className="max-w-md mx-auto space-y-2">
-            <h2 className="text-lg font-bold text-foreground">Nenhuma solicitação de troca ou devolução</h2>
+            <h2 className="text-lg font-bold text-foreground">Nenhuma troca ativa</h2>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               Você não possui nenhum processo de RMA ativo. Se você recebeu um produto e precisa trocar de tamanho, se arrependeu ou notou alguma avaria, solicite abaixo.
             </p>
@@ -197,10 +174,10 @@ function CustomerRmaPage() {
               className="h-11 rounded-2xl px-6 text-sm font-semibold cursor-pointer"
             >
               <Plus className="size-4 mr-2" />
-              Solicitar Devolução ou Troca
+              Solicitar Troca
             </Button>
             <Button asChild variant="outline" className="h-11 rounded-2xl px-5 text-sm font-semibold cursor-pointer">
-              <Link to="/conta/pedidos">Ver Meus Pedidos</Link>
+              <Link to="/conta/pedidos">Pedidos</Link>
             </Button>
           </div>
         </div>
@@ -353,7 +330,7 @@ function CustomerRmaPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="return">Devolução & Estorno do Valor</SelectItem>
+                  <SelectItem value="return">Devolução e Estorno do Valor</SelectItem>
                   <SelectItem value="exchange">Troca por Outro Tamanho ou Item</SelectItem>
                   <SelectItem value="warranty">Garantia / Produto com Avaria</SelectItem>
                 </SelectContent>

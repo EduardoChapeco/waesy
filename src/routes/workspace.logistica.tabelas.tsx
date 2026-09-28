@@ -1,20 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import {
-  Truck,
-  Car,
-  Bike,
-  Boxes,
-  Zap,
-  Save,
-  Loader2,
-  Calculator,
-  Gauge,
-  DollarSign,
-  Coins,
-  Navigation,
-  CheckCircle2,
-} from "lucide-react";
+import { Truck, Car, Bike, Boxes, Zap, Save, Loader2, Calculator, Gauge, DollarSign, Coins, Navigation, CheckCircle2 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,15 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
-import {
-  listLogisticsPriceTables,
-  saveLogisticsPriceTable,
-} from "@/services/mobility.functions";
+import { listLogisticsPriceTables, saveLogisticsPriceTable } from "@/services/mobility.functions";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/logistica/tabelas")({
   head: () => ({
-    meta: [{ title: "Tabelas de Preço & Tarifas por KM | Workspace Waesy" }],
+    meta: [{ title: "Tabelas de Preço | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -179,7 +162,7 @@ function WorkspaceLogisticsPriceTablesPage() {
       {/* ── HEADER DA PÁGINA ── */}
       <PageHeader
         eyebrow="Logística & Mobilidade"
-        title="Tabelas de Preço & Tarifas por KM"
+        title="Tabelas de Tarifas"
         description="Configure as taxas de partida, valor quilométrico e piso mínimo para cálculo automático de fretes e entregadores."
         actions={
           <Button

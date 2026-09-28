@@ -1,38 +1,13 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import {
-  Plane,
-  Hotel,
-  Calendar,
-  Users,
-  MapPin,
-  DollarSign,
-  CheckCircle2,
-  FileText,
-  Loader2,
-  Phone,
-  User,
-  ShieldCheck,
-} from "lucide-react";
+import { Plane, Hotel, Calendar, Users, MapPin, DollarSign, CheckCircle2, FileText, Loader2, Phone, User, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { createManualTrip } from "@/services/travel-lifecycle.functions";
 
@@ -155,7 +130,7 @@ export function NewTripSheet({
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
               <MapPin className="size-3.5 text-primary" />
-              <span>Dados do Roteiro & Destino</span>
+              <span>Dados do Roteiro e Destino</span>
             </div>
 
             <div className="space-y-1.5">
@@ -301,7 +276,7 @@ export function NewTripSheet({
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
               <Hotel className="size-3.5 text-primary" />
-              <span>Hospedagem & Localizadores de Voo</span>
+              <span>Hospedagem e Localizadores de Voo</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

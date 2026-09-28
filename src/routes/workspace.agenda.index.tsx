@@ -1,25 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- Calendar as CalendarIcon,
- Clock,
- CheckCircle2,
- FileText,
- Play,
- Ticket,
- ChevronLeft,
- ChevronRight,
- DollarSign,
- Users,
- MessageCircle,
- Smartphone,
-} from "lucide-react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { Calendar as CalendarIcon, Clock, CheckCircle2, FileText, Play, Ticket, ChevronLeft, ChevronRight, DollarSign, Users, MessageCircle, Smartphone } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DigitalCompanionCard } from "@/components/documents/digital-companion-card";
 import { format, addDays, subDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -27,29 +9,18 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
 
-import {
- listAppointments,
- updateAppointmentStatus,
- listClinicalRecords,
- addClinicalRecord,
-} from "@/services/booking.functions";
+import { listAppointments, updateAppointmentStatus, listClinicalRecords, addClinicalRecord } from "@/services/booking.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/commerce/page-header";
-import {
- Sheet,
- SheetContent,
- SheetDescription,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/agenda/")({
- head: () => ({ meta: [{ title: "Agenda & Atendimentos | Workspace Waesy" }] }),
- component: AdminAppointmentsPage,
+  head: () => ({ meta: [{ title: "Agenda | Workspace Waesy" }] }),
+  component: AdminAppointmentsPage,
 });
 
 function ClinicalRecordDrawer({
@@ -92,7 +63,7 @@ function ClinicalRecordDrawer({
  <Sheet open={isOpen} onOpenChange={(val) => !val && onClose()}>
  <SheetContent size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col h-full bg-card">
  <SheetHeader className="pb-3 ">
- <SheetTitle className="text-base font-bold text-foreground">Prontuário & Evolução</SheetTitle>
+ <SheetTitle className="text-base font-bold text-foreground">Prontuário e Evolução</SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">Histórico de atendimento de {guestName}</SheetDescription>
  </SheetHeader>
  <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-3">
@@ -172,7 +143,7 @@ function AdminAppointmentsPage() {
  ],
  rules: [
  {
- title: "Tolerância & Chegada",
+ title: "Tolerância e Chegada",
  description: "Recomendamos chegar com 10 minutos de antecedência. A tolerância máxima para atrasos é de 15 minutos.",
  highlight: true,
  },
@@ -194,7 +165,7 @@ function AdminAppointmentsPage() {
  is24h: false,
  },
  ],
- customWhatsAppText: `Olá, *${appt.guest_name || "Cliente"}*! Confirmamos seu agendamento de *${serviceTitle}* para *${dateFormatted}* com *${resourceName}*.\n\nLocal: ${appt.store?.name || "Nosso Espaço"}\nDuração: ${duration}\n\nQualquer dúvida ou necessidade de ajuste de horário, estamos à disposição! ✨`,
+ customWhatsAppText: `Olá, *${appt.guest_name || "Cliente"}*! Confirmamos seu agendamento de *${serviceTitle}* para *${dateFormatted}* com *${resourceName}*.\n\nLocal: ${appt.store?.name || "Nosso Espaço"}\nDuração: ${duration}\n\nQualquer dúvida ou necessidade de ajuste de horário, estamos à disposição!`,
  });
  setCompanionCardOpen(true);
  };
@@ -309,13 +280,13 @@ function AdminAppointmentsPage() {
  <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5">
  <Link to="/workspace/pacotes">
  <Ticket className="size-3.5 text-primary" />
- <span>Pacotes & Passes</span>
+ <span>Pacotes e Passes</span>
  </Link>
  </Button>
  <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5">
  <Link to="/workspace/agenda/recursos">
  <Users className="size-3.5" />
- <span>Profissionais & Salas</span>
+ <span>Profissionais e Salas</span>
  </Link>
  </Button>
  </div>

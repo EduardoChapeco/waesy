@@ -1,57 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  Plane,
-  Hotel,
-  Car,
-  FileWarning,
-  Clock,
-  CheckCircle2,
-  Plus,
-  ChevronRight,
-  ShieldAlert,
-  Utensils,
-  RefreshCw,
-  FileText,
-  MessageSquare,
-  PhoneCall,
-  Building2,
-  Send,
-  Circle,
-  ArrowRight,
-  Loader2,
-} from 'lucide-react';
+import { AlertTriangle, Plane, Hotel, Car, FileWarning, Clock, CheckCircle2, Plus, ChevronRight, ShieldAlert, Utensils, RefreshCw, FileText, MessageSquare, PhoneCall, Building2, Send, Circle, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-canonical-toolbar';
 import { EmptyState } from '@/components/state/states';
 import { getStoreSettings } from '@/services/store.functions';
-import {
-  listTourismIncidents,
-  createTourismIncident,
-  getIncidentDetail,
-  addIncidentEvent,
-  updateIncidentStatus,
-  INCIDENT_TYPE_LABELS,
-  INCIDENT_STATUS_LABELS,
-  type TourismIncidentItem,
-  type TourismIncidentEvent,
-  type TourismIncidentType,
-  type TourismIncidentPriority,
-  type TourismIncidentStatus,
-  type TourismEventType,
-} from '@/services/tourism-incidents.functions';
+import { listTourismIncidents, createTourismIncident, getIncidentDetail, addIncidentEvent, updateIncidentStatus, INCIDENT_TYPE_LABELS, INCIDENT_STATUS_LABELS, type TourismIncidentItem, type TourismIncidentEvent, type TourismIncidentType, type TourismIncidentPriority, type TourismIncidentStatus, type TourismEventType } from '@/services/tourism-incidents.functions';
 import { useWorkspaceStore } from '@/lib/store-context';
 
 export const Route = createFileRoute('/workspace/turismo/incidentes')({

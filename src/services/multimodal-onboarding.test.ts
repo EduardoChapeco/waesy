@@ -1,12 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { executeGenerateStorefrontFromOnboarding } from "@/services/multimodal-onboarding.functions";
-import {
-  AgentRegistrySchema,
-  SquadTemplateSchema,
-  GlobalMasterCatalogItemSchema,
-  MultimodalOnboardingSessionSchema,
-  BrandDnaProfileSchema,
-} from "@/types/squads-and-onboarding";
+import { AgentRegistrySchema, SquadTemplateSchema, GlobalMasterCatalogItemSchema, MultimodalOnboardingSessionSchema, BrandDnaProfileSchema } from "@/types/squads-and-onboarding";
 
 describe("Multimodal Onboarding, Master Catalog & Squads — Big Tech Architecture", () => {
   describe("Validação de Schemas e Contratos Estritos", () => {

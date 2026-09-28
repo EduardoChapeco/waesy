@@ -1,6 +1,6 @@
 import React from "react";
 import { CommercialDocumentTemplateProps } from "../types";
-import { CheckCircle2, ArrowRight, ShieldCheck, Clock, Sparkles } from "lucide-react";
+import { CheckCircle2, ArrowRight, ShieldCheck, Clock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> = ({
@@ -63,15 +63,15 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
             </span>
             <div className="flex items-center gap-2 text-slate-300">
               <span className="size-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono">1</span>
-              <span>Diagnóstico & Escopo</span>
+              <span>Diagnóstico e Escopo</span>
             </div>
             <div className="flex items-center gap-2 text-slate-300">
               <span className="size-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono">2</span>
-              <span>Execução & Entregáveis</span>
+              <span>Execução e Entregáveis</span>
             </div>
             <div className="flex items-center gap-2 text-slate-300">
               <span className="size-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-mono">3</span>
-              <span>Investimento & Ativação</span>
+              <span>Investimento e Ativação</span>
             </div>
           </div>
         </div>
@@ -90,7 +90,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
           {/* Título Editorial Display */}
           <div className="mb-8">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-800 mb-3">
-              <Sparkles className="size-3.5 text-amber-500" />
+              <Star className="size-3.5 text-amber-500" />
               <span>Proposta Comercial Executiva</span>
             </span>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-tight">
@@ -162,7 +162,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
               {data.signatories?.clientSigned ? (
                 <div className="flex items-center gap-2 bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 px-5 py-3 rounded-xl font-bold text-sm">
                   <ShieldCheck className="size-5" />
-                  <span>Proposta Aceita & Ativa</span>
+                  <span>Proposta Aceita e Ativa</span>
                 </div>
               ) : (
                 <Button
@@ -170,7 +170,7 @@ export const ProposalEditorialAgency: React.FC<CommercialDocumentTemplateProps> 
                   onClick={onAcceptProposal}
                   className="h-12 px-6 rounded-xl font-bold text-sm bg-white text-slate-950 hover:bg-slate-100 transition-transform active:scale-95 shadow-md flex items-center gap-2"
                 >
-                  <span>Aceitar Proposta & Iniciar</span>
+                  <span>Aceitar Proposta e Iniciar</span>
                   <ArrowRight className="size-4" />
                 </Button>
               )}

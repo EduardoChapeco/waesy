@@ -1,29 +1,11 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  FileSignature,
-  ShieldCheck,
-  CheckCircle2,
-  Lock,
-  Hash,
-  AlertCircle,
-  Loader2,
-  ArrowRight,
-  FileText,
-  Calendar,
-  Camera,
-  RefreshCcw,
-  ExternalLink,
-} from "lucide-react";
+import { FileSignature, ShieldCheck, CheckCircle2, Lock, Hash, AlertCircle, Loader2, ArrowRight, FileText, Calendar, Camera, RefreshCcw, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
-import {
-  getEnvelopeByToken,
-  signContractEnvelope,
-  getPublicGovBrSigningConfig,
-} from "@/services/contracts.functions";
+import { getEnvelopeByToken, signContractEnvelope, getPublicGovBrSigningConfig } from "@/services/contracts.functions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";

@@ -1,86 +1,29 @@
 /**
  * canonical-store-profile-view.tsx — Perfil Comercial Público Canônico de Empresas (Waesy / Apple HIG)
  * Unifica a presença pública de lojas e empresas locais com a mesma excelência visual do perfil de membro.
- * Abas ricas: Vitrine (Banners, Botões/Hotpages, Catálogo), Sobre & Atendimento (Horários, Pagamentos, Mapa),
+ * Abas ricas: Vitrine (Banners, Botões/Hotpages, Catálogo), Sobre (Horários, Pagamentos, Mapa),
  * Posts Sociais (Feed/Grid), Vagas de Emprego, Avaliações Verificadas e Patrocinadores.
  */
 
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Clock,
-  Phone,
-  MapPin,
-  Star,
-  ShieldCheck,
-  Share2,
-  ArrowLeft,
-  Store,
-  ShoppingBag,
-  Layers,
-  UtensilsCrossed,
-  Briefcase,
-  Building2,
-  ChevronRight,
-  Search,
-  ExternalLink,
-  Plus,
-  MessageSquare,
-  Award,
-  CreditCard,
-  Truck,
-  CheckCircle,
-  Eye,
-  Check,
-  Navigation,
-  Ticket,
-  FileCheck,
-  Sparkles,
-  Grid,
-  List,
-  Camera,
-  Edit3,
-  Package,
-  LayoutGrid,
-  Tag,
-} from "lucide-react";
-import {
-  WhatsappLogo,
-  PaperPlaneTilt,
-  Globe,
-  InstagramLogo,
-} from "@phosphor-icons/react";
+import { Clock, Phone, MapPin, Star, ShieldCheck, Share2, ArrowLeft, Store, ShoppingBag, Layers, UtensilsCrossed, Briefcase, Building2, ChevronRight, Search, ExternalLink, Plus, MessageSquare, Award, CreditCard, Truck, CheckCircle, Eye, Check, Navigation, Ticket, FileCheck, Grid, List, Camera, Edit3, Package, LayoutGrid, Tag } from "lucide-react";
+import { WhatsappLogo, PaperPlaneTilt, Globe, InstagramLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  StoreVitrineSectionsEditor,
-  DEFAULT_STORE_VITRINE_SECTIONS,
-  type VitrineSectionConfig,
-  type VitrineCardItem,
-} from "@/components/commerce/store-vitrine-sections-editor";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { StoreVitrineSectionsEditor, DEFAULT_STORE_VITRINE_SECTIONS, type VitrineSectionConfig, type VitrineCardItem } from "@/components/commerce/store-vitrine-sections-editor";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { CommunityFeedCard } from "@/components/social/community-feed-card";
+import { UnifiedFeedCard } from "@/components/commerce/unified-feed-card";
 import { NativeMobileHeader } from "@/components/navigation";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
 import { ProductModifiersModal, type SelectedModifier } from "@/components/pos/product-modifiers-modal";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
-import {
-  normalizeWorkingHours,
-  formatWeeklyScheduleSummary,
-  WEEKDAYS_ORDER,
-} from "@/lib/business-hours";
+import { normalizeWorkingHours, formatWeeklyScheduleSummary, WEEKDAYS_ORDER } from "@/lib/business-hours";
 import { getOpenStatus, formatDate } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
@@ -139,9 +82,23 @@ export function CanonicalStoreProfileView({
   isOwner = false,
   source = "storefront",
   backUrl = source === "directory" ? "/diretorio" : "/",
-  backLabel = source === "directory" ? "Guia & Diretório" : "Início",
+  backLabel = source === "directory" ? "Diretório" : "Início",
 }: CanonicalStoreProfileViewProps) {
   const { setCartData, setIsCartOpen } = useCartContext();
+
+  // FASE 1 (V114): Scroll Restoration imediato ao montar ou trocar de Loja/Perfil
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const mainContainer = document.querySelector("main");
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+        mainContainer.scrollTop = 0;
+      }
+    }
+  }, [store?.id, store?.slug]);
 
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [productSearch, setProductSearch] = useState("");
@@ -390,7 +347,7 @@ export function CanonicalStoreProfileView({
     segment.includes("oficina");
   const isNews = segment.includes("jornal") || segment.includes("notic") || segment.includes("portal");
 
-  const catalogTabTitle = isGastronomy ? "Cardápio" : isServices ? "Serviços & Preços" : "Produtos & Loja";
+  const catalogTabTitle = isGastronomy ? "Cardápio" : isServices ? "Serviços" : "Produtos";
   const CatalogIcon = isGastronomy ? UtensilsCrossed : isServices ? Layers : ShoppingBag;
 
   const handleShare = () => {
@@ -697,12 +654,12 @@ function cleanAddressSegment(text: string): string {
       />
 
       {/* ── 2. CABEÇALHO DO PERFIL: FOTO 1:1 + CAPA 21:9 NA MESMA ALTURA SEM BORDAS PESADAS ── */}
-      <div className="rounded-2xl bg-card border border-border/40 p-4 sm:p-6 space-y-4">
+      <div className="rounded-2xl bg-card border border-border/40 p-3.5 sm:p-5 space-y-2.5">
         {/* Faixa Superior: Foto 1:1 + Capa 21:9 com Mesma Altura */}
         <div className="flex items-center gap-3 sm:gap-4 w-full">
           {/* Foto da Empresa em Squircle 1:1 */}
           <div className="flex-shrink-0 relative group">
-            <div className="size-20 sm:size-32 rounded-2xl bg-muted flex-shrink-0 overflow-hidden flex items-center justify-center">
+            <div className="size-20 sm:size-28 rounded-2xl bg-muted flex-shrink-0 overflow-hidden flex items-center justify-center">
               {logoUrl ? (
                 <img
                   src={logoUrl}
@@ -728,8 +685,8 @@ function cleanAddressSegment(text: string): string {
             )}
           </div>
 
-          {/* Container da Capa Panorâmica com Mesma Altura e Scroll Interno Suave */}
-          <div className="flex-1 h-20 sm:h-32 rounded-2xl bg-muted/20 relative overflow-hidden flex items-center">
+          {/* Container da Capa Panorâmica com Escala Proporcional Verdadeira */}
+          <div className="flex-1 aspect-[2.6/1] sm:aspect-[3/1] max-h-28 rounded-2xl bg-muted/20 relative overflow-hidden flex items-center">
             <div 
               tabIndex={0}
               aria-label="Galeria de banners da empresa"
@@ -743,8 +700,14 @@ function cleanAddressSegment(text: string): string {
                   >
                     <img
                       src={banner.imageUrl}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 size-full object-cover blur-xl opacity-35 scale-110 pointer-events-none select-none"
+                    />
+                    <img
+                      src={banner.imageUrl}
                       alt={banner.title || "Capa da empresa"}
-                      className="size-full object-cover select-none rounded-xl"
+                      className="relative size-full object-contain sm:object-cover select-none rounded-xl"
                     />
                     {banner.link && (
                       <a
@@ -772,7 +735,7 @@ function cleanAddressSegment(text: string): string {
                   title="Editar Capa e Marca"
                 >
                   <Camera className="size-3 sm:size-3.5" />
-                  <span className="hidden sm:inline">Capa & Marca</span>
+                  <span className="hidden sm:inline">Capa</span>
                 </Link>
                 <button
                   type="button"
@@ -788,16 +751,16 @@ function cleanAddressSegment(text: string): string {
           </div>
         </div>
 
-        {/* Stats Reais no Padrão Instagram (Limpo, Sem Card Cinza de Fundo) */}
-        <div className="flex items-center gap-6 sm:gap-10 py-1">
+        {/* Contadores Superiores Exclusivos para Seguidores / Seguindo / Curtidas (Padrão Instagram) */}
+        <div className="flex items-center gap-6 sm:gap-8 py-0.5">
           <div className="text-left">
-            <span className="block text-sm sm:text-base font-bold text-foreground">
+            <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
               {store.followers_count || store.followersCount || 0}
             </span>
             <span className="text-[11px] text-muted-foreground">Seguidores</span>
           </div>
           <div className="text-left">
-            <span className="block text-sm sm:text-base font-bold text-foreground">
+            <span className="block text-sm sm:text-base font-bold text-foreground font-mono">
               {store.following_count || store.followingCount || 0}
             </span>
             <span className="text-[11px] text-muted-foreground">Seguindo</span>
@@ -808,49 +771,48 @@ function cleanAddressSegment(text: string): string {
             </span>
             <span className="text-[11px] text-muted-foreground">Curtidas</span>
           </div>
-          {/* Avaliação Real exclusivamente para Empresas */}
-          {(source === "directory" || store.is_company || store.business_name || !store.is_personal) && (
-            <div className="text-left">
-              <span className="inline-flex items-center gap-1 text-sm sm:text-base font-bold text-foreground">
-                {realReviewsCount > 0 && realRatingAverage !== null ? (
-                  <>
-                    <Star className="size-3.5 fill-amber-500 text-muted-foreground" />
-                    <span>{realRatingAverage.toFixed(1)}</span>
-                  </>
-                ) : (
-                  <span className="text-muted-foreground font-normal text-xs sm:text-sm">—</span>
-                )}
-              </span>
-              <span className="text-[11px] text-muted-foreground block">
-                {realReviewsCount > 0 ? `(${realReviewsCount}) Avaliações` : "Avaliações"}
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Linha de Identidade e Ações Minimalistas (Padrão Instagram / Apple HIG) */}
-        <div className="pt-2 border-t border-border/30 space-y-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+        {/* Linha de Identidade Compacta, Tipografia Fluida & Avaliação Real reposicionada abaixo do Nome */}
+        <div className="pt-2 border-t border-border/30 flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <div className="inline-flex items-center flex-wrap gap-1.5">
+              <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-balance line-clamp-2">
                 {store.name || store.business_name}
               </h1>
               <ShieldCheck className="size-4 text-primary fill-primary/20 shrink-0" />
               {isOwner && (
-                <Badge variant="secondary" className="h-5 px-2 text-[10px] font-bold rounded-full border border-border/60 bg-muted/60 text-foreground gap-1">
+                <Badge variant="secondary" className="h-5 px-2 text-[10px] font-bold rounded-full border border-border/60 bg-muted/60 text-foreground gap-1 shrink-0">
                   <Shield className="size-2.5 text-primary" />
                   <span>Admin</span>
                 </Badge>
               )}
               {store.slug && (
-                <span className="text-xs sm:text-sm font-medium text-muted-foreground font-mono">
+                <span className="text-xs font-medium text-muted-foreground font-mono">
                   @{store.slug}
                 </span>
               )}
             </div>
 
-            {/* Categoria Limpa — Sem repetição de endereço */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground pt-0.5">
+            {/* Nome da Empresa ➔ [★ 4.9 (120) • Nicho] — Avaliação 100% Dinâmica do BFF */}
+            <div className="inline-flex items-center flex-wrap gap-1.5 text-xs text-muted-foreground">
+              {realReviewsCount > 0 && realRatingAverage !== null ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("avaliacoes")}
+                  className="inline-flex items-center gap-1 font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
+                >
+                  <Star className="size-3.5 fill-amber-500 text-amber-500 shrink-0" />
+                  <span>{realRatingAverage.toFixed(1)}</span>
+                  <span className="text-muted-foreground font-medium">({realReviewsCount})</span>
+                </button>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-muted-foreground font-medium">
+                  <Star className="size-3 text-muted-foreground/50 shrink-0" />
+                  <span>Sem avaliações</span>
+                </span>
+              )}
+              <span className="text-muted-foreground/40">•</span>
               <span className="font-semibold text-foreground/90">
                 {store.category || store.type || (isGastronomy ? "Gastronomia" : "Empresa")}
               </span>
@@ -877,7 +839,7 @@ function cleanAddressSegment(text: string): string {
 
           {/* Bio / Descrição Formatada com Limite & Expansão */}
           {(store.description || settings.bio || settings.about) && (
-            <div className="space-y-1 max-w-2xl pt-1">
+            <div className="space-y-1 max-w-2xl">
               <p
                 className={cn(
                   "text-xs sm:text-sm text-foreground/90 font-medium leading-relaxed whitespace-pre-line",
@@ -899,7 +861,7 @@ function cleanAddressSegment(text: string): string {
           )}
 
           {/* Links e Localização Sanitizada (Única Renderização) */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             {store.website && (
               <a
                 href={store.website.startsWith("http") ? store.website : `https://${store.website}`}
@@ -950,7 +912,7 @@ function cleanAddressSegment(text: string): string {
           </div>
 
           {/* ── BOTÕES DE AÇÃO ERGONÔMICOS (PADRÃO INSTAGRAM / APPLE HIG) — Imediatamente Abaixo da Bio ── */}
-          <div className="flex items-center gap-2 pt-3 w-full">
+          <div className="flex items-center gap-2 pt-1.5 w-full">
             {isOwner ? (
               <>
                 <Button
@@ -977,7 +939,7 @@ function cleanAddressSegment(text: string): string {
                   className="size-9 sm:size-10 p-0 sm:px-3 sm:w-auto rounded-xl font-semibold text-xs bg-muted/60 hover:bg-muted text-foreground border border-border/50 transition-colors inline-flex items-center justify-center shrink-0 shadow-none cursor-pointer"
                   title="Social Studio"
                 >
-                  <Sparkles className="size-3.5" />
+                  <SlidersHorizontal className="size-3.5" />
                   <span className="hidden sm:inline ml-1.5">Studio</span>
                 </Button>
                 <Button
@@ -1182,7 +1144,7 @@ function cleanAddressSegment(text: string): string {
               )}
             </button>
 
-            {/* Aba 3: Sobre & Atendimento */}
+            {/* Aba 3: Sobre */}
             <button
               type="button"
               onClick={() => setActiveTab("sobre")}
@@ -1194,7 +1156,7 @@ function cleanAddressSegment(text: string): string {
               )}
             >
               <Building2 className="size-3.5 sm:size-4" />
-              <span>Sobre & Atendimento</span>
+              <span>Sobre</span>
             </button>
 
             {/* Aba 4: Posts & Novidades */}
@@ -1277,7 +1239,7 @@ function cleanAddressSegment(text: string): string {
               </button>
             )}
 
-            {/* Aba 8: Sorteios & Prêmios */}
+            {/* Aba 8: Sorteios */}
             {concursos.length > 0 && (
               <button
                 type="button"
@@ -1290,7 +1252,7 @@ function cleanAddressSegment(text: string): string {
                 )}
               >
                 <Ticket className="size-3.5 sm:size-4" />
-                <span>Sorteios & Prêmios</span>
+                <span>Sorteios</span>
                 <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-bold font-mono">
                   {concursos.length}
                 </span>
@@ -1309,7 +1271,7 @@ function cleanAddressSegment(text: string): string {
               {isOwner && (
                 <div className="flex items-center justify-between py-1 px-0.5">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Sparkles className="size-3.5 text-primary" />
+                    <Star className="size-3.5 text-primary" />
                     <span className="font-semibold text-foreground">Vitrine Modular</span>
                   </div>
                   <Button
@@ -1355,7 +1317,7 @@ function cleanAddressSegment(text: string): string {
                       <div key={section.id} className="space-y-2">
                         <PromotionalFlyersRail
                           flyers={flyersList}
-                          title={section.title || "Encartes & Tabloides da Semana"}
+                          title={section.title || "Encartes"}
                           storeName={store.name || store.business_name}
                           storeSlug={store.slug}
                         />
@@ -1370,7 +1332,7 @@ function cleanAddressSegment(text: string): string {
                       <div key={section.id} className="space-y-3">
                         <div className="flex items-center justify-between">
                           <h2 className="text-base font-bold text-foreground tracking-tight">
-                            {section.title || "Destaques & Novidades"}
+                            {section.title || "Destaques"}
                           </h2>
                           {isOwner && (
                             <button
@@ -1620,48 +1582,21 @@ function cleanAddressSegment(text: string): string {
 
               {posts.length > 0 ? (
                 postViewMode === "grid" ? (
-                  /* Modo 1: Grade de Fotos 1:1 Editorial */
+                  /* Modo 1: Grade Editorial com UnifiedFeedCard (Instagram Media vs Threads Text Note) */
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                    {posts.map((post: any) => {
-                      const firstMedia = post.media_urls?.[0];
-                      return (
-                        <div
-                          key={post.id}
-                          onClick={() => setLightboxPost(post)}
-                          className="group aspect-square rounded-2xl overflow-hidden bg-muted/30 relative cursor-pointer border border-border/40 hover:border-foreground/40 transition-all"
-                        >
-                          {firstMedia ? (
-                            <img
-                              src={firstMedia}
-                              alt="Foto da publicação"
-                              className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="size-full p-4 flex flex-col justify-between bg-card">
-                              <p className="text-xs text-foreground line-clamp-4 leading-relaxed font-medium">
-                                {post.content_text}
-                              </p>
-                              <span className="text-[10px] text-muted-foreground font-mono">
-                                {formatDate(post.created_at)}
-                              </span>
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-3 text-center text-white text-xs font-semibold">
-                            <span className="line-clamp-2">{post.content_text || "Ver publicação"}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  /* Modo 2: Feed Social com Notas Rápidas */
-                  <div className="space-y-4 max-w-2xl mx-auto">
                     {posts.map((post: any) => (
-                      <CommunityFeedCard
+                      <UnifiedFeedCard
                         key={post.id}
+                        mode="grid"
+                        onSelectPost={() => setLightboxPost(post)}
                         post={{
                           id: post.id,
+                          content: post.content || post.content_text,
+                          media_url: post.media_url || post.image_url || post.media_urls?.[0] || null,
+                          media_urls: post.media_urls || [],
+                          created_at: post.created_at,
+                          likes_count: post.likes_count || 0,
+                          comments_count: post.replies_count || post.comments_count || 0,
                           author: {
                             id: store.id,
                             full_name: store.name || store.business_name,
@@ -1669,11 +1604,33 @@ function cleanAddressSegment(text: string): string {
                             avatar_url: logoUrl || undefined,
                             is_verified: true,
                           },
-                          content_text: post.content_text || "",
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Modo 2: Feed Social com UnifiedFeedCard (Instagram Media vs Threads Text Note) */
+                  <div className="space-y-4 max-w-2xl mx-auto">
+                    {posts.map((post: any) => (
+                      <UnifiedFeedCard
+                        key={post.id}
+                        mode="feed"
+                        onSelectPost={() => setLightboxPost(post)}
+                        post={{
+                          id: post.id,
+                          content: post.content || post.content_text,
+                          media_url: post.media_url || post.image_url || post.media_urls?.[0] || null,
                           media_urls: post.media_urls || [],
                           created_at: post.created_at,
                           likes_count: post.likes_count || 0,
-                          replies_count: post.replies_count || 0,
+                          comments_count: post.replies_count || post.comments_count || 0,
+                          author: {
+                            id: store.id,
+                            full_name: store.name || store.business_name,
+                            username: store.slug,
+                            avatar_url: logoUrl || undefined,
+                            is_verified: true,
+                          },
                         }}
                       />
                     ))}
@@ -1904,7 +1861,7 @@ function cleanAddressSegment(text: string): string {
                   <Briefcase className="size-10 text-muted-foreground/40 mx-auto" />
                   <div className="space-y-1">
                     <h3 className="text-sm font-bold text-foreground">
-                      Atendimento Sob Medida & Presencial
+                      Atendimento
                     </h3>
                     <p className="text-xs text-muted-foreground max-w-md mx-auto">
                       Esta empresa presta serviços e atendimento personalizado. Entre em contato diretamente pelo WhatsApp para orçamentos e agendamentos.
@@ -2035,7 +1992,7 @@ function cleanAddressSegment(text: string): string {
                         className="rounded-xl h-9 px-4 font-bold text-xs bg-foreground text-background w-full"
                       >
                         <Link to="/empregos/$id" params={{ id: j.id }}>
-                          <span>Ver Detalhes & Candidatar-se</span>
+                          <span>Candidatar-se</span>
                         </Link>
                       </Button>
                     </div>
@@ -2360,12 +2317,12 @@ function cleanAddressSegment(text: string): string {
                   </div>
                 </div>
 
-                {/* 2. Endereço & Localização */}
+                {/* 2. Localização */}
                 <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4 flex flex-col justify-between">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <MapPin className="size-4 text-primary" />
-                      <h3 className="text-sm font-bold text-foreground">Endereço & Localização</h3>
+                      <h3 className="text-sm font-bold text-foreground">Localização</h3>
                     </div>
 
                     {formattedAddress ? (
@@ -2422,11 +2379,11 @@ function cleanAddressSegment(text: string): string {
                   </div>
                 </div>
 
-                {/* 3. Pagamento & Modalidades */}
+                {/* 3. Pagamentos */}
                 <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-3">
                   <div className="flex items-center gap-2">
                     <CreditCard className="size-4 text-primary" />
-                    <h3 className="text-sm font-bold text-foreground">Pagamento & Modalidades</h3>
+                    <h3 className="text-sm font-bold text-foreground">Pagamentos</h3>
                   </div>
 
                   <div className="space-y-2 text-xs">

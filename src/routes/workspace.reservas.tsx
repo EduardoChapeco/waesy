@@ -8,45 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetTrigger,
-} from "@/components/ui/sheet";
-import {
- CalendarDays,
- Clock,
- Users,
- Plus,
- CheckCircle2,
- XCircle,
- Armchair,
- Share2,
- Utensils,
- Phone,
- MessageSquare,
- LayoutGrid,
- List,
- MapPin,
- Receipt,
-} from "lucide-react";
-import {
- listStoreReservations,
- createStoreReservation,
- updateReservationStatus,
- getStoreFloorPlan,
- saveStoreFloorPlan,
-} from "@/services/reservations.functions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { CalendarDays, Clock, Users, Plus, CheckCircle2, XCircle, Armchair, Share2, Utensils, Phone, MessageSquare, LayoutGrid, List, MapPin, Receipt } from "lucide-react";
+import { listStoreReservations, createStoreReservation, updateReservationStatus, getStoreFloorPlan, saveStoreFloorPlan } from "@/services/reservations.functions";
 import { openTableComanda } from "@/services/order.functions";
 import { listCustomers } from "@/services/crm.functions";
 import { FloorPlanEditorSheet } from "@/components/reservations/floor-plan-editor-sheet";
@@ -56,7 +21,7 @@ import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/reservas")({
- head: () => ({ meta: [{ title: "Reservas de Mesas & Salão | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Reservas | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const store = await getStoreSettings().catch(() => null);
@@ -275,13 +240,13 @@ export default function TableReservationsPage() {
  return (
  <NicheOperationalGuard
  targetNiche="gastronomy"
- toolTitle="Reservas de Mesas & Mapa do Salão"
+ toolTitle="Mapa de Reservas"
  toolDescription="O mapa de salão, disposição de mesas físicas e gestão de comandas presenciais foi projetado especificamente para restaurantes, bares e estabelecimentos gastronômicos."
  store={store}
  >
  <div className="w-full space-y-6">
  <PageHeader
- title="Reservas & Salão"
+ title="Reservas"
  actions={
  <div className="flex items-center gap-2">
  <Button variant="outline" size="sm" onClick={copyShareLink} className="gap-1.5 font-bold text-xs">
@@ -508,9 +473,9 @@ export default function TableReservationsPage() {
  <Table>
  <TableHeader>
  <TableRow>
- <TableHead>Horário & Data</TableHead>
+ <TableHead>Horário e Data</TableHead>
  <TableHead>Cliente</TableHead>
- <TableHead>Pessoas & Mesa</TableHead>
+ <TableHead>Pessoas e Mesa</TableHead>
  <TableHead>Status</TableHead>
  <TableHead>Observações</TableHead>
  <TableHead className="text-right">Ações</TableHead>
@@ -715,7 +680,7 @@ export default function TableReservationsPage() {
  }
  disabled={isOpeningComanda}
  >
- <Receipt className="size-3.5" /> Abrir Comanda no PDV & Lançar Pedidos
+ <Receipt className="size-3.5" /> Abrir Comanda no PDV e Lançar Pedidos
  </Button>
  )}
  {["pending", "confirmed"].includes(reservation.status) && (

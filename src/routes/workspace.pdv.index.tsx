@@ -1,54 +1,9 @@
 import { createFileRoute, useNavigate, Link, isRedirect, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import {
- ShoppingCart,
- Search,
- CreditCard,
- Banknote,
- QrCode,
- MonitorPause,
- X,
- Plus,
- Minus,
- Receipt,
- Percent,
- Utensils,
- Printer,
- Barcode,
- CheckCircle2,
- Maximize2,
- Minimize2,
- ExternalLink,
- Keyboard,
- User,
- Coffee,
- ShoppingBag,
- Clock,
- ArrowUpRight,
- ArrowDownLeft,
- Trash2,
- Layers,
- Image as ImageIcon,
- Share2,
- Loader2,
- ChefHat,
- Armchair,
- Users,
-	FileText,
-	Smartphone,
-} from "lucide-react";
-import {
-  ModuleTourModal,
-  ModuleTourTrigger,
-  type TourSlide,
-} from "@/components/ui/module-tour-modal";
-import {
-  DigitalCompanionCard,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
+import { ShoppingCart, Search, CreditCard, Banknote, QrCode, MonitorPause, X, Plus, Minus, Receipt, Percent, Utensils, Printer, Barcode, CheckCircle2, Maximize2, Minimize2, ExternalLink, Keyboard, User, Coffee, ShoppingBag, Clock, ArrowUpRight, ArrowDownLeft, Trash2, Layers, Image as ImageIcon, Share2, Loader2, ChefHat, Armchair, Users, FileText, Smartphone } from "lucide-react";
+import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
+import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 
 const PDV_TOUR_SLIDES: TourSlide[] = [
   {
@@ -82,12 +37,7 @@ const PDV_TOUR_SLIDES: TourSlide[] = [
 ];
 import { generateContractFromOrder } from "@/services/contracts.functions";
 import { printThermalReceipt, type ThermalReceiptData } from "@/lib/thermal-printer";
-import {
- getActiveRegister,
- openRegister,
- processPOSSale,
- addRegisterEntry,
-} from "@/services/cash.functions";
+import { getActiveRegister, openRegister, processPOSSale, addRegisterEntry } from "@/services/cash.functions";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
@@ -98,27 +48,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
- ProductModifiersModal,
- type SelectedModifier,
-} from "@/components/pos/product-modifiers-modal";
+import { ProductModifiersModal, type SelectedModifier } from "@/components/pos/product-modifiers-modal";
 import { listPriceTables, type PriceTableDTO } from "@/services/price-tables.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
@@ -1201,7 +1134,7 @@ function PdvTerminal() {
  variant="outline"
  size="sm"
  className="h-9 rounded-xl text-xs font-bold gap-1"
- title="Comandas e Mesas"
+ title="Comandas"
  >
  <Link to="/workspace/pdv/comandas">
  <Utensils className="size-3.5 text-amber-500" />

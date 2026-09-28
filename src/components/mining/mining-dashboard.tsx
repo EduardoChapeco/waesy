@@ -3,76 +3,16 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Scale, MapPin, Utensils, Zap } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Database,
-  RefreshCw,
-  Play,
-  Clock,
-  Building2,
-  Rss,
-  TrendingUp,
-  Search,
-  Plus,
-  Loader2,
-  ExternalLink,
-  ShieldCheck,
-  Globe,
-  Sparkles,
-  Package,
-  ShieldAlert,
-  RotateCcw,
-  ShoppingBag,
-  DollarSign,
-  Percent,
-  Edit2,
-  Trash2,
-  CheckCircle2,
-  XCircle,
-  ArrowRight,
-} from "lucide-react";
+import { Database, RefreshCw, Play, Clock, Building2, Rss, TrendingUp, Search, Plus, Loader2, ExternalLink, ShieldCheck, Globe, Star, Package, ShieldAlert, RotateCcw, ShoppingBag, DollarSign, Percent, Edit2, Trash2, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import {
-  getMiningStatsFn,
-  getCrawlQueueFn,
-  getIndexedBusinessesFn,
-  getScraperAuditLogsFn,
-  getRssFeedsFn,
-  getMarketIndicatorsFn,
-  runScraperFn,
-  addCrawlSeedFn,
-  addRssFeedFn,
-  generateGhostStoresFn,
-  dispatchScheduledMiningJobFn,
-  getMinedProductsFn,
-  getGlobalPriceBenchmarkFn,
-  getDomainCooldownsFn,
-  resetDomainCooldownFn,
-  updateMinedProductFn,
-  deleteMinedProductFn,
-  importMinedProductToStoreFn,
-  batchImportMinedProductsFn,
-} from "@/services/mining.functions";
+import { getMiningStatsFn, getCrawlQueueFn, getIndexedBusinessesFn, getScraperAuditLogsFn, getRssFeedsFn, getMarketIndicatorsFn, runScraperFn, addCrawlSeedFn, addRssFeedFn, generateGhostStoresFn, dispatchScheduledMiningJobFn, getMinedProductsFn, getGlobalPriceBenchmarkFn, getDomainCooldownsFn, resetDomainCooldownFn, updateMinedProductFn, deleteMinedProductFn, importMinedProductToStoreFn, batchImportMinedProductsFn } from "@/services/mining.functions";
 import type {
   MiningStats,
   CrawlQueueItem,
@@ -644,7 +584,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Database className="w-5 h-5 text-primary" />
-            Central de Dados & Inteligência Comercial
+            Central de Dados e Inteligência Comercial
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Gestão unificada de importações, catálogo comercial, processos judiciais e indicadores de mercado.
@@ -658,7 +598,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               size="sm"
               className="h-10 px-3.5 rounded-xl border border-border/50 font-normal gap-1.5"
             >
-              <Sparkles className="w-4 h-4 text-muted-foreground" />
+              <Star className="w-4 h-4 text-muted-foreground" />
               Curadoria
               {stats?.minedArticles && stats?.minedArticles.pendingReview > 0 ? (
                 <span className="ml-1 text-[11px] px-1.5 py-0.5 rounded-md bg-muted text-foreground font-mono">
@@ -933,7 +873,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
             {/* Enriquecimento de CNPJ pontual */}
             <div className="p-4 rounded-xl border border-border/40 bg-card space-y-2.5">
               <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Consultar & Enriquecer CNPJ
+                Consultar e Enriquecer CNPJ
               </span>
               <div className="flex gap-2">
                 <Input
@@ -1027,7 +967,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
               <div>
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                  Radar & Inteligência de Preços Multiverticais
+                  Radar e Inteligência de Preços Multiverticais
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Compare cotações de um mesmo produto em múltiplos e-commerces e marketplaces minerados.
@@ -1451,7 +1391,7 @@ export function MiningDashboard({ initialStats }: { initialStats?: MiningStats }
           <div className="p-4 rounded-xl border border-border/40 bg-card space-y-2">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
               <ShieldAlert className="w-4 h-4 text-muted-foreground" />
-              Proteção de Rede & Resiliência Anti-Ban
+              Proteção de Rede e Resiliência Anti-Ban
             </h3>
             <p className="text-xs text-muted-foreground">
               Mecanismo de repouso automático para domínios que ativaram defesas Cloudflare/Akamai ou HTTP 429/403.

@@ -1,35 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-  Plane,
-  Building2,
-  Car,
-  Shield,
-  Phone,
-  PhoneCall,
-  MapPin,
-  User,
-  Ticket,
-  Luggage,
-  Clock,
-  HelpCircle,
-  ShieldCheck,
-  CheckCircle2,
-  Copy,
-  Download,
-  ExternalLink,
-  MessageCircle,
-  FileText,
-  Info,
-  Siren,
-  Sparkles,
-  Wrench,
-  Home,
-  Receipt,
-  HeartPulse,
-  ImageIcon,
-  Loader2,
-  Share2,
-} from "lucide-react";
+import { Plane, Building2, Car, Shield, Phone, PhoneCall, MapPin, User, Ticket, Luggage, Clock, HelpCircle, ShieldCheck, CheckCircle2, Copy, Download, ExternalLink, MessageCircle, FileText, Info, Siren, Star, Wrench, Home, Receipt, HeartPulse, ImageIcon, Loader2, Share2 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -300,7 +270,7 @@ export function DigitalCompanionCard({
             }`}
           >
             <Info className="size-4" />
-            <span>Orientações & Regras</span>
+            <span>Orientações e Regras</span>
           </button>
 
           <button
@@ -313,7 +283,7 @@ export function DigitalCompanionCard({
             }`}
           >
             <Siren className="size-4 text-rose-500" />
-            <span>Contatos & Apoio</span>
+            <span>Contatos e Apoio</span>
           </button>
 
           <button
@@ -430,7 +400,7 @@ export function DigitalCompanionCard({
                     <img src={companyLogoUrl} alt={companyName} className="h-9 w-auto object-contain brightness-0 invert" />
                   ) : (
                     <div className="size-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30">
-                      <Sparkles className="size-5" />
+                      <Star className="size-5" />
                     </div>
                   )}
                   <div>

@@ -1,34 +1,13 @@
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Bus,
- FolderPlus,
- MapPin,
- Calendar,
- Clock,
- DollarSign,
- Plus,
- Trash,
- CheckCircle2,
- ShieldCheck,
- Building,
- Image as ImageIcon,
- Users,
- Compass,
-} from "lucide-react";
+import { Bus, FolderPlus, MapPin, Calendar, Clock, DollarSign, Plus, Trash, CheckCircle2, ShieldCheck, Building, Image as ImageIcon, Users, Compass } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { createGroupTour } from "@/services/group-tours.functions";
@@ -45,7 +24,7 @@ interface NewGroupTourSheetProps {
 const TOUR_PRESETS = [
  {
  id: "beto_carrero",
- title: "Excursão Beto Carrero World & Praias",
+ title: "Excursão Beto Carrero World e Praias",
  destination: "Penha / Balneário Camboriú, SC",
  departureTime: "19:30",
  returnTime: "22:00",
@@ -69,7 +48,7 @@ const TOUR_PRESETS = [
  },
  {
  id: "gramado_canela",
- title: "Gramado & Canela — Serra Gaúcha & Natal Luz",
+ title: "Gramado e Canela — Serra Gaúcha & Natal Luz",
  destination: "Gramado / Canela, RS",
  departureTime: "20:00",
  returnTime: "23:00",
@@ -93,7 +72,7 @@ const TOUR_PRESETS = [
  },
  {
  id: "aparecida",
- title: "Aparecida do Norte & Frei Galvão — Circuito da Fé",
+ title: "Aparecida do Norte e Frei Galvão — Circuito da Fé",
  destination: "Aparecida / Guaratinguetá, SP",
  departureTime: "12:00",
  returnTime: "18:00",
@@ -117,7 +96,7 @@ const TOUR_PRESETS = [
  },
  {
  id: "foz_cataratas",
- title: "Foz do Iguaçu, Cataratas & Compras Paraguai",
+ title: "Foz do Iguaçu, Cataratas e Compras Paraguai",
  destination: "Foz do Iguaçu, PR / CDE",
  departureTime: "22:00",
  returnTime: "23:30",
@@ -141,7 +120,7 @@ const TOUR_PRESETS = [
  },
  {
  id: "piratuba",
- title: "Termas de Piratuba & Machadinho — Águas Termais",
+ title: "Termas de Piratuba e Machadinho — Águas Termais",
  destination: "Piratuba, SC",
  departureTime: "06:00",
  returnTime: "20:00",
@@ -360,10 +339,10 @@ export function NewGroupTourSheet({
  </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground">
- Studio de Excursões & Viagens Rodoviárias
+ Nova Excursão
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
- Configuração de roteiro, ônibus virtual da frota, pontos de embarque e precificação.
+ Configuração de roteiro, ônibus da frota, pontos de embarque e precificação.
  </SheetDescription>
  </div>
  </div>
@@ -389,7 +368,7 @@ export function NewGroupTourSheet({
  </TabsTrigger>
  <TabsTrigger value="frota" className="text-xs font-bold rounded-lg gap-1.5 py-1">
  <Bus className="size-3.5" />
- <span>2. Frota & Ônibus</span>
+ <span>2. Frota</span>
  </TabsTrigger>
  <TabsTrigger value="embarque" className="text-xs font-bold rounded-lg gap-1.5 py-1">
  <MapPin className="size-3.5" />
@@ -796,7 +775,7 @@ export function NewGroupTourSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-xs font-bold">Condições de Pagamento & Parcelamento</Label>
+ <Label className="text-xs font-bold">Condições de Pagamento e Parcelamento</Label>
  <Input
  placeholder="Ex: Entrada de 20% + até 10x sem juros no cartão ou 4x no carnê"
  value={paymentConditions}
@@ -806,7 +785,7 @@ export function NewGroupTourSheet({
  </div>
 
  <div className="space-y-1">
- <Label className="text-xs font-bold">Observações & Informações Gerais</Label>
+ <Label className="text-xs font-bold">Observações e Informações Gerais</Label>
  <Textarea
  placeholder="Ex: Saída pontual com tolerância de 15 minutos. Levar documento com foto original."
  value={notes}

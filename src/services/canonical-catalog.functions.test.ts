@@ -1,12 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
- fetchCanonicalDeviceBrands,
- fetchCanonicalVehicleBrands,
- fetchCanonicalJobOccupations,
- listCanonicalDeviceBrands,
- listCanonicalVehicleBrands,
- listCanonicalJobOccupations,
-} from "./canonical-catalog.functions";
+import { fetchCanonicalDeviceBrands, fetchCanonicalVehicleBrands, fetchCanonicalJobOccupations, listCanonicalDeviceBrands, listCanonicalVehicleBrands, listCanonicalJobOccupations } from "./canonical-catalog.functions";
 
 describe("Canonical Sources & Market Measurement (Microfase 77B)", () => {
  it("valida que as server functions de catálogo canônico estão exportadas corretamente", () => {

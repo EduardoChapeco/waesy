@@ -1,18 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import {
- CheckCircle2,
- Package,
- ArrowRight,
- Copy,
- Info,
- MessageCircle,
- ShieldCheck,
- Clock,
- ChefHat,
- Bike,
- Truck,
-} from "lucide-react";
+import { CheckCircle2, Package, ArrowRight, Copy, Info, MessageCircle, ShieldCheck, Clock, ChefHat, Bike, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ErrorState } from "@/components/state/states";
@@ -193,7 +181,7 @@ function ConfirmationPage() {
  <div className="mx-auto max-w-screen-xl px-4 py-8 md:px-6 md:py-12">
  <div className="mx-auto max-w-3xl space-y-8">
  <div className="flex flex-col items-center text-center">
- <PageHeader title="Pedido Realizado com Sucesso" />
+ <PageHeader title="Confirmação" />
  <p className="mt-2 text-sm text-muted-foreground">
  Código do pedido:{" "}
  <span className="font-mono font-medium text-foreground">{order.order_number || formatHumanOrderId(order.custom_fields?.short_id || order.public_token)}</span>

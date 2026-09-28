@@ -1,60 +1,19 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Globe,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Star,
-  Shield,
-  ShieldAlert,
-  ShieldOff,
-  AlertTriangle,
-  Info,
-  Zap,
-  Thermometer,
-  DollarSign,
-  MapPin,
-  Eye,
-  Search,
-  ChevronRight,
-  Plane,
-  BadgeCheck,
-  BarChart3,
-  Plus,
-  Loader2,
-} from 'lucide-react';
+import { Globe, TrendingUp, TrendingDown, Minus, Star, Shield, ShieldAlert, ShieldOff, AlertTriangle, Info, Zap, Thermometer, DollarSign, MapPin, Eye, Search, ChevronRight, Plane, BadgeCheck, BarChart3, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from '@/components/ui/sheet';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-canonical-toolbar';
 import { WorkspaceDashboardSheet, type MetricCardItem } from '@/components/workspace/workspace-dashboard-sheet';
 import { toast } from 'sonner';
 import { getStoreSettings } from '@/services/store.functions';
-import {
-  listDestinationIntelligence,
-  upsertDestinationIntelligence,
-  listTravelAlerts,
-  createTravelAlert,
-} from '@/services/destination-intelligence.functions';
+import { listDestinationIntelligence, upsertDestinationIntelligence, listTravelAlerts, createTravelAlert } from '@/services/destination-intelligence.functions';
 import type {
   DestinationIntelligence,
   TravelAlert,
@@ -63,7 +22,7 @@ import type {
 } from '@/types/destination-intelligence';
 
 export const Route = createFileRoute('/workspace/turismo/radar')({
-  head: () => ({ meta: [{ title: 'Radar Global de Destinos & IA | Workspace Waesy' }] }),
+  head: () => ({ meta: [{ title: 'Radar de Destinos | Workspace Waesy' }] }),
   loader: async () => {
     try {
       const store = await getStoreSettings().catch(() => null);
@@ -357,7 +316,7 @@ export default function TurismoRadarPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              Alertas Operacionais & Câmbio em Tempo Real
+              Alertas Operacionais e Câmbio em Tempo Real
             </h2>
             <Button
               variant="ghost"
@@ -528,7 +487,7 @@ export default function TurismoRadarPage() {
                     {Array.isArray(dest.highlights) && dest.highlights.length > 0 && (
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 flex items-center gap-1.5">
-                          <Zap className="size-3.5 text-amber-500" /> Destaques & Passeios
+                          <Zap className="size-3.5 text-amber-500" /> Destaques e Passeios
                         </h4>
                         <ul className="space-y-1">
                           {dest.highlights.map((h: string) => (
@@ -725,7 +684,7 @@ export default function TurismoRadarPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Tags & Perfis (separados por vírgula)</Label>
+              <Label className="text-xs font-semibold">Tags e Perfis (separados por vírgula)</Label>
               <Input
                 value={formTags}
                 onChange={(e) => setFormTags(e.target.value)}

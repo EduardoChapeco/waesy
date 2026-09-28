@@ -4,19 +4,21 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
 export type AdCampaign = {
- id: string;
- store_id: string;
- title: string;
- format: "post_patrocinado" | "banner_destaque" | "story_patrocinado" | "busca_topo";
- target_location: string;
- target_radius_km: number;
- daily_budget_cents: number;
- total_budget_cents: number;
- status: "active" | "paused" | "completed" | "draft";
- impressions_count: number;
- clicks_count: number;
- spent_cents: number;
- created_at: string;
+  id: string;
+  store_id: string;
+  title: string;
+  headline?: string;
+  media_url?: string | null;
+  format: "post_patrocinado" | "banner_destaque" | "story_patrocinado" | "busca_topo" | "stories_sponsor";
+  target_location: string;
+  target_radius_km: number;
+  daily_budget_cents: number;
+  total_budget_cents: number;
+  status: "active" | "paused" | "completed" | "draft";
+  impressions_count: number;
+  clicks_count: number;
+  spent_cents: number;
+  created_at: string;
 };
 
 export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async () => {
@@ -27,7 +29,7 @@ export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async (
  const { data: campaigns, error } = await supabase
  .from("ad_campaigns")
  .select(
- "id, store_id, title, type, budget_cents, status, created_at, starts_at, ends_at, placements",
+ "id, store_id, title, body, image_url, target_url, product_id, type, budget_cents, status, created_at, starts_at, ends_at, placements, settings",
  )
  .eq("store_id", identity.store_id)
  .order("created_at", { ascending: false });
@@ -56,32 +58,37 @@ export const listAdCampaigns = createServerFn({ method: "GET" }).handler(async (
  });
 
  return (campaigns || []).map((c: any) => {
- const stats = eventsCount.get(c.id) || { views: 0, clicks: 0 };
- const placements = c.placements || ["feed"];
- const format = placements.includes("search")
- ? "busca_topo"
- : placements.includes("banner")
- ? "banner_destaque"
- : placements.includes("story")
- ? "story_patrocinado"
- : "post_patrocinado";
+    const stats = eventsCount.get(c.id) || { views: 0, clicks: 0 };
+    const placements = c.placements || ["feed"];
+    const s = (c.settings as Record<string, any>) || {};
+    const format = (s.format as any) || (
+      placements.includes("search")
+        ? "busca_topo"
+        : placements.includes("banner")
+        ? "banner_destaque"
+        : placements.includes("story")
+        ? "story_patrocinado"
+        : "post_patrocinado"
+    );
 
- return {
- id: c.id,
- store_id: c.store_id,
- title: c.title || "Campanha Promocional",
- format,
- target_location: (c.settings as any)?.target_location || "Toda a Região",
- target_radius_km: 15,
- daily_budget_cents: Math.round(c.budget_cents / 5),
- total_budget_cents: c.budget_cents,
- status: c.status,
- impressions_count: stats.views,
- clicks_count: stats.clicks,
- spent_cents: Math.min(c.budget_cents, stats.clicks * 45),
- created_at: c.created_at,
- } as AdCampaign;
- });
+    return {
+      id: c.id,
+      store_id: c.store_id,
+      title: c.title || "Campanha Promocional",
+      headline: c.body || s.headline || "",
+      media_url: c.image_url || null,
+      format,
+      target_location: s.target_location || "Toda a Região",
+      target_radius_km: s.target_radius_km || 15,
+      daily_budget_cents: s.daily_budget_cents || Math.round(c.budget_cents / 5),
+      total_budget_cents: c.budget_cents,
+      status: c.status,
+      impressions_count: stats.views,
+      clicks_count: stats.clicks,
+      spent_cents: Math.min(c.budget_cents, stats.clicks * 45),
+      created_at: c.created_at,
+    } as AdCampaign;
+  });
 });
 
 export const getStoreAdTargets = createServerFn({ method: "GET" }).handler(async () => {
@@ -145,13 +152,29 @@ export const createAdCampaign = createServerFn({ method: "POST" })
  const { data: campaign, error } = await supabase
  .from("ad_campaigns")
  .insert({
- store_id: identity.store_id,
- title: input.title,
- type: input.format === "banner_destaque" ? "fixed_banner" : "dynamic_boost",
- budget_cents: input.total_budget_cents,
- placements: placementMap[input.format] || ["feed"],
- status: "active",
- })
+        store_id: identity.store_id,
+        title: input.title,
+        body: input.headline || null,
+        image_url: input.media_url || null,
+        target_url: input.destination_url || null,
+        product_id: input.destination_type === "product" && input.destination_id ? input.destination_id : null,
+        type: input.format === "banner_destaque" ? "fixed_banner" : "dynamic_boost",
+        budget_cents: input.total_budget_cents,
+        placements: placementMap[input.format] || ["feed"],
+        status: "active",
+        settings: {
+          format: input.format,
+          headline: input.headline,
+          daily_budget_cents: input.daily_budget_cents,
+          total_budget_cents: input.total_budget_cents,
+          target_location: input.target_location,
+          target_radius_km: input.target_radius_km,
+          objective: input.objective,
+          destination_type: input.destination_type,
+          destination_id: input.destination_id,
+          destination_url: input.destination_url,
+        },
+      })
  .select()
  .single();
 
@@ -879,6 +902,31 @@ export const toggleAdCampaignStatusAdmin = createServerFn({ method: "POST" })
     }
 
     return updated;
+  });
+
+export const deleteAdCampaign = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      campaignId: z.string().uuid(),
+    }),
+  )
+  .handler(async ({ data: { campaignId } }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const { error } = await supabase
+      .from("ad_campaigns")
+      .delete()
+      .eq("id", campaignId)
+      .eq("store_id", identity.store_id);
+
+    if (error) {
+      console.error("[ads] Error deleting campaign:", error);
+      throw new Error("Erro ao excluir campanha.");
+    }
+
+    return { success: true };
   });
 
 

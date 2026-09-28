@@ -1,36 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Megaphone,
- ArrowLeft,
- MapPin,
- DollarSign,
- TrendingUp,
- Loader2,
- CheckCircle2,
- Users,
- Image as ImageIcon,
- MessageCircle,
- ShoppingBag,
- ExternalLink,
- Target,
- Eye,
-} from "lucide-react";
+import { Megaphone, ArrowLeft, MapPin, DollarSign, TrendingUp, Loader2, CheckCircle2, Users, Image as ImageIcon, MessageCircle, ShoppingBag, ExternalLink, Target, Eye, ChevronDown, ChevronUp, Bot, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { MediaUploader } from "@/components/ui/media-uploader";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createAdCampaign, getStoreAdTargets } from "@/services/ads.functions";
+import { createListingWithAI } from "@/services/ai-sdr.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -54,12 +34,12 @@ export const Route = createFileRoute("/workspace/marketing/anuncios/novo")({
 
 function WorkspaceAnunciosNovoErrorComponent({ error }: { error: any }) {
   return (
-    <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-4">
+    <div className="w-full max-w-lg mx-auto p-4 sm:p-8 text-center space-y-4">
       <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
         <Megaphone className="size-7" />
       </div>
       <div className="space-y-1">
-        <h2 className="text-lg font-bold text-foreground">Falha ao Abrir Criador de Campanha</h2>
+        <h2 className="text-lg font-bold text-foreground">Falha ao Abrir Campanha</h2>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
           Ocorreu um erro ao carregar os dados de produtos e alvos da loja.
         </p>
@@ -160,9 +140,46 @@ function NovoAnuncioPage() {
   const [dailyBudgetCents, setDailyBudgetCents] = useState<number | undefined>(2000);
   const [totalBudgetCents, setTotalBudgetCents] = useState<number | undefined>(10000);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiExtracting, setIsAiExtracting] = useState(false);
+  const [isFormatDrawerOpen, setIsFormatDrawerOpen] = useState(false);
 
   const selectedFormatConfig = AD_FORMATS.find((f) => f.id === format) || AD_FORMATS[0];
   const selectedProduct = safeProducts.find((p: any) => p.id === selectedProductId);
+
+  const handleExtractWithAI = async () => {
+    const trimmed = aiPrompt.trim();
+    if (!trimmed) {
+      toast.error("Descreva o objetivo ou produto do anúncio.");
+      return;
+    }
+    setIsAiExtracting(true);
+    toast.loading("A IA está estruturando sua campanha...", { id: "ai-ad" });
+    try {
+      const res = await createListingWithAI({ data: { prompt: trimmed } });
+      if (res?.success && res.listing) {
+        const l = res.listing;
+        if (l.title) setTitle(l.title);
+        const headlineText = l.title + (l.price_cents ? ` • Apenas ${formatMoney(l.price_cents)}` : "");
+        setHeadline(headlineText);
+        if (l.location) setLocation(l.location);
+        if (l.delivery_type === "online") {
+          setObjective("brand_awareness");
+          setDestinationType("custom_url");
+        } else {
+          setObjective("whatsapp_leads");
+          setDestinationType("whatsapp");
+        }
+        toast.success("Campanha estruturada com sucesso!", { id: "ai-ad" });
+      } else {
+        toast.error("Não foi possível estruturar todos os dados automaticamente.", { id: "ai-ad" });
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Erro na conexão com IA.", { id: "ai-ad" });
+    } finally {
+      setIsAiExtracting(false);
+    }
+  };
 
  // Estimativa de alcance baseada no orçamento diário
  const dailyNum = (dailyBudgetCents || 0) / 100;
@@ -229,10 +246,7 @@ function NovoAnuncioPage() {
  </Link>
  </Button>
  <div>
- <h1 className="text-xl font-bold text-foreground">Nova Campanha de Anúncio</h1>
- <p className="text-xs text-muted-foreground">
- Formato, criativo com aspect ratio travado, segmentação e destino
- </p>
+ <h1 className="text-xl font-bold text-foreground">Nova Campanha</h1>
  </div>
  </div>
  </div>
@@ -240,9 +254,82 @@ function NovoAnuncioPage() {
  <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
  {/* Coluna Esquerda: Formulário de Configuração (7 colunas) */}
  <div className="lg:col-span-7 space-y-5">
+ {/* Card 1: Criativo / Mídia Primeiro (Inversão do Funil V121) */}
  <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/40">
- {/* Título e Headline */}
+ <div className="flex items-center justify-between pb-2 border-b border-border/40">
+ <Label className="text-xs font-semibold flex items-center gap-1.5">
+ <ImageIcon className="size-3.5 text-primary" />
+ <span>Mídia da Campanha</span>
+ </Label>
+ <span className="text-[10px] text-muted-foreground font-mono">
+ Enquadramento: {selectedFormatConfig.aspectLabel}
+ </span>
+ </div>
+
+ <MediaUploader
+ value={mediaUrls}
+ onChange={setMediaUrls}
+ maxFiles={1}
+ accept="image"
+ aspect={selectedFormatConfig.aspect}
+ lockAspect={true}
+ bucket="banners"
+ folder="anuncios"
+ label={`Enviar Banner (${selectedFormatConfig.aspectLabel})`}
+ />
+
+ {/* Omni-Extractor: Preenchimento Rápido com IA */}
+ <div className="pt-2 border-t border-border/40 space-y-2">
+ <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+ <Bot className="size-3.5 text-primary" />
+ <span>Preenchimento Inteligente</span>
+ </div>
+ <div className="flex gap-2">
+ <Input
+ value={aiPrompt}
+ onChange={(e) => setAiPrompt(e.target.value)}
+ placeholder="Ex: Anunciar pizza grande por R$ 49,90 no centro com entrega grátis via WhatsApp"
+ className="h-10 text-xs rounded-xl flex-1 bg-background"
+ onKeyDown={(e) => {
+ if (e.key === "Enter") {
+ e.preventDefault();
+ handleExtractWithAI();
+ }
+ }}
+ />
+ <Button
+ type="button"
+ variant="outline"
+ onClick={handleExtractWithAI}
+ disabled={isAiExtracting}
+ className="h-10 rounded-xl text-xs font-semibold px-4 cursor-pointer shrink-0"
+ >
+ {isAiExtracting ? <Loader2 className="size-3.5 animate-spin" /> : "Estruturar"}
+ </Button>
+ </div>
+ </div>
+ </div>
+
+ {/* Card 2: Informações da Campanha */}
+ <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/40">
+ <div className="flex items-center gap-1.5 pb-2 border-b border-border/40 text-xs font-semibold text-foreground">
+ <span>2. Conteúdo da Campanha</span>
+ </div>
+
  <div className="space-y-3">
+ <div className="space-y-1.5">
+ <Label htmlFor="ad-headline" className="text-xs font-semibold">
+ Chamada Principal (Opcional)
+ </Label>
+ <Input
+ id="ad-headline"
+ value={headline}
+ onChange={(e) => setHeadline(e.target.value)}
+ placeholder="Ex: 20% OFF no Primeiro Pedido • Entrega Grátis"
+ className="h-10 text-xs rounded-xl"
+ />
+ </div>
+
  <div className="space-y-1.5">
  <Label htmlFor="ad-title" className="text-xs font-semibold">
  Título Interno da Campanha <span className="text-destructive">*</span>
@@ -256,76 +343,6 @@ function NovoAnuncioPage() {
  required
  />
  </div>
-
- <div className="space-y-1.5">
- <Label htmlFor="ad-headline" className="text-xs font-semibold">
- Chamada Pública / Headline no Anúncio (Opcional)
- </Label>
- <Input
- id="ad-headline"
- value={headline}
- onChange={(e) => setHeadline(e.target.value)}
- placeholder="Ex: 20% OFF no Primeiro Pedido • Entrega Grátis"
- className="h-10 text-xs rounded-xl"
- />
- </div>
- </div>
-
- {/* Formato do Anúncio */}
- <div className="space-y-2 pt-2 border-t border-border/40">
- <div className="flex items-center justify-between">
- <Label className="text-xs font-semibold">Formato do Anúncio</Label>
- <Badge variant="outline" className="text-[10px] font-mono">
- Aspecto: {selectedFormatConfig.aspectLabel}
- </Badge>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
- {AD_FORMATS.map((f) => (
- <button
- key={f.id}
- type="button"
- onClick={() => setFormat(f.id)}
- className={cn(
- "p-3 rounded-xl border text-left flex items-start justify-between transition-all cursor-pointer",
- format === f.id
- ? "border-primary bg-primary/5 ring-1 ring-primary/30"
- : "border-border/60 bg-background hover:bg-muted/40",
- )}
- >
- <div>
- <p className="text-xs font-bold text-foreground">{f.title}</p>
- <p className="text-[11px] text-muted-foreground mt-0.5">{f.desc}</p>
- </div>
- {format === f.id && (
- <CheckCircle2 className="size-4 text-primary shrink-0 ml-2" />
- )}
- </button>
- ))}
- </div>
- </div>
-
- {/* Upload do Criativo com Cropper Travado */}
- <div className="space-y-2 pt-2 border-t border-border/40">
- <div className="flex items-center justify-between">
- <Label className="text-xs font-semibold flex items-center gap-1.5">
- <ImageIcon className="size-3.5 text-primary" />
- <span>Criativo / Imagem da Campanha</span>
- </Label>
- <span className="text-[10px] text-muted-foreground font-mono">
- Enquadramento travado em {selectedFormatConfig.aspectLabel}
- </span>
- </div>
- <MediaUploader
- value={mediaUrls}
- onChange={setMediaUrls}
- maxFiles={1}
- accept="image"
- aspect={selectedFormatConfig.aspect}
- lockAspect={true}
- bucket="banners"
- folder="anuncios"
- label={`Upload de Banner (${selectedFormatConfig.aspectLabel})`}
- />
  </div>
 
  {/* Objetivo da Campanha */}
@@ -413,7 +430,7 @@ function NovoAnuncioPage() {
  className="text-xs font-semibold flex items-center gap-1.5"
  >
  <MapPin className="size-3.5 text-primary" />
- Localização Alvo & Raio de Alcance
+ Localização Alvo e Raio de Alcance
  </Label>
  <Input
  id="ad-location"
@@ -467,6 +484,55 @@ function NovoAnuncioPage() {
  />
  </div>
  </div>
+ </div>
+
+ {/* Card 3: Formato Visual (Design Silencioso / Collapsible no Fundo - V121) */}
+ <div className="bg-card rounded-2xl p-4 border border-border/40">
+ <button
+ type="button"
+ onClick={() => setIsFormatDrawerOpen(!isFormatDrawerOpen)}
+ className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+ >
+ <div className="flex items-center gap-2">
+ <Palette className="size-4 text-primary shrink-0" />
+ <span>Formato Visual</span>
+ <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider">
+ {selectedFormatConfig.title} ({selectedFormatConfig.aspectLabel})
+ </Badge>
+ </div>
+ {isFormatDrawerOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+ </button>
+
+ {isFormatDrawerOpen && (
+ <div className="mt-3 pt-3 border-t border-border/40 space-y-2">
+ <p className="text-[11px] text-muted-foreground">
+ Selecione onde seu anúncio deve ser veiculado na plataforma:
+ </p>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+ {AD_FORMATS.map((f) => (
+ <button
+ key={f.id}
+ type="button"
+ onClick={() => setFormat(f.id)}
+ className={cn(
+ "p-3 rounded-xl border text-left flex items-start justify-between transition-all cursor-pointer",
+ format === f.id
+ ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+ : "border-border/60 bg-background hover:bg-muted/40",
+ )}
+ >
+ <div>
+ <p className="text-xs font-bold text-foreground">{f.title}</p>
+ <p className="text-[11px] text-muted-foreground mt-0.5">{f.desc}</p>
+ </div>
+ {format === f.id && (
+ <CheckCircle2 className="size-4 text-primary shrink-0 ml-2" />
+ )}
+ </button>
+ ))}
+ </div>
+ </div>
+ )}
  </div>
 
  <Button

@@ -1,42 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Calendar as CalendarIcon,
- Plus,
- Clock,
- ImageIcon,
- Tag,
- Megaphone,
- Layers,
- ChevronLeft,
- ChevronRight,
- Loader2,
- Trash2,
-} from "lucide-react";
+import { Calendar as CalendarIcon, Plus, Clock, ImageIcon, Tag, Megaphone, Layers, ChevronLeft, ChevronRight, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogTrigger,
-} from "@/components/ui/dialog";
-import {
- listScheduledPosts,
- schedulePost,
- reschedulePost,
- type ScheduledPost,
-} from "@/services/editorial.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { listScheduledPosts, schedulePost, reschedulePost, type ScheduledPost } from "@/services/editorial.functions";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/cms/calendario")({
- head: () => ({ meta: [{ title: "Calendário Editorial & Agendamento | Waesy" }] }),
+ head: () => ({ meta: [{ title: "Calendário Editorial e Agendamento | Waesy" }] }),
  loader: async () => {
    try {
  return await listScheduledPosts();
@@ -165,7 +141,7 @@ function CalendarioEditorialPage() {
  <div>
  <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
  <CalendarIcon className="size-5 text-primary" />
- Calendário Editorial & Agendamento
+ Calendário Editorial e Agendamento
  </h1>
  <p className="text-xs text-muted-foreground">
  Planeje flyers, drops de produtos, stories e lançamentos culturais com antecedência.

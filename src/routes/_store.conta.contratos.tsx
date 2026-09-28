@@ -6,23 +6,8 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  FileText,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Hash,
-  ExternalLink,
-  Building2,
-  AlertCircle,
-  PenTool,
-  Download,
-  Filter,
-} from "lucide-react";
-import {
-  listUserEnvelopesAndContracts,
-  type UserContractVaultItemDTO,
-} from "@/services/contracts.functions";
+import { FileText, CheckCircle2, Clock, ShieldCheck, Hash, ExternalLink, Building2, AlertCircle, PenTool, Download, Filter } from "lucide-react";
+import { listUserEnvelopesAndContracts, type UserContractVaultItemDTO } from "@/services/contracts.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/datetime";

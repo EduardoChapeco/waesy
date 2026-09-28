@@ -1,34 +1,10 @@
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- Compass,
- MapPin,
- CalendarDots,
- Users,
- WhatsappLogo,
- ShieldCheck,
- Printer,
- ShareNetwork,
- ArrowLeft,
- QrCode,
- Ticket,
- CheckCircle,
- Clock,
- ArrowUpRight,
- Info,
- Airplane,
- Buildings,
-} from "@phosphor-icons/react";
+import { Compass, MapPin, CalendarDots, Users, WhatsappLogo, ShieldCheck, Printer, ShareNetwork, ArrowLeft, QrCode, Ticket, CheckCircle, Clock, ArrowUpRight, Info, Airplane, Buildings } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { listCustomerTrips, type TourismBookingDTO } from "@/services/tourism.functions";
 import { listCustomerAgencyTrips } from "@/services/travel-lifecycle.functions";
 import { formatMoney } from "@/lib/money";
@@ -37,7 +13,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_store/conta/viagens")({
  head: () => ({
  meta: [
- { title: "Minhas Viagens & Vouchers | Waesy" },
+ { title: "Viagens | Waesy" },
  { name: "description", content: "Consulte seus vouchers, reservas de turismo e passeios confirmados." },
  ],
  }),
@@ -100,7 +76,7 @@ function CustomerTripsPage() {
         </div>
 
         <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
-          <Link to="/turismo">Explorar Roteiros</Link>
+          <Link to="/turismo">Explorar</Link>
         </Button>
       </div>
 
@@ -139,7 +115,7 @@ function CustomerTripsPage() {
  <div className="flex items-center justify-between">
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Airplane size={18} weight="bold" className="text-primary" />
- <span>Viagens & Pacotes Turísticos Integrados</span>
+ <span>Pacotes</span>
  </h2>
  <span className="text-[11px] text-muted-foreground font-medium">
  {agencyTrips.length} pacote(s) cadastrado(s)
@@ -223,7 +199,7 @@ function CustomerTripsPage() {
  >
  <a href={voucherUrl} target="_blank" rel="noopener noreferrer">
  <QrCode size={16} weight="bold" />
- <span>Abrir Guia de Embarque</span>
+ <span>Embarque</span>
  </a>
  </Button>
  ) : (
@@ -258,7 +234,7 @@ function CustomerTripsPage() {
   <Button asChild className="rounded-xl font-bold text-xs bg-foreground text-background">
   <Link to="/turismo">
   <Compass size={16} weight="bold" className="mr-1.5" />
-  <span>Ver Roteiros Disponíveis</span>
+  <span>Explorar</span>
   </Link>
   </Button>
   </div>

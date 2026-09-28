@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  CANONICAL_FOOD_SUBNICHES,
-  CANONICAL_SERVICE_SUBNICHES,
-  CANONICAL_BUSINESS_TYPES,
-  CANONICAL_INVESTMENT_MODELS,
-} from '@/lib/classifieds/canonical-taxonomy';
+import { CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_INVESTMENT_MODELS } from '@/lib/classifieds/canonical-taxonomy';
 import { resolveWorkspaceNavigation } from '@/lib/workspace-navigation';
 import { AuditCnpjInputSchema } from '@/services/market-intelligence.functions';
 

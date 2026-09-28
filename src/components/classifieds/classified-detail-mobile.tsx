@@ -1,44 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Share2,
-  MapPin,
-  Check,
-  ShieldCheck,
-  Tag,
-  Clock,
-  User,
-  ChevronLeft,
-  ChevronRight,
-  Maximize2,
-  X,
-  Phone,
-  MessageCircle,
-  Package,
-  Truck,
-  CreditCard,
-  QrCode,
-  Receipt,
-  FileSpreadsheet,
-  CheckCircle2,
-  Edit3,
-  Smartphone,
-  ExternalLink,
-  ShieldAlert,
-  Coins,
-  TrendingUp,
-  Banknote,
-  FileCheck,
-  Download,
-  AlertCircle,
-  Eye,
-  Building,
-  Car,
-  Hotel,
-  Briefcase,
-  HelpCircle,
-} from "lucide-react";
+import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";

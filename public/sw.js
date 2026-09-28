@@ -1,4 +1,4 @@
-const CACHE_NAME = "waesy-v4-pwa-push";
+const CACHE_NAME = "waesy-v5-pwa-native";
 const STATIC_ASSETS = [
   "/",
   "/offline.html",
@@ -11,6 +11,16 @@ const STATIC_ASSETS = [
   "/apple-touch-icon.png",
 ];
 
+// ── PWA Native Singularity: Auth-Safe Service Worker ───────────────────────
+// Regras críticas para não quebrar a sessão Supabase no contexto standalone:
+// 1. NUNCA interceptar rotas de auth (/api/auth/*, /auth/*) — deixar passar direto.
+// 2. NUNCA cachear respostas com Set-Cookie ou headers de autenticação.
+// 3. skipWaiting() diferido — só após um messageEvent 'SKIP_WAITING', evitando
+//    que o SW se ative no meio de um request de refresh de token.
+// 4. navigate requests usam fetch() com credentials:"include" para que o browser
+//    envie os cookies de sessão corretamente mesmo no standalone context.
+// ──────────────────────────────────────────────────────────────────────────
+
 // 1. Instalação e pré-cache de ativos essenciais + página offline
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -18,7 +28,16 @@ self.addEventListener("install", (event) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting();
+  // NÃO chamamos self.skipWaiting() aqui.
+  // O SW antigo continua ativo até que a aba seja refrescada,
+  // evitando interromper requests de refresh de token em voo.
+});
+
+// Permite ativação forçada via postMessage (ex: após login bem-sucedido)
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // 2. Ativação e limpeza de caches legados
@@ -35,28 +54,58 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// ── Rotas que NUNCA devem ser interceptadas pelo SW ───────────────────────
+function isAuthRoute(url) {
+  return (
+    url.pathname.startsWith("/api/auth") ||
+    url.pathname.startsWith("/auth") ||
+    url.pathname.includes("supabase") ||
+    url.hostname.includes("supabase.co") ||
+    url.hostname.includes("supabase.in") ||
+    url.search.includes("_server") ||
+    url.pathname.includes("_server")
+  );
+}
+
+// ── Rotas de admin/workspace — network-only (dados dinâmicos críticos) ─────
+function isAdminRoute(url) {
+  return (
+    url.pathname.startsWith("/admin") ||
+    url.pathname.startsWith("/workspace")
+  );
+}
+
+// ── A resposta tem dados de auth? Nunca cachear ───────────────────────────
+function hasAuthHeaders(response) {
+  const cc = response.headers.get("cache-control") || "";
+  const setCookie = response.headers.get("set-cookie") || "";
+  return (
+    cc.includes("no-store") ||
+    cc.includes("private") ||
+    setCookie.length > 0
+  );
+}
+
 // 3. Estratégia de Rede e Cache Resiliente
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Ignora requisições de API (exceto PWA manifest), Supabase, Server Functions e métodos não-GET
+  // Passa direto sem interceptar: auth, API não-manifest, admin, workspace
   const isPwaManifest = url.pathname.startsWith("/api/pwa/manifest");
   if (
     event.request.method !== "GET" ||
+    isAuthRoute(url) ||
     (url.pathname.startsWith("/api") && !isPwaManifest) ||
-    url.hostname.includes("supabase.co") ||
-    url.search.includes("_server") ||
-    url.pathname.includes("_server") ||
-    url.pathname.startsWith("/admin") ||
-    url.pathname.startsWith("/workspace")
+    isAdminRoute(url)
   ) {
-    return;
+    return; // deixa o browser resolver normalmente com cookies intactos
   }
 
-  // Network-first com fallback para /offline.html para navegação de páginas
+  // Navigate: Network-first com credentials:include para preservar cookies de sessão
+  // Fallback para /offline.html apenas em caso de erro de rede real.
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request).catch(async () => {
+      fetch(event.request, { credentials: "include" }).catch(async () => {
         const cached = await caches.match(event.request);
         if (cached) return cached;
         const offlinePage = await caches.match("/offline.html");
@@ -67,11 +116,16 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Stale-While-Revalidate para ativos estáticos (imagens, CSS, JS, fontes)
+  // com guarda: nunca cachear respostas com headers de auth.
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            !hasAuthHeaders(networkResponse)
+          ) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);

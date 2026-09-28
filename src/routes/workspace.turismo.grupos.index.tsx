@@ -1,33 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Bus,
-  Plus,
-  Calendar,
-  Users,
-  MapPin,
-  Clock,
-  CheckCircle2,
-  Trash,
-  Building,
-  UserCheck,
-} from "lucide-react";
+import { Bus, Plus, Calendar, Users, MapPin, Clock, CheckCircle2, Trash, Building, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { toast } from "sonner";
-import {
-  listAgencyGroupTours,
-  deleteGroupTour,
-  type GroupTourDTO,
-} from "@/services/group-tours.functions";
+import { listAgencyGroupTours, deleteGroupTour, type GroupTourDTO } from "@/services/group-tours.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listVehicleLayouts } from "@/services/vehicle-layouts.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -36,7 +18,7 @@ import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/turismo/grupos/")({
   head: () => ({
-    meta: [{ title: "Grupos Terrestres & Excursões | Workspace Waesy" }],
+    meta: [{ title: "Excursões | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -166,7 +148,7 @@ export default function WorkspaceGroupToursIndexPage() {
   return (
     <NicheOperationalGuard
       targetNiche="tourism"
-      toolTitle="Grupos Terrestres & Excursões"
+      toolTitle="Grupos e Excursões"
       toolDescription="Gestão de excursões rodoviárias, controle de lotação de assentos em mapa 2D, check-in de embarque e rooming list de passageiros."
       store={store}
     >
@@ -323,7 +305,7 @@ export default function WorkspaceGroupToursIndexPage() {
                       >
                         <Link to={`/workspace/turismo/grupos/${t.id}` as any}>
                           <UserCheck className="size-4 sm:size-3.5" />
-                          <span>Gestão & Poltronas</span>
+                          <span>Gestão e Poltronas</span>
                         </Link>
                       </Button>
 
@@ -338,7 +320,7 @@ export default function WorkspaceGroupToursIndexPage() {
                         customActions={[
                           {
                             id: "manifesto",
-                            label: "Manifesto & Poltronas",
+                            label: "Manifesto e Poltronas",
                             icon: UserCheck,
                             href: `/workspace/turismo/grupos/${t.id}`,
                           },
@@ -368,7 +350,7 @@ export default function WorkspaceGroupToursIndexPage() {
         <WorkspaceDashboardSheet
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
-          title="Painel Executivo de Frotas & Grupos"
+          title="Grupos"
           subtitle="Taxa de ocupação de assentos rodoviários e faturamento"
           metrics={metricsItems}
         />

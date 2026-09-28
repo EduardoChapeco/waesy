@@ -102,7 +102,7 @@ export function RestaurantHoursDeliverySection({
  <div className="p-5 rounded-2xl border border-border/80 bg-card space-y-3 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground font-bold text-sm">
  <Truck className="size-4 text-primary" />
- <span>Prazos & Taxas de Entrega</span>
+ <span>Prazos e Taxas de Entrega</span>
  </div>
  <div className="space-y-2 text-xs">
  <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
@@ -133,7 +133,7 @@ export function RestaurantHoursDeliverySection({
  <div className="p-5 rounded-2xl border border-border/80 bg-card space-y-3 shadow-2xs">
  <div className="flex items-center gap-2 text-foreground font-bold text-sm">
  <MapPin className="size-4 text-primary" />
- <span>Retirada & Local</span>
+ <span>Retirada e Local</span>
  </div>
  <p className="text-xs text-muted-foreground leading-relaxed">
  Você também pode fazer seu pedido online e retirar no balcão sem fila e sem custo de entrega.

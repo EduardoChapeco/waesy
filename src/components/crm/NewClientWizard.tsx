@@ -1,39 +1,11 @@
 import React, { useState } from "react";
-import {
- User,
- Building2,
- Phone,
- Mail,
- MapPin,
- Check,
- ChevronRight,
- ChevronLeft,
- Calendar,
- CreditCard,
- Tag,
- ShieldCheck,
- Loader2,
- FileText,
- DollarSign,
-} from "lucide-react";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { User, Building2, Phone, Mail, MapPin, Check, ChevronRight, ChevronLeft, Calendar, CreditCard, Tag, ShieldCheck, Loader2, FileText, DollarSign } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { createCustomer } from "@/services/crm.functions";

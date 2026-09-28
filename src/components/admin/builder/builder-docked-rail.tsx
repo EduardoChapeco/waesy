@@ -1,14 +1,5 @@
 import * as React from "react";
-import {
- Plus,
- Layers,
- FileText,
- Palette,
- Database,
- Sliders,
- Settings,
- HelpCircle,
-} from "lucide-react";
+import { Plus, Layers, FileText, Palette, Database, Sliders, Settings, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type DockedRailActivePanel = "add" | "layers" | "pages" | "design" | "cms" | null;

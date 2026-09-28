@@ -41,7 +41,7 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  <div className="space-y-3">
  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-muted/60 text-muted-foreground text-xs font-semibold ">
  <FileText className="size-3.5 text-primary" />
- <span>Documento Legal Oficial & Conformidade LGPD</span>
+ <span>Documento Legal Oficial e Conformidade LGPD</span>
  </div>
  <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-foreground">
  {document.title}
@@ -72,7 +72,7 @@ export function LegalDocumentViewer({ document }: LegalDocumentProps) {
  <Link to="/politicas/$slug" params={{ slug: "lojistas" }}>Lojistas</Link>
  </Button>
  <Button asChild variant="outline" size="sm" className="rounded-xl text-xs h-7">
- <Link to="/trocas-e-devolucoes">Trocas & Devoluções</Link>
+ <Link to="/trocas-e-devolucoes">Devoluções</Link>
  </Button>
  </div>
 

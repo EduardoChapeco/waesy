@@ -1,20 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Flame,
-  Plus,
-  Percent,
-  RefreshCw,
-  Tag,
-  Loader2,
-  Ticket,
-  Copy,
-  Trash2,
-  Calendar,
-  Check,
-  DollarSign,
-  Truck,
-} from "lucide-react";
+import { Flame, Plus, Percent, RefreshCw, Tag, Loader2, Ticket, Copy, Trash2, Calendar, Check, DollarSign, Truck } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
@@ -23,29 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  listStorePromotions,
-  createPromotion,
-  togglePromotionStatus,
-  type PromotionDTO,
-} from "@/services/promotions.functions";
-import {
-  listCoupons,
-  upsertCoupon,
-  deleteCoupon,
-} from "@/services/growth.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listStorePromotions, createPromotion, togglePromotionStatus, type PromotionDTO } from "@/services/promotions.functions";
+import { listCoupons, upsertCoupon, deleteCoupon } from "@/services/growth.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/marketing/promocoes")({
   head: () => ({
-    meta: [{ title: "Promoções & Cupons | Workspace Waesy" }],
+    meta: [{ title: "Promoções | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -234,7 +205,7 @@ function WorkspacePromotionsPage() {
       {/* ── PageHeader Canônico ── */}
       <PageHeader
         eyebrow="Marketing"
-        title="Promoções & Cupons"
+        title="Promoções"
         actions={
           <Button
             onClick={() => {
@@ -265,7 +236,7 @@ function WorkspacePromotionsPage() {
           }`}
         >
           <Flame className="size-3.5" />
-          <span>Ofertas & Promoções</span>
+          <span>Ofertas e Promoções</span>
           <Badge variant="secondary" className="text-[10px] ml-1 px-1.5 py-0 h-4">
             {promos.length}
           </Badge>

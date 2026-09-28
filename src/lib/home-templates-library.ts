@@ -254,7 +254,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  parent_id: c1,
  sort_order: 0,
  content: {
- title: "Beleza Natural & Botânica",
+ title: "Beleza Natural e Botânica",
  description:
  "Fórmulas dermatologicamente testadas, veganas e livres de crueldade animal.",
  button_text: "Conhecer Linha",
@@ -321,7 +321,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  parent_id: c2,
  sort_order: 1,
  content: {
- title: "Ativos & Ingredientes Selecionados",
+ title: "Ativos e Ingredientes Selecionados",
  subtitle: "Conheça o que torna nossa fórmula única",
  items: [
  {
@@ -861,7 +861,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  block_type: "product_rail",
  parent_id: c1,
  sort_order: 1,
- content: { title: "Mais Vendidos & Ofertas" },
+ content: { title: "Mais Vendidos e Ofertas" },
  data_bindings: { source: "top_sellers" },
  },
  {
@@ -871,7 +871,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  parent_id: c1,
  sort_order: 2,
  content: {
- title: "Atendimento & Localização",
+ title: "Atendimento e Localização",
  badges: [],
  },
  },
@@ -922,7 +922,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  gastronomy_restaurant: {
  id: "gastronomy_restaurant",
  slug: "gastronomy-restaurant",
- name: "Gastronomia & Restaurantes",
+ name: "Gastronomia",
  category: "conversion",
  description: "Cardápio digital moderno, pratos do chef, reserva de mesas e pedidos para entrega.",
  thumbnail: null,
@@ -932,7 +932,7 @@ export const HOME_TEMPLATES_LIBRARY: Record<string, HomeTemplatePreset> = {
  return [
  { id: s1, node_type: "section", block_type: "section", parent_id: null, sort_order: 0 },
  { id: c1, node_type: "container", block_type: "container", parent_id: s1, sort_order: 0 },
- { id: uid(), node_type: "composition", block_type: "hero_carousel", parent_id: c1, sort_order: 0, content: { title: "Culinária Autoral & Sabores Inesquecíveis" } },
+ { id: uid(), node_type: "composition", block_type: "hero_carousel", parent_id: c1, sort_order: 0, content: { title: "Culinária Autoral e Sabores Inesquecíveis" } },
  { id: uid(), node_type: "composition", block_type: "bento_grid", parent_id: c1, sort_order: 1, content: { title: "Especialidades da Casa" } },
  ];
  },

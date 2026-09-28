@@ -2,59 +2,15 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- Users,
- Search,
- Plus,
- ArrowRight,
- TrendingUp,
- Building2,
- User,
- Phone,
- Mail,
- MapPin,
- Tag,
- AlertTriangle,
- Clock,
- CheckCircle2,
- Archive,
- ExternalLink,
- MessageCircle,
- MoreVertical,
- Filter,
- DollarSign,
- ShieldCheck,
- FileText,
- Plane,
- Ticket,
-} from "lucide-react";
+import { Users, Search, Plus, ArrowRight, TrendingUp, Building2, User, Phone, Mail, MapPin, Tag, AlertTriangle, Clock, CheckCircle2, Archive, ExternalLink, MessageCircle, MoreVertical, Filter, DollarSign, ShieldCheck, FileText, Plane, Ticket } from "lucide-react";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuSeparator,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/state/states";
 import { listCustomers, archiveCustomer } from "@/services/crm.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
@@ -63,7 +19,7 @@ import { formatMoney } from "@/lib/money";
 import { NewClientWizard } from "@/components/crm/NewClientWizard";
 
 export const Route = createFileRoute("/workspace/clientes/")({
- head: () => ({ meta: [{ title: "Carteira de Clientes & Passageiros | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Clientes | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const [customers, teamRes, store] = await Promise.all([

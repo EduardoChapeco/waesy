@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from "react";
-import { Camera, Image as ImageIcon, Check, Loader2, Globe, Phone, MapPin, Sparkles, Building2, User, Layers } from "lucide-react";
+import { Camera, Image as ImageIcon, Check, Loader2, Globe, Phone, MapPin, Star, Building2, User, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -99,7 +99,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
   const personaBadge = {
     civil: { label: "Conta Civil / Pessoal", icon: User, color: "bg-primary/10 text-primary border-primary/20" },
     company: { label: "Perfil Empresarial", icon: Building2, color: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
-    creator: { label: "Perfil de Criador", icon: Sparkles, color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+    creator: { label: "Perfil de Criador", icon: Star, color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
   }[formData.personaType];
 
   return (
@@ -191,7 +191,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value="company_details"
                 className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
               >
-                Dados da Empresa & Loja
+                Dados da Empresa e Loja
               </TabsTrigger>
             )}
 
@@ -200,7 +200,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
                 value="creator_details"
                 className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
               >
-                Mídia Kit & Redes
+                Mídia Kit e Redes
               </TabsTrigger>
             )}
 
@@ -208,7 +208,7 @@ export const UniversalProfileEditor: React.FC<UniversalProfileEditorProps> = ({
               value="links"
               className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground border-b-2 border-transparent rounded-none px-1 pb-2 text-xs font-bold"
             >
-              Links & Contato
+              Links e Contato
             </TabsTrigger>
           </TabsList>
         </div>

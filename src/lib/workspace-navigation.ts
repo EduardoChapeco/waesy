@@ -1,78 +1,4 @@
-import {
-  Package,
-  Tags,
-  Tag,
-  Store,
-  LayoutDashboard,
-  Settings,
-  Calendar,
-  Users,
-  ShoppingBag,
-  Truck,
-  Boxes,
-  Banknote,
-  FileText,
-  LayoutTemplate,
-  Link2,
-  Image as ImageIcon,
-  ClipboardList,
-  ShieldAlert,
-  Megaphone,
-  Share2,
-  Star,
-  Bell,
-  Flame,
-  Kanban,
-  Newspaper,
-  Plus,
-  Sliders,
-  DollarSign,
-  Ticket,
-  ArrowRightLeft,
-  Building2,
-  ShieldCheck,
-  UtensilsCrossed,
-  ChefHat,
-  Coins,
-  Zap,
-  MessageSquare,
-  Scale,
-  Wrench,
-  MapPin,
-  Palette,
-  Target,
-  LayoutGrid,
-  Navigation,
-  Briefcase,
-  Plane,
-  ShoppingCart,
-  Eye,
-  Receipt,
-  AlertTriangle,
-  ArrowDownUp,
-  Clock,
-  Car,
-  Smartphone,
-  Layers,
-  HeartPulse,
-  GraduationCap,
-  Dog,
-  CarFront,
-  PenTool,
-  Layers2,
-  FileSpreadsheet,
-  Gift,
-  Globe,
-  Bus,
-  Award,
-  Bot,
-  LifeBuoy,
-  Compass,
-  UserCheck,
-  Lock,
-  HandHeart,
-  Database,
-} from "lucide-react";
+import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database } from "lucide-react";
 
 export type NavItem = {
   path: string;
@@ -97,215 +23,214 @@ export type NavGroup = {
 // Módulos Mestres Universais (Linha Executiva Corporativa)
 const GROUP_OVERVIEW: NavGroup = {
   id: "overview",
-  label: "Visão Geral",
+  label: "Painel",
   icon: LayoutDashboard,
   section: "master",
   items: [
-    { path: "/workspace", label: "Dashboard Geral", icon: LayoutDashboard },
-    { path: "/workspace/onboarding", label: "Setup & Ativação", icon: Layers },
+    { path: "/workspace", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/workspace/onboarding", label: "Ativação", icon: Layers },
   ],
 };
 
 const GROUP_MASTER_TASKS: NavGroup = {
   id: "master-tasks",
-  label: "Tarefas & Rotina",
+  label: "Tarefas",
   icon: ClipboardList,
   section: "master",
   items: [
-    { path: "/workspace/tarefas", label: "Tarefas & Equipe", icon: ClipboardList },
+    { path: "/workspace/tarefas", label: "Tarefas", icon: ClipboardList },
   ],
 };
 
-
 const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
   id: "intelligence-squads",
-  label: "Squads & Inteligência",
+  label: "Inteligência",
   icon: Layers,
   section: "master",
   items: [
-    { path: "/workspace/squads", label: "Squads Especializados", icon: Bot },
-    { path: "/workspace/mining", label: "Inteligência & Importações", icon: Database },
-    { path: "/workspace/conteudo/receitas", label: "Curadoria de Receitas", icon: ChefHat },
-    { path: "/workspace/simlab/focus-group", label: "SimLab Focus Group", icon: Users },
-    { path: "/workspace/inteligencia/radar", label: "Radar de Mercado & DNA", icon: Target },
-    { path: "/workspace/marketing/canvas-pecados", label: "Canvas dos 7 Pecados", icon: Flame },
-    { path: "/workspace/onboarding/revisao", label: "Onboarding & Catálogo Mestre", icon: Layers },
+    { path: "/workspace/squads", label: "Squads", icon: Bot },
+    { path: "/workspace/mining", label: "Importações", icon: Database },
+    { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
+    { path: "/workspace/simlab/focus-group", label: "SimLab", icon: Users },
+    { path: "/workspace/inteligencia/radar", label: "Radar", icon: Target },
+    { path: "/workspace/marketing/canvas-pecados", label: "Canvas", icon: Flame },
+    { path: "/workspace/onboarding/revisao", label: "Catálogo Mestre", icon: Layers },
   ],
 };
 
 const GROUP_MASTER_INBOX: NavGroup = {
   id: "master-inbox",
-  label: "Atendimento & Suporte",
+  label: "Atendimento",
   icon: MessageSquare,
   section: "master",
   items: [
-    { path: "/workspace/atendimento", label: "Atendimento & WhatsApp", icon: MessageSquare },
-    { path: "/workspace/avaliacoes", label: "Avaliações & Reputação", icon: Star },
-    { path: "/workspace/notificacoes", label: "Central de Notificações", icon: Bell },
-    { path: "/workspace/suporte", label: "Central de Suporte", icon: LifeBuoy },
+    { path: "/workspace/atendimento", label: "Conversas", icon: MessageSquare },
+    { path: "/workspace/avaliacoes", label: "Avaliações", icon: Star },
+    { path: "/workspace/notificacoes", label: "Notificações", icon: Bell },
+    { path: "/workspace/suporte", label: "Suporte", icon: LifeBuoy },
   ],
 };
 
 // 1. Gastronomia
 const GROUP_GASTRO_CATALOG: NavGroup = {
   id: "gastro-catalog",
-  label: "Cardápio & Itens",
+  label: "Cardápio",
   icon: UtensilsCrossed,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Cardápio & Produtos", icon: Package },
-    { path: "/workspace/catalogo/categorias", label: "Categorias do Menu", icon: Tags },
-    { path: "/workspace/catalogo/atributos", label: "Adicionais & Opcionais", icon: Boxes },
-    { path: "/workspace/estoque", label: "Controle de Insumos", icon: Boxes },
+    { path: "/workspace/catalogo/produtos", label: "Cardápio", icon: Package },
+    { path: "/workspace/catalogo/categorias", label: "Categorias", icon: Tags },
+    { path: "/workspace/catalogo/atributos", label: "Complementos", icon: Boxes },
+    { path: "/workspace/estoque", label: "Insumos", icon: Boxes },
   ],
 };
 
 const GROUP_GASTRO_ORDERS: NavGroup = {
   id: "gastro-orders",
-  label: "Pedidos & Cozinha",
+  label: "Pedidos",
   icon: ClipboardList,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos/gestor", label: "Gestor & SLAs (KDS)", icon: ClipboardList },
-    { path: "/workspace/pdv/comandas", label: "Salão & Mesas", icon: UtensilsCrossed },
-    { path: "/workspace/pdv/cozinha", label: "KDS Cozinha", icon: ChefHat },
-    { path: "/workspace/reservas", label: "Reservas de Mesas", icon: Calendar },
-    { path: "/workspace/pedidos", label: "Histórico de Vendas", icon: ShoppingBag },
-    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
-    { path: "/workspace/pedidos/frota", label: "Entregadores & Despacho", icon: Truck },
+    { path: "/workspace/pedidos/gestor", label: "Gestor KDS", icon: ClipboardList },
+    { path: "/workspace/pdv/comandas", label: "Mesas", icon: UtensilsCrossed },
+    { path: "/workspace/pdv/cozinha", label: "Cozinha", icon: ChefHat },
+    { path: "/workspace/reservas", label: "Reservas", icon: Calendar },
+    { path: "/workspace/pedidos", label: "Histórico", icon: ShoppingBag },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pedidos/frota", label: "Despacho", icon: Truck },
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
 
-// 2. Varejo & Moda
+// 2. Varejo
 const GROUP_RETAIL_CATALOG: NavGroup = {
   id: "retail-catalog",
-  label: "Catálogo & Estoque",
+  label: "Catálogo",
   icon: Package,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Produtos & Variações", icon: Package },
+    { path: "/workspace/catalogo/produtos", label: "Produtos", icon: Package },
     { path: "/workspace/catalogo/categorias", label: "Categorias", icon: Tags },
     { path: "/workspace/catalogo/colecoes", label: "Coleções", icon: Sliders },
-    { path: "/workspace/catalogo/atributos", label: "Grades (Cores/Tamanhos)", icon: Boxes },
-    { path: "/workspace/estoque", label: "Estoque & Movimentos", icon: Boxes },
-    { path: "/workspace/estoque/alertas", label: "Alertas de Reposição", icon: AlertTriangle },
+    { path: "/workspace/catalogo/atributos", label: "Grades", icon: Boxes },
+    { path: "/workspace/estoque", label: "Estoque", icon: Boxes },
+    { path: "/workspace/estoque/alertas", label: "Reposição", icon: AlertTriangle },
   ],
 };
 
 const GROUP_RETAIL_SALES: NavGroup = {
   id: "retail-sales",
-  label: "Vendas & Logística",
+  label: "Vendas",
   icon: ShoppingBag,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos", label: "Todos os Pedidos", icon: ShoppingBag },
-    { path: "/workspace/pedidos/gestor", label: "Gestor (Kanban)", icon: ClipboardList },
-    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
-    { path: "/workspace/pedidos/trocas", label: "Trocas & Devoluções", icon: ArrowRightLeft },
-    { path: "/workspace/logistica/tabelas", label: "Fretes & Entregas", icon: Truck },
-    { path: "/workspace/clientes", label: "Carteira de Clientes", icon: Users },
-    { path: "/workspace/comercial", label: "Funil Comercial (Kanban)", icon: Kanban },
+    { path: "/workspace/pedidos", label: "Pedidos", icon: ShoppingBag },
+    { path: "/workspace/pedidos/gestor", label: "Gestor", icon: ClipboardList },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pedidos/trocas", label: "Devoluções", icon: ArrowRightLeft },
+    { path: "/workspace/logistica/tabelas", label: "Fretes", icon: Truck },
+    { path: "/workspace/clientes", label: "Clientes", icon: Users },
+    { path: "/workspace/comercial", label: "Funil", icon: Kanban },
     { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
   ],
 };
 
-// 3. Serviços & Beleza
+// 3. Serviços
 const GROUP_SERVICES_AGENDA: NavGroup = {
   id: "services-agenda",
-  label: "Agenda & Atendimentos",
+  label: "Agenda",
   icon: Calendar,
   section: "niche",
   items: [
-    { path: "/workspace/agenda", label: "Grade de Agendamentos", icon: Calendar },
-    { path: "/workspace/agenda/recursos", label: "Profissionais & Salas", icon: Users },
-    { path: "/workspace/pacotes", label: "Pacotes & Passes", icon: Ticket },
+    { path: "/workspace/agenda", label: "Horários", icon: Calendar },
+    { path: "/workspace/agenda/recursos", label: "Profissionais", icon: Users },
+    { path: "/workspace/pacotes", label: "Pacotes", icon: Ticket },
   ],
 };
 
 const GROUP_SERVICES_CATALOG: NavGroup = {
   id: "services-catalog",
-  label: "Serviços & Produtos",
+  label: "Serviços",
   icon: Layers,
   section: "niche",
   items: [
-    { path: "/workspace/agenda/servicos", label: "Catálogo de Serviços", icon: Layers },
-    { path: "/workspace/catalogo/produtos", label: "Produtos / Homecare", icon: Package },
-    { path: "/workspace/pdv", label: "Comandas & PDV", icon: Store },
-    { path: "/workspace/clientes", label: "Clientes / Pacientes", icon: Users },
+    { path: "/workspace/agenda/servicos", label: "Serviços", icon: Layers },
+    { path: "/workspace/catalogo/produtos", label: "Produtos", icon: Package },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
 
-// 4. Locação & Estruturas
+// 4. Locação
 const GROUP_RENTAL_EVENTS: NavGroup = {
   id: "rental-events",
-  label: "Locação & Inventário",
+  label: "Locação",
   icon: Boxes,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Bens & Equipamentos", icon: Package },
-    { path: "/workspace/agenda", label: "Agenda de Locação & Disponibilidade", icon: Calendar },
-    { path: "/workspace/orcamentos", label: "Orçamentos & Contratos", icon: FileText },
-    { path: "/workspace/pedidos/gestor", label: "Montagens & Despacho", icon: ClipboardList },
-    { path: "/workspace/clientes", label: "Clientes / Produtores", icon: Users },
+    { path: "/workspace/catalogo/produtos", label: "Equipamentos", icon: Package },
+    { path: "/workspace/agenda", label: "Disponibilidade", icon: Calendar },
+    { path: "/workspace/orcamentos", label: "Contratos", icon: FileText },
+    { path: "/workspace/pedidos/gestor", label: "Montagens", icon: ClipboardList },
+    { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
 
 // 5. Assistência Técnica
 const GROUP_TECH_REPAIR: NavGroup = {
   id: "tech-repair",
-  label: "Assistência & Vendas",
+  label: "Assistência",
   icon: Wrench,
   section: "niche",
   items: [
-    { path: "/workspace/pedidos/gestor", label: "Ordens de Serviço (OS)", icon: ClipboardList },
-    { path: "/workspace/agenda/servicos", label: "Tabela de Mão de Obra", icon: Wrench },
-    { path: "/workspace/catalogo/produtos", label: "Peças, Capinhas & Acessórios", icon: Package },
-    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
-    { path: "/workspace/orcamentos", label: "Orçamentos de Reparo", icon: FileText },
+    { path: "/workspace/pedidos/gestor", label: "Ordens de Serviço", icon: ClipboardList },
+    { path: "/workspace/agenda/servicos", label: "Mão de Obra", icon: Wrench },
+    { path: "/workspace/catalogo/produtos", label: "Peças", icon: Package },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
   ],
 };
 
-// 6. Advocacia & Jurídico
+// 6. Advocacia
 const GROUP_LEGAL: NavGroup = {
   id: "legal",
-  label: "Processos & Jurídico",
+  label: "Jurídico",
   icon: Scale,
   section: "niche",
   items: [
-    { path: "/workspace/advocacia", label: "Processos & Prazos", icon: Scale },
-    { path: "/workspace/agenda", label: "Audiências & Reuniões", icon: Calendar },
-    { path: "/workspace/orcamentos", label: "Honorários & Propostas", icon: FileText },
-    { path: "/workspace/clientes", label: "Clientes / Assistidos", icon: Users },
+    { path: "/workspace/advocacia", label: "Processos", icon: Scale },
+    { path: "/workspace/agenda", label: "Audiências", icon: Calendar },
+    { path: "/workspace/orcamentos", label: "Honorários", icon: FileText },
+    { path: "/workspace/clientes", label: "Assistidos", icon: Users },
   ],
 };
 
 // 7. Imóveis
 const GROUP_REAL_ESTATE: NavGroup = {
   id: "real-estate",
-  label: "Imóveis & Vistorias",
+  label: "Imóveis",
   icon: Building2,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Catálogo de Imóveis", icon: Building2 },
-    { path: "/workspace/imoveis/manutencoes", label: "Vistorias & Chamados", icon: Wrench },
-    { path: "/workspace/orcamentos", label: "Propostas & Contratos", icon: FileText },
-    { path: "/workspace/clientes", label: "Interessados / Clientes", icon: Users },
+    { path: "/workspace/catalogo/produtos", label: "Imóveis", icon: Building2 },
+    { path: "/workspace/imoveis/manutencoes", label: "Vistorias", icon: Wrench },
+    { path: "/workspace/orcamentos", label: "Propostas", icon: FileText },
+    { path: "/workspace/clientes", label: "Interessados", icon: Users },
   ],
 };
 
-// 8. Turismo & Agência de Viagens — Especialização Modular Canônica
+// 8. Turismo
 const GROUP_TURISMO_COMMERCIAL: NavGroup = {
   id: "tourism-commercial",
   label: "Comercial",
   icon: Kanban,
   section: "niche",
   items: [
-    { path: "/workspace/comercial", label: "Funil de Vendas", icon: Kanban },
-    { path: "/workspace/turismo/cotacoes", label: "Cotações Rápidas", icon: Plane },
-    { path: "/workspace/turismo/propostas", label: "Propostas Studio", icon: FileSpreadsheet },
-    { path: "/workspace/orcamentos", label: "Orçamentos Corporativos", icon: FileText },
+    { path: "/workspace/comercial", label: "Funil", icon: Kanban },
+    { path: "/workspace/turismo/cotacoes", label: "Cotações", icon: Plane },
+    { path: "/workspace/turismo/propostas", label: "Propostas", icon: FileSpreadsheet },
+    { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
   ],
 };
 
@@ -315,16 +240,16 @@ const GROUP_TURISMO_OPERATIONS: NavGroup = {
   icon: Compass,
   section: "niche",
   items: [
-    { path: "/workspace/turismo/viagens", label: "Viagens & Reservas", icon: Compass },
-    { path: "/workspace/turismo/aereos", label: "Bilhetes Aéreos", icon: Plane },
+    { path: "/workspace/turismo/viagens", label: "Viagens", icon: Compass },
+    { path: "/workspace/turismo/aereos", label: "Aéreos", icon: Plane },
     { path: "/workspace/turismo/incidentes", label: "Incidentes", icon: AlertTriangle },
-    { path: "/workspace/turismo/reacomodacao", label: "Reacomodação ANAC", icon: ShieldAlert },
-    { path: "/workspace/turismo/embarques", label: "Embarques & Calendário", icon: Calendar },
-    { path: "/workspace/turismo/vouchers", label: "Vouchers & Bilhetes", icon: Ticket },
-    { path: "/workspace/turismo/contratos", label: "Contratos Digitais", icon: FileText },
-    { path: "/workspace/turismo/vistos", label: "Vistos & Passaportes", icon: Globe },
-    { path: "/workspace/turismo/radar", label: "Radar de Passageiros", icon: Navigation },
-    { path: "/workspace/turismo/viagens?view=embarque", label: "Check-in Rápido", icon: UserCheck },
+    { path: "/workspace/turismo/reacomodacao", label: "Reacomodação", icon: ShieldAlert },
+    { path: "/workspace/turismo/embarques", label: "Embarques", icon: Calendar },
+    { path: "/workspace/turismo/vouchers", label: "Vouchers", icon: Ticket },
+    { path: "/workspace/turismo/contratos", label: "Contratos", icon: FileText },
+    { path: "/workspace/turismo/vistos", label: "Vistos", icon: Globe },
+    { path: "/workspace/turismo/radar", label: "Radar", icon: Navigation },
+    { path: "/workspace/turismo/viagens?view=embarque", label: "Check-in", icon: UserCheck },
   ],
 };
 
@@ -334,22 +259,22 @@ const GROUP_TURISMO_CATALOG: NavGroup = {
   icon: Package,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Pacotes & Roteiros", icon: Package },
+    { path: "/workspace/catalogo/produtos", label: "Roteiros", icon: Package },
     { path: "/workspace/turismo/destinos", label: "Destinos", icon: MapPin },
-    { path: "/workspace/turismo/hoteis", label: "Hotéis & Resorts", icon: Building2 },
+    { path: "/workspace/turismo/hoteis", label: "Hotéis", icon: Building2 },
     { path: "/workspace/turismo/fornecedores", label: "Fornecedores", icon: Building2 },
   ],
 };
 
 const GROUP_TURISMO_FLEET_GROUPS: NavGroup = {
   id: "tourism-fleet-groups",
-  label: "Frota & Grupos",
+  label: "Frota",
   icon: Bus,
   section: "niche",
   items: [
-    { path: "/workspace/turismo/grupos", label: "Grupos & Excursões", icon: Users },
-    { path: "/workspace/turismo/frota", label: "Frota de Ônibus", icon: Bus },
-    { path: "/workspace/eventos", label: "Passeios & Ingressos", icon: Calendar },
+    { path: "/workspace/turismo/grupos", label: "Excursões", icon: Users },
+    { path: "/workspace/turismo/frota", label: "Ônibus", icon: Bus },
+    { path: "/workspace/eventos", label: "Passeios", icon: Calendar },
   ],
 };
 
@@ -359,8 +284,8 @@ const GROUP_TURISMO_CLIENTS: NavGroup = {
   icon: Users,
   section: "niche",
   items: [
-    { path: "/workspace/clientes", label: "Carteira de Passageiros", icon: Users },
-    { path: "/workspace/pedidos", label: "Histórico de Emissões", icon: ShoppingBag },
+    { path: "/workspace/clientes", label: "Passageiros", icon: Users },
+    { path: "/workspace/pedidos", label: "Emissões", icon: ShoppingBag },
   ],
 };
 
@@ -370,201 +295,200 @@ const GROUP_TURISMO_MARKETING: NavGroup = {
   icon: Megaphone,
   section: "corporate",
   items: [
-    { path: "/workspace/marketing/vitrine", label: "Vitrine Visual", icon: LayoutGrid },
-    { path: "/workspace/cms/paginas", label: "Páginas & Roteiros", icon: FileText },
-    { path: "/workspace/cms/bio", label: "Link da Bio", icon: Link2 },
-    { path: "/workspace/marketing/banners", label: "Banners & Destaques", icon: ImageIcon },
-    { path: "/workspace/marketing/promocoes", label: "Ofertas & Descontos", icon: Flame },
-    { path: "/workspace/marketing/concursos", label: "Sorteios da Loja", icon: Ticket },
-    { path: "/workspace/marketing/anuncios", label: "Campanhas Publicitárias", icon: Megaphone },
-    { path: "/workspace/marketing/social", label: "Compartilhamento & Redes", icon: Share2 },
+    { path: "/workspace/marketing/vitrine", label: "Vitrine", icon: LayoutGrid },
+    { path: "/workspace/cms/paginas", label: "Páginas", icon: FileText },
+    { path: "/workspace/cms/bio", label: "Link Bio", icon: Link2 },
+    { path: "/workspace/marketing/banners", label: "Banners", icon: ImageIcon },
+    { path: "/workspace/marketing/promocoes", label: "Ofertas", icon: Flame },
+    { path: "/workspace/marketing/concursos", label: "Sorteios", icon: Ticket },
+    { path: "/workspace/marketing/anuncios", label: "Anúncios", icon: Megaphone },
+    { path: "/workspace/marketing/social", label: "Social", icon: Share2 },
   ],
 };
 
-
-// 9. Empregos & Recrutamento
+// 9. Recrutamento
 const GROUP_JOBS: NavGroup = {
   id: "jobs",
-  label: "Vagas & Recrutamento",
+  label: "Recrutamento",
   icon: Briefcase,
   section: "niche",
   items: [
-    { path: "/workspace/empregos/candidatos", label: "Vagas & Candidaturas", icon: Briefcase },
-    { path: "/workspace/clientes", label: "Banco de Talentos", icon: Users },
-    { path: "/workspace/marketing/vitrine", label: "Página de Carreiras", icon: Eye },
+    { path: "/workspace/empregos/candidatos", label: "Candidaturas", icon: Briefcase },
+    { path: "/workspace/clientes", label: "Talentos", icon: Users },
+    { path: "/workspace/marketing/vitrine", label: "Carreiras", icon: Eye },
   ],
 };
 
-// 10. Eventos, Shows & Ingressos
+// 10. Eventos
 const GROUP_EVENTS_TICKETS: NavGroup = {
   id: "events-tickets",
-  label: "Eventos & Ingressos",
+  label: "Eventos",
   icon: Ticket,
   section: "niche",
   items: [
-    { path: "/workspace/eventos", label: "Meus Eventos & Lotes", icon: Ticket },
-    { path: "/workspace/marketing/banners", label: "Flyers & Divulgação", icon: ImageIcon },
-    { path: "/workspace/clientes", label: "Participantes / Compradores", icon: Users },
-    { path: "/workspace/financeiro/pagamentos", label: "Balanço de Ingressos", icon: DollarSign },
+    { path: "/workspace/eventos", label: "Ingressos", icon: Ticket },
+    { path: "/workspace/marketing/banners", label: "Flyers", icon: ImageIcon },
+    { path: "/workspace/clientes", label: "Participantes", icon: Users },
+    { path: "/workspace/financeiro/pagamentos", label: "Bilheteria", icon: DollarSign },
   ],
 };
 
-// 11. Automóveis & Veículos
+// 11. Veículos
 const GROUP_VEHICLES: NavGroup = {
   id: "vehicles",
-  label: "Estoque de Veículos",
+  label: "Veículos",
   icon: CarFront,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Estoque de Veículos", icon: CarFront },
-    { path: "/workspace/orcamentos", label: "Propostas & Financiamento", icon: FileText },
-    { path: "/workspace/clientes", label: "Leads & Interessados", icon: Users },
+    { path: "/workspace/catalogo/produtos", label: "Veículos", icon: CarFront },
+    { path: "/workspace/orcamentos", label: "Financiamentos", icon: FileText },
+    { path: "/workspace/clientes", label: "Leads", icon: Users },
   ],
 };
 
-// 12. Pet Shop & Veterinária
+// 12. Pet
 const GROUP_PET: NavGroup = {
   id: "pet",
-  label: "Pet Shop & Clínica",
+  label: "Clínica Pet",
   icon: Dog,
   section: "niche",
   items: [
-    { path: "/workspace/agenda", label: "Grade de Banho, Tosa e Consultas", icon: Calendar },
-    { path: "/workspace/agenda/servicos", label: "Procedimentos & Vacinas", icon: HeartPulse },
-    { path: "/workspace/catalogo/produtos", label: "Rações, Farmácia & Acessórios", icon: Package },
-    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
-    { path: "/workspace/clientes", label: "Tutores & Pets", icon: Users },
+    { path: "/workspace/agenda", label: "Banho e Tosa", icon: Calendar },
+    { path: "/workspace/agenda/servicos", label: "Vacinas", icon: HeartPulse },
+    { path: "/workspace/catalogo/produtos", label: "Produtos Pet", icon: Package },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/clientes", label: "Tutores", icon: Users },
   ],
 };
 
-// 13. Supermercado, Açougue & Hortifrúti
+// 13. Supermercado
 const GROUP_SUPERMARKET: NavGroup = {
   id: "supermarket",
-  label: "Gôndolas & Hortifrúti",
+  label: "Mercado",
   icon: ShoppingCart,
   section: "niche",
   items: [
-    { path: "/workspace/marketing/encartes", label: "Encartes da Semana", icon: Flame },
-    { path: "/workspace/catalogo/produtos", label: "Produtos (KG e Unidade)", icon: Package },
-    { path: "/workspace/catalogo/categorias", label: "Sessões do Mercado", icon: Tags },
-    { path: "/workspace/estoque/alertas", label: "Validades & Reposição", icon: AlertTriangle },
-    { path: "/workspace/pedidos/gestor", label: "Separação de Pedidos", icon: ClipboardList },
-    { path: "/workspace/pedidos/frota", label: "Entregas Locais", icon: Truck },
-    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
+    { path: "/workspace/marketing/encartes", label: "Encartes", icon: Flame },
+    { path: "/workspace/catalogo/produtos", label: "Gôndolas", icon: Package },
+    { path: "/workspace/catalogo/categorias", label: "Sessões", icon: Tags },
+    { path: "/workspace/estoque/alertas", label: "Validades", icon: AlertTriangle },
+    { path: "/workspace/pedidos/gestor", label: "Separação", icon: ClipboardList },
+    { path: "/workspace/pedidos/frota", label: "Entregas", icon: Truck },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
   ],
 };
 
-// 14. Farmácia & Saúde
+// 14. Farmácia
 const GROUP_PHARMACY: NavGroup = {
   id: "pharmacy",
-  label: "Farmácia & Cosméticos",
+  label: "Farmácia",
   icon: HeartPulse,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Medicamentos & OTC", icon: Package },
-    { path: "/workspace/pedidos/gestor", label: "Receituários & Balcão", icon: ClipboardList },
-    { path: "/workspace/pedidos/frota", label: "Tele-Entrega Express", icon: Truck },
-    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
-    { path: "/workspace/clientes", label: "Pacientes / Clientes", icon: Users },
+    { path: "/workspace/catalogo/produtos", label: "Medicamentos", icon: Package },
+    { path: "/workspace/pedidos/gestor", label: "Receituários", icon: ClipboardList },
+    { path: "/workspace/pedidos/frota", label: "Tele-Entrega", icon: Truck },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/clientes", label: "Pacientes", icon: Users },
   ],
 };
 
-// 15. Notícias & Redação de Jornal
+// 15. Redação
 const GROUP_NEWS: NavGroup = {
   id: "news",
-  label: "Redação & Notícias",
+  label: "Redação",
   icon: Newspaper,
   section: "niche",
   items: [
-    { path: "/workspace/noticias", label: "Todas as Matérias", icon: Newspaper },
-    { path: "/workspace/noticias/novo", label: "Nova Reportagem", icon: PenTool },
-    { path: "/workspace/marketing/banners", label: "Banners Publicitários", icon: ImageIcon },
-    { path: "/workspace/marketing/vitrine", label: "Capa do Portal", icon: Eye },
+    { path: "/workspace/noticias", label: "Matérias", icon: Newspaper },
+    { path: "/workspace/noticias/novo", label: "Nova Matéria", icon: PenTool },
+    { path: "/workspace/marketing/banners", label: "Publicidade", icon: ImageIcon },
+    { path: "/workspace/marketing/vitrine", label: "Capa", icon: Eye },
   ],
 };
 
-// 16. Educação & Cursos
+// 16. Educação
 const GROUP_EDUCATION: NavGroup = {
   id: "education",
-  label: "Cursos & Turmas",
+  label: "Cursos",
   icon: GraduationCap,
   section: "niche",
   items: [
-    { path: "/workspace/agenda", label: "Grade de Aulas & Workshops", icon: Calendar },
-    { path: "/workspace/agenda/servicos", label: "Catálogo de Cursos", icon: GraduationCap },
-    { path: "/workspace/clientes", label: "Alunos & Matrículas", icon: Users },
-    { path: "/workspace/orcamentos", label: "Contratos & Propostas", icon: FileText },
+    { path: "/workspace/agenda", label: "Turmas", icon: Calendar },
+    { path: "/workspace/agenda/servicos", label: "Cursos", icon: GraduationCap },
+    { path: "/workspace/clientes", label: "Alunos", icon: Users },
+    { path: "/workspace/orcamentos", label: "Matrículas", icon: FileText },
   ],
 };
 
-// 17. Indústria, Atacado & B2B
+// 17. Atacado
 const GROUP_WHOLESALE: NavGroup = {
   id: "wholesale",
-  label: "Atacado & B2B",
+  label: "Atacado",
   icon: Layers2,
   section: "niche",
   items: [
-    { path: "/workspace/catalogo/produtos", label: "Grade de Produtos & Caixas", icon: Package },
-    { path: "/workspace/catalogo/tabelas", label: "Tabelas de Preço PJ", icon: FileSpreadsheet },
-    { path: "/workspace/orcamentos", label: "Orçamentos em Lote", icon: FileText },
-    { path: "/workspace/pedidos", label: "Faturamento & Pedidos", icon: ShoppingBag },
-    { path: "/workspace/clientes", label: "Clientes PJ / Distribuidores", icon: Users },
+    { path: "/workspace/catalogo/produtos", label: "Atacado", icon: Package },
+    { path: "/workspace/catalogo/tabelas", label: "Tabelas PJ", icon: FileSpreadsheet },
+    { path: "/workspace/orcamentos", label: "Cotações", icon: FileText },
+    { path: "/workspace/pedidos", label: "Faturamento", icon: ShoppingBag },
+    { path: "/workspace/clientes", label: "Distribuidores", icon: Users },
   ],
 };
 
 // Grupos Universais Corporativos
 const GROUP_COMMERCIAL_SALES: NavGroup = {
   id: "commercial",
-  label: "Comercial & CRM",
+  label: "Comercial",
   icon: Users,
   section: "corporate",
   items: [
-    { path: "/workspace/clientes", label: "Carteira de Clientes 360°", icon: Users },
-    { path: "/workspace/comercial", label: "Funil de Vendas (Kanban)", icon: Kanban },
-    { path: "/workspace/atendimento", label: "Atendimento & Chat", icon: MessageSquare },
-    { path: "/workspace/orcamentos", label: "Orçamentos & Propostas", icon: FileText },
-    { path: "/workspace/pdv", label: "Frente de Caixa (PDV)", icon: Store },
-    { path: "/workspace/pedidos", label: "Histórico de Vendas", icon: ShoppingBag },
+    { path: "/workspace/clientes", label: "Clientes", icon: Users },
+    { path: "/workspace/comercial", label: "Funil", icon: Kanban },
+    { path: "/workspace/atendimento", label: "Conversas", icon: MessageSquare },
+    { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
+    { path: "/workspace/pdv", label: "PDV", icon: Store },
+    { path: "/workspace/pedidos", label: "Vendas", icon: ShoppingBag },
   ],
 };
 
 const GROUP_MARKETING_VITRINE: NavGroup = {
   id: "marketing",
-  label: "Vitrine & Divulgação",
+  label: "Marketing",
   icon: Megaphone,
   section: "corporate",
   items: [
-    { path: "/workspace/marketing/vitrine", label: "Vitrine Visual (Builder)", icon: LayoutGrid },
-    { path: "/workspace/marketing/brand-kit", label: "Brand Kit & Capa da Loja", icon: Palette },
-    { path: "/workspace/cms/paginas", label: "Páginas & Landing Pages", icon: FileText },
-    { path: "/workspace/cms/bio", label: "Link da Bio & Perfil", icon: Link2 },
-    { path: "/workspace/marketing/banners", label: "Banners & Topo", icon: ImageIcon },
-    { path: "/workspace/marketing/encartes", label: "Encartes & Tabloides", icon: Flame },
-    { path: "/workspace/marketing/carrinhos", label: "Carrinhos Abandonados", icon: ShoppingCart },
-    { path: "/workspace/marketing/promocoes", label: "Promoções & Cupons", icon: Flame },
-    { path: "/workspace/marketing/concursos", label: "Sorteios da Loja", icon: Ticket },
-    { path: "/workspace/marketing/fidelidade", label: "Programa de Fidelidade", icon: Award },
-    { path: "/workspace/marketing/gift-cards", label: "Vales-Presente", icon: Gift },
-    { path: "/workspace/marketing/pixels", label: "Pixels & Telemetria", icon: Target },
-    { path: "/workspace/marketing/anuncios", label: "Campanhas de Anúncios", icon: Megaphone },
-    { path: "/workspace/marketing/social", label: "Compartilhamento & Redes", icon: Share2 },
-    { path: "/workspace/avaliacoes", label: "Avaliações & Prova Social", icon: Star },
+    { path: "/workspace/marketing/vitrine", label: "Vitrine", icon: LayoutGrid },
+    { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
+    { path: "/workspace/cms/paginas", label: "Páginas", icon: FileText },
+    { path: "/workspace/cms/bio", label: "Link Bio", icon: Link2 },
+    { path: "/workspace/marketing/banners", label: "Banners", icon: ImageIcon },
+    { path: "/workspace/marketing/encartes", label: "Encartes", icon: Flame },
+    { path: "/workspace/marketing/carrinhos", label: "Abandonos", icon: ShoppingCart },
+    { path: "/workspace/marketing/promocoes", label: "Promoções", icon: Flame },
+    { path: "/workspace/marketing/concursos", label: "Sorteios", icon: Ticket },
+    { path: "/workspace/marketing/fidelidade", label: "Fidelidade", icon: Award },
+    { path: "/workspace/marketing/gift-cards", label: "Gift Cards", icon: Gift },
+    { path: "/workspace/marketing/pixels", label: "Pixels", icon: Target },
+    { path: "/workspace/marketing/anuncios", label: "Anúncios", icon: Megaphone },
+    { path: "/workspace/marketing/social", label: "Social", icon: Share2 },
+    { path: "/workspace/avaliacoes", label: "Avaliações", icon: Star },
   ],
 };
 
 const GROUP_LOGISTICS_EXPEDITION: NavGroup = {
   id: "logistics-expedition",
-  label: "Logística & Expedição",
+  label: "Logística",
   icon: Truck,
   section: "corporate",
   items: [
-    { path: "/workspace/pedidos/expedicao", label: "Expedição WMS & Picking", icon: Package },
-    { path: "/workspace/pedidos/frota", label: "Despacho & Rotas", icon: Truck },
-    { path: "/workspace/pedidos/entregadores", label: "Entregadores & Motoboys", icon: Users },
-    { path: "/workspace/pedidos/trocas", label: "Trocas & Devoluções", icon: ArrowRightLeft },
-    { path: "/workspace/logistica/pudo", label: "Pontos PUDO & Lockers", icon: MapPin },
-    { path: "/workspace/logistica/tabelas", label: "Tabelas de Frete", icon: Navigation },
-    { path: "/workspace/logistica/faturas", label: "Faturas de Frete & CT-e", icon: Receipt },
+    { path: "/workspace/pedidos/expedicao", label: "Expedição", icon: Package },
+    { path: "/workspace/pedidos/frota", label: "Despacho", icon: Truck },
+    { path: "/workspace/pedidos/entregadores", label: "Entregadores", icon: Users },
+    { path: "/workspace/pedidos/trocas", label: "Trocas", icon: ArrowRightLeft },
+    { path: "/workspace/logistica/pudo", label: "Pontos PUDO", icon: MapPin },
+    { path: "/workspace/logistica/tabelas", label: "Tabelas", icon: Navigation },
+    { path: "/workspace/logistica/faturas", label: "CT-e", icon: Receipt },
   ],
 };
 
@@ -574,52 +498,52 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
   icon: Banknote,
   section: "corporate",
   items: [
-    { path: "/workspace/financeiro/caixa", label: "Fluxo de Caixa", icon: Banknote },
-    { path: "/workspace/relatorios/metas", label: "Metas de Vendas & Forecast", icon: Target },
-    { path: "/workspace/financeiro/pagamentos", label: "Pagamentos & Repasses", icon: DollarSign },
-    { path: "/workspace/financeiro/contas-pagar", label: "Contas a Pagar & Despesas", icon: Receipt },
-    { path: "/workspace/financeiro/recebiveis", label: "Recebíveis, Carnês & Malas", icon: Receipt },
-    { path: "/workspace/financeiro/faturas", label: "Faturas da Plataforma & Planos", icon: Receipt },
-    { path: "/workspace/financeiro/relatorios-canal", label: "DRE & Canais de Venda", icon: FileSpreadsheet },
-    { path: "/workspace/financeiro/afiliados", label: "Comissões de Afiliados", icon: Coins },
-    { path: "/workspace/financeiro/funcionarios", label: "Folha & Salários", icon: Users },
+    { path: "/workspace/financeiro/caixa", label: "Caixa", icon: Banknote },
+    { path: "/workspace/relatorios/metas", label: "Metas", icon: Target },
+    { path: "/workspace/financeiro/pagamentos", label: "Repasses", icon: DollarSign },
+    { path: "/workspace/financeiro/contas-pagar", label: "Contas a Pagar", icon: Receipt },
+    { path: "/workspace/financeiro/recebiveis", label: "Recebíveis", icon: Receipt },
+    { path: "/workspace/financeiro/faturas", label: "Planos", icon: Receipt },
+    { path: "/workspace/financeiro/relatorios-canal", label: "DRE", icon: FileSpreadsheet },
+    { path: "/workspace/financeiro/afiliados", label: "Afiliados", icon: Coins },
+    { path: "/workspace/financeiro/funcionarios", label: "Folha", icon: Users },
   ],
 };
 
 const GROUP_FISCAL_ACCOUNTING: NavGroup = {
   id: "fiscal-accounting",
-  label: "Fiscal & Contábil",
+  label: "Fiscal",
   icon: FileText,
   section: "corporate",
   items: [
-    { path: "/workspace/fiscal/nfe", label: "Notas Fiscais (NF-e/NFC-e)", icon: Receipt },
-    { path: "/workspace/contador", label: "Portal do Contador", icon: FileSpreadsheet },
-    { path: "/workspace/contratos", label: "Contratos Digitais", icon: FileText },
+    { path: "/workspace/fiscal/nfe", label: "Notas Fiscais", icon: Receipt },
+    { path: "/workspace/contador", label: "Contabilidade", icon: FileSpreadsheet },
+    { path: "/workspace/contratos", label: "Contratos", icon: FileText },
   ],
 };
 
 const GROUP_TEAM_RH: NavGroup = {
   id: "team-rh",
-  label: "Equipe & RH",
+  label: "Equipe",
   icon: Users,
   section: "corporate",
   items: [
-    { path: "/workspace/configuracoes/equipe", label: "Colaboradores & Acessos", icon: Users },
-    { path: "/workspace/rh/ponto", label: "Controle de Ponto & Turnos", icon: Clock },
-    { path: "/workspace/financeiro/comissoes", label: "Comissões & Metas", icon: Target },
-    { path: "/workspace/configuracoes/sessoes", label: "Sessões & Auditoria", icon: ShieldCheck },
+    { path: "/workspace/configuracoes/equipe", label: "Colaboradores", icon: Users },
+    { path: "/workspace/rh/ponto", label: "Ponto", icon: Clock },
+    { path: "/workspace/financeiro/comissoes", label: "Comissões", icon: Target },
+    { path: "/workspace/configuracoes/sessoes", label: "Sessões", icon: ShieldCheck },
   ],
 };
 
 const GROUP_DONATIONS_CAPTACAO: NavGroup = {
   id: "donations-captacao",
-  label: "Doações & Captação",
+  label: "Captação",
   icon: Coins,
   section: "corporate",
   items: [
-    { path: "/workspace/doacoes", label: "Doações & Solidariedade", icon: Gift },
-    { path: "/workspace/captacao", label: "Captação de Investimento & M&A", icon: Coins },
-    { path: "/workspace/captacao/ndas", label: "NDAs & Termos Assinados", icon: Lock },
+    { path: "/workspace/doacoes", label: "Doações", icon: Gift },
+    { path: "/workspace/captacao", label: "Investidores", icon: Coins },
+    { path: "/workspace/captacao/ndas", label: "NDAs", icon: Lock },
   ],
 };
 
@@ -627,16 +551,16 @@ import { getNicheSemantics } from "./niche-semantics";
 
 const GROUP_SETTINGS: NavGroup = {
   id: "settings",
-  label: "Configurações",
+  label: "Ajustes",
   icon: Settings,
   section: "corporate",
   items: [
     { path: "/workspace/configuracoes", label: "Dados da Loja", icon: Settings },
-    { path: "/workspace/configuracoes/sessoes", label: "Sessões & Auditoria", icon: ShieldCheck },
-    { path: "/workspace/integracoes/marketplaces", label: "Hub de Marketplaces & Canais", icon: Globe },
-    { path: "/workspace/configuracoes/inteligencia-artificial", label: "Inteligência Artificial (IAs)", icon: Bot },
-    { path: "/workspace/configuracoes/integracoes", label: "Integrações & Domínios", icon: Link2 },
-    { path: "/workspace/configuracoes/parceiros", label: "Parceiros & Fornecedores", icon: Building2 },
+    { path: "/workspace/configuracoes/sessoes", label: "Auditoria", icon: ShieldCheck },
+    { path: "/workspace/integracoes/marketplaces", label: "Canais", icon: Globe },
+    { path: "/workspace/configuracoes/inteligencia-artificial", label: "Automação", icon: Bot },
+    { path: "/workspace/configuracoes/integracoes", label: "Integrações", icon: Link2 },
+    { path: "/workspace/configuracoes/parceiros", label: "Fornecedores", icon: Building2 },
   ],
 };
 
@@ -1111,8 +1035,8 @@ export function resolveWorkspaceNavigation(
         icon: ShoppingBag,
         items: [
           { path: "/workspace/pdv", label: "Abrir Frente de Caixa (PDV)", icon: ShoppingBag },
-          { path: "/workspace/pedidos", label: "Pedidos & Vendas do Dia", icon: ShoppingCart },
-          { path: "/workspace/financeiro/caixa", label: "Fluxo de Caixa & Turno", icon: Banknote },
+          { path: "/workspace/pedidos", label: "Pedidos e Vendas do Dia", icon: ShoppingCart },
+          { path: "/workspace/financeiro/caixa", label: "Fluxo de Caixa e Turno", icon: Banknote },
         ],
       },
     ];
@@ -1139,12 +1063,12 @@ export function resolveWorkspaceNavigation(
       GROUP_OVERVIEW,
       {
         id: "operations",
-        label: "Operações & Expedição",
+        label: "Operações e Expedição",
         icon: Boxes,
         items: [
           { path: "/workspace/pedidos/gestor", label: "Gestor de Pedidos / KDS", icon: Clock },
-          { path: "/workspace/pedidos", label: "Separação & Picking", icon: Package },
-          { path: "/workspace/estoque", label: "Estoque & Insumos", icon: Boxes },
+          { path: "/workspace/pedidos", label: "Separação e Picking", icon: Package },
+          { path: "/workspace/estoque", label: "Estoque e Insumos", icon: Boxes },
         ],
       },
     ];
@@ -1156,7 +1080,7 @@ export function resolveWorkspaceNavigation(
       GROUP_OVERVIEW,
       {
         id: "specialist-agenda",
-        label: "Minha Agenda & Atendimentos",
+        label: "Minha Agenda e Atendimentos",
         icon: Calendar,
         items: [
           { path: "/workspace/agenda", label: "Minha Grade de Agendamentos", icon: Calendar },
@@ -1173,11 +1097,11 @@ export function resolveWorkspaceNavigation(
       GROUP_OVERVIEW,
       {
         id: "rh-module",
-        label: "RH & Recrutamento",
+        label: "RH e Recrutamento",
         icon: Briefcase,
         items: [
-          { path: "/workspace/configuracoes/equipe", label: "Colaboradores & Folha", icon: Users },
-          { path: "/workspace/empregos/candidatos", label: "Vagas & Triagem (ATS)", icon: Briefcase },
+          { path: "/workspace/configuracoes/equipe", label: "Colaboradores e Folha", icon: Users },
+          { path: "/workspace/empregos/candidatos", label: "Vagas e Triagem (ATS)", icon: Briefcase },
           { path: "/workspace/clientes", label: "Banco de Talentos", icon: Users },
         ],
       },

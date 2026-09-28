@@ -4,11 +4,7 @@ import { X, Send, Heart, MessageSquare, CornerDownRight, Smile, Layers, Loader2 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
- listPostComments,
- createPostComment,
- type PostCommentDTO,
-} from "@/services/social.functions";
+import { listPostComments, createPostComment, type PostCommentDTO } from "@/services/social.functions";
 import { formatRelativeTime } from "@/lib/datetime";
 import { toast } from "sonner";
 

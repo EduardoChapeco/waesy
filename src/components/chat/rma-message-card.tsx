@@ -80,7 +80,7 @@ export const RmaMessageCard: React.FC<RmaMessageCardProps> = ({
  key={idx}
  href={url}
  target="_blank"
- rel="noreferrer"
+ rel="noopener noreferrer"
  className="size-14 shrink-0 rounded-xl overflow-hidden border border-border/80 hover:border-primary transition-colors group"
  >
  <img src={url} alt="Evidência" className="size-full object-cover group-hover:scale-105 transition-transform" />

@@ -1,16 +1,7 @@
 import { describe, it, expect } from "vitest";
-import {
-  inboundWebhookPayloadSchema,
-} from "./marketplace-webhooks.functions";
-import {
-  requestAffiliatePayoutInput,
-  adminProcessPayoutRequestInput,
-} from "./affiliates.functions";
-import {
-  buildEscPosReceipt,
-  buildZplShippingLabel,
-  EscPosBuilder,
-} from "@/lib/thermal-printer";
+import { inboundWebhookPayloadSchema } from "./marketplace-webhooks.functions";
+import { requestAffiliatePayoutInput, adminProcessPayoutRequestInput } from "./affiliates.functions";
+import { buildEscPosReceipt, buildZplShippingLabel, EscPosBuilder } from "@/lib/thermal-printer";
 
 describe("Marketplace Webhooks & Inbound Contract Tests", () => {
   it("valida payload de webhook do Mercado Livre com sucesso", () => {

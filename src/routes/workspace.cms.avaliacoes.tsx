@@ -7,19 +7,12 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listReviews, updateReviewStatus } from "@/services/cms.functions";
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/cms/avaliacoes")({
-  head: () => ({ meta: [{ title: "Avaliações & Moderação | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Avaliações | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const res = await listReviews();

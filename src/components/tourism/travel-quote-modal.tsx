@@ -1,30 +1,10 @@
 import { useState } from "react";
-import {
- AirplaneTilt,
- MapPin,
- CalendarDots,
- Users,
- ArrowsLeftRight,
- CheckCircle,
- Clock,
- SuitcaseSimple,
- ShieldCheck,
- WhatsappLogo,
- Plus,
- Minus,
- X,
- CaretRight,
-} from "@phosphor-icons/react";
+import { AirplaneTilt, MapPin, CalendarDots, Users, ArrowsLeftRight, CheckCircle, Clock, SuitcaseSimple, ShieldCheck, WhatsappLogo, Plus, Minus, X, CaretRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CANONICAL_AIRPORTS, searchAirports, type AirportItem } from "@/lib/airports-data";
 import { requestTravelQuote, type TravelTripType } from "@/services/tourism.functions";
 import { toast } from "sonner";

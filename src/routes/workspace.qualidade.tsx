@@ -6,36 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- getStoreMysteryAudits,
- reportStoreHardshipOrDispute,
-} from "@/services/curadoria.functions";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getStoreMysteryAudits, reportStoreHardshipOrDispute } from "@/services/curadoria.functions";
 
 export const Route = createFileRoute("/workspace/qualidade")({
- head: () => ({ meta: [{ title: "Qualidade & Curadoria | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Qualidade | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const audits = await getStoreMysteryAudits();

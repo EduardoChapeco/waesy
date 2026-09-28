@@ -1,60 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  FileText,
-  Plus,
-  Plane,
-  Building2,
-  Car,
-  Download,
-  Trash2,
-  Ticket,
-  Shield,
-  MapPin,
-  CheckCircle2,
-  Smartphone,
-  Layers,
-  Eye,
-} from "lucide-react";
+import { FileText, Plus, Plane, Building2, Car, Download, Trash2, Ticket, Shield, MapPin, CheckCircle2, Smartphone, Layers, Eye } from "lucide-react";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { VoucherCreationSheet } from "@/components/tourism/vouchers/voucher-creation-sheet";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
 import { toast } from "sonner";
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  listTravelVouchers,
-  createTravelVoucher,
-  deleteTravelVoucher,
-} from "@/services/travel-vouchers.functions";
+import { listTravelVouchers, createTravelVoucher, deleteTravelVoucher } from "@/services/travel-vouchers.functions";
 import { VOUCHER_TYPE_LABELS, type VoucherType } from "@/types/travel-vouchers";
 import { TemplateVoucherA4 } from "@/components/tourism/vouchers/templates/template-voucher-a4";
 import { TemplateVoucherStory } from "@/components/tourism/vouchers/templates/template-voucher-story";
 import { exportElementAsPdf } from "@/lib/pdf-export";
-import {
-  DigitalCompanionCard,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
+import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { MultimodalOcrUploader } from "@/components/documents/multimodal-ocr-uploader";
 
 export const Route = createFileRoute("/workspace/turismo/vouchers/")({
   head: () => ({
-    meta: [{ title: "Central de Vouchers & Boarding Passes | Workspace Waesy" }],
+    meta: [{ title: "Vouchers | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -124,12 +92,12 @@ export default function WorkspaceVouchersPage() {
       description: "Cartões de embarque com código localizador",
     },
     {
-      label: "Hotéis & Resorts",
+      label: "Hotéis e Resorts",
       value: `${hotelVouchersCount} vouchers`,
       description: "Confirmações de hospedagem e pensão",
     },
     {
-      label: "Transfers & Receptivos",
+      label: "Transfers e Receptivos",
       value: `${transferVouchersCount} vouchers`,
       description: "Vouchers de transporte e passeios locais",
     },
@@ -214,7 +182,7 @@ export default function WorkspaceVouchersPage() {
 
   const TABS = [
     { id: "all", label: "Todos os Vouchers", icon: Ticket, count: vouchers.length },
-    { id: "flight", label: "Aéreos & Voos", icon: Plane, count: flightVouchersCount },
+    { id: "flight", label: "Aéreos e Voos", icon: Plane, count: flightVouchersCount },
     { id: "hotel", label: "Hospedagens", icon: Building2, count: hotelVouchersCount },
     { id: "transfer", label: "Transfers", icon: Car, count: transferVouchersCount },
   ];
@@ -450,7 +418,7 @@ export default function WorkspaceVouchersPage() {
       >
         <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-3xl bg-background border border-border shadow-xs">
           <DialogHeader className="sr-only">
-            <DialogTitle>Visualizador de Voucher & Bilhete</DialogTitle>
+            <DialogTitle>Visualizador de Voucher e Bilhete</DialogTitle>
           </DialogHeader>
 
           {companionModalVoucher && (

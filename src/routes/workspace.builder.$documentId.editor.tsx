@@ -2,12 +2,8 @@ import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import {
- getExperienceDocument,
- saveBuilderNodes,
- publishBuilderVersion,
- updateExperienceDocumentSettings,
-} from "@/services/builder.functions";
+import { SlidersHorizontal } from "lucide-react";
+import { getExperienceDocument, saveBuilderNodes, publishBuilderVersion, updateExperienceDocumentSettings } from "@/services/builder.functions";
 import { listCategories, listCollections, listAdminProducts } from "@/services/admin-catalog.functions";
 import { BuilderTopBar } from "@/components/admin/builder/builder-top-bar";
 import { BuilderDockedRail, type DockedRailActivePanel } from "@/components/admin/builder/builder-docked-rail";
@@ -20,6 +16,7 @@ import { BuilderCanvas, ViewportMode } from "@/components/admin/builder/builder-
 import { BuilderInspector, InspectorTab } from "@/components/admin/builder/builder-inspector";
 import { BuilderLayoutSwitcherModal } from "@/components/admin/builder/builder-layout-switcher-modal";
 import { GuidedSectionPicker } from "@/components/admin/builder/guided-section-picker";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import type { SectionTemplate } from "@/lib/builder-types";
 import { builderRegistry } from "@/lib/builder-registry";
 
@@ -170,6 +167,7 @@ function BuilderEditorPage() {
  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
  const [isLayoutSwitcherOpen, setIsLayoutSwitcherOpen] = useState(false);
  const [isLegacySectionPickerOpen, setIsLegacySectionPickerOpen] = useState(false);
+ const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
 
  // Saving & Publishing State
  const [isSaving, setIsSaving] = useState(false);
@@ -741,12 +739,14 @@ function BuilderEditorPage() {
 
  {/* ── 2. ÁREA PRINCIPAL: DOCKED RAIL + GAVETAS + CANVAS + INSPETOR ── */}
  <div className="flex flex-1 overflow-hidden relative">
- {/* Trilho de Ícones Fino 48px */}
+ {/* ── Trilho de Ícones (Desktop Only) ── */}
+ <div className="hidden md:flex">
  <BuilderDockedRail
  activePanel={dockedPanel}
  onTogglePanel={(p) => setDockedPanel(p)}
  nodesCount={nodes.length}
  />
+ </div>
 
  {/* Drawer 3-Colunas "Adicionar ao Site" (Wix Studio Imagem 3) */}
  <BuilderAddPanel3Col
@@ -828,7 +828,8 @@ function BuilderEditorPage() {
  themeConfig={themeConfig}
  />
 
- {/* Painel Inspetor à Direita (Editor X Standard - Imagem 4) */}
+ {/* Painel Inspetor (Desktop Only) */}
+ <div className="hidden md:flex">
  <BuilderInspector
  selectedNodeId={selectedNodeId}
  selectedNode={selectedNode}
@@ -843,6 +844,35 @@ function BuilderEditorPage() {
  treeNodes={treeNodes}
  pages={pages}
  />
+ </div>
+
+ {/* ── FAB Mobile: Ferramentas (< md) ── */}
+ <Sheet open={isMobileToolsOpen} onOpenChange={setIsMobileToolsOpen}>
+ <SheetTrigger asChild>
+ <button
+ className="md:hidden fixed bottom-20 right-4 z-50 flex items-center justify-center size-12 rounded-full bg-primary text-primary-foreground shadow-lg"
+ aria-label="Ferramentas do editor"
+ >
+ <SlidersHorizontal className="size-5" />
+ </button>
+ </SheetTrigger>
+ <SheetContent side="right" className="w-80 p-0 overflow-y-auto">
+ <BuilderInspector
+ selectedNodeId={selectedNodeId}
+ selectedNode={selectedNode}
+ blockManifest={selectedBlockManifest}
+ inspectorTab={inspectorTab}
+ setInspectorTab={setInspectorTab}
+ setSelectedNodeId={setSelectedNodeId}
+ updateNode={updateNode}
+ setNodes={setNodes}
+ collections={initialData.collections || []}
+ categories={initialData.categories || []}
+ treeNodes={treeNodes}
+ pages={pages}
+ />
+ </SheetContent>
+ </Sheet>
  </div>
 
  {/* ── 3. MODAL SELETOR DE LAYOUTS DE GRID (Wix Pro Gallery - Imagem 2) ── */}

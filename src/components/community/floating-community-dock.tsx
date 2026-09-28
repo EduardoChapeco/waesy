@@ -1,18 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
-import {
- ChatCircleDots,
- Plus,
- X,
- ImageSquare,
- PencilSimple,
- FilmStrip,
- AirplaneTilt,
- Newspaper,
- CircleNotch,
- MapPin,
- Trash,
-} from "@phosphor-icons/react";
+import { ChatCircleDots, Plus, X, ImageSquare, PencilSimple, FilmStrip, AirplaneTilt, Newspaper, CircleNotch, MapPin, Trash } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";

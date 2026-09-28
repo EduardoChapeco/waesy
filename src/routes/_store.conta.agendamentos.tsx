@@ -7,30 +7,15 @@ import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NativeMobileHeader } from "@/components/navigation";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { getUserSession } from "@/services/auth.functions";
-import {
- listCustomerAppointments,
- cancelCustomerAppointment,
-} from "@/services/booking.functions";
-import {
-  DigitalCompanionCard,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
+import { listCustomerAppointments, cancelCustomerAppointment } from "@/services/booking.functions";
+import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/conta/agendamentos")({
  head: () => ({
- meta: [{ title: "Minha Agenda | Waesy" }],
+ meta: [{ title: "Agendamentos | Waesy" }],
  }),
   loader: async () => {
     try {
@@ -150,7 +135,7 @@ function CustomerAgendaPage() {
          variant="outline"
          className="rounded-xl text-xs font-semibold h-8.5 px-3.5 cursor-pointer"
        >
-         <Link to="/agendar">Novo Agendamento</Link>
+         <Link to="/agendar">Agendar</Link>
        </Button>
      }
    />
@@ -167,7 +152,7 @@ function CustomerAgendaPage() {
  : "text-muted-foreground hover:text-foreground",
  )}
  >
- Próximos Agendamentos
+ Próximos
  </button>
  <button
  type="button"
@@ -199,7 +184,7 @@ function CustomerAgendaPage() {
  {activeTab === "upcoming" && (
  <div className="pt-2">
  <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-9">
- <Link to="/agendar">Explorar Serviços</Link>
+ <Link to="/agendar">Explorar</Link>
  </Button>
  </div>
  )}
@@ -217,7 +202,7 @@ function CustomerAgendaPage() {
  return (
           <div
             key={appt.id}
-            className="rounded-2xl border border-border/60 bg-card p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-border"
+            className="p-3.5 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-muted/20"
           >
  {/* Data e Horário em Destaque */}
  <div className="flex items-start gap-4">
@@ -238,7 +223,7 @@ function CustomerAgendaPage() {
  {getStatusBadge(appt.status)}
  {appt.pass_id && (
  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
- Pacote de Sessões
+ Pacote
  </span>
  )}
  </div>
@@ -273,7 +258,7 @@ function CustomerAgendaPage() {
    title="Visualizar Cartão Digital de Atendimento 9:16 e WhatsApp"
  >
    <Smartphone className="size-3.5" />
-   <span>Cartão 9:16</span>
+   <span>Cartão</span>
  </Button>
 
  {isUpcoming && (
@@ -296,7 +281,7 @@ function CustomerAgendaPage() {
  className="rounded-xl text-xs font-semibold h-8 text-muted-foreground hover:text-foreground cursor-pointer"
  >
  <Link to="/c/$storeSlug" params={{ storeSlug: appt.stores.slug }}>
- Ver Loja ↗
+ Loja ↗
  </Link>
  </Button>
  )}
@@ -316,7 +301,7 @@ function CustomerAgendaPage() {
  <DialogContent className="sm:max-w-md sm:rounded-2xl sm:p-6">
  <DialogHeader className="space-y-1.5">
  <DialogTitle className="text-base font-bold text-foreground">
- Cancelar Agendamento?
+ Cancelar Agendamento
  </DialogTitle>
  <DialogDescription className="text-xs text-muted-foreground">
  {cancellingAppt?.pass_id
@@ -386,7 +371,7 @@ function getApptCompanionData(appt: any, session: any) {
       subtitle: `${storeName} · ${duration} minutos`,
       details: [
         {
-          label: "Data & Horário",
+          label: "Data e Horário",
           value: `${dateObj.toLocaleDateString("pt-BR")} às ${dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
           highlight: true,
         },

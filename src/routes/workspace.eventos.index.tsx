@@ -1,48 +1,24 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Calendar,
-  Plus,
-  QrCode,
-  ExternalLink,
-  MapPin,
-  Clock,
-  Ticket,
-  Users,
-  CheckCircle2,
-  Trash2,
-  Flame,
-  Building,
-  TrendingUp,
-} from "lucide-react";
+import { Calendar, Plus, QrCode, ExternalLink, MapPin, Clock, Ticket, Users, CheckCircle2, Trash2, Flame, Building, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { listAdminEvents, upsertEvent } from "@/services/events.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 export const Route = createFileRoute("/workspace/eventos/")({
-  head: () => ({ meta: [{ title: "Gestão de Eventos & Produtora | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Eventos | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const [events, store] = await Promise.all([
@@ -121,7 +97,7 @@ export default function WorkspaceEventosPage() {
       description: "Total de atrações no histórico",
     },
     {
-      label: "Próximos Shows & Eventos",
+      label: "Próximos Shows e Eventos",
       value: `${metrics.upcoming} ativos`,
       description: "Com ingressos ou cronograma aberto",
     },
@@ -139,9 +115,9 @@ export default function WorkspaceEventosPage() {
 
   const TABS = [
     { id: "all", label: "Todos os Eventos", count: metrics.total },
-    { id: "shows", label: "Shows & Festivais" },
-    { id: "corporate", label: "Corporativo & Palestras" },
-    { id: "theatre", label: "Teatro & Cultura" },
+    { id: "shows", label: "Shows e Festivais" },
+    { id: "corporate", label: "Corporativo e Palestras" },
+    { id: "theatre", label: "Teatro e Cultura" },
     { id: "sports", label: "Esportivos" },
   ];
 
@@ -212,7 +188,7 @@ export default function WorkspaceEventosPage() {
   return (
     <NicheOperationalGuard
       targetNiche="events"
-      toolTitle="Gestão de Eventos, Shows & Produtora"
+      toolTitle="Gestão de Eventos"
       toolDescription="Controle de ingressos, lotes promocionais, check-in de portaria com QR Code, orçamentos e fornecedores de eventos."
       store={store}
     >
@@ -229,7 +205,7 @@ export default function WorkspaceEventosPage() {
           dashboardLabel="Métricas de Bilheteria"
           metricsBadge={metrics.upcoming > 0 ? `${metrics.upcoming} ativos` : undefined}
           primaryAction={{
-            label: "Novo Evento & Lotes",
+            label: "Novo Evento e Lotes",
             icon: Plus,
             onClick: () => setIsOpen(true),
           }}
@@ -342,7 +318,7 @@ export default function WorkspaceEventosPage() {
                     >
                       <Link to="/workspace/eventos/$id" params={{ id: event.id }}>
                         <Ticket className="size-3.5" />
-                        <span>Lotes & Ingressos</span>
+                        <span>Lotes e Ingressos</span>
                       </Link>
                     </Button>
 
@@ -352,7 +328,7 @@ export default function WorkspaceEventosPage() {
                       viewUrl={`/evento/${event.id}`}
                       customActions={[
                         {
-                          label: "Portaria & Validador QR Code",
+                          label: "Portaria e Validador QR Code",
                           icon: QrCode,
                           href: `/workspace/eventos/${event.id}/checkin`,
                         },
@@ -374,7 +350,7 @@ export default function WorkspaceEventosPage() {
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] p-0 overflow-y-auto no-scrollbar flex flex-col h-full bg-background border-l border-border">
             <SheetHeader className="px-6 py-4 bg-muted/20 border-b border-border/60 text-left shrink-0">
-              <SheetTitle className="text-lg font-bold">Novo Evento & Lotes de Ingressos</SheetTitle>
+              <SheetTitle className="text-lg font-bold">Novo Evento e Lotes de Ingressos</SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground">
                 Cadastre o evento para habilitar a venda de ingressos, controle de lotes e portaria.
               </SheetDescription>
@@ -412,11 +388,11 @@ export default function WorkspaceEventosPage() {
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
                     className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="shows">Shows & Festivais</option>
-                    <option value="corporate">Corporativo & Palestras</option>
-                    <option value="theatre">Teatro & Cultura</option>
+                    <option value="shows">Shows e Festivais</option>
+                    <option value="corporate">Corporativo e Palestras</option>
+                    <option value="theatre">Teatro e Cultura</option>
                     <option value="sports">Esportivos</option>
-                    <option value="gastronomy">Gastronomia & Open Food</option>
+                    <option value="gastronomy">Gastronomia e Open Food</option>
                   </select>
                 </div>
               </div>

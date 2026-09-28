@@ -171,7 +171,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
       <div className="my-8 p-6 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex-1 space-y-1.5 text-xs">
           <span className="font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            CONDIÇÕES DE PAGAMENTO & LIQUIDAÇÃO
+            CONDIÇÕES DE PAGAMENTO e LIQUIDAÇÃO
           </span>
           <p className="font-semibold text-slate-900">
             Método: {data.paymentTerms.method.toUpperCase()}
@@ -223,7 +223,7 @@ export const BudgetCorporateClean: React.FC<CommercialDocumentTemplateProps> = (
                 onClick={onAcceptProposal}
                 className="px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs"
               >
-                Aprovar & Assinar Proposta
+                Aprovar e Assinar Proposta
               </button>
             ) : (
               <span className="text-slate-400 text-xs">Aguardando Assinatura</span>

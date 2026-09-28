@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  SaveDeliverySettingsSchema,
-  CreateDispatchSchema,
-  UpdateDispatchStatusSchema,
-  GetDispatchByDealSchema,
-} from "./company-delivery.functions";
+import { SaveDeliverySettingsSchema, CreateDispatchSchema, UpdateDispatchStatusSchema, GetDispatchByDealSchema } from "./company-delivery.functions";
 
 describe("Company Delivery & Dispatch Contracts (BFF)", () => {
   it("valida schema de taxas de entrega com cálculo em centavos inteiros", () => {

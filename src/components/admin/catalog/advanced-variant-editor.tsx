@@ -1,12 +1,5 @@
 import React from "react";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetFooter,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";

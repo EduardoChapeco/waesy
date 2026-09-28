@@ -6,36 +6,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ShieldCheck,
-    Warning,
-  CheckCircle,
-  XCircle,
-  Eye,
-  Motorcycle,
-  Car,
-  Truck,
-  VideoCamera,
-  Camera,
-  FileText,
-  User,
-  Siren,
-  ArrowsClockwise,
-} from "@phosphor-icons/react";
+import { ShieldCheck, Warning, CheckCircle, XCircle, Eye, Motorcycle, Car, Truck, VideoCamera, Camera, FileText, User, Siren, ArrowsClockwise } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  listCourierApplicationsForAudit,
-  auditCourierApplication,
-  type CourierApplicationDTO,
-} from "@/services/courier-verification.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { listCourierApplicationsForAudit, auditCourierApplication, type CourierApplicationDTO } from "@/services/courier-verification.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-master/entregadores/auditoria")({
@@ -417,7 +393,7 @@ function AdminCourierAuditPage() {
                     className="rounded-xl h-10 px-4 text-xs font-bold gap-1.5 cursor-pointer"
                   >
                     <Siren size={15} weight="bold" />
-                    <span>Rejeitar Fraude & Registrar Notificação</span>
+                    <span>Rejeitar Fraude e Registrar Notificação</span>
                   </Button>
 
                   <Button

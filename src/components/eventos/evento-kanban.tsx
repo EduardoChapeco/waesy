@@ -8,27 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Plus, 
-  Calendar, 
-  CheckSquare, 
-  Trash2, 
-  Clock, 
-  Layers, 
-  CheckCircle2, 
-  AlertCircle,
-  MoveRight,
-  UserCheck
-} from "lucide-react";
+import { Plus, Calendar, CheckSquare, Trash2, Clock, Layers, CheckCircle2, AlertCircle, MoveRight, UserCheck } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getEventKanbanBoard,
-  listEventTasks,
-  createEventTask,
-  updateEventTask,
-  deleteEventTask,
-  moveEventTask
-} from "@/services/events.functions";
+import { getEventKanbanBoard, listEventTasks, createEventTask, updateEventTask, deleteEventTask, moveEventTask } from "@/services/events.functions";
 
 interface EventoKanbanProps {
   eventId: string;
@@ -236,7 +218,7 @@ export function EventoKanban({ eventId }: EventoKanbanProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Descrição & Detalhes</Label>
+                <Label className="text-xs font-bold">Descrição e Detalhes</Label>
                 <Textarea
                   rows={3}
                   placeholder="Especificações técnicas, contato do fornecedor, etc."

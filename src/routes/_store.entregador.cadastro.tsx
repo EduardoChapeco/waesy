@@ -6,31 +6,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Motorcycle,
-  Car,
-  Truck,
-  ShieldCheck,
-  ShieldWarning,
-  VideoCamera,
-  Camera,
-  CheckCircle,
-  ArrowRight,
-  ArrowLeft,
-  FileText,
-  Clock,
-  Scales,
-  Warning,
-} from "@phosphor-icons/react";
+import { Motorcycle, Car, Truck, ShieldCheck, ShieldWarning, VideoCamera, Camera, CheckCircle, ArrowRight, ArrowLeft, FileText, Clock, Scales, Warning } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  submitCourierApplication,
-  getMyCourierApplicationStatus,
-} from "@/services/courier-verification.functions";
+import { submitCourierApplication, getMyCourierApplicationStatus } from "@/services/courier-verification.functions";
 import { getLegalDocumentBySlug } from "@/services/legal.functions";
 import { toast } from "sonner";
 import { formatCpf, validateCpfMod11 } from "@/lib/document-validator";
@@ -40,7 +22,7 @@ import { PlateField } from "@/components/ui/plate-field";
 export const Route = createFileRoute("/_store/entregador/cadastro")({
   head: () => ({
     meta: [
-      { title: "Cadastro de Entregador & Motorista Parceiro | Waesy" },
+      { title: "Cadastro de Entregador e Motorista Parceiro | Waesy" },
       {
         name: "description",
         content:
@@ -265,7 +247,7 @@ function CourierOnboardingPage() {
               step === 1 ? "text-primary font-bold" : "text-muted-foreground"
             }`}
           >
-            1. Veículo & CNH
+            1. Veículo e CNH
           </button>
           <button
             type="button"
@@ -276,7 +258,7 @@ function CourierOnboardingPage() {
               step === 2 ? "text-primary font-bold" : "text-muted-foreground"
             }`}
           >
-            2. Biometria & Prova de Vida
+            2. Biometria e Prova de Vida
           </button>
           <button
             type="button"
@@ -287,7 +269,7 @@ function CourierOnboardingPage() {
               step === 3 ? "text-primary font-bold" : "text-muted-foreground"
             }`}
           >
-            3. Autonomia & Termos
+            3. Autonomia e Termos
           </button>
         </div>
 

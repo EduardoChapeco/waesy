@@ -1,22 +1,10 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Flag, ShieldAlert, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { submitModerationReport } from "@/services/moderation.functions";
@@ -96,7 +84,7 @@ export function ReportDialog({
  Denunciar Publicação
  </DialogTitle>
  <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
- Nossa equipe de moderação e Trust & Safety analisará o conteúdo com base nos Termos
+ Nossa equipe de moderação e Trust e Safety analisará o conteúdo com base nos Termos
  de Uso e Diretrizes da Comunidade Waesy.
  </DialogDescription>
  </DialogHeader>

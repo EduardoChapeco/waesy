@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase";
-import { Motorcycle, Phone, WhatsappLogo, CheckCircle, Clock, MapPin, ShieldCheck, Sparkle } from "@phosphor-icons/react";
+import { Motorcycle, Phone, WhatsappLogo, CheckCircle, Clock, MapPin, ShieldCheck, Star } from "@phosphor-icons/react";
 
 export interface MotoLinkTrackingWidgetProps {
   orderId: string;
@@ -74,7 +74,7 @@ export function MotoLinkTrackingWidget({
             <h3 className="font-semibold text-sm sm:text-base text-foreground flex items-center gap-1.5">
               MotoLink — Entrega Local Expressa
               <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium">
-                <Sparkle className="w-3 h-3" /> Ao Vivo
+                <Star className="w-3 h-3" /> Ao Vivo
               </span>
             </h3>
             <p className="text-xs text-muted-foreground">Tempo estimado de chegada: <strong className="text-foreground">{eta > 0 ? `${eta} min` : "Entregue!"}</strong></p>

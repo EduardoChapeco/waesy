@@ -8,28 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 import { getStoreSettings, saveStoreSettings } from "@/services/store.functions";
-import {
- listTenantAiProviders,
- saveTenantAiProvider,
- deleteTenantAiProvider,
- testAiProviderConnection,
- type TenantAiProviderItem,
- type AiProviderType,
-} from "@/services/ai-providers.functions";
+import { listTenantAiProviders, saveTenantAiProvider, deleteTenantAiProvider, testAiProviderConnection, type TenantAiProviderItem, type AiProviderType } from "@/services/ai-providers.functions";
 
 export const Route = createFileRoute(
  "/workspace/configuracoes/inteligencia-artificial"
 )({
- head: () => ({ meta: [{ title: "Inteligência Artificial & Chaves | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Inteligência Artificial e Chaves | Workspace" }] }),
  loader: async () => {
    try {
  const store = await getStoreSettings().catch(() => null);
@@ -190,7 +177,7 @@ function WorkspaceAiSettingsPage() {
  <Link to="/workspace/configuracoes/integracoes">
  <Button variant="outline" size="sm" className="h-9 px-3.5 text-xs font-semibold rounded-xl gap-2 cursor-pointer border-border/70 hover:bg-muted/50">
  <Sliders className="size-3.5 text-primary" />
- Central de Integrações & APIs
+ Central de Integrações e APIs
  <ExternalLink className="size-3 text-muted-foreground" />
  </Button>
  </Link>
@@ -322,7 +309,7 @@ function WorkspaceAiSettingsPage() {
         <div>
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Bot className="size-4 text-primary" />
-            DNA & Base de Conhecimento da Loja
+            DNA e Base de Conhecimento da Loja
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
             Instruções globais que todos os agentes de IA (SDRs) da sua loja devem seguir. Defina o tom de voz, regras de negociação, políticas de devolução e garantias.

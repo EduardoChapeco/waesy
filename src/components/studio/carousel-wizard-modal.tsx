@@ -87,7 +87,7 @@ export function CarouselWizardModal({
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Waesy Creative Studio · Gerador de Carrosséis & Flyers
+ Waesy Creative Studio · Gerador de Carrosséis
  </h2>
  <p className="text-[11px] text-muted-foreground">
  Motor Escamas Multi-Camadas nativo do Waesy
@@ -189,7 +189,7 @@ export function CarouselWizardModal({
  <div className="max-w-2xl mx-auto space-y-6">
  <div>
  <h3 className="text-xl font-extrabold text-foreground">
- Configurações de Estilo & Camadas
+ Configurações de Estilo
  </h3>
  <p className="text-xs text-muted-foreground mt-1">
  Ajuste a densidade visual e quantidade de slides.
@@ -369,7 +369,7 @@ export function CarouselWizardModal({
  onClick={onClose}
  className="min-h-[40px] px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-xs"
  >
- Concluir & Fechar
+ Concluir e Fechar
  </Button>
  )}
  </div>

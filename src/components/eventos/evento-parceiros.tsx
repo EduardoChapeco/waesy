@@ -104,7 +104,7 @@ export function EventoParceiros({ eventId }: EventoParceirosProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground">Patrocinadores & Cotas de Apoio</h3>
+            <h3 className="text-base font-bold text-foreground">Patrocinadores</h3>
             <Badge variant="outline" className="text-xs">
               {partners.length} {partners.length === 1 ? "parceiro ativo" : "parceiros ativos"}
             </Badge>

@@ -3,14 +3,7 @@ import { useState } from "react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  getCart,
-  getGlobalCarts,
-  removeFromCart,
-  updateCartItemQty,
-  applyCouponToCart,
-  updateCartShipping,
-} from "@/services/cart.functions";
+import { getCart, getGlobalCarts, removeFromCart, updateCartItemQty, applyCouponToCart, updateCartShipping } from "@/services/cart.functions";
 import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, Ticket, Truck, CheckCircle2, ShoppingBag } from "lucide-react";
 import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";

@@ -1,73 +1,20 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import {
- ExternalLink,
- Smartphone,
- Laptop,
- ArrowRight,
- Plus,
- Search,
- MoreVertical,
- Copy,
- Eye,
- Trash2,
- Grid,
- List as ListIcon,
- Globe,
- Settings,
- SlidersHorizontal,
- CheckCircle2,
- Clock,
- Layers,
- Flame,
- Tag,
- Zap,
- Percent,
- Compass,
- Store,
- Share2,
-} from "lucide-react";
+import { ExternalLink, Smartphone, Laptop, ArrowRight, Plus, Search, MoreVertical, Copy, Eye, Trash2, Grid, List as ListIcon, Globe, Settings, SlidersHorizontal, CheckCircle2, Clock, Layers, Flame, Tag, Zap, Percent, Compass, Store, Share2 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuSeparator,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import {
- listExperienceDocuments,
- getOrCreateStorefrontExperienceDocument,
- getOrCreateBiolinkExperienceDocument,
- createExperienceDocument,
- duplicateExperienceDocument,
- deleteExperienceDocument,
- setActiveStorefrontDocument,
-} from "@/services/builder.functions";
+import { listExperienceDocuments, getOrCreateStorefrontExperienceDocument, getOrCreateBiolinkExperienceDocument, createExperienceDocument, duplicateExperienceDocument, deleteExperienceDocument, setActiveStorefrontDocument } from "@/services/builder.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/marketing/vitrine")({
- head: () => ({ meta: [{ title: "Sites, Vitrines & Hotpages | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Vitrines | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const [docs, storefrontRes, biolinkRes] = await Promise.all([
@@ -123,7 +70,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  },
  {
  id: "tourism_excelencia",
- title: "Excelência Tour • Agência Boutique & Pacotes",
+ title: "Excelência Tour • Agência Boutique e Pacotes",
  niche: "Agências de Turismo & Viagens",
  category: "turismo",
  tagline: "Roteiros com saídas 2027/28, cotação rápida WhatsApp, captura de leads e galeria da loja física.",
@@ -133,7 +80,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  },
  {
  id: "classic_commerce",
- title: "Aura Premium • Moda & Varejo",
+ title: "Aura Premium • Moda e Varejo",
  niche: "Moda & Vestuário",
  category: "varejo",
  tagline: "Lookbook interativo, hero 21:9, bento grid de coleções e carrinho lateral.",
@@ -143,7 +90,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  },
  {
  id: "minimalist_fashion",
- title: "Sapore • Gastronomia & Delivery",
+ title: "Sapore • Gastronomia e Delivery",
  niche: "Restaurantes & Cafés",
  category: "food",
  tagline: "Cardápio dinâmico com fotos apetitosas, pedidos via WhatsApp e combos.",
@@ -153,7 +100,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  },
  {
  id: "institutional_profile",
- title: "Monochrome • Editorial & Zine",
+ title: "Monochrome • Editorial e Zine",
  niche: "Branding & Estúdios",
  category: "editorial",
  tagline: "Storytelling autêntico, manifesto de marca, timeline histórica e depoimentos.",
@@ -163,7 +110,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  },
  {
  id: "services_studio",
- title: "Atelier • Serviços & Bem-Estar",
+ title: "Atelier • Serviços e Bem-Estar",
  niche: "Clínicas, Salões & Spas",
  category: "servicos",
  tagline: "Agendamento integrado de horários, equipe profissional e tabela de pacotes.",
@@ -173,7 +120,7 @@ const TEMPLATES_GALLERY: TemplateItem[] = [
  },
  {
  id: "real_estate_luxury",
- title: "Habitat • Imóveis & Arquitetura",
+ title: "Habitat • Imóveis e Arquitetura",
  niche: "Imobiliárias & Corretores",
  category: "imoveis",
  tagline: "Showcase de empreendimentos de alto padrão, tour virtual e formulário de visita.",
@@ -381,7 +328,7 @@ function WorkspaceSitesHubPage() {
  {/* ── Header Canônico Studio Apple HIG ── */}
  <PageHeader
  eyebrow="Marketing & Design"
- title="Sites, Vitrines & Hotpages"
+ title="Vitrines Digitais"
  actions={
  <div className="flex items-center gap-2">
  <Button
@@ -790,7 +737,7 @@ function WorkspaceSitesHubPage() {
  <SelectItem value="biolink">Link da Bio (Multi-links Mobile)</SelectItem>
  <SelectItem value="landing_page">Landing Page de Alta Conversão</SelectItem>
  <SelectItem value="campaign">Página de Campanha / Hotpage Oferta</SelectItem>
- <SelectItem value="custom">Hotsite Institucional & Portfólio</SelectItem>
+ <SelectItem value="custom">Hotsite Institucional e Portfólio</SelectItem>
  </SelectContent>
  </Select>
  </div>
@@ -844,8 +791,8 @@ function WorkspaceSitesHubPage() {
  <SelectContent className="text-xs">
  <SelectItem value="blank">Começar em Branco (Livre)</SelectItem>
  <SelectItem value="classic_commerce">Vitrine de Coleção Completa</SelectItem>
- <SelectItem value="hotpage_flash_sale">Hotpage com Cronômetro & Ofertas</SelectItem>
- <SelectItem value="tourism_excelencia">Roteiro de Viagens & Turismo</SelectItem>
+ <SelectItem value="hotpage_flash_sale">Hotpage com Cronômetro e Ofertas</SelectItem>
+ <SelectItem value="tourism_excelencia">Roteiro de Viagens e Turismo</SelectItem>
  <SelectItem value="biolink_classic">Cartão de Links para Redes Sociais</SelectItem>
  <SelectItem value="institutional_profile">Institucional com História da Marca</SelectItem>
  </SelectContent>

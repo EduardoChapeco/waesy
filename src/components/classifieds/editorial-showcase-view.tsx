@@ -1,117 +1,23 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import {
-  Grid,
-  Building2,
-  Calendar,
-  Compass,
-  ArrowLeft,
-  Share2,
-  CheckCircle2,
-  Plane,
-  MapPin,
-  MessageCircle,
-  Maximize2,
-  Edit3,
-  Settings,
-  CreditCard,
-  QrCode,
-  Truck,
-  ShieldCheck,
-  Star,
-  Award,
-  HeartHandshake,
-  ImagePlus,
-  Clock,
-  Utensils,
-  Car,
-  Home as HomeIcon,
-  Briefcase,
-  Wrench,
-  FileArchive,
-  Tag,
-  BadgePercent,
-  Check,
-  Info,
-  ExternalLink,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  ChevronUp,
-  Handshake,
-  Landmark,
-  Coins,
-  Receipt,
-  FileSpreadsheet,
-  BookOpenCheck,
-  ShieldAlert,
-  Bus,
-  Ship,
-  Train,
-  Navigation,
-  Route as RouteIcon,
-  X,
-  Users,
-  Phone,
-  Mail,
-  MessageSquare,
-  Send,
-  Store as StoreIcon,
-  User,
-  Download,
-  Loader2,
-  FileText,
-  Smartphone,
-  Laptop,
-  Tv,
-  Gamepad2,
-  Armchair,
-  Shirt,
-  GraduationCap,
-  Crown,
-  Bed,
-  Sparkles,
-} from "lucide-react";
+import { Grid, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatMoney } from "@/lib/money";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { registerClassifiedLead } from "@/services/company-mvp.functions";
 import { getDigitalDownloadSignedUrl } from "@/services/classifieds.functions";
-import {
-  getEducationLabel,
-  getExperienceLabel,
-  getRegimeLabel,
-  getWorkplaceModelLabel,
-} from "@/lib/classifieds/canonical-hiring";
+import { getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { LeadFormModal } from "@/components/leads/lead-form-modal";
-import {
-  resolveClassifiedNiche,
-  getClassifiedFeatureCards,
-  getClassifiedPaymentMethods,
-  getClassifiedHeroHighlight,
-  getClassifiedEditorialSpecs,
-  getClassifiedPrimaryCtaLabel,
-} from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedFeatureCards, getClassifiedPaymentMethods, getClassifiedHeroHighlight, getClassifiedEditorialSpecs, getClassifiedPrimaryCtaLabel } from "@/lib/classifieds/semantics";
 import { formatDate } from "@/lib/datetime";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
-import {
-  DepartureOption,
-  CANONICAL_BUS_CATEGORIES,
-  CANONICAL_GUIDE_SERVICES,
-  CANONICAL_TRANSFER_VEHICLES,
-  DEPARTURE_STATUS_CONFIG,
-} from "@/lib/classifieds/canonical-airports";
+import { DepartureOption, CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
 import { TravelBookingDossierModal } from "./travel-booking-dossier-modal";
 import { TravelPromoFlyerModal } from "@/components/tourism/promotional-flyer/travel-promo-flyer-modal";
@@ -694,7 +600,7 @@ export function EditorialShowcaseView({
               title="Gerar Story 9:16 com IA"
               aria-label="Gerar Story 9:16"
             >
-              <Sparkles className="size-4.5" />
+              <Star className="size-4.5" />
             </button>
           )}
 
@@ -785,7 +691,7 @@ export function EditorialShowcaseView({
                 className="h-8 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
                 title="Gerar Flyer / Story Promocional 9:16 com IA"
               >
-                <Sparkles className="size-3.5" />
+                <Star className="size-3.5" />
                 <span>Gerar Story 9:16</span>
               </Button>
             )}
@@ -1172,7 +1078,7 @@ export function EditorialShowcaseView({
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                       <Compass className="size-3.5 text-primary" />
-                      <span>Diferenciais & Inclusões do Pacote</span>
+                      <span>Diferenciais e Inclusões do Pacote</span>
                     </h4>
                     {attrs.duration_text && (
                       <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
@@ -1229,7 +1135,7 @@ export function EditorialShowcaseView({
               {nicheId.includes("hosped") && (
                 <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px]">Hospedagem & Estadia</h4>
+                    <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px]">Hospedagem e Estadia</h4>
                     {attrs.property_type && (
                       <Badge variant="outline" className="text-[10px] font-semibold">{attrs.property_type}</Badge>
                     )}
@@ -1298,7 +1204,7 @@ export function EditorialShowcaseView({
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                       <Wrench className="size-3.5 text-primary" />
-                      <span>Equipamento & Locação</span>
+                      <span>Equipamento e Locação</span>
                     </h4>
                     {attrs.condition && (
                       <Badge variant="outline" className="text-[10px] font-semibold capitalize">
@@ -1334,7 +1240,7 @@ export function EditorialShowcaseView({
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                       <FileArchive className="size-3.5 text-primary" />
-                      <span>Produto Digital & Download</span>
+                      <span>Produto Digital e Download</span>
                     </h4>
                     <Badge variant="outline" className="text-[10px] font-bold text-emerald-600 border-emerald-500/30 bg-emerald-500/10">
                       Acesso Instantâneo
@@ -1389,7 +1295,7 @@ export function EditorialShowcaseView({
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                       <Wrench className="size-3.5 text-primary" />
-                      <span>Serviço Profissional & Atendimento</span>
+                      <span>Serviço Profissional e Atendimento</span>
                     </h4>
                     <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
                       Agendamento Disponível
@@ -1416,7 +1322,7 @@ export function EditorialShowcaseView({
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                       <Briefcase className="size-3.5 text-primary" />
-                      <span>Requisitos & Detalhes da Vaga</span>
+                      <span>Requisitos e Detalhes da Vaga</span>
                     </h4>
                     <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
                       {attrs.role || classified.title}
@@ -1499,7 +1405,7 @@ export function EditorialShowcaseView({
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                       <Award className="size-3.5 text-primary" />
-                      <span>Plano & Assinatura Recorrente</span>
+                      <span>Plano e Assinatura Recorrente</span>
                     </h4>
                     <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30 capitalize">
                       {classified.billing_cycle === "yearly" ? "Cobrança Anual" : classified.billing_cycle === "quarterly" ? "Cobrança Trimestral" : classified.billing_cycle === "semiannual" ? "Cobrança Semestral" : "Cobrança Mensal"}
@@ -1608,7 +1514,7 @@ export function EditorialShowcaseView({
                     <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
                         <Award className="size-3.5 text-primary" />
-                        <span>Benefícios & Vantagens</span>
+                        <span>Benefícios e Vantagens</span>
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {attrs.benefits.map((b: string, i: number) => (
@@ -1626,7 +1532,7 @@ export function EditorialShowcaseView({
                     <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
                       <h4 className="font-bold text-xs text-foreground uppercase tracking-wider flex items-center gap-1.5">
                         <GraduationCap className="size-3.5 text-primary" />
-                        <span>Competências & Habilidades Desejadas</span>
+                        <span>Competências e Habilidades Desejadas</span>
                       </h4>
                       <div className="flex flex-wrap gap-1.5">
                         {attrs.skills.map((s: string, i: number) => (
@@ -1694,7 +1600,7 @@ export function EditorialShowcaseView({
                   {/* Opcionais & Diferenciais (Veículo ou Desapego) */}
                   {Array.isArray(attrs.features) && attrs.features.length > 0 && (
                     <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
-                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Opcionais & Diferenciais</h4>
+                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Opcionais e Diferenciais</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {attrs.features.map((f: string, i: number) => (
                           <Badge key={i} variant="secondary" className="text-xs font-medium bg-muted">
@@ -1708,7 +1614,7 @@ export function EditorialShowcaseView({
                   {/* Procedência (Veículo) */}
                   {Array.isArray(attrs.provenance) && attrs.provenance.length > 0 && (
                     <div className="p-4 rounded-2xl bg-muted/20 border border-border/30 space-y-2">
-                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Procedência & Documentação</h4>
+                      <h4 className="font-bold text-xs text-foreground uppercase tracking-wider">Procedência e Documentação</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {attrs.provenance.map((p: string, i: number) => (
                           <Badge key={i} variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20 gap-1 flex items-center">
@@ -1782,7 +1688,7 @@ export function EditorialShowcaseView({
                       <p className="text-[11px] text-muted-foreground">Proibida a cobrança de qualquer valor pelo item anunciado nesta modalidade.</p>
                     </div>
                     <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
-                      <p className="font-bold text-foreground">Retirada & Ponto de Encontro</p>
+                      <p className="font-bold text-foreground">Retirada e Ponto de Encontro</p>
                       <p className="text-[11px] text-muted-foreground">O endereço ou local público seguro é combinado diretamente com o doador via chat ou WhatsApp.</p>
                     </div>
                   </div>
@@ -1794,7 +1700,7 @@ export function EditorialShowcaseView({
                 <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
                   <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                     <Briefcase className="size-4 text-primary" />
-                    <span>Processo Seletivo & Candidatura</span>
+                    <span>Processo Seletivo e Candidatura</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-center">
                     <div className="p-3 rounded-xl bg-background border border-border/50 space-y-1">
@@ -1845,7 +1751,7 @@ export function EditorialShowcaseView({
                 <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
                   <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                     <CreditCard className="size-4 text-primary" />
-                    <span>Formas de Pagamento & Condições</span>
+                    <span>Formas de Pagamento e Condições</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
@@ -2764,7 +2670,7 @@ export function EditorialShowcaseView({
             {/* ── 1. Valores & Condições de Pagamento (Formato Lista Apple HIG) ── */}
             <div className="space-y-1.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
-                Valores & Condições de Pagamento
+                Valores e Condições de Pagamento
               </span>
               <div className="rounded-2xl border border-border/60 bg-muted/20 divide-y divide-border/40 overflow-hidden text-xs">
                 {/* 1.1 Valor Total */}
@@ -2847,7 +2753,7 @@ export function EditorialShowcaseView({
             {/* ── 2. Opções de Atendimento & Negociação (Botões em Lista Apple HIG) ── */}
             <div className="space-y-2 pt-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
-                Canais de Atendimento & Negociação
+                Canais de Atendimento e Negociação
               </span>
 
               {/* Botão 1: WhatsApp Oficial */}

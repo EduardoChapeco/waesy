@@ -111,7 +111,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  kpiMetrics: [
  { id: "ticket_medio_mesa", label: "Ticket Médio por Mesa / Pedido", description: "Valor médio faturado por comanda ou entrega", format: "currency" },
  { id: "tempo_medio_kds", label: "Tempo Médio de Preparo", description: "Duração média entre pedido e expedição pela cozinha", format: "duration" },
- { id: "mesas_ativas", label: "Mesas & Comandas Abertas", description: "Capacidade operacional em atendimento simultâneo no salão", format: "number" },
+ { id: "mesas_ativas", label: "Mesas e Comandas Abertas", description: "Capacidade operacional em atendimento simultâneo no salão", format: "number" },
  { id: "taxa_cancelamento", label: "Índice de Cancelamentos", description: "Percentual de pedidos estornados ou cancelados", format: "percent" },
  ],
  operationalTips: [
@@ -143,7 +143,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  priceLabel: "Preço de Venda",
  skuLabel: "SKU / Código de Barras",
  primaryQuickAction: { label: "Frente de Caixa (PDV)", path: "/workspace/pdv" },
- secondaryQuickAction: { label: "Catálogo & Estoque", path: "/workspace/catalogo/produtos" },
+ secondaryQuickAction: { label: "Catálogo e Estoque", path: "/workspace/catalogo/produtos" },
  posServiceModes: [
  { id: "counter", label: "Balcão / Caixa", placeholder: "Nome do Cliente" },
  { id: "fitting", label: "Provador / Reserva", placeholder: "Identificação da Reserva" },
@@ -189,7 +189,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  priceLabel: "Valor por Pessoa / Pacote (R$)",
  skuLabel: "Código do Roteiro / Pacote",
  preparationOrDurationLabel: "Duração da Viagem (dias / noites)",
- primaryQuickAction: { label: "Grupos & Excursões", path: "/workspace/turismo/grupos" },
+ primaryQuickAction: { label: "Grupos e Excursões", path: "/workspace/turismo/grupos" },
  secondaryQuickAction: { label: "Central de Cotações", path: "/workspace/turismo/cotacoes" },
  posServiceModes: [
  { id: "quote", label: "Nova Cotação", placeholder: "Nome do Viajante e Destino" },
@@ -282,8 +282,8 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  emptyCatalogText: "Nenhum serviço ou processo cadastrado ainda.",
  priceLabel: "Valor dos Honorários (R$)",
  skuLabel: "Código Interno / Pasta",
- primaryQuickAction: { label: "Processos & Prazos", path: "/workspace/advocacia" },
- secondaryQuickAction: { label: "Audiências & Reuniões", path: "/workspace/agenda" },
+ primaryQuickAction: { label: "Processos e Prazos", path: "/workspace/advocacia" },
+ secondaryQuickAction: { label: "Audiências e Reuniões", path: "/workspace/agenda" },
  posServiceModes: [
  { id: "case", label: "Nova Pasta / Processo", placeholder: "Nome do Cliente / Ação" },
  { id: "consultation", label: "Consulta Jurídica", placeholder: "Nome do Interessado" },
@@ -419,10 +419,10 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  priceLabel: "Preço",
  skuLabel: "Código de Barras / SKU",
  preparationOrDurationLabel: "Tempo Médio de Banho/Consulta (min)",
- primaryQuickAction: { label: "Agenda de Banho & Tosa", path: "/workspace/agenda" },
+ primaryQuickAction: { label: "Agenda de Banho e Tosa", path: "/workspace/agenda" },
  secondaryQuickAction: { label: "Frente de Caixa (PDV)", path: "/workspace/pdv" },
  posServiceModes: [
- { id: "bath", label: "Banho & Tosa", placeholder: "Nome do Pet e Tutor" },
+ { id: "bath", label: "Banho e Tosa", placeholder: "Nome do Pet e Tutor" },
  { id: "clinic", label: "Consulta Veterinária", placeholder: "Nome do Paciente Pet" },
  { id: "counter", label: "Balcão da Loja", placeholder: "Nome do Tutor" },
  { id: "delivery", label: "Tele-Entrega de Ração", placeholder: "Endereço de Entrega" },
@@ -433,7 +433,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  { name: "Tosa Higiênica e Corte de Unhas", type: "multiple", desc: "Procedimentos complementares inclusos" },
  ],
  kpiMetrics: [
- { id: "banhos_dia", label: "Banhos & Tosas no Dia", description: "Contagem de procedimentos de estética animal agendados", format: "number" },
+ { id: "banhos_dia", label: "Banhos e Tosas no Dia", description: "Contagem de procedimentos de estética animal agendados", format: "number" },
  { id: "consultas_veterinarias", label: "Consultas Clínicas Agendadas", description: "Volume de atendimentos médicos veterinários programados", format: "number" },
  { id: "ticket_medio_pet", label: "Ticket Médio por Tutor", description: "Valor médio combinado entre serviços estéticos e produtos da loja", format: "currency" },
  { id: "vacinas_a_vencer", label: "Lotes de Vacina a Vencer", description: "Controle de validade de imunizantes e medicamentos", format: "number" },
@@ -467,7 +467,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  priceLabel: "Preço por Unidade / KG",
  skuLabel: "Código de Barras (EAN-13)",
  primaryQuickAction: { label: "Frente de Caixa (PDV)", path: "/workspace/pdv" },
- secondaryQuickAction: { label: "Gôndolas & Produtos", path: "/workspace/catalogo/produtos" },
+ secondaryQuickAction: { label: "Gôndolas e Produtos", path: "/workspace/catalogo/produtos" },
  posServiceModes: [
  { id: "checkout", label: "Caixa Rápido / Frente de Loja", placeholder: "CPF do Cliente" },
  { id: "delivery", label: "Entrega em Domicílio", placeholder: "Endereço do Cliente" },
@@ -512,7 +512,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  priceLabel: "Preço de Venda (R$)",
  skuLabel: "Código EAN / Registro MS",
  primaryQuickAction: { label: "Frente de Caixa (PDV)", path: "/workspace/pdv" },
- secondaryQuickAction: { label: "Receituários & Balcão", path: "/workspace/pedidos/gestor" },
+ secondaryQuickAction: { label: "Receituários e Balcão", path: "/workspace/pedidos/gestor" },
  posServiceModes: [
  { id: "counter", label: "Balcão / Caixa", placeholder: "Nome do Paciente" },
  { id: "delivery", label: "Tele-Entrega Express", placeholder: "Endereço de Entrega" },
@@ -554,7 +554,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  emptyCatalogText: "Nenhum evento publicado ainda.",
  priceLabel: "Valor do Ingresso",
  skuLabel: "Código do Lote",
- primaryQuickAction: { label: "Meus Eventos & Lotes", path: "/workspace/eventos" },
+ primaryQuickAction: { label: "Meus Eventos e Lotes", path: "/workspace/eventos" },
  secondaryQuickAction: { label: "Balanço de Ingressos", path: "/workspace/financeiro/pagamentos" },
  posServiceModes: [
  { id: "boxoffice", label: "Bilheteria Física", placeholder: "Nome do Participante" },
@@ -601,7 +601,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  priceLabel: "Valor do Veículo (Tabela FIPE / Pedida)",
  skuLabel: "Placa / Renavam",
  primaryQuickAction: { label: "Estoque de Veículos", path: "/workspace/catalogo/produtos" },
- secondaryQuickAction: { label: "Propostas & Financiamento", path: "/workspace/orcamentos" },
+ secondaryQuickAction: { label: "Propostas e Financiamento", path: "/workspace/orcamentos" },
  posServiceModes: [
  { id: "showroom", label: "Salão de Vendas (Showroom)", placeholder: "Nome do Interessado" },
  { id: "tradein", label: "Avaliação de Troca", placeholder: "Placa do Carro Usado" },
@@ -645,7 +645,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  priceLabel: "Valor de Venda / Aluguel",
  skuLabel: "Código do Imóvel (Ref)",
  primaryQuickAction: { label: "Catálogo de Imóveis", path: "/workspace/catalogo/produtos" },
- secondaryQuickAction: { label: "Propostas & Contratos", path: "/workspace/orcamentos" },
+ secondaryQuickAction: { label: "Propostas e Contratos", path: "/workspace/orcamentos" },
  posServiceModes: [
  { id: "visit", label: "Agendamento de Visita", placeholder: "Nome do Interessado" },
  { id: "proposal", label: "Proposta Formal", placeholder: "Nome do Comprador" },
@@ -687,7 +687,7 @@ export const NICHE_SEMANTICS_REGISTRY: Record<string, NicheSemantics> = {
  emptyCatalogText: "Nenhuma vaga publicada ainda.",
  priceLabel: "Faixa Salarial / Remuneração (R$)",
  skuLabel: "Código da Vaga",
- primaryQuickAction: { label: "Vagas & Candidaturas", path: "/workspace/empregos/candidatos" },
+ primaryQuickAction: { label: "Vagas e Candidaturas", path: "/workspace/empregos/candidatos" },
  secondaryQuickAction: { label: "Banco de Talentos", path: "/workspace/clientes" },
  posServiceModes: [
  { id: "interview", label: "Agendar Entrevista", placeholder: "Nome do Candidato" },

@@ -1,34 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Target,
-  Send,
-  Copy,
-  CheckCircle2,
-  Users,
-  RefreshCw,
-  Share2,
-  MessageCircle,
-  Megaphone,
-  Smartphone,
-  ChevronRight,
-  TrendingUp,
-  Sliders,
-  Flame,
-  ShieldCheck,
-  AlertTriangle,
-  BookmarkCheck,
-  ShoppingBag,
-} from "lucide-react";
-import {
-  SEVEN_SINS_DEFINITIONS,
-  SinType,
-  generateSevenSinCopy,
-  runSimLabPersonaTest,
-  saveSevenSinHookToStore,
-  listStoreProductsQuick,
-  SimLabPersonaResult,
-} from "@/services/seven-sins-simlab.functions";
+import { Target, Send, Copy, CheckCircle2, Users, RefreshCw, Share2, MessageCircle, Megaphone, Smartphone, ChevronRight, TrendingUp, Sliders, Flame, ShieldCheck, AlertTriangle, BookmarkCheck, ShoppingBag } from "lucide-react";
+import { SEVEN_SINS_DEFINITIONS, SinType, generateSevenSinCopy, runSimLabPersonaTest, saveSevenSinHookToStore, listStoreProductsQuick, SimLabPersonaResult } from "@/services/seven-sins-simlab.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { SevenSinHookDTO } from "@/types/squads-and-onboarding";
 
@@ -193,7 +166,7 @@ export function SevenSinsCanvasPage() {
                 </span>
               </div>
               <h1 className="text-2xl font-semibold tracking-tight mt-1 text-foreground">
-                Canvas de Conversão & 7 Pecados
+                Canvas de Conversão e 7 Pecados
               </h1>
               <p className="text-sm text-muted-foreground mt-0.5">
                 Crie anúncios e mensagens de WhatsApp ativando os 7 gatilhos subconscientes de compra e teste antes com personas sintéticas.

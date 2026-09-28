@@ -758,7 +758,7 @@ export function PostCard(props: PostCardProps) {
  </div>
  <div className="min-w-0 flex-1">
  <span className="text-[10px] font-bold uppercase text-amber-600 tracking-wider">
- Anúncio & Desapego
+ Anúncio e Desapego
  </span>
  <p className="text-sm font-bold text-foreground truncate">
  {item.reference_data.title}

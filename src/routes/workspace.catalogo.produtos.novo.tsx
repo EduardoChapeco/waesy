@@ -3,28 +3,7 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { NativeBackButton } from "@/components/ui/native-back-button";
-import {
- ArrowLeft,
- CheckCircle2,
- Plus,
- ImagePlus,
- Eye,
- ShoppingBag,
- Globe,
- Download,
- Package,
- Tag,
- DollarSign,
- SlidersHorizontal,
- Truck,
- ShieldCheck,
- Loader2,
- Box,
- Plane,
- Sparkles,
- Search,
- Store,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, Plus, ImagePlus, Eye, ShoppingBag, Globe, Download, Package, Tag, DollarSign, SlidersHorizontal, Truck, ShieldCheck, Loader2, Box, Plane, Star, Search, Store } from "lucide-react";
 
 import { TravelPackageForm } from "@/components/commerce/travel/travel-package-form";
 import { TravelPackageDetailView } from "@/components/commerce/travel/travel-package-detail-view";
@@ -37,47 +16,18 @@ import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { VariantMatrixGrid, type RawVariant } from "@/components/admin/catalog/variant-matrix-grid";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- createProduct,
- createCategory,
- listCategories,
- listProductTypes,
- listOptionGroups,
-} from "@/services/admin-catalog.functions";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { createProduct, createCategory, listCategories, listProductTypes, listOptionGroups } from "@/services/admin-catalog.functions";
 import { ProductModifiersCard } from "@/components/admin/catalog/product-modifiers-card";
 import { ProductBomCard, type BomItem } from "@/components/admin/catalog/product-bom-card";
-import {
- ProductFoodSpecsCard,
- type FoodSpecsData,
-} from "@/components/admin/catalog/product-food-specs-card";
+import { ProductFoodSpecsCard, type FoodSpecsData } from "@/components/admin/catalog/product-food-specs-card";
 import { importProductFromUrl, importFullCatalogMenu } from "@/services/api-orchestrator.functions";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
 import { getNicheSemantics } from "@/lib/niche-semantics";
@@ -512,7 +462,7 @@ export function UnifiedNewProductPage() {
  onClick={() => setIsMasterCatalogOpen(true)}
  className="rounded-xl text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
  >
- <Sparkles className="size-3.5" />
+ <Star className="size-3.5" />
  <span>Catálogo Mestre</span>
  </Button>
  <Button
@@ -650,10 +600,10 @@ export function UnifiedNewProductPage() {
  <SelectValue placeholder="Selecione o tom" />
  </SelectTrigger>
  <SelectContent className="rounded-2xl">
- <SelectItem value="profissional">Profissional & Elegante</SelectItem>
- <SelectItem value="persuasivo">Persuasivo & Vendedor (Copywriting)</SelectItem>
- <SelectItem value="tecnico">Técnico & Detalhado (Especificações)</SelectItem>
- <SelectItem value="minimalista">Minimalista & Direto ao Ponto</SelectItem>
+ <SelectItem value="profissional">Profissional e Elegante</SelectItem>
+ <SelectItem value="persuasivo">Persuasivo e Vendedor (Copywriting)</SelectItem>
+ <SelectItem value="tecnico">Técnico e Detalhado (Especificações)</SelectItem>
+ <SelectItem value="minimalista">Minimalista e Direto ao Ponto</SelectItem>
  </SelectContent>
  </Select>
  </div>
@@ -681,7 +631,7 @@ export function UnifiedNewProductPage() {
  ) : (
  <>
  <Download className="size-3.5" />
- <span>Extrair & Preencher</span>
+ <span>Extrair e Preencher</span>
  </>
  )}
  </Button>
@@ -702,7 +652,7 @@ export function UnifiedNewProductPage() {
  Preço
  </TabsTrigger>
  <TabsTrigger value="fiscal" className="rounded-xl text-xs font-bold whitespace-nowrap shrink-0 px-3">
- Fiscal & Tributos
+ Fiscal e Tributos
  </TabsTrigger>
  {nicheCtx.isFoodBusiness && (
  <TabsTrigger value="cardapio" className="rounded-xl text-xs font-bold whitespace-nowrap shrink-0 px-3">
@@ -911,7 +861,7 @@ export function UnifiedNewProductPage() {
  <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Truck className="size-4 text-primary" />
- <span>Logística & Frete</span>
+ <span>Logística e Frete</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -975,7 +925,7 @@ export function UnifiedNewProductPage() {
  <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/60">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <DollarSign className="size-4 text-primary" />
- <span>Precificação & Margens</span>
+ <span>Precificação e Margens</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1150,7 +1100,7 @@ export function UnifiedNewProductPage() {
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <ShieldCheck className="size-4 text-primary" />
- <span>Classificação Fiscal & Reforma Tributária 2026</span>
+ <span>Classificação Fiscal e Reforma Tributária 2026</span>
  </div>
  <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20 font-semibold">
  IBS / CBS
@@ -1166,7 +1116,7 @@ export function UnifiedNewProductPage() {
  onClick={() => setIsMasterCatalogOpen(true)}
  className="h-7 text-[11px] font-bold gap-1 rounded-lg border-primary/30 text-primary cursor-pointer"
  >
- <Sparkles className="size-3" />
+ <Star className="size-3" />
  <span>Buscar no Catálogo Mestre</span>
  </Button>
  </div>
@@ -1526,7 +1476,7 @@ export function UnifiedNewProductPage() {
  <div className="flex items-center justify-between">
  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
  <SlidersHorizontal className="size-3.5 text-primary" />
- <span>Opções & Personalização</span>
+ <span>Opções e Personalização</span>
  </h3>
  <Badge variant="outline" className="text-[10px]">
  {selectedOptionGroupIds.length} grupo(s)

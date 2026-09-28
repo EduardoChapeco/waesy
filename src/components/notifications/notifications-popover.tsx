@@ -2,21 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, CheckCheck, Tag, Briefcase, Store, Info, Layers, ArrowRight } from 'lucide-react';
-import {
- Popover,
- PopoverContent,
- PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
- listUserNotifications,
- markNotificationAsRead,
- markAllNotificationsAsRead,
- type NotificationItemDTO,
- type NotificationType,
-} from "@/services/notifications.functions";
+import { listUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, type NotificationItemDTO, type NotificationType } from "@/services/notifications.functions";
 import { cn } from "@/lib/utils";
 
 interface NotificationsPopoverProps {
@@ -25,7 +15,7 @@ interface NotificationsPopoverProps {
 
 const FILTER_TABS: { id: string; label: string; type?: NotificationType }[] = [
  { id: "all", label: "Tudo" },
- { id: "interaction", label: "Interações & Leads", type: "interaction" },
+ { id: "interaction", label: "Interações e Leads", type: "interaction" },
  { id: "promotion", label: "Promoções", type: "promotion" },
  { id: "opportunity", label: "Vagas", type: "opportunity" },
  { id: "system", label: "Avisos", type: "system" },

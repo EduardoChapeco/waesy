@@ -1,31 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ShoppingBag,
-  Store,
-  Truck,
-  Utensils,
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle,
-  Link2,
-  Unlink,
-  Sliders,
-  ExternalLink,
-  ChevronRight,
-  TrendingUp,
-  Package,
-  Copy,
-  Plus,
-  PlayCircle,
-  Search,
-  Check,
-  Radio,
-  FileCode2,
-  History,
-  Barcode,
-} from "lucide-react";
+import { ShoppingBag, Store, Truck, Utensils, RefreshCw, CheckCircle2, AlertCircle, Link2, Unlink, Sliders, ExternalLink, ChevronRight, TrendingUp, Package, Copy, Plus, PlayCircle, Search, Check, Radio, FileCode2, History, Barcode } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -33,48 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  listMarketplaceConnectors,
-  saveMarketplaceConnector,
-  disconnectMarketplaceConnector,
-  triggerSyncConnector,
-  getMarketplaceFinancialSummary,
-  syncProductStockToMarketplaces,
-  mapProductToMarketplace,
-  listProductMarketplaceMappings,
-  listMarketplaceSyncLogs,
-  type MarketplaceConnectorDTO,
-  type MarketplacePlatform,
-  type ProductMarketplaceMappingDTO,
-  type MarketplaceSyncLogDTO,
-} from "@/services/marketplace-hub.functions";
-import {
-  listStoreWebhookEvents,
-  reprocessWebhookEvent,
-  simulateMarketplaceOrder,
-} from "@/services/marketplace-webhooks.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { listMarketplaceConnectors, saveMarketplaceConnector, disconnectMarketplaceConnector, triggerSyncConnector, getMarketplaceFinancialSummary, syncProductStockToMarketplaces, mapProductToMarketplace, deleteProductChannelListing, listProductMarketplaceMappings, importProductFromMercadoLivre, calculateAndApplyChannelPricing, listMarketplaceSyncLogs, type MarketplaceConnectorDTO, type MarketplacePlatform, type ProductMarketplaceMappingDTO, type MarketplaceSyncLogDTO } from "@/services/marketplace-hub.functions";
+import { listStoreWebhookEvents, reprocessWebhookEvent, simulateMarketplaceOrder } from "@/services/marketplace-webhooks.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/integracoes/marketplaces")({
   head: () => ({
-    meta: [{ title: "Hub de Marketplaces & Canais | Workspace Waesy" }],
+    meta: [{ title: "Marketplaces | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -133,7 +78,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     icon: ShoppingBag,
     color: "from-amber-400 to-yellow-500",
     docUrl: "https://developers.mercadolivre.com.br/",
-    badgeLabel: "MLB Sync & Full",
+    badgeLabel: "MLB Sync",
     credentialFields: [
       { key: "client_id", label: "App ID (Client ID)", placeholder: "1234567890", required: true },
       { key: "client_secret", label: "Client Secret", placeholder: "xxxxxxxxxxxxxxxx", type: "password", required: true },
@@ -206,7 +151,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     icon: Truck,
     color: "from-emerald-500 to-teal-600",
     docUrl: "https://docs.melhorenvio.com.br/",
-    badgeLabel: "Cotação & Etiquetas",
+    badgeLabel: "Cotação de Frete",
     credentialFields: [
       { key: "api_token", label: "Token de Acesso (Bearer)", placeholder: "Cole o token gerado no portal", type: "password", required: true, hint: "Gere em: app.melhorenvio.com.br → Tokens → Criar token" },
     ],
@@ -233,7 +178,7 @@ const PLATFORMS_CATALOG: PlatformMeta[] = [
     icon: Truck,
     color: "from-blue-600 to-sky-500",
     docUrl: "https://docs.loggi.com/",
-    badgeLabel: "Coleta & Entrega",
+    badgeLabel: "Logística",
     credentialFields: [
       { key: "api_key", label: "API Key (Bearer)", placeholder: "xxxxxxxxxxxxxxxxxxxxxxxx", type: "password", required: true, hint: "Obtida em: app.loggi.com → Configurações → Integrações" },
       { key: "shop_id", label: "Shop ID Loggi", placeholder: "12345" },
@@ -430,6 +375,18 @@ function MarketplaceHubPage() {
     },
   });
 
+  const deleteMappingMutation = useMutation({
+    mutationFn: (payload: { productId: string; platform: MarketplacePlatform }) =>
+      deleteProductChannelListing({ data: payload }),
+    onSuccess: (res) => {
+      toast.success(res.message);
+      queryClient.invalidateQueries({ queryKey: ["marketplace-product-mappings"] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Erro ao desvincular anúncio.");
+    },
+  });
+
   const reprocessEventMutation = useMutation({
     mutationFn: (eventId: string) => reprocessWebhookEvent({ data: { eventId } }),
     onSuccess: () => {
@@ -561,7 +518,7 @@ function MarketplaceHubPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           eyebrow="Ecossistema Omnicanal"
-          title="Hub de Marketplaces & Integrações"
+          title="Hub de Marketplaces"
           description="Gestão unificada: conectores oficiais, mapeamento de SKUs, estoque ativo e conciliação de webhooks."
         />
         <div className="flex items-center gap-2">
@@ -632,7 +589,7 @@ function MarketplaceHubPage() {
               : "text-muted-foreground hover:text-foreground bg-muted/40"
           )}
         >
-          <Radio className="size-3.5" /> Canais & Conectores ({PLATFORMS_CATALOG.length})
+          <Radio className="size-3.5" /> Canais ({PLATFORMS_CATALOG.length})
         </button>
         <button
           type="button"
@@ -644,7 +601,7 @@ function MarketplaceHubPage() {
               : "text-muted-foreground hover:text-foreground bg-muted/40"
           )}
         >
-          <Barcode className="size-3.5" /> Mapeamento de SKUs & Anúncios ({mappings.length})
+          <Barcode className="size-3.5" /> Mapeamento de SKUs ({mappings.length})
         </button>
         <button
           type="button"
@@ -656,12 +613,12 @@ function MarketplaceHubPage() {
               : "text-muted-foreground hover:text-foreground bg-muted/40"
           )}
         >
-          <History className="size-3.5" /> Auditoria de Webhooks & Sincronização ({webhookEvents.length})
+          <History className="size-3.5" /> Auditoria de Webhooks ({webhookEvents.length})
         </button>
       </div>
 
       {/* ========================================================================= */}
-      {/* ABA 1: CANAIS & CONECTORES */}
+      {/* ABA 1: CANAIS */}
       {/* ========================================================================= */}
       {mainView === "connectors" && (
         <div className="space-y-4">
@@ -689,7 +646,7 @@ function MarketplaceHubPage() {
               className="h-8 rounded-lg text-xs"
               onClick={() => setCategoryFilter("food")}
             >
-              Delivery & Restaurantes
+              Delivery e Restaurantes
             </Button>
             <Button
               size="sm"
@@ -697,7 +654,7 @@ function MarketplaceHubPage() {
               className="h-8 rounded-lg text-xs"
               onClick={() => setCategoryFilter("logistics")}
             >
-              Frete & Logística
+              Frete e Logística
             </Button>
           </div>
 
@@ -830,17 +787,27 @@ function MarketplaceHubPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* ABA 2: MAPEAMENTO DE SKUS & ANÚNCIOS */}
+      {/* ABA 2: MAPEAMENTO DE SKUS */}
       {/* ========================================================================= */}
       {mainView === "mapping" && (
         <div className="space-y-4">
           <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h3 className="font-bold text-base text-foreground">Catálogo Integrado & Vínculo de SKUs</h3>
+                <h3 className="font-bold text-base text-foreground">Catálogo Integrado e Vínculo de SKUs</h3>
                 <p className="text-xs text-muted-foreground">
                   Ligue os produtos cadastrados na Waesy aos anúncios do Mercado Livre, Shopee, iFood e Amazon para baixa de estoque bidirecional.
                 </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => setIsImportMlbModalOpen(true)}
+                  className="rounded-xl text-xs font-bold gap-1.5 h-9 px-4 bg-amber-500 hover:bg-amber-600 text-amber-950 cursor-pointer shadow-xs"
+                >
+                  <ShoppingBag className="size-3.5" />
+                  <span>Importar do Mercado Livre</span>
+                </Button>
               </div>
             </div>
 
@@ -899,8 +866,17 @@ function MarketplaceHubPage() {
                             ) : (
                               <div className="flex flex-wrap gap-1">
                                 {channelKeys.map((ch) => (
-                                  <Badge key={ch} variant="outline" className="text-[10px] font-mono capitalize">
-                                    {ch}: #{item.mappings[ch]?.listing_id || "OK"}
+                                  <Badge key={ch} variant="outline" className="text-[10px] font-mono capitalize flex items-center gap-1 group/badge">
+                                    <span>{ch}: #{item.mappings[ch]?.listing_id || "OK"}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteMappingMutation.mutate({ productId: item.id, platform: ch as MarketplacePlatform })}
+                                      disabled={deleteMappingMutation.isPending}
+                                      className="opacity-40 hover:opacity-100 hover:text-destructive cursor-pointer ml-0.5 text-[11px] leading-none"
+                                      title={`Desvincular canal ${ch}`}
+                                    >
+                                      ×
+                                    </button>
                                   </Badge>
                                 ))}
                               </div>
@@ -938,7 +914,7 @@ function MarketplaceHubPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* ABA 3: AUDITORIA DE WEBHOOKS & EVENTOS */}
+      {/* ABA 3: AUDITORIA DE WEBHOOKS */}
       {/* ========================================================================= */}
       {mainView === "audit" && (
         <div className="space-y-6">
@@ -967,10 +943,10 @@ function MarketplaceHubPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40 text-xs">
-                    <TableHead>Data / Hora</TableHead>
+                    <TableHead>Data</TableHead>
                     <TableHead>Plataforma</TableHead>
                     <TableHead>ID do Evento</TableHead>
-                    <TableHead>Tópico / Recurso</TableHead>
+                    <TableHead>Tópico</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Ação</TableHead>
                   </TableRow>
@@ -1042,7 +1018,7 @@ function MarketplaceHubPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40 text-xs">
-                    <TableHead>Data / Hora</TableHead>
+                    <TableHead>Data</TableHead>
                     <TableHead>Plataforma</TableHead>
                     <TableHead>Tipo de Sync</TableHead>
                     <TableHead>Direção</TableHead>
@@ -1307,7 +1283,14 @@ function MarketplaceHubPage() {
                 onChange={(e) => setPriceMarginPercent(Number(e.target.value))}
                 className="h-10 text-xs rounded-xl font-mono"
               />
-              <p className="text-[11px] text-muted-foreground">Compensa taxas de comissão da plataforma.</p>
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+                <span>Compensa taxas e comissões da plataforma.</span>
+                {selectedProductForMapping && (
+                  <span className="font-semibold text-foreground">
+                    Preço no canal: {formatMoney(Math.round((selectedProductForMapping.price_cents || 0) * (1 + (priceMarginPercent || 0) / 100)))}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

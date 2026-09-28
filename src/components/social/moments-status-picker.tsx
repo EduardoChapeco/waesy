@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,7 +67,7 @@ export function MomentsStatusPicker({
  <DialogHeader className="text-left space-y-1">
  <DialogTitle className="text-lg font-black tracking-tight flex items-center gap-2">
  <Layers className="size-5 text-primary" />
- <span>Definir Momento & Status</span>
+ <span>Definir Momento e Status</span>
  </DialogTitle>
  <p className="text-xs text-muted-foreground">
  Compartilhe o que você está fazendo no mapa e no seu perfil comunitário.

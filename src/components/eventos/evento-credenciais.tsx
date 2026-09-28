@@ -3,55 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Plus,
-  QrCode,
-  UserCheck,
-  Shield,
-  Newspaper,
-  Users,
-  Star,
-  Briefcase,
-  Download,
-  Trash2,
-  CheckCircle2,
-  Clock,
-  Printer,
-  Search,
-  Sparkles,
-  ArrowRight,
-  ExternalLink,
-} from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, QrCode, UserCheck, Shield, Newspaper, Users, Star, Briefcase, Download, Trash2, CheckCircle2, Clock, Printer, Search, Award, ArrowRight, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import {
-  listEventCredentials,
-  upsertEventCredential,
-  deleteEventCredential,
-  validateCredentialCheckin,
-} from "@/services/events.functions";
+import { listEventCredentials, upsertEventCredential, deleteEventCredential, validateCredentialCheckin } from "@/services/events.functions";
 
 interface EventoCredenciaisProps {
   eventId: string;
@@ -77,12 +34,12 @@ interface Credencial {
 
 const CREDENTIAL_TYPES = [
   { value: "equipe", label: "Equipe Interna", icon: Users, badgeStyle: "bg-primary/10 text-primary border-primary/20" },
-  { value: "staff", label: "Staff & Produção", icon: UserCheck, badgeStyle: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+  { value: "staff", label: "Staff e Produção", icon: UserCheck, badgeStyle: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
   { value: "terceiro", label: "Prestador / Terceirizado", icon: Briefcase, badgeStyle: "bg-muted text-muted-foreground border-border" },
   { value: "patrocinador", label: "Patrocinador", icon: Star, badgeStyle: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" },
   { value: "imprensa", label: "Imprensa / Mídia", icon: Newspaper, badgeStyle: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
   { value: "autoridade", label: "Autoridade / Fiscal", icon: Shield, badgeStyle: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20" },
-  { value: "vip", label: "Convidado VIP", icon: Sparkles, badgeStyle: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" },
+  { value: "vip", label: "Convidado VIP", icon: Star, badgeStyle: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" },
 ];
 
 export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProps) {
@@ -583,7 +540,7 @@ export function EventoCredenciais({ eventId, eventTitle }: EventoCredenciaisProp
                     <SelectContent>
                       <SelectItem value="basico" className="text-xs">Básico (Área Comum)</SelectItem>
                       <SelectItem value="restrito" className="text-xs">Restrito (Produção/Backstage)</SelectItem>
-                      <SelectItem value="vip" className="text-xs">VIP (Camarotes & Lounges)</SelectItem>
+                      <SelectItem value="vip" className="text-xs">VIP (Camarotes e Lounges)</SelectItem>
                       <SelectItem value="total" className="text-xs">Total (Acesso Livre Geral)</SelectItem>
                     </SelectContent>
                   </Select>

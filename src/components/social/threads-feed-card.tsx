@@ -1,25 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
- Heart,
- MessageCircle,
- Repeat2,
- Send,
- MoreHorizontal,
- Bookmark,
- EyeOff,
- ShieldCheck,
- Check,
- Share2,
-} from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Send, MoreHorizontal, Bookmark, EyeOff, ShieldCheck, Check, Share2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { PostEmbedRenderer, type PostEmbedData } from "./post-embed-renderer";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";

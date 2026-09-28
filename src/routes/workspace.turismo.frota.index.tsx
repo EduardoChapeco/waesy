@@ -1,56 +1,23 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- Plus,
- Bus,
- Search,
- Copy,
- Trash2,
- Edit3,
- Layers,
- Users,
- CheckCircle2,
- Car,
- Plane,
-} from "lucide-react";
+import { Plus, Bus, Search, Copy, Trash2, Edit3, Layers, Users, CheckCircle2, Car, Plane } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { EmptyState } from "@/components/state/states";
 
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
-import {
- listVehicleLayouts,
- createVehicleLayout,
- duplicateVehicleLayout,
- deleteVehicleLayout,
-} from "@/services/vehicle-layouts.functions";
+import { listVehicleLayouts, createVehicleLayout, duplicateVehicleLayout, deleteVehicleLayout } from "@/services/vehicle-layouts.functions";
 
 export const Route = createFileRoute("/workspace/turismo/frota/")({
- head: () => ({ meta: [{ title: "Frota & Ônibus | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Frota | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const store = await getStoreSettings().catch(() => null);
@@ -229,7 +196,7 @@ function VehicleLayoutsListPage() {
  return (
  <NicheOperationalGuard
  targetNiche="tourism"
- toolTitle="Modelos de Frota & Ônibus 2D"
+ toolTitle="Modelos de Frota"
  toolDescription="Editor interativo de plantas baixas de ônibus (Double Decker, Executivo, Leito) com mapa de assentos para agências de turismo e fretamento."
  store={store}
  >

@@ -2,28 +2,13 @@ import { ProposalShareWhatsappModal } from "@/components/tourism/studio/proposal
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
- ArrowLeft,
- Download,
- Image as ImageIcon,
- Send,
- Check,
- Loader2,
- Copy,
- FileCheck2,
- Compass,
- Maximize2,
-} from "lucide-react";
+import { ArrowLeft, Download, Image as ImageIcon, Send, Check, Loader2, Copy, FileCheck2, Compass, Maximize2, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
- getTravelProposalById,
- updateTravelProposal,
- type TravelProposalDTO,
- type ProposalCanvasFormat,
-} from "@/services/travel-proposal.functions";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { getTravelProposalById, updateTravelProposal, type TravelProposalDTO, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
 import { createContractFromProposal } from "@/services/travel-contract.functions";
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { StudioFrame, CANVAS_DIMENSIONS } from "@/components/tourism/studio/studio-frame";
@@ -33,7 +18,7 @@ import { exportElementAsPdf, exportElementAsImage } from "@/lib/pdf-export";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/turismo/propostas/$id")({
-  head: () => ({ meta: [{ title: "Studio de Propostas & Lâminas | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Proposta Comercial | Workspace Waesy" }] }),
   loader: async ({ params }) => {
     if (params.id === "novo" || params.id === "new") {
       throw redirect({
@@ -61,6 +46,7 @@ function WorkspaceProposalStudioPage() {
  const [isConvertingTrip, setIsConvertingTrip] = useState(false);
  const [isSaving, setIsSaving] = useState(false);
  const [whatsappModalOpen, setWhatsappModalOpen] = useState(false);
+ const [isMobileEditorOpen, setIsMobileEditorOpen] = useState(false);
 
  // Zoom controls state
  const [zoomScale, setZoomScale] = useState<number | null>(null);
@@ -247,7 +233,7 @@ function WorkspaceProposalStudioPage() {
  {/* Seletor de Template Visual */}
  <div className="flex items-center gap-0.5 bg-muted/40 p-0.5 rounded-xl border border-border/50">
  {[
-  { id: "editorial-flat", label: "Clean Apple", icon: "✨" },
+  { id: "editorial-flat", label: "Clean Apple", icon: "📐" },
   { id: "dark-premium", label: "Dark Luxo", icon: "🌙" },
   { id: "executivo-b2b", label: "Executivo", icon: "💼" },
   { id: "landscape-presentation", label: "Paisagem", icon: "🖥️" },
@@ -377,14 +363,14 @@ function WorkspaceProposalStudioPage() {
  </div>
  </header>
 
- {/* ── 2. STUDIO WORKSPACE BODY (Editor 440px + Canvas Centralizado Flex-1) ── */}
- <div className="flex flex-1 min-h-0 overflow-hidden">
- {/* Editor Lateral TravelOS com Scroll Interno Limpo */}
- <aside className="w-[420px] lg:w-[460px] shrink-0 border-r border-border/80 bg-card flex flex-col h-full overflow-hidden shadow-2xs z-20">
+ {/* ── 2. STUDIO WORKSPACE BODY (Bifurcação Desktop vs Mobile - V119) ── */}
+ <div className="flex flex-1 min-h-0 overflow-hidden relative">
+ {/* Editor Lateral no Desktop (md+) */}
+ <aside className="hidden md:flex w-[420px] lg:w-[460px] shrink-0 border-r border-border/80 bg-card flex-col h-full overflow-hidden shadow-2xs z-20">
  <StudioSidebarEditor proposal={proposal} onChange={handleChange} />
  </aside>
 
- {/* Truthful Preview Canvas Frame com Scroll Fluido */}
+ {/* Truthful Preview Canvas Frame com Scroll Fluido (Full Width no Mobile) */}
  <main className="flex-1 h-full overflow-hidden flex flex-col bg-muted/30 relative">
  <StudioFrame
  format={proposal.canvas_format}
@@ -394,6 +380,24 @@ function WorkspaceProposalStudioPage() {
  <ProposalCanvasRenderer proposal={proposal} />
  </StudioFrame>
  </main>
+
+ {/* FAB Mobile: Abre Editor em Bottom Sheet (< md) */}
+ <Sheet open={isMobileEditorOpen} onOpenChange={setIsMobileEditorOpen}>
+ <SheetTrigger asChild>
+ <button
+ type="button"
+ className="md:hidden fixed bottom-20 right-4 z-50 flex items-center justify-center size-12 rounded-full bg-primary text-primary-foreground shadow-lg cursor-pointer"
+ aria-label="Abrir editor da proposta"
+ >
+ <SlidersHorizontal className="size-5" />
+ </button>
+ </SheetTrigger>
+ <SheetContent side="bottom" className="h-[85vh] p-0 overflow-hidden rounded-t-3xl">
+ <div className="h-full flex flex-col">
+ <StudioSidebarEditor proposal={proposal} onChange={handleChange} />
+ </div>
+ </SheetContent>
+ </Sheet>
  </div>
  </div>
  );

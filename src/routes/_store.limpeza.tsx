@@ -1,16 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Broom,
- Drop,
- HandSoap,
- Package,
- Buildings,
- Storefront,
- ShoppingBag,
-} from "@phosphor-icons/react";
+import { Broom, Drop, HandSoap, Package, Buildings, Storefront, ShoppingBag } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +12,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { OfferCard } from "@/components/commerce/offer-card";
@@ -44,18 +33,18 @@ const SearchSchema = z.object({
 type LimpezaSearch = z.infer<typeof SearchSchema>;
 
 const LIMPEZA_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo em Limpeza & Higiene", icon: Tag },
- { id: "pesada", label: "Limpeza Pesada & Pós-Obra", icon: Broom },
- { id: "lavanderia", label: "Lavanderia & Sabões", icon: Drop },
- { id: "cozinha", label: "Cozinha & Desengordurantes", icon: HandSoap },
- { id: "descartaveis", label: "Descartáveis & Embalagens", icon: Package },
- { id: "empresas", label: "Corporativo & Distribuidoras", icon: Buildings },
+ { id: "todos", label: "Tudo em Limpeza e Higiene", icon: Tag },
+ { id: "pesada", label: "Limpeza Pesada e Pós-Obra", icon: Broom },
+ { id: "lavanderia", label: "Lavanderia e Sabões", icon: Drop },
+ { id: "cozinha", label: "Cozinha e Desengordurantes", icon: HandSoap },
+ { id: "descartaveis", label: "Descartáveis e Embalagens", icon: Package },
+ { id: "empresas", label: "Corporativo e Distribuidoras", icon: Buildings },
 ];
 
 export const Route = createFileRoute("/_store/limpeza")({
  head: () => ({
  meta: [
- { title: "Produtos de Limpeza, Higiene & Descartáveis | Waesy" },
+ { title: "Produtos de Limpeza, Higiene e Descartáveis | Waesy" },
  {
  name: "description",
  content:
@@ -65,12 +54,13 @@ export const Route = createFileRoute("/_store/limpeza")({
  }),
  validateSearch: (search: Record<string, unknown>): LimpezaSearch => SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "limpeza" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "limpeza", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "limpeza" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "limpeza" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "limpeza", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "limpeza", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {
@@ -184,7 +174,7 @@ function LimpezaVerticalPage() {
  {relevantStores.length > 0 && (
  <section aria-label="Distribuidoras de Limpeza">
  <HorizontalRail
- title="Distribuidoras & Lojas de Limpeza"
+ title="Distribuidoras"
  hideHeader={true}
  actionTo="/buscar"
  >

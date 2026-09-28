@@ -9,48 +9,19 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Sheet,
- SheetContent,
- SheetFooter,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyState } from "@/components/state/states";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/datetime";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
-import {
- listProductTypes,
- createProductType,
- updateProductType,
- deleteProductType,
-} from "@/services/admin-catalog.functions";
+import { listProductTypes, createProductType, updateProductType, deleteProductType } from "@/services/admin-catalog.functions";
 
 const fieldSchemaObj = z.object({
  name: z.string().min(1, "Obrigatório"),
@@ -252,7 +223,7 @@ function ProductTypesPage() {
  <div className="space-y-4">
  <div className="flex items-center justify-between pb-2">
  <div>
- <h4 className="text-xs font-bold text-foreground">Campos Dinâmicos & Grades</h4>
+ <h4 className="text-xs font-bold text-foreground">Campos Dinâmicos e Grades</h4>
  <p className="text-[11px] text-muted-foreground">Atributos que produtos deste tipo possuirão.</p>
  </div>
  <Button
@@ -400,7 +371,7 @@ function ProductTypesPage() {
  <TableRow className="bg-muted/30 border-b border-border/40">
  <TableHead className="text-xs font-bold text-foreground">Nome do Tipo</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Slug</TableHead>
- <TableHead className="text-xs font-bold text-foreground">Campos & Atributos</TableHead>
+ <TableHead className="text-xs font-bold text-foreground">Campos e Atributos</TableHead>
  <TableHead className="text-xs font-bold text-foreground">Criado em</TableHead>
  <TableHead className="w-[80px] text-right text-xs font-bold text-foreground">Ações</TableHead>
  </TableRow>

@@ -10,13 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
@@ -207,7 +201,7 @@ function EditCollectionPage() {
 
  <div className="bg-card rounded-2xl border border-border/60 p-6 space-y-4">
  <div className="pb-3 border-b border-border/40">
- <h3 className="text-sm font-bold text-foreground">Tipo de Coleção & Regras de Inclusão</h3>
+ <h3 className="text-sm font-bold text-foreground">Tipo de Coleção e Regras de Inclusão</h3>
  <p className="text-xs text-muted-foreground mt-0.5">
  Escolha se os itens são adicionados individualmente ou calculados automaticamente.
  </p>

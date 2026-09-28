@@ -1,41 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import {
-  Link2,
-  Share2,
-  Users,
-  Loader2,
-  FileSpreadsheet,
-  FileText,
-  ShieldCheck,
-  Plus,
-  Trash2,
-  Building2,
-  CheckCircle2,
-} from "lucide-react";
+import { Link2, Share2, Users, Loader2, FileSpreadsheet, FileText, ShieldCheck, Plus, Trash2, Building2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { getAffiliateLink, getMyCommissionProfile } from "@/services/affiliates.functions";
-import {
-  listStoreAccountants,
-  inviteAccountantToStore,
-  revokeAccountantAccess,
-} from "@/services/b2b-partners.functions";
+import { listStoreAccountants, inviteAccountantToStore, revokeAccountantAccess } from "@/services/b2b-partners.functions";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/configuracoes/parceiros")({
-  head: () => ({ meta: [{ title: "Configurações de Parceiros & Contabilidade | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Parceiros | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const [profile, accountants] = await Promise.all([
@@ -149,7 +127,7 @@ function ConfigParceirosPage() {
       {/* ── 1. Meu Perfil de Parceiro & Afiliado ── */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Meu Perfil de Parceiro & Divulgação</h1>
+          <h1 className="text-lg font-semibold text-foreground">Meu Perfil de Parceiro e Divulgação</h1>
           <p className="text-sm text-muted-foreground">
             Gerencie seu link de divulgação e acompanhe seus ganhos diretos com a plataforma.
           </p>
@@ -219,7 +197,7 @@ function ConfigParceirosPage() {
           <div>
             <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Building2 className="size-5 text-primary" />
-              Contabilidade & Acesso Fiscal B2B
+              Contabilidade e Acesso Fiscal B2B
             </h2>
             <p className="text-sm text-muted-foreground">
               Delegue acesso seguro de leitura para o seu contador consultar DRE, baixar XMLs de venda e auditar liquidações financeiras.

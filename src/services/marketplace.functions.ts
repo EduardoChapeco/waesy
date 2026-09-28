@@ -529,16 +529,16 @@ export const getGlobalDealsPage = createServerFn({ method: "GET" })
  color: string;
  to: string;
  }> = [
- { nicho: "gastronomia", label: "Gastronomia & Delivery", emoji: "🍔", color: "from-orange-600 to-red-600", to: "/gastronomia" },
- { nicho: "mercado", label: "Mercado & Hortifrúti", emoji: "🛒", color: "from-emerald-700 to-teal-600", to: "/mercado" },
- { nicho: "farmacia", label: "Farmácia & Saúde", emoji: "💊", color: "from-blue-600 to-cyan-600", to: "/farmacia" },
- { nicho: "moda", label: "Moda & Acessórios", emoji: "👗", color: "from-pink-600 to-rose-600", to: "/moda" },
- { nicho: "eletronicos", label: "Eletrônicos & Tech", emoji: "💻", color: "from-indigo-600 to-violet-600", to: "/eletronicos" },
- { nicho: "beleza", label: "Beleza & Bem-Estar", emoji: "💄", color: "from-fuchsia-600 to-pink-600", to: "/beleza" },
+ { nicho: "gastronomia", label: "Gastronomia e Delivery", emoji: "🍔", color: "from-orange-600 to-red-600", to: "/gastronomia" },
+ { nicho: "mercado", label: "Mercado e Hortifrúti", emoji: "🛒", color: "from-emerald-700 to-teal-600", to: "/mercado" },
+ { nicho: "farmacia", label: "Farmácia e Saúde", emoji: "💊", color: "from-blue-600 to-cyan-600", to: "/farmacia" },
+ { nicho: "moda", label: "Moda e Acessórios", emoji: "👗", color: "from-pink-600 to-rose-600", to: "/moda" },
+ { nicho: "eletronicos", label: "Eletrônicos e Tech", emoji: "💻", color: "from-indigo-600 to-violet-600", to: "/eletronicos" },
+ { nicho: "beleza", label: "Beleza e Bem-Estar", emoji: "💄", color: "from-fuchsia-600 to-pink-600", to: "/beleza" },
  { nicho: "pet", label: "Pet Shop", emoji: "🐾", color: "from-amber-600 to-orange-600", to: "/pet" },
- { nicho: "acougue", label: "Açougue & Churrasco", emoji: "🥩", color: "from-red-700 to-rose-700", to: "/acougue" },
- { nicho: "bebidas", label: "Bebidas & Adega", emoji: "🍻", color: "from-yellow-600 to-amber-600", to: "/bebidas" },
- { nicho: "casa", label: "Casa & Decoração", emoji: "🏠", color: "from-teal-600 to-green-600", to: "/casa" },
+ { nicho: "acougue", label: "Açougue e Churrasco", emoji: "🥩", color: "from-red-700 to-rose-700", to: "/acougue" },
+ { nicho: "bebidas", label: "Bebidas e Adega", emoji: "🍻", color: "from-yellow-600 to-amber-600", to: "/bebidas" },
+ { nicho: "casa", label: "Casa e Decoração", emoji: "🏠", color: "from-teal-600 to-green-600", to: "/casa" },
  ];
 
  const targetNiches = nicheFilter

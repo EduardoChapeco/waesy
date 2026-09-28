@@ -5,17 +5,7 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
-import { 
-  ShieldCheck, 
-  IdentificationCard, 
-  CheckCircle, 
-  WarningCircle, 
-  Clock, 
-  UploadSimple, 
-  Camera,
-  Scales,
-  Briefcase
-} from "@phosphor-icons/react";
+import { ShieldCheck, IdentificationCard, CheckCircle, WarningCircle, Clock, UploadSimple, Camera, Scales, Briefcase } from "@phosphor-icons/react";
 import { getMyKycStatus, submitKycVerification } from "@/services/kyc.functions";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/verificacao")({
-  head: () => ({ meta: [{ title: "Verificação de Identidade & KYC | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Verificação de Identidade e KYC | Waesy" }] }),
   loader: async () => {
     try {
       const kyc = await getMyKycStatus();

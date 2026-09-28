@@ -1,11 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  registerAffiliateInput,
-  upsertCreatorProfileInput,
-  toggleProfilePrivacyInput,
-  requestStoreInvoiceDiscountInput,
-  approveStoreInvoiceDiscountInput,
-} from "./affiliates.functions";
+import { registerAffiliateInput, upsertCreatorProfileInput, toggleProfilePrivacyInput, requestStoreInvoiceDiscountInput, approveStoreInvoiceDiscountInput } from "./affiliates.functions";
 
 describe("Diretiva BigTech: Afiliados, Tokens de Vesting, Sub-Perfis de Criadores & Governança Bilateral", () => {
   it("1. cadastra parceiro/afiliado sem exigir chave PIX nem comissão em dinheiro fixa", () => {

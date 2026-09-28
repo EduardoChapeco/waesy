@@ -1,21 +1,14 @@
 import { CreatorAnalyticsCard } from "@/components/social/creator-analytics-card";
 import { CommunityFeedCard } from "@/components/social/community-feed-card";
 import { CreatorProfileSheetEditor, CreatorProfileSheetData } from "@/components/profile/creator-profile-sheet-editor";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
- SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetTrigger } from "@/components/ui/sheet";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ExperienceMediaCarousel } from "@/components/profile/experience-media-carousel";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAffiliateShowcaseProducts, getAvailablePartnerStores, upsertCreatorProfile } from "@/services/affiliates.functions";
-import { Package, Settings, User, MessageSquare, Tag, MapPin, Briefcase, Globe, Instagram, Store, Check, Plus, Edit3, Share2, Layers, ExternalLink, MessageCircle, GraduationCap, Grid, List, ArrowLeft, Building2, Clock, ShieldCheck, Award, Calendar, Send, ShoppingBag, Trash2, FileText, Upload, HeartHandshake, Languages, X, UserPlus, Eye, ChevronRight, Heart, Activity, Camera, Copy, ArrowRight, Star, Sparkles } from 'lucide-react';
+import { Package, Settings, User, MessageSquare, Tag, MapPin, Briefcase, Globe, Instagram, Store, Check, Plus, Edit3, Share2, Layers, ExternalLink, MessageCircle, GraduationCap, Grid, List, ArrowLeft, Building2, Clock, ShieldCheck, Award, Calendar, Send, ShoppingBag, Trash2, FileText, Upload, HeartHandshake, Languages, X, UserPlus, Eye, ChevronRight, Heart, Activity, Camera, Copy, ArrowRight, Star } from 'lucide-react';
+import { UnifiedFeedCard } from "@/components/commerce/unified-feed-card";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { MediaLightboxModal } from "@/components/community/media-lightbox-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,29 +19,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogFooter,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
-import {
- getPublicMemberProfile,
- toggleUserFollow,
- updateMemberResumeData,
- searchStoresForCompanyAutocomplete,
-} from "@/services/social.functions";
+import { getPublicMemberProfile, toggleUserFollow, updateMemberResumeData, searchStoresForCompanyAutocomplete } from "@/services/social.functions";
 import { getPostMediaSignedUrl } from "@/services/storage.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -133,6 +108,22 @@ export function MemberPublicProfileView({
  const posts = (data?.posts || []) as any[];
  const stats = data?.stats || { followersCount: 0, followingCount: 0, postsCount: 0 };
  const creatorProfile = data?.creatorProfile || null;
+ useEffect(() => { if (typeof window !== "undefined") { window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; document.querySelector("main")?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); } }, [profile?.id, profile?.username]);
+
+ // FASE 1 (V114): Scroll Restoration imediato ao montar ou trocar de Membro/Perfil
+ useEffect(() => {
+   if (typeof window !== "undefined") {
+     window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+     document.documentElement.scrollTop = 0;
+     document.body.scrollTop = 0;
+     const mainContainer = document.querySelector("main");
+     if (mainContainer) {
+       mainContainer.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+       mainContainer.scrollTop = 0;
+     }
+   }
+ }, [profile?.id, profile?.username]);
+ useEffect(() => { if (typeof window !== "undefined") { window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; document.querySelector("main")?.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior }); } }, [profile?.id, profile?.username]);
  const isCreator = Boolean(data?.isCreator);
  const creatorPartnerStores = (data?.partnerStores && data.partnerStores.length > 0) ? data.partnerStores : [];
  const creatorShowcaseProducts = (data?.pinnedProducts && data.pinnedProducts.length > 0)
@@ -440,7 +431,7 @@ export function MemberPublicProfileView({
                 </SheetTrigger>
                 <SheetContent side="bottom" className="rounded-t-3xl p-6 space-y-4 max-h-[85vh]">
                   <SheetHeader className="text-left pb-2 border-b border-border/40">
-                    <SheetTitle className="text-base font-bold">Configurações & Gestão</SheetTitle>
+                    <SheetTitle className="text-base font-bold">Configurações e Gestão</SheetTitle>
                   </SheetHeader>
                   <div className="grid gap-2 text-sm font-medium">
                     <Link
@@ -455,14 +446,14 @@ export function MemberPublicProfileView({
                       className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
                     >
                       <Store className="size-4 text-primary" />
-                      <span>Minhas Lojas & Negócios</span>
+                      <span>Minhas Lojas e Negócios</span>
                     </Link>
                     <Link
                       to="/conta/pedidos"
                       className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 hover:bg-muted transition-colors"
                     >
                       <Package className="size-4 text-primary" />
-                      <span>Meus Pedidos & Compras</span>
+                      <span>Meus Pedidos e Compras</span>
                     </Link>
                   </div>
                 </SheetContent>
@@ -489,7 +480,7 @@ export function MemberPublicProfileView({
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                Vitrine & Parcerias
+                Vitrine e Parcerias
               </Link>
               <Link
                 to="/membro/$id"
@@ -704,7 +695,7 @@ export function MemberPublicProfileView({
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
   <div className="space-y-0.5">
   <div className="flex items-center gap-2 flex-wrap">
-  <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+  <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-balance line-clamp-2">
   {profile.full_name}
   </h1>
   {profile.is_verified && (
@@ -989,7 +980,7 @@ export function MemberPublicProfileView({
  {hl.cover_url ? (
  <img src={hl.cover_url} alt={hl.title} className="size-full object-cover rounded-full" />
  ) : (
- <Sparkles className="size-6 text-primary" />
+ <Star className="size-6 text-primary" />
  )}
  </div>
  <span className="text-[11px] font-bold text-foreground/90 max-w-[64px] truncate text-center">
@@ -1363,7 +1354,7 @@ export function MemberPublicProfileView({
  <div className="space-y-0.5">
  <h2 className="text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
  <ShieldCheck className="size-5 text-primary" />
- <span>Registros Profissionais & Conselhos</span>
+ <span>Registros Profissionais e Conselhos</span>
  </h2>
  <p className="text-xs text-muted-foreground">
  Conselhos de classe oficiais (OAB, CRM, CREA, CRC, CRO, etc.), alvarás e carteiras validadas.
@@ -1723,7 +1714,7 @@ export function MemberPublicProfileView({
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- Fotos & Mídias
+ Fotos e Mídias
  </button>
 
  {isOwner && (
@@ -1843,7 +1834,7 @@ export function MemberPublicProfileView({
  <div className="space-y-4">
  {posts.map((p: any) => (
  <div key={p.id} className="rounded-2xl bg-card border border-border/60 p-4 sm:p-5">
- <CommunityFeedCard
+ <UnifiedFeedCard
  post={{
  id: p.id,
  author: {
@@ -2065,7 +2056,7 @@ export function MemberPublicProfileView({
  <div>
  <h3 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2">
  <ShoppingBag className="size-4 text-primary" />
- <span>Produtos Selecionados & Recomendados</span>
+ <span>Produtos Selecionados e Recomendados</span>
  </h3>
  <p className="text-xs text-muted-foreground">
  Itens recomendados das melhores lojas locais parceiras.
@@ -2136,7 +2127,7 @@ export function MemberPublicProfileView({
  <div>
  <h3 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2">
  <Calendar className="size-4 text-primary" />
- <span>Agenda & Próximos Eventos da Marca</span>
+ <span>Agenda e Próximos Eventos da Marca</span>
  </h3>
  <p className="text-xs text-muted-foreground">
  Shows, workshops e apresentações em que participo ou coordeno.
@@ -2183,7 +2174,7 @@ export function MemberPublicProfileView({
  <>
  {stores.length > 0 && (
  <div className="pt-8 space-y-6">
- <h2 className="text-lg font-bold text-foreground tracking-tight">Lojas & Espaços Oficiais</h2>
+ <h2 className="text-lg font-bold text-foreground tracking-tight">Lojas e Espaços Oficiais</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  {stores.map((s: any) => (
  <Link
@@ -2212,7 +2203,7 @@ export function MemberPublicProfileView({
  )}
 
  <div className="pt-8 space-y-6">
- <h2 className="text-lg font-bold text-foreground tracking-tight">Classificados & Desapegos</h2>
+ <h2 className="text-lg font-bold text-foreground tracking-tight">Classificados e Desapegos</h2>
  {classifieds.length === 0 ? (
  <div className="py-12 text-center text-muted-foreground space-y-2">
  <ShoppingBag className="size-8 mx-auto text-muted-foreground/40" />
@@ -2711,7 +2702,7 @@ function AboutEditModal({
  <Sheet open={open} onOpenChange={onOpenChange}>
  <SheetContent side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:max-w-2xl p-0 flex flex-col h-full bg-background overflow-hidden border-l border-border">
  <div className="p-6 pb-4 border-b border-border/40 shrink-0 flex items-center justify-between">
- <SheetTitle className="text-xl font-extrabold text-foreground">Sobre & Título</SheetTitle>
+ <SheetTitle className="text-xl font-extrabold text-foreground">Sobre e Título</SheetTitle>
  </div>
 
  <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden">
@@ -3013,7 +3004,7 @@ function ExperienceEditModal({
 
  {/* Mídias & Anexos */}
  <div className="space-y-2 pt-1">
- <Label className="text-xs font-semibold">Mídias & Anexos (Fotos, Certificados, PDFs)</Label>
+ <Label className="text-xs font-semibold">Mídias e Anexos (Fotos, Certificados, PDFs)</Label>
  <div className="flex flex-wrap gap-2">
  {mediaUrls.map((url, idx) => (
  <div key={idx} className="relative size-16 rounded-xl overflow-hidden bg-muted group">

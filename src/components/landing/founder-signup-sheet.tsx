@@ -1,26 +1,10 @@
 import React, { useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sparkles,
-  Building2,
-  Phone,
-  User,
-  MapPin,
-  Loader2,
-  Ticket,
-  ArrowRight,
-  CheckCircle2,
-} from "lucide-react";
+import { Star, Building2, Phone, User, MapPin, Loader2, Ticket, ArrowRight, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { submitFounderLead } from "@/services/launch.functions";
 import type { CnpjCompanyDTO } from "@/services/public-apis.functions";
@@ -140,7 +124,7 @@ export function FounderSignupSheet({
               variant="outline"
               className="bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] font-bold gap-1 px-2.5 py-0.5 animate-pulse"
             >
-              <Sparkles className="size-3" />
+              <Star className="size-3" />
               <span>Membro Fundador 2027</span>
             </Badge>
             <div className="flex items-center gap-1.5">
@@ -154,7 +138,7 @@ export function FounderSignupSheet({
             Entre na Lista de Fundadores
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground leading-relaxed">
-            Tenha visibilidade antecipada no Circuito Internacional Waesy Chapecó & SMO, participe dos workshops e concorra a viagens em 2027 com chances duplicadas.
+            Tenha visibilidade antecipada no Circuito Internacional Waesy Chapecó e SMO, participe dos workshops e concorra a viagens em 2027 com chances duplicadas.
           </SheetDescription>
         </SheetHeader>
 
@@ -278,11 +262,11 @@ export function FounderSignupSheet({
             {isSubmitting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                <span>Consultando dados & gerando mockup...</span>
+                <span>Consultando dados e gerando mockup...</span>
               </>
             ) : (
               <>
-                <span>Garantir Vaga & Ver Perfil da Empresa</span>
+                <span>Garantir Vaga e Ver Perfil da Empresa</span>
                 <ArrowRight className="size-4" />
               </>
             )}

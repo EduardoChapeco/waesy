@@ -20,12 +20,7 @@ import { Provider } from "@supabase/supabase-js";
 import { getEnvVar } from "@/lib/env";
 import { readCookieFromRequest } from "@/lib/http-cookies";
 import { normalizeInternalReturnPath } from "@/lib/return-path";
-import {
- checkRateLimit,
- recordFailedAttempt,
- resetAttempts,
- formatRetryAfter,
-} from "@/lib/rate-limiter";
+import { checkRateLimit, recordFailedAttempt, resetAttempts, formatRetryAfter } from "@/lib/rate-limiter";
 import { recordAuthAuditEvent } from "@/lib/session-audit.server";
 import { getRealClientIP } from "@/lib/network-telemetry.server";
 import { validateCpfMod11, cleanDocument } from "@/lib/document-validator";

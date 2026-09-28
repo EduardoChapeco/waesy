@@ -2,15 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { type Hotel, type Flight } from "@/services/proposals";
-import {
-  mapApiHotelToCanonical,
-  mapApiFlightToCanonical,
-  mapApiBookingToNormalized,
-  type NormalizedBooking,
-  type ApiHotelAvail,
-  type ApiFlightAvail,
-  type ApiBooking,
-} from "@/types/infotravel";
+import { mapApiHotelToCanonical, mapApiFlightToCanonical, mapApiBookingToNormalized, type NormalizedBooking, type ApiHotelAvail, type ApiFlightAvail, type ApiBooking } from "@/types/infotravel";
 
 // ── Erro estruturado para credenciais não configuradas ─────────────────────
 // O conector retorna { error_code: "CREDENTIALS_NOT_CONFIGURED" } com HTTP 200

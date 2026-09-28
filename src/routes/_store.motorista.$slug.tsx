@@ -1,10 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
- Car,
- Star,
- ShieldCheck,
- Phone,
-} from "lucide-react";
+import { Car, Star, ShieldCheck, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getCourierBySlug } from "@/services/mobility.functions";

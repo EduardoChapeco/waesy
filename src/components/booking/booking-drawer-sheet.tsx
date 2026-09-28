@@ -5,22 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  CalendarDots,
-  CheckCircle,
-  CircleNotch,
-  Ticket,
-  Phone,
-  User,
-  ChatCircleDots,
-} from "@phosphor-icons/react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { CalendarDots, CheckCircle, CircleNotch, Ticket, Phone, User, ChatCircleDots } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 export interface BookingDrawerSheetProps {

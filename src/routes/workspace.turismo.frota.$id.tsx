@@ -1,50 +1,21 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- ArrowLeft,
- Save,
- Undo,
- Redo,
- ListOrdered,
- Layers,
- Users,
- Bus,
- ShieldCheck,
- Ban,
- CheckCircle2,
- SlidersHorizontal,
- BookmarkPlus,
- Info,
-} from "lucide-react";
+import { ArrowLeft, Save, Undo, Redo, ListOrdered, Layers, Users, Bus, ShieldCheck, Ban, CheckCircle2, SlidersHorizontal, BookmarkPlus, Info } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 import { getStoreSettings } from "@/services/store.functions";
-import {
- getVehicleLayout,
- updateVehicleLayout,
- generateDefaultBusSeatMap,
- type SeatCell,
- type SeatElementType,
- type SeatCategory,
-} from "@/services/vehicle-layouts.functions";
+import { getVehicleLayout, updateVehicleLayout, generateDefaultBusSeatMap, type SeatCell, type SeatElementType, type SeatCategory } from "@/services/vehicle-layouts.functions";
 
 export const Route = createFileRoute("/workspace/turismo/frota/$id")({
- head: () => ({ meta: [{ title: "Editor de Assentos 2D | Frota & Turismo | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Editor de Assentos 2D | Frota | Workspace Waesy" }] }),
  loader: async ({ params }: { params: { id: string } }) => {
    try {
  const store = await getStoreSettings().catch(() => null);

@@ -1,19 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Briefcase,
-  Coins,
-  Lock,
-  Plus,
-  ExternalLink,
-  TrendingUp,
-  Building,
-  Users,
-  Eye,
-  ShieldCheck,
-  FileSpreadsheet,
-  ArrowUpRight,
-} from "lucide-react";
+import { Briefcase, Coins, Lock, Plus, ExternalLink, TrendingUp, Building, Users, Eye, ShieldCheck, FileSpreadsheet, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -21,7 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { listStoreBusinessClassifieds, listStoreAllNdaSignatures } from "@/services/classifieds.functions";
 
 export const Route = createFileRoute("/workspace/captacao/")({
-  head: () => ({ meta: [{ title: "Captação de Investimento & M&A | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Captação de Investimento | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const [businesses, ndas] = await Promise.all([
@@ -67,7 +54,7 @@ function WorkspaceCaptacaoHubPage() {
       {/* ── CABEÇALHO COM AÇÕES RÁPIDAS ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <PageHeader title="Captação de Investimento, M&A & Pontos" />
+          <PageHeader title="Investimento" />
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Gestão estratégica de empresas à venda, repasse de pontos comerciais, captação de aportes e termos de confidencialidade (NDA).
           </p>

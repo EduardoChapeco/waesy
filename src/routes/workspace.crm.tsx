@@ -1,45 +1,14 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Users,
-  Search,
-  Plus,
-  Phone,
-  Mail,
-  ArrowUpRight,
-  TrendingUp,
-  MessageCircle,
-  ExternalLink,
-  ChevronRight,
-  Filter,
-  DollarSign,
-  Kanban,
-  CheckCircle2,
-  Clock,
-  UserCheck,
-  Building2,
-  Tag,
-  ShieldCheck,
-  MoreHorizontal,
-  SlidersHorizontal,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Globe,
-  Share2,
-} from "lucide-react";
+import { Users, Search, Plus, Phone, Mail, ArrowUpRight, TrendingUp, MessageCircle, ExternalLink, ChevronRight, Filter, DollarSign, Kanban, CheckCircle2, Clock, UserCheck, Building2, Tag, ShieldCheck, MoreHorizontal, SlidersHorizontal, X, ChevronDown, ChevronUp, Globe, Share2, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
+import { StorePersonasMatrix } from "@/components/workspace/crm/store-personas-matrix";
 import { listCustomers } from "@/services/crm.functions";
 import { getDashboardData } from "@/services/dashboard.functions";
 import { formatMoney } from "@/lib/money";
@@ -48,7 +17,7 @@ import { EmptyState } from "@/components/state/states";
 
 export const Route = createFileRoute("/workspace/crm")({
   head: () => ({
-    meta: [{ title: "Central de CRM & Clientes | Workspace Waesy" }],
+    meta: [{ title: "CRM | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -80,6 +49,7 @@ export default function WorkspaceCrmPage() {
   const [channelFilter, setChannelFilter] = useState<string>("all");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showMetricsMobile, setShowMetricsMobile] = useState(false);
+  const [activeTab, setActiveTab] = useState<"clientes" | "personas">("clientes");
 
   const { data: customers = initialCustomers } = useQuery({
     queryKey: ["workspace-crm-customers", statusFilter, channelFilter],
@@ -129,7 +99,7 @@ export default function WorkspaceCrmPage() {
             <Users className="size-4 sm:size-5" />
           </span>
           <h1 className="text-base sm:text-2xl font-bold tracking-tight text-foreground truncate">
-            Central de CRM
+            CRM
           </h1>
           <Badge variant="outline" className="text-[11px] sm:text-xs font-mono py-0 px-2 border-primary/30 text-primary shrink-0">
             {metrics.total} contatos
@@ -196,8 +166,41 @@ export default function WorkspaceCrmPage() {
         </div>
       </div>
 
-      {/* ── 2. Grid de Métricas (Visível sempre no Desktop; Alternável no Mobile) ── */}
-      <div className={showMetricsMobile ? "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" : "hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"}>
+      {/* ── Sub-Navegação Silenciosa: Clientes vs Personas Preditivas (50-Prompt Golden Codex) ── */}
+      <div className="flex items-center gap-1 border-b border-border/40 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab("clientes")}
+          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeTab === "clientes"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Users className="size-3.5" />
+          <span>Clientes</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("personas")}
+          className={`h-9 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeTab === "personas"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Brain className="size-3.5" />
+          <span>Personas</span>
+        </button>
+      </div>
+
+      {activeTab === "personas" ? (
+        <StorePersonasMatrix />
+      ) : (
+        <>
+          {/* ── 2. Grid de Métricas (Visível sempre no Desktop; Alternável no Mobile) ── */}
+          <div className={showMetricsMobile ? "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" : "hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"}>
         <Card className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">Clientes Cadastrados</span>
@@ -465,6 +468,8 @@ export default function WorkspaceCrmPage() {
             </table>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

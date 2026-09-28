@@ -1,26 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  Download, 
-  Share2, 
-  Smartphone, 
-  Square, 
-  Eye, 
-  RefreshCw,
-  Plane,
-  ShoppingBag,
-  MessageSquareQuote,
-  Check,
-  Package
-} from "lucide-react";
-import { 
-  InstagramLogo, 
-  TiktokLogo, 
-  TwitterLogo, 
-  WhatsappLogo, 
-  FacebookLogo 
-} from "@phosphor-icons/react";
+import { Download, Share2, Smartphone, Square, Eye, RefreshCw, Plane, ShoppingBag, MessageSquareQuote, Check, Package } from "lucide-react";
+import { InstagramLogo, TiktokLogo, TwitterLogo, WhatsappLogo, FacebookLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +15,7 @@ import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/marketing/studio")({
   head: () => ({
-    meta: [{ title: "Social Studio & Gerador de Peças | Workspace Waesy" }],
+    meta: [{ title: "Social Studio | Workspace Waesy" }],
   }),
   component: WorkspaceSocialStudioPage,
 });
@@ -186,7 +168,7 @@ export default function WorkspaceSocialStudioPage() {
           {/* Formato & Template */}
           <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
             <Label className="text-xs font-bold text-foreground">
-              Formato & Template
+              Formato e Template
             </Label>
             <div className="grid grid-cols-3 gap-2.5">
               <button
@@ -200,7 +182,7 @@ export default function WorkspaceSocialStudioPage() {
                 )}
               >
                 <ShoppingBag className="size-4" />
-                <span className="text-xs">Produto & Oferta</span>
+                <span className="text-xs">Produto e Oferta</span>
               </button>
 
               <button
@@ -228,7 +210,7 @@ export default function WorkspaceSocialStudioPage() {
                 )}
               >
                 <MessageSquareQuote className="size-4" />
-                <span className="text-xs">Frase & Depoimento</span>
+                <span className="text-xs">Frase e Depoimento</span>
               </button>
             </div>
 

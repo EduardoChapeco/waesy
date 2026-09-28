@@ -1,23 +1,11 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
- Search,
- Plus,
- Minus,
- UtensilsCrossed,
- Send,
- Loader2,
-} from "lucide-react";
+import { Search, Plus, Minus, UtensilsCrossed, Send, Loader2 } from "lucide-react";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { addItemsToTableComanda } from "@/services/order.functions";
 import { formatMoney } from "@/lib/money";

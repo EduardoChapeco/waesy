@@ -6,21 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import {
- MapPin,
- Search,
- Loader2,
- Navigation,
- CheckCircle2,
- EyeOff,
- Eye,
- Store,
- Bike,
- Home,
- Wrench,
- Globe,
- Sliders,
-} from "lucide-react";
+import { MapPin, Search, Loader2, Navigation, CheckCircle2, EyeOff, Eye, Store, Bike, Home, Wrench, Globe, Sliders } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStoredLocation } from "@/components/location/location-master-pill";
 import { useQuery } from "@tanstack/react-query";
@@ -724,7 +710,7 @@ export function BusinessLocationPicker({
  <div className="space-y-0.5">
  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
  <Sliders className="size-3.5 text-primary" />
- Raio de Atendimento & Região de Entrega
+ Raio de Atendimento e Região de Entrega
  </span>
  <p className="text-[11px] text-muted-foreground">
  Define o alcance máximo onde seus produtos e serviços aparecem nas buscas e filtros locais.

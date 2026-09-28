@@ -1,31 +1,16 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
- Car,
- Bike,
- Zap,
- Truck,
- Boxes,
- MapPin,
- Clock,
- Loader2,
- Phone,
- Plus,
-} from "lucide-react";
+import { Car, Bike, Zap, Truck, Boxes, MapPin, Clock, Loader2, Phone, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
-import {
- listCustomerMobilityRequests,
-} from "@/services/mobility.functions";
-import {
- getMyCourierApplicationStatus,
-} from "@/services/courier-verification.functions";
+import { listCustomerMobilityRequests } from "@/services/mobility.functions";
+import { getMyCourierApplicationStatus } from "@/services/courier-verification.functions";
 
 export const Route = createFileRoute("/_store/conta/mobilidade")({
  head: () => ({
- meta: [{ title: "Minhas Corridas & Mudanças | Waesy" }],
+ meta: [{ title: "Minhas Corridas e Mudanças | Waesy" }],
  }),
   loader: async () => {
     try {
@@ -84,7 +69,7 @@ function CustomerMobilityHistoryPage() {
  <Badge variant="outline" className="font-mono text-[10px] uppercase font-bold px-2.5 py-0.5">
  Mobilidade
  </Badge>
- <span className="text-xs text-muted-foreground font-mono">Trajetos & Entregas</span>
+ <span className="text-xs text-muted-foreground font-mono">Trajetos e Entregas</span>
  </div>
 
  <div className="flex items-center gap-2">

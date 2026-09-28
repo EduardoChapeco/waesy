@@ -1,35 +1,21 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Zap, GitBranch, MessageSquare, Mail, Tag, Plus, Play, Trash2,
-  ToggleLeft, ToggleRight, CheckCircle2, ArrowRight, Settings2,
-  Clock, ShoppingCart, UserPlus, TrendingUp, Package, Calendar,
-} from "lucide-react";
+import { Zap, GitBranch, MessageSquare, Mail, Tag, Plus, Play, Trash2, ToggleLeft, ToggleRight, CheckCircle2, ArrowRight, Settings2, Clock, ShoppingCart, UserPlus, TrendingUp, Package, Calendar } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { EmptyState } from "@/components/state/states";
-import {
-  listWorkflows,
-  createWorkflow,
-  toggleWorkflowStatus,
-  deleteWorkflow,
-  triggerWorkflowExecution,
-} from "@/services/automation.functions";
+import { listWorkflows, createWorkflow, toggleWorkflowStatus, deleteWorkflow, triggerWorkflowExecution } from "@/services/automation.functions";
 
 export const Route = createFileRoute("/workspace/automacoes")({
-  head: () => ({ meta: [{ title: "Workflows & Automações | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Workflows e Automações | Waesy" }] }),
   loader: async () => {
     try {
       const workflows = await listWorkflows();

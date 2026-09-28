@@ -1,10 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  adminListPayoutRequests,
-  adminProcessPayoutRequest,
-} from "@/services/affiliates.functions";
+import { adminListPayoutRequests, adminProcessPayoutRequest } from "@/services/affiliates.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { PageHeader } from "@/components/commerce/page-header";
@@ -12,32 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Coins,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Wallet,
-  ArrowUpRight,
-  TrendingUp,
-  Users,
-  Search,
-  Check,
-  ShieldCheck,
-  FileText,
-} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Coins, CheckCircle2, XCircle, Clock, Wallet, ArrowUpRight, TrendingUp, Users, Search, Check, ShieldCheck, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/marketing/afiliados")({
   head: () => ({
-    meta: [{ title: "Gestão de Afiliados & Saques PIX | Workspace" }],
+    meta: [{ title: "Gestão de Afiliados e Saques PIX | Workspace" }],
   }),
   loader: async () => {
     try {
@@ -119,7 +97,7 @@ function WorkspaceAffiliatesPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Marketing & Comunidade"
-        title="Gestão de Afiliados & Saques PIX"
+        title="Gestão de Afiliados"
         description="Acompanhe solicitações de repasse, aprove saques de comissão de criadores e audite comprovantes bancários."
       />
 
@@ -258,7 +236,7 @@ function WorkspaceAffiliatesPage() {
                             onClick={() => handleOpenProcess(payout)}
                             className="h-8 px-3 rounded-lg text-xs font-semibold bg-foreground text-background cursor-pointer"
                           >
-                            Revisar & Pagar
+                            Revisar e Pagar
                           </Button>
                         ) : payout.receipt_url ? (
                           <a

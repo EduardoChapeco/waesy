@@ -1,46 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  LifeBuoy,
-  Plus,
-  MessageSquare,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Send,
-  Link as LinkIcon,
-  Paperclip,
-  ChevronRight,
-  ShieldCheck,
-  Headphones,
-} from "lucide-react";
+import { LifeBuoy, Plus, MessageSquare, Clock, CheckCircle2, AlertCircle, Send, Link as LinkIcon, Paperclip, ChevronRight, ShieldCheck, Headphones } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { FileAttachmentUpload } from "@/components/ui/file-attachment-upload";
 import { EmptyState } from "@/components/state/states";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  listSupportTickets,
-  getSupportTicketDetails,
-  createSupportTicket,
-  addSupportTicketMessage,
-  updateSupportTicketStatus,
-  type SupportTicketItem,
-  type SupportMessageItem,
-  type TicketCategory,
-  type TicketPriority,
-  type TicketStatus,
-} from "@/services/support-tickets.functions";
+import { listSupportTickets, getSupportTicketDetails, createSupportTicket, addSupportTicketMessage, updateSupportTicketStatus, type SupportTicketItem, type SupportMessageItem, type TicketCategory, type TicketPriority, type TicketStatus } from "@/services/support-tickets.functions";
 
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet } from "@/components/workspace/workspace-dashboard-sheet";
@@ -255,10 +226,10 @@ function WorkspaceSupportPage() {
             options: [
               { label: "Todas Categorias", value: "all" },
               { label: "Módulo Turismo", value: "tourism" },
-              { label: "Financeiro & Taxas", value: "finance" },
+              { label: "Financeiro e Taxas", value: "finance" },
               { label: "Erro no Sistema", value: "system_bug" },
-              { label: "Integrações & Domínio", value: "integration" },
-              { label: "Conta & Acessos", value: "account" },
+              { label: "Integrações e Domínio", value: "integration" },
+              { label: "Conta e Acessos", value: "account" },
               { label: "Outras Dúvidas", value: "other" },
             ],
             onChange: setCategoryFilter,
@@ -338,7 +309,7 @@ function WorkspaceSupportPage() {
       <WorkspaceDashboardSheet
         open={isDashboardOpen}
         onOpenChange={setIsDashboardOpen}
-        title="Painel de Suporte & SLAs"
+        title="Suporte"
         description="Indicadores de tempo de atendimento, fila de resolução e satisfação."
         metrics={[
           {
@@ -389,7 +360,7 @@ function WorkspaceSupportPage() {
               color: "bg-sky-500",
             },
             {
-              label: "Financeiro & Taxas",
+              label: "Financeiro e Taxas",
               value: tickets.filter((t) => t.category === "finance").length,
               total: Math.max(tickets.length, 1),
               color: "bg-emerald-500",
@@ -439,10 +410,10 @@ function WorkspaceSupportPage() {
                     className="w-full h-10 px-3 rounded-xl border border-input bg-background text-xs font-semibold text-foreground focus:outline-none"
                   >
                     <option value="tourism">Módulo Turismo / Excursões</option>
-                    <option value="finance">Financeiro & Pagamentos</option>
+                    <option value="finance">Financeiro e Pagamentos</option>
                     <option value="system_bug">Bug / Erro Visual ou de Operação</option>
-                    <option value="integration">Integrações & Domínio Próprio</option>
-                    <option value="account">Acesso & Usuários</option>
+                    <option value="integration">Integrações e Domínio Próprio</option>
+                    <option value="account">Acesso e Usuários</option>
                     <option value="other">Outras Dúvidas</option>
                   </select>
                 </div>

@@ -1,56 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useRef, useEffect } from 'react';
-import { 
-  Users, 
-  Send, 
-  Layers, 
-  Brain, 
-  ShieldCheck, 
-  CheckCircle2, 
-  Activity, 
-  TrendingUp, 
-  DollarSign, 
-  Filter, 
-  Sliders, 
-  ArrowRight, 
-  Clock, 
-  Command,
-  MessageSquare,
-  ChevronRight,
-  Info,
-  Key,
-  Briefcase,
-  Home,
-  Wallet,
-  CreditCard,
-  UserCheck,
-  Scale,
-  FileText,
-  Cpu
-} from 'lucide-react';
+import { Users, Send, Layers, Brain, ShieldCheck, CheckCircle2, Activity, TrendingUp, DollarSign, Filter, Sliders, ArrowRight, Clock, Command, MessageSquare, ChevronRight, Info, Key, Briefcase, Home, Wallet, CreditCard, UserCheck, Scale, FileText, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import type { SyntheticArchetype, FocusGroupMessage, FocusGroupSession } from '@/types/simlab';
-import { 
-  listSyntheticArchetypes, 
-  getOrCreateActiveFocusSession, 
-  listFocusGroupMessages, 
-  sendFocusGroupMessage 
-} from '@/services/simlab.functions';
-import { 
-  getSimLabKeyStatus, 
-  saveSimLabApiKey 
-} from '@/services/api-orchestrator.functions';
+import { listSyntheticArchetypes, getOrCreateActiveFocusSession, listFocusGroupMessages, sendFocusGroupMessage } from '@/services/simlab.functions';
+import { getSimLabKeyStatus, saveSimLabApiKey } from '@/services/api-orchestrator.functions';
 import { getStoreSettings } from '@/services/store.functions';
 
 export const Route = createFileRoute('/workspace/simlab/focus-group')({
@@ -446,7 +405,7 @@ function FocusGroupPage() {
                               onClick={() => setInspectingPersona(matchedPersona)}
                               className="text-[10px] text-muted-foreground hover:text-primary underline flex items-center gap-0.5"
                             >
-                              <span>ver currículo & finanças</span>
+                              <span>ver currículo e finanças</span>
                             </button>
                           )}
                         </div>
@@ -541,7 +500,7 @@ function FocusGroupPage() {
               <div className="rounded-xl border border-border/70 p-4 space-y-3 bg-muted/20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Briefcase className="size-4 text-primary" />
-                  <span>Currículo Profissional & Ocupação</span>
+                  <span>Currículo Profissional e Ocupação</span>
                 </div>
                 <div className="space-y-1.5 text-xs">
                   <p className="text-foreground font-medium">
@@ -563,7 +522,7 @@ function FocusGroupPage() {
               <div className="rounded-xl border border-border/70 p-4 space-y-3 bg-muted/20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Home className="size-4 text-primary" />
-                  <span>Estrutura Familiar & Dependentes</span>
+                  <span>Estrutura Familiar e Dependentes</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
@@ -585,7 +544,7 @@ function FocusGroupPage() {
               <div className="rounded-xl border border-border/70 p-4 space-y-3 bg-muted/20">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Wallet className="size-4 text-primary" />
-                  <span>Balanço Mensal & Capacidade Financeira</span>
+                  <span>Balanço Mensal e Capacidade Financeira</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>

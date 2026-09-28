@@ -2,29 +2,7 @@ import { Tag } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
- MapPin,
- MagnifyingGlass,
- X,
- Plus,
- NavigationArrow,
- Broadcast,
- CaretLeft,
- CaretRight,
- Compass,
- ShareNetwork,
- Crosshair,
- BeerBottle,
- Coffee,
- Tree,
- MusicNotes,
- Clock,
- Heart,
- Camera,
- ArrowLeft,
- CaretUp,
- CaretDown,
-} from "@phosphor-icons/react";
+import { MapPin, MagnifyingGlass, X, Plus, NavigationArrow, Broadcast, CaretLeft, CaretRight, Compass, ShareNetwork, Crosshair, BeerBottle, Coffee, Tree, MusicNotes, Clock, Heart, Camera, ArrowLeft, CaretUp, CaretDown } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,10 +44,10 @@ export const Route = createFileRoute("/_store/mapa")({
 const VIBE_FILTERS = [
  { id: "all", label: "Todos", icon: Tag },
  { id: "live", label: "Ao Vivo", icon: Broadcast },
- { id: "mesa_aberta", label: "Mesas & Contas", icon: BeerBottle },
- { id: "cafe_trabalho", label: "Café & Trabalho", icon: Coffee },
- { id: "parque_esporte", label: "Parques & Treino", icon: Tree },
- { id: "encontro_musica", label: "Música & Cultura", icon: MusicNotes },
+ { id: "mesa_aberta", label: "Mesas e Contas", icon: BeerBottle },
+ { id: "cafe_trabalho", label: "Café e Trabalho", icon: Coffee },
+ { id: "parque_esporte", label: "Parques e Treino", icon: Tree },
+ { id: "encontro_musica", label: "Música e Cultura", icon: MusicNotes },
 ];
 
 function FullscreenMapaPage() {

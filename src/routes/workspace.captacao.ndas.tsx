@@ -1,17 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Lock,
-  ArrowLeft,
-  ShieldCheck,
-  Calendar,
-  Mail,
-  User,
-  Building,
-  Globe,
-  FileCheck,
-  Download,
-} from "lucide-react";
+import { Lock, ArrowLeft, ShieldCheck, Calendar, Mail, User, Building, Globe, FileCheck, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +37,7 @@ function WorkspaceCaptacaoNdasPage() {
         <div className="flex items-start gap-3">
           <NativeBackButton fallbackHref="/workspace/captacao" />
           <div className="space-y-1">
-            <PageHeader title="NDAs & Termos de Confidencialidade" />
+            <PageHeader title="Confidencialidade" />
             <p className="text-xs sm:text-sm text-muted-foreground">
               Auditoria jurídica de investidores e compradores qualificados que assinaram termo digital de sigilo para ver métricas e DREs restritos.
             </p>
@@ -98,7 +87,7 @@ function WorkspaceCaptacaoNdasPage() {
                   <th className="py-3 px-4 sm:px-5">Investidor / Comprador</th>
                   <th className="py-3 px-4 sm:px-5">Documento (LGPD)</th>
                   <th className="py-3 px-4 sm:px-5">Empresa / Ponto Alvo</th>
-                  <th className="py-3 px-4 sm:px-5">Data & Hora</th>
+                  <th className="py-3 px-4 sm:px-5">Data e Hora</th>
                   <th className="py-3 px-4 sm:px-5">Telemetria IP</th>
                   <th className="py-3 px-4 sm:px-5 text-right">Status</th>
                 </tr>

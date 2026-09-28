@@ -95,7 +95,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground">Lineup & Programação Artística</h3>
+            <h3 className="text-base font-bold text-foreground">Lineup</h3>
             <Badge variant="outline" className="text-xs">
               {lineup.length} {lineup.length === 1 ? "atração confirmada" : "atrações confirmadas"}
             </Badge>
@@ -164,7 +164,7 @@ export function EventoLineup({ eventId }: EventoLineupProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold">Bio & Release</Label>
+                <Label className="text-xs font-bold">Bio e Release</Label>
                 <Textarea
                   rows={3}
                   placeholder="Gênero musical, sucessos e informações do rider técnico..."

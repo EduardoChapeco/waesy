@@ -207,7 +207,7 @@ export function NewSupplierWizard({ isOpen, onClose, onCreated, storeId }: NewSu
  </div>
 
  <div className="space-y-1">
- <label className="text-xs font-bold text-foreground">Instruções Financeiras & Prazos</label>
+ <label className="text-xs font-bold text-foreground">Instruções Financeiras e Prazos</label>
  <Textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}

@@ -1,12 +1,5 @@
 import { type Proposal } from "@/services/proposals";
-import {
-  Accordion,
-  NumField,
-  TextField,
-  Card,
-  AddBtn,
-  SMALL_INPUT,
-} from "@/components/proposals/ProposalFormFields";
+import { Accordion, NumField, TextField, Card, AddBtn, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormInput as Input } from "@/components/ui/input";

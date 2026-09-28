@@ -8,13 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaUploader } from "@/components/admin/builder/MediaUploader";
 import { ColorPicker } from "@/components/admin/builder/ColorPicker";
 import { ArrayBuilder } from "@/components/admin/builder/ArrayBuilder";
@@ -908,7 +902,7 @@ export function BuilderInspector({
  {/* Configuração de Caixas / Cards Numéricos */}
  <div className="space-y-3 pt-3 border-t border-border/60">
  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
- Caixas Numéricas & Elementos
+ Caixas Numéricas e Elementos
  </span>
  <div className="space-y-1.5">
  <Label className="text-xs font-bold text-foreground">Fundo das Caixas</Label>
@@ -986,7 +980,7 @@ export function BuilderInspector({
  <div className="space-y-1">
  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
  <Sliders className="size-3.5 text-primary" />
- Motor de Animações & Scroll (Wix Studio Standard)
+ Motor de Animações e Scroll (Wix Studio Standard)
  </h4>
  <p className="text-[11px] text-muted-foreground">
  Microinterações fluidas a 60fps com aceleração de hardware e física Apple HIG.
@@ -1112,7 +1106,7 @@ export function BuilderInspector({
  <SelectItem value="dynamic_products">Produtos Mais Vendidos (Hits)</SelectItem>
  <SelectItem value="latest_products">Últimos Lançamentos</SelectItem>
  <SelectItem value="product_collection">Coleção Específica</SelectItem>
- <SelectItem value="destinations_catalog">Destinos Turísticos & Pacotes</SelectItem>
+ <SelectItem value="destinations_catalog">Destinos Turísticos e Pacotes</SelectItem>
  <SelectItem value="dynamic_reviews">Avaliações de Clientes (Reviews)</SelectItem>
  <SelectItem value="store_profile">Dados da Loja (Nome, Logo, Capa)</SelectItem>
  <SelectItem value="store_contact">Canais de Contato (WhatsApp / Endereço)</SelectItem>

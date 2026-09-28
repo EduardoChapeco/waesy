@@ -85,7 +85,7 @@ export const PUBLIC_ROUTES: RouteEntry[] = [
   },
   {
   path: "/afiliados",
-  label: "Parceiros & Criadores",
+  label: "Parceiros e Criadores",
   description: "Programa de parceiros, criadores e monetização",
   audience: "public",
   roles: ["visitor"],
@@ -161,7 +161,7 @@ export const PUBLIC_ROUTES: RouteEntry[] = [
  },
  {
  path: "/convite",
- label: "Membros Fundadores & Indicação",
+ label: "Membros Fundadores e Indicação",
  description: "Programa de membros fundadores e embaixadores da comunidade",
  audience: "public",
  roles: ["visitor"],
@@ -169,7 +169,7 @@ export const PUBLIC_ROUTES: RouteEntry[] = [
  },
  {
  path: "/concursos",
- label: "Sorteios & Prêmios",
+ label: "Sorteios e Prêmios",
  description: "Sorteios e campanhas promocionais de empresas da região",
  audience: "public",
  roles: ["visitor"],
@@ -467,7 +467,7 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
  },
  {
  path: "/workspace/mining",
- label: "Mineração & Crawlers",
+ label: "Mineração e Crawlers",
  description: "Hub de Crawlers, RSS e Mineração de Dados",
  audience: "admin",
  roles: STAFF_ALL,
@@ -629,7 +629,7 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
  },
  {
  path: "/workspace/pedidos/frota",
- label: "Frota & Despacho",
+ label: "Frota e Despacho",
  description: "Gestão de motoboys e entregas com PIN",
  audience: "admin",
  roles: ["owner", "admin", "manager", "seller", "stock"],
@@ -761,7 +761,7 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
  },
  {
  path: "/workspace/cms/stories",
- label: "Stories & Moments",
+ label: "Stories e Moments",
  description: "Gestão e publicação de stories",
  audience: "admin",
  roles: ["owner", "admin", "manager", "content"],
@@ -769,7 +769,7 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
  },
  {
  path: "/workspace/cms/bio",
- label: "Bio Link & Cartão",
+ label: "Bio Link e Cartão",
  description: "Página de biolink e links sociais",
  audience: "admin",
  roles: ["owner", "admin", "manager", "content"],
@@ -787,7 +787,7 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
  },
  {
  path: "/workspace/builder",
- label: "Páginas Extras & Bio Links",
+ label: "Páginas Extras e Bio Links",
  description: "Crie campanhas, bio links e landing pages",
  audience: "admin",
  roles: ["owner", "admin", "content"],
@@ -824,7 +824,7 @@ export const WORKSPACE_ROUTES: RouteEntry[] = [
  },
  {
  path: "/workspace/marketing/promocoes",
- label: "Promoções & Ofertas",
+ label: "Promoções e Ofertas",
  description: "Gestão de ofertas relâmpago, descontos e combos",
  audience: "admin",
  roles: ["owner", "admin", "manager", "content"],
@@ -1187,7 +1187,7 @@ export const ADMIN_SIDEBAR_NAV: AdminNavGroup[] = [
  ],
  },
  {
- title: "Eventos & Cultura",
+ title: "Eventos e Cultura",
  items: [
  { path: "/admin/events", label: "Meus Eventos", icon: "Calendar" },
  { path: "/admin/destaques", label: "Destaques (Highlights)", icon: "CircleDot" },
@@ -1195,43 +1195,43 @@ export const ADMIN_SIDEBAR_NAV: AdminNavGroup[] = [
  ],
  },
  {
- title: "Mercado & Estoque",
+ title: "Mercado e Estoque",
  items: [
  { path: "/admin/catalogo/produtos", label: "Mercadorias", icon: "Package" },
  { path: "/admin/estoque", label: "Estoque", icon: "Boxes" },
  { path: "/admin/catalogo/categorias", label: "Categorias", icon: "FolderTree" },
  { path: "/admin/catalogo/colecoes", label: "Coleções", icon: "Layers" },
- { path: "/admin/midias", label: "Mídias & Fotos", icon: "Images" },
+ { path: "/admin/midias", label: "Mídias e Fotos", icon: "Images" },
  { path: "/admin/catalogo/atributos", label: "Atributos", icon: "Settings2" },
  { path: "/admin/catalogo/tipos", label: "Tipos de Produto", icon: "Settings" },
  ],
  },
  {
- title: "Vendas & Caixa",
+ title: "Vendas e Caixa",
  items: [
- { path: "/admin/pedidos", label: "Pedidos & Compras", icon: "ShoppingBag" },
+ { path: "/admin/pedidos", label: "Pedidos e Compras", icon: "ShoppingBag" },
  { path: "/admin/caixa", label: "PDV / Caixa Rápido", icon: "MonitorSmartphone" },
  { path: "/admin/pagamentos", label: "Pagamentos", icon: "CreditCard" },
  { path: "/admin/comprovantes", label: "Comprovantes Manuais", icon: "FileText" },
- { path: "/admin/pedidos/trocas", label: "Trocas & Devoluções", icon: "ArrowLeftRight" },
+ { path: "/admin/pedidos/trocas", label: "Trocas e Devoluções", icon: "ArrowLeftRight" },
  { path: "/admin/comissoes", label: "Comissões da Equipe", icon: "Percent" },
  ],
  },
  {
  title: "Comunidade",
  items: [
- { path: "/admin/clientes", label: "Público & Clientes", icon: "Users" },
- { path: "/admin/conversas", label: "Chat & Mensagens", icon: "MessagesSquare" },
+ { path: "/admin/clientes", label: "Público e Clientes", icon: "Users" },
+ { path: "/admin/conversas", label: "Chat e Mensagens", icon: "MessagesSquare" },
  { path: "/admin/suporte", label: "Tickets de Suporte", icon: "LifeBuoy" },
  { path: "/admin/classificados", label: "Meus Classificados", icon: "Tag" },
  { path: "/admin/marketing/seguidores", label: "Seguidores", icon: "Heart" },
  ],
  },
  {
- title: "Design & Presença",
+ title: "Design e Presença",
  items: [
  { path: "/admin/vitrine", label: "Editor da Home", icon: "MonitorPlay" },
- { path: "/admin/cms/tema", label: "Cores & Estilo", icon: "Palette" },
+ { path: "/admin/cms/tema", label: "Cores e Estilo", icon: "Palette" },
  { path: "/admin/cms/navegacao", label: "Menus de Navegação", icon: "Menu" },
  { path: "/admin/builder", label: "Páginas Extras", icon: "FileText" },
  { path: "/admin/link-da-bio", label: "Link da Bio", icon: "Link2" },
@@ -1254,12 +1254,12 @@ export const ADMIN_SIDEBAR_NAV: AdminNavGroup[] = [
  title: "Ajustes do Coletivo",
  items: [
  { path: "/admin/configuracoes/loja", label: "Dados e Setup", icon: "Store" },
- { path: "/admin/configuracoes/pagamentos", label: "Taxas & Pix Manual", icon: "Landmark" },
- { path: "/admin/fretes/tabelas", label: "Entregas & Frete", icon: "Truck" },
+ { path: "/admin/configuracoes/pagamentos", label: "Taxas e Pix Manual", icon: "Landmark" },
+ { path: "/admin/fretes/tabelas", label: "Entregas e Frete", icon: "Truck" },
  { path: "/admin/integracoes", label: "Integrações (Pixels)", icon: "Plug" },
- { path: "/admin/configuracoes/politicas", label: "Termos & Políticas", icon: "ShieldCheck" },
+ { path: "/admin/configuracoes/politicas", label: "Termos e Políticas", icon: "ShieldCheck" },
  { path: "/admin/configuracoes/lgpd", label: "Privacidade LGPD", icon: "Lock" },
- { path: "/admin/configuracoes/seo", label: "SEO & Busca", icon: "Search" },
+ { path: "/admin/configuracoes/seo", label: "SEO e Busca", icon: "Search" },
  { path: "/admin/equipe", label: "Acessos da Equipe", icon: "UserCog" },
  { path: "/admin/relatorios", label: "Métricas Financeiras", icon: "BarChart3" },
  { path: "/admin/configuracoes/auditoria", label: "Auditoria", icon: "ShieldAlert" },

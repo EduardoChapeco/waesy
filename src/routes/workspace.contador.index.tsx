@@ -1,43 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import {
-  FileText,
-  Download,
-  Share2,
-  Calendar,
-  CheckCircle,
-  Building2,
-  FileSpreadsheet,
-  Copy,
-  ExternalLink,
-  ShieldCheck,
-} from "lucide-react";
+import { FileText, Download, Share2, Calendar, CheckCircle, Building2, FileSpreadsheet, Copy, ExternalLink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  listStoreNFeInvoices,
-  exportFiscalBatch,
-  generateAccountantShareLink,
-  getStoreNFeConfig,
-} from "@/services/fiscal-nfe.functions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { listStoreNFeInvoices, exportFiscalBatch, generateAccountantShareLink, getStoreNFeConfig } from "@/services/fiscal-nfe.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/contador/")({
   head: () => ({
-    meta: [{ title: "Portal da Contabilidade & Lote Fiscal | Workspace Waesy" }],
+    meta: [{ title: "Contabilidade | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -106,8 +83,8 @@ function AccountantPortalPage() {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
-        title="Portal da Contabilidade"
-        subtitle="Exportação de notas fiscais, XMLs e relatórios mensais para escritórios contábeis."
+        title="Contabilidade"
+        subtitle="Exportação de notas fiscais e relatórios fiscais mensais."
       />
 
       {/* Corporate Summary & Share Box */}
@@ -115,7 +92,7 @@ function AccountantPortalPage() {
         {/* CNPJ Info Card */}
         <div className="bg-surface-paper border border-border rounded-xl p-5 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
-            <Building2 className="w-4 h-4 text-primary" /> Empresa & Regime
+            <Building2 className="w-4 h-4 text-primary" /> Regime Tributário
           </div>
           <p className="text-base font-bold text-foreground">
             {loaderData?.config?.razao_social || "Razão Social Não Cadastrada"}
@@ -229,7 +206,7 @@ function AccountantPortalPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-xs">Número / Série</TableHead>
+              <TableHead className="text-xs">Número</TableHead>
               <TableHead className="text-xs">Chave de Acesso</TableHead>
               <TableHead className="text-xs">Destinatário</TableHead>
               <TableHead className="text-xs">Data Emissão</TableHead>

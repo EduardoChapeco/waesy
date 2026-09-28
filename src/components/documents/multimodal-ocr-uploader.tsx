@@ -1,35 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  UploadCloud,
-  FileText,
-  Image as ImageIcon,
-  Sparkles,
-  Loader2,
-  Trash2,
-  CheckCircle2,
-  AlertCircle,
-  Clipboard,
-  Smartphone,
-  Eye,
-} from "lucide-react";
+import { UploadCloud, FileText, Image as ImageIcon, Star, Loader2, Trash2, CheckCircle2, AlertCircle, Clipboard, Smartphone, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  parseUniversalDocumentOCR,
-  type UniversalOcrResult,
-} from "@/services/multimodal-ocr.functions";
-import {
-  DigitalCompanionCard,
-  type CompanionCardNiche,
-} from "@/components/documents/digital-companion-card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { parseUniversalDocumentOCR, type UniversalOcrResult } from "@/services/multimodal-ocr.functions";
+import { DigitalCompanionCard, type CompanionCardNiche } from "@/components/documents/digital-companion-card";
 
 export interface MultimodalOcrUploaderProps {
   nicheHint?: CompanionCardNiche | "general";
@@ -175,12 +152,12 @@ export function MultimodalOcrUploader({
 
   const NICHE_PILLS = [
     { id: "general", label: "Automático" },
-    { id: "tourism", label: "Turismo & Vouchers" },
-    { id: "real_estate", label: "Imóveis & Temporada" },
+    { id: "tourism", label: "Turismo e Vouchers" },
+    { id: "real_estate", label: "Imóveis e Temporada" },
     { id: "service", label: "Ordem de Serviço" },
-    { id: "auto", label: "Veículos & CRLV" },
-    { id: "retail", label: "Balcão & Varejo" },
-    { id: "health", label: "Saúde & Termos" },
+    { id: "auto", label: "Veículos e CRLV" },
+    { id: "retail", label: "Balcão e Varejo" },
+    { id: "health", label: "Saúde e Termos" },
   ];
 
   return (
@@ -322,7 +299,7 @@ export function MultimodalOcrUploader({
           </>
         ) : (
           <>
-            <Sparkles className="size-4" />
+            <Star className="size-4" />
             <span>Extrair Dados com Inteligência Visual (OCR)</span>
           </>
         )}

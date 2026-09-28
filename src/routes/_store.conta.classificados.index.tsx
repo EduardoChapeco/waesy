@@ -1,34 +1,29 @@
 import { cn } from '@/lib/utils';
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Tag,
   Plus,
   Loader2,
-  MapPin,
   Eye,
   Edit3,
   Image as ImageIcon,
-  Flame,
   Zap,
   MessageCircle,
-  Handshake,
   PauseCircle,
   PlayCircle,
   Check,
-  Copy,
   ExternalLink,
   AlertTriangle,
-  Clock,
   CheckCircle2,
-  QrCode,
   RefreshCw,
   Building2,
-  Sparkles,
+  Star,
   MoreVertical,
   MousePointer,
   Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -51,7 +46,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -59,15 +53,19 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
-import { formatDate } from "@/lib/datetime";
 import { resolveClassifiedNiche } from "@/lib/classifieds/semantics";
 
 function isVideoUrl(url?: string | null): boolean {
   if (!url) return false;
   return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
 }
-
 
 // ─── Ad-Tech: Mini-Sparkline Monocromático 7 Dias (Design Silencioso) ─────────
 function AdSparkline({ data, className = "h-7 w-20" }: { data: number[]; className?: string }) {
@@ -111,7 +109,6 @@ function AdSparkline({ data, className = "h-7 w-20" }: { data: number[]; classNa
     </div>
   );
 }
-
 
 export const Route = createFileRoute("/_store/conta/classificados/")({
   head: () => ({ meta: [{ title: "Meus Anúncios | Waesy" }] }),
@@ -178,41 +175,7 @@ const STATUS_CONFIG: Record<
   expired: { label: "Expirado", className: "border-border/60 bg-muted/40 text-muted-foreground" },
 };
 
-const BOOST_PLANS = [
-  {
-    id: 7,
-    days: 7 as const,
-    title: "Destaque 7 Dias",
-    priceCents: 1990,
-    badge: "Iniciante",
-    description: "Ideal para vendas rápidas e itens de alta procura.",
-  },
-  {
-    id: 15,
-    days: 15 as const,
-    title: "Destaque 15 Dias",
-    priceCents: 3490,
-    badge: "Mais Escolhido",
-    highlight: true,
-    description: "Maior retenção no topo das buscas e recomendação no feed.",
-  },
-  {
-    id: 30,
-    days: 30 as const,
-    title: "Destaque 30 Dias",
-    priceCents: 5990,
-    badge: "Melhor Custo",
-    description: "Exposição prolongada com prioridade máxima na categoria.",
-  },
-];
-
-// ────────────────────────────────────────────────────────────────
-// Tipos para o fluxo de pagamento de boost
-// ────────────────────────────────────────────────────────────────
-type BoostStep =
-  | "plan_select"      // escolha do plano
-  | "checkout_pending" // aguardando pagamento (PIX / link)
-  | "paid";            // confirmado
+type BoostStep = "plan_select" | "checkout_pending" | "paid";
 
 interface ActiveBoostPayment {
   boostPaymentId: string;
@@ -232,14 +195,19 @@ function ClassificadosIndex() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [boostingAd, setBoostingAd] = useState<any | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<7 | 15 | 30>(15);
+  const [, setSelectedPlan] = useState<7 | 15 | 30>(15);
   const [boostStep, setBoostStep] = useState<BoostStep>("plan_select");
   const [activeBoostPayment, setActiveBoostPayment] = useState<ActiveBoostPayment | null>(null);
-  const [copiedPix, setCopiedPix] = useState(false);
 
-  // Estado de Migração para Loja no Workspace Pro (Fase 5)
+  // Estados de Gerenciamento & Exclusão E2E
   const [migratingAd, setMigratingAd] = useState<any | null>(null);
   const [adToDelete, setAdToDelete] = useState<any | null>(null);
+  const [isMigrating, setIsMigrating] = useState(false);
+
+  // Filtros
+  const [isMlFilterOpen, setIsMlFilterOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -254,7 +222,6 @@ function ClassificadosIndex() {
       toast.error(err.message || "Erro ao excluir anúncio.");
     },
   });
-  const [isMigrating, setIsMigrating] = useState(false);
 
   const handleMigrateToPro = async () => {
     if (!migratingAd) return;
@@ -276,11 +243,11 @@ function ClassificadosIndex() {
     }
   };
 
-  // ── Consulta gateway de pagamento ANTES de abrir modal ──────────
+  // Gateway de Pagamento
   const { data: gatewayStatus, isLoading: gatewayLoading } = useQuery({
     queryKey: ["boost-gateway-status"],
     queryFn: () => getBoostPaymentStatus(),
-    staleTime: 60_000, // cache 1min
+    staleTime: 60_000,
   });
 
   const { data: classifieds, isLoading } = useQuery({
@@ -299,91 +266,85 @@ function ClassificadosIndex() {
       queryClient.invalidateQueries({ queryKey: ["classifieds"] });
     },
     onError: (err: any) => {
-      toast.error(err.message || "Erro ao alterar status do anúncio.");
+      toast.error(err.message || "Erro ao atualizar status do anúncio.");
     },
   });
 
-  // ── Mutation: Inicia pagamento real via gateway ──────────────────
   const initiateBoostMutation = useMutation({
     mutationFn: async ({ adId, planDays }: { adId: string; planDays: 7 | 15 | 30 }) => {
       return await initiateBoostPayment({ data: { adId, planDays } });
     },
-    onSuccess: (res) => {
+    onSuccess: (data) => {
       setActiveBoostPayment({
-        boostPaymentId: res.boostPaymentId,
-        provider: res.provider,
-        pixQrCode: res.pixQrCode,
-        pixCopyPaste: res.pixCopyPaste,
-        paymentLink: res.paymentLink,
-        amountCents: res.amountCents,
-        planName: res.planName,
-        planDays: res.planDays,
-        expiresAt: res.expiresAt,
-        adTitle: res.adTitle,
+        boostPaymentId: data.boostPaymentId,
+        provider: data.provider,
+        pixQrCode: data.pixQrCode || null,
+        pixCopyPaste: data.pixCopyPaste || null,
+        paymentLink: data.paymentLink || null,
+        amountCents: data.amountCents,
+        planName: data.planName,
+        planDays: data.planDays,
+        expiresAt: data.expiresAt,
+        adTitle: boostingAd?.title || "",
       });
       setBoostStep("checkout_pending");
     },
     onError: (err: any) => {
-      toast.error(err.message || "Falha ao iniciar pagamento.");
+      toast.error(err.message || "Erro ao iniciar impulsionamento.");
     },
   });
 
-  // ── Polling: verifica status do pagamento a cada 5s ─────────────
-  const { data: boostPaymentStatus } = useQuery({
-    queryKey: ["boost-payment-status", activeBoostPayment?.boostPaymentId],
-    queryFn: () =>
-      getBoostPaymentById({ data: { boostPaymentId: activeBoostPayment!.boostPaymentId } }),
-    enabled: boostStep === "checkout_pending" && !!activeBoostPayment?.boostPaymentId,
-    refetchInterval: 5000,
-  });
-
-  // Detecta pagamento confirmado via polling
-  useEffect(() => {
-    if (boostPaymentStatus?.status === "paid") {
-      setBoostStep("paid");
-      queryClient.invalidateQueries({ queryKey: ["classifieds"] });
-    }
-  }, [boostPaymentStatus?.status, queryClient]);
-
-  const handleOpenBoostModal = useCallback(
-    (ad: any) => {
-      if (!gatewayStatus?.available) {
-        toast.error(
-          "Pagamento não configurado. O administrador da plataforma precisa configurar um gateway de pagamento.",
-          { duration: 6000 }
-        );
-        return;
+  const checkPaymentStatus = useCallback(async () => {
+    if (!activeBoostPayment?.boostPaymentId) return;
+    try {
+      const res = await getBoostPaymentById({ data: { boostPaymentId: activeBoostPayment.boostPaymentId } });
+      if (res.status === "paid") {
+        setBoostStep("paid");
+        toast.success("Pagamento confirmado! O anúncio agora está em Destaque.");
+        queryClient.invalidateQueries({ queryKey: ["classifieds"] });
       }
-      setBoostingAd(ad);
-      setBoostStep("plan_select");
-      setActiveBoostPayment(null);
-      setSelectedPlan(15);
-      setCopiedPix(false);
+    } catch {
+      // Polling silencioso
+    }
+  }, [activeBoostPayment, queryClient]);
+
+  // Polling de pagamento quando pendente
+  useQuery({
+    queryKey: ["boost-poll", activeBoostPayment?.boostPaymentId],
+    queryFn: async () => {
+      await checkPaymentStatus();
+      return true;
     },
-    [gatewayStatus]
-  );
+    enabled: boostStep === "checkout_pending" && !!activeBoostPayment?.boostPaymentId,
+    refetchInterval: 3000,
+  });
+
+  const handleOpenBoostModal = (ad: any) => {
+    setBoostingAd(ad);
+    setBoostStep("plan_select");
+    setActiveBoostPayment(null);
+  };
 
   const handleCloseBoostModal = () => {
     setBoostingAd(null);
     setBoostStep("plan_select");
     setActiveBoostPayment(null);
-    setCopiedPix(false);
-  };
-
-  const handleCopyPix = async () => {
-    if (!activeBoostPayment?.pixCopyPaste) return;
-    try {
-      await navigator.clipboard.writeText(activeBoostPayment.pixCopyPaste);
-      setCopiedPix(true);
-      toast.success("Código PIX copiado!");
-      setTimeout(() => setCopiedPix(false), 3000);
-    } catch {
-      toast.error("Não foi possível copiar. Copie manualmente.");
-    }
   };
 
   const safeClassifieds = Array.isArray(classifieds) ? classifieds : [];
+
   const filtered = safeClassifieds.filter((ad: any) => {
+    if (statusFilter !== "all") {
+      if (statusFilter === "boosted") {
+        const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
+        if (!isBoosted) return false;
+      } else if (ad.status !== statusFilter) {
+        return false;
+      }
+    }
+    if (categoryFilter !== "all" && ad.category !== categoryFilter) {
+      return false;
+    }
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
@@ -393,64 +354,66 @@ function ClassificadosIndex() {
     );
   });
 
-  // Verifica se gateway está disponível para exibição do botão
+  const activeFiltersCount =
+    (statusFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0);
   const gatewayAvailable = gatewayStatus?.available ?? false;
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
-            {/* ── 1. NativeMobileHeader Canônico ── */}
+    <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-28 px-0 sm:px-4 md:px-0">
+      {/* ── 1. CABEÇALHO NATIVO UNIVERSAL (Voltar | Título | Lupa + Filtro ML) ── */}
       <NativeMobileHeader
         fallbackHref="/conta"
         title="Meus Anúncios"
+        centerTitle={true}
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar anúncio..."
+        onFilterClick={() => setIsMlFilterOpen(true)}
+        activeFiltersCount={activeFiltersCount}
         badge={
-          (classifieds || []).length > 0 ? (
+          safeClassifieds.length > 0 ? (
             <Badge variant="outline" className="text-xs font-mono font-bold bg-muted/30">
-              {(classifieds || []).length}
+              {safeClassifieds.length}
             </Badge>
           ) : null
         }
         rightActions={
-          <Button asChild size="sm" className="h-8.5 px-3 rounded-xl font-bold gap-1.5 bg-primary text-primary-foreground">
+          <Button
+            asChild
+            size="sm"
+            className="hidden sm:inline-flex h-11 px-4 rounded-xl font-bold gap-1.5 bg-primary text-primary-foreground"
+          >
             <Link to="/conta/classificados/novo">
               <Plus className="size-4" />
-              <span>Criar</span>
+              <span>Novo Anúncio</span>
             </Link>
           </Button>
         }
       />
 
-      {/* ── Aviso: Gateway não configurado ──────────────────────── */}
+      {/* ── Aviso Gateway ── */}
       {!gatewayLoading && !gatewayAvailable && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-700 dark:text-amber-400">
+        <div className="mx-4 sm:mx-0 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5 text-xs text-amber-700 dark:text-amber-400">
           <AlertTriangle className="size-4 shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold">Impulsionamento indisponível.</span> Nenhum gateway de pagamento está configurado na plataforma. O recurso de destaque ficará bloqueado até a configuração.
+            <span className="font-bold">Impulsionamento indisponível.</span> Nenhum gateway de pagamento está configurado na plataforma.
           </div>
         </div>
       )}
 
-      {/* ── Filtro de Busca ─────────────────────────────────────── */}
-      {classifieds && classifieds.length > 0 && (
-        <div className="max-w-md">
-          <Input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por título, categoria..."
-            className="h-11 sm:h-9 rounded-xl text-base sm:text-xs bg-background border-border/70"
-          />
-        </div>
-      )}
-
-      {/* ── Lista de Anúncios ────────────────────────────────────── */}
+      {/* ── 2. BIFURCAÇÃO NATIVA: Mobile (<640px WhatsApp List) vs Desktop (>=640px Bento Cards) ── */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
           <Loader2 className="size-6 animate-spin" />
-          <span className="text-xs">Carregando seus anúncios...</span>
+          <span className="text-xs">Sincronizando seus anúncios e telemetria...</span>
         </div>
       ) : filtered.length > 0 ? (
         <>
-          {/* ── BIFURCAÇÃO MOBILE: Padrão WhatsApp List Edge-to-Edge ── */}
-          <div className="block md:hidden w-full bg-card divide-y divide-border/40 border-y border-border/40 overflow-hidden">
+          {/* ══════════════════════════════════════════════════════════════════
+              MOBILE VIEW: WhatsApp List Edge-to-Edge (<640px)
+              Zero-Dead-Space Mandate: se estende de ponta a ponta sem margem dupla
+          ══════════════════════════════════════════════════════════════════ */}
+          <div className="block sm:hidden border-y border-border/40 divide-y divide-border/40 bg-card">
             {filtered.map((ad: any) => {
               const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
               const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
@@ -458,361 +421,122 @@ function ClassificadosIndex() {
               const thumbUrl = ad.images?.[0] || null;
               const isVideo = isVideoUrl(thumbUrl);
               const niche = resolveClassifiedNiche(ad);
-              const NicheIcon = niche.icon;
-              const viewsCount = ad.views_count || 0;
-              const clicksCount = ad.clicks_count || 0;
-              const whatsappCount = ad.whatsapp_clicks_count || ad.proposals_count || 0;
-
-              return (
-                <div key={ad.id} className="p-3.5 space-y-2.5 transition-colors hover:bg-muted/20">
-                  {/* Linha Superior: Foto à esquerda + Infos à direita */}
-                  <div className="flex items-start gap-3">
-                    {/* Thumbnail Squircle */}
-                    <div className="size-16 rounded-xl bg-muted shrink-0 overflow-hidden border border-border/40 flex items-center justify-center relative">
-                      {thumbUrl ? (
-                        isVideo ? (
-                          <video src={thumbUrl} className="size-full object-cover" muted />
-                        ) : (
-                          <img src={thumbUrl} alt={ad.title} className="size-full object-cover" />
-                        )
-                      ) : (
-                        <ImageIcon className="size-6 text-muted-foreground/40" />
-                      )}
-                      {isBoosted && (
-                        <span className="absolute top-1 left-1 size-2 rounded-full bg-amber-500 animate-pulse" />
-                      )}
-                    </div>
-
-                    {/* Título, Preço e Status */}
-                    <div className="flex-1 min-w-0 space-y-0.5">
-                      <div className="flex items-start justify-between gap-1.5">
-                        <h2 className="text-xs font-bold text-foreground truncate leading-snug">
-                          {ad.title}
-                        </h2>
-                        <div className="flex items-center gap-1 shrink-0">
-                          {isBoosted && (
-                            <Badge className="text-[8px] font-mono px-1 py-0 h-3.5 bg-amber-500 text-black border-none font-black">
-                              BOOST
-                            </Badge>
-                          )}
-                          <Badge variant="outline" className={cn("text-[8px] font-mono px-1 py-0 h-3.5", statusConf.className)}>
-                            {statusConf.label}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {ad.price_cents != null && (
-                        <p className="text-sm font-black font-mono text-foreground">
-                          {formatMoney(ad.price_cents)}
-                        </p>
-                      )}
-
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                        <span className="flex items-center gap-0.5 truncate">
-                          <NicheIcon className="size-2.5 shrink-0 text-muted-foreground/70" />
-                          {niche.shortLabel}
-                        </span>
-                        {ad.location_city && (
-                          <>
-                            <span>•</span>
-                            <span className="truncate">{ad.location_city}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Linha Inferior: Micro-Pills Silenciosas + Ações Diretas */}
-                  <div className="flex items-center justify-between gap-2 pt-0.5">
-                    {/* Micro-Pills de Performance */}
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[10px] font-mono text-muted-foreground" title="Visualizações">
-                        <Eye className="size-2.5" />
-                        <span>{viewsCount}</span>
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[10px] font-mono text-muted-foreground" title="Cliques">
-                        <MousePointer className="size-2.5 text-sky-600 dark:text-sky-400" />
-                        <span>{clicksCount}</span>
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[10px] font-mono text-muted-foreground" title="Contatos WhatsApp">
-                        <MessageCircle className="size-2.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>{whatsappCount}</span>
-                      </span>
-
-                      {viewsCount > 0 && (
-                        <div className="hidden xs:flex items-center pl-1 border-l border-border/40" title="Tendência 7 dias">
-                          <AdSparkline data={ad.sparkline_7d || [0, 0, 0, 0, 0, 0, 0]} className="h-5 w-12" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Ação Primária: Impulsionar + Menu Contextual (3 pontos) */}
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleOpenBoostModal(ad)}
-                        disabled={!gatewayAvailable || gatewayLoading}
-                        className={cn(
-                          "h-9 px-3 rounded-xl font-bold text-xs gap-1 cursor-pointer transition-all active:scale-95 shadow-2xs",
-                          !gatewayAvailable
-                            ? "bg-muted text-muted-foreground border border-border/50 cursor-not-allowed opacity-60"
-                            : isBoosted
-                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
-                            : "bg-amber-500 text-black hover:bg-amber-400"
-                        )}
-                      >
-                        <Zap className="size-3 fill-current" />
-                        <span>{isBoosted ? "Renovar" : "Impulsionar"}</span>
-                      </Button>
-
-                      {/* Dropdown de Ações Secundárias (Anti-Esmagamento Apple HIG) */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
-                            aria-label="Mais opções"
-                          >
-                            <MoreVertical className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1.5 border-border/80">
-                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
-                            <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
-                              <Edit3 className="size-3.5 mr-2 text-muted-foreground" />
-                              <span>Editar Anúncio</span>
-                            </Link>
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
-                            <Link to="/classificados/$id" params={{ id: ad.id }}>
-                              <ExternalLink className="size-3.5 mr-2 text-muted-foreground" />
-                              <span>Ver na Vitrine</span>
-                            </Link>
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem
-                            onClick={() =>
-                              toggleStatusMutation.mutate({
-                                id: ad.id,
-                                newStatus: isPaused ? "active" : "paused",
-                              })
-                            }
-                            disabled={toggleStatusMutation.isPending}
-                            className="rounded-xl cursor-pointer text-xs font-semibold py-2"
-                          >
-                            {isPaused ? (
-                              <>
-                                <PlayCircle className="size-3.5 mr-2 text-emerald-600" />
-                                <span>Reativar Anúncio</span>
-                              </>
-                            ) : (
-                              <>
-                                <PauseCircle className="size-3.5 mr-2 text-amber-600" />
-                                <span>Pausar Anúncio</span>
-                              </>
-                            )}
-                          </DropdownMenuItem>
-
-                          {ad.status !== "completed" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                toggleStatusMutation.mutate({
-                                  id: ad.id,
-                                  newStatus: "completed" as any,
-                                })
-                              }
-                              disabled={toggleStatusMutation.isPending}
-                              className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-blue-600 dark:text-blue-400"
-                            >
-                              <CheckCircle2 className="size-3.5 mr-2" />
-                              <span>Marcar como Vendido</span>
-                            </DropdownMenuItem>
-                          )}
-
-                          <DropdownMenuItem
-                            onClick={() => setAdToDelete(ad)}
-                            className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-destructive"
-                          >
-                            <Trash2 className="size-3.5 mr-2" />
-                            <span>Excluir Anúncio</span>
-                          </DropdownMenuItem>
-
-                          <DropdownMenuSeparator />
-
-                          {ad.store_id ? (
-                            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary">
-                              <Link to="/workspace">
-                                <Building2 className="size-3.5 mr-2" />
-                                <span>Acessar Loja Pro</span>
-                              </Link>
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={() => setMigratingAd(ad)}
-                              className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary"
-                            >
-                              <Sparkles className="size-3.5 mr-2" />
-                              <span>Migrar para Loja Pro</span>
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ── BIFURCAÇÃO DESKTOP: Bento Grid com Sparklines Silenciosos ── */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((ad: any) => {
-              const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
-              const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
-              const isPaused = ad.status === "paused";
-              const thumbUrl = ad.images?.[0] || null;
-              const isVideo = isVideoUrl(thumbUrl);
-              const niche = resolveClassifiedNiche(ad);
-              const NicheIcon = niche.icon;
-              const viewsCount = ad.views_count || 0;
-              const clicksCount = ad.clicks_count || 0;
-              const whatsappCount = ad.whatsapp_clicks_count || ad.proposals_count || 0;
-              const sparklinePoints = (ad.sparkline_7d && Array.isArray(ad.sparkline_7d) && ad.sparkline_7d.length >= 2)
-                ? ad.sparkline_7d
-                : [0, 0, 0, 0, 0, 0, 0];
+              const viewsCount = Number(ad.views_count || 0);
+              const clicksCount = Number(ad.clicks_count || 0);
+              const whatsappCount = Number(ad.whatsapp_clicks_count || ad.proposals_count || 0);
 
               return (
                 <div
                   key={ad.id}
-                  className="rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col justify-between hover:border-border transition-all shadow-xs group"
+                  className="flex items-center justify-between p-3.5 gap-3 hover:bg-muted/20 active:bg-muted/40 transition-colors"
                 >
-                  <div className="p-3.5 space-y-3">
-                    {/* Imagem / Capa Panorâmica */}
-                    <div className="h-36 w-full rounded-xl bg-muted overflow-hidden border border-border/40 relative flex items-center justify-center">
-                      {thumbUrl ? (
-                        isVideo ? (
-                          <video src={thumbUrl} className="size-full object-cover" muted />
-                        ) : (
-                          <img src={thumbUrl} alt={ad.title} className="size-full object-cover group-hover:scale-102 transition-transform duration-300" />
-                        )
+                  {/* Thumbnail Quadrada Edge com Aspect 1:1 */}
+                  <Link
+                    to="/classificados/$id"
+                    params={{ id: ad.id }}
+                    className="relative size-16 shrink-0 rounded-xl overflow-hidden bg-muted flex items-center justify-center"
+                  >
+                    {thumbUrl ? (
+                      isVideo ? (
+                        <video src={thumbUrl} className="size-full object-cover" muted />
                       ) : (
-                        <ImageIcon className="size-8 text-muted-foreground/30" />
-                      )}
+                        <img src={thumbUrl} alt={ad.title} loading="lazy" className="size-full object-cover" />
+                      )
+                    ) : (
+                      <ImageIcon className="size-6 text-muted-foreground/35" />
+                    )}
+                    {isBoosted && (
+                      <span className="absolute top-1 left-1 px-1 py-0.2 rounded bg-amber-500 text-black text-[8px] font-black uppercase">
+                        Boost
+                      </span>
+                    )}
+                  </Link>
 
-                      {/* Badges Flutuantes */}
-                      <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                        <Badge variant="outline" className={cn("text-[9px] font-mono px-2 py-0.5 backdrop-blur-md bg-background/90 shadow-2xs", statusConf.className)}>
-                          {statusConf.label}
-                        </Badge>
-                        {isBoosted && (
-                          <Badge className="text-[9px] font-mono px-2 py-0.5 bg-amber-500 text-black border-none font-black shadow-xs gap-1">
-                            <Zap className="size-2.5 fill-current" />
-                            DESTAQUE
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Sparkline no Canto Inferior Direito da Imagem */}
-                      {viewsCount > 0 && (
-                        <div className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-background/90 backdrop-blur-md border border-border/50 flex items-center gap-2 shadow-2xs">
-                          <span className="text-[9px] font-mono text-muted-foreground font-semibold">7d</span>
-                          <AdSparkline data={sparklinePoints} />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Metadados do Anúncio */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 uppercase tracking-wider">
-                          <NicheIcon className="size-3 text-muted-foreground/70" />
-                          {niche.shortLabel}
-                        </span>
-                        {ad.location_city && (
-                          <span className="text-[10px] text-muted-foreground truncate flex items-center gap-0.5">
-                            <MapPin className="size-2.5" />
-                            {ad.location_city}
-                          </span>
-                        )}
-                      </div>
-
-                      <h2 className="text-sm font-bold text-foreground line-clamp-1 leading-snug group-hover:text-primary transition-colors">
+                  {/* Conteúdo Central */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        to="/classificados/$id"
+                        params={{ id: ad.id }}
+                        className="text-xs font-bold text-foreground truncate hover:text-primary transition-colors flex-1"
+                      >
                         {ad.title}
-                      </h2>
-
-                      {ad.price_cents != null && (
-                        <p className="text-base font-black font-mono text-foreground pt-0.5">
-                          {formatMoney(ad.price_cents)}
-                        </p>
-                      )}
+                      </Link>
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[9px] font-mono px-1.5 py-0 shrink-0", statusConf.className)}
+                      >
+                        {statusConf.label}
+                      </Badge>
                     </div>
 
-                    {/* Micro-Pills Silenciosas de Métricas */}
-                    <div className="flex items-center gap-2 pt-1 border-t border-border/30">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground" title="Visualizações">
-                        <Eye className="size-3" />
+                    <div className="flex items-baseline justify-between gap-1">
+                      <span className="text-xs font-bold font-mono text-foreground">
+                        {ad.price_cents != null ? (ad.price_cents === 0 ? "Doação" : formatMoney(ad.price_cents)) : "—"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground capitalize truncate">
+                        {niche.shortLabel}
+                      </span>
+                    </div>
+
+                    {/* Telemetria Compacta */}
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+                      <span className="flex items-center gap-0.5" title="Visualizações">
+                        <Eye className="size-2.5" />
                         <span>{viewsCount}</span>
                       </span>
-
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground" title="Cliques">
-                        <MousePointer className="size-3 text-sky-600 dark:text-sky-400" />
+                      <span className="flex items-center gap-0.5 text-sky-600 dark:text-sky-400" title="Cliques">
+                        <MousePointer className="size-2.5" />
                         <span>{clicksCount}</span>
                       </span>
-
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground" title="Contatos WhatsApp">
-                        <MessageCircle className="size-3 text-emerald-600 dark:text-emerald-400" />
+                      <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400" title="Contatos">
+                        <MessageCircle className="size-2.5" />
                         <span>{whatsappCount}</span>
                       </span>
                     </div>
                   </div>
 
-                  {/* Barra de Ações Inferior no Desktop */}
-                  <div className="border-t border-border/40 bg-muted/10 px-3.5 py-2.5 flex items-center justify-between gap-2">
+                  {/* Ações Mobile 44x44px */}
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
                       type="button"
-                      size="sm"
+                      size="icon"
                       onClick={() => handleOpenBoostModal(ad)}
                       disabled={!gatewayAvailable || gatewayLoading}
                       className={cn(
-                        "h-9 px-3.5 rounded-xl font-bold text-xs gap-1.5 cursor-pointer flex-1 transition-all active:scale-95 shadow-2xs",
+                        "size-10 min-w-[40px] rounded-xl cursor-pointer transition-all active:scale-95 shadow-none",
                         !gatewayAvailable
-                          ? "bg-muted text-muted-foreground border border-border/50 cursor-not-allowed opacity-60"
+                          ? "bg-muted text-muted-foreground opacity-50"
                           : isBoosted
-                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
+                          ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30"
                           : "bg-amber-500 text-black hover:bg-amber-400"
                       )}
+                      title={isBoosted ? "Renovar Destaque" : "Impulsionar"}
                     >
-                      <Zap className="size-3.5 fill-current" />
-                      <span>{isBoosted ? "Renovar Destaque" : "Impulsionar Anúncio"}</span>
+                      <Zap className="size-4 fill-current" />
                     </Button>
 
-                    {/* Dropdown de Ações Secundárias */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
-                          className="size-9 rounded-xl border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                          className="size-10 min-w-[40px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
                         >
                           <MoreVertical className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 rounded-2xl p-1.5 border-border/80">
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
+                      <DropdownMenuContent align="end" className="w-52 rounded-2xl p-1.5 border-border/80">
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
                           <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
-                            <Edit3 className="size-3.5 mr-2 text-muted-foreground" />
+                            <Edit3 className="size-4 mr-2 text-muted-foreground" />
                             <span>Editar Anúncio</span>
                           </Link>
                         </DropdownMenuItem>
 
-                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2">
+                        <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
                           <Link to="/classificados/$id" params={{ id: ad.id }}>
-                            <ExternalLink className="size-3.5 mr-2 text-muted-foreground" />
+                            <ExternalLink className="size-4 mr-2 text-muted-foreground" />
                             <span>Ver na Vitrine</span>
                           </Link>
                         </DropdownMenuItem>
@@ -825,16 +549,16 @@ function ClassificadosIndex() {
                             })
                           }
                           disabled={toggleStatusMutation.isPending}
-                          className="rounded-xl cursor-pointer text-xs font-semibold py-2"
+                          className="rounded-xl cursor-pointer text-xs font-semibold py-2.5"
                         >
                           {isPaused ? (
                             <>
-                              <PlayCircle className="size-3.5 mr-2 text-emerald-600" />
+                              <PlayCircle className="size-4 mr-2 text-emerald-600" />
                               <span>Reativar Anúncio</span>
                             </>
                           ) : (
                             <>
-                              <PauseCircle className="size-3.5 mr-2 text-amber-600" />
+                              <PauseCircle className="size-4 mr-2 text-amber-600" />
                               <span>Pausar Anúncio</span>
                             </>
                           )}
@@ -849,36 +573,36 @@ function ClassificadosIndex() {
                               })
                             }
                             disabled={toggleStatusMutation.isPending}
-                            className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-blue-600 dark:text-blue-400"
+                            className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-blue-600 dark:text-blue-400"
                           >
-                            <CheckCircle2 className="size-3.5 mr-2" />
+                            <CheckCircle2 className="size-4 mr-2" />
                             <span>Marcar como Vendido</span>
                           </DropdownMenuItem>
                         )}
 
                         <DropdownMenuItem
                           onClick={() => setAdToDelete(ad)}
-                          className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-destructive"
+                          className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-destructive"
                         >
-                          <Trash2 className="size-3.5 mr-2" />
+                          <Trash2 className="size-4 mr-2" />
                           <span>Excluir Anúncio</span>
                         </DropdownMenuItem>
 
                         <DropdownMenuSeparator />
 
                         {ad.store_id ? (
-                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary">
+                          <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary">
                             <Link to="/workspace">
-                              <Building2 className="size-3.5 mr-2" />
+                              <Building2 className="size-4 mr-2" />
                               <span>Acessar Loja Pro</span>
                             </Link>
                           </DropdownMenuItem>
                         ) : (
                           <DropdownMenuItem
                             onClick={() => setMigratingAd(ad)}
-                            className="rounded-xl cursor-pointer text-xs font-semibold py-2 text-primary"
+                            className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary"
                           >
-                            <Sparkles className="size-3.5 mr-2" />
+                            <Star className="size-4 mr-2" />
                             <span>Migrar para Loja Pro</span>
                           </DropdownMenuItem>
                         )}
@@ -889,29 +613,377 @@ function ClassificadosIndex() {
               );
             })}
           </div>
+
+          {/* ══════════════════════════════════════════════════════════════════
+              DESKTOP VIEW: High-Density Bento Cards (>=640px)
+          ══════════════════════════════════════════════════════════════════ */}
+          <div className="hidden sm:block space-y-3.5">
+            {filtered.map((ad: any) => {
+              const statusConf = STATUS_CONFIG[ad.status] || STATUS_CONFIG.draft;
+              const isBoosted = ad.is_boosted && ad.boosted_until && new Date(ad.boosted_until) > new Date();
+              const isPaused = ad.status === "paused";
+              const thumbUrl = ad.images?.[0] || null;
+              const isVideo = isVideoUrl(thumbUrl);
+              const niche = resolveClassifiedNiche(ad);
+              const NicheIcon = niche.icon;
+              const viewsCount = Number(ad.views_count || 0);
+              const clicksCount = Number(ad.clicks_count || 0);
+              const whatsappCount = Number(ad.whatsapp_clicks_count || ad.proposals_count || 0);
+
+              return (
+                <article
+                  key={ad.id}
+                  className="relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[144px] pl-36 sm:pl-44 transition-all hover:border-primary/40 shadow-xs"
+                >
+                  <Link
+                    to="/classificados/$id"
+                    params={{ id: ad.id }}
+                    className="absolute inset-y-0 left-0 w-36 sm:w-44 overflow-hidden rounded-l-2xl bg-muted flex items-center justify-center group"
+                  >
+                    {thumbUrl ? (
+                      isVideo ? (
+                        <video src={thumbUrl} className="size-full object-cover group-hover:scale-105 transition-transform duration-300" muted />
+                      ) : (
+                        <img src={thumbUrl} alt={ad.title} loading="lazy" className="size-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      )
+                    ) : (
+                      <ImageIcon className="size-8 text-muted-foreground/35" />
+                    )}
+                    {isBoosted && (
+                      <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-amber-500 text-black text-[9px] font-black uppercase tracking-wider shadow-xs">
+                        Boost
+                      </span>
+                    )}
+                  </Link>
+
+                  <div className="p-4 sm:p-5 flex flex-col justify-between min-h-[144px] gap-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <Link
+                          to="/classificados/$id"
+                          params={{ id: ad.id }}
+                          className="text-sm sm:text-base font-bold text-foreground line-clamp-1 hover:text-primary transition-colors"
+                        >
+                          {ad.title}
+                        </Link>
+                        <Badge
+                          variant="outline"
+                          className={cn("text-[10px] font-mono px-2 py-0.5 shrink-0", statusConf.className)}
+                        >
+                          {statusConf.label}
+                        </Badge>
+                      </div>
+
+                      {ad.price_cents != null && (
+                        <p className="text-base sm:text-lg font-black font-mono text-foreground tracking-tight">
+                          {ad.price_cents === 0 ? "Doação Gratuita" : formatMoney(ad.price_cents)}
+                        </p>
+                      )}
+
+                      <div className="flex items-center flex-wrap gap-2 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <NicheIcon className="size-3.5 text-muted-foreground/75" />
+                          <span>{niche.shortLabel}</span>
+                        </span>
+                        {(ad.location_city || ad.location_name) && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate max-w-[160px]">
+                              {ad.location_city || ad.location_name}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <span
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
+                          title="Visualizações reais auditadas"
+                        >
+                          <Eye className="size-3" />
+                          <span>{viewsCount}</span>
+                        </span>
+
+                        <span
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
+                          title="Cliques no anúncio"
+                        >
+                          <MousePointer className="size-3 text-sky-600 dark:text-sky-400" />
+                          <span>{clicksCount}</span>
+                        </span>
+
+                        <span
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border/40 text-[11px] font-mono text-muted-foreground"
+                          title="Contatos WhatsApp e Propostas"
+                        >
+                          <MessageCircle className="size-3 text-emerald-600 dark:text-emerald-400" />
+                          <span>{whatsappCount}</span>
+                        </span>
+
+                        <div className="hidden sm:flex items-center pl-1 border-l border-border/40" title="Tendência 7 dias">
+                          <AdSparkline data={ad.sparkline_7d || [0, 0, 0, 0, 0, 0, viewsCount]} className="h-6 w-14" />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Button
+                          type="button"
+                          onClick={() => handleOpenBoostModal(ad)}
+                          disabled={!gatewayAvailable || gatewayLoading}
+                          className={cn(
+                            "h-10 px-3.5 rounded-xl font-bold text-xs gap-1.5 cursor-pointer transition-all active:scale-95 shadow-none",
+                            !gatewayAvailable
+                              ? "bg-muted text-muted-foreground border border-border/50 cursor-not-allowed opacity-60"
+                              : isBoosted
+                              ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
+                              : "bg-amber-500 text-black hover:bg-amber-400"
+                          )}
+                        >
+                          <Zap className="size-3.5 fill-current" />
+                          <span>{isBoosted ? "Renovar" : "Impulsionar"}</span>
+                        </Button>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                              aria-label="Opções do anúncio"
+                            >
+                              <MoreVertical className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52 rounded-2xl p-1.5 border-border/80">
+                            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
+                              <Link to="/conta/classificados/novo" search={{ editId: ad.id }}>
+                                <Edit3 className="size-4 mr-2 text-muted-foreground" />
+                                <span>Editar Anúncio</span>
+                              </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5">
+                              <Link to="/classificados/$id" params={{ id: ad.id }}>
+                                <ExternalLink className="size-4 mr-2 text-muted-foreground" />
+                                <span>Ver na Vitrine</span>
+                              </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() =>
+                                toggleStatusMutation.mutate({
+                                  id: ad.id,
+                                  newStatus: isPaused ? "active" : "paused",
+                                })
+                              }
+                              disabled={toggleStatusMutation.isPending}
+                              className="rounded-xl cursor-pointer text-xs font-semibold py-2.5"
+                            >
+                              {isPaused ? (
+                                <>
+                                  <PlayCircle className="size-4 mr-2 text-emerald-600" />
+                                  <span>Reativar Anúncio</span>
+                                </>
+                              ) : (
+                                <>
+                                  <PauseCircle className="size-4 mr-2 text-amber-600" />
+                                  <span>Pausar Anúncio</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+
+                            {ad.status !== "completed" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  toggleStatusMutation.mutate({
+                                    id: ad.id,
+                                    newStatus: "completed" as any,
+                                  })
+                                }
+                                disabled={toggleStatusMutation.isPending}
+                                className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-blue-600 dark:text-blue-400"
+                              >
+                                <CheckCircle2 className="size-4 mr-2" />
+                                <span>Marcar como Vendido</span>
+                              </DropdownMenuItem>
+                            )}
+
+                            <DropdownMenuItem
+                              onClick={() => setAdToDelete(ad)}
+                              className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-destructive"
+                            >
+                              <Trash2 className="size-4 mr-2" />
+                              <span>Excluir Anúncio</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            {ad.store_id ? (
+                              <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary">
+                                <Link to="/workspace">
+                                  <Building2 className="size-4 mr-2" />
+                                  <span>Acessar Loja Pro</span>
+                                </Link>
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => setMigratingAd(ad)}
+                                className="rounded-xl cursor-pointer text-xs font-semibold py-2.5 text-primary"
+                              >
+                                <Star className="size-4 mr-2" />
+                                <span>Migrar para Loja Pro</span>
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </>
       ) : (
-        <div className="w-full rounded-2xl border border-border/60 bg-card p-8 text-center space-y-3">
+        <div className="mx-4 sm:mx-0 rounded-2xl border border-border/60 bg-card p-8 text-center space-y-3">
           <p className="text-sm font-semibold text-foreground">
             {searchTerm ? "Nenhum anúncio encontrado para sua busca" : "Você ainda não possui anúncios ativos"}
           </p>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             {searchTerm
-              ? "Tente buscar por outro termo ou limpe o campo de busca."
-              : "Publique produtos, veículos, imóveis ou serviços para alcançar milhares de pessoas na sua cidade."}
+              ? "Tente buscar por outro termo ou ajuste os filtros."
+              : "Use o botão + para publicar seu primeiro anúncio."}
           </p>
-          <div className="pt-2">
-            <Button asChild className="rounded-xl text-xs font-bold h-9 bg-primary text-primary-foreground">
-              <Link to="/conta/classificados/novo">
-                <Plus className="size-4 mr-1.5" />
-                <span>Criar Primeiro Anúncio</span>
-              </Link>
-            </Button>
-          </div>
+          <Button asChild size="sm" className="rounded-xl font-bold mt-2">
+            <Link to="/conta/classificados/novo">
+              <Plus className="size-4 mr-1.5" />
+              <span>Publicar Anúncio</span>
+            </Link>
+          </Button>
         </div>
       )}
 
-      {/* ── BOOST BOTTOM SHEET CANÔNICO (MOBILE & DESKTOP SPATIAL UI) ── */}
+      {/* ── Mobile Floating Action Button (FAB 44px+) ── */}
+      <Link
+        to="/conta/classificados/novo"
+        aria-label="Criar Novo Anúncio"
+        className="sm:hidden fixed bottom-20 right-4 z-40 size-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+      >
+        <Plus className="size-6" />
+      </Link>
+
+      {/* ── FILTRO SHEET CANÔNICO (100dvh no Mobile / Dialog no Desktop) ── */}
+      <Sheet open={isMlFilterOpen} onOpenChange={setIsMlFilterOpen}>
+        <SheetContent side="bottom" className="h-[90dvh] sm:h-auto sm:max-h-[85vh] sm:max-w-md mx-auto rounded-t-3xl sm:rounded-2xl p-0 overflow-hidden flex flex-col">
+          <SheetHeader className="p-4 border-b border-border/40 shrink-0 text-left flex flex-row items-center justify-between">
+            <SheetTitle className="text-base font-bold text-foreground">
+              Filtrar Anúncios
+            </SheetTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMlFilterOpen(false)}
+              className="size-9 rounded-full"
+            >
+              <Check className="size-4" />
+            </Button>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
+                Status do Anúncio
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "all", label: "Todos os Status" },
+                  { id: "active", label: "Publicados" },
+                  { id: "paused", label: "Pausados" },
+                  { id: "boosted", label: "Impulsionados" },
+                  { id: "completed", label: "Finalizados" },
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => setStatusFilter(st.id)}
+                    className={cn(
+                      "h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
+                      statusFilter === st.id
+                        ? "border-primary bg-primary/10 text-primary font-bold"
+                        : "border-border/60 bg-card text-foreground"
+                    )}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
+                Categoria
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCategoryFilter("all")}
+                  className={cn(
+                    "h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
+                    categoryFilter === "all"
+                      ? "border-primary bg-primary/10 text-primary font-bold"
+                      : "border-border/60 bg-card text-foreground"
+                  )}
+                >
+                  Todas
+                </button>
+                {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setCategoryFilter(key)}
+                    className={cn(
+                      "h-11 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center transition-all cursor-pointer",
+                      categoryFilter === key
+                        ? "border-primary bg-primary/10 text-primary font-bold"
+                        : "border-border/60 bg-card text-foreground"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-border/40 shrink-0 flex items-center gap-2 bg-background">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setStatusFilter("all");
+                setCategoryFilter("all");
+                setSearchTerm("");
+                setIsMlFilterOpen(false);
+              }}
+              className="h-11 flex-1 rounded-xl font-bold text-xs"
+            >
+              Limpar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setIsMlFilterOpen(false)}
+              className="h-11 flex-1 rounded-xl font-bold text-xs bg-primary text-primary-foreground"
+            >
+              Ver {filtered.length} Anúncio(s)
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ── BOOST BOTTOM SHEET CANÔNICO ── */}
       <BoostBottomSheet
         open={!!boostingAd}
         onOpenChange={(open) => {
@@ -951,7 +1023,7 @@ function ClassificadosIndex() {
         }}
       />
 
-      {/* Modal de Migração de Anúncio para Loja no Workspace Pro */}
+      {/* ── MODAL DE MIGRAÇÃO PARA LOJA PRO ── */}
       <Dialog open={!!migratingAd} onOpenChange={(open) => !open && setMigratingAd(null)}>
         <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
           <DialogHeader>
@@ -996,8 +1068,55 @@ function ClassificadosIndex() {
               disabled={isMigrating}
               className="flex-1 h-10 rounded-xl text-xs font-bold bg-primary text-primary-foreground cursor-pointer shadow-xs"
             >
-              {isMigrating ? <Loader2 className="size-4 animate-spin mr-1" /> : <Sparkles className="size-4 mr-1" />}
+              {isMigrating ? <Loader2 className="size-4 animate-spin mr-1" /> : <Star className="size-4 mr-1" />}
               <span>Confirmar Migração</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── MODAL DE CONFIRMAÇÃO DE EXCLUSÃO (CORREÇÃO DE GAP LÓGICO E2E) ── */}
+      <Dialog open={!!adToDelete} onOpenChange={(open) => !open && setAdToDelete(null)}>
+        <DialogContent className="max-w-md rounded-2xl p-6 space-y-4">
+          <DialogHeader>
+            <div className="size-12 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive mb-1">
+              <Trash2 className="size-6" />
+            </div>
+            <DialogTitle className="text-base font-bold text-foreground">
+              Excluir Anúncio Definitivamente?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Você tem certeza de que deseja excluir <strong>"{adToDelete?.title}"</strong>? Esta ação é irreversível e removerá o anúncio e suas métricas da plataforma.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAdToDelete(null)}
+              disabled={deleteMutation.isPending}
+              className="flex-1 h-10 rounded-xl text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => {
+                if (adToDelete) {
+                  deleteMutation.mutate(adToDelete.id);
+                }
+              }}
+              disabled={deleteMutation.isPending}
+              className="flex-1 h-10 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin mr-1" />
+              ) : (
+                <Trash2 className="size-4 mr-1" />
+              )}
+              <span>Excluir Anúncio</span>
             </Button>
           </div>
         </DialogContent>
@@ -1005,3 +1124,5 @@ function ClassificadosIndex() {
     </div>
   );
 }
+// Default export removed for TanStack Router code-splitting optimization
+export default Route.component;

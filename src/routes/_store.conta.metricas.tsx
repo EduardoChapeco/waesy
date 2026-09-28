@@ -4,10 +4,7 @@ import { TrendingUp, Users, Heart, MessageCircle, Eye, ArrowUpRight, Sliders, Ar
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
- getMemberAnalyticsInsights,
- type MemberAnalyticsDTO,
-} from "@/services/social.functions";
+import { getMemberAnalyticsInsights, type MemberAnalyticsDTO } from "@/services/social.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -292,7 +289,7 @@ function MemberMetricsPage() {
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
  <span className="flex items-center gap-1.5 text-muted-foreground">
- <Layers className="size-3.5 text-primary" /> Carrosséis & Galerias
+ <Layers className="size-3.5 text-primary" /> Carrosséis e Galerias
  </span>
  <span className="font-bold">{formatDistribution.gallery}</span>
  </div>
@@ -310,7 +307,7 @@ function MemberMetricsPage() {
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
  <span className="flex items-center gap-1.5 text-muted-foreground">
- <Film className="size-3.5 text-rose-500" /> Vídeos & Moments
+ <Film className="size-3.5 text-rose-500" /> Vídeos e Moments
  </span>
  <span className="font-bold">{formatDistribution.video}</span>
  </div>
@@ -328,7 +325,7 @@ function MemberMetricsPage() {
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
  <span className="flex items-center gap-1.5 text-muted-foreground">
- <Sliders className="size-3.5 text-amber-500" /> Zines & Notícias
+ <Sliders className="size-3.5 text-amber-500" /> Zines e Notícias
  </span>
  <span className="font-bold">{formatDistribution.zine}</span>
  </div>
@@ -346,7 +343,7 @@ function MemberMetricsPage() {
  <div className="space-y-1">
  <div className="flex items-center justify-between text-xs">
  <span className="flex items-center gap-1.5 text-muted-foreground">
- <FileText className="size-3.5 text-slate-500" /> Textos & Debates
+ <FileText className="size-3.5 text-slate-500" /> Textos e Debates
  </span>
  <span className="font-bold">{formatDistribution.text}</span>
  </div>

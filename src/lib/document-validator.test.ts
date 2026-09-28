@@ -1,22 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  validateCpfMod11,
-  validateCnpjMod11,
-  validateBirthDate,
-  validateCep,
-  formatCpf,
-  formatCnpj,
-  formatCep,
-  formatPhone,
-  maskCpfProgressive,
-  maskCnpjProgressive,
-  maskDocumentProgressive,
-  maskPlate,
-  validatePlate,
-  detectCardBrand,
-  maskCreditCardNumber,
-  maskCardExpiry,
-} from "./document-validator";
+import { validateCpfMod11, validateCnpjMod11, validateBirthDate, validateCep, formatCpf, formatCnpj, formatCep, formatPhone, maskCpfProgressive, maskCnpjProgressive, maskDocumentProgressive, maskPlate, validatePlate, detectCardBrand, maskCreditCardNumber, maskCardExpiry } from "./document-validator";
 
 describe("document-validator", () => {
   describe("validateCpfMod11", () => {

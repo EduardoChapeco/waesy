@@ -3,14 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserSession } from "@/services/auth.functions";
 import { trackAndOpenWhatsApp, sanitizeWhatsAppPhone } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Lock, MessageCircle, ShieldCheck, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

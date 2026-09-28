@@ -7,32 +7,11 @@
  */
 
 import { useState, useMemo } from "react";
-import {
-  Users,
-  DollarSign,
-  Compass,
-  Car,
-  Home,
-  Scale,
-  ShoppingBag,
-  Briefcase,
-  Search,
-  Sparkles,
-  Plus,
-  Check,
-} from "lucide-react";
+import { Users, DollarSign, Compass, Car, Home, Scale, ShoppingBag, Briefcase, Search, Star, Plus, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  CONTRACT_SEMANTIC_GROUPS,
-  type ContractSemanticVariable,
-} from "@/lib/contracts/contract-semantic-dictionary";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CONTRACT_SEMANTIC_GROUPS, type ContractSemanticVariable } from "@/lib/contracts/contract-semantic-dictionary";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -107,7 +86,7 @@ export function ContractVariablePicker({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <Sparkles className="size-4.5" />
+            <Star className="size-4.5" />
           </div>
           <div>
             <h4 className="text-sm font-bold text-foreground flex items-center gap-2">

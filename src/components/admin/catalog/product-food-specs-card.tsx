@@ -1,31 +1,10 @@
 import React from "react";
-import {
-  Layers,
-  Leaf,
-  Apple,
-  Users,
-  Scale,
-  Clock,
-  ShieldCheck,
-  Tag,
-  Check,
-  Barcode,
-  Sparkles,
-  Percent,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { Layers, Leaf, Apple, Users, Scale, Clock, ShieldCheck, Tag, Check, Barcode, Star, Percent, Plus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -141,7 +120,7 @@ export function ProductFoodSpecsCard({
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Especificações de Varejo, Alimentação & Hortifrúti</h3>
+            <h3 className="text-sm font-bold text-foreground">Especificações de Varejo, Alimentação</h3>
             <Badge variant="outline" className="text-[10px] font-bold bg-primary/10 text-primary border-none">
               Padrão iFood / Osuper
             </Badge>
@@ -434,7 +413,7 @@ export function ProductFoodSpecsCard({
       {/* ── 6. Tamanho do Item, Porção & Tempo de Preparo ── */}
       <div className="pt-2 border-t border-border/40 space-y-4">
         <Label className="text-xs font-bold text-foreground uppercase tracking-wider text-[11px]">
-          Tamanho do Item & Porção da Refeição
+          Tamanho do Item e Porção da Refeição
         </Label>
 
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">

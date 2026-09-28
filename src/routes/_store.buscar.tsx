@@ -1,19 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { z } from "zod";
-import { ShoppingBag, Calendar, Tag, Store, ChevronRight, Layers, Clock, Sparkles, TrendingUp, X, CookingPot } from 'lucide-react';
+import { ShoppingBag, Calendar, Tag, Store, ChevronRight, Layers, Clock, Star, TrendingUp, X, CookingPot } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
-import {
-  federatedSearch,
-  getSearchDiscoveryData,
-  type FederatedSearchResponse,
-  type SearchResultProduct,
-  type SearchResultEvent,
-  type SearchResultClassified,
-  type SearchResultStore,
-  type SearchResultRecipe,
-} from "@/services/search.functions";
+import { federatedSearch, getSearchDiscoveryData, type FederatedSearchResponse, type SearchResultProduct, type SearchResultEvent, type SearchResultClassified, type SearchResultStore, type SearchResultRecipe } from "@/services/search.functions";
 import { getUserTopAffinities } from "@/services/telemetry-affinity.functions";
 import { ProductGrid } from "@/components/commerce/product-grid";
 import { Badge } from "@/components/ui/badge";
@@ -21,11 +12,7 @@ import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { MapLibreCanvas, type MapMarkerItem } from "@/components/mobility/maplibre-canvas";
 
 const SearchSchema = z.object({
@@ -66,7 +53,7 @@ const TYPE_FILTERS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", icon: Layers as any },
  { id: "product", label: "Produtos", icon: ShoppingBag as any },
  { id: "classified", label: "Classificados", icon: Tag as any },
- { id: "store", label: "Lojas & Negócios", icon: Store as any },
+ { id: "store", label: "Lojas e Negócios", icon: Store as any },
  { id: "event", label: "Eventos", icon: Calendar as any },
   { id: "recipe", label: "Receitas", icon: CookingPot as any },
 ];
@@ -615,7 +602,7 @@ function SearchPage() {
           {userAffinities && userAffinities.length > 0 && (
             <div className="space-y-2">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-primary" />
+                <Star className="size-3.5 text-primary" />
                 <span>Recomendado para você</span>
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -667,10 +654,10 @@ function SearchPage() {
           {/* Atalhos Rápidos para Verticais */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             {[
-              { to: "/mercado", label: "Mercado & Feira", icon: ShoppingBag, color: "text-foreground bg-muted/30 border border-border/40" },
+              { to: "/mercado", label: "Mercado e Feira", icon: ShoppingBag, color: "text-foreground bg-muted/30 border border-border/40" },
               { to: "/gastronomia", label: "Gastronomia", icon: Store, color: "text-foreground bg-muted/30 border border-border/40" },
               { to: "/classificados", label: "Classificados", icon: Tag, color: "text-foreground bg-muted/30 border border-border/40" },
-              { to: "/agenda", label: "Eventos & Festas", icon: Calendar, color: "text-foreground bg-muted/30 border border-border/40" },
+              { to: "/agenda", label: "Eventos e Festas", icon: Calendar, color: "text-foreground bg-muted/30 border border-border/40" },
             ].map((cat) => {
               const Icon = cat.icon;
               return (
@@ -741,7 +728,7 @@ function SearchPage() {
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black tracking-tight text-foreground">
-                  Lojas & Negócios Locais
+                  Lojas e Negócios Locais
                 </h3>
                 <Link to="/diretorio" className="text-xs font-semibold text-primary hover:underline">
                   Guia completo
@@ -852,7 +839,7 @@ function SearchPage() {
     <div className="space-y-6 pt-2">
       {/* Seção de Lojas */}
       <ResultSection
-        title="Lojas & Comércios"
+        title="Lojas"
         count={filteredStores.length}
         icon={Store}
       >
@@ -875,7 +862,7 @@ function SearchPage() {
         <section className="mb-8 space-y-3">
           <div className="flex items-center gap-2">
             <ShoppingBag className="size-4 text-primary" />
-            <h2 className="text-sm font-bold text-foreground">Produtos & Cardápio</h2>
+            <h2 className="text-sm font-bold text-foreground">Produtos</h2>
             <Badge variant="outline" className="text-[10px] font-mono border-border/70">
               {filteredProducts.length}
             </Badge>
@@ -893,7 +880,7 @@ function SearchPage() {
 
       {/* Seção de Classificados */}
       <ResultSection
-        title="Classificados & Anúncios"
+        title="Classificados"
         count={filteredClassifieds.length}
         icon={Tag}
       >
@@ -912,9 +899,9 @@ function SearchPage() {
       </ResultSection>
 
       
-      {/* Seção de Receitas & Gastronomia */}
+      {/* Seção de Receitas */}
       <ResultSection
-        title="Receitas & Gastronomia"
+        title="Receitas"
         count={filteredRecipes.length}
         icon={CookingPot}
       >
@@ -934,7 +921,7 @@ function SearchPage() {
 
       {/* Seção de Eventos */}
       <ResultSection
-        title="Eventos & Agenda Cultural"
+        title="Eventos"
         count={filteredEvents.length}
         icon={Calendar}
       >

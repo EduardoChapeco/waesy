@@ -1,15 +1,5 @@
 import { useState } from "react";
-import {
-  Wand2,
-  AlertTriangle,
-  CheckCircle2,
-  Sliders,
-  Type,
-  Clock,
-  Palette,
-  Layers,
-  Zap,
-} from "lucide-react";
+import { Wand2, AlertTriangle, CheckCircle2, Sliders, Type, Clock, Palette, Layers, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,13 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import type {
   MotionStudioTemplateDefinition,

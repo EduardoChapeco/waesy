@@ -2,52 +2,22 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { EmptyState } from "@/components/state/states";
-import {
-  listEmployeesBalance,
-  registerFinancialEvent,
-  getEmployeeFinancialStatement,
-} from "@/services/hr.functions";
-import {
-  Wallet,
-  ArrowDownRight,
-  ArrowUpRight,
-  Search,
-  FileSpreadsheet,
-  Users,
-  Clock,
-  CheckCircle2,
-  TrendingUp,
-  FileText,
-  Loader2,
-  Plus,
-} from "lucide-react";
+import { listEmployeesBalance, registerFinancialEvent, getEmployeeFinancialStatement } from "@/services/hr.functions";
+import { Wallet, ArrowDownRight, ArrowUpRight, Search, FileSpreadsheet, Users, Clock, CheckCircle2, TrendingUp, FileText, Loader2, Plus } from "lucide-react";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/financeiro/funcionarios")({
-  head: () => ({ meta: [{ title: "Folha & Vales da Equipe | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Folha de Pagamento | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const data = await listEmployeesBalance();
@@ -220,7 +190,7 @@ function HrFinancePage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Financeiro"
-        title="Folha de Pagamento, Vales & Comissões da Equipe"
+        title="Folha de Pagamento"
         description="Acompanhe saldos líquidos da equipe, controle adiantamentos (vales) e emita o extrato individual para cada colaborador."
         actions={
           <Button
@@ -483,7 +453,7 @@ function HrFinancePage() {
                     <TableRow className="border-border/60 hover:bg-transparent">
                       <TableHead className="text-[11px] font-bold">Data/Hora</TableHead>
                       <TableHead className="text-[11px] font-bold">Tipo</TableHead>
-                      <TableHead className="text-[11px] font-bold">Descrição / Motivo</TableHead>
+                      <TableHead className="text-[11px] font-bold">Descrição</TableHead>
                       <TableHead className="text-right text-[11px] font-bold font-mono">Valor</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -538,7 +508,7 @@ function HrFinancePage() {
       <SheetPage
         open={modalOpen}
         onOpenChange={setModalOpen}
-        title="Lançamento de Folha & Vales"
+        title="Lançamento de Folha"
         description={`Registrando lançamento para ${selectedEmp?.name || "colaborador"}`}
         size="default"
         footer={
@@ -595,7 +565,7 @@ function HrFinancePage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-bold">Descrição / Motivo</Label>
+            <Label className="text-xs font-bold">Descrição</Label>
             <Input
               placeholder="Ex: Adiantamento para transporte, bônus meta..."
               value={formData.description}

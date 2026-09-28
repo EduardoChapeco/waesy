@@ -13,7 +13,7 @@ import { getPlatformBrandSettings, updatePlatformBrandSettings } from "@/service
 import { uploadBrandAsset } from "@/services/storage.functions";
 
 export const Route = createFileRoute("/admin-master/marca")({
- head: () => ({ meta: [{ title: "Identidade da Marca & CMS | Admin Waesy" }] }),
+ head: () => ({ meta: [{ title: "Identidade da Marca e CMS | Admin Waesy" }] }),
  loader: async () => {
  try {
  const brand = await getPlatformBrandSettings();
@@ -200,7 +200,7 @@ function AdminMasterMarcaPage() {
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
- Identidade & Marca Global
+ Identidade e Marca Global
  </h1>
  <Badge variant="outline" className="text-[11px] font-mono border-primary/30 text-primary">
  Propagação Bilateral
@@ -236,7 +236,7 @@ function AdminMasterMarcaPage() {
  <Type className="size-4" />
  </div>
  <div>
- <h2 className="text-sm font-bold text-foreground">Nome & Marca da Cidade</h2>
+ <h2 className="text-sm font-bold text-foreground">Nome e Marca da Cidade</h2>
  <p className="text-[11px] text-muted-foreground">
  Título oficial exibido nos cabeçalhos, títulos de página e metadados SEO.
  </p>
@@ -742,7 +742,7 @@ function AdminMasterMarcaPage() {
  Tela de Login
  </TabsTrigger>
  <TabsTrigger value="browser" className="text-[11px] rounded-lg">
- Aba & Suporte
+ Aba e Suporte
  </TabsTrigger>
  </TabsList>
 
@@ -979,7 +979,7 @@ function AdminMasterMarcaPage() {
  <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
  <div className="flex items-center gap-2">
  <span className="text-xs sm:text-sm font-semibold text-foreground">
- Configurações de Identidade Visual & CMS
+ Configurações de Identidade Visual e CMS
  </span>
  {isDirty && (
  <span className="text-xs text-amber-600 font-medium hidden sm:inline">

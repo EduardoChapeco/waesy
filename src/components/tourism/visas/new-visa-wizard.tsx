@@ -135,7 +135,7 @@ export function NewVisaWizard({ isOpen, onClose, onCreated, storeId }: NewVisaWi
  </div>
 
  <div className="space-y-1">
- <label className="text-xs font-bold text-foreground">Observações & Instruções do Cliente</label>
+ <label className="text-xs font-bold text-foreground">Observações e Instruções do Cliente</label>
  <Textarea
  value={notes}
  onChange={(e) => setNotes(e.target.value)}

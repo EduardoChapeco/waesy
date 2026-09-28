@@ -1,26 +1,8 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  CalendarDots,
-  CalendarBlank,
-  Clock,
-  MapPin,
-  Ticket,
-  CreditCard,
-  Scissors,
-  CheckCircle,
-  CaretRight,
-  Sparkle,
-  CircleNotch,
-  WarningCircle,
-  CurrencyDollar,
-  QrCode,
-  ArrowRight,
-  Plus,
-  Tag,
-  Storefront,
-} from "@phosphor-icons/react";
+import { CalendarDots, CalendarBlank, Clock, MapPin, Ticket, CreditCard, Scissors, CheckCircle, CaretRight, Star, CircleNotch, WarningCircle, CurrencyDollar, QrCode, ArrowRight, Plus, Tag, Storefront } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -34,11 +16,8 @@ import { getPublicEvents } from "@/services/events.functions";
 import { listActiveBanners } from "@/services/banner.functions";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { X, Calendar as CalendarIcon, ChevronDown } from "lucide-react";
@@ -51,16 +30,16 @@ const MONTH_NAMES = [
 
 const AGENDA_FILTER_CHIPS: FilterChipOption[] = [
   { id: "todos", label: "Toda a Agenda", emoji: "📅" },
-  { id: "eventos", label: "Eventos & Shows", emoji: "🎟️" },
+  { id: "eventos", label: "Eventos e Shows", emoji: "🎟️" },
   { id: "servicos", label: "Meus Serviços", emoji: "✂️" },
   { id: "ingressos", label: "Meus Ingressos", emoji: "🎫" },
-  { id: "carnes", label: "Contas & Carnês", emoji: "💳" },
+  { id: "carnes", label: "Contas e Carnês", emoji: "💳" },
 ];
 
 export const Route = createFileRoute("/_store/agenda")({
   head: () => ({
     meta: [
-      { title: "Agenda Cultural & Calendário | Waesy" },
+      { title: "Agenda Cultural e Calendário | Waesy" },
       {
         name: "description",
         content:
@@ -68,11 +47,12 @@ export const Route = createFileRoute("/_store/agenda")({
       },
     ],
   }),
-  loader: async () => {
+  loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
     try {
       const [session, banners] = await Promise.all([
         getUserSession().catch(() => null),
-        listActiveBanners({ data: { placement: "agenda" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "agenda", city: activeCity } }).catch(() => []),
       ]);
       return { session, banners: banners || [] };
     } catch {
@@ -341,7 +321,7 @@ function AgendaPadronizadaPage() {
     if (eventos.length > 0) {
       groups.push({
         key: "eventos",
-        label: "Shows & Eventos na Cidade",
+        label: "Shows e Eventos na Cidade",
         badge: `${eventos.length} atrações`,
         items: eventos,
       });
@@ -381,46 +361,48 @@ function AgendaPadronizadaPage() {
   }, [filteredItems]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24 py-4">
-      {/* ── 1. Banners de Destaque da Agenda (se cadastrados) ── */}
-      {banners && banners.length > 0 && (
-        <section aria-label="Destaques da Agenda">
-          <BannerHeroCarousel banners={banners} />
-        </section>
-      )}
+    <div className="w-full max-w-5xl mx-auto pb-24">
+      <NativeMobileHeader
+        title="Agenda"
+        centerTitle
+        backTo="/"
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Buscar shows, eventos, horários..."
+      />
 
-      {/* ── 2. Header Apple HIG ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
-        <div>
+      <div className="px-4 sm:px-5 space-y-5 py-3 sm:py-4">
+        {/* ── 1. Banners de Destaque da Agenda (se cadastrados) ── */}
+        {banners && banners.length > 0 && (
+          <section aria-label="Destaques da Agenda">
+            <BannerHeroCarousel banners={banners} />
+          </section>
+        )}
+
+        {/* ── 2. Header Desktop Silencioso Apple HIG ── */}
+        <div className="hidden lg:flex items-center justify-between gap-3 border-b border-border/40 pb-3">
+          <h1 className="text-xl font-black tracking-tight text-foreground">
+            Agenda
+          </h1>
+
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-              Agenda & Calendário
-            </h1>
-            
+            {!isAuthenticated ? (
+              <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+                <Link to="/entrar" search={{ returnUrl: "/agenda" }}>
+                  <span>Entrar na Conta</span>
+                  <ArrowRight size={13} className="ml-1.5" />
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
+                <Link to="/servicos">
+                  <Plus size={14} weight="bold" className="mr-1.5" />
+                  <span>Agendar Serviço</span>
+                </Link>
+              </Button>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Shows, programação cultural da cidade, agendamentos e ingressos organizados por data.
-          </p>
         </div>
-
-        <div className="flex items-center gap-2">
-          {!isAuthenticated ? (
-            <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
-              <Link to="/entrar" search={{ returnUrl: "/agenda" }}>
-                <span>Entrar na Conta</span>
-                <ArrowRight size={13} className="ml-1.5" />
-              </Link>
-            </Button>
-          ) : (
-            <Button asChild size="sm" className="h-9 px-4 rounded-xl text-xs font-bold bg-foreground text-background hover:bg-foreground/90">
-              <Link to="/servicos">
-                <Plus size={14} weight="bold" className="mr-1.5" />
-                <span>Agendar Serviço</span>
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
 
       {/* ── 3. Seletor de Datas Consolidado (Estilo Airbnb / Sympla — Zero Poluição) ── */}
       <section aria-label="Filtro por Data" className="py-1">
@@ -474,14 +456,20 @@ function AgendaPadronizadaPage() {
             </PopoverContent>
           </Popover>
 
-          {/* Atalhos Rápidos Inteligentes em Pílulas Flat */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          {/* Atalhos Rápidos Inteligentes em Pílulas Flat (Snap & Fade Physics) */}
+          <div
+            className="flex items-center gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory pr-6"
+            style={{
+              maskImage: "linear-gradient(to right, black 88%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to right, black 88%, transparent 100%)",
+            }}
+          >
             {/* Todos */}
             <button
               type="button"
               onClick={() => setSelectedDate("all")}
               className={cn(
-                "h-9 px-3.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
+                "h-9 px-3.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap snap-start",
                 selectedDate === "all"
                   ? "bg-foreground text-background font-bold shadow-2xs"
                   : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -764,27 +752,27 @@ function AgendaPadronizadaPage() {
             </div>
           )}
 
-          {/* ── MODO 3: LISTA COMPACTA (Split com Imagem à Esquerda) ── */}
+          {/* ── MODO 3: LISTA EXPANDIDA (V117 Full-Height Left Edge-to-Edge Image) ── */}
           {viewMode === "list" && (
             <div className="space-y-3">
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="group flex flex-col sm:flex-row items-stretch justify-between rounded-2xl border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-all overflow-hidden p-0 w-full"
+                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 hover:shadow-xs transition-all min-h-[136px] pl-32 sm:pl-44 w-full"
                 >
                   <Link
                     to={item.to as any}
-                    className="relative w-full sm:w-56 md:w-64 h-40 sm:h-auto min-h-[130px] overflow-hidden bg-muted/40 shrink-0 cursor-pointer"
+                    className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted/40 cursor-pointer"
                   >
                     {item.image ? (
                       <img
                         src={item.image}
                         alt={item.title}
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="size-full bg-muted/50 flex items-center justify-center">
+                      <div className="w-full h-full bg-muted/50 flex items-center justify-center">
                         <CalendarDots size={28} className="text-muted-foreground/30" />
                       </div>
                     )}
@@ -795,7 +783,7 @@ function AgendaPadronizadaPage() {
                     </div>
                   </Link>
 
-                  <div className="flex-1 min-w-0 p-4 sm:p-5 flex flex-col justify-between space-y-2">
+                  <div className="p-3.5 sm:p-4 flex flex-col justify-between min-h-[136px] gap-2">
                     <Link to={item.to as any} className="space-y-1 block cursor-pointer">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono font-bold text-primary uppercase">
@@ -818,7 +806,7 @@ function AgendaPadronizadaPage() {
                         <span className="truncate">{item.location || "Na região"}</span>
                       </span>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <span className="text-xs font-bold text-primary font-mono">
                           {item.priceOrStatus}
                         </span>
@@ -837,6 +825,7 @@ function AgendaPadronizadaPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

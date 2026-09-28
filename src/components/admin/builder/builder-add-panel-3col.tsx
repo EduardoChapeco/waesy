@@ -66,7 +66,7 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  subcategories: [
  { id: "gastro_streamlined", label: "Cardápio Mobile-First", templateIds: ["food_menu_streamlined", "food_menu_tabs"] },
  { id: "gastro_menu", label: "Cardápio por Abas", templateIds: ["food_menu_tabs", "chef_special_banner"] },
- { id: "gastro_comanda", label: "Comanda & QR Code Mesa", templateIds: ["table_order_comanda"] },
+ { id: "gastro_comanda", label: "Comanda e QR Code Mesa", templateIds: ["table_order_comanda"] },
  { id: "gastro_special", label: "Prato do Chef", templateIds: ["chef_special_banner"] },
  { id: "gastro_hours", label: "Horários e Delivery", templateIds: ["restaurant_hours_delivery", "table_booking_card"] },
  { id: "gastro_reserva", label: "Reserva de Mesa", templateIds: ["table_booking_card"] },
@@ -137,7 +137,7 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  label: "Conteúdo e Layout",
  icon: AlignLeft,
  subcategories: [
- { id: "content_rich", label: "Artigo & Texto Editorial", templateIds: ["rich_text"] },
+ { id: "content_rich", label: "Artigo e Texto Editorial", templateIds: ["rich_text"] },
 				{ id: "content_bento", label: "Bento Grid", templateIds: ["bento_grid"] },
  { id: "content_passos", label: "Passo a Passo", templateIds: ["routine_steps"] },
  { id: "content_location", label: "Localização e Mapa", templateIds: ["location_map_card"] },
@@ -148,9 +148,9 @@ const CATEGORY_TREE: CategoryDefinition[] = [
  label: "Blocos Individuais",
  icon: Layers,
  subcategories: [
- { id: "blocos_viagem", label: "Viagem & Turismo", templateIds: [] },
- { id: "blocos_negocios", label: "Negócios & E-commerce", templateIds: [] },
- { id: "blocos_basico", label: "Básicos & Utilitários", templateIds: [] },
+ { id: "blocos_viagem", label: "Viagem e Turismo", templateIds: [] },
+ { id: "blocos_negocios", label: "Negócios e E-commerce", templateIds: [] },
+ { id: "blocos_basico", label: "Básicos e Utilitários", templateIds: [] },
  ],
  },
  {
@@ -219,9 +219,9 @@ const SINGLE_BLOCKS: Record<"viagem" | "negocios" | "basico", SingleBlockDef[]> 
 };
 
 const SINGLE_BLOCK_SUBCATEGORIES: { id: "viagem" | "negocios" | "basico"; label: string; icon: any }[] = [
- { id: "viagem", label: "Viagem & Turismo", icon: Plane },
- { id: "negocios", label: "Negócios & E-commerce", icon: ShoppingBag },
- { id: "basico", label: "Básicos & Utilitários", icon: Layers },
+ { id: "viagem", label: "Viagem e Turismo", icon: Plane },
+ { id: "negocios", label: "Negócios e E-commerce", icon: ShoppingBag },
+ { id: "basico", label: "Básicos e Utilitários", icon: Layers },
 ];
 
 export function BuilderAddPanel3Col({

@@ -8,25 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Plus, 
-  Trash2, 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  CheckCircle2, 
-  FileText, 
-  Layers,
-  ArrowUpRight,
-  Calculator,
-  Building
-} from "lucide-react";
+import { Plus, Trash2, DollarSign, TrendingUp, TrendingDown, CheckCircle2, FileText, Layers, ArrowUpRight, Calculator, Building } from "lucide-react";
 import { toast } from "sonner";
-import {
-  listEventBudgets,
-  upsertEventBudget,
-  deleteEventBudget
-} from "@/services/events.functions";
+import { listEventBudgets, upsertEventBudget, deleteEventBudget } from "@/services/events.functions";
 
 interface EventoOrcamentosProps {
   eventId: string;
@@ -261,7 +245,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">
-              Orçamento Executivo & Fornecedores
+              Orçamento Executivo
             </h3>
             {selectedBudget && (
               <Badge
@@ -341,7 +325,7 @@ export function EventoOrcamentos({ eventId }: EventoOrcamentosProps) {
 
         <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-            <span>Custos & Fornecedores</span>
+            <span>Custos e Fornecedores</span>
             <TrendingDown className="size-4 text-rose-500" />
           </div>
           <p className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-2">

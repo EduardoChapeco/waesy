@@ -5,22 +5,7 @@
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import {
-  Receipt,
-  QrCode,
-  UploadCloud,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  FileText,
-  Copy,
-  ExternalLink,
-  ShieldCheck,
-  DollarSign,
-  Building2,
-  HelpCircle,
-  Eye,
-} from "lucide-react";
+import { Receipt, QrCode, UploadCloud, CheckCircle2, Clock, AlertTriangle, FileText, Copy, ExternalLink, ShieldCheck, DollarSign, Building2, HelpCircle, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -29,33 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  getStoreInvoicesList,
-  submitStoreInvoicePaymentProof,
-  getStoreInvoicePixDetails,
-  type StoreInvoiceDTO,
-} from "@/services/invoices.functions";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getStoreInvoicesList, submitStoreInvoicePaymentProof, getStoreInvoicePixDetails, type StoreInvoiceDTO } from "@/services/invoices.functions";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 
 export const Route = createFileRoute("/workspace/financeiro/faturas")({
   head: () => ({
-    meta: [{ title: "Faturas da Plataforma & Mensalidades | Workspace Waesy" }],
+    meta: [{ title: "Faturas | Workspace Waesy" }],
   }),
   loader: async (): Promise<StoreInvoiceDTO[]> => {
     try {
@@ -231,7 +197,7 @@ function WorkspaceFaturasPage() {
               <Receipt className="size-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              Faturas da Plataforma & Planos
+              Faturas da Plataforma e Planos
             </h1>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
@@ -341,7 +307,7 @@ function WorkspaceFaturasPage() {
         <Table>
           <TableHeader className="bg-muted/40">
             <TableRow>
-              <TableHead className="text-xs font-bold font-mono">Descrição & Referência</TableHead>
+              <TableHead className="text-xs font-bold font-mono">Descrição e Referência</TableHead>
               <TableHead className="text-xs font-bold font-mono">Vencimento</TableHead>
               <TableHead className="text-xs font-bold font-mono">Valor Original</TableHead>
               <TableHead className="text-xs font-bold font-mono">Total a Pagar</TableHead>

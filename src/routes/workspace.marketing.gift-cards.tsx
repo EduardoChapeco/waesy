@@ -2,14 +2,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
@@ -184,7 +177,7 @@ function GiftCardsDashboardPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <PageHeader title="Vales-Presente" />
+        <PageHeader title="Presentes" />
         <Button onClick={() => setIsDrawerOpen(true)} className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground h-10">
           <Plus className="h-4 w-4" /> Gerar Vale-Presente
         </Button>

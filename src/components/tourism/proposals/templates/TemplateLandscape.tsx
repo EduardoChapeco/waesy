@@ -5,17 +5,7 @@
 import { type Proposal } from "@/services/proposals";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { buildBaseViewModel } from "@/lib/adapters";
-import {
-  Plane,
-  Hotel,
-  Compass,
-  Check,
-  X,
-  MapPin,
-  Calendar,
-  FileText,
-  PhoneCall,
-} from "lucide-react";
+import { Plane, Hotel, Compass, Check, X, MapPin, Calendar, FileText, PhoneCall } from "lucide-react";
 import { DocumentPage } from "./blocks/UI";
 
 interface TemplateProps {

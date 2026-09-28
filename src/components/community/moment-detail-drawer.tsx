@@ -1,17 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
- X,
- Heart,
- ShareNetwork,
- NavigationArrow,
- MapPin,
- BeerBottle,
- Clock,
- CheckCircle,
- ChatCircle,
- Users,
-} from "@phosphor-icons/react";
+import { X, Heart, ShareNetwork, NavigationArrow, MapPin, BeerBottle, Clock, CheckCircle, ChatCircle, Users } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatRelativeTime } from "@/lib/datetime";

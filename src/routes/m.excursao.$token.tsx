@@ -1,26 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Bus,
- Calendar,
- MapPin,
- CheckCircle2,
- ShieldCheck,
- Phone,
- User,
- HeartPulse,
- Send,
- AlertCircle,
-} from "lucide-react";
+import { Bus, Calendar, MapPin, CheckCircle2, ShieldCheck, Phone, User, HeartPulse, Send, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
- getPublicPassengerForm,
- submitPassengerForm,
-} from "@/services/group-tour-tokens.functions";
+import { getPublicPassengerForm, submitPassengerForm } from "@/services/group-tour-tokens.functions";
 
 export const Route = createFileRoute("/m/excursao/$token")({
  head: () => ({ meta: [{ title: "Confirmação de Passageiro | Waesy" }] }),

@@ -1,18 +1,10 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Laptop,
- DeviceMobile,
- GameController,
- Headphones,
- Television,
- Plug,
- Storefront,
- ShoppingBag,
-} from "@phosphor-icons/react";
+import { Laptop, DeviceMobile, GameController, Headphones, Television, Plug, Storefront, ShoppingBag } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,11 +13,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { OfferCard } from "@/components/commerce/offer-card";
@@ -46,19 +34,19 @@ const SearchSchema = z.object({
 type EletronicosSearch = z.infer<typeof SearchSchema>;
 
 const ELETRONICOS_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo em Eletrônicos & Tech", icon: Tag },
- { id: "smartphones", label: "Smartphones & Celulares", icon: DeviceMobile },
- { id: "notebooks", label: "Notebooks & Computadores", icon: Laptop },
- { id: "gamer", label: "PC Gamer & Periféricos", icon: GameController },
- { id: "audio", label: "Fones, Caixas & Áudio", icon: Headphones },
- { id: "tvs", label: "Smart TVs & Monitores", icon: Television },
- { id: "acessorios", label: "Cabos, Carregadores & Suportes", icon: Plug },
+ { id: "todos", label: "Tudo em Eletrônicos e Tech", icon: Tag },
+ { id: "smartphones", label: "Smartphones e Celulares", icon: DeviceMobile },
+ { id: "notebooks", label: "Notebooks e Computadores", icon: Laptop },
+ { id: "gamer", label: "PC Gamer e Periféricos", icon: GameController },
+ { id: "audio", label: "Fones, Caixas e Áudio", icon: Headphones },
+ { id: "tvs", label: "Smart TVs e Monitores", icon: Television },
+ { id: "acessorios", label: "Cabos, Carregadores e Suportes", icon: Plug },
 ];
 
 export const Route = createFileRoute("/_store/eletronicos")({
  head: () => ({
  meta: [
- { title: "Eletrônicos, Informática, Smartphones & Gamers | Waesy" },
+ { title: "Eletrônicos, Informática, Smartphones e Gamers | Waesy" },
  {
  name: "description",
  content:
@@ -68,12 +56,13 @@ export const Route = createFileRoute("/_store/eletronicos")({
  }),
  validateSearch: (search: Record<string, unknown>): EletronicosSearch => SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "eletronicos" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "eletronicos", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "eletronicos" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "eletronicos" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "eletronicos", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "eletronicos", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {
@@ -188,7 +177,7 @@ function EletronicosVerticalPage() {
  {relevantStores.length > 0 && (
  <section aria-label="Lojas de Tecnologia">
  <HorizontalRail
- title="Lojas de Eletrônicos & Informática"
+ title="Lojas"
  hideHeader={true}
  actionTo="/buscar"
  >

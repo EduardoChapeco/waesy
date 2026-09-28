@@ -58,7 +58,7 @@ function MuralPage() {
     <div className="min-h-[100dvh] bg-background text-foreground pb-24">
       {/* ─── Topo / Filtros Rápidos ────────────────────────────────── */}
       <div className="border-b border-border/40 bg-background sticky top-14 z-20">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
+        <div className="max-w-2xl mx-auto px-0 sm:px-4 py-3 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
           <div className="flex items-center gap-1.5">
             <button
               type="button"
@@ -81,7 +81,7 @@ function MuralPage() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-transparent"
               }`}
             >
-              Fotos & Ideias
+              Publicações
             </button>
 
             <button

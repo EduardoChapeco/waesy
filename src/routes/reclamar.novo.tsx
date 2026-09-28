@@ -1,17 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { 
- AlertTriangle, 
- Scale, 
- Send, 
- CheckCircle2, 
- FileText, 
- Calendar, 
- Building2,
- ShieldAlert,
- ArrowRight,
- Info
-} from 'lucide-react';
+import { AlertTriangle, Scale, Send, CheckCircle2, FileText, Calendar, Building2, ShieldAlert, ArrowRight, Info } from 'lucide-react';
 import { createConsumerClaim } from '@/services/claim-intelligence.functions';
 import type { ClaimCategory } from '@/types/claim-intelligence';
 import { Button } from '@/components/ui/button';
@@ -109,7 +98,7 @@ function ReclamarNovoPage() {
  <div className="max-w-2xl mx-auto">
  <div className="text-center mb-8">
  <Badge variant="outline" className="px-3 py-1 mb-3 rounded-full text-xs font-semibold gap-1.5 border-rose-500/30 text-rose-500">
- <AlertTriangle className="size-3.5" /> Waesy Reclamar & Proteção ao Consumidor
+ <AlertTriangle className="size-3.5" /> Waesy Reclamar e Proteção ao Consumidor
  </Badge>
  <h1 className="text-3xl font-black tracking-tight">Registrar Manifestação Oficial</h1>
  <p className="text-muted-foreground mt-2 text-sm">

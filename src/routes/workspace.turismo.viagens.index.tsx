@@ -1,48 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Plane,
-  FileText,
-  Plus,
-  Calendar,
-  Users,
-  Compass,
-  ArrowUpRight,
-  CheckCircle2,
-  Clock,
-  Luggage,
-  Building2,
-  Banknote,
-  Check,
-  AlertTriangle,
-  FileSpreadsheet,
-} from "lucide-react";
+import { Plane, FileText, Plus, Calendar, Users, Compass, ArrowUpRight, CheckCircle2, Clock, Luggage, Building2, Banknote, Check, AlertTriangle, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { NewTripSheet } from "@/components/tourism/trips/new-trip-sheet";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
-import {
-  listStoreTrips,
-  type TourismTripDTO,
-} from "@/services/travel-lifecycle.functions";
+import { listStoreTrips, type TourismTripDTO } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import {
-  ModuleTourModal,
-  ModuleTourTrigger,
-  type TourSlide,
-} from "@/components/ui/module-tour-modal";
+import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 
 const TURISMO_TOUR_SLIDES: TourSlide[] = [
   {
-    title: "Gestão Completa de Viagens & Roteiros",
+    title: "Gestão Completa de Viagens e Roteiros",
     description: "Controle roteiros terrestres e aéreos, datas de embarque, lista de passageiros e status de confirmação com integração direta a vouchers.",
     icon: Compass,
     highlightBadge: "Roteiros & PNR",
@@ -56,7 +30,7 @@ const TURISMO_TOUR_SLIDES: TourSlide[] = [
     tip: "A poltrona selecionada é sincronizada no ingresso do passageiro com QR Code de embarque.",
   },
   {
-    title: "Emissão de Manifesto ANTT & Rooming List",
+    title: "Emissão de Manifesto ANTT e Rooming List",
     description: "Exporte em 1 clique o manifesto formal de passageiros exigido pela ANTT em PDF e a lista de quartos (Rooming List) para a recepção dos hotéis.",
     icon: FileSpreadsheet,
     highlightBadge: "Compliance & PDF",
@@ -66,7 +40,7 @@ const TURISMO_TOUR_SLIDES: TourSlide[] = [
 
 export const Route = createFileRoute("/workspace/turismo/viagens/")({
   head: () => ({
-    meta: [{ title: "Viagens & Reservas Confirmadas | Workspace Waesy" }],
+    meta: [{ title: "Viagens Confirmadas | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -171,14 +145,14 @@ export default function WorkspaceTripsListPage() {
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 transition-colors border border-primary/20"
           >
             <Clock className="size-3.5" />
-            <span>Central de Cotações & Leads</span>
+            <span>Central de Cotações e Leads</span>
           </Link>
           <Link
             to="/workspace/turismo/aereos"
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/50"
           >
             <Plane className="size-3.5" />
-            <span>Malha Aérea & PNR</span>
+            <span>Malha Aérea e PNR</span>
           </Link>
         </div>
         <ModuleTourTrigger onClick={() => setIsTourOpen(true)} label="Guia do Módulo" />
@@ -235,7 +209,7 @@ export default function WorkspaceTripsListPage() {
               <span>Registrar Primeira Viagem</span>
             </Button>
             <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold">
-              <Link to="/workspace/turismo/cotacoes">Ver Cotações & Leads</Link>
+              <Link to="/workspace/turismo/cotacoes">Ver Cotações e Leads</Link>
             </Button>
           </div>
         </div>

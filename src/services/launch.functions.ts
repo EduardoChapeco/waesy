@@ -50,21 +50,21 @@ const DEFAULT_LAUNCH_SETTINGS: LaunchLandingSettingsDTO = {
   slides: [
     {
       id: "slide-1",
-      title: "Shows Nacionais & Internacional",
+      title: "Shows Nacionais e Internacional",
       tag: "Música & Cultura",
       image_url:
         "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
     },
     {
       id: "slide-2",
-      title: "Feira de Negócios & Inovação",
+      title: "Feira de Negócios e Inovação",
       tag: "Conexões Regionais",
       image_url:
         "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
     },
     {
       id: "slide-3",
-      title: "Workshops & Mentorias Executivas",
+      title: "Workshops e Mentorias Executivas",
       tag: "Capacitação",
       image_url:
         "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",

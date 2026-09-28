@@ -12,43 +12,15 @@
 
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import {
-  getUserSecurityAuditLogs,
-  getUserRegisteredDevices,
-  revokeUserDevice,
-} from "@/services/auth.functions";
+import { getUserSecurityAuditLogs, getUserRegisteredDevices, revokeUserDevice } from "@/services/auth.functions";
 import { getStoreAuditLogs, type StoreAuditLogItem } from "@/services/admin-logs.functions";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  Shield,
-  ShieldCheck,
-  Smartphone,
-  Laptop,
-  Globe,
-  MapPin,
-  Clock,
-  ArrowLeft,
-  RefreshCw,
-  AlertTriangle,
-  History,
-  FileCode2,
-  Trash2,
-  Eye,
-  CheckCircle2,
-  Activity,
-  Layers,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Shield, ShieldCheck, Smartphone, Laptop, Globe, MapPin, Clock, ArrowLeft, RefreshCw, AlertTriangle, History, FileCode2, Trash2, Eye, CheckCircle2, Activity, Layers } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -56,7 +28,7 @@ import { ptBR } from "date-fns/locale";
 export const Route = createFileRoute("/workspace/configuracoes/sessoes")({
   head: () => ({
     meta: [
-      { title: "Sessões, Dispositivos & Auditoria da Loja | Workspace Waesy" },
+      { title: "Sessões Ativas | Workspace Waesy" },
       { name: "description", content: "Auditoria operacional da loja e controle de sessões e dispositivos ativos." },
     ],
   }),
@@ -169,7 +141,7 @@ function WorkspaceSessionsAndAuditPage() {
           <NativeBackButton fallbackHref="/workspace/configuracoes" />
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">
-              Sessões & Auditoria da Loja
+              Sessões e Auditoria da Loja
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               Governança bilateral: consulte o histórico de alterações da equipe e gerencie dispositivos conectados.
@@ -223,7 +195,7 @@ function WorkspaceSessionsAndAuditPage() {
           )}
         >
           <ShieldCheck className="size-3.5" />
-          <span>Sessões & Dispositivos</span>
+          <span>Sessões e Dispositivos</span>
           <Badge
             variant="secondary"
             className={cn(
@@ -446,7 +418,7 @@ function WorkspaceSessionsAndAuditPage() {
           <div className="space-y-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Activity className="size-4 text-primary" />
-              <span>Eventos de Autenticação & Segurança</span>
+              <span>Eventos de Autenticação e Segurança</span>
             </h2>
 
             {logs.length === 0 ? (

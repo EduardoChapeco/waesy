@@ -1,32 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  FileText,
-  Plus,
-  CheckCircle2,
-  Clock,
-  Send,
-  Copy,
-  Scale,
-  Trash2,
-  ExternalLink,
-  TrendingUp,
-} from "lucide-react";
+import { FileText, Plus, CheckCircle2, Clock, Send, Copy, Scale, Trash2, ExternalLink, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
-import {
-  listAgencyTravelContracts,
-  deleteTravelContract,
-  type TravelContractDTO,
-} from "@/services/travel-contract.functions";
+import { listAgencyTravelContracts, deleteTravelContract, type TravelContractDTO } from "@/services/travel-contract.functions";
 import { AgencyClausesEditorModal } from "@/components/tourism/contract/agency-clauses-editor-modal";
 import { NewTravelContractSheet } from "@/components/tourism/contract/new-travel-contract-sheet";
 import { getStoreSettings } from "@/services/store.functions";
@@ -35,7 +17,7 @@ import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/turismo/contratos/")({
   head: () => ({
-    meta: [{ title: "Contratos Turísticos & Assinatura Digital | Workspace Waesy" }],
+    meta: [{ title: "Contratos Turísticos | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -129,7 +111,7 @@ export default function WorkspaceContractsIndexPage() {
   return (
     <NicheOperationalGuard
       targetNiche="tourism"
-      toolTitle="Contratos Turísticos & Assinatura Digital"
+      toolTitle="Contratos Turísticos"
       toolDescription="Gestão de minutas, contratos com validade jurídica e link de assinatura digital para passageiros e contratantes de pacotes turísticos."
       store={store}
     >
@@ -151,7 +133,7 @@ export default function WorkspaceContractsIndexPage() {
             onClick: () => setIsNewModalOpen(true),
           }}
           secondaryAction={{
-            label: "Minuta & Cláusulas Padrão",
+            label: "Minuta e Cláusulas Padrão",
             icon: Scale,
             onClick: () => setIsClausesModalOpen(true),
           }}

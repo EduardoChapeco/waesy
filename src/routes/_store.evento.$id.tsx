@@ -6,28 +6,12 @@ import { useState, useEffect } from "react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  CalendarBlank,
-  Ticket,
-  WarningCircle,
-  ArrowLeft,
-  MapPin,
-  ArrowSquareOut,
-  Users,
-  CheckCircle,
-  Star,
-  XCircle,
-  Newspaper,
-  PencilSimple,
-} from "@phosphor-icons/react";
+import { CalendarBlank, Ticket, WarningCircle, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { addToCart } from "@/services/cart.functions";
 import { recordUserBehavior, linkEventInteractionToCrmFn } from "@/services/telemetry-affinity.functions";
 import { getEventWithLots } from "@/services/events.functions";
-import {
-  getEventRsvpStatus,
-  toggleEventRsvpAction,
-} from "@/services/events/external-events.functions";
+import { getEventRsvpStatus, toggleEventRsvpAction } from "@/services/events/external-events.functions";
 import { getIdentity } from "@/services/identity.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 

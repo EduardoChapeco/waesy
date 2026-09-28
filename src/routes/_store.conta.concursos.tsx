@@ -1,29 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Ticket,
-  Trophy,
-  Sparkles,
-  Store,
-  Clock,
-  CheckCircle2,
-  ChevronRight,
-} from "lucide-react";
+import { Ticket, Trophy, Star, Store, Clock, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  getMyUserConcursos,
-  getMyInviteOverview,
-  type UserRaffleEntryDTO,
-  type InviteOverviewDTO,
-} from "@/services/invite.functions";
+import { getMyUserConcursos, getMyInviteOverview, type UserRaffleEntryDTO, type InviteOverviewDTO } from "@/services/invite.functions";
 
 export const Route = createFileRoute("/_store/conta/concursos")({
   head: () => ({
     meta: [
-      { title: "Meus Sorteios & Cupons | Minha Conta" },
+      { title: "Meus Sorteios e Cupons | Minha Conta" },
       {
         name: "description",
-        content: "Acompanhe seus cupons emitidos, status dos sorteios e prêmios conquistados.",
+        content: "Acompanhe seus cupons emitidos, status dos sorteios e prÃªmios conquistados.",
       },
     ],
   }),
@@ -53,14 +40,14 @@ function ContaConcursosPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 pb-20 px-0 sm:px-6 py-2 sm:py-6 animate-in fade-in duration-150">
-      {/* ── Top Header Clean ── */}
+      {/* â”€â”€ Top Header Clean â”€â”€ */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
-            Minha Conta • Prêmios
+            Minha Conta â€¢ PrÃªmios
           </span>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Meus Sorteios & Cupons
+            Meus Sorteios
           </h1>
         </div>
 
@@ -75,7 +62,7 @@ function ContaConcursosPage() {
         </Button>
       </div>
 
-      {/* ── Métricas do Participante ── */}
+      {/* â”€â”€ MÃ©tricas do Participante â”€â”€ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-1">
           <span className="text-[11px] font-mono text-muted-foreground uppercase block">
@@ -95,7 +82,7 @@ function ContaConcursosPage() {
 
         <div className="col-span-2 sm:col-span-1 rounded-2xl border border-border/70 bg-card p-4 space-y-1">
           <span className="text-[11px] font-mono text-muted-foreground uppercase block">
-            Prêmios Conquistados
+            PrÃªmios Conquistados
           </span>
           <span className="text-2xl font-black font-mono text-emerald-500">
             {winningEntries.length}
@@ -103,7 +90,7 @@ function ContaConcursosPage() {
         </div>
       </div>
 
-      {/* ── ALERTA DE PRÊMIO CONQUISTADO ── */}
+      {/* â”€â”€ ALERTA DE PRÃŠMIO CONQUISTADO â”€â”€ */}
       {winningEntries.length > 0 && (
         <div className="rounded-3xl border-2 border-amber-500/50 bg-amber-500/10 p-5 space-y-2">
           <div className="flex items-center gap-3">
@@ -112,17 +99,17 @@ function ContaConcursosPage() {
             </div>
             <div>
               <h2 className="text-base font-bold text-foreground">
-                Parabéns! Você foi contemplado em um sorteio!
+                ParabÃ©ns! VocÃª foi contemplado em um sorteio!
               </h2>
               <p className="text-xs text-muted-foreground">
-                Apresente seu cupom e documento na empresa organizadora para retirar seu prêmio.
+                Apresente seu cupom e documento na empresa organizadora para retirar seu prÃªmio.
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Lista de Cupons / Sorteios ── */}
+      {/* â”€â”€ Lista de Cupons / Sorteios â”€â”€ */}
       {entries.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border/80 bg-card p-12 text-center space-y-4">
           <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
@@ -131,7 +118,7 @@ function ContaConcursosPage() {
           <div className="max-w-md mx-auto space-y-1">
             <h2 className="text-base font-bold text-foreground">Nenhum cupom emitido ainda</h2>
             <p className="text-xs text-muted-foreground">
-              Participe dos sorteios abertos promovidos pelas empresas da região para concorrer a prêmios.
+              Participe dos sorteios abertos promovidos pelas empresas da regiÃ£o para concorrer a prÃªmios.
             </p>
           </div>
           <Button
@@ -173,7 +160,7 @@ function ContaConcursosPage() {
                             : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold"
                         }
                       >
-                        {isWinner ? "🏆 Premiado!" : isCompleted ? "Concluído" : "Em Andamento"}
+                        {isWinner ? "ðŸ† Premiado!" : isCompleted ? "ConcluÃ­do" : "Em Andamento"}
                       </Badge>
 
                       <Badge variant="outline" className="text-[10px] font-medium gap-1">
@@ -224,7 +211,7 @@ function ContaConcursosPage() {
                         >
                           <Ticket className="size-3.5" />
                           <span>#{t.ticketNumber}</span>
-                          {isWinningTicket && <span>★ Premiado</span>}
+                          {isWinningTicket && <span>â˜… Premiado</span>}
                         </div>
                       );
                     })}
@@ -241,7 +228,7 @@ function ContaConcursosPage() {
                           <span>Seu cupom #{raffle.winnerTicketNumber} foi o vencedor!</span>
                         </div>
                         <p className="text-xs text-foreground">
-                          Apresente este comprovante e seu documento de identificação na empresa para retirar seu prêmio.
+                          Apresente este comprovante e seu documento de identificaÃ§Ã£o na empresa para retirar seu prÃªmio.
                         </p>
                       </div>
                     ) : (

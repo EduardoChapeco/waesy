@@ -1,72 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  Plane,
-  Building2,
-  Users,
-  FileText,
-  Ticket,
-  Calendar,
-  Phone,
-  Mail,
-  Copy,
-  Check,
-  ExternalLink,
-  Plus,
-  Printer,
-  Download,
-  Luggage,
-  Shield,
-  Clock,
-  Car,
-  FileCheck2,
-  Loader2,
-  Compass,
-  AlertTriangle,
-  CheckCircle2,
-  Trash2,
-  Edit2,
-  CreditCard,
-  Receipt,
-  ShieldAlert,
-  DollarSign,
-  Building,
-  Barcode,
-} from "lucide-react";
+import { ArrowLeft, Plane, Building2, Users, FileText, Ticket, Calendar, Phone, Mail, Copy, Check, ExternalLink, Plus, Printer, Download, Luggage, Shield, Clock, Car, FileCheck2, Loader2, Compass, AlertTriangle, CheckCircle2, Trash2, Edit2, CreditCard, Receipt, ShieldAlert, DollarSign, Building, Barcode } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import {
-  getTripAggregate,
-  saveConfirmationItem,
-  saveTripPassenger,
-  deleteTripPassenger,
-  saveTripFinancialDetails,
-  type TripAggregateDTO,
-  type TripConfirmationItemDTO,
-  type TripPassengerDTO,
-} from "@/services/travel-lifecycle.functions";
+import { getTripAggregate, saveConfirmationItem, saveTripPassenger, deleteTripPassenger, saveTripFinancialDetails, type TripAggregateDTO, type TripConfirmationItemDTO, type TripPassengerDTO } from "@/services/travel-lifecycle.functions";
 import { processBoletoOcr } from "@/services/travel-operator-ocr.functions";
 import { VoucherBoardingCard } from "@/components/tourism/voucher-boarding-card";
 import { OperatorVoucherImportSheet } from "@/components/tourism/vouchers/operator-voucher-import-sheet";
@@ -307,7 +252,7 @@ function WorkspaceTripDetailPage() {
           </p>
         </div>
         <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold">
-          <Link to="/workspace/turismo/viagens">Voltar para Viagens & Reservas</Link>
+          <Link to="/workspace/turismo/viagens">Voltar para Viagens e Reservas</Link>
         </Button>
       </div>
     );
@@ -534,7 +479,7 @@ function WorkspaceTripDetailPage() {
           }`}
         >
           <Compass className="size-3.5" />
-          <span>Visão Geral & Roteiro</span>
+          <span>Visão Geral e Roteiro</span>
         </button>
 
         <button
@@ -594,7 +539,7 @@ function WorkspaceTripDetailPage() {
           }`}
         >
           <CreditCard className="size-3.5" />
-          <span>Financeiro, Boletos & Comissões</span>
+          <span>Financeiro, Boletos e Comissões</span>
         </button>
       </div>
 
@@ -650,7 +595,7 @@ function WorkspaceTripDetailPage() {
                   className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-0.5 min-w-0">
-                  <span className="font-bold text-foreground block">3. Vouchers & Apólices Emitidos</span>
+                  <span className="font-bold text-foreground block">3. Vouchers e Apólices Emitidos</span>
                   <span className="text-[11px] text-muted-foreground block leading-tight">
                     Bilhetes carregados e disponíveis na Carteira Digital do Viajante (PWA).
                   </span>
@@ -664,7 +609,7 @@ function WorkspaceTripDetailPage() {
                   className="mt-0.5 size-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                 />
                 <div className="space-y-0.5 min-w-0">
-                  <span className="font-bold text-foreground block">4. Check-in & Disparo de Kit</span>
+                  <span className="font-bold text-foreground block">4. Check-in e Disparo de Kit</span>
                   <span className="text-[11px] text-muted-foreground block leading-tight">
                     Check-in aéreo concluído e kit de viagem disparado no WhatsApp do cliente.
                   </span>
@@ -680,7 +625,7 @@ function WorkspaceTripDetailPage() {
                 <div className="flex items-center gap-2">
                   <Building className="size-4 text-primary" />
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                    Operadora & Central de Plantão 24h
+                    Operadora e Central de Plantão 24h
                   </h3>
                 </div>
                 {trip.operator_name && (
@@ -731,7 +676,7 @@ function WorkspaceTripDetailPage() {
               <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <ShieldAlert className="size-4 text-amber-500" />
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Regras Tarifárias, Cancelamento & Bagagem
+                  Regras Tarifárias, Cancelamento e Bagagem
                 </h3>
               </div>
 
@@ -779,7 +724,7 @@ function WorkspaceTripDetailPage() {
                 <div className="flex items-center gap-2">
                   <DollarSign className="size-4 text-emerald-600" />
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                    Condições Financeiras & Pagamento
+                    Condições Financeiras e Pagamento
                   </h3>
                 </div>
                 <span className="text-xs font-bold text-primary font-mono">
@@ -861,7 +806,7 @@ function WorkspaceTripDetailPage() {
               <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <Plane className="size-4 text-primary" />
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Voos & Malha Aérea
+                  Voos e Malha Aérea
                 </h3>
               </div>
 
@@ -905,7 +850,7 @@ function WorkspaceTripDetailPage() {
               <div className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <Building2 className="size-4 text-primary" />
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Hospedagens & Resorts
+                  Hospedagens e Resorts
                 </h3>
               </div>
 
@@ -940,7 +885,7 @@ function WorkspaceTripDetailPage() {
           {(trip.includes?.length > 0 || trip.notes) && (
             <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3 text-xs">
               <h3 className="font-bold text-foreground uppercase tracking-wider text-xs">
-                Inclusões & Orientações ao Viajante
+                Inclusões e Orientações ao Viajante
               </h3>
               {trip.includes?.length > 0 && (
                 <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
@@ -966,7 +911,7 @@ function WorkspaceTripDetailPage() {
             <div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                 <Users className="size-4 text-primary" />
-                <span>Lista Oficial de Viajantes & Controle de Documentação</span>
+                <span>Lista Oficial de Viajantes e Controle de Documentação</span>
               </h3>
               <p className="text-[11px] text-muted-foreground">
                 Documentos completos extraídos via OCR ou editados pelo agente, com monitoramento automático de validade de passaportes.
@@ -1137,7 +1082,7 @@ function WorkspaceTripDetailPage() {
           <div className="flex items-center justify-between gap-2 pb-2 border-b border-border/60">
             <div>
               <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                Localizadores & Confirmações de Fornecedores
+                Localizadores e Confirmações de Fornecedores
               </h3>
               <p className="text-[11px] text-muted-foreground">
                 Códigos PNR de companhias aéreas, reservas de hotéis, apólices de seguros e transfers.
@@ -1380,7 +1325,7 @@ function WorkspaceTripDetailPage() {
           {/* 2. CONFIGURAÇÃO DE VALORES E OPERADORA */}
           <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Composição da Venda & Comissão
+              Composição da Venda e Comissão
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
@@ -2031,7 +1976,7 @@ function WorkspaceTripDetailPage() {
                 <div className="space-y-1.5 p-3 rounded-xl bg-primary/5 border border-primary/20">
                   <Label className="text-[11px] font-bold text-primary flex items-center gap-1">
                     <Compass className="size-3" />
-                    <span>Banco de Hotéis & Resorts Renomados (Preset Canônico)</span>
+                    <span>Banco de Hotéis e Resorts Renomados (Preset Canônico)</span>
                   </Label>
                   <Select
                     onValueChange={(presetId) => {

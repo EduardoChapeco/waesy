@@ -67,7 +67,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "2124-30",
-    title: "Engenheiro de DevOps & Cloud",
+    title: "Engenheiro de DevOps e Cloud",
     sector: "Tecnologia & Inovação",
     description: "Gerencia pipelines de CI/CD, esteiras de automação de infraestrutura em nuvem, orquestração de containers e monitoramento de observabilidade.",
     junior_salary_cents: 550000,   // R$ 5.500,00
@@ -81,7 +81,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "2124-40",
-    title: "Cientista de Dados & Engenheiro de IA",
+    title: "Cientista de Dados e Engenheiro de IA",
     sector: "Tecnologia & Inovação",
     description: "Modela soluções estatísticas, aprendizado de máquina (Machine Learning), automações de modelos de linguagem (LLMs) e análise preditiva de negócios.",
     junior_salary_cents: 500000,   // R$ 5.000,00
@@ -97,7 +97,7 @@ const RAW_PROFESSIONS = [
   // ── 2. GESTÃO, FINANÇAS, VENDAS & B2B ──
   {
     cbo_code: "2522-10",
-    title: "Contador Geral & Consultor Tributário",
+    title: "Contador Geral e Consultor Tributário",
     sector: "Gestão & Finanças",
     description: "Supervisiona escriturações contábeis e fiscais, demonstrações financeiras (DRE, Balanço), planejamento tributário e enquadramentos da Reforma Tributária 2026.",
     junior_salary_cents: 380000,   // R$ 3.800,00
@@ -111,7 +111,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "1423-05",
-    title: "Gerente Comercial & Vendas B2B",
+    title: "Gerente Comercial e Vendas B2B",
     sector: "Vendas & Negócios",
     description: "Estrutura estratégias de expansão de vendas, gestão de funil comercial (CRM), liderança de times de consultores e negociações corporativas de médio e grande porte.",
     junior_salary_cents: 400000,   // R$ 4.000,00 (+ comissões)
@@ -125,7 +125,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "2531-15",
-    title: "Analista de Marketing Digital & Tráfego Pago",
+    title: "Analista de Marketing Digital e Tráfego Pago",
     sector: "Marketing & Comunicação",
     description: "Gerencia campanhas de tráfego pago (Meta Ads, Google Ads), funis de conversão, otimização de ROAS e telemetria avançada de eventos e conversões.",
     junior_salary_cents: 320000,   // R$ 3.200,00
@@ -155,7 +155,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "2236-05",
-    title: "Fisioterapeuta Ortopédico & Reabilitação",
+    title: "Fisioterapeuta Ortopédico e Reabilitação",
     sector: "Saúde & Cuidados",
     description: "Avalia distúrbios cinéticos funcionais, prescreve planos de reabilitação motora, alívio de dor e prevenção de lesões musculoesqueléticas.",
     junior_salary_cents: 350000,   // R$ 3.500,00
@@ -169,7 +169,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "2237-10",
-    title: "Nutricionista Clínico & Esportivo",
+    title: "Nutricionista Clínico e Esportivo",
     sector: "Saúde & Cuidados",
     description: "Elabora planos alimentares individualizados, análise de composição corporal (bioimpedância) e orientação nutricional esportiva e preventiva.",
     junior_salary_cents: 300000,   // R$ 3.000,00
@@ -183,7 +183,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "2235-05",
-    title: "Enfermeiro Geral & Coordenador Assistencial",
+    title: "Enfermeiro Geral e Coordenador Assistencial",
     sector: "Saúde & Cuidados",
     description: "Coordena equipes de enfermagem, administra medicações complexas, curativos especializados e supervisiona protocolos de segurança do paciente.",
     junior_salary_cents: 475000,   // R$ 4.750,00 (Piso Nacional Enfermagem)
@@ -199,7 +199,7 @@ const RAW_PROFESSIONS = [
   // ── 4. GASTRONOMIA, BARES & HOSPITALIDADE ──
   {
     cbo_code: "5134-05",
-    title: "Chef de Cozinha & Coordenador Gastronômico",
+    title: "Chef de Cozinha e Coordenador Gastronômico",
     sector: "Gastronomia & Hospitalidade",
     description: "Cria fichas técnicas, elabora cardápios autorais, calcula CMV (Custo de Mercadoria Vendida), treina equipes de praça e controla segurança alimentar.",
     junior_salary_cents: 400000,   // R$ 4.000,00
@@ -213,7 +213,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "5135-05",
-    title: "Cozinheiro Geral & Chapeiro",
+    title: "Cozinheiro Geral e Chapeiro",
     sector: "Gastronomia & Hospitalidade",
     description: "Prepara pratos quentes e frios, cortes de carnes, lanches artesanais, porções e organiza mise en place da cozinha em restaurante e hamburguerias.",
     junior_salary_cents: 220000,   // R$ 2.200,00
@@ -227,7 +227,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "5132-20",
-    title: "Pizzaiolo Forneiro & Padeiro Artesanal",
+    title: "Pizzaiolo Forneiro e Padeiro Artesanal",
     sector: "Gastronomia & Hospitalidade",
     description: "Preparo de massas de fermentação longa e natural (levain/biga), molhos artesanais, abertura manual de discos e operação de forno a lenha, lastro e esteira.",
     junior_salary_cents: 230000,   // R$ 2.300,00
@@ -241,7 +241,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "5134-25",
-    title: "Sushiman Especialista & Saucier",
+    title: "Sushiman Especialista e Saucier",
     sector: "Gastronomia & Hospitalidade",
     description: "Especialista no preparo e filetagem de pescados nobres (salmão, atum, peixe branco), preparação de arroz shari e montagem de combinados premium.",
     junior_salary_cents: 280000,   // R$ 2.800,00
@@ -255,7 +255,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "5134-20",
-    title: "Barman & Mixologista de Coquetelaria",
+    title: "Barman e Mixologista de Coquetelaria",
     sector: "Gastronomia & Hospitalidade",
     description: "Criação e execução de coquetéis clássicos e autorais, manipulação de xaropes artesanais, infusões e gestão de estoque de destilados.",
     junior_salary_cents: 220000,   // R$ 2.200,00
@@ -271,7 +271,7 @@ const RAW_PROFESSIONS = [
   // ── 5. SERVIÇOS GERAIS, MANUTENÇÃO, OBRAS & REFORMAS ──
   {
     cbo_code: "7156-15",
-    title: "Eletricista Predial & Residencial",
+    title: "Eletricista Predial e Residencial",
     sector: "Engenharia & Manutenção",
     description: "Executa instalações de quadros de distribuição, cabeamento estruturado, circuitos bifásicos e trifásicos, disjuntores e sistemas de aterramento conforme NR-10.",
     junior_salary_cents: 250000,   // R$ 2.500,00
@@ -285,7 +285,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "7241-10",
-    title: "Encanador & Instalador Hidráulico",
+    title: "Encanador e Instalador Hidráulico",
     sector: "Engenharia & Manutenção",
     description: "Localiza vazamentos com geofone, instala tubulações de água fria e quente (PPR, CPVC, Cobre), reparos em válvulas de descarga, caixas d'água e bombas.",
     junior_salary_cents: 240000,   // R$ 2.400,00
@@ -299,7 +299,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "9144-05",
-    title: "Mecânico de Automóveis & Injeção Eletrônica",
+    title: "Mecânico de Automóveis e Injeção Eletrônica",
     sector: "Automotivo & Mecânica",
     description: "Diagnóstico computadorizado por scanner OBD-II, retífica de motores, suspensão, freios ABS, troca de correias e revisão preventiva de veículos leves.",
     junior_salary_cents: 280000,   // R$ 2.800,00
@@ -313,7 +313,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "7152-10",
-    title: "Pedreiro de Acabamento & Mestre de Obras",
+    title: "Pedreiro de Acabamento e Mestre de Obras",
     sector: "Engenharia & Manutenção",
     description: "Executa assentamento de porcelanatos em grandes formatos, alvenaria estrutural, nivelamento com laser, contra-piso e gestão de canteiro de obras residenciais.",
     junior_salary_cents: 240000,   // R$ 2.400,00
@@ -327,7 +327,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "5121-05",
-    title: "Diarista & Profissional de Higienização Residencial",
+    title: "Diarista e Profissional de Higienização Residencial",
     sector: "Serviços Domésticos",
     description: "Higienização profunda de residências, apartamentos, vidraças, organização de ambientes e desinfecção com produtos adequados e alta agilidade.",
     junior_salary_cents: 200000,   // R$ 2.000,00
@@ -357,7 +357,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "7825-10",
-    title: "Motorista de Carga & Utilitários Leves (Fiorino / Van)",
+    title: "Motorista de Carga e Utilitários Leves (Fiorino / Van)",
     sector: "Logística & Mobilidade",
     description: "Transporte rodoviário e distribuição urbana de mercadorias, conferência de notas fiscais, carga e descarga com segurança em veículo utilitário.",
     junior_salary_cents: 260000,   // R$ 2.600,00
@@ -373,7 +373,7 @@ const RAW_PROFESSIONS = [
   // ── 7. BELEZA, ESTÉTICA & CUIDADOS PESSOAIS ──
   {
     cbo_code: "5161-10",
-    title: "Barbeiro & Cabeleireiro Estilista",
+    title: "Barbeiro e Cabeleireiro Estilista",
     sector: "Beleza & Estética",
     description: "Execução de cortes masculinos e femininos, degradê na navalha (fade), barba com toalha quente, colorimetria e tratamentos capilares.",
     junior_salary_cents: 220000,   // R$ 2.200,00 (+ comissão)
@@ -387,7 +387,7 @@ const RAW_PROFESSIONS = [
   },
   {
     cbo_code: "5161-20",
-    title: "Manicure, Pedicure & Nail Designer",
+    title: "Manicure, Pedicure e Nail Designer",
     sector: "Beleza & Estética",
     description: "Alongamento de unhas em fibra de vidro, gel e acrílico, cutilagem russa, esmaltação em gel e spa dos pés com instrumentos esterilizados em autoclave.",
     junior_salary_cents: 200000,   // R$ 2.000,00

@@ -1,29 +1,13 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  NewspaperClipping,
-  Flame,
-  MagnifyingGlass,
-  ArrowRight,
-  Lightning,
-  Buildings,
-  CalendarDots,
-  Briefcase,
-  Trophy,
-  Laptop,
-  Lightbulb,
-} from "@phosphor-icons/react";
+import { NewspaperClipping, Flame, MagnifyingGlass, ArrowRight, Lightning, Buildings, CalendarDots, Briefcase, Trophy, Laptop, Lightbulb } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import {
-  listPublicArticles,
-  listPublicNewsSponsors,
-  type NewsArticleDTO,
-  type SponsorDTO,
-} from "@/services/news.functions";
+import { listPublicArticles, listPublicNewsSponsors, type NewsArticleDTO, type SponsorDTO } from "@/services/news.functions";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
@@ -38,18 +22,19 @@ import { getMarketIndicatorsFn } from "@/services/mining.functions";
 export const Route = createFileRoute("/_store/noticias/")({
   head: () => ({
     meta: [
-      { title: "Notícias & Jornalismo Local | Waesy" },
+      { title: "Notícias e Jornalismo Local | Waesy" },
       {
         name: "description",
         content: "Acompanhe as últimas notícias, urgências, reportagens e coberturas locais no Waesy.",
       },
     ],
   }),
-  loader: async () => {
+  loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
     try {
       const [articles, banners, hotpages, sponsors, indicators] = await Promise.all([
         listPublicArticles({ data: { limit: 40 } }).catch(() => []),
-        listActiveBanners({ data: { placement: "noticias" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "noticias", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "noticias" } }).catch(() => []),
         listPublicNewsSponsors({ data: { limit: 12 } }).catch(() => []),
         getMarketIndicatorsFn().catch(() => []),
@@ -66,12 +51,12 @@ export const Route = createFileRoute("/_store/noticias/")({
 const CATEGORIES = [
   { id: "todas", label: "Todas Notícias", emoji: "📰", icon: Tag },
   { id: "urgente", label: "Última Hora", emoji: "⚡️", icon: Lightning },
-  { id: "cidade", label: "Cidade & Região", emoji: "🏙️", icon: Buildings },
-  { id: "cultura", label: "Cultura & Lazer", emoji: "🎭", icon: CalendarDots },
-  { id: "economia", label: "Economia & Negócios", emoji: "📈", icon: Briefcase },
+  { id: "cidade", label: "Cidade e Região", emoji: "🏙️", icon: Buildings },
+  { id: "cultura", label: "Cultura e Lazer", emoji: "🎭", icon: CalendarDots },
+  { id: "economia", label: "Economia e Negócios", emoji: "📈", icon: Briefcase },
   { id: "esportes", label: "Esportes", emoji: "⚽️", icon: Trophy },
   { id: "politica", label: "Política", emoji: "🏛️", icon: NewspaperClipping },
-  { id: "inovacao", label: "Inovação & Tech", emoji: "💡", icon: Lightbulb },
+  { id: "inovacao", label: "Inovação e Tech", emoji: "💡", icon: Lightbulb },
 ];
 
 export function NoticiasFeedPage() {
@@ -203,7 +188,7 @@ export function NoticiasFeedPage() {
       {breakingNews.length > 0 && !searchQuery && (
         <section aria-label="Plantão de Notícias" className="space-y-3">
           <HorizontalRail
-            title="Plantão & Última Hora"
+            title="Plantão"
             hideHeader={true}
             leadCard={
               <HitsLeadCard
@@ -231,7 +216,7 @@ export function NoticiasFeedPage() {
             className="flex flex-col w-full"
           >
             {featuredArticle.cover_media_url && (
-              <div className="relative aspect-16/9 w-full overflow-hidden bg-muted">
+              <div className="relative aspect-[2.35/1] sm:aspect-[2.6/1] md:aspect-[21/9] w-full overflow-hidden bg-muted">
                 <img
                   src={featuredArticle.cover_media_url}
                   alt={featuredArticle.title}
@@ -278,7 +263,7 @@ export function NoticiasFeedPage() {
       {economyArticles.length > 0 && !searchQuery && (
         <section aria-label="Economia & Negócios" className="space-y-3">
           <HorizontalRail
-            title="Economia & Negócios"
+            title="Economia"
             hideHeader={true}
             leadCard={
               <HitsLeadCard
@@ -301,7 +286,7 @@ export function NoticiasFeedPage() {
       {cultureArticles.length > 0 && !searchQuery && (
         <section aria-label="Cultura & Lazer" className="space-y-3">
           <HorizontalRail
-            title="Cultura, Noite & Lazer"
+            title="Cultura"
             hideHeader={true}
             leadCard={
               <HitsLeadCard
@@ -335,7 +320,7 @@ export function NoticiasFeedPage() {
             <div className="flex items-center gap-2">
               <NewspaperClipping size={16} weight="bold" className="text-primary" />
               <h2 className="text-sm font-bold text-foreground tracking-tight">
-                {searchQuery ? "Resultados da Busca" : "Últimas Notícias"}
+                {searchQuery ? "Resultados" : "Notícias"}
               </h2>
             </div>
             <span className="text-xs text-muted-foreground font-mono">

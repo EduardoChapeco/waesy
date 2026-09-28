@@ -1,23 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  FileText,
-  Upload,
-  Layers,
-  Smartphone,
-  Monitor,
-  UserPlus,
-  Trash2,
-  ScanLine,
-  CheckCircle2,
-  ArrowRight,
-  ShieldCheck,
-  Plus,
-  Sparkles,
-  Loader2,
-  FileCheck,
-  Lock,
-} from "lucide-react";
+import { FileText, Upload, Layers, Smartphone, Monitor, UserPlus, Trash2, ScanLine, CheckCircle2, ArrowRight, ShieldCheck, Plus, Star, Loader2, FileCheck, Lock } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -29,25 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  createContract,
-  extractContractDataFromOcr,
-  type ContractCategoryEnum,
-} from "@/services/contracts.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createContract, extractContractDataFromOcr, type ContractCategoryEnum } from "@/services/contracts.functions";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
 import { MultimodalOcrUploader } from "@/components/documents/multimodal-ocr-uploader";
 import type { UniversalOcrResult } from "@/services/multimodal-ocr.functions";
-import {
-  ADVANCED_CONTRACT_TEMPLATES,
-  type ContractTemplateDefinition,
-} from "@/lib/data/advanced-contract-templates";
+import { ADVANCED_CONTRACT_TEMPLATES, type ContractTemplateDefinition } from "@/lib/data/advanced-contract-templates";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/contratos/novo")({
@@ -69,7 +39,7 @@ const SIGNER_COLORS = ["#2563eb", "#9333ea", "#059669", "#ea580c", "#dc2626"];
 
 const NICHE_TEMPLATES: Record<string, { title: string; category: string; description: string; content: string }> = {
   tourism_package: {
-    title: "Turismo & Viagens — Pacote Turístico",
+    title: "Turismo e Viagens — Pacote Turístico",
     category: "tourism_package",
     description: "Pacotes de viagem, hospedagem, aéreo e passeios com cláusulas Cadastur/Embratur.",
     content: `# CONTRATO DE PRESTAÇÃO DE SERVIÇOS TURÍSTICOS
@@ -97,7 +67,7 @@ As solicitações de desistência ou alteração obedecerão às diretrizes norm
 As partes elegem o foro da comarca da sede da CONTRATADA para dirimir qualquer controvérsia decorrente deste contrato.`,
   },
   real_estate_rental: {
-    title: "Imóveis & Temporada — Locação Residencial/Comercial",
+    title: "Imóveis e Temporada — Locação Residencial/Comercial",
     category: "real_estate_rental",
     description: "Locação de imóveis e temporada regida pela Lei do Inquilinato (Lei 8.245/91).",
     content: `# CONTRATO DE LOCAÇÃO DE IMÓVEL
@@ -120,7 +90,7 @@ O aluguel mensal é ajustado no valor de **{{valor_total}}**, com vencimento est
 O LOCATÁRIO compromete-se a restituir o imóvel em perfeito estado de conservação, conforme laudo de vistoria inicial assinado entre as partes.`,
   },
   vehicle_sale: {
-    title: "Veículos & Frota — Compra e Venda Automotiva",
+    title: "Veículos e Frota — Compra e Venda Automotiva",
     category: "vehicle_sale",
     description: "Transferência de veículo automotor, quitação e responsabilidade sobre infrações.",
     content: `# CONTRATO DE COMPRA E VENDA DE VEÍCULO AUTOMOTOR
@@ -144,7 +114,7 @@ O preço total da transação é de **{{valor_total}}**, quitado em **{{quantida
 O VENDEDOR responde pelas infrações de trânsito até esta data, passando toda a responsabilidade civil, administrativa e penal ao COMPRADOR a partir da entrega do veículo.`,
   },
   fashion_retail: {
-    title: "Moda & Varejo — Mala Condicional / Prova em Casa",
+    title: "Moda e Varejo — Mala Condicional / Prova em Casa",
     category: "fashion_retail",
     description: "Termo de responsabilidade e custódia temporária de peças para prova domiciliar.",
     content: `# TERMO DE RESPONSABILIDADE & MALA CONDICIONAL
@@ -168,7 +138,7 @@ O valor global das peças sob responsabilidade é de **{{valor_total}}**. As pe�
 {{termo_responsabilidade_condicional}}`,
   },
   pos_retail: {
-    title: "Balcão PDV — Venda Presencial & Carnê",
+    title: "Balcão PDV — Venda Presencial e Carnê",
     category: "pos_retail",
     description: "Confissão de dívida para vendas balcão com pagamento a prazo / carnê de loja.",
     content: `# CONTRATO DE COMPRA BALCÃO & CARNÊ DE PAGAMENTO
@@ -189,7 +159,7 @@ O valor total da compra é de **{{valor_total}}**, parcelado em **{{quantidade_p
 O presente documento constitui título executivo extrajudicial na forma do Art. 784, inciso III do Código de Processo Civil.`,
   },
   legal_retainer: {
-    title: "Jurídico & Advocacia — Honorários Advocatícios",
+    title: "Jurídico e Advocacia — Honorários Advocatícios",
     category: "legal_retainer",
     description: "Contrato de prestação de serviços jurídicos e honorários contratuais e sucumbenciais.",
     content: `# CONTRATO DE PRESTAÇÃO DE SERVIÇOS ADVOCATÍCIOS
@@ -212,7 +182,7 @@ Pelos serviços pactuados, a CONTRATANTE pagará ao CONTRATADO:
 A prestação dos serviços é de meio e não de resultado, comprometendo-se o advogado a zelar pelo melhor direito e prestar contas periódicas.`,
   },
   service_agreement: {
-    title: "Serviços Gerais — Prestação Técnica & Freelancer",
+    title: "Serviços Gerais — Prestação Técnica e Freelancer",
     category: "service_agreement",
     description: "Prestação de serviços técnicos, escopo, entregáveis e prazos.",
     content: `# CONTRATO DE PRESTAÇÃO DE SERVIÇOS TÉCNICOS
@@ -232,7 +202,7 @@ Pela execução dos trabalhos, o CONTRATANTE pagará o valor de **{{valor_total}
 {{multa_rescisoria}}`,
   },
   medical_aesthetic_consent: {
-    title: "Saúde & Estética — Termo de Consentimento Informado",
+    title: "Saúde e Estética — Termo de Consentimento Informado",
     category: "medical_aesthetic_consent",
     description: "Termo de consentimento e responsabilidade para clínicas, odontologia e estética.",
     content: `# TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO & PROCEDIMENTOS ESTÉTICOS

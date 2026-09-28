@@ -1,20 +1,5 @@
 import { forwardRef } from "react";
-import {
- Plane,
- Building2,
- Car,
- Shield,
- Phone,
- Users,
- Calendar,
- MapPin,
- QrCode,
- Compass,
- Luggage,
- Clock,
- Ticket,
- FileCheck,
-} from "lucide-react";
+import { Plane, Building2, Car, Shield, Phone, Users, Calendar, MapPin, QrCode, Compass, Luggage, Clock, Ticket, FileCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 
@@ -124,7 +109,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  </div>
  <div>
  <h1 className="text-base font-black tracking-tight uppercase">{agency.name}</h1>
- <span className="text-[10px] text-neutral-400 font-medium">Turismo & Experiências</span>
+ <span className="text-[10px] text-neutral-400 font-medium">Turismo e Experiências</span>
  </div>
  </div>
  )}
@@ -153,7 +138,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
  <Users className="size-4 text-neutral-500" />
  <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
- Passageiros & Documentação
+ Passageiros e Documentação
  </span>
  </div>
  <div className="flex flex-col gap-2.5 sm:grid sm:grid-cols-2 lg:grid-cols-3">
@@ -179,7 +164,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
  <Plane className="size-4 text-neutral-500" />
  <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
- Malha Aérea & Cartões de Embarque
+ Malha Aérea e Cartões de Embarque
  </span>
  </div>
 
@@ -242,7 +227,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
   <Building2 className="size-4 text-neutral-500" />
   <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
-  Hospedagem & Voucher Hoteleiro
+  Hospedagem e Voucher Hoteleiro
   </span>
   </div>
 
@@ -308,7 +293,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
   <div className="flex items-center gap-2 pb-1.5 border-b border-neutral-200">
   <Car className="size-4 text-neutral-500" />
   <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
-  Transfers & Passeios Inclusos
+  Transfers e Passeios Inclusos
   </span>
   </div>
 
@@ -359,7 +344,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 space-y-1.5">
  <div className="flex items-center gap-1.5 text-emerald-800 font-bold text-[11px]">
  <Shield className="size-3.5 text-emerald-600" />
- <span>Seguro Viagem & Assistência Médica 24h</span>
+ <span>Seguro Viagem e Assistência Médica 24h</span>
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] text-neutral-700">
  <div>
@@ -395,7 +380,7 @@ export const VoucherBoardingCard = forwardRef<HTMLDivElement, VoucherBoardingCar
  <div className="space-y-1 text-center sm:text-left">
  <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[11px] font-bold text-neutral-900">
  <FileCheck className="size-4 text-emerald-600" />
- <span>Documento Oficial de Viagem & Embarque</span>
+ <span>Documento Oficial de Viagem e Embarque</span>
  </div>
  <p className="text-[10px] text-neutral-500 max-w-md">
  Apresente este voucher impresso ou digital acompanhado de documento oficial com foto no balcão da companhia aérea e recepção do hotel.

@@ -1,11 +1,4 @@
-import {
-  type Proposal,
-  type Flight,
-  type Hotel,
-  type Transfer,
-  type Tour,
-  type ItineraryDay,
-} from "@/services/proposals";
+import { type Proposal, type Flight, type Hotel, type Transfer, type Tour, type ItineraryDay } from "@/services/proposals";
 import { calculateQuoteTotals, type QuoteTotals } from "./pricing";
 
 export type BaseViewModel = {

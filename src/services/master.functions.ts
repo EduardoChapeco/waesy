@@ -1420,7 +1420,7 @@ export interface LogisticsPresentationSettings {
 }
 
 export const DEFAULT_LOGISTICS_PRESENTATION: LogisticsPresentationSettings = {
- title: "Logística Integrada & MotoLink",
+ title: "Logística Integrada e MotoLink",
  subtitle: "Conecte-se aos entregadores autônomos da sua cidade sem intermediários e com zero taxa de frete.",
  badge: "Zero Taxa de Intermediação",
  disclaimer: "A Waesy é uma infraestrutura tecnológica aberta. Não intermediamos pagamentos de fretes nem cobramos comissão entre entregadores e empresas. A relação comercial e operacional é direta e independente entre das partes.",
@@ -1435,12 +1435,12 @@ export const DEFAULT_LOGISTICS_PRESENTATION: LogisticsPresentationSettings = {
  icon: "BadgePercent",
  },
  {
- title: "Ficha Completa & Segurança",
+ title: "Ficha Completa e Segurança",
  desc: "Consulte foto, modelo da moto, placa, contato, selo de verificação e avaliações de outros lojistas da região.",
  icon: "ShieldCheck",
  },
  {
- title: "Frota de Confiança & Bloqueio",
+ title: "Frota de Confiança e Bloqueio",
  desc: "Favorite seus motoboys parceiros para chamadas prioritárias e bloqueie condutores com histórico inadequado.",
  icon: "Users",
  },

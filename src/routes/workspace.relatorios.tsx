@@ -1,10 +1,6 @@
-﻿import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  TrendingUp, TrendingDown, ShoppingCart, Users, Package,
-  DollarSign, BarChart3, RefreshCw, ArrowUpRight, ArrowDownRight,
-  AlertTriangle, Clock, CheckCircle2,
-} from "lucide-react";
+import { TrendingUp, TrendingDown, ShoppingCart, Users, Package, DollarSign, BarChart3, RefreshCw, ArrowUpRight, ArrowDownRight, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +9,7 @@ import { getDashboardData } from "@/services/dashboard.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/relatorios")({
-  head: () => ({ meta: [{ title: "Relatórios & Análise de Performance | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Relatórios e Análise de Performance | Waesy" }] }),
   loader: async () => {
     try {
       const data = await getDashboardData();
@@ -57,7 +53,7 @@ function RelatoriosPage() {
     <div className="w-full space-y-6 pb-12">
       {/* ── Header ── */}
       <PageHeader
-        title="Relatórios & Performance"
+        title="Relatórios de Desempenho"
         description="Visão analítica em tempo real do seu negócio."
         actions={
           <Button

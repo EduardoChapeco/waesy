@@ -8,58 +8,14 @@
 
 import React, { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  FileText,
-  Search,
-  Sparkles,
-  Building,
-  Calendar,
-  AlertCircle,
-  CheckCircle2,
-  Lock,
-  ExternalLink,
-  Bell,
-  Coins,
-  ShieldCheck,
-  ChevronRight,
-  Filter,
-  DollarSign,
-  Clock,
-  Briefcase,
-  SlidersHorizontal,
-  Loader2,
-  X,
-} from "lucide-react";
+import { FileText, Search, Star, Building, Calendar, AlertCircle, CheckCircle2, Lock, ExternalLink, Bell, Coins, ShieldCheck, ChevronRight, Filter, DollarSign, Clock, Briefcase, SlidersHorizontal, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  listPublicTenders,
-  unlockTenderWithAiDigest,
-  getStoreTenderAlerts,
-  saveStoreTenderAlert,
-  type MinedTenderItem,
-} from "@/services/tenders.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { listPublicTenders, unlockTenderWithAiDigest, getStoreTenderAlerts, saveStoreTenderAlert, type MinedTenderItem } from "@/services/tenders.functions";
 import { getStoreTokenWallet } from "@/services/tokens.functions";
 import { toast } from "sonner";
 
@@ -282,7 +238,7 @@ export default function WorkspaceTendersPage() {
             Oportunidades em Aberto
           </TabsTrigger>
           <TabsTrigger value="alertas" className="text-xs">
-            Filtros & Radar de Alertas
+            Filtros e Radar de Alertas
           </TabsTrigger>
         </TabsList>
 
@@ -424,7 +380,7 @@ export default function WorkspaceTendersPage() {
                           </>
                         ) : (
                           <>
-                            <Sparkles className="size-3 text-amber-500" />
+                            <Star className="size-3 text-amber-500" />
                             Ver Dossiê IA
                             <span className="text-[10px] text-muted-foreground font-mono ml-0.5">
                               [ -100 Tokens ]
@@ -530,7 +486,7 @@ export default function WorkspaceTendersPage() {
                   {/* Resumo Executivo */}
                   <div className="p-4 rounded-xl bg-muted/40 border border-border/50 space-y-2">
                     <span className="font-semibold text-foreground flex items-center gap-1.5">
-                      <Sparkles className="size-3.5 text-amber-500" />
+                      <Star className="size-3.5 text-amber-500" />
                       Resumo Executivo do Objeto
                     </span>
                     <p className="text-muted-foreground leading-relaxed">
@@ -561,7 +517,7 @@ export default function WorkspaceTendersPage() {
                     <div className="space-y-2">
                       <span className="font-semibold text-foreground flex items-center gap-1.5">
                         <Clock className="size-3.5 text-primary" />
-                        Cronograma & Prazos Críticos
+                        Cronograma e Prazos Críticos
                       </span>
                       <ul className="space-y-1.5 pl-1">
                         {selectedTender.ai_curated_digest.critical_milestones.map((m, idx) => (

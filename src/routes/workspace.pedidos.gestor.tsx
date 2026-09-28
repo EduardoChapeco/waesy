@@ -1,29 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { toast } from "sonner";
-import {
- ArrowLeft,
- ChefHat,
- Clock,
- CheckCircle2,
- Bike,
- PackageSearch,
- Maximize,
- Printer,
- FileText,
- MessageCircle,
- AlertTriangle,
- TrendingUp,
- Activity,
- Kanban,
- LayoutDashboard,
- Users,
- UtensilsCrossed,
- MapPin,
- Phone,
- Navigation,
- History,
-} from "lucide-react";
+import { ArrowLeft, ChefHat, Clock, CheckCircle2, Bike, PackageSearch, Maximize, Printer, FileText, MessageCircle, AlertTriangle, TrendingUp, Activity, Kanban, LayoutDashboard, Users, UtensilsCrossed, MapPin, Phone, Navigation, History } from "lucide-react";
 
 import { getBrowserClient } from "@/lib/supabase";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
@@ -34,21 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Table,
- TableHeader,
- TableBody,
- TableRow,
- TableHead,
- TableCell,
-} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -354,7 +319,7 @@ function KDSPage() {
  return (
  <NicheOperationalGuard
  targetNiche="gastronomy"
- toolTitle="KDS Gestor de Pedidos & Cozinha"
+ toolTitle="KDS Cozinha"
  toolDescription="O painel KDS (Kitchen Display System) em tempo real, com divisão de praças e tempos de cocção, é projetado especificamente para restaurantes e delivery de alimentação."
  store={store}
  >
@@ -397,9 +362,9 @@ function KDSPage() {
  )}
  <div>
  <div className="flex items-center gap-2">
- <h1 className="text-lg font-black tracking-tight leading-none">Gestor de Pedidos & Expedição</h1>
+ <h1 className="text-lg font-black tracking-tight leading-none">Gestor de Pedidos e Expedição</h1>
  <Badge variant="outline" className="text-[10px] uppercase font-mono bg-muted text-muted-foreground border-border/80">
- Balcão & Atendimento
+ Balcão e Atendimento
  </Badge>
  </div>
  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
@@ -604,7 +569,7 @@ function KDSPage() {
  <div className="rounded-2xl border border-border bg-card overflow-hidden">
  <div className="p-4 border-b border-border/80 flex items-center justify-between">
  <div>
- <h3 className="text-sm font-bold text-foreground">Live Dashboard de Pedidos & Acompanhamento de SLA</h3>
+ <h3 className="text-sm font-bold text-foreground">Live Dashboard de Pedidos e Acompanhamento de SLA</h3>
  <p className="text-xs text-muted-foreground">Monitoramento segundo a segundo para eliminação de gargalos operacionais</p>
  </div>
  <Badge variant="outline" className="font-mono text-xs font-bold bg-muted/40">
@@ -702,7 +667,7 @@ function KDSPage() {
  <TableHead>Cliente</TableHead>
  <TableHead>Valor</TableHead>
  <TableHead>Status</TableHead>
- <TableHead className="w-56">Tempo / SLA</TableHead>
+ <TableHead className="w-56">Tempo</TableHead>
  <TableHead className="text-right">Ações</TableHead>
  </TableRow>
  </TableHeader>
@@ -1171,7 +1136,7 @@ function KDSPage() {
  : "text-muted-foreground hover:text-foreground",
  )}
  >
- Cliente & Entrega
+ Cliente e Entrega
  </button>
  <button
  type="button"

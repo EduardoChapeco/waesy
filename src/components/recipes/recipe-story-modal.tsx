@@ -1,12 +1,7 @@
 import { useState, useRef } from "react";
-import { Download, Share2, Copy, Check, X, Sparkles, Clock, Users, ChefHat } from "lucide-react";
+import { Download, Share2, Copy, Check, X, Star, Clock, Users, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import type { MinedRecipeDTO } from "@/services/mining.functions";
@@ -79,7 +74,7 @@ export function RecipeStoryModal({ recipe, isOpen, onClose }: RecipeStoryModalPr
         <DialogHeader className="pb-2 border-b border-border/40">
           <DialogTitle className="text-sm font-semibold text-foreground flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <Sparkles className="size-4 text-primary" />
+              <Star className="size-4 text-primary" />
               Story Instagram (9:16)
             </span>
           </DialogTitle>

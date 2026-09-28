@@ -8,13 +8,7 @@
  */
 
 import { getServerClient } from "@/lib/supabase";
-import {
-  captureRequestTelemetry,
-  getRealClientIP,
-  resolveGeoLocation,
-  parseDeviceTelemetry,
-  type ClientTelemetrySnapshot,
-} from "@/lib/network-telemetry.server";
+import { captureRequestTelemetry, getRealClientIP, resolveGeoLocation, parseDeviceTelemetry, type ClientTelemetrySnapshot } from "@/lib/network-telemetry.server";
 
 export type AuditEventType =
   | "login_success"

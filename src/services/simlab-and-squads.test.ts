@@ -6,11 +6,7 @@ import type {
 } from '@/types/simlab';
 import { renderSlideHTML5, executeOrchestrateMarketingPost } from './squad-content.functions';
 import { MCP_TOOLS_MANIFEST, executeMcpToolCall } from './mcp-server.functions';
-import { 
-  executeSimLabBatchSimulation, 
-  executeSendFocusGroupMessage, 
-  CANONICAL_BRAZIL_ARCHETYPES 
-} from './simlab.functions';
+import { executeSimLabBatchSimulation, executeSendFocusGroupMessage, CANONICAL_BRAZIL_ARCHETYPES } from './simlab.functions';
 
 describe('Dossiê Deep-Tech: Populações Sintéticas (Aaru AI), SimLab V2, Focus Group & Servidor MCP', () => {
   describe('1. Calibração Demográfica IBGE 2022 & Critério Brasil ABEP', () => {

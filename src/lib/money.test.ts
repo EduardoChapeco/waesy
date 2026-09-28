@@ -1,11 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
- formatMoney,
- formatCentsToBRL,
- parseBRLToCents,
- maskCurrencyBRL,
- parseMoney,
-} from "./money";
+import { formatMoney, formatCentsToBRL, parseBRLToCents, maskCurrencyBRL, parseMoney } from "./money";
 
 describe("Money Library - BRL Cents", () => {
  it("formats integer cents into localized BRL currency", () => {

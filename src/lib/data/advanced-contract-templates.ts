@@ -99,7 +99,7 @@ export const ADVANCED_CONTRACT_TEMPLATES: ContractTemplateDefinition[] = [
   // ── 2. MARKETING DE INFLUÊNCIA, GESTÃO DE TRÁFEGO & PUBLICIDADE DIGITAL ──
   {
     id: "template-marketing-influenciador",
-    title: "Contrato de Parceria Publicitária, Direitos de Imagem & Marketing Digital",
+    title: "Contrato de Parceria Publicitária, Direitos de Imagem e Marketing Digital",
     category: "general_deal",
     summary: "Regulamenta ações de influenciadores, creators, criadores de conteúdo e agências de marketing, com licenciamento de imagem e métricas.",
     legal_framework: "Artigos 421 e seguintes do Código Civil, Código de Autorregulamentação Publicitária (CONAR) e LGPD",
@@ -209,7 +209,7 @@ export const ADVANCED_CONTRACT_TEMPLATES: ContractTemplateDefinition[] = [
   // ── 4. COMPRA E VENDA MERCANTIL DE PRODUTOS & FORNECIMENTO ──
   {
     id: "template-compra-venda-mercantil",
-    title: "Contrato de Compra, Venda Mercantil & Fornecimento de Mercadorias",
+    title: "Contrato de Compra, Venda Mercantil e Fornecimento de Mercadorias",
     category: "general_deal",
     summary: "Minuta para venda e remessa de produtos entre fabricantes, distribuidores e lojistas com garantia de entrega e vícios redibitórios.",
     legal_framework: "Artigos 481 a 532 do Código Civil Brasileiro e Código de Defesa do Consumidor",
@@ -320,7 +320,7 @@ export const ADVANCED_CONTRACT_TEMPLATES: ContractTemplateDefinition[] = [
   // ── 6. ASSESSORIA EMPRESARIAL, CONSULTORIA & PARCERIA ESTRATÉGICA ──
   {
     id: "template-assessoria-consultoria",
-    title: "Contrato de Assessoria Empresarial, Consultoria Estratégica & Assessoramento",
+    title: "Contrato de Assessoria Empresarial, Consultoria Estratégica e Assessoramento",
     category: "service_agreement",
     summary: "Minuta de alta governança corporativa para consultores, assessores jurídicos/financeiros, com cláusulas de NDA e não-aliciamento.",
     legal_framework: "Código Civil Brasileiro e Lei de Propriedade Industrial (Lei nº 9.279/1996)",
@@ -472,7 +472,7 @@ export const ADVANCED_CONTRACT_TEMPLATES: ContractTemplateDefinition[] = [
   // ── 9. COMPRA, VENDA & CONSIGNAÇÃO DE VEÍCULOS AUTOMOTORES ──
   {
     id: "template-compra-venda-veiculo",
-    title: "Contrato de Compra, Venda & Garantia de Veículo Automotor",
+    title: "Contrato de Compra, Venda e Garantia de Veículo Automotor",
     category: "vehicle_sale",
     summary: "Minuta para transações de automóveis e motocicletas com ateste de quilometragem, histórico de multas e garantia mecânica legal de 90 dias.",
     legal_framework: "Código Civil Brasileiro e Código de Defesa do Consumidor (Artigo 26)",

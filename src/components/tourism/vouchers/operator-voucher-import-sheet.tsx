@@ -1,48 +1,12 @@
 import { useState, useRef } from "react";
-import {
-  UploadCloud,
-  FileText,
-  Plane,
-  Building2,
-  Car,
-  ShieldCheck,
-  Users,
-  Check,
-  AlertCircle,
-  AlertTriangle,
-  Loader2,
-  ExternalLink,
-  ChevronRight,
-  Ticket,
-  Copy,
-  Plus,
-  Trash2,
-  Calendar,
-  CreditCard,
-  Receipt,
-  Phone,
-  Clock,
-  Luggage,
-  X,
-} from "lucide-react";
+import { UploadCloud, FileText, Plane, Building2, Car, ShieldCheck, Users, Check, AlertCircle, AlertTriangle, Loader2, ExternalLink, ChevronRight, Ticket, Copy, Plus, Trash2, Calendar, CreditCard, Receipt, Phone, Clock, Luggage, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import {
-  parseOperatorVoucherAI,
-  applyParsedVoucherToTrip,
-  type OperatorParsedVoucherDTO,
-} from "@/services/travel-lifecycle.functions";
+import { parseOperatorVoucherAI, applyParsedVoucherToTrip, type OperatorParsedVoucherDTO } from "@/services/travel-lifecycle.functions";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
 interface UploadedDocumentItem {
@@ -272,7 +236,7 @@ export function OperatorVoucherImportSheet({
               </div>
               <div>
                 <SheetTitle className="text-sm font-bold text-foreground">
-                  Studio de Importação de Vouchers & Documentos (OCR)
+                  Importador de Vouchers (OCR)
                 </SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
                   Importe comprovantes de operadoras (CVC, FRT, Orinter), bilhetes, passaportes e faturas com extração automática.
@@ -423,7 +387,7 @@ export function OperatorVoucherImportSheet({
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Resumo & Operadora
+                  Resumo
                 </button>
                 <button
                   type="button"
@@ -434,7 +398,7 @@ export function OperatorVoucherImportSheet({
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Viajantes & Validades
+                  Viajantes e Validades
                   <Badge variant="secondary" className="text-[10px] h-4 px-1 ml-0.5">
                     {parsedData.passengers?.length || 0}
                   </Badge>
@@ -448,7 +412,7 @@ export function OperatorVoucherImportSheet({
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Voos & Bagagens
+                  Voos e Bagagens
                   <Badge variant="secondary" className="text-[10px] h-4 px-1 ml-0.5">
                     {parsedData.flights?.length || 0}
                   </Badge>
@@ -476,7 +440,7 @@ export function OperatorVoucherImportSheet({
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Transfers & Tours
+                  Transfers e Tours
                 </button>
                 <button
                   type="button"
@@ -487,7 +451,7 @@ export function OperatorVoucherImportSheet({
                       : "bg-muted/50 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Financeiro & Regras
+                  Financeiro e Regras
                 </button>
               </div>
 
@@ -1253,7 +1217,7 @@ export function OperatorVoucherImportSheet({
                   <div className="p-3.5 rounded-xl bg-card border border-border space-y-2.5">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="size-4 text-primary" />
-                      <span className="text-xs font-bold text-foreground">Seguro Viagem & Assistência</span>
+                      <span className="text-xs font-bold text-foreground">Seguro Viagem e Assistência</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div>
@@ -1313,7 +1277,7 @@ export function OperatorVoucherImportSheet({
                   <div className="p-3.5 rounded-xl bg-card border border-border space-y-3">
                     <div className="flex items-center gap-2">
                       <CreditCard className="size-4 text-primary" />
-                      <span className="text-xs font-bold text-foreground">Forma de Pagamento & Parcelas</span>
+                      <span className="text-xs font-bold text-foreground">Forma de Pagamento e Parcelas</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1408,7 +1372,7 @@ export function OperatorVoucherImportSheet({
                   <div className="p-3.5 rounded-xl bg-card border border-border space-y-3">
                     <div className="flex items-center gap-2">
                       <Receipt className="size-4 text-primary" />
-                      <span className="text-xs font-bold text-foreground">Regras Tarifárias & Cancelamento</span>
+                      <span className="text-xs font-bold text-foreground">Regras Tarifárias e Cancelamento</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1561,7 +1525,7 @@ export function OperatorVoucherImportSheet({
                   </>
                 ) : (
                   <>
-                    <Check className="size-3.5" /> Confirmar & Sincronizar Viagem
+                    <Check className="size-3.5" /> Confirmar e Sincronizar Viagem
                   </>
                 )}
               </Button>

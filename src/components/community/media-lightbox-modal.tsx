@@ -1,22 +1,9 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
- X,
- Heart,
- MessageSquare,
- ChevronLeft,
- ChevronRight,
- Share2,
- Download,
- Eye,
-} from "lucide-react";
+import { X, Heart, MessageSquare, ChevronLeft, ChevronRight, Share2, Download, Eye } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
- toggleMediaLike,
- getPostMediaStats,
- type MuralFeedItem,
-} from "@/services/social.functions";
+import { toggleMediaLike, getPostMediaStats, type MuralFeedItem } from "@/services/social.functions";
 import { PostCommentsDrawer } from "@/components/community/post-comments-drawer";
 import { toast } from "sonner";
 

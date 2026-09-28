@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  CANONICAL_BUSINESS_TYPES,
-  CANONICAL_INVESTMENT_MODELS,
-  CANONICAL_PROJECT_STAGES,
-  CANONICAL_USE_OF_FUNDS,
-} from "./canonical-taxonomy";
+import { CANONICAL_BUSINESS_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS } from "./canonical-taxonomy";
 import { NICHE_DEFINITIONS, resolveClassifiedNiche } from "./semantics";
 
 describe("Canonical Taxonomy & Investment Architecture Tests", () => {

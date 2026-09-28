@@ -6,13 +6,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,29 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DocumentField } from "@/components/ui/document-field";
 import { PhoneField } from "@/components/ui/phone-field";
-import {
-  CreditCardNumberInput,
-  CardExpiryInput,
-  CardCvvInput,
-} from "@/components/ui/credit-card-field";
+import { CreditCardNumberInput, CardExpiryInput, CardCvvInput } from "@/components/ui/credit-card-field";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
-import {
-  ShieldCheck,
-  CreditCard,
-  QrCode,
-  CheckCircle2,
-  Users,
-  Copy,
-  Check,
-  Loader2,
-  ArrowRight,
-  Lock,
-  Building2,
-  FileText,
-  Banknote,
-  Compass,
-} from "lucide-react";
+import { ShieldCheck, CreditCard, QrCode, CheckCircle2, Users, Copy, Check, Loader2, ArrowRight, Lock, Building2, FileText, Banknote, Compass } from "lucide-react";
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import type { TravelProposalDTO } from "@/services/travel-proposal.functions";
 
@@ -179,7 +154,7 @@ export function TravelProposalCheckoutModal({
             <div className="space-y-0.5">
               <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
                 <ShieldCheck className="size-5 text-primary" />
-                <span>Reserva & Condições de Pagamento</span>
+                <span>Reserva e Condições de Pagamento</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 {proposal.title} · {proposal.destination_city}

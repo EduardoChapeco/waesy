@@ -1,11 +1,5 @@
 import { useState, useEffect } from "react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Layers, ShoppingBag, Utensils, Scissors, Briefcase, Plane, Flame, Shirt, Music, Check, ArrowRight } from 'lucide-react';
 import { saveUserPreferences, getUserPreferences } from "@/services/hotpage.functions";
@@ -26,38 +20,38 @@ const NICHES_LIST = [
  },
  {
  id: "gastronomia",
- label: "Gastronomia & Lanches",
+ label: "Gastronomia e Lanches",
  icon: Utensils,
  color: "from-orange-500/20 to-amber-500/20",
  },
  {
  id: "mercado",
- label: "Mercado & Produtores",
+ label: "Mercado e Produtores",
  icon: ShoppingBag,
  color: "from-emerald-500/20 to-green-500/20",
  },
  {
  id: "beleza",
- label: "Beleza & Barbearia",
+ label: "Beleza e Barbearia",
  icon: Scissors,
  color: "from-purple-500/20 to-pink-500/20",
  },
  {
  id: "empregos",
- label: "Vagas & Oportunidades",
+ label: "Vagas e Oportunidades",
  icon: Briefcase,
  color: "from-blue-500/20 to-cyan-500/20",
  },
  {
  id: "viagens",
- label: "Viagens & Passeios",
+ label: "Viagens e Passeios",
  icon: Plane,
  color: "from-sky-500/20 to-indigo-500/20",
  },
- { id: "moda", label: "Moda & Estilo", icon: Shirt, color: "from-fuchsia-500/20 to-pink-500/20" },
+ { id: "moda", label: "Moda e Estilo", icon: Shirt, color: "from-fuchsia-500/20 to-pink-500/20" },
  {
  id: "arte",
- label: "Música & Eventos",
+ label: "Música e Eventos",
  icon: Music,
  color: "from-violet-500/20 to-purple-500/20",
  },

@@ -1,30 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import {
-  Search,
-  Barcode,
-  Package,
-  Sparkles,
-  CheckCircle2,
-  ShieldCheck,
-  Tag,
-  Percent,
-  X,
-  Loader2,
-  Building2,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Search, Barcode, Package, Star, CheckCircle2, ShieldCheck, Tag, Percent, X, Loader2, Building2 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  searchMasterCatalogProducts,
-} from "@/services/master-catalog.functions";
+import { searchMasterCatalogProducts } from "@/services/master-catalog.functions";
 import type { MasterProductRecord } from "@/lib/data/master-products-catalog";
 import { formatMoney } from "@/lib/money";
 
@@ -38,10 +18,10 @@ const CATEGORY_TABS = [
   { id: "all", label: "Todos os Itens" },
   { id: "Alimentos & Mercearia", label: "Alimentos" },
   { id: "Bebidas", label: "Bebidas" },
-  { id: "Gastronomia", label: "Gastronomia & Restaurantes" },
-  { id: "Móveis", label: "Móveis & Decoração" },
+  { id: "Gastronomia", label: "Gastronomia e Restaurantes" },
+  { id: "Móveis", label: "Móveis e Decoração" },
   { id: "Eletrodomésticos", label: "Eletrodomésticos" },
-  { id: "Automotivo", label: "Automotivo & Peças" },
+  { id: "Automotivo", label: "Automotivo e Peças" },
   { id: "Eletrônicos & Acessórios", label: "Eletrônicos" },
   { id: "Limpeza & Lavanderia", label: "Limpeza" },
   { id: "Higiene & Cuidados Pessoais", label: "Higiene" },
@@ -111,11 +91,11 @@ export function MasterCatalogSearchDialog({
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Sparkles className="size-4" />
+                <Star className="size-4" />
               </div>
               <div>
                 <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
-                  <span>Catálogo Central de Produtos & Dados Fiscais</span>
+                  <span>Catálogo Central de Produtos e Dados Fiscais</span>
                   <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20 font-semibold">
                     Reforma Tributária 2026
                   </Badge>

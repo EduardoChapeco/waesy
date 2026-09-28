@@ -129,10 +129,7 @@ vi.mock("@/lib/supabase", () => ({
   })),
 }));
 
-import {
-  getUserTokenWallet,
-  attemptUserTokenTransferBlocked,
-} from "./tokens.functions";
+import { getUserTokenWallet, attemptUserTokenTransferBlocked } from "./tokens.functions";
 
 describe("Segurança Militar de Tokens & Zero-Transfer Policy", () => {
   beforeEach(() => {

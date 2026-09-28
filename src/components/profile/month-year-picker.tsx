@@ -1,19 +1,10 @@
 import React from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  calculateExperienceDurationMonths,
-  formatExperienceDurationMonths,
-} from "@/lib/schemas/resume-experience.schema";
+import { calculateExperienceDurationMonths, formatExperienceDurationMonths } from "@/lib/schemas/resume-experience.schema";
 
 export const MONTHS = [
   { value: "1", label: "Janeiro", short: "Jan" },

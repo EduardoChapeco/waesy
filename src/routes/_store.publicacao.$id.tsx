@@ -1,13 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getPostById,
-  listPostComments,
-  createPostComment,
-  togglePostLike,
-  type MuralFeedItem,
-} from "@/services/social.functions";
+import { getPostById, listPostComments, createPostComment, togglePostLike, type MuralFeedItem } from "@/services/social.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -15,19 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Heart,
-  MessageSquare,
-  Share2,
-  Bookmark,
-  ChevronLeft,
-  ShoppingBag,
-  Calendar,
-  MapPin,
-  ExternalLink,
-  Send,
-  Sparkles,
-} from "lucide-react";
+import { Heart, MessageSquare, Share2, Bookmark, ChevronLeft, ShoppingBag, Calendar, MapPin, ExternalLink, Send, Star } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/publicacao/$id")({

@@ -1,36 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Truck,
- MapPin,
- Phone,
- CheckCircle2,
- Navigation,
- KeyRound,
- Loader2,
- Camera,
-} from "lucide-react";
+import { Truck, MapPin, Phone, CheckCircle2, Navigation, KeyRound, Loader2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { MediaUploader } from "@/components/ui/media-uploader";
-import {
- getDeliveryByToken,
- confirmDeliveryByPin,
- startDeliveryPickup,
- updateDeliveryPaymentMethod,
- recordDeliveryTelemetry,
-} from "@/services/dispatch.functions";
+import { getDeliveryByToken, confirmDeliveryByPin, startDeliveryPickup, updateDeliveryPaymentMethod, recordDeliveryTelemetry } from "@/services/dispatch.functions";
 import { useEffect } from "react";
 import { formatMoney } from "@/lib/money";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_store/entrega/$token")({
  head: () => ({ meta: [{ title: "Painel do Entregador | Waesy" }] }),

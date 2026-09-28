@@ -1,43 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Banknote,
-  Receipt,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  FileText,
-  Upload,
-  Calendar,
-  AlertCircle,
-  Plus,
-  Send,
-  Search,
-  Filter,
-  Eye,
-  Percent,
-  Check,
-  Building2,
-  User,
-  ShieldCheck,
-  ChevronRight,
-  ExternalLink,
-  MessageSquare,
-  Lock,
-  Shield,
-  TrendingUp,
-  Sparkles,
-  Sliders,
-  ArrowRight,
-  ArrowDownRight,
-  RefreshCw,
-  ShoppingBag,
-  Shirt,
-  HeartHandshake,
-  DollarSign,
-  Wallet,
-} from "lucide-react";
+import { Banknote, Receipt, Clock, CheckCircle2, XCircle, FileText, Upload, Calendar, AlertCircle, Plus, Send, Search, Filter, Eye, Percent, Check, Building2, User, ShieldCheck, ChevronRight, ExternalLink, MessageSquare, Lock, Shield, TrendingUp, Star, Sliders, ArrowRight, ArrowDownRight, RefreshCw, ShoppingBag, Shirt, HeartHandshake, DollarSign, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -49,35 +13,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
-import {
-  listStoreCarnes,
-  getCarnesReportSummary,
-  approveInstallmentPayment,
-  rejectInstallmentPayment,
-  adjustInstallmentAmount,
-  sendMassBillingReminders,
-  createStoreCarne,
-  searchCustomersForCarne,
-} from "@/services/receivables.functions";
-import {
-  listStoreCondicionais,
-  createStoreCondicional,
-  resolveCondicionalItems,
-  type StoreCondicionalDTO,
-  type CondicionalItemDTO,
-} from "@/services/condicionais.functions";
+import { listStoreCarnes, getCarnesReportSummary, approveInstallmentPayment, rejectInstallmentPayment, adjustInstallmentAmount, sendMassBillingReminders, createStoreCarne, searchCustomersForCarne } from "@/services/receivables.functions";
+import { listStoreCondicionais, createStoreCondicional, resolveCondicionalItems, type StoreCondicionalDTO, type CondicionalItemDTO } from "@/services/condicionais.functions";
 import { createContract } from "@/services/contracts.functions";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/workspace/financeiro/recebiveis")({
-  head: () => ({ meta: [{ title: "Recebíveis, Carnês & Condicionais | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Recebíveis | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const [carnes, report, condicionais] = await Promise.all([
@@ -568,7 +510,7 @@ Assinatura da Loja (Consignante)`;
           )}
         >
           <Receipt className="h-4 w-4" />
-          <span>Carnês & Caderninho</span>
+          <span>Carnês e Caderninho</span>
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
             {carnes.length}
           </Badge>
@@ -585,7 +527,7 @@ Assinatura da Loja (Consignante)`;
           )}
         >
           <Shirt className="h-4 w-4 text-indigo-500" />
-          <span>Condicionais & Malas</span>
+          <span>Condicionais e Malas</span>
           <Badge
             variant="outline"
             className="text-[10px] px-1.5 py-0 h-4 border-indigo-200 text-indigo-600 dark:text-indigo-400"
@@ -2020,7 +1962,7 @@ Assinatura da Loja (Consignante)`;
                   className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-9 px-4"
                   onClick={handleConfirmReturnCondicional}
                 >
-                  Confirmar Baixa & Reintegrar Peças
+                  Confirmar Baixa e Reintegrar Peças
                 </Button>
               </div>
             </div>

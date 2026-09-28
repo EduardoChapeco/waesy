@@ -8,20 +8,10 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Surface } from "@/components/ui/surface";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
- getCategoryById,
- listCategories,
- updateCategory,
-} from "@/services/admin-catalog.functions";
+import { getCategoryById, listCategories, updateCategory } from "@/services/admin-catalog.functions";
 
 export const Route = createFileRoute("/workspace/catalogo/categorias/$id")({
  head: () => ({ meta: [{ title: "Editar Categoria | Workspace Waesy" }] }),

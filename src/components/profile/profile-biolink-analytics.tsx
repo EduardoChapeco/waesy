@@ -1,19 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import {
-  TrendingUp,
-  MousePointer2,
-  Users,
-  BarChart3,
-  Calendar,
-  ArrowUpRight,
-  ArrowDownRight,
-  ExternalLink,
-  Smartphone,
-  Monitor,
-  Share2,
-  Zap,
-} from "lucide-react";
+import { TrendingUp, MousePointer2, Users, BarChart3, Calendar, ArrowUpRight, ArrowDownRight, ExternalLink, Smartphone, Monitor, Share2, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,7 +74,7 @@ export function ProfileBiolinkAnalytics({
           </div>
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
             <BarChart3 className="size-4 text-primary" />
-            <span>Analytics de Acessos & Cliques na Bio</span>
+            <span>Analytics de Acessos e Cliques na Bio</span>
           </h3>
         </div>
 
@@ -203,7 +190,7 @@ export function ProfileBiolinkAnalytics({
             {links.length}
           </p>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-            Links & Botões na Bio
+            Links e Botões na Bio
           </p>
         </div>
       </div>

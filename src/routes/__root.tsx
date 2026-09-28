@@ -1,13 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
- Outlet,
- Link,
- createRootRouteWithContext,
- useRouter,
- HeadContent,
- Scripts,
- isRedirect,
-} from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, useRouter, HeadContent, Scripts, isRedirect } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { CookieBanner } from "@/components/commerce/cookie-banner";
 
@@ -296,33 +288,72 @@ function RootShell({ children }: { children: ReactNode }) {
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart-context";
 import { initSecuritySentinel } from "@/lib/security-sentinel";
+import { PwaUpdatePrompt } from "@/components/pwa/pwa-update-prompt";
 
 function RootComponent() {
  const { queryClient } = Route.useRouteContext();
 
  useEffect(() => {
- if (typeof window !== "undefined" && "serviceWorker" in navigator) {
- window.addEventListener("load", () => {
- navigator.serviceWorker.register("/sw.js").catch((err) => {
- console.error("ServiceWorker registration failed:", err);
- });
- });
- }
+  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+   window.addEventListener("load", () => {
+    navigator.serviceWorker
+     .register("/sw.js")
+     .then((registration) => {
+      // Verifica atualizações periodicamente (a cada 60s) enquanto o app está aberto
+      setInterval(() => {
+       registration.update().catch(() => {});
+      }, 60_000);
+
+      // NÃO fazemos SKIP_WAITING automático aqui —
+      // o PwaUpdatePrompt aguarda a ação explícita do utilizador (V120 design).
+      registration.addEventListener("updatefound", () => {
+       // O PwaUpdatePrompt escuta o statechange do installing worker
+       // e exibe o toast quando ele entra em "installed" (= waiting).
+       // Nenhuma ação aqui — apenas log para diagnóstico.
+       const newWorker = registration.installing;
+       if (newWorker) {
+        newWorker.addEventListener("statechange", () => {
+         if (process.env.NODE_ENV === "development") {
+          console.info("[SW] New worker state:", newWorker.state);
+         }
+        });
+       }
+      });
+     })
+     .catch((err) => {
+      console.error("ServiceWorker registration failed:", err);
+     });
+
+    // Reload quando o novo SW assume controlo (disparado pelo PwaUpdatePrompt
+    // via postMessage SKIP_WAITING → o browser dispara controllerchange).
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+     if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+     }
+    });
+   });
+  }
  }, []);
 
  // ── Sentinel de Segurança (passivo, não bloqueia UX) ──
  useEffect(() => {
- const cleanup = initSecuritySentinel();
- return cleanup;
+  const cleanup = initSecuritySentinel();
+  return cleanup;
  }, []);
 
  return (
- <QueryClientProvider client={queryClient}>
- <CartProvider>
- {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
- <Outlet />
- <Toaster />
- </CartProvider>
- </QueryClientProvider>
+  <QueryClientProvider client={queryClient}>
+   <CartProvider>
+    {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+    <Outlet />
+    <Toaster />
+    {/* Seamless Release Protocol (V120): toast de atualização silencioso */}
+    <PwaUpdatePrompt />
+   </CartProvider>
+  </QueryClientProvider>
  );
 }
+
+

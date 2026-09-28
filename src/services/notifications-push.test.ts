@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  SavePushSubscriptionSchema,
-  ListCompanyNotificationsSchema,
-  MarkNotificationAsReadSchema,
-} from "./notifications-push.functions";
+import { SavePushSubscriptionSchema, ListCompanyNotificationsSchema, MarkNotificationAsReadSchema } from "./notifications-push.functions";
 
 describe("Notifications & Web Push Contracts", () => {
   it("validates SavePushSubscriptionSchema with valid keys and endpoint", () => {

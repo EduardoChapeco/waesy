@@ -1,39 +1,18 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Share2,
-  Save,
-  Globe,
-  Smartphone,
-  ExternalLink,
-  Copy,
-  Check,
-  Sparkles,
-  RefreshCw,
-  Info,
-  Layers,
-  Eye,
-  MessageCircle,
-  Twitter,
-  Facebook,
-  Link2,
-} from "lucide-react";
+import { Share2, Save, Globe, Smartphone, ExternalLink, Copy, Check, Star, RefreshCw, Info, Layers, Eye, MessageCircle, Twitter, Facebook, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  getStoreSocialShareSettings,
-  saveStoreSocialShareSettings,
-  type StoreSocialShareSettingsDTO,
-} from "@/services/marketing.functions";
+import { getStoreSocialShareSettings, saveStoreSocialShareSettings, type StoreSocialShareSettingsDTO } from "@/services/marketing.functions";
 
 export const Route = createFileRoute("/workspace/marketing/social")({
   head: () => ({
-    meta: [{ title: "Compartilhamento & Redes Sociais | Workspace Waesy" }],
+    meta: [{ title: "Redes Sociais | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -165,7 +144,7 @@ export default function WorkspaceMarketingSocialPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 py-4 sm:py-8 space-y-6 sm:space-y-8">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
@@ -174,15 +153,12 @@ export default function WorkspaceMarketingSocialPage() {
               <Share2 className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Compartilhamento & Redes Sociais
+              Redes Sociais
             </h1>
             <Badge variant="outline" className="text-xs font-mono">
-              Open Graph & WhatsApp
+              Open Graph
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Configure como os links dos seus produtos, catálogo e vitrine aparecem ao serem compartilhados no WhatsApp, Instagram e Redes.
-          </p>
         </div>
 
         <div className="flex items-center gap-3">

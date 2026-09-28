@@ -1,26 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
- MapPin,
- Navigation,
- Search,
- X,
- Check,
- Loader2,
- Compass,
- Maximize2,
- Minimize2,
- Crosshair,
- Globe,
-} from "lucide-react";
+import { MapPin, Navigation, Search, X, Check, Loader2, Compass, Maximize2, Minimize2, Crosshair, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { findClosestCanonicalCity } from "@/lib/constants/cities";
 import { toast } from "sonner";
 

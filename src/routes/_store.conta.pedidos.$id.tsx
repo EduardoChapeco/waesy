@@ -1,24 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  ChevronLeft,
-  Package,
-  MapPin,
-  CreditCard,
-  Copy,
-  Upload,
-  Info,
-  AlertTriangle,
-  QrCode,
-  Smartphone,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ChevronLeft, Package, MapPin, CreditCard, Copy, Upload, Info, AlertTriangle, QrCode, Smartphone } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DigitalCompanionCard } from "@/components/documents/digital-companion-card";
 
 import { Button } from "@/components/ui/button";
@@ -186,7 +170,7 @@ function CustomerOrderDetailPage() {
     if (address?.street) {
       customWhatsAppText += `📍 *Entrega:* ${address.street}, ${address.number || ""} - ${address.city || ""}\n\n`;
     }
-    customWhatsAppText += `Obrigado pela preferência! ✨`;
+    customWhatsAppText += `Obrigado pela preferência!`;
 
     return {
       niche: "retail" as const,

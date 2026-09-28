@@ -1,19 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
-  House,
-  Key,
-  Buildings,
-  Tree,
-  MapPin,
-  FileText,
-  PhoneCall,
-  MagnifyingGlass,
-  ArrowRight,
-  ShieldCheck,
-} from "@phosphor-icons/react";
+import { House, Key, Buildings, Tree, MapPin, FileText, PhoneCall, MagnifyingGlass, ArrowRight, ShieldCheck } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +12,8 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
@@ -67,12 +54,13 @@ export const Route = createFileRoute("/_store/imoveis")({
   }),
   validateSearch: (search: Record<string, unknown>): ImoveisSearch => SearchSchema.parse(search),
   loaderDeps: ({ search }) => search,
-  loader: async () => {
+  loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
     try {
       const [banners, hotpages, marketplaceFeed, classifieds] = await Promise.all([
-        listActiveBanners({ data: { placement: "imoveis" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "imoveis", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "imoveis" } }).catch(() => []),
-        getModularSurfaceFeed({ data: { surfaceSlug: "imoveis" } }).catch(() => ({ sections: [], allProducts: [] })),
+        getModularSurfaceFeed({ data: { surfaceSlug: "imoveis", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
         getPublicClassifieds({ data: { category: "real_estate" } }).catch(() => []),
       ]);
 
@@ -164,7 +152,16 @@ function ImoveisVerticalPage() {
   }, [classifieds, activeCategory, search.q]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
+    <div className="w-full max-w-5xl mx-auto pb-24">
+      <NativeMobileHeader
+        title="Imóveis"
+        centerTitle
+        backTo="/"
+        searchValue={search.q || ""}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Buscar casas, apartamentos, terrenos..."
+      />
+      <div className="px-4 sm:px-5 space-y-6 pt-2 sm:pt-4">
       {/* ── 1. Banners de Imóveis ── */}
       {banners && banners.length > 0 && (
         <section aria-label="Destaques Imobiliários">
@@ -275,7 +272,7 @@ function ImoveisVerticalPage() {
               />
             </div>
           ) : (
-            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
+            <div className="w-full space-y-3">
               {filteredClassifieds.map((item: any) => (
                 <PropertyListItem key={item.id} item={item} />
               ))}
@@ -300,8 +297,7 @@ function ImoveisVerticalPage() {
           )}
         </section>
       )}
-
-
+      </div>
     </div>
   );
 }
@@ -369,30 +365,30 @@ function PropertyListItem({ item }: { item: any }) {
     <Link
       to="/classificados/$id"
       params={{ id: item.id }}
-      className="group w-full px-3 sm:px-4 py-3 sm:py-3.5 hover:bg-muted/40 transition-colors flex items-center gap-3.5 min-h-[72px] sm:min-h-[84px] cursor-pointer"
+      className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 flex items-center justify-between pr-4 py-3.5 gap-3 cursor-pointer w-full"
     >
-      <div className="relative size-16 sm:size-20 rounded-xl overflow-hidden bg-muted/60 shrink-0 border border-border/40">
+      <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-2xl overflow-hidden bg-muted/60">
         {img ? (
-          <img src={img} alt={item.title} className="size-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+          <img src={img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
         ) : (
-          <div className="size-full flex items-center justify-center bg-muted/40">
-            <House size={22} className="text-muted-foreground/40" />
+          <div className="w-full h-full flex items-center justify-center bg-muted/40">
+            <House size={24} className="text-muted-foreground/40" />
           </div>
         )}
-        <Badge variant="secondary" className="absolute top-1 left-1 text-[9px] px-1 py-0 font-bold bg-background/90 backdrop-blur-xs">
+        <Badge variant="secondary" className="absolute top-2 left-2 text-[9px] px-1.5 py-0.5 font-bold bg-background/90 backdrop-blur-xs">
           {isTemporada ? "Temp." : isAluguel ? "Aluguel" : "Venda"}
         </Badge>
       </div>
 
-      <div className="flex-1 min-w-0 space-y-1">
+      <div className="flex-1 min-w-0 space-y-1 pl-2">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <MapPin size={12} className="text-primary shrink-0" />
           <span className="truncate">{item.location_name || item.city || "Região"}</span>
         </div>
-        <h3 className="font-bold text-xs sm:text-sm text-foreground truncate group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-sm sm:text-base text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
           {item.title}
         </h3>
-        <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-1">
+        <p className="text-xs text-muted-foreground line-clamp-1">
           {item.content}
         </p>
       </div>

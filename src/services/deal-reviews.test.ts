@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  SubmitDealReviewSchema,
-  RespondToDealReviewSchema,
-  ListStoreDealReviewsSchema,
-} from "./deal-reviews.functions";
+import { SubmitDealReviewSchema, RespondToDealReviewSchema, ListStoreDealReviewsSchema } from "./deal-reviews.functions";
 
 describe("Deal Reviews & Verified Reputation Contracts", () => {
   it("validates SubmitDealReviewSchema with valid ratings and limits", () => {

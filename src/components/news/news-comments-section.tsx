@@ -1,13 +1,7 @@
 import { useState, useEffect } from "react";
 import { MessageSquare, Heart, Send, Loader2, User, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
- listArticleComments,
- submitArticleComment,
- toggleArticleLike,
- getArticleLikeStatus,
- type NewsCommentDTO,
-} from "@/services/news.functions";
+import { listArticleComments, submitArticleComment, toggleArticleLike, getArticleLikeStatus, type NewsCommentDTO } from "@/services/news.functions";
 import { toast } from "sonner";
 
 export interface NewsCommentsSectionProps {

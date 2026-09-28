@@ -1,24 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Plane,
-  Plus,
-  Trash2,
-  CheckCircle2,
-  Clock,
-  Luggage,
-  MapPin,
-  ExternalLink,
-  ShieldCheck,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Plane, Plus, Trash2, CheckCircle2, Clock, Luggage, MapPin, ExternalLink, ShieldCheck } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -146,7 +129,7 @@ export function LeadFlightGridSheet({
           <div className="flex items-center gap-2">
             <Plane className="size-5 text-sky-500" />
             <SheetTitle className="text-base font-bold text-foreground">
-              Malha Aérea & Reservas de Trecho
+              Malha Aérea
             </SheetTitle>
           </div>
           <SheetDescription className="text-xs text-muted-foreground">

@@ -10,46 +10,11 @@ import { listUserNotifications } from "@/services/notifications.functions";
 import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
 import { cn } from "@/lib/utils";
 import { ContextSwitcher } from "@/components/profile/context-switcher";
-import {
-  Shield,
-  Store,
-  ArrowRight,
-  Plus,
-  ShoppingBag,
-  Calendar,
-  Ticket,
-  Bookmark,
-  Plane,
-  CreditCard,
-  Coins,
-  Gift,
-  HelpCircle,
-  RotateCcw,
-  Layers,
-  LogOut,
-  User,
-  ChevronRight,
-  Building2,
-  Lock,
-  ShieldCheck,
-  Briefcase,
-  Wallet,
-  FileText,
-  Sparkles,
-  Trophy,
-  Bell,
-  MessageCircle,
-  Handshake,
-  MapPin,
-  Car,
-  Star,
-  RefreshCw,
-  Users,
-} from "lucide-react";
+import { Shield, Store, ArrowRight, Plus, ShoppingBag, Calendar, Ticket, Bookmark, Plane, CreditCard, Coins, Gift, HelpCircle, RotateCcw, Layers, LogOut, User, ChevronRight, Building2, Lock, ShieldCheck, Briefcase, Wallet, FileText, Trophy, Bell, MessageCircle, Handshake, MapPin, Car, Star, RefreshCw, Users } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/")({
-  head: () => ({ meta: [{ title: "Minha Conta | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Conta | Waesy" }] }),
   loader: async () => {
     try {
       const session = await getUserSession().catch(() => null);
@@ -195,10 +160,10 @@ function AccountDashboardPage() {
     {
       title: "Oportunidades",
       items: [
-        { to: "/conta/curriculo", label: "Meu Currículo", icon: FileText },
+        { to: "/conta/curriculo", label: "Currículo", icon: FileText },
         { to: "/conta/candidaturas", label: "Candidaturas", icon: Briefcase },
         { to: "/conta/classificados", label: "Anúncios", icon: Layers },
-        { to: "/conta/criadores", label: "Parcerias", icon: Sparkles },
+        { to: "/conta/criadores", label: "Criadores", icon: Star },
         { to: "/conta/comissoes", label: "Afiliados", icon: Coins },
       ],
     },
@@ -210,9 +175,9 @@ function AccountDashboardPage() {
         { to: "/conta/pagamentos", label: "Pagamentos", icon: CreditCard },
         { to: "/conta/creditos", label: "Créditos", icon: Coins },
         { to: "/conta/tokens", label: "Tokens", icon: Coins },
-        { to: "/conta/gift-cards", label: "Cartão Presente", icon: Gift },
+        { to: "/conta/gift-cards", label: "Presentes", icon: Gift },
         { to: "/conta/concursos", label: "Cupons", icon: Ticket },
-        { to: "/convite", label: "Membro Fundador", icon: Trophy },
+        { to: "/convite", label: "Fundador", icon: Trophy },
       ],
     },
     {
@@ -270,7 +235,7 @@ function AccountDashboardPage() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── 1. Header do Perfil com Acesso ao Perfil & Master ── */}
       <div className="relative bg-card rounded-2xl border border-border/60 p-3.5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {/* Ação de Logout Minimalista no Top-Right (Não polui o grid central de ações) */}
@@ -350,80 +315,59 @@ function AccountDashboardPage() {
         </div>
       </div>
 
-      {/* ── 1.1 Barra Rápida de Métricas & Atalhos Diretos (Thumb-Friendly) ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+      {/* ── 1.1 Barra Compacta de Atalhos (Single-Line Direct Pills) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Link
           to="/conta/pedidos"
-          className="p-3 sm:p-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 group cursor-pointer"
+          className="h-11 px-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <ShoppingBag className="size-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground truncate">Pedidos</p>
-              <p className="text-xs font-bold text-foreground">{orders.length}</p>
-            </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <ShoppingBag className="size-4 text-muted-foreground shrink-0" />
+            <span className="text-xs font-semibold text-foreground truncate">Pedidos</span>
           </div>
-          <ChevronRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground shrink-0 transition-transform group-hover:translate-x-0.5" />
+          <Badge variant="secondary" className="text-[10px] font-bold h-5 px-1.5 shrink-0">
+            {orders.length}
+          </Badge>
         </Link>
 
         <Link
           to="/conta/notificacoes"
           className={cn(
-            "p-3 sm:p-3.5 rounded-xl border transition-colors flex items-center justify-between gap-2 group cursor-pointer",
+            "h-11 px-3.5 rounded-xl border transition-colors flex items-center justify-between gap-2 cursor-pointer",
             unreadNotifsCount > 0
               ? "border-primary/40 bg-primary/[0.04] hover:bg-primary/[0.08]"
               : "border-border/60 bg-card hover:bg-muted/40"
           )}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className={cn(
-              "size-8 rounded-lg flex items-center justify-center shrink-0",
-              unreadNotifsCount > 0 ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-            )}>
-              <Bell className="size-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground truncate">Notificações</p>
-              <p className={cn("text-xs font-bold", unreadNotifsCount > 0 ? "text-primary" : "text-foreground")}>
-                {unreadNotifsCount > 0 ? `${unreadNotifsCount} nova${unreadNotifsCount > 1 ? "s" : ""}` : "0"}
-              </p>
-            </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <Bell className={cn("size-4 shrink-0", unreadNotifsCount > 0 ? "text-primary" : "text-muted-foreground")} />
+            <span className="text-xs font-semibold text-foreground truncate">Notificações</span>
           </div>
-          <ChevronRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground shrink-0 transition-transform group-hover:translate-x-0.5" />
+          <Badge variant={unreadNotifsCount > 0 ? "default" : "secondary"} className="text-[10px] font-bold h-5 px-1.5 shrink-0">
+            {unreadNotifsCount}
+          </Badge>
         </Link>
 
         <Link
           to="/conta/negociacoes"
-          className="p-3 sm:p-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 group cursor-pointer"
+          className="h-11 px-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Handshake className="size-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground truncate">Negociações</p>
-              <p className="text-xs font-bold text-foreground">Acessar</p>
-            </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <Handshake className="size-4 text-muted-foreground shrink-0" />
+            <span className="text-xs font-semibold text-foreground truncate">Negociações</span>
           </div>
-          <ChevronRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground shrink-0 transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight className="size-3.5 text-muted-foreground/50 shrink-0" />
         </Link>
 
         <Link
           to="/conta/salvos"
-          className="p-3 sm:p-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 group cursor-pointer"
+          className="h-11 px-3.5 rounded-xl border border-border/60 bg-card hover:bg-muted/40 transition-colors flex items-center justify-between gap-2 cursor-pointer"
         >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Bookmark className="size-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground truncate">Salvos</p>
-              <p className="text-xs font-bold text-foreground">Favoritos</p>
-            </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <Bookmark className="size-4 text-muted-foreground shrink-0" />
+            <span className="text-xs font-semibold text-foreground truncate">Salvos</span>
           </div>
-          <ChevronRight className="size-3.5 text-muted-foreground/60 group-hover:text-foreground shrink-0 transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight className="size-3.5 text-muted-foreground/50 shrink-0" />
         </Link>
       </div>
 
@@ -441,7 +385,7 @@ function AccountDashboardPage() {
             <Button asChild variant="ghost" size="sm" className="rounded-xl text-xs sm:text-sm font-semibold h-10 px-3.5 text-primary hover:bg-primary/10 cursor-pointer shadow-2xs active:scale-98">
               <Link to="/criar-negocio">
                 <Plus className="size-4 mr-1.5" />
-                <span>Nova Loja</span>
+                <span>Criar</span>
               </Link>
             </Button>
           </div>
@@ -495,7 +439,7 @@ function AccountDashboardPage() {
               <Store className="size-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Abrir Empresa no Waesy</h2>
+              <h2 className="text-sm font-bold text-foreground">Abrir Empresa</h2>
               <p className="text-xs text-muted-foreground">Gerencie catálogo, vendas e operação completa no Workspace.</p>
             </div>
           </div>
@@ -559,4 +503,5 @@ function AccountDashboardPage() {
   );
 }
 
-export default AccountDashboardPage;
+// Default export removed for TanStack Router code-splitting optimization
+export default Route.component;

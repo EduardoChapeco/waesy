@@ -17,9 +17,9 @@ export interface GuidedSectionPickerProps {
 
 const CATEGORIES = [
   { id: "all", label: "Todas as Seções" },
-  { id: "commerce", label: "Vitrine & Vendas" },
-  { id: "content", label: "Conteúdo & Mídia" },
-  { id: "marketing", label: "Conversão & Prova Social" },
+  { id: "commerce", label: "Vitrine e Vendas" },
+  { id: "content", label: "Conteúdo e Mídia" },
+  { id: "marketing", label: "Conversão e Prova Social" },
 ];
 
 export function GuidedSectionPicker({

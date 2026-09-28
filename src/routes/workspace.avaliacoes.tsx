@@ -2,36 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Star,
-  MessageSquare,
-  CheckCircle2,
-  AlertTriangle,
-  CornerDownRight,
-  Send,
-  Share2,
-  Copy,
-  Check,
-  Search,
-  Filter,
-  ShieldCheck,
-  TrendingUp,
-  User,
-  ShoppingBag,
-} from "lucide-react";
+import { Star, MessageSquare, CheckCircle2, AlertTriangle, CornerDownRight, Send, Share2, Copy, Check, Search, Filter, ShieldCheck, TrendingUp, User, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  listStoreDealReviews,
-  respondToDealReview,
-} from "@/services/deal-reviews.functions";
+import { listStoreDealReviews, respondToDealReview } from "@/services/deal-reviews.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/avaliacoes")({
   head: () => ({
-    meta: [{ title: "Central de Avaliações & Reputação | Workspace Waesy" }],
+    meta: [{ title: "Avaliações | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -140,7 +121,7 @@ export default function WorkspaceReviewsPage() {
               <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Central de Avaliações & Reputação
+              Avaliações
             </h1>
             <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-600 bg-amber-500/10">
               {stats.total_reviews > 0 ? `${stats.average_rating.toFixed(1)} ★ (${stats.total_reviews})` : "Sem avaliações"}

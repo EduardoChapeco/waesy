@@ -1,23 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import {
- Compass,
- Plane,
- Hotel,
- Calendar,
- CreditCard,
- Camera,
- PhoneCall,
- MapPin,
- Clock,
- ShieldCheck,
- CheckCircle2,
- FileText,
- DollarSign,
- Utensils,
- Sun,
- Globe,
-} from 'lucide-react';
+import { Compass, Plane, Hotel, Calendar, CreditCard, Camera, PhoneCall, MapPin, Clock, ShieldCheck, CheckCircle2, FileText, DollarSign, Utensils, Sun, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -42,7 +25,7 @@ export default function TripPortalPage() {
  <Compass className="size-3.5" />
  Portal do Passageiro 360
  </span>
- <h1 className="text-3xl font-black tracking-tight">Férias em Orlando & Miami</h1>
+ <h1 className="text-3xl font-black tracking-tight">Férias em Orlando e Miami</h1>
  <p className="text-white/80 text-sm mt-1">
  Viagem #{id} · 15 de Outubro a 23 de Outubro de 2026 · 2 Viajantes
  </p>
@@ -93,7 +76,7 @@ export default function TripPortalPage() {
  }`}
  >
  <CreditCard className="size-4" />
- Carnê & Financeiro
+ Carnê e Financeiro
  </button>
 
  <button
@@ -117,7 +100,7 @@ export default function TripPortalPage() {
  }`}
  >
  <PhoneCall className="size-4" />
- Plantão 24h & Emergência
+ Plantão 24h e Emergência
  </button>
  </div>
 
@@ -146,7 +129,7 @@ export default function TripPortalPage() {
  </div>
  <div className="p-3 rounded-xl bg-muted/40 text-xs flex justify-between items-center">
  <div>
- <p className="font-bold text-foreground">Grand Beach Resort & Spa</p>
+ <p className="font-bold text-foreground">Grand Beach Resort e Spa</p>
  <p className="text-muted-foreground">7 Noites · Café da Manhã Incluso</p>
  </div>
  <Badge variant="outline">Voucher Ativo</Badge>
@@ -209,7 +192,7 @@ export default function TripPortalPage() {
  {activeTab === 'memorias' && (
  <div className="p-8 rounded-2xl border border-dashed border-border bg-card text-center">
  <Camera className="size-10 text-muted-foreground mx-auto mb-3 opacity-50" />
- <h4 className="text-base font-bold text-foreground">Álbum & Memórias da Viagem</h4>
+ <h4 className="text-base font-bold text-foreground">Álbum e Memórias da Viagem</h4>
  <p className="text-xs text-muted-foreground mt-1 mb-4">
  Envie suas fotos favoritas dos passeios para compor o diário visual da viagem.
  </p>
@@ -241,7 +224,7 @@ export default function TripPortalPage() {
  <div className="p-6 rounded-2xl border border-border bg-card shadow-sm flex flex-col gap-4">
  <h3 className="text-base font-bold text-foreground flex items-center gap-2">
  <PhoneCall className="size-4 text-primary" />
- Contatos de Emergência & Suporte 24 Horas
+ Contatos de Emergência e Suporte 24 Horas
  </h3>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
  <div className="p-4 rounded-xl bg-muted/40 flex flex-col gap-1">

@@ -1,28 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Sparkles,
-  Ticket,
-  ArrowRight,
-  Compass,
-  Store,
-  CalendarDays,
-  ShieldCheck,
-  ChevronRight,
-  PartyPopper,
-  Search,
-  Loader2,
-  LogIn,
-  ChefHat,
-} from "lucide-react";
+import { Star, Ticket, ArrowRight, Compass, Store, CalendarDays, ShieldCheck, ChevronRight, PartyPopper, Search, Loader2, LogIn, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  lookupFounderTicket,
-  type LaunchLandingSettingsDTO,
-} from "@/services/launch.functions";
+import { lookupFounderTicket, type LaunchLandingSettingsDTO } from "@/services/launch.functions";
 import type { CnpjCompanyDTO } from "@/services/public-apis.functions";
 import { LaunchCarousel } from "@/components/landing/launch-carousel";
 import { FounderSignupSheet } from "@/components/landing/founder-signup-sheet";
@@ -42,21 +25,21 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
     slides: [
       {
         id: "slide-1",
-        title: "Shows Nacionais & Internacional",
+        title: "Shows Nacionais e Internacional",
         tag: "Música & Cultura",
         image_url:
           "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
       },
       {
         id: "slide-2",
-        title: "Feira de Negócios & Inovação",
+        title: "Feira de Negócios e Inovação",
         tag: "Conexões Regionais",
         image_url:
           "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
       },
       {
         id: "slide-3",
-        title: "Workshops & Mentorias Executivas",
+        title: "Workshops e Mentorias Executivas",
         tag: "Capacitação",
         image_url:
           "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
@@ -203,7 +186,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
               onClick={() => setIsSheetOpen(true)}
               className="rounded-xl text-xs font-bold bg-primary text-primary-foreground h-9 px-3.5 gap-1.5 shadow-xs cursor-pointer hover:bg-primary/90"
             >
-              <Sparkles className="size-3.5" />
+              <Star className="size-3.5" />
               <span>Seja Fundador</span>
             </Button>
           </div>
@@ -219,7 +202,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
             variant="outline"
             className="rounded-full bg-primary/10 text-primary border-primary/20 text-xs font-bold px-3.5 py-1 inline-flex items-center gap-1.5 shadow-2xs animate-pulse"
           >
-            <Sparkles className="size-3.5" />
+            <Star className="size-3.5" />
             <span>{settings.hero_badge}</span>
           </Badge>
 
@@ -285,7 +268,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
           <div className="space-y-2 text-center sm:text-left">
             <div className="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
               <PartyPopper className="size-4" />
-              <span>Evento & Conexões Regionais</span>
+              <span>Evento e Conexões Regionais</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
               {settings.event_info?.circuito_title || "Circuito Internacional Waesy 2027"}
@@ -413,37 +396,37 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
               {
-                title: "Turismo & Roteiros",
+                title: "Turismo e Roteiros",
                 desc: "Pacotes, passagens e reservas de viagens",
                 icon: Compass,
                 to: "/turismo",
               },
               {
-                title: "Comércio & PDV",
+                title: "Comércio e PDV",
                 desc: "Vendas no balcão e vitrine online",
                 icon: Store,
                 to: "/explorar",
               },
               {
-                title: "Receitas & Culinária",
+                title: "Receitas e Culinária",
                 desc: "Pratos típicos e guia de gastronomia local",
                 icon: ChefHat,
                 to: "/receitas",
               },
               {
-                title: "Eventos & Shows",
+                title: "Eventos e Shows",
                 desc: "Ingressos digitais e atrações regionais",
                 icon: PartyPopper,
                 to: "/eventos",
               },
               {
-                title: "Agenda & Serviços",
+                title: "Agenda e Serviços",
                 desc: "Agendamentos diretos e lembretes",
                 icon: CalendarDays,
                 to: "/agenda",
               },
               {
-                title: "Classificados & Vagas",
+                title: "Classificados e Vagas",
                 desc: "Imóveis, veículos e vagas de trabalho",
                 icon: ShieldCheck,
                 to: "/classificados",
@@ -478,7 +461,7 @@ export function LaunchHomeView({ initialSettings }: LaunchHomeViewProps) {
           <div className="rounded-2xl bg-card border border-border/80 p-2 shadow-xs flex items-center justify-between gap-3">
             <div className="pl-2 min-w-0">
               <div className="flex items-center gap-1 text-[11px] font-bold text-primary">
-                <Sparkles className="size-3 shrink-0" />
+                <Star className="size-3 shrink-0" />
                 <span className="truncate">Circuito 2027 Aberto</span>
               </div>
               <p className="text-[10px] text-muted-foreground truncate">

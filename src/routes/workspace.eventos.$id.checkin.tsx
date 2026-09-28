@@ -1,19 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- ArrowLeft,
- QrCode,
- CheckCircle2,
- AlertCircle,
- Search,
- User,
- Ticket,
- Loader2,
- RefreshCw,
- Camera,
- CameraOff,
-} from "lucide-react";
+import { ArrowLeft, QrCode, CheckCircle2, AlertCircle, Search, User, Ticket, Loader2, RefreshCw, Camera, CameraOff } from "lucide-react";
 import { useRef, useEffect } from "react";
 
 import { validateTicketCheckin, validateCredentialCheckin, getEventWithLots } from "@/services/events.functions";
@@ -24,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { playCheckinSuccessSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/eventos/$id/checkin")({
- head: () => ({ meta: [{ title: "Portaria & Check-in de Ingressos | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Check-in de Ingressos | Workspace Waesy" }] }),
  loader: async ({ params }) => {
  try {
  const event = await getEventWithLots({ data: { eventId: (params as any).id } });
@@ -82,12 +70,12 @@ function EventCheckinPage() {
  if (credRes.alreadyCheckedIn) {
  playWarningAlert();
  if (navigator.vibrate) navigator.vibrate(300);
- toast.warning(`Atenção: ${credRes.message}`);
+ toast.warning(`AtenÃ§Ã£o: ${credRes.message}`);
  setLastCheckin({
  success: false,
  name: credRes.credential?.nome_completo,
- lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} • ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
- message: credRes.message || "Credencial já utilizada!",
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} â€¢ ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
+ message: credRes.message || "Credencial jÃ¡ utilizada!",
  timestamp: new Date(),
  });
  } else {
@@ -97,8 +85,8 @@ function EventCheckinPage() {
  setLastCheckin({
  success: true,
  name: credRes.credential?.nome_completo,
- lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} • ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
- message: "Credencial Válida! Acesso Liberado.",
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} â€¢ ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
+ message: "Credencial VÃ¡lida! Acesso Liberado.",
  timestamp: new Date(),
  });
  setHistory((prev) => [
@@ -116,7 +104,7 @@ function EventCheckinPage() {
  return;
  }
 
- // 2. Validação canônica de ingresso regular com fallback defensivo para credenciais avulsas
+ // 2. ValidaÃ§Ã£o canÃ´nica de ingresso regular com fallback defensivo para credenciais avulsas
  try {
  const res = await validateTicketCheckin({
  data: {
@@ -133,7 +121,7 @@ function EventCheckinPage() {
  success: true,
  name: res.name,
  lotName: res.lotName,
- message: "Ingresso Válido! Entrada Liberada.",
+ message: "Ingresso VÃ¡lido! Entrada Liberada.",
  timestamp: new Date(),
  });
  setHistory((prev) => [
@@ -149,7 +137,7 @@ function EventCheckinPage() {
  setTicketCode("");
  }
  } catch (ticketErr: any) {
- // Fallback: tenta validar se o código pertence à tabela de credenciais
+ // Fallback: tenta validar se o cÃ³digo pertence Ã  tabela de credenciais
  try {
  const credRes = await validateCredentialCheckin({
  data: {
@@ -165,7 +153,7 @@ function EventCheckinPage() {
  success: false,
  name: credRes.credential?.nome_completo,
  lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()}`,
- message: credRes.message || "Credencial já utilizada!",
+ message: credRes.message || "Credencial jÃ¡ utilizada!",
  timestamp: new Date(),
  });
  } else {
@@ -174,8 +162,8 @@ function EventCheckinPage() {
  setLastCheckin({
  success: true,
  name: credRes.credential?.nome_completo,
- lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} • ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
- message: "Credencial Válida! Acesso Liberado.",
+ lotName: `Credencial: ${credRes.credential?.tipo_credencial.toUpperCase()} â€¢ ${credRes.credential?.cargo_funcao || credRes.credential?.setor_acesso}`,
+ message: "Credencial VÃ¡lida! Acesso Liberado.",
  timestamp: new Date(),
  });
  setHistory((prev) => [
@@ -197,7 +185,7 @@ function EventCheckinPage() {
  } catch (err: any) {
  playWarningAlert();
  if (navigator.vibrate) navigator.vibrate(300);
- const errMsg = err?.message || "Ingresso ou credencial inválida.";
+ const errMsg = err?.message || "Ingresso ou credencial invÃ¡lida.";
  toast.error(errMsg);
  setLastCheckin({
  success: false,
@@ -217,7 +205,7 @@ function EventCheckinPage() {
  }
  };
 
- // ── SCANNER CONTÍNUO DE QR CODE VIA BARCODEDETECTOR ──────────────────────
+ // â”€â”€ SCANNER CONTÃNUO DE QR CODE VIA BARCODEDETECTOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  const runScanLoop = () => {
  if (!videoRef.current || !mediaStreamRef.current) return;
 
@@ -234,7 +222,7 @@ function EventCheckinPage() {
  const raw = barcodes[0].rawValue?.trim();
  const now = Date.now();
 
- // Debounce de 3 segundos para o mesmo código lido
+ // Debounce de 3 segundos para o mesmo cÃ³digo lido
  if (
  raw &&
  (!lastScannedRef.current ||
@@ -247,7 +235,7 @@ function EventCheckinPage() {
  }
  })
  .catch(() => {
- // Ignorar frames intermediários sem código
+ // Ignorar frames intermediÃ¡rios sem cÃ³digo
  });
  } catch {
  // Fallback silencioso
@@ -272,12 +260,12 @@ function EventCheckinPage() {
  };
  }
  setIsCameraActive(true);
- toast.info("Câmera ativada. Aponte para o QR Code do ingresso.");
+ toast.info("CÃ¢mera ativada. Aponte para o QR Code do ingresso.");
  } else {
- toast.error("Câmera não suportada neste navegador.");
+ toast.error("CÃ¢mera nÃ£o suportada neste navegador.");
  }
  } catch {
- toast.error("Permissão de câmera negada ou dispositivo indisponível.");
+ toast.error("PermissÃ£o de cÃ¢mera negada ou dispositivo indisponÃ­vel.");
  setIsCameraActive(false);
  }
  };
@@ -312,7 +300,7 @@ function EventCheckinPage() {
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-base font-bold leading-tight truncate max-w-xs md:max-w-md">
- {event?.name || "Portaria & Check-in"}
+ {event?.name || "Check-in"}
  </h1>
  <Badge variant="secondary" className="text-[10px] font-mono uppercase font-bold">
  Ao Vivo
@@ -344,16 +332,16 @@ function EventCheckinPage() {
  className="rounded-xl text-xs font-bold gap-2 cursor-pointer"
  >
  {isCameraActive ? <CameraOff className="size-4" /> : <Camera className="size-4" />}
- <span className="hidden sm:inline">{isCameraActive ? "Desativar Câmera" : "Câmera Traseira"}</span>
+ <span className="hidden sm:inline">{isCameraActive ? "Desativar CÃ¢mera" : "CÃ¢mera Traseira"}</span>
  </Button>
  </div>
  </header>
 
  {/* Main Container */}
  <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 grid gap-6 md:grid-cols-12 items-start">
- {/* Lado Esquerdo: Scanner / Validador Rápido */}
+ {/* Lado Esquerdo: Scanner / Validador RÃ¡pido */}
  <div className="md:col-span-7 space-y-5">
- {/* Visualizador de Câmera */}
+ {/* Visualizador de CÃ¢mera */}
  {isCameraActive && (
  <div className="relative rounded-2xl overflow-hidden bg-black border border-primary/30 aspect-video flex items-center justify-center">
  <video
@@ -388,7 +376,7 @@ function EventCheckinPage() {
  autoFocus
  value={ticketCode}
  onChange={(e) => setTicketCode(e.target.value)}
- placeholder="Escaneie o QR Code ou digite o código (Ingresso ou CRED-...)"
+ placeholder="Escaneie o QR Code ou digite o cÃ³digo (Ingresso ou CRED-...)"
  className="pl-10 h-12 rounded-xl text-sm font-mono bg-background"
  disabled={isValidating}
  />
@@ -422,7 +410,7 @@ function EventCheckinPage() {
  </form>
  </div>
 
- {/* Feedback Visual Imediato do Último Check-in */}
+ {/* Feedback Visual Imediato do Ãšltimo Check-in */}
  {lastCheckin && (
  <div
  className={`p-5 rounded-2xl border transition-all animate-in fade-in zoom-in-95 ${
@@ -452,7 +440,7 @@ function EventCheckinPage() {
  </div>
  )}
  <p className="text-[10px] opacity-60 pt-1">
- Validado às {lastCheckin.timestamp.toLocaleTimeString()}
+ Validado Ã s {lastCheckin.timestamp.toLocaleTimeString()}
  </p>
  </div>
  </div>
@@ -460,19 +448,19 @@ function EventCheckinPage() {
  )}
  </div>
 
- {/* Lado Direito: Histórico de Entradas Recentes */}
+ {/* Lado Direito: HistÃ³rico de Entradas Recentes */}
  <div className="md:col-span-5 p-5 rounded-2xl bg-card space-y-3">
  <div className="flex items-center justify-between pb-3">
  <h3 className="text-sm font-bold text-foreground">Entradas Recentes</h3>
  <Badge variant="secondary" className="text-xs font-mono">
- {history.filter((h) => h.success).length} válidas
+ {history.filter((h) => h.success).length} vÃ¡lidas
  </Badge>
  </div>
 
  <div className="space-y-2 max-h-[420px] overflow-y-auto no-scrollbar pr-1">
  {history.length === 0 ? (
  <p className="text-xs text-muted-foreground text-center py-8">
- Nenhuma leitura realizada nesta sessão.
+ Nenhuma leitura realizada nesta sessÃ£o.
  </p>
  ) : (
  history.map((item, idx) => (

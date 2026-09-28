@@ -5,15 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import {
- type WeeklySchedule,
- type Weekday,
- type TimeInterval,
- type HolidayException,
- WEEKDAYS_ORDER,
- SCHEDULE_PRESETS,
- normalizeWorkingHours,
-} from "@/lib/business-hours";
+import { type WeeklySchedule, type Weekday, type TimeInterval, type HolidayException, WEEKDAYS_ORDER, SCHEDULE_PRESETS, normalizeWorkingHours } from "@/lib/business-hours";
 import { getOpenStatus } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -510,7 +502,7 @@ export function BusinessHoursEditor({
  <Calendar className="size-4 text-primary" />
  <div>
  <h4 className="text-xs font-bold text-foreground">
- Feriados & Datas Especiais
+ Feriados e Datas Especiais
  </h4>
  <p className="text-[11px] text-muted-foreground">
  {holidayExceptions.length > 0

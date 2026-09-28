@@ -936,7 +936,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
 	  block_type: "split_banner",
 	  content: {
 		badge: "DESTAQUE EXCLUSIVO",
-		title: "Design Contemporâneo & Excelência",
+		title: "Design Contemporâneo e Excelência",
 		subtitle: "Experiência de alto padrão feita sob medida para o seu estilo de vida.",
 		description: "Peças desenvolvidas com tecidos nobres, acabamento impecável e tecnologia sustentável.\n\n- Envio expresso para todo o Brasil\n- Garantia de autenticidade\n- Atendimento VIP personalizado",
 		button_text: "Explorar Coleção",
@@ -1377,7 +1377,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "composition",
  block_type: "ingredient_spotlight",
  content: {
- title: "Tecnologia & Ingredientes",
+ title: "Tecnologia e Ingredientes",
  subtitle: "Fórmulas puras e matérias-primas selecionadas",
  items: [
  {
@@ -1602,7 +1602,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  defaultProps: {
  node_type: "composition",
  block_type: "restaurant_hours_delivery",
- content: { title: "Horários de Atendimento & Entrega" },
+ content: { title: "Horários de Atendimento e Entrega" },
  },
  },
 
@@ -1743,7 +1743,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  defaultProps: {
  node_type: "composition",
  block_type: "specialist_team_grid",
- content: { title: "Corpo Clínico & Especialistas", subtitle: "Profissionais certificados com vasta experiência." },
+ content: { title: "Corpo Clínico e Especialistas", subtitle: "Profissionais certificados com vasta experiência." },
  },
  },
 
@@ -2116,7 +2116,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "composition",
  block_type: "service_pricing_table",
  content: {
- title: "Planos & Assinaturas Sob Medida",
+ title: "Planos e Assinaturas Sob Medida",
  subtitle: "Escolha a melhor opção para sua rotina e economize com pacotes recorrentes.",
  },
  },
@@ -2312,7 +2312,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  subtitle: "Assessoria completa para que sua única preocupação seja fazer as malas.",
  services: [
  { title: "Passagens Aéreas", desc: "Tarifas acordadas e emissão com milhas nas melhores companhias." },
- { title: "Hotéis & Resorts", desc: "Hospedagens selecionadas a dedo com upgrade e café incluso." },
+ { title: "Hotéis e Resorts", desc: "Hospedagens selecionadas a dedo com upgrade e café incluso." },
  { title: "Cruzeiros Marítimos", desc: "Navios nacionais e internacionais com tudo incluso a bordo." },
  { title: "Seguro Viagem Global", desc: "Assistência médica completa e cobertura de bagagem 24 horas." },
  ],
@@ -2363,7 +2363,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  allowedParentTypes: ["container", "section"],
  allowedChildTypes: [],
  contentSchema: z.object({
- title: z.string().default("Meus Contratos & Documentos"),
+ title: z.string().default("Contratos"),
  subtitle: z.string().default("Gerencie suas minutas jurídicas e termos assinados."),
  }),
  inspector: {
@@ -2376,7 +2376,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "block",
  block_type: "portal_contracts",
  content: {
- title: "Meus Contratos & Documentos",
+ title: "Meus Contratos e Documentos",
  subtitle: "Gerencie suas minutas jurídicas e termos assinados.",
  },
  design_tokens: {},
@@ -2395,7 +2395,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  allowedParentTypes: ["container", "section"],
  allowedChildTypes: [],
  contentSchema: z.object({
- title: z.string().default("Carnê Digital & Parcelas"),
+ title: z.string().default("Carnê Digital"),
  subtitle: z.string().default("Consulte faturas em aberto e pague com PIX sem taxas."),
  }),
  inspector: {
@@ -2408,7 +2408,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "block",
  block_type: "portal_carnes_bills",
  content: {
- title: "Carnê Digital & Parcelas",
+ title: "Carnê Digital e Parcelas",
  subtitle: "Consulte faturas em aberto e pague com PIX sem taxas.",
  },
  design_tokens: {},
@@ -2427,7 +2427,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  allowedParentTypes: ["container", "section"],
  allowedChildTypes: [],
  contentSchema: z.object({
- title: z.string().default("Meus Agendamentos & Serviços"),
+ title: z.string().default("Agendamentos"),
  subtitle: z.string().default("Acompanhe seus horários e serviços marcados."),
  }),
  inspector: {
@@ -2440,7 +2440,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "block",
  block_type: "portal_appointments",
  content: {
- title: "Meus Agendamentos & Serviços",
+ title: "Meus Agendamentos e Serviços",
  subtitle: "Acompanhe seus horários e serviços marcados.",
  },
  design_tokens: {},
@@ -2451,7 +2451,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  portal_orders_rentals: {
  type: "portal_orders_rentals",
  version: "1.0.0",
- name: "Compras, Aluguéis & Devoluções",
+ name: "Compras",
  description: "Histórico de pedidos, produtos locados e solicitações de troca",
  category: "content",
  icon: "Package",
@@ -2459,7 +2459,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  allowedParentTypes: ["container", "section"],
  allowedChildTypes: [],
  contentSchema: z.object({
- title: z.string().default("Compras, Aluguéis & Devoluções"),
+ title: z.string().default("Compras"),
  subtitle: z.string().default("Histórico detalhado de compras e locações ativas."),
  }),
  inspector: {
@@ -2472,7 +2472,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
  node_type: "block",
  block_type: "portal_orders_rentals",
  content: {
- title: "Compras, Aluguéis & Devoluções",
+ title: "Compras, Aluguéis e Devoluções",
  subtitle: "Histórico detalhado de compras e locações ativas.",
  },
  design_tokens: {},

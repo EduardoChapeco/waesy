@@ -1,53 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  Compass,
-  MapPin,
-  Clock,
-  Star,
-  WhatsappLogo,
-  ShareNetwork,
-  ArrowLeft,
-  CheckCircle,
-  SuitcaseRolling,
-  SlidersHorizontal,
-  CalendarDots,
-  Users,
-  CircleNotch,
-  User,
-  EnvelopeSimple,
-  Phone,
-  ChatText,
-  ShieldCheck,
-  AirplaneTilt,
-  Ticket,
-  CreditCard,
-  QrCode,
-  IdentificationCard,
-  Plus,
-  Trash,
-  PencilSimple,
-} from "@phosphor-icons/react";
+import { Compass, MapPin, Clock, Star, WhatsappLogo, ShareNetwork, ArrowLeft, CheckCircle, SuitcaseRolling, SlidersHorizontal, CalendarDots, Users, CircleNotch, User, EnvelopeSimple, Phone, ChatText, ShieldCheck, AirplaneTilt, Ticket, CreditCard, QrCode, IdentificationCard, Plus, Trash, PencilSimple } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { TravelQuoteModal } from "@/components/tourism/travel-quote-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  getPublicTourismById,
-  bookTourismExperience,
-  type TourismItemDTO,
-  type TourismPassenger,
-} from "@/services/tourism.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { getPublicTourismById, bookTourismExperience, type TourismItemDTO, type TourismPassenger } from "@/services/tourism.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
@@ -431,7 +392,7 @@ function TourismDetailPage() {
   if (viewMode === "instagram_editorial" && editorialClassified) {
     return (
       <div className="w-full min-h-[100dvh] bg-background">
-        <div className="max-w-6xl mx-auto px-4 pt-3 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-0 sm:px-4 pt-3 flex items-center justify-between">
           <Link
             to="/turismo"
             className="size-11 sm:size-auto rounded-full sm:rounded-none flex items-center justify-center text-xs font-semibold text-muted-foreground hover:text-foreground group gap-1.5 hover:bg-muted/80 sm:hover:bg-transparent transition-all"
@@ -665,7 +626,7 @@ function TourismDetailPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                     <CalendarDots size={18} weight="bold" className="text-primary" />
-                    <span>Roteiro Dia a Dia & Atividades</span>
+                    <span>Roteiro Dia a Dia e Atividades</span>
                   </h3>
                   <Badge variant="outline" className="text-[10px] font-mono font-bold">
                     Programação Oficial
@@ -715,7 +676,7 @@ function TourismDetailPage() {
               <section className="p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <ShieldCheck size={18} weight="bold" className="text-primary" />
-                  <span>Informações Importantes & Documentação</span>
+                  <span>Informações Importantes e Documentação</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   {experience.documentation_notes && (

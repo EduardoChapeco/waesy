@@ -1,37 +1,10 @@
 import React, { useState } from "react";
-import {
- Link2,
- ExternalLink,
- Store,
- Tag,
- Compass,
- Briefcase,
- Plane,
- Calendar,
- Newspaper,
- ShoppingBag,
- Flame,
- Car,
- MapPin,
- Utensils,
- ChevronDown,
- Ticket,
- MessageSquare,
- Target,
-} from "lucide-react";
+import { Link2, ExternalLink, Store, Tag, Compass, Briefcase, Plane, Calendar, Newspaper, ShoppingBag, Flame, Car, MapPin, Utensils, ChevronDown, Ticket, MessageSquare, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
- Select,
- SelectContent,
- SelectGroup,
- SelectItem,
- SelectLabel,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export interface DestinationPreset {
@@ -43,16 +16,16 @@ export interface DestinationPreset {
 }
 
 export const SYSTEM_DESTINATIONS: DestinationPreset[] = [
- { label: "Mercado & Hortifrúti", url: "/mercado", category: "Vitrine & Comércio", icon: Store, badge: "Essencial" },
- { label: "Gastronomia & Delivery", url: "/gastronomia", category: "Vitrine & Comércio", icon: Utensils, badge: "Comida" },
+ { label: "Mercado e Hortifrúti", url: "/mercado", category: "Vitrine & Comércio", icon: Store, badge: "Essencial" },
+ { label: "Gastronomia e Delivery", url: "/gastronomia", category: "Vitrine & Comércio", icon: Utensils, badge: "Comida" },
  { label: "Ofertas Relâmpago", url: "/ofertas", category: "Vitrine & Comércio", icon: Flame, badge: "Descontos" },
  { label: "Busca / Catálogo Geral", url: "/buscar", category: "Vitrine & Comércio", icon: ShoppingBag },
  
  { label: "Feed Social", url: "/feed", category: "Conteúdo & Cidade", icon: MessageSquare, badge: "Comunidade" },
  { label: "Notícias Locais", url: "/noticias", category: "Conteúdo & Cidade", icon: Newspaper, badge: "Jornalismo" },
- { label: "Eventos & Shows", url: "/eventos", category: "Conteúdo & Cidade", icon: Ticket, badge: "Ingressos" },
+ { label: "Eventos e Shows", url: "/eventos", category: "Conteúdo & Cidade", icon: Ticket, badge: "Ingressos" },
  { label: "Agenda da Cidade", url: "/agenda", category: "Conteúdo & Cidade", icon: Calendar, badge: "Datas" },
- { label: "Turismo & Passeios", url: "/turismo", category: "Conteúdo & Cidade", icon: Plane, badge: "Lazer" },
+ { label: "Turismo e Passeios", url: "/turismo", category: "Conteúdo & Cidade", icon: Plane, badge: "Lazer" },
  { label: "Mapa da Cidade", url: "/mapa", category: "Conteúdo & Cidade", icon: MapPin },
  { label: "Mobilidade Urbana", url: "/mobilidade", category: "Conteúdo & Cidade", icon: Car },
 
@@ -126,7 +99,7 @@ export function DestinationPicker({
  <SelectContent className="max-h-72">
  <SelectGroup>
  <SelectLabel className="text-[10px] uppercase font-bold text-muted-foreground">
- Vitrines & Comércio
+ Vitrines e Comércio
  </SelectLabel>
  {SYSTEM_DESTINATIONS.filter((d) => d.category === "Vitrine & Comércio").map((dest) => {
  const Icon = dest.icon;
@@ -148,7 +121,7 @@ export function DestinationPicker({
 
  <SelectGroup>
  <SelectLabel className="text-[10px] uppercase font-bold text-muted-foreground">
- Conteúdo & Cidade
+ Conteúdo e Cidade
  </SelectLabel>
  {SYSTEM_DESTINATIONS.filter((d) => d.category === "Conteúdo & Cidade").map((dest) => {
  const Icon = dest.icon;
@@ -170,7 +143,7 @@ export function DestinationPicker({
 
  <SelectGroup>
  <SelectLabel className="text-[10px] uppercase font-bold text-muted-foreground">
- Serviços & Negócios
+ Serviços e Negócios
  </SelectLabel>
  {SYSTEM_DESTINATIONS.filter((d) => d.category === "Serviços & Negócios").map((dest) => {
  const Icon = dest.icon;

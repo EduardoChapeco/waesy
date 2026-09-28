@@ -6,11 +6,8 @@ import { StoreCard } from "@/components/commerce/store-card";
 import { AdTelemetryBeacon } from "@/components/commerce/ad-telemetry-beacon";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
-import {
-  getProceduralInfiniteFeedPage,
-  type ProceduralFeedSectionDTO,
-} from "@/services/surface-cms.functions";
-import { Tag, Storefront, MapPin, CircleNotch, Sparkle } from "@phosphor-icons/react";
+import { getProceduralInfiniteFeedPage, type ProceduralFeedSectionDTO } from "@/services/surface-cms.functions";
+import { Tag, Storefront, MapPin, CircleNotch, Star } from "@phosphor-icons/react";
 
 export interface ProceduralInfiniteFeedProps {
   initialExcludedStoreIds?: string[];

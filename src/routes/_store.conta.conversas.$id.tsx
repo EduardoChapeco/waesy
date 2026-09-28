@@ -5,16 +5,7 @@ import { getBrowserClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NativeBackButton } from "@/components/navigation";
-import {
-  ChevronLeft,
-  Send,
-  AlertTriangle,
-  ShieldCheck,
-  Loader2,
-  Lock,
-  Paperclip,
-  MessageCircle,
-} from "lucide-react";
+import { Send, AlertTriangle, ShieldCheck, Loader2, Lock, Paperclip, MessageCircle, Check, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/datetime";
 import { OrderMessageCard } from "@/components/chat/order-message-card";
@@ -22,7 +13,7 @@ import { RmaTicketModal } from "@/components/chat/rma-ticket-modal";
 import { RmaMessageCard } from "@/components/chat/rma-message-card";
 
 export const Route = createFileRoute("/_store/conta/conversas/$id")({
-  head: () => ({ meta: [{ title: "Atendimento & SAC | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Mensagens | Waesy" }] }),
   loader: async ({ params }) => {
     try {
       const res = await getCustomerChatThread({ data: { threadId: params.id } });
@@ -36,22 +27,24 @@ export const Route = createFileRoute("/_store/conta/conversas/$id")({
 });
 
 const STATUS_LABELS: Record<string, string> = {
-  open: "Em Atendimento",
-  pending: "Aguardando Loja",
+  open: "Online",
+  pending: "Aguardando",
   resolved: "Resolvido",
   closed: "Encerrado",
 };
 
 function CustomerChatPage() {
-  const { thread, messages: initialMessages, tickets: initialTickets } = ((Route.useLoaderData?.() as any) || {});
+  const { thread, messages: initialMessages } = ((Route.useLoaderData?.() as any) || {});
   const { id } = Route.useParams();
   const [messages, setMessages] = useState<any[]>(initialMessages || []);
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isPeerTyping, setIsPeerTyping] = useState(false);
   const [rmaModalOpen, setRmaModalOpen] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const messengerChannelRef = useRef<any>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Normalize store and order from joined relations
   const rawStore: any = thread?.store;
   const storeData: any = Array.isArray(rawStore) ? rawStore[0] : rawStore;
 
@@ -65,8 +58,9 @@ function CustomerChatPage() {
         behavior: "smooth",
       });
     }
-  }, [messages]);
+  }, [messages, isPeerTyping]);
 
+  // Motor Realtime E2E: Postgres Changes + Broadcast is_typing & read_receipts
   useEffect(() => {
     if (!id) return;
 
@@ -90,12 +84,14 @@ function CustomerChatPage() {
             createdAt: payload.new.created_at,
             attachments: payload.new.attachments || [],
             payload: payload.new.payload || {},
+            readStatus: "read",
           };
+          setIsPeerTyping(false);
           setMessages((prev: any[]) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
-        },
+        }
       )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
@@ -107,10 +103,49 @@ function CustomerChatPage() {
         }
       });
 
+    const protocolChannel = supabase.channel("messenger-protocol-v115");
+    protocolChannel
+      .on("broadcast", { event: "is_typing" }, ({ payload }: any) => {
+        if (payload?.threadId === id && payload?.sender !== "customer") {
+          setIsPeerTyping(Boolean(payload.isTyping));
+        }
+      })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          protocolChannel.send({
+            type: "broadcast",
+            event: "read_receipts",
+            payload: { threadId: id, status: "read" },
+          });
+        }
+      });
+
+    messengerChannelRef.current = protocolChannel;
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(protocolChannel);
     };
   }, [id]);
+
+  const handleInputChange = (value: string) => {
+    setText(value);
+    if (messengerChannelRef.current && id) {
+      messengerChannelRef.current.send({
+        type: "broadcast",
+        event: "is_typing",
+        payload: { threadId: id, isTyping: value.trim().length > 0, sender: "customer" },
+      });
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        messengerChannelRef.current?.send({
+          type: "broadcast",
+          event: "is_typing",
+          payload: { threadId: id, isTyping: false, sender: "customer" },
+        });
+      }, 2500);
+    }
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,14 +155,16 @@ function CustomerChatPage() {
     setText("");
     setIsSending(true);
 
+    const tempId = crypto.randomUUID();
     const optimistic = {
-      id: crypto.randomUUID(),
+      id: tempId,
       message: sent,
       message_type: "text",
       isStaffReply: false,
       createdAt: new Date().toISOString(),
       attachments: [],
       payload: {},
+      readStatus: "sent",
     };
     setMessages((prev) => [...prev, optimistic]);
 
@@ -139,9 +176,17 @@ function CustomerChatPage() {
           message_type: "text",
         },
       });
-    } catch (err) {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, readStatus: "read" } : m))
+      );
+      messengerChannelRef.current?.send({
+        type: "broadcast",
+        event: "read_receipts",
+        payload: { threadId: id, status: "read" },
+      });
+    } catch {
       toast.error("Erro ao enviar mensagem.");
-      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setText(sent);
     } finally {
       setIsSending(false);
@@ -150,16 +195,16 @@ function CustomerChatPage() {
 
   if (!thread) {
     return (
-      <section className="flex flex-col items-center justify-center min-h-[50vh] max-w-md mx-auto px-4 py-16 text-center gap-3">
+      <section className="flex flex-col items-center justify-center min-h-[50vh] max-w-md mx-auto px-0 sm:px-4 py-16 text-center gap-3">
         <div className="size-12 rounded-full bg-muted/60 flex items-center justify-center">
           <MessageCircle className="size-6 text-muted-foreground" />
         </div>
         <h2 className="text-base font-semibold text-foreground">Conversa não encontrada</h2>
         <p className="text-xs text-muted-foreground">
-          Esta conversa pode ter sido finalizada, excluída ou você não tem permissão para acessá-la.
+          Esta conversa pode ter sido finalizada ou excluída.
         </p>
-        <Button variant="outline" size="sm" asChild className="mt-2">
-          <Link to="/conta/conversas">Voltar para Conversas</Link>
+        <Button variant="outline" size="sm" asChild className="mt-2 rounded-xl">
+          <Link to="/conta/conversas">Voltar</Link>
         </Button>
       </section>
     );
@@ -169,32 +214,46 @@ function CustomerChatPage() {
 
   return (
     <section className="flex flex-col h-[calc(100dvh-100px)] max-w-4xl mx-auto font-sans text-foreground bg-background">
-      {/* ── Header Ultra-Minimalista WhatsApp ── */}
+      {/* ── Header Ultra-Minimalista WhatsApp com Avatar Circular + Online Dot + Typing Indicator ── */}
       <div className="flex items-center justify-between gap-3 px-3 py-2.5 border-b border-border/40 bg-background sticky top-0 z-10">
         <div className="flex items-center gap-2.5 min-w-0">
           <NativeBackButton fallbackHref="/conta/conversas" />
 
           <div className="flex items-center gap-2.5 min-w-0">
-            {storeData?.logo_url ? (
-              <img
-                src={storeData.logo_url}
-                alt={storeData.name}
-                className="size-9 rounded-full object-cover shrink-0"
-              />
-            ) : (
-              <div className="size-9 rounded-full bg-muted text-foreground flex items-center justify-center font-bold text-xs shrink-0">
-                {(storeData?.name || "L")[0]}
-              </div>
-            )}
+            <div className="relative shrink-0">
+              {storeData?.logo_url ? (
+                <img
+                  src={storeData.logo_url}
+                  alt={storeData.name}
+                  className="size-10 rounded-full object-cover border border-border/40"
+                />
+              ) : (
+                <div className="size-10 rounded-full bg-muted text-foreground flex items-center justify-center font-bold text-xs border border-border/40">
+                  {(storeData?.name || "L")[0]}
+                </div>
+              )}
+              {!isClosed && (
+                <span
+                  className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 border-2 border-background"
+                  title="Online"
+                />
+              )}
+            </div>
 
             <div className="min-w-0">
               <h2 className="text-sm font-bold text-foreground truncate">
                 {storeData?.name || thread?.subject || "Atendimento"}
               </h2>
-              <p className="text-[11px] text-muted-foreground truncate">
-                {orderData ? `Pedido #${orderData.id.slice(0, 8)} • ` : ""}
-                {STATUS_LABELS[thread?.status] ?? "Atendimento"}
-              </p>
+              {isPeerTyping ? (
+                <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 animate-pulse truncate">
+                  Digitando...
+                </p>
+              ) : (
+                <p className="text-[11px] text-muted-foreground truncate">
+                  {orderData ? `Pedido #${orderData.id.slice(0, 8)} • ` : ""}
+                  {STATUS_LABELS[thread?.status] ?? "Online"}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -208,7 +267,7 @@ function CustomerChatPage() {
               className="h-8 text-xs font-semibold rounded-xl border border-border/60 text-foreground hover:bg-muted/50 hidden sm:flex"
             >
               <AlertTriangle className="size-3.5 mr-1.5 text-muted-foreground" strokeWidth={1.75} />
-              Ajuda / SAC
+              Suporte
             </Button>
           )}
 
@@ -235,28 +294,26 @@ function CustomerChatPage() {
       {/* ── Timeline de Mensagens ── */}
       <div
         ref={chatContainerRef}
-        className="flex-1 space-y-3 overflow-y-auto no-scrollbar py-3 px-3 sm:px-4"
+        className="flex-1 space-y-2.5 overflow-y-auto no-scrollbar py-3 px-3 sm:px-4"
       >
-        {/* Indicativo tipográfico sutil centralizado no início do chat */}
-        <div className="flex justify-center my-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/40 text-[11px] text-muted-foreground select-none max-w-sm text-center">
+        <div className="flex justify-center my-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/40 text-[11px] text-muted-foreground select-none max-w-sm text-center">
             <Lock className="size-3 text-muted-foreground shrink-0" strokeWidth={1.75} />
-            <span>As mensagens são protegidas com criptografia de ponta a ponta</span>
+            <span>Mensagens protegidas de ponta a ponta</span>
           </div>
         </div>
 
         {(!messages || messages.length === 0) && (
-          <div className="text-center py-12 text-muted-foreground space-y-2">
-            <ShieldCheck className="size-10 mx-auto text-primary/40" strokeWidth={1.5} />
-            <p className="text-xs font-medium">Conversa segura com a loja.</p>
-            <p className="text-[11px]">Envie uma mensagem abaixo para falar com o atendimento.</p>
+          <div className="text-center py-12 text-muted-foreground space-y-1.5 select-none">
+            <ShieldCheck className="size-10 mx-auto text-muted-foreground/30" strokeWidth={1.25} />
+            <p className="text-xs text-gray-400">Envie uma mensagem para iniciar.</p>
           </div>
         )}
 
         {messages.map((msg) => {
           const isStaff = msg.isStaffReply;
+          const readStatus = msg.readStatus || "read";
 
-          // Se for card de pedido
           if (msg.message_type === "order_card" && (msg.payload?.order || orderData)) {
             return (
               <div
@@ -272,7 +329,6 @@ function CustomerChatPage() {
             );
           }
 
-          // Se for card de ticket de troca / SAC
           if (msg.message_type === "rma_ticket" && msg.payload?.ticket_id) {
             return (
               <div
@@ -284,14 +340,13 @@ function CustomerChatPage() {
             );
           }
 
-          // Mensagem de texto WhatsApp-like
           return (
             <div
               key={msg.id}
               className={`flex flex-col ${isStaff ? "items-start" : "items-end"}`}
             >
               <div
-                className={`max-w-[85%] sm:max-w-md px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed border-none ${
+                className={`max-w-[85%] sm:max-w-md px-3.5 py-2 text-xs sm:text-sm leading-relaxed ${
                   isStaff
                     ? "bg-muted/70 text-foreground rounded-2xl rounded-tl-xs"
                     : "bg-primary/10 text-foreground rounded-2xl rounded-tr-xs"
@@ -299,7 +354,6 @@ function CustomerChatPage() {
               >
                 <p className="whitespace-pre-wrap break-words">{msg.message}</p>
 
-                {/* Preview de imagem integrado à bolha de forma fluida (sem bordas extras) */}
                 {msg.attachments && msg.attachments.length > 0 && (
                   <div className="mt-2 grid grid-cols-2 gap-1.5 overflow-hidden rounded-xl">
                     {msg.attachments.map((url: string, i: number) => (
@@ -319,11 +373,23 @@ function CustomerChatPage() {
                     ))}
                   </div>
                 )}
-              </div>
 
-              <span className="text-[10px] text-muted-foreground mt-1 px-1">
-                {isStaff ? (storeData?.name || "Equipe") : "Você"} • {formatDate(msg.createdAt)}
-              </span>
+                {/* Rodapé Inline da Bolha estilo WhatsApp: Horário + Ticks de Leitura */}
+                <div className="flex items-center justify-end gap-1 mt-1">
+                  <span className="text-[10px] text-gray-400 font-mono leading-none">
+                    {formatDate(msg.createdAt)}
+                  </span>
+                  {!isStaff && (
+                    <span className="inline-flex items-center">
+                      {readStatus === "sent" ? (
+                        <Check className="size-3 text-gray-400 stroke-[2.2]" />
+                      ) : (
+                        <CheckCheck className="size-3.5 text-sky-500 stroke-[2.4]" />
+                      )}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           );
         })}
@@ -335,14 +401,13 @@ function CustomerChatPage() {
           onSubmit={handleSend}
           className="p-2 sm:p-2.5 border-t border-border/40 bg-background flex items-center gap-1.5 sticky bottom-0 z-10"
         >
-          {/* Ícone de anexo (clipe/câmera) sem caixa decorativa (44px) */}
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={() => setRmaModalOpen(true)}
             className="size-11 rounded-full text-muted-foreground hover:text-foreground shrink-0 cursor-pointer active:scale-95 transition-all"
-            title="Anexar ou Ocorrência"
+            title="Anexar"
             aria-label="Anexar arquivo"
           >
             <Paperclip className="size-5" strokeWidth={1.75} />
@@ -350,13 +415,12 @@ function CustomerChatPage() {
 
           <input
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value)}
             placeholder="Mensagem..."
             className="flex-1 h-11 rounded-full bg-muted/50 px-4 text-base sm:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary/20 transition-all border-none"
             disabled={isSending}
           />
 
-          {/* Botão de envio sem caixa em volta (44px) */}
           <button
             type="submit"
             disabled={!text.trim() || isSending}
@@ -377,7 +441,6 @@ function CustomerChatPage() {
         </div>
       )}
 
-      {/* Modal de Abertura de Ticket SAC / RMA */}
       <RmaTicketModal
         open={rmaModalOpen}
         onOpenChange={setRmaModalOpen}

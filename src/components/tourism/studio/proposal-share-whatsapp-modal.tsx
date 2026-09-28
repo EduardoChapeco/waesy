@@ -105,7 +105,7 @@ Ficamos à disposição para tirar qualquer dúvida e garantir sua reserva! `;
  </div>
  <div>
  <DialogTitle className="text-sm font-bold text-foreground">
- Compartilhar Proposta & Lâmina Visual
+ Compartilhar Proposta
  </DialogTitle>
  <p className="text-[11px] text-muted-foreground">
  Envio 1-clique formatado para o WhatsApp do passageiro

@@ -5,11 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import {
-  getTravelerFormContext,
-  submitTravelerRegistrationForm,
-  type TravelerFormContextDTO,
-} from '@/services/travel-lifecycle.functions';
+import { getTravelerFormContext, submitTravelerRegistrationForm, type TravelerFormContextDTO } from '@/services/travel-lifecycle.functions';
 
 export const Route = createFileRoute('/viajante/$token')({
   head: ({ loaderData }: any) => ({
@@ -145,7 +141,7 @@ function PublicTravelerFormPage() {
             <div className="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
               <CheckCircle2 className="size-8" />
             </div>
-            <h2 className="text-2xl font-black text-white">Ficha Confirmada & Registrada!</h2>
+            <h2 className="text-2xl font-black text-white">Ficha Confirmada e Registrada!</h2>
             <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
               Obrigado, <strong className="text-white">{fullName}</strong>! Seus dados e documentos foram recebidos e vinculados com segurança pela agência <strong className="text-white">{context?.agencyName}</strong> para emissão de passagens, voucher e seguro viagem.
             </p>
@@ -159,7 +155,7 @@ function PublicTravelerFormPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-lg font-black text-white">Identificação & Documentação</h1>
+                <h1 className="text-lg font-black text-white">Identificação e Documentação</h1>
                 <p className="text-xs text-slate-400">Preencha com atenção conforme seus documentos oficiais.</p>
               </div>
               <span className="text-xs font-mono text-slate-500">Passo {step} de 3</span>

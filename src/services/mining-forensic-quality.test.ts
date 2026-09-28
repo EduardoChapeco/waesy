@@ -1,14 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  validateMechanicalCompleteness,
-  isHealthyImageUrl,
-  getFallbackThematicImage,
-  calculateTitleSimilarity,
-} from "./mining/integrity-gate";
-import {
-  resolveImageUrl,
-  sanitizeParagraphs,
-} from "./mining/mechanical-extractor";
+import { validateMechanicalCompleteness, isHealthyImageUrl, getFallbackThematicImage, calculateTitleSimilarity } from "./mining/integrity-gate";
+import { resolveImageUrl, sanitizeParagraphs } from "./mining/mechanical-extractor";
 
 describe("Mining Pipeline — Forensic Integrity Gate & Sanitization", () => {
   describe("1. Image Health & Thematic Fallbacks", () => {

@@ -1,57 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import {
-  Zap,
-  TrendingUp,
-  DollarSign,
-  Radio,
-  ExternalLink,
-  Layers,
-  Search,
-  CheckCircle2,
-  Clock,
-  PauseCircle,
-  PlayCircle,
-  Play,
-  Pause,
-  Building2,
-  Sliders,
-  ShieldCheck,
-  Settings,
-  Sparkles,
-  Globe,
-  Instagram,
-  BookOpen,
-  ArrowDownLeft,
-  ArrowUpRight,
-  Filter,
-  X,
-} from "lucide-react";
-import {
-  getAdNetworkTreasuryMetrics,
-  listAllNetworkCampaignsAdmin,
-  getGlobalAdNetworkConfig,
-  updateGlobalAdNetworkConfig,
-  listAdLedgerEntries,
-  toggleAdCampaignStatusAdmin,
-} from "@/services/ads.functions";
+import { Zap, TrendingUp, DollarSign, Radio, ExternalLink, Layers, Search, CheckCircle2, Clock, PauseCircle, PlayCircle, Play, Pause, Building2, Sliders, ShieldCheck, Settings, Star, Globe, Instagram, BookOpen, ArrowDownLeft, ArrowUpRight, Filter, X } from "lucide-react";
+import { getAdNetworkTreasuryMetrics, listAllNetworkCampaignsAdmin, getGlobalAdNetworkConfig, updateGlobalAdNetworkConfig, listAdLedgerEntries, toggleAdCampaignStatusAdmin } from "@/services/ads.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/admin-master/ads-network")({
-  head: () => ({ meta: [{ title: "Ad-Tech Command Center & Arbitragem | Admin Master" }] }),
+  head: () => ({ meta: [{ title: "Ad-Tech Command Center e Arbitragem | Admin Master" }] }),
   loader: async () => {
     try {
       const [metrics, campaigns, globalConfig] = await Promise.all([
@@ -237,7 +198,7 @@ function AdminAdsNetworkPage() {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Gestão da câmara de compensação de anúncios pagos e distribuição de tráfego Meta & Google.
+            Gestão da câmara de compensação de anúncios pagos e distribuição de tráfego Meta e Google.
           </p>
         </div>
 
@@ -553,7 +514,7 @@ function AdminAdsNetworkPage() {
                   <span className="col-span-2">Roteamento</span>
                   <span className="col-span-2 text-right">Budget Total</span>
                   <span className="col-span-2 text-right">Receita Waesy ({Math.round((globalConfig?.take_rate ?? 0.20) * 100)}%)</span>
-                  <span className="col-span-2 text-center">Status & Ações</span>
+                  <span className="col-span-2 text-center">Status e Ações</span>
                 </div>
 
                 {filteredCampaigns.length > 0 ? (

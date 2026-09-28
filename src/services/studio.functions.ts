@@ -232,7 +232,7 @@ export const listStudioTemplates = createServerFn({ method: "GET" })
  {
  id: "tpl-veiculo-oferta",
  category: "veiculos",
- title: "Ficha Seminovos — Oferta & Parcelamento",
+ title: "Ficha Seminovos — Oferta e Parcelamento",
  template_type: "graphic",
  aspect_ratio: "1:1",
  preview_url: null,
@@ -490,7 +490,7 @@ export const listStudioTemplates = createServerFn({ method: "GET" })
  {
  id: "tpl-gastro-prato",
  category: "gastronomia",
- title: "Cardápio do Dia & Prato do Chef",
+ title: "Cardápio do Dia e Prato do Chef",
  template_type: "graphic",
  aspect_ratio: "1:1",
  preview_url: null,

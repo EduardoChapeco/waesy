@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getActiveSecretForProvider } from "./secret-vault.functions";
 import { testPaymentGatewayConnection } from "./integrations.functions";
-import {
-  signClassifiedNda,
-  checkClassifiedNdaStatus,
-  listClassifiedNdaSignatures,
-} from "./classifieds.functions";
+import { signClassifiedNda, checkClassifiedNdaStatus, listClassifiedNdaSignatures } from "./classifieds.functions";
 import { DEFAULT_PUBLIC_API_GOVERNANCE } from "./public-apis.functions";
 
 describe("Unified Integrations Hub, Gateway Testing & Digital NDA", () => {

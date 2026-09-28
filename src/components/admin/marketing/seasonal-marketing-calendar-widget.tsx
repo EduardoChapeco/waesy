@@ -1,16 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Calendar,
-  Sparkles,
-  ChevronRight,
-  Clock,
-  TrendingUp,
-  Tag,
-  Zap,
-  MapPin,
-  ArrowUpRight,
-  Gift,
-} from "lucide-react";
+import { Calendar, Star, ChevronRight, Clock, TrendingUp, Tag, Zap, MapPin, ArrowUpRight, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,8 +87,8 @@ export function SeasonalMarketingCalendarWidget({
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <span>Calendário Editorial & Vendas Sazonais</span>
-              <Sparkles className="size-3 text-amber-500" />
+              <span>Calendário Editorial e Vendas Sazonais</span>
+              <Star className="size-3 text-amber-500" />
             </h3>
             <p className="text-xs text-foreground font-medium">
               Próximas datas comemorativas e picos de demanda

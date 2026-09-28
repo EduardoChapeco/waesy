@@ -2,47 +2,22 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  AlertTriangle,
-  BellRing,
-  Search,
-  FileSpreadsheet,
-  Plus,
-  Boxes,
-  Flame,
-  ShieldAlert,
-  PackageCheck,
-  CheckCircle2,
-} from "lucide-react";
+import { AlertTriangle, BellRing, Search, FileSpreadsheet, Plus, Boxes, Flame, ShieldAlert, PackageCheck, CheckCircle2 } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/state/states";
 import { getStockLevels, adjustStock } from "@/services/stock.functions";
 import { getWaitlistDemandCounts } from "@/services/waitlist.functions";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/estoque/alertas")({
-  head: () => ({ meta: [{ title: "Alertas de Reposição & Ruptura | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Alertas de Estoque | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const res = await getStockLevels({ data: {} });

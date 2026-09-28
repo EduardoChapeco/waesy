@@ -1,44 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- MapPin,
- Plus,
- Search,
- Camera,
- Calendar,
- Compass,
- Edit2,
- Trash2,
- Hotel,
- Sun,
- ExternalLink,
- Plane,
- Building2,
- Layers,
- Image as ImageIcon,
- CheckCircle2,
- Utensils,
- Lightbulb,
- Tag,
- X,
- UploadCloud,
- Loader2,
- Award,
- Clock,
- HelpCircle,
- Eye,
- Check,
- ChevronDown,
- ChevronUp,
- ArrowRight,
- MessageSquare,
- ShieldCheck,
- Globe2,
- Sliders,
- ListPlus,
- FileText,
-} from "lucide-react";
+import { MapPin, Plus, Search, Camera, Calendar, Compass, Edit2, Trash2, Hotel, Sun, ExternalLink, Plane, Building2, Layers, Image as ImageIcon, CheckCircle2, Utensils, Lightbulb, Tag, X, UploadCloud, Loader2, Award, Clock, HelpCircle, Eye, Check, ChevronDown, ChevronUp, ArrowRight, MessageSquare, ShieldCheck, Globe2, Sliders, ListPlus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
@@ -47,44 +10,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { uploadStoreMedia } from "@/services/storage.functions";
-import {
- listDestinations,
- createDestination,
- updateDestination,
- deleteDestination,
- type DestinationDTO,
- type DestinationSection,
- type DestinationAttraction,
- type DestinationReview,
-} from "@/services/travel-catalog.functions";
+import { listDestinations, createDestination, updateDestination, deleteDestination, type DestinationDTO, type DestinationSection, type DestinationAttraction, type DestinationReview } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
-import {
- CANONICAL_DESTINATIONS,
- BRAZIL_STATES,
- MAJOR_IATA_AIRPORTS,
- TOURISM_TAGS_PRESETS,
- getDestinationsByState,
- findAirportByIata,
- searchCanonicalDestinations,
- type CanonicalDestination,
-} from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS, BRAZIL_STATES, MAJOR_IATA_AIRPORTS, TOURISM_TAGS_PRESETS, getDestinationsByState, findAirportByIata, searchCanonicalDestinations, type CanonicalDestination } from "@/lib/destinations-catalog";
 
 export const Route = createFileRoute("/workspace/turismo/destinos")({
- head: () => ({ meta: [{ title: "Banco de Destinos Turísticos & CMS | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Destinos Turísticos | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const [destinations, store] = await Promise.all([
@@ -268,7 +207,7 @@ export default function WorkspaceDestinationsPage() {
  {
  id: crypto.randomUUID(),
  type: "gastronomy_guide",
- title: "Sabores & Gastronomia Local",
+ title: "Sabores e Gastronomia Local",
  subtitle: "Experiências culinárias inesquecíveis",
  content_text: canonical.gastronomyTip,
  items: [
@@ -446,7 +385,7 @@ export default function WorkspaceDestinationsPage() {
  : type === "highlights_grid"
  ? "Pontos Turísticos & Passeios"
  : type === "gastronomy_guide"
- ? "Gastronomia & Restaurantes"
+ ? "Gastronomia"
  : type === "travel_tips_cards"
  ? "Dicas Essenciais para o Viajante"
  : "Perguntas Frequentes (FAQ)",
@@ -613,7 +552,7 @@ export default function WorkspaceDestinationsPage() {
       color: "amber",
     },
     {
-      title: "Estados & Regiões",
+      title: "Estados e Regiões",
       value: metrics.statesCount,
       description: "UFs cadastradas",
       icon: MapPin,
@@ -631,7 +570,7 @@ export default function WorkspaceDestinationsPage() {
   return (
     <NicheOperationalGuard
       targetNiche="tourism"
-      toolTitle="Banco de Destinos Turísticos & CMS"
+      toolTitle="Destinos Turísticos"
       toolDescription="Catálogo estruturado com base canônica de cidades, estados, aeroportos IATA, seções ricas, galerias de mídia e avaliações de viajantes."
       store={store}
     >
@@ -892,7 +831,7 @@ export default function WorkspaceDestinationsPage() {
  </TabsTrigger>
  <TabsTrigger value="tags" className="text-xs font-bold rounded-lg gap-1.5 py-1">
  <Tag className="size-3.5" />
- <span>5. Tags & SEO</span>
+ <span>5. Tags e SEO</span>
  </TabsTrigger>
  <TabsTrigger value="preview" className="text-xs font-bold rounded-lg gap-1.5 py-1">
  <Eye className="size-3.5" />
@@ -1127,7 +1066,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="space-y-3">
  <div className="flex items-center justify-between">
  <div className="space-y-0.5">
- <Label className="text-xs font-bold">Galeria de Mídias & Fotos do Destino</Label>
+ <Label className="text-xs font-bold">Galeria de Mídias e Fotos do Destino</Label>
  <p className="text-[11px] text-muted-foreground">
  Imagens em alta resolução de praias, pontos turísticos, hotéis e passeios para ilustrar roteiros.
  </p>
@@ -1633,7 +1572,7 @@ export default function WorkspaceDestinationsPage() {
  {/* ── ABA 5: TAGS DE NICHO & SEO ── */}
  <TabsContent value="tags" className="m-0 space-y-5">
  <div className="space-y-2">
- <Label className="text-xs font-bold">Segmentos & Perfil do Destino</Label>
+ <Label className="text-xs font-bold">Segmentos e Perfil do Destino</Label>
  <p className="text-[11px] text-muted-foreground">
  Selecione as tags que definem o perfil deste destino para alimentar buscas inteligentes e filtros do CRM:
  </p>
@@ -1663,7 +1602,7 @@ export default function WorkspaceDestinationsPage() {
  <div className="space-y-3">
  <Label className="text-xs font-bold flex items-center gap-1.5">
  <Globe2 className="size-4 text-primary" />
- Configurações de SEO & Vitrine Pública
+ Configurações de SEO e Vitrine Pública
  </Label>
 
  <div className="space-y-1">

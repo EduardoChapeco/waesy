@@ -1,21 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Heartbeat,
- FirstAid,
- Pill,
- Baby,
- Sun,
- ShieldCheck,
- Clock,
- MapPin,
- Storefront,
- ArrowRight,
- ShoppingBag,
- SlidersHorizontal,
-} from "@phosphor-icons/react";
+import { Heartbeat, FirstAid, Pill, Baby, Sun, ShieldCheck, Clock, MapPin, Storefront, ArrowRight, ShoppingBag, SlidersHorizontal } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +12,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
@@ -51,18 +35,18 @@ type FarmaciaSearch = z.infer<typeof SearchSchema>;
 const FARMACIA_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", icon: Tag },
  { id: "medicamentos", label: "Medicamentos Isentos", icon: Pill },
- { id: "suplementos", label: "Vitaminas & Suplementos", icon: Heartbeat },
+ { id: "suplementos", label: "Vitaminas e Suplementos", icon: Heartbeat },
  { id: "dermocosmeticos", label: "Dermocosméticos", icon: Tag },
- { id: "higiene", label: "Higiene & Cuidados", icon: ShieldCheck },
- { id: "bebe", label: "Mamãe & Bebê", icon: Baby },
+ { id: "higiene", label: "Higiene e Cuidados", icon: ShieldCheck },
+ { id: "bebe", label: "Mamãe e Bebê", icon: Baby },
  { id: "primeiros_socorros", label: "Primeiros Socorros", icon: FirstAid },
- { id: "solar", label: "Protetor Solar & Verão", icon: Sun },
+ { id: "solar", label: "Protetor Solar e Verão", icon: Sun },
 ];
 
 export const Route = createFileRoute("/_store/farmacia")({
  head: () => ({
  meta: [
- { title: "Farmácias, Drogarias & Saúde | Waesy" },
+ { title: "Farmácias, Drogarias e Saúde | Waesy" },
  {
  name: "description",
  content:
@@ -73,12 +57,13 @@ export const Route = createFileRoute("/_store/farmacia")({
  validateSearch: (search: Record<string, unknown>): FarmaciaSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "farmacia" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "farmacia", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "farmacia" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "farmacia" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "farmacia", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "farmacia", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

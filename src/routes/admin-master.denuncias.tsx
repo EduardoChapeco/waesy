@@ -1,22 +1,8 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- AlertTriangle,
- CheckCircle2,
- XCircle,
- Eye,
- Trash2,
- Ban,
- ShieldAlert,
- Loader2,
- Filter,
- ExternalLink,
-} from "lucide-react";
-import {
- listModerationReports,
- resolveModerationReport,
-} from "@/services/master.functions";
+import { AlertTriangle, CheckCircle2, XCircle, Eye, Trash2, Ban, ShieldAlert, Loader2, Filter, ExternalLink } from "lucide-react";
+import { listModerationReports, resolveModerationReport } from "@/services/master.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SheetPage } from "@/components/ui/sheet-page";
@@ -27,7 +13,7 @@ import { formatDateTime } from "@/lib/datetime";
 import { ErrorState } from "@/components/state/states";
 
 export const Route = createFileRoute("/admin-master/denuncias")({
- head: () => ({ meta: [{ title: "Trust & Safety — Central de Denúncias | Admin Waesy" }] }),
+ head: () => ({ meta: [{ title: "Trust e Safety — Central de Denúncias | Admin Waesy" }] }),
  loader: async () => {
  try {
  const reports = await listModerationReports({ data: { status: "all" } }).catch(() => []);
@@ -109,7 +95,7 @@ function AdminDenunciasPage() {
  <div>
  <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
  <AlertTriangle className="size-6 text-amber-500" />
- Denúncias & Moderação
+ Denúncias e Moderação
  </h1>
  <p className="text-sm text-muted-foreground">
  Auditoria global de conteúdos sinalizados, histórico de infrações e sanções disciplinares.
@@ -189,7 +175,7 @@ function AdminDenunciasPage() {
 
  <div className="space-y-1">
  <span className="text-[11px] font-bold uppercase text-muted-foreground">
- Denunciante & Alvo
+ Denunciante e Alvo
  </span>
  <p className="text-xs text-foreground">
  Denunciante:{" "}

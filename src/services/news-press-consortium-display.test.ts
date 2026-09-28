@@ -1,12 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  listPublicNewsSponsors,
-  getPublicSponsorReport,
-  listStoreSponsoredCampaigns,
-  listPressConsortiumStores,
-  reviewPressAccreditation,
-  type SponsorDTO,
-} from "./news.functions";
+import { listPublicNewsSponsors, getPublicSponsorReport, listStoreSponsoredCampaigns, listPressConsortiumStores, reviewPressAccreditation, type SponsorDTO } from "./news.functions";
 
 describe("News Press Consortium & Sponsor Display Network", () => {
   it("exports all required functions for press consortium and display ads", () => {

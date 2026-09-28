@@ -1,21 +1,8 @@
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Bookmark,
-  Tag,
-  ShoppingBag,
-  Calendar,
-  Trash2,
-  ExternalLink,
-  Loader2,
-  MapPin,
-  Clock,
-  Layers,
-  Scissors,
-  Search,
-  X,
-} from "lucide-react";
+import { Bookmark, Tag, ShoppingBag, Calendar, Trash2, ExternalLink, Loader2, MapPin, Clock, Layers, Scissors, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { listUserFavorites, toggleFavorite } from "@/services/favorites.functions";
@@ -26,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/_store/conta/salvos")({
-  head: () => ({ meta: [{ title: "Meus Itens Salvos | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Salvos | Waesy" }] }),
   loader: async () => {
     try {
       const initialFavorites = await listUserFavorites({
@@ -66,7 +53,7 @@ function SavedItemsErrorComponent({ error, reset }: { error: any; reset: () => v
 
 const TYPE_TABS = [
   { id: "all", label: "Todos", icon: Layers },
-  { id: "product", label: "Produtos & Serviços", icon: ShoppingBag },
+  { id: "product", label: "Produtos", icon: ShoppingBag },
   { id: "classified", label: "Classificados", icon: Tag },
   { id: "event", label: "Eventos", icon: Calendar },
 ] as const;
@@ -135,7 +122,8 @@ function SavedItemsPage() {
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-5 pb-24 px-0 sm:px-4 md:px-0">
       {/* ── 1. Top Header Limpo & Direto (Apple HIG) ── */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
+      <NativeMobileHeader title="Salvos" fallbackHref="/conta" mobileOnly />
+      <div className="hidden sm:flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
         <div className="flex items-center gap-2.5">
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
             Salvos
@@ -153,7 +141,7 @@ function SavedItemsPage() {
           variant="outline"
           className="rounded-xl h-9 px-3.5 text-xs font-semibold cursor-pointer hover:bg-muted"
         >
-          <Link to="/mercado">Explorar Vitrines</Link>
+          <Link to="/mercado">Explorar</Link>
         </Button>
       </div>
 
@@ -246,7 +234,7 @@ function SavedItemsPage() {
       ) : filteredFavorites && filteredFavorites.length > 0 ? (
         <>
           {/* ── MOBILE: WhatsApp / Apple HIG List Pattern ── */}
-          <div className="block sm:hidden divide-y divide-border/20 rounded-2xl bg-card border border-border/40 overflow-hidden shadow-xs">
+          <div className="block sm:hidden divide-y divide-border/20 rounded-none sm:rounded-2xl bg-card border-y sm:border border-border/40 overflow-hidden shadow-xs">
             {filteredFavorites.map((fav: any) => {
               const item = fav.details;
               if (!item) return null;

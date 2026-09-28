@@ -1,29 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Bell,
-  CheckCheck,
-  Tag,
-  Briefcase,
-  Store,
-  Info,
-  Trash2,
-  ExternalLink,
-  MailOpen,
-  Mail,
-  Calendar,
-} from "lucide-react";
+import { Bell, CheckCheck, Tag, Briefcase, Store, Info, Trash2, ExternalLink, MailOpen, Mail, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NativeMobileHeader } from "@/components/navigation";
-import {
-  listUserNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-  type NotificationItemDTO,
-  type NotificationType,
-} from "@/services/notifications.functions";
+import { listUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, type NotificationItemDTO, type NotificationType } from "@/services/notifications.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { cn } from "@/lib/utils";
 
@@ -172,7 +154,7 @@ function NotificationsPage() {
               className="h-8.5 px-3 rounded-xl border border-border/70 bg-card hover:bg-muted/50 font-semibold text-xs gap-1.5 cursor-pointer shadow-2xs active:scale-98"
             >
               <CheckCheck className="size-3.5 text-primary" />
-              <span>Marcar lidas</span>
+              <span>Lidas</span>
             </Button>
           ) : null
         }

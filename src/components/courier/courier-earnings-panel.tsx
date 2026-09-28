@@ -1,28 +1,11 @@
 import { useState, useEffect } from "react";
-import {
-  DollarSign,
-  TrendingUp,
-  Gift,
-  Target,
-  ArrowUpRight,
-  ArrowDownRight,
-  Wallet,
-  CreditCard,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Zap,
-} from "lucide-react";
+import { DollarSign, TrendingUp, Gift, Target, ArrowUpRight, ArrowDownRight, Wallet, CreditCard, Clock, CheckCircle2, AlertCircle, Loader2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
-import {
-  getMyCourierEarnings,
-  type CourierEarningsDTO,
-} from "@/services/mobility.functions";
+import { getMyCourierEarnings, type CourierEarningsDTO } from "@/services/mobility.functions";
 
 export function CourierEarningsPanel() {
   const [data, setData] = useState<CourierEarningsDTO | null>(null);

@@ -1,27 +1,10 @@
 import React, { useState } from "react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MediaUploader } from "@/components/ui/media-uploader";
-import {
- Lightning,
- MapPin,
- Camera,
- Users,
- BeerBottle,
- Coffee,
- Tree,
- MusicNotes,
- Crosshair,
- Check,
-} from "@phosphor-icons/react";
+import { Lightning, MapPin, Camera, Users, BeerBottle, Coffee, Tree, MusicNotes, Crosshair, Check } from "@phosphor-icons/react";
 import { publishLiveMoment } from "@/services/social.functions";
 import { getStoredLocation } from "@/components/location/location-master-pill";
 import { toast } from "sonner";
@@ -38,9 +21,9 @@ export interface PublishMomentModalProps {
 const VIBE_OPTIONS = [
  { id: "ao_vivo", label: "Ao Vivo", icon: Lightning },
  { id: "mesa_aberta", label: "Mesa Aberta / Dividir Conta", icon: BeerBottle },
- { id: "cafe_trabalho", label: "Café & Trabalho", icon: Coffee },
- { id: "parque_esporte", label: "Parque & Esporte", icon: Tree },
- { id: "encontro_musica", label: "Música & Encontro", icon: MusicNotes },
+ { id: "cafe_trabalho", label: "Café e Trabalho", icon: Coffee },
+ { id: "parque_esporte", label: "Parque e Esporte", icon: Tree },
+ { id: "encontro_musica", label: "Música e Encontro", icon: MusicNotes },
 ];
 
 export function PublishMomentModal({

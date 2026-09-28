@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Plane, ShieldCheck, MessageCircle, Loader2, Sparkles } from "lucide-react";
+import { Calendar, Users, Plane, ShieldCheck, MessageCircle, Loader2, Star } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { registerClassifiedLead } from "@/services/company-mvp.functions";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
@@ -151,7 +151,7 @@ export function TravelBookingDossierModal({
         childrenSummary,
         periodSummary,
         passengerNames.trim() ? `📝 *Passageiros:* ${passengerNames.trim()}` : "",
-        specialRequests.trim() ? `✨ *Preferências:* ${specialRequests.trim()}` : "",
+        specialRequests.trim() ? `*Preferências:* ${specialRequests.trim()}` : "",
         ...customAnswerLines,
       ]
         .filter(Boolean)
@@ -269,7 +269,7 @@ export function TravelBookingDossierModal({
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <Users className="size-3.5 text-primary" />
-                <span>Passageiros & Viajantes</span>
+                <span>Passageiros e Viajantes</span>
               </Label>
               <span className="text-[11px] font-mono text-muted-foreground">
                 Total: {adultsCount + childrenCount} viajante(s)
@@ -442,7 +442,7 @@ export function TravelBookingDossierModal({
             <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/[0.03] space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="size-3.5 text-primary" />
+                  <Star className="size-3.5 text-primary" />
                   <span>Perguntas da Agência (Formulário de Interesse)</span>
                 </Label>
                 <span className="text-[10px] font-mono text-primary font-bold">

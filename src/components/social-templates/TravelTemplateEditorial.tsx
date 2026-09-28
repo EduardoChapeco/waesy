@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo } from "react";
-import { Plane, Coffee, Car, Utensils, Compass, Sun, Snowflake, Anchor, ShieldCheck, Sparkles } from "lucide-react";
+import { Plane, Coffee, Car, Utensils, Compass, Sun, Snowflake, Anchor, ShieldCheck, Star } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import type { SocialTemplateProps } from "./types";
 
@@ -99,7 +99,7 @@ export function TravelTemplateEditorial({ data, className = "" }: SocialTemplate
         <div className={`w-full text-center space-y-3 ${aspectRatio === "1:1" ? "pt-4" : "pt-8"}`}>
           {promoBadge && (
             <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 font-bold uppercase tracking-widest text-sm sm:text-base shadow-sm backdrop-blur-md mb-2">
-              <Sparkles className="size-4.5 text-amber-400 shrink-0" />
+              <Star className="size-4.5 text-amber-400 shrink-0" />
               <span>{promoBadge}</span>
             </div>
           )}

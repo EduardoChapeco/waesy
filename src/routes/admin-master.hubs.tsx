@@ -1,51 +1,21 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useRef } from "react";
-import {
-  Plus,
- Trash2,
- Edit2,
- UploadCloud,
- CheckCircle2,
- Eye,
- EyeOff,
- Layers,
- ArrowUpDown,
- Image as ImageIcon,
- Check,
- Tag,
-} from "lucide-react";
+import { Plus, Trash2, Edit2, UploadCloud, CheckCircle2, Eye, EyeOff, Layers, ArrowUpDown, Image as ImageIcon, Check, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { SheetPage } from "@/components/ui/sheet-page";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import {
- listAllAdminHubs,
- saveAdminHub,
- deleteAdminHub,
- toggleAdminHubStatus,
-} from "@/services/admin-hubs.functions";
+import { listAllAdminHubs, saveAdminHub, deleteAdminHub, toggleAdminHubStatus } from "@/services/admin-hubs.functions";
 import { uploadAdminMedia } from "@/services/storage.functions";
 import type { HotpageDTO, HotpageModule } from "@/services/hotpage.functions";
 
 export const Route = createFileRoute("/admin-master/hubs")({
- head: () => ({ meta: [{ title: "Gestão de Hubs & Categorias Globais | Admin Master" }] }),
+ head: () => ({ meta: [{ title: "Gestão de Hubs e Categorias Globais | Admin Master" }] }),
   loader: async () => {
     try {
       const hubs = await listAllAdminHubs().catch(() => []);
@@ -61,32 +31,32 @@ export const Route = createFileRoute("/admin-master/hubs")({
 const MODULES: { id: HotpageModule; label: string; emoji: string }[] = [
  { id: "all", label: "Todos os Módulos", emoji: "🌐" },
  { id: "home", label: "Início (Home)", emoji: "🏠" },
- { id: "gastronomia", label: "Gastronomia & Delivery", emoji: "🍽️" },
- { id: "mercado", label: "Supermercado & Hortifrúti", emoji: "🛒" },
- { id: "farmacia", label: "Farmácia & Saúde", emoji: "💊" },
- { id: "bebidas", label: "Bebidas & Adega", emoji: "🍻" },
- { id: "acougue", label: "Açougue & Carnes", emoji: "🥩" },
- { id: "moda", label: "Moda & Vestuário", emoji: "👗" },
- { id: "eletronicos", label: "Eletrônicos & Tech", emoji: "📱" },
+ { id: "gastronomia", label: "Gastronomia e Delivery", emoji: "🍽️" },
+ { id: "mercado", label: "Supermercado e Hortifrúti", emoji: "🛒" },
+ { id: "farmacia", label: "Farmácia e Saúde", emoji: "💊" },
+ { id: "bebidas", label: "Bebidas e Adega", emoji: "🍻" },
+ { id: "acougue", label: "Açougue e Carnes", emoji: "🥩" },
+ { id: "moda", label: "Moda e Vestuário", emoji: "👗" },
+ { id: "eletronicos", label: "Eletrônicos e Tech", emoji: "📱" },
  { id: "pet", label: "Pet Shop", emoji: "🐾" },
- { id: "servicos", label: "Serviços & Profissionais", emoji: "💼" },
- { id: "imoveis", label: "Imóveis & Locação", emoji: "🏢" },
- { id: "construcao", label: "Construção & Reforma", emoji: "🔨" },
- { id: "casa", label: "Casa & Decoração", emoji: "🛋️" },
- { id: "beleza", label: "Beleza & Estética", emoji: "✂️" },
- { id: "limpeza", label: "Limpeza & Utilidades", emoji: "🧹" },
- { id: "livros", label: "Livros & Papelaria", emoji: "📚" },
+ { id: "servicos", label: "Serviços e Profissionais", emoji: "💼" },
+ { id: "imoveis", label: "Imóveis e Locação", emoji: "🏢" },
+ { id: "construcao", label: "Construção e Reforma", emoji: "🔨" },
+ { id: "casa", label: "Casa e Decoração", emoji: "🛋️" },
+ { id: "beleza", label: "Beleza e Estética", emoji: "✂️" },
+ { id: "limpeza", label: "Limpeza e Utilidades", emoji: "🧹" },
+ { id: "livros", label: "Livros e Papelaria", emoji: "📚" },
  { id: "feed", label: "Feed", emoji: "📡" },
  { id: "noticias", label: "Notícias", emoji: "📰" },
  { id: "eventos", label: "Eventos", emoji: "🎟️" },
  { id: "agenda", label: "Agenda", emoji: "📅" },
  { id: "afiliados", label: "Afiliados", emoji: "🎯" },
- { id: "turismo", label: "Turismo & Hospedagem", emoji: "✈️" },
+ { id: "turismo", label: "Turismo e Hospedagem", emoji: "✈️" },
  { id: "empregos", label: "Empregos", emoji: "💼" },
  { id: "classificados", label: "Classificados", emoji: "🏷️" },
  { id: "diretorio", label: "Places (Lista Telefônica)", emoji: "🧭" },
  { id: "mobilidade", label: "Mobilidade Urbana", emoji: "🚗" },
- { id: "ofertas", label: "Ofertas & Promoções", emoji: "⚡" },
+ { id: "ofertas", label: "Ofertas e Promoções", emoji: "⚡" },
 ];
 
 function AdminMasterHubsPage() {
@@ -276,7 +246,7 @@ function AdminMasterHubsPage() {
  </span>
  </div>
  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
- Hubs Verticais & Categorias Globais
+ Hubs Verticais e Categorias Globais
  </h1>
  <p className="text-xs text-muted-foreground mt-1">
  Taxonomia de categorias e botões de atalho da rede

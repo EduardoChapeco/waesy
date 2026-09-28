@@ -11,12 +11,7 @@ import { requireAdmin } from "@/lib/server-access";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { logSystemError } from "@/lib/logger";
 import { getOpenStatus } from "@/lib/datetime";
-import {
- ExperienceNodeSchema,
- type ExperienceDocument,
- type ExperienceNode,
- type ExperienceType,
-} from "@/lib/builder-types";
+import { ExperienceNodeSchema, type ExperienceDocument, type ExperienceNode, type ExperienceType } from "@/lib/builder-types";
 
 // ---------------------------------------------------------------------------
 // Store Profile Hydration Helper

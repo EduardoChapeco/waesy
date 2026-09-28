@@ -1,21 +1,10 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Hammer,
- PaintBrush,
- Lightbulb,
- Drop,
- Wrench,
- Armchair,
- Storefront,
- Clock,
- MapPin,
- ArrowRight,
- ShoppingBag,
-} from "@phosphor-icons/react";
+import { Hammer, PaintBrush, Lightbulb, Drop, Wrench, Armchair, Storefront, Clock, MapPin, ArrowRight, ShoppingBag } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +13,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { OfferCard } from "@/components/commerce/offer-card";
@@ -50,18 +35,18 @@ type ConstrucaoSearch = z.infer<typeof SearchSchema>;
 
 const CONSTRUCAO_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", icon: Tag },
- { id: "tintas", label: "Tintas & Acabamento", icon: PaintBrush },
- { id: "ferramentas", label: "Ferramentas Manuais & Elétricas", icon: Hammer },
- { id: "eletrica", label: "Elétrica & Iluminação", icon: Lightbulb },
- { id: "hidraulica", label: "Hidráulica & Tubos", icon: Drop },
- { id: "decoracao", label: "Decoração & Móveis", icon: Armchair },
- { id: "fixacao", label: "Parafusos & Ferragens", icon: Wrench },
+ { id: "tintas", label: "Tintas e Acabamento", icon: PaintBrush },
+ { id: "ferramentas", label: "Ferramentas Manuais e Elétricas", icon: Hammer },
+ { id: "eletrica", label: "Elétrica e Iluminação", icon: Lightbulb },
+ { id: "hidraulica", label: "Hidráulica e Tubos", icon: Drop },
+ { id: "decoracao", label: "Decoração e Móveis", icon: Armchair },
+ { id: "fixacao", label: "Parafusos e Ferragens", icon: Wrench },
 ];
 
 export const Route = createFileRoute("/_store/construcao")({
  head: () => ({
  meta: [
- { title: "Construção, Ferramentas, Tintas & Casa | Waesy" },
+ { title: "Construção, Ferramentas, Tintas e Casa | Waesy" },
  {
  name: "description",
  content:
@@ -72,12 +57,13 @@ export const Route = createFileRoute("/_store/construcao")({
  validateSearch: (search: Record<string, unknown>): ConstrucaoSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "construcao" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "construcao", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "construcao" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "construcao" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "construcao", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "construcao", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

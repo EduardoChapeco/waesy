@@ -1,23 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Download,
-  Copy,
-  Share2,
-  Sparkles,
-  Smartphone,
-  Square,
-  Monitor,
-  Check,
-} from "lucide-react";
+import { Download, Copy, Share2, Star, Smartphone, Square, Monitor, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +41,7 @@ const FORMAT_CONFIGS = {
     icon: Square,
   },
   threads: {
-    label: "Microblog & Notícias (16:9)",
+    label: "Microblog e Notícias (16:9)",
     ratioLabel: "16:9",
     width: 1200,
     height: 675,
@@ -240,7 +225,7 @@ export function SocialCardGeneratorModal({
       <DialogContent className="max-w-2xl rounded-2xl p-6">
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <Sparkles className="size-4 text-amber-500" /> Gerador Social Studio
+            <Star className="size-4 text-amber-500" /> Gerador Social Studio
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             Gere cards gráficos em alta resolução prontos para Stories, Feed ou Microblog.

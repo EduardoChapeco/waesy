@@ -1,22 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import {
-  FileText,
-  Plus,
-  ChevronRight,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Send,
-  AlertTriangle,
-  Loader2,
-  Kanban,
-  List,
-  ArrowRight,
-  TrendingUp,
-  DollarSign,
-} from "lucide-react";
+import { FileText, Plus, ChevronRight, Clock, CheckCircle2, XCircle, Send, AlertTriangle, Loader2, Kanban, List, ArrowRight, TrendingUp, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -68,7 +53,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 const KANBAN_COLUMNS = [
-  { id: "draft", title: "Rascunhos & Leads", statuses: ["draft"] },
+  { id: "draft", title: "Rascunhos e Leads", statuses: ["draft"] },
   { id: "sent", title: "Enviados", statuses: ["sent"] },
   { id: "negotiating", title: "Em Negociação", statuses: ["negotiating"] },
   { id: "won", title: "Ganhos / Fechados", statuses: ["approved", "converted"] },
@@ -308,7 +293,7 @@ function QuotesListPage() {
       <WorkspaceDashboardSheet
         open={isDashboardOpen}
         onOpenChange={setIsDashboardOpen}
-        title="Painel de Orçamentos & Pipeline"
+        title="Pipeline de Orçamentos"
         description="Indicadores de volume orçado, conversão em pedidos e estágios das propostas comerciais."
         metrics={[
           {

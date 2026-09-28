@@ -1,0 +1,66 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Waesy — Cloudflare Pages Canonical Cache Headers
+# Seamless Release Protocol (V120)
+#
+# Lei do Cache:
+#  1. Assets com hash (/assets/*) → cache eterno (immutable), nunca revalidar.
+#  2. SW, manifest, HTML raiz → max-age=0 + must-revalidate:
+#     o browser SEMPRE pergunta ao servidor se o conteúdo mudou.
+#     Se não mudou (304 Not Modified), serve do cache local sem re-download.
+#  3. Ícones e imagens estáticas sem hash → curta TTL (1 hora) para atualização
+#     controlada sem forçar o utilizador a limpar cache.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── 1. Assets com hash de conteúdo (Vite/Rollup geram ex: /assets/index-Ab3xC.js)
+#       Cache eterno — nunca mudam, hash novo = URL nova.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# ── 2. Service Worker — ZERO cache. O browser DEVE verificar em cada visita.
+#       Crítico para que o PWA detecte atualizações imediatamente.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
+  X-Content-Type-Options: nosniff
+
+# ── 3. PWA Manifest — ZERO cache. Permite atualizar nome, ícones, cores de tema.
+/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: application/manifest+json; charset=utf-8
+
+# ── 4. Manifesto dinâmico da loja (por storeId) — ZERO cache.
+/api/pwa/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: application/manifest+json; charset=utf-8
+
+# ── 5. Ícones da app (podem ser atualizados entre versões)
+/icons/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  X-Content-Type-Options: nosniff
+
+# ── 6. Favicon e apple-touch-icon
+/favicon.ico
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/favicon.svg
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+/apple-touch-icon.png
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+# ── 7. Página offline (pode ser atualizada entre versões)
+/offline.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# ── 8. robots.txt
+/robots.txt
+  Cache-Control: public, max-age=3600
+
+# ── 9. Rotas HTML (navegação SPA/SSR) — network-first via must-revalidate.
+#       Garante que o utilizador sempre recebe o HTML mais recente,
+#       que por sua vez carrega os assets com hash corretos.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self)

@@ -1,18 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { 
- Building2, 
- FileText, 
- Mail, 
- Phone, 
- Globe, 
- Instagram, 
- CheckCircle2, 
- ShieldCheck, 
- ArrowRight,
- Send,
- Lock
-} from 'lucide-react';
+import { Building2, FileText, Mail, Phone, Globe, Instagram, CheckCircle2, ShieldCheck, ArrowRight, Send, Lock } from 'lucide-react';
 import { submitClaimProfile, getEntityForClaim } from '@/services/claim-intelligence.functions';
 import type { ProofType, EntityType } from '@/types/claim-intelligence';
 import { Button } from '@/components/ui/button';
@@ -120,7 +108,7 @@ function ClaimReivindicarPage() {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
           <Badge variant="outline" className="px-3 py-1 mb-3 rounded-full text-xs font-semibold gap-1.5 border-primary/30 text-primary">
-            <ShieldCheck className="size-3.5" /> Waesy Trust & Compliance
+            <ShieldCheck className="size-3.5" /> Waesy Trust e Compliance
           </Badge>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight">
             Reivindicar {entity?.name || 'Perfil Comercial'}

@@ -2,49 +2,21 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Layers,
-  Store,
-  Zap,
-  ArrowRight,
-  CheckCircle2,
-  TrendingUp,
-  ShieldCheck,
-  Building2,
-  Users,
-  Clock,
-  Compass,
-  CreditCard,
-  Truck,
-  FileSpreadsheet,
-  Check,
-  Loader2,
-  Play,
-  ArrowUpRight,
-} from "lucide-react";
+import { Layers, Store, Zap, ArrowRight, CheckCircle2, TrendingUp, ShieldCheck, Building2, Users, Clock, Compass, CreditCard, Truck, FileSpreadsheet, Check, Loader2, Play, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  getPortalCompletoContent,
-  registerWorkspaceProWaitlist,
-} from "@/services/portal-completo.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getPortalCompletoContent, registerWorkspaceProWaitlist } from "@/services/portal-completo.functions";
 import { getUserSession } from "@/services/auth.functions";
 
 export const Route = createFileRoute("/_store/portal-completo")({
   head: () => ({
     meta: [
-      { title: "Portal Completo & Workspace Pro | Waesy" },
+      { title: "Portal Completo e Workspace Pro | Waesy" },
       { name: "description", content: "Conheça os módulos avançados de gestão, PDV e automação do Waesy para sua empresa." },
     ],
   }),
@@ -116,7 +88,7 @@ function PortalCompletoPage() {
   const modules = pageData?.modules || [
     {
       id: "pdv",
-      title: "PDV Cloud & Comandas",
+      title: "PDV Cloud e Comandas",
       category: "Operação Comercial",
       description: "Emissão de pedidos em tempo real, painel de cozinha (KDS), comandas individuais e divisão de contas via PIX instantâneo.",
       icon: "Store",
@@ -125,7 +97,7 @@ function PortalCompletoPage() {
     },
     {
       id: "estoque",
-      title: "Estoque com Grade & Variações",
+      title: "Estoque com Grade e Variações",
       category: "Logística & Catálogo",
       description: "Controle refinado por cor, tamanho, lote e validade. Alertas preventivos de ruptura de estoque e reposição automática.",
       icon: "Layers",
@@ -134,7 +106,7 @@ function PortalCompletoPage() {
     },
     {
       id: "motolink",
-      title: "MotoLink & Frota Local",
+      title: "MotoLink e Frota Local",
       category: "Entrega Expressa",
       description: "Despacho autônomo com rastreamento GPS, precificação dinâmica de taxa de entrega com multiplicador de clima e comprovante digital.",
       icon: "Truck",
@@ -143,7 +115,7 @@ function PortalCompletoPage() {
     },
     {
       id: "turismo",
-      title: "Gestão de Turismo & Receptivo",
+      title: "Gestão de Turismo e Receptivo",
       category: "Viagens & Experiências",
       description: "Controle de lotação de excursões, alocação de poltronas em ônibus, rooming list de hotéis parceiros e vouchers com QR Code anti-fraude.",
       icon: "Compass",
@@ -152,7 +124,7 @@ function PortalCompletoPage() {
     },
     {
       id: "financeiro",
-      title: "Conciliação & Livro Caixa",
+      title: "Conciliação e Livro Caixa",
       category: "Gestão Financeira",
       description: "Fechamento diário de turnos de operadores, conciliação bancária PIX e cartão, DRE simplificado e exportação para contabilidade.",
       icon: "CreditCard",
@@ -161,7 +133,7 @@ function PortalCompletoPage() {
     },
     {
       id: "crm",
-      title: "CRM & Automação de Retenção",
+      title: "CRM e Automação de Retenção",
       category: "Marketing & Clientes",
       description: "Histórico completo de compras de cada cliente, campanhas automáticas de recompra e recuperação de clientes inativos via WhatsApp.",
       icon: "Users",
@@ -174,7 +146,7 @@ function PortalCompletoPage() {
     <div className="min-h-[100dvh] bg-background pb-24">
       {/* Hero Silencioso Apple HIG */}
       <section className="relative overflow-hidden pt-10 pb-12 border-b border-border/60 bg-muted/20">
-        <div className="max-w-4xl mx-auto px-4 text-center space-y-3">
+        <div className="max-w-4xl mx-auto px-0 sm:px-4 text-center space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background border border-border/70 text-muted-foreground text-xs font-mono font-medium">
             <Layers className="size-3 text-primary" />
             <span>Módulos Operacionais</span>
@@ -204,7 +176,7 @@ function PortalCompletoPage() {
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-10 space-y-12">
+      <div className="max-w-6xl mx-auto px-0 sm:px-4 py-10 space-y-12">
         {/* Grid de Módulos Operacionais Padronizados */}
         <section className="space-y-6">
           <div className="flex items-center justify-between pb-1 border-b border-border/40">
@@ -348,9 +320,9 @@ function PortalCompletoPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="servicos">Prestação de Serviços</SelectItem>
-                    <SelectItem value="gastronomia">Gastronomia & Restaurantes</SelectItem>
-                    <SelectItem value="turismo">Turismo & Viagens</SelectItem>
-                    <SelectItem value="comercio">Comércio & Varejo</SelectItem>
+                    <SelectItem value="gastronomia">Gastronomia e Restaurantes</SelectItem>
+                    <SelectItem value="turismo">Turismo e Viagens</SelectItem>
+                    <SelectItem value="comercio">Comércio e Varejo</SelectItem>
                     <SelectItem value="equipamentos">Locação de Equipamentos</SelectItem>
                     <SelectItem value="outros">Outro Segmento</SelectItem>
                   </SelectContent>

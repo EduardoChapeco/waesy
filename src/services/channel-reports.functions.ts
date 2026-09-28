@@ -5,6 +5,11 @@ import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 import { logSystemError } from "@/lib/logger";
 
 export type ChannelOrigin =
+  | "waesy_app"
+  | "vitrine_online"
+  | "pdv"
+  | "balcao_pos"
+  | "whatsapp"
   | "mercadolivre"
   | "amazon"
   | "magalu"
@@ -12,9 +17,9 @@ export type ChannelOrigin =
   | "ifood"
   | "rappi"
   | "amodelivery"
+  | "99food"
+  | "direct_link"
   | "correios"
-  | "balcao_pos"
-  | "vitrine_online"
   | "outros";
 
 export interface ChannelDRESummaryDTO {
@@ -41,6 +46,11 @@ export interface ChannelFeeLineDTO {
 }
 
 const CHANNEL_LABELS: Record<string, string> = {
+  waesy_app: "Waesy App / Vitrine",
+  vitrine_online: "Vitrine Online",
+  pdv: "Balcão / PDV",
+  balcao_pos: "Balcão / PDV",
+  whatsapp: "WhatsApp (Atendimento)",
   mercadolivre: "Mercado Livre",
   amazon: "Amazon",
   magalu: "Magazine Luiza",
@@ -48,9 +58,9 @@ const CHANNEL_LABELS: Record<string, string> = {
   ifood: "iFood",
   rappi: "Rappi",
   amodelivery: "Amo Delivery",
+  "99food": "99Food",
+  direct_link: "Link Direto / Bio",
   correios: "Correios",
-  balcao_pos: "Balcão / PDV",
-  vitrine_online: "Vitrine Online",
   outros: "Outros",
 };
 
@@ -91,10 +101,10 @@ export const getChannelDRE = createServerFn({ method: "GET" })
 
     const { data: externalOrders } = await externalQuery;
 
-    // Busca pedidos da vitrine online com channel_origin
+    // Busca pedidos da loja com origin_channel e cost_breakdown
     let ownQuery = supabase
       .from("orders")
-      .select("channel_origin, total_amount_cents, shipping_cost_cents")
+      .select("id, origin_channel, channel_origin, total_cents, shipping_cents, cost_breakdown")
       .eq("store_id", targetStoreId)
       .in("status", ["completed", "delivered", "paid"]);
 
@@ -129,14 +139,15 @@ export const getChannelDRE = createServerFn({ method: "GET" })
       current.gross_revenue_cents += order.total_amount_cents || 0;
       current.platform_fees_cents += order.marketplace_fee_cents || 0;
       current.shipping_costs_cents += order.shipping_cost_cents || 0;
-      current.net_revenue_cents += order.net_payout_cents || 0;
+      current.net_revenue_cents += order.net_payout_cents || (order.total_amount_cents - (order.marketplace_fee_cents || 0));
 
       summaryMap.set(channel, current);
     }
 
-    // Processa pedidos próprios (vitrine/PDV)
+    // Processa pedidos registrados na tabela orders
     for (const order of ownOrders || []) {
-      const channel = ((order.channel_origin as ChannelOrigin) || "vitrine_online");
+      const rawChannel = order.origin_channel || order.channel_origin || "waesy_app";
+      const channel = (rawChannel as ChannelOrigin);
       const current = summaryMap.get(channel) || {
         channel,
         channel_label: CHANNEL_LABELS[channel] || channel,
@@ -149,11 +160,19 @@ export const getChannelDRE = createServerFn({ method: "GET" })
         gross_margin_percent: 0,
       };
 
+      const breakdown = (order.cost_breakdown as Record<string, any>) || {};
+      const orderTotalCents = order.total_cents || 0;
+      const shippingCents = order.shipping_cents || breakdown.shipping_cost_cents || 0;
+      const platformFeeCents = breakdown.platform_fee_cents || 0;
+      const paymentFeeCents = breakdown.payment_fee_cents || 0;
+      const netCents = breakdown.net_revenue_cents || (orderTotalCents - platformFeeCents - paymentFeeCents);
+
       current.order_count += 1;
-      current.gross_revenue_cents += order.total_amount_cents || 0;
-      current.shipping_costs_cents += order.shipping_cost_cents || 0;
-      // Pedidos próprios: sem taxa de plataforma, net = gross
-      current.net_revenue_cents += order.total_amount_cents || 0;
+      current.gross_revenue_cents += orderTotalCents;
+      current.platform_fees_cents += platformFeeCents;
+      current.gateway_fees_cents += paymentFeeCents;
+      current.shipping_costs_cents += shippingCents;
+      current.net_revenue_cents += netCents;
 
       summaryMap.set(channel, current);
     }

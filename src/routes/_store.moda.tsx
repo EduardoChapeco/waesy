@@ -1,18 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- TShirt,
- ShoppingBag,
- Storefront,
- Clock,
- MapPin,
- ArrowRight,
- Handbag,
- Sunglasses,
- Footprints,
-} from "@phosphor-icons/react";
+import { TShirt, ShoppingBag, Storefront, Clock, MapPin, ArrowRight, Handbag, Sunglasses, Footprints } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +13,7 @@ import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { OfferCard } from "@/components/commerce/offer-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { listActiveBanners } from "@/services/banner.functions";
@@ -49,16 +36,16 @@ const MODA_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", icon: Tag },
  { id: "feminina", label: "Moda Feminina", icon: TShirt },
  { id: "masculina", label: "Moda Masculina", icon: TShirt },
- { id: "calcados", label: "Calçados & Tênis", icon: Footprints },
- { id: "acessorios", label: "Bolsas & Acessórios", icon: Handbag },
- { id: "fitness", label: "Fitness & Praia", icon: Tag },
- { id: "infantil", label: "Infantil & Kids", icon: ShoppingBag },
+ { id: "calcados", label: "Calçados e Tênis", icon: Footprints },
+ { id: "acessorios", label: "Bolsas e Acessórios", icon: Handbag },
+ { id: "fitness", label: "Fitness e Praia", icon: Tag },
+ { id: "infantil", label: "Infantil e Kids", icon: ShoppingBag },
 ];
 
 export const Route = createFileRoute("/_store/moda")({
  head: () => ({
  meta: [
- { title: "Moda, Roupas, Calçados & Acessórios | Waesy" },
+ { title: "Moda, Roupas, Calçados e Acessórios | Waesy" },
  {
  name: "description",
  content:
@@ -69,12 +56,13 @@ export const Route = createFileRoute("/_store/moda")({
  validateSearch: (search: Record<string, unknown>): ModaSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "moda" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "moda", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "moda" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "moda" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "moda", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "moda", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

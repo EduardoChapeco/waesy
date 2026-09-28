@@ -186,6 +186,40 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
       }
 
       let classifiedData: any = data;
+      if (classifiedData && classifiedData.id) {
+        const [telRes, dealRes] = await Promise.all([
+          supabase
+            .from("ad_telemetry_events")
+            .select("event_type")
+            .eq("article_id", classifiedData.id)
+            .limit(2000)
+            .then((r) => r.data || [], () => []),
+          supabase
+            .from("deals")
+            .select("id")
+            .eq("classified_id", classifiedData.id)
+            .then((r) => r.data || [], () => []),
+        ]);
+        let vCount = 0;
+        let cCount = 0;
+        let wCount = (dealRes as any[]).length;
+        for (const ev of telRes as any[]) {
+          const t = String(ev.event_type || "view").toLowerCase();
+          if (t === "view") vCount++;
+          else if (t.includes("whatsapp") || t.includes("lead")) {
+            wCount++;
+            cCount++;
+          } else {
+            cCount++;
+          }
+        }
+        classifiedData.views_count = Math.max(Number(classifiedData.views_count || 0), vCount);
+        classifiedData.clicks_count = Math.max(Number(classifiedData.clicks_count || 0), cCount);
+        classifiedData.whatsapp_clicks_count = Math.max(
+          Number(classifiedData.whatsapp_clicks_count || classifiedData.proposals_count || 0),
+          wCount
+        );
+      }
       if (!classifiedData) {
         const similarAds = await getSimilarClassifiedsFallback(supabase);
         return {
@@ -475,7 +509,83 @@ export const getClassifieds = createServerFn({ method: "GET" }).handler(async ()
 		throw new Error("Failed to fetch classifieds");
 	}
 
-	return data;
+	const ads = data || [];
+	if (ads.length === 0) return [];
+
+	const adIds = ads.map((a: any) => a.id).filter(Boolean);
+
+	// Telemetry Reality Check (V117 Fase 4): Agrega eventos reais de ad_telemetry_events e deals
+	const [telemetryRes, dealsRes] = await Promise.all([
+		supabase
+			.from("ad_telemetry_events")
+			.select("article_id, event_type, created_at")
+			.in("article_id", adIds)
+			.limit(5000)
+			.then((r) => r.data || [], () => []),
+		supabase
+			.from("deals")
+			.select("classified_id")
+			.in("classified_id", adIds)
+			.then((r) => r.data || [], () => []),
+	]);
+
+	const now = Date.now();
+	const DAY_MS = 86_400_000;
+
+	const telemetryMap = new Map<
+		string,
+		{ views: number; clicks: number; whatsapp: number; sparkline: number[] }
+	>();
+
+	for (const id of adIds) {
+		telemetryMap.set(id, { views: 0, clicks: 0, whatsapp: 0, sparkline: [0, 0, 0, 0, 0, 0, 0] });
+	}
+
+	for (const ev of telemetryRes as any[]) {
+		const entry = telemetryMap.get(ev.article_id);
+		if (!entry) continue;
+		const type = String(ev.event_type || "view").toLowerCase();
+		if (type === "view") {
+			entry.views += 1;
+		} else if (type.includes("whatsapp") || type.includes("lead")) {
+			entry.whatsapp += 1;
+			entry.clicks += 1;
+		} else {
+			entry.clicks += 1;
+		}
+
+		if (ev.created_at) {
+			const ageDays = Math.floor((now - new Date(ev.created_at).getTime()) / DAY_MS);
+			if (ageDays >= 0 && ageDays < 7) {
+				entry.sparkline[6 - ageDays] += 1;
+			}
+		}
+	}
+
+	for (const d of dealsRes as any[]) {
+		const entry = telemetryMap.get(d.classified_id);
+		if (entry) {
+			entry.whatsapp += 1;
+		}
+	}
+
+	return ads.map((ad: any) => {
+		const t = telemetryMap.get(ad.id);
+		const realViews = Math.max(Number(ad.views_count || 0), t?.views || 0);
+		const realClicks = Math.max(Number(ad.clicks_count || 0), t?.clicks || 0);
+		const realWhatsapp = Math.max(
+			Number(ad.whatsapp_clicks_count || ad.proposals_count || 0),
+			t?.whatsapp || 0
+		);
+		const hasSparkline = t && t.sparkline.some((v) => v > 0);
+		return {
+			...ad,
+			views_count: realViews,
+			clicks_count: realClicks,
+			whatsapp_clicks_count: realWhatsapp,
+			sparkline_7d: hasSparkline ? t!.sparkline : ad.sparkline_7d || [0, 0, 0, 0, 0, 0, realViews],
+		};
+	});
 });
 
 export const getClassified = createServerFn({ method: "GET" })

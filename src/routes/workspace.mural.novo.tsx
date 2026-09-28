@@ -9,23 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  createPost,
-  type PostType,
-} from "@/services/social.functions";
+import { createPost, type PostType } from "@/services/social.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import {
-  Newspaper,
-  ImageIcon,
-  Sparkles,
-  Store,
-  Tag,
-  CheckCircle2,
-  Send,
-  Loader2,
-  Radio,
-  Layers,
-} from "lucide-react";
+import { Newspaper, ImageIcon, Star, Store, Tag, CheckCircle2, Send, Loader2, Radio, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/mural/novo")({
   head: () => ({ meta: [{ title: "Nova Publicação no Mural | Workspace Waesy" }] }),

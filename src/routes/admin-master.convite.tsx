@@ -1,30 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Gift,
-  Trophy,
-  Ticket,
-  Users,
-  Plus,
-  Play,
-  CheckCircle2,
-  Clock,
-  Award,
-  Calendar,
-  Layers,
-  Loader2,
-  ShieldCheck,
-  Pencil,
-  Trash2,
-  Search,
-  Store,
-  Eye,
-  Ban,
-  Phone,
-  User,
-  AlertTriangle,
-} from "lucide-react";
+import { Gift, Trophy, Ticket, Users, Plus, Play, CheckCircle2, Clock, Award, Calendar, Layers, Loader2, ShieldCheck, Pencil, Trash2, Search, Store, Eye, Ban, Phone, User, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -32,35 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { MediaUploader } from "@/components/ui/media-uploader";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  adminListGamification,
-  adminDrawRaffle,
-  adminCancelRaffle,
-  adminGetRaffleTickets,
-  adminUpsertReward,
-  adminDeleteReward,
-  adminCreateRaffle,
-} from "@/services/invite.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { adminListGamification, adminDrawRaffle, adminCancelRaffle, adminGetRaffleTickets, adminUpsertReward, adminDeleteReward, adminCreateRaffle } from "@/services/invite.functions";
 
 export const Route = createFileRoute("/admin-master/convite")({
-  head: () => ({ meta: [{ title: "Sorteios & Prêmios | Admin Master" }] }),
+  head: () => ({ meta: [{ title: "Sorteios e Prêmios | Admin Master" }] }),
   loader: async () => {
     try {
       const data = await adminListGamification();
@@ -293,7 +247,7 @@ function AdminConvitePage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Sorteios & Prêmios
+            Sorteios e Prêmios
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
             Governança global de sorteios oficiais e de lojas, apuração eletrônica e catálogo de recompensas.

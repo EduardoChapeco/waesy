@@ -1,43 +1,15 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import {
-  DollarSign,
-  CheckCircle,
-  Users,
-  Percent,
-  Edit2,
-  Search,
-  FileSpreadsheet,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  Wallet,
-  ArrowDownLeft,
-  Loader2,
-  ShieldCheck,
-} from "lucide-react";
+import { DollarSign, CheckCircle, Users, Percent, Edit2, Search, FileSpreadsheet, TrendingUp, Clock, CheckCircle2, Wallet, ArrowDownLeft, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import {
-  listCommissions,
-  payCommission,
-  payAllPendingCommissionsForSeller,
-  listSellers,
-  updateSellerCommissionRate,
-} from "@/services/commission.functions";
+import { listCommissions, payCommission, payAllPendingCommissionsForSeller, listSellers, updateSellerCommissionRate } from "@/services/commission.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
@@ -239,7 +211,7 @@ function CommissionsPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Financeiro"
-        title="Comissões de Vendas & Parceiros"
+        title="Comissões de Vendas"
         description="Acompanhe repasses por pedido, defina regras percentuais e realize quitações individuais ou em lote."
         actions={
           <Button
@@ -472,7 +444,7 @@ function CommissionsPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
-                  <TableHead className="text-xs font-bold">Profissional / Vendedor</TableHead>
+                  <TableHead className="text-xs font-bold">Profissional</TableHead>
                   <TableHead className="text-xs font-bold">Cargo</TableHead>
                   <TableHead className="text-xs font-bold font-mono">Taxa Padrão (%)</TableHead>
                   <TableHead className="text-xs font-bold font-mono">Saldo Pendente</TableHead>

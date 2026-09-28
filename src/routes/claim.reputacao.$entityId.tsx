@@ -1,19 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
-import { 
- ShieldCheck, 
- BarChart3, 
- TrendingUp, 
- Star, 
- Award, 
- Globe, 
- Users, 
- MessageSquare, 
- CheckCircle2, 
- AlertTriangle,
- ArrowUpRight,
- Share2
-} from 'lucide-react';
+import { ShieldCheck, BarChart3, TrendingUp, Star, Award, Globe, Users, MessageSquare, CheckCircle2, AlertTriangle, ArrowUpRight, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -158,9 +145,9 @@ function ClaimReputacaoPage() {
  {/* Conteúdo em Abas */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  <TabsList className="bg-muted/40 p-1 rounded-2xl border border-border">
- <TabsTrigger value="overview" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Visão Geral & Métricas</TabsTrigger>
+ <TabsTrigger value="overview" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Visão Geral e Métricas</TabsTrigger>
  <TabsTrigger value="competitors" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Benchmarking de Concorrência</TabsTrigger>
- <TabsTrigger value="claims" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Atendimento & Resoluções</TabsTrigger>
+ <TabsTrigger value="claims" className="rounded-xl text-xs font-bold py-2 min-h-[44px]">Atendimento e Resoluções</TabsTrigger>
  </TabsList>
 
  <TabsContent value="overview" className="space-y-4">

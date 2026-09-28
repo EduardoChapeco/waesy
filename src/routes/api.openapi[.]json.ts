@@ -10,7 +10,7 @@ export const Route = createFileRoute("/api/openapi.json")({
         const openapiSpec = {
           openapi: "3.1.0",
           info: {
-            title: "Waesy Universal Commerce & AI Protocol API",
+            title: "Waesy Universal Commerce e AI Protocol API",
             version: "2.1.0",
             description:
               "Especificação OpenAPI 3.1 canônica da plataforma Waesy. Integra descoberta comercial, catálogo distribuído, feeds de sindicação (Google/Meta), webhooks transacionais e protocolo WebMCP para agentes autônomos com barreiras de segurança multi-tenant (AI-Guards).",

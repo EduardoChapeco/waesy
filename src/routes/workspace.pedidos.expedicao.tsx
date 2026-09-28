@@ -1,52 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  Barcode, 
-  Package, 
-  Truck, 
-  CheckCircle2, 
-  AlertCircle, 
-  Layers, 
-  Search,
-  ScanLine,
-  Printer,
-  Plus,
-  Clock,
-  ShoppingBag,
-  Store,
-  Check
-} from "lucide-react";
+import { Barcode, Package, Truck, CheckCircle2, AlertCircle, Layers, Search, ScanLine, Printer, Plus, Clock, ShoppingBag, Store, Check } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { 
-  listPickingBatches, 
-  scanBarcodePickItem, 
-  generateShippingManifest,
-  createPickingBatch
-} from "@/services/wms.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { listPickingBatches, scanBarcodePickItem, generateShippingManifest, createPickingBatch } from "@/services/wms.functions";
 import { listOrders } from "@/services/order.functions";
 import { getStoreSettings } from "@/services/store.functions";
-import { 
-  listMarketplaceExternalOrders,
-  type ExternalOrderDTO
-} from "@/services/marketplace-hub.functions";
+import { listMarketplaceExternalOrders, type ExternalOrderDTO } from "@/services/marketplace-hub.functions";
 import { formatMoney } from "@/lib/money";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 
 export const Route = createFileRoute("/workspace/pedidos/expedicao")({
-  head: () => ({ meta: [{ title: "WMS Expedição & Picking | Waesy" }] }),
+  head: () => ({ meta: [{ title: "WMS Expedição e Picking | Waesy" }] }),
   component: WmsExpedicaoPage,
 });
 
@@ -253,7 +223,7 @@ function WmsExpedicaoPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader 
           eyebrow="Logística & Expedição"
-          title="Conferência & Picking (WMS)" 
+          title="Conferência WMS" 
           description="Separação por ondas, conferência por código de barras e emissão de romaneios de despacho."
         />
         <div className="flex items-center gap-2">

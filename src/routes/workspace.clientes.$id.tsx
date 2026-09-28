@@ -1,13 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  User, Save, MapPin, ShieldCheck, FileText, Mail, Phone,
-  AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History,
-  Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy,
-  Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2,
-  Compass, Armchair, Utensils,
-} from "lucide-react";
+import { User, Save, MapPin, ShieldCheck, FileText, Mail, Phone, AlertTriangle, Gift, HeartPulse, Calendar, CreditCard, History, Tag, TrendingUp, Plane, Users2, Smartphone, ExternalLink, Copy, Award, Luggage, QrCode, CheckCircle2, ChevronRight, Share2, Compass, Armchair, Utensils } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,22 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { EmptyState } from "@/components/state/states";
-import {
-  getCustomer360,
-  updateCustomerCrm,
-  addCustomerClinicalRecord,
-  grantCustomerStoreCredit,
-  saveTravelerPreferences,
-} from "@/services/crm.functions";
+import { getCustomer360, updateCustomerCrm, addCustomerClinicalRecord, grantCustomerStoreCredit, saveTravelerPreferences } from "@/services/crm.functions";
 import { DocumentsPanel } from "@/components/crm/DocumentsPanel";
 import { formatMoney } from "@/lib/money";
 
@@ -455,7 +436,7 @@ function CustomerDetailPage() {
           </TabsTrigger>
           <TabsTrigger value="crm" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Tag className="size-3.5" />
-            <span>Notas & Tags</span>
+            <span>Notas e Tags</span>
           </TabsTrigger>
         </TabsList>
 
@@ -656,7 +637,7 @@ function CustomerDetailPage() {
             <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <Armchair className="size-4 text-sky-500" />
-                <span>Assento & Cabine</span>
+                <span>Assento e Cabine</span>
               </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between py-1 border-b border-border/30">
@@ -676,7 +657,7 @@ function CustomerDetailPage() {
             <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <FileText className="size-4 text-primary" />
-                <span>Passaporte & Vistos</span>
+                <span>Passaporte e Vistos</span>
               </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between py-1 border-b border-border/30">
@@ -704,7 +685,7 @@ function CustomerDetailPage() {
             <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <Award className="size-4 text-amber-500" />
-                <span>Programas & Milhas</span>
+                <span>Programas e Milhas</span>
               </div>
               <div className="space-y-2 text-xs">
                 {airlineMiles ? (
@@ -726,7 +707,7 @@ function CustomerDetailPage() {
             <div className="bg-card rounded-2xl border border-border/60 p-4 space-y-3 md:col-span-2 lg:col-span-3">
               <div className="flex items-center gap-2 text-foreground font-bold text-xs uppercase tracking-wider">
                 <HeartPulse className="size-4 text-rose-500" />
-                <span>Acessibilidade, PCD & Cuidados Especiais</span>
+                <span>Acessibilidade, PCD e Cuidados Especiais</span>
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
                 <Badge variant={isPcd ? "destructive" : "outline"} className="text-xs">
@@ -1024,7 +1005,7 @@ function CustomerDetailPage() {
         >
           <div>
             <SheetHeader className="pb-4">
-              <SheetTitle>Registro de Atendimento & Anamnese</SheetTitle>
+              <SheetTitle>Registro de Atendimento e Anamnese</SheetTitle>
               <SheetDescription>
                 Histórico clínico para profissionais de saúde, estética, beleza e bem-estar.
               </SheetDescription>
@@ -1050,7 +1031,7 @@ function CustomerDetailPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Observações do Atendimento & Evolução</Label>
+                <Label className="text-xs">Observações do Atendimento e Evolução</Label>
                 <Textarea
                   value={clinicalNotes}
                   onChange={(e) => setClinicalNotes(e.target.value)}
@@ -1084,7 +1065,7 @@ function CustomerDetailPage() {
             <SheetHeader className="pb-4">
               <SheetTitle className="flex items-center gap-2">
                 <Compass className="size-5 text-primary" />
-                Preferências de Viagem & Anamnese
+                Preferências de Viagem e Anamnese
               </SheetTitle>
               <SheetDescription>
                 Configure os detalhes operacionais de voo, alimentação, passaportes e programas de fidelidade para emissões rápidas e personalizadas.
@@ -1096,7 +1077,7 @@ function CustomerDetailPage() {
               <div className="space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Armchair className="size-3.5 text-sky-500" />
-                  Assento & Refeições a Bordo
+                  Assento e Refeições a Bordo
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
@@ -1175,7 +1156,7 @@ function CustomerDetailPage() {
               <div className="space-y-3 border-t border-border/40 pt-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Award className="size-3.5 text-amber-500" />
-                  Programas de Fidelidade & Milhas
+                  Programas de Fidelidade e Milhas
                 </h4>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Contas de Milhagem (formato: Cia: Número, separadas por vírgula)</Label>
@@ -1192,7 +1173,7 @@ function CustomerDetailPage() {
               <div className="space-y-3 border-t border-border/40 pt-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <HeartPulse className="size-3.5 text-rose-500" />
-                  Acessibilidade & Cuidados de Saúde
+                  Acessibilidade e Cuidados de Saúde
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="flex items-center gap-2 p-3 rounded-xl border border-border/60 bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors">

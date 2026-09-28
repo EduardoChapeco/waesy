@@ -1,21 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
- Building2,
- Plus,
- Search,
- Phone,
- Mail,
- Percent,
- Trash2,
- ExternalLink,
- MapPin,
- CheckCircle2,
- Filter,
- Layers,
- Globe,
-} from 'lucide-react';
+import { Building2, Plus, Search, Phone, Mail, Percent, Trash2, ExternalLink, MapPin, CheckCircle2, Filter, Layers, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +69,7 @@ function WorkspaceSuppliersPage() {
       color: "blue",
     },
     {
-      title: "Operadoras & DMCs",
+      title: "Operadoras e DMCs",
       value: suppliers.filter((s: any) => s.kind === "dmc" || s.kind === "operator").length,
       description: "Parceiros internacionais e consolidadoras",
       icon: Globe,
@@ -97,7 +83,7 @@ function WorkspaceSuppliersPage() {
       color: "emerald",
     },
     {
-      title: "Cias Aéreas & Marítimas",
+      title: "Cias Aéreas e Marítimas",
       value: suppliers.filter((s: any) => s.kind === "airline" || s.kind === "cruise").length,
       description: "Transporte e cruzeiros",
       icon: Layers,
@@ -132,7 +118,7 @@ function WorkspaceSuppliersPage() {
       />
 
       <WorkspaceDashboardSheet
-        title="Telemetria de Fornecedores & DMCs"
+        title="Fornecedores"
         open={isMetricsOpen}
         onOpenChange={setIsMetricsOpen}
         items={dashboardMetrics}

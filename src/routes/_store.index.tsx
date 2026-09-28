@@ -1,34 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Tag,
-  Newspaper,
-  Briefcase,
-  CalendarDots,
-  MapPin,
-  Clock,
-  WhatsappLogo,
-  Buildings,
-  Sparkle,
-  Star,
-  CheckCircle,
-  Storefront,
-  ArrowRight,
-  Ticket,
-  UserCircle,
-  Target,
-  Rss,
-  ChatCircleDots,
-} from "@phosphor-icons/react";
+import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { NewsCard } from "@/components/news/news-card";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -50,7 +27,7 @@ import { getAllPublicConcursos, type RaffleDTO } from "@/services/invite.functio
 const CANONICAL_PILLARS = [
   {
     slug: "places",
-    title: "Lugares & Negócios",
+    title: "Lugares e Negócios",
     to: "/diretorio",
     isPlacesBadge: true,
   },
@@ -96,7 +73,7 @@ const CANONICAL_PILLARS = [
   },
   {
     slug: "turismo",
-    title: "Turismo & Roteiros",
+    title: "Turismo e Roteiros",
     to: "/turismo",
   },
   {
@@ -107,11 +84,11 @@ const CANONICAL_PILLARS = [
 ];
 
 const DISCOVERY_CATEGORIES: FilterChipOption[] = [
-  { id: "todos", label: "Todos os Anúncios", emoji: "✨" },
-  { id: "places", label: "Lugares & Negócios", emoji: "📍" },
+  { id: "todos", label: "Todos os Anúncios", emoji: "🌐" },
+  { id: "places", label: "Lugares e Negócios", emoji: "📍" },
   { id: "classificados", label: "Classificados", emoji: "🏷️" },
   { id: "receitas", label: "Receitas", emoji: "🍲" },
-  { id: "turismo", label: "Turismo & Roteiros", emoji: "✈️" },
+  { id: "turismo", label: "Turismo e Roteiros", emoji: "✈️" },
   { id: "feed", label: "Feed", emoji: "📡" },
   { id: "noticias", label: "Notícias", emoji: "📰" },
   { id: "empregos", label: "Empregos", emoji: "💼" },
@@ -603,13 +580,14 @@ function CommunityMarketplaceView({ data }: { data: any }) {
       <DiscoveryControlBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Buscar classificados, eventos, empresas e vagas..."
+        searchPlaceholder="Buscar na cidade..."
         categories={DISCOVERY_CATEGORIES}
         activeCategory={activeCategory}
         onSelectCategory={setActiveCategory}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         allowedViewModes={["feed", "grid", "list"]}
+        stickyMode="none"
       />
 
       {/* ── 4. RENDERIZAÇÃO DOS 3 MODOS DE VISUALIZAÇÃO ── */}
@@ -619,12 +597,12 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           ───────────────────────────────────────────────────────────────────────────── */}
       {viewMode === "feed" && (
         <div className="space-y-4 sm:space-y-5 mt-2">
-          {/* PLACES (LISTA TELEFÔNICA) */}
+          {/* PLACES */}
           {(activeCategory === "todos" || activeCategory === "places") && filteredPlaces.length > 0 && (
             <section aria-label="Places" className="space-y-2">
               <HorizontalRail
-                title="Places (Lista Telefônica)"
-                actionLabel="Ver todas"
+                title="Places"
+                actionLabel="Ver todos"
                 onAction={() => {}}
                 actionTo="/diretorio"
               >
@@ -1128,7 +1106,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="adaptive-card-grid">
               {unifiedItems.map((item) => (
                 <div
                   key={item.id}
@@ -1430,7 +1408,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           <div className="p-6 sm:p-8 rounded-3xl border border-border/60 bg-card space-y-4">
             <div className="max-w-xl space-y-1">
               <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider font-bold">
-                Empresas & Negócios
+                Empresas e Negócios
               </Badge>
               <h2 className="text-lg sm:text-xl font-black tracking-tight text-foreground">
                 Divulgue seu negócio no <PlacesHighlightBadge className="text-lg sm:text-xl" />

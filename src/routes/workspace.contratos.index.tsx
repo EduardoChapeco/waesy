@@ -1,24 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import {
-  FileText,
-  Plus,
-  FileSignature,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  ShieldCheck,
-  TrendingUp,
-  DollarSign,
-  Copy,
-  Check,
-  Sparkles,
-  ArrowRight,
-  Eye,
-  Sliders,
-  Share2,
-} from "lucide-react";
+import { FileText, Plus, FileSignature, CheckCircle2, Clock, ExternalLink, ShieldCheck, TrendingUp, DollarSign, Copy, Check, Star, ArrowRight, Eye, Sliders, Share2 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
@@ -30,17 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { listContracts } from "@/services/contracts.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
-import {
-  WorkspaceCanonicalToolbar,
-  type WorkspaceToolbarTab,
-} from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 
 export const Route = createFileRoute("/workspace/contratos/")({
-  head: () => ({ meta: [{ title: "Contratos & Assinaturas Digitais | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Contratos | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const contracts = await listContracts().catch(() => []);
@@ -55,20 +32,20 @@ export const Route = createFileRoute("/workspace/contratos/")({
 
 const CATEGORY_LABELS: Record<string, string> = {
   tourism_package: "Turismo & Viagens",
-  real_estate_rental: "Imóveis & Locação",
-  real_estate_sale: "Imóveis & Venda",
-  vehicle_sale: "Veículos & Frota",
-  vehicle_consignation: "Consignação de Veículo",
+  real_estate_rental: "ImÃ³veis & LocaÃ§Ã£o",
+  real_estate_sale: "ImÃ³veis & Venda",
+  vehicle_sale: "VeÃ­culos & Frota",
+  vehicle_consignation: "ConsignaÃ§Ã£o de VeÃ­culo",
   fashion_retail: "Moda & Mala Condicional",
-  pos_retail: "Balcão PDV & Carnê",
-  legal_retainer: "Jurídico & Advocacia",
-  service_agreement: "Prestação de Serviços",
-  medical_aesthetic_consent: "Saúde & Estética",
+  pos_retail: "BalcÃ£o PDV & CarnÃª",
+  legal_retainer: "JurÃ­dico & Advocacia",
+  service_agreement: "PrestaÃ§Ã£o de ServiÃ§os",
+  medical_aesthetic_consent: "SaÃºde & EstÃ©tica",
   employment: "Contrato de Trabalho",
   general_deal: "Acordo Comercial",
   partnership: "Parceria Comercial",
   ndas: "Confidencialidade (NDA)",
-  lease: "Locação de Bens",
+  lease: "LocaÃ§Ã£o de Bens",
   general: "Acordo Geral",
 };
 
@@ -131,7 +108,7 @@ function ContractsDashboard() {
       id: "signed_contracts",
       label: "Contratos Assinados",
       value: String(signedContracts),
-      description: `${signedRate}% de taxa de efetivação jurídica`,
+      description: `${signedRate}% de taxa de efetivaÃ§Ã£o jurÃ­dica`,
       icon: CheckCircle2,
       variant: "success",
     },
@@ -147,7 +124,7 @@ function ContractsDashboard() {
       id: "total_value",
       label: "Volume Negociado",
       value: formatMoney(totalValueCents),
-      description: "Valor econômico protegido por contratos",
+      description: "Valor econÃ´mico protegido por contratos",
       icon: DollarSign,
       variant: "info",
     },
@@ -169,18 +146,18 @@ function ContractsDashboard() {
     const link = contract.verification_code
       ? `${window.location.origin}/verify/document/${contract.verification_code}`
       : `${window.location.origin}/workspace/contratos/${contract.id}/editor`;
-    const text = `Olá! Segue o link de acesso ao contrato *${contract.title}*: ${link}`;
+    const text = `OlÃ¡! Segue o link de acesso ao contrato *${contract.title}*: ${link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pb-20">
-      {/* ── 1. Top Header ── */}
+      {/* â”€â”€ 1. Top Header â”€â”€ */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
-          eyebrow="Gestão Jurídica & Compliance"
-          title="Contratos & Assinaturas Digitais"
-          description="Gestão de acordos formais, envelopes de assinatura eletrônica com carimbo de tempo e evidências criptográficas imutáveis."
+          eyebrow="GestÃ£o JurÃ­dica & Compliance"
+          title="Contratos Digitais"
+          description="GestÃ£o de acordos formais, envelopes de assinatura eletrÃ´nica com carimbo de tempo e evidÃªncias criptogrÃ¡ficas imutÃ¡veis."
         />
         <div className="flex items-center gap-2">
           <Button asChild className="h-11 rounded-xl text-xs font-semibold bg-primary text-primary-foreground cursor-pointer shadow-xs">
@@ -192,9 +169,9 @@ function ContractsDashboard() {
         </div>
       </div>
 
-      {/* ── 2. Toolbar Canônica ── */}
+      {/* â”€â”€ 2. Toolbar CanÃ´nica â”€â”€ */}
       <WorkspaceCanonicalToolbar
-        searchPlaceholder="Buscar por título do contrato, signatário ou categoria..."
+        searchPlaceholder="Buscar por tÃ­tulo do contrato, signatÃ¡rio ou categoria..."
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         tabs={tabs}
@@ -203,16 +180,16 @@ function ContractsDashboard() {
         onOpenDashboard={() => setDashboardOpen(true)}
       />
 
-      {/* ── 3. Painel de Métricas Lateral (Dashboard Sheet) ── */}
+      {/* â”€â”€ 3. Painel de MÃ©tricas Lateral (Dashboard Sheet) â”€â”€ */}
       <WorkspaceDashboardSheet
         open={dashboardOpen}
         onOpenChange={setDashboardOpen}
-        title="Painel Jurídico & Contratos"
-        description="Métricas consolidadas de conformidade, envelopes emitidos e volume financeiro sob contrato."
+        title="Contratos"
+        description="MÃ©tricas consolidadas de conformidade, envelopes emitidos e volume financeiro sob contrato."
         metrics={dashboardMetrics}
       />
 
-      {/* ── 4. Conteúdo: Listagem em Cards Elegantes (Paradigma Clean) ── */}
+      {/* â”€â”€ 4. ConteÃºdo: Listagem em Cards Elegantes (Paradigma Clean) â”€â”€ */}
       {filteredContracts.length === 0 ? (
         <div className="py-20 text-center space-y-4 bg-card rounded-2xl p-8 border border-dashed border-border">
           <div className="size-12 mx-auto rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground">
@@ -222,7 +199,7 @@ function ContractsDashboard() {
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             {searchQuery || activeTab !== "all"
               ? "Tente ajustar o termo de busca ou selecione outra aba de status."
-              : "Comece criando o seu primeiro documento legal ou utilize um template inteligente de prestação de serviços."}
+              : "Comece criando o seu primeiro documento legal ou utilize um template inteligente de prestaÃ§Ã£o de serviÃ§os."}
           </p>
           <Button asChild size="sm" variant="outline" className="rounded-xl h-10 px-4 text-xs font-semibold mt-2 cursor-pointer">
             <Link to="/workspace/contratos/novo">Criar Primeiro Contrato</Link>
@@ -249,7 +226,7 @@ function ContractsDashboard() {
                       </Badge>
                       {contract.is_settled && (
                         <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-600 bg-emerald-500/5">
-                          Quitado ✓
+                          Quitado âœ“
                         </Badge>
                       )}
                     </div>
@@ -314,7 +291,7 @@ function ContractsDashboard() {
  ...(contract.verification_code
  ? [
  {
- label: "Certificado Público de Assinatura",
+ label: "Certificado PÃºblico de Assinatura",
  icon: ExternalLink,
  onClick: () => router.navigate({ to: "/verify/document/$code", params: { code: contract.verification_code } }),
  },

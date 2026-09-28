@@ -2,45 +2,11 @@ import { NotificationsPopover } from "@/components/notifications/notifications-p
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
-import {
- Search,
- ShoppingBag,
- Bell,
- LogOut,
- User,
- Store,
- Check,
- Plus,
- LayoutDashboard,
- Settings,
- Package,
- Tag,
- Bookmark,
- Edit3,
- ArrowUpRight,
- ShieldAlert,
- Shield,
- MessageSquare,
- Ticket,
- Calendar,
- Sparkles,
-} from "lucide-react";
+import { Search, ShoppingBag, Bell, LogOut, User, Store, Check, Plus, LayoutDashboard, Settings, Package, Tag, Bookmark, Edit3, ArrowUpRight, ShieldAlert, Shield, MessageSquare, Ticket, Calendar, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuLabel,
- DropdownMenuSeparator,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "@/services/auth.functions";
@@ -258,7 +224,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <div className="p-1.5 rounded-xl bg-muted/60 border border-border/60 flex items-center justify-between text-xs">
  <div className="flex items-center gap-1.5 px-1 min-w-0">
  {activeContext === "creator" ? (
- <Sparkles className="size-3.5 text-amber-500 shrink-0" />
+ <Award className="size-3.5 text-amber-500 shrink-0" />
  ) : activeContext === "store" ? (
  <Store className="size-3.5 text-primary shrink-0" />
  ) : (
@@ -269,7 +235,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  ? `Criador: @${activeCreatorId || "ativo"}`
  : activeContext === "store"
  ? "Empresa Ativa"
- : "Conta Civil / Pessoal"}
+ : "Conta Pessoal"}
  </span>
  </div>
  {activeContext !== "civil" && (
@@ -289,11 +255,11 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  {/* Ações da Conta Pessoal (1 Palavra / Rótulo Direto) */}
  <div className="space-y-0.5">
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-bold text-foreground px-3 py-2 hover:bg-muted/60">
- <Link to="/conta">Minha Conta</Link>
+ <Link to="/conta">Conta</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/perfil">Meu Perfil</Link>
+ <Link to="/conta/perfil">Perfil</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
@@ -309,31 +275,31 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/agendamentos">Agendamentos</Link>
+ <Link to="/conta/agendamentos">Agenda</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/classificados">Meus Desapegos</Link>
+ <Link to="/conta/classificados">Classificados</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/concursos">Meus Sorteios & Cupons</Link>
+ <Link to="/conta/concursos">Sorteios</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/convite">Convites & Membro Fundador</Link>
+ <Link to="/convite">Convites</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/criadores">Criadores & Vitrines</Link>
+ <Link to="/conta/criadores">Criadores</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/seguranca">Configurações</Link>
+ <Link to="/conta/seguranca">Ajustes</Link>
  </DropdownMenuItem>
 
  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-medium text-foreground/90 px-3 py-2 hover:bg-muted/60">
- <Link to="/conta/suporte">Ajuda & Suporte</Link>
+ <Link to="/conta/suporte">Suporte</Link>
  </DropdownMenuItem>
  </div>
 
@@ -357,7 +323,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <Link to="/workspace">
  <div className="flex items-center gap-2">
  <LayoutDashboard className="size-3.5" />
- <span>Entrar no Workspace</span>
+ <span>Workspace</span>
  </div>
  <ArrowUpRight className="size-3.5" />
  </Link>
@@ -367,7 +333,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  <Link to="/criar-negocio">
  <div className="flex items-center gap-2">
  <Plus className="size-3.5" />
- <span>Cadastrar Meu Negócio</span>
+ <span>Nova Loja</span>
  </div>
  <ArrowUpRight className="size-3.5" />
  </Link>
@@ -375,12 +341,12 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  )}
  </div>
 
- {/* ── Gestão de Personas de Criador & Vitrines ── */}
+ {/* ── Gestão de Personas de Criador ── */}
  {creatorProfiles.length > 0 && (
  <div className="py-1 border-t border-border/40">
  <div className="px-3 py-1.5 flex items-center justify-between">
  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
- Vitrines & Criadores ({creatorProfiles.length})
+ Criadores ({creatorProfiles.length})
  </span>
  <Link
  to="/conta/criadores"
@@ -411,7 +377,7 @@ export function UtilityCluster({ session, embedded = false }: UtilityClusterProp
  {cp.avatar_url ? (
  <img src={cp.avatar_url} alt={cp.handle} className="size-full object-cover" />
  ) : (
- <Sparkles className="size-3" />
+ <Award className="size-3" />
  )}
  </div>
  <p className="text-xs truncate leading-tight">@{cp.handle}</p>

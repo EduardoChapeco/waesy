@@ -1,18 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
- Layers, 
- Plus, 
- Link as LinkIcon, 
- Copy, 
- Check, 
- Users, 
- Beer, 
- ShoppingBag, 
- Utensils, 
- ExternalLink 
-} from "lucide-react";
+import { Layers, Plus, Link as LinkIcon, Copy, Check, Users, Beer, ShoppingBag, Utensils, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -74,7 +63,7 @@ function EventSubpanelsPage() {
  <div className="flex-1 space-y-6 p-6 max-w-7xl mx-auto">
  <div className="flex items-center justify-between">
  <PageHeader
- title="Subpainéis & Pontos de Venda do Evento"
+ title="Pontos de Venda"
  description="Crie portais isolados com link mágico para operadores de bar, praça de alimentação e lojinhas."
  />
  <Button onClick={() => setIsDialogOpen(true)} className="rounded-2xl min-h-[44px] font-bold">

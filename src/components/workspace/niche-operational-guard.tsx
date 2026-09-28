@@ -1,19 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import {
- ShieldAlert,
- ArrowRight,
- Plane,
- Users,
- Bus,
- Calendar,
- Layers,
- Store,
- ClipboardList,
- ShoppingBag,
- ExternalLink,
- ChevronRight,
-} from "lucide-react";
+import { ShieldAlert, ArrowRight, Plane, Users, Bus, Calendar, Layers, Store, ClipboardList, ShoppingBag, ExternalLink, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -77,19 +64,19 @@ export function NicheOperationalGuard({
  if (semantics.nicheId === "tourism") {
  return [
  {
- title: "Central de Cotações & Leads",
+ title: "Central de Cotações e Leads",
  desc: "Gerencie solicitações de pacotes, orçamentos e roteiros de viagens",
  path: "/workspace/turismo/cotacoes",
  icon: Plane,
  },
  {
- title: "Grupos & Excursões",
+ title: "Grupos e Excursões",
  desc: "Lista de passageiros, guias, pontos de embarque e reservas",
  path: "/workspace/turismo/grupos",
  icon: Users,
  },
  {
- title: "Frota & Assentos (2D)",
+ title: "Frota e Assentos (2D)",
  desc: "Mapa visual de assentos em ônibus, vans e transfers",
  path: "/workspace/turismo/frota",
  icon: Bus,
@@ -145,7 +132,7 @@ export function NicheOperationalGuard({
 
  const suggestions = getSuggestions();
  const targetLabel =
- targetNiche === "gastronomy" ? "Gastronomia & Restaurantes" : targetNiche;
+ targetNiche === "gastronomy" ? "Gastronomia" : targetNiche;
 
  return (
  <div className="max-w-3xl mx-auto py-12 px-4 space-y-6 animate-in fade-in duration-200">

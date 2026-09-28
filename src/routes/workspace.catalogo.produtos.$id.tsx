@@ -3,38 +3,7 @@ import { useState, useMemo, useEffect, Fragment } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { NativeBackButton } from "@/components/ui/native-back-button";
-import {
- ArrowLeft,
- ArrowRight,
- Plus,
- ImagePlus,
- X,
- Loader2,
- Trash2,
- Eye,
- ShoppingBag,
- CreditCard,
- Utensils,
- Percent,
- TrendingUp,
- Package,
- CheckCircle2,
- Settings,
- LayoutList,
- Box,
- ChevronDown,
- ChevronUp,
- SlidersHorizontal,
- Truck,
- ShieldCheck,
- Globe,
- Tag,
- DollarSign,
- Boxes,
- Plane,
- Layers,
- Sparkles,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, ImagePlus, X, Loader2, Trash2, Eye, ShoppingBag, CreditCard, Utensils, Percent, TrendingUp, Package, CheckCircle2, Settings, LayoutList, Box, ChevronDown, ChevronUp, SlidersHorizontal, Truck, ShieldCheck, Globe, Tag, DollarSign, Boxes, Plane, Layers, Star } from "lucide-react";
 
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
 import type { MasterProductRecord } from "@/lib/data/master-products-catalog";
@@ -49,59 +18,24 @@ import { VariantOptionsBuilder } from "@/components/admin/product-editor/variant
 import { VariantMatrixGrid, type RawVariant } from "@/components/admin/catalog/variant-matrix-grid";
 import { ProductModifiersCard } from "@/components/admin/catalog/product-modifiers-card";
 import { ProductBomCard, type BomItem } from "@/components/admin/catalog/product-bom-card";
-import {
- ProductFoodSpecsCard,
- type FoodSpecsData,
-} from "@/components/admin/catalog/product-food-specs-card";
+import { ProductFoodSpecsCard, type FoodSpecsData } from "@/components/admin/catalog/product-food-specs-card";
 import { PageHeader } from "@/components/commerce/page-header";
 import { PriceDisplay } from "@/components/commerce/price-display";
-import {
- Accordion,
- AccordionContent,
- AccordionItem,
- AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
- Sheet,
- SheetContent,
- SheetDescription,
- SheetFooter,
- SheetHeader,
- SheetTitle,
- SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 
-import {
- getProductById,
- updateProduct,
- upsertProductVariant,
- batchUpsertVariantMatrix,
- deleteProductMedia,
- addProductMediaLink,
- updateProductMediaMetadata,
- reorderProductMedia,
- listCategories,
- createCategory,
- listProductTypes,
- listOptionGroups,
-} from "@/services/admin-catalog.functions";
+import { getProductById, updateProduct, upsertProductVariant, batchUpsertVariantMatrix, deleteProductMedia, addProductMediaLink, updateProductMediaMetadata, reorderProductMedia, listCategories, createCategory, listProductTypes, listOptionGroups } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
 import { getNicheSemantics } from "@/lib/niche-semantics";
@@ -434,7 +368,7 @@ function EditProductPage() {
  onClick={() => setIsMasterCatalogOpen(true)}
  className="rounded-xl text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
  >
- <Sparkles className="size-3.5" />
+ <Star className="size-3.5" />
  <span>Sincronizar Catálogo Central</span>
  </Button>
  <NativeBackButton fallbackHref="/workspace/catalogo/produtos" />
@@ -594,17 +528,17 @@ function EditProductPage() {
  }
  sections={[
  ...(isTravelPackageMode
- ? [{ id: "turismo", label: "Pacote de Viagem & Roteiro", icon: <Plane className="size-4" /> }]
+ ? [{ id: "turismo", label: "Pacote de Viagem e Roteiro", icon: <Plane className="size-4" /> }]
  : []),
  { id: "geral", label: "Informações Básicas", icon: <Box className="size-4" /> },
  ...(nicheCtx.isFoodBusiness
- ? [{ id: "especificacoes", label: "Cardápio & Restrições", icon: <Utensils className="size-4" /> }]
+ ? [{ id: "especificacoes", label: "Cardápio e Restrições", icon: <Utensils className="size-4" /> }]
  : []),
  { id: "midias", label: "Galeria de Fotos", icon: <ImagePlus className="size-4" /> },
  { id: "variantes", label: nicheCtx.variationsSectionTitle, icon: <LayoutList className="size-4" /> },
- { id: "opcoes", label: "Adicionais & Opções", icon: <SlidersHorizontal className="size-4" /> },
+ { id: "opcoes", label: "Adicionais e Opções", icon: <SlidersHorizontal className="size-4" /> },
  ...(nicheCtx.isFoodBusiness
- ? [{ id: "ficha-tecnica", label: "Ficha Técnica & Insumos", icon: <Boxes className="size-4" /> }]
+ ? [{ id: "ficha-tecnica", label: "Ficha Técnica e Insumos", icon: <Boxes className="size-4" /> }]
  : []),
  ]}
  >
@@ -716,7 +650,7 @@ function EditProductPage() {
  <div id="opcoes" className="scroll-mt-32 pt-12 border-t">
  <div className="mb-6">
  <h2 className="text-xl font-bold flex items-center gap-2">
- <SlidersHorizontal className="size-5 text-primary" /> Adicionais & Modificadores
+ <SlidersHorizontal className="size-5 text-primary" /> Adicionais e Modificadores
  </h2>
  <p className="text-sm text-muted-foreground">
  Grupos de complementos que o cliente escolhe ao adicionar ao carrinho (ex: ponto da carne, extras, passeios opcionais).
@@ -1061,7 +995,7 @@ function GeneralForm({
 
  <div className="pt-6 border-t">
  <div className="mb-4">
- <h3 className="text-lg font-bold text-foreground">Precificação & Lucratividade</h3>
+ <h3 className="text-lg font-bold text-foreground">Precificação e Lucratividade</h3>
  <p className="text-sm text-muted-foreground">
  Valores em Reais (R$). Cálculos de margem de lucro acontecem em tempo real.
  </p>
@@ -1118,7 +1052,7 @@ function GeneralForm({
 
  <div className="pt-6 border-t">
  <div className="mb-4">
- <h3 className="text-lg font-bold text-foreground">Publicação & Status</h3>
+ <h3 className="text-lg font-bold text-foreground">Publicação e Status</h3>
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-2">
@@ -1264,7 +1198,7 @@ function GeneralForm({
 
  <div className="pt-6 border-t">
  <div className="mb-4">
- <h3 className="text-lg font-bold text-foreground">Logística Avançada & Dimensões</h3>
+ <h3 className="text-lg font-bold text-foreground">Logística Avançada e Dimensões</h3>
  <p className="text-sm text-muted-foreground">
  Necessário para cálculo de frete, entregas e prazos.
  </p>
@@ -1351,7 +1285,7 @@ function GeneralForm({
 
  <div className="pt-6 border-t">
  <div className="mb-4">
- <h3 className="text-lg font-bold text-foreground">Identificadores & SEO</h3>
+ <h3 className="text-lg font-bold text-foreground">Identificadores e SEO</h3>
  <p className="text-sm text-muted-foreground">
  Otimização para busca no Google e conformidade fiscal/EAN.
  </p>

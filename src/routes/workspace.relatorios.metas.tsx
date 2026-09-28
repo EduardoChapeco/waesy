@@ -2,51 +2,20 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CurrencyField } from "@/components/ui/currency-field";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
-import {
-  Target,
-  TrendingUp,
-  Calendar,
-  DollarSign,
-  ShoppingCart,
-  Receipt,
-  FileSpreadsheet,
-  Settings2,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Sparkles,
-  ArrowUpRight,
-} from "lucide-react";
-import {
-  getRevenueGoalsAndForecast,
-  saveRevenueGoals,
-  RevenueGoalsAndForecastDTO,
-} from "@/services/revenue-goals.functions";
+import { Target, TrendingUp, Calendar, DollarSign, ShoppingCart, Receipt, FileSpreadsheet, Settings2, CheckCircle2, AlertCircle, Clock, Star, ArrowUpRight } from "lucide-react";
+import { getRevenueGoalsAndForecast, saveRevenueGoals, RevenueGoalsAndForecastDTO } from "@/services/revenue-goals.functions";
 
 export const Route = createFileRoute("/workspace/relatorios/metas")({
-  head: () => ({ meta: [{ title: "Metas de Vendas & Forecast | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Metas de Vendas | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const data = await getRevenueGoalsAndForecast();
@@ -213,7 +182,7 @@ function RevenueGoalsPage() {
       case "ahead":
         return (
           <Badge className="bg-blue-600 text-white font-bold text-xs gap-1.5 px-3 py-1">
-            <Sparkles className="size-3.5" />
+            <Star className="size-3.5" />
             Ritmo Acelerado (+{data.projected_percent - 100}% acima da meta)
           </Badge>
         );
@@ -238,7 +207,7 @@ function RevenueGoalsPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Planejamento Comercial & Gestão de Vendas"
-        title="Metas de Faturamento & Forecast"
+        title="Metas de Faturamento"
         description="Monitore o atingimento das metas mensais de faturamento, a projeção preditiva de fechamento e a meta diária necessária."
         actions={
           <div className="flex items-center gap-2">
@@ -463,7 +432,7 @@ function RevenueGoalsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-border/50 pb-3">
           <div>
             <h3 className="text-base font-bold text-foreground">
-              Desempenho & Metas por Canal de Venda
+              Desempenho e Metas por Canal de Venda
             </h3>
             <p className="text-xs text-muted-foreground">
               Acompanhe a contribuição de cada canal comercial no atingimento da meta global da empresa.

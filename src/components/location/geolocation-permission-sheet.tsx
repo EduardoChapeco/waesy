@@ -1,28 +1,9 @@
 import { useState, useEffect } from "react";
-import {
- MapPin,
- Store,
- Compass,
- Users,
- ShieldCheck,
- Loader2,
- Check,
- X,
-} from "lucide-react";
+import { MapPin, Store, Compass, Users, ShieldCheck, Loader2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
-import {
- useMasterLocation,
- resolveGeoCoordinates,
- type LocationState,
-} from "./location-master-pill";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useMasterLocation, resolveGeoCoordinates, type LocationState } from "./location-master-pill";
 import { toast } from "sonner";
 
 export function GeolocationPermissionSheet() {

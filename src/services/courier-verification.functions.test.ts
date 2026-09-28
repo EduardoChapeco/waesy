@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  submitCourierApplicationSchema,
-  vehicleTypeEnum,
-} from "./courier-verification.functions";
+import { submitCourierApplicationSchema, vehicleTypeEnum } from "./courier-verification.functions";
 import { z } from "zod";
 
 // Schema de auditoria master espelhado para testes unitários isolados

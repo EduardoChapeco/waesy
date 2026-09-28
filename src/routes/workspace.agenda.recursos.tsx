@@ -9,20 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/state/states";
 import { toast } from "sonner";
 
@@ -195,7 +183,7 @@ function AdminResourcesPage() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Agenda & Agendamentos"
-        title="Recursos & Atendentes"
+        title="Recursos"
         actions={
           <Button onClick={openNewResourceModal} className="rounded-xl font-bold text-xs gap-2">
             <UserPlus className="size-4" />

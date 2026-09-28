@@ -1,23 +1,13 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Compass,
-  MapPin,
-  AirplaneTilt,
-  ArrowRight,
-  GridFour,
-  Rows,
-  SquaresFour,
-} from "@phosphor-icons/react";
+import { Compass, MapPin, AirplaneTilt, ArrowRight, GridFour, Rows, SquaresFour } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { SlimActionBanner } from "@/components/commerce/slim-action-banner";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
-  DiscoveryControlBar,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicTourism } from "@/services/tourism.functions";
@@ -30,17 +20,18 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_store/turismo/")({
   head: () => ({
     meta: [
-      { title: "Turismo & Viagens | Waesy" },
+      { title: "Turismo e Viagens | Waesy" },
       {
         name: "description",
         content: "Pacotes de viagens, hospedagens e experiências regionais.",
       },
     ],
   }),
-  loader: async () => {
+  loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
     try {
       const [banners, hotpages, tourismItems] = await Promise.all([
-        listActiveBanners({ data: { placement: "turismo" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "turismo", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "turismo" } }).catch(() => []),
         listPublicTourism().catch(() => []),
       ]);
@@ -61,7 +52,7 @@ function TourismErrorComponent({ error, reset }: { error: any; reset: () => void
       <div className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-2">
         <AirplaneTilt size={32} />
       </div>
-      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar viagens & turismo</h2>
+      <h2 className="text-2xl font-bold text-foreground">Instabilidade ao carregar viagens e turismo</h2>
       <p className="text-sm text-muted-foreground max-w-md mx-auto">
         {error?.message || "Não foi possível carregar os pacotes e destinos no momento."}
       </p>
@@ -153,7 +144,17 @@ function TourismMasterPage() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-5 space-y-6 pb-24">
+      <div className="-mx-4 sm:-mx-5">
+        <NativeMobileHeader
+          title="Turismo"
+          centerTitle
+          backTo="/"
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Buscar destinos ou roteiros..."
+        />
+      </div>
       {/* Banners */}
       {banners && banners.length > 0 && (
         <BannerHeroCarousel banners={banners} className="w-full" />
@@ -195,7 +196,7 @@ function TourismMasterPage() {
       />
 
       {/* Filtro de Saída por Aeroporto Regional (Padrão Botão Grande com Snap Scroll) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 border-b border-border/40 snap-x snap-mandatory">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 pr-8 border-b border-border/40 snap-x snap-mandatory [mask-image:linear-gradient(to_right,black_88%,transparent_100%)]">
         <span className="text-xs font-semibold text-muted-foreground shrink-0 mr-1 snap-start">
           Saída:
         </span>
@@ -359,57 +360,63 @@ function TourismMasterPage() {
           })}
         </div>
       ) : layoutMode === "compact" ? (
-        /* MODO 2: COMPACTO (WhatsApp List no Mobile / Grade Compacta no Desktop) */
-        <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden sm:divide-y-0 sm:border-0 sm:bg-transparent sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4">
+        /* MODO 2: COMPACTO (Full-Height Left Edge-to-Edge List Card) */
+        <div className="w-full space-y-3">
           {tourismList.map((item) => {
             const priceCents = item.price_cents || 0;
             return (
               <div
                 key={item.id}
-                className="group w-full px-3 sm:px-3 py-3 sm:py-0 hover:bg-muted/40 sm:hover:bg-transparent transition-colors flex sm:flex-col items-center sm:items-stretch gap-3.5 sm:gap-0 sm:rounded-2xl sm:border sm:border-border/60 sm:bg-card sm:overflow-hidden sm:hover:border-border cursor-pointer sm:cursor-default"
+                className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-3.5 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-3.5 w-full"
               >
-                <div className="relative size-16 sm:size-auto sm:aspect-[4/3] sm:w-full overflow-hidden bg-muted rounded-xl sm:rounded-none shrink-0 border border-border/40 sm:border-0">
+                <Link
+                  to="/turismo/$id"
+                  params={{ id: item.id }}
+                  className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted border-r border-border/40"
+                >
                   {item.cover_image ? (
                     <img
                       src={item.cover_image}
                       alt={item.title}
-                      className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
                   ) : (
-                    <div className="size-full flex items-center justify-center bg-muted">
-                      <AirplaneTilt size={20} className="opacity-40" />
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                      <AirplaneTilt size={24} className="opacity-40" />
                     </div>
                   )}
                   {item.departure_city && (
-                    <span className="hidden sm:inline-block absolute bottom-2 left-2 text-[9px] bg-background/90 px-1.5 py-0.5 rounded text-foreground font-medium">
+                    <span className="absolute bottom-2 left-2 text-[9px] bg-background/90 px-1.5 py-0.5 rounded text-foreground font-medium">
                       {item.departure_city}
                     </span>
                   )}
-                </div>
+                </Link>
 
-                <div className="flex-1 min-w-0 sm:p-3 space-y-1 sm:space-y-2 flex flex-col justify-between">
+                <div className="flex-1 min-w-0 pl-1 space-y-1.5 flex flex-col justify-between">
                   <div>
-                    <span className="text-[10px] text-muted-foreground block truncate">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block truncate">
                       {item.location_name || item.destination || "Regional"}
                     </span>
-                    <h4 className="font-semibold text-xs sm:text-xs text-foreground line-clamp-1">
-                      {item.title}
-                    </h4>
+                    <Link to="/turismo/$id" params={{ id: item.id }} className="block">
+                      <h4 className="font-bold text-sm sm:text-base text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                        {item.title}
+                      </h4>
+                    </Link>
                   </div>
 
-                  <div className="pt-1 flex items-center justify-between gap-1">
-                    <span className="font-mono text-xs font-bold text-foreground truncate">
+                  <div className="pt-1 flex items-center justify-between gap-2">
+                    <span className="font-mono text-sm sm:text-base font-black text-foreground truncate">
                       {item.price_display || (priceCents > 0 ? formatMoney(priceCents) : "Consulte")}
                     </span>
                     <Button
                       asChild
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-[11px] rounded-lg font-medium cursor-pointer"
+                      className="h-9 px-3.5 text-xs rounded-xl font-bold cursor-pointer"
                     >
                       <Link to="/turismo/$id" params={{ id: item.id }}>
-                        Ver
+                        Ver Roteiro
                       </Link>
                     </Button>
                   </div>

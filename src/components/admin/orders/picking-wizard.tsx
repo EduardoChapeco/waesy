@@ -1,23 +1,11 @@
 import * as React from "react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Box, CheckCircle2, AlertCircle, PackageCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import {
- startPickingSession,
- getPickingSessionItems,
- pickWmsItem,
- completePickingSession,
-} from "@/services/wms.functions";
+import { startPickingSession, getPickingSessionItems, pickWmsItem, completePickingSession } from "@/services/wms.functions";
 
 interface PickingWizardProps {
  order: any; // Raw order from DB in admin

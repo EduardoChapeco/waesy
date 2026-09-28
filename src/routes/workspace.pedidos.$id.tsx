@@ -6,63 +6,15 @@ import { formatHumanOrderId } from "@/lib/order-id";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
- Sheet,
- SheetContent,
- SheetDescription,
- SheetHeader,
- SheetTitle,
- SheetTrigger,
-} from "@/components/ui/sheet";
-import {
- AlertDialog,
- AlertDialogContent,
- AlertDialogDescription,
- AlertDialogHeader,
- AlertDialogTitle,
- AlertDialogTrigger,
- AlertDialogFooter,
-} from "@/components/ui/alert-dialog";
-import {
-  Printer,
-  Banknote,
-  Landmark,
-  AlertTriangle,
-  Truck,
-  ExternalLink,
-  Package,
-  User,
-  MapPin,
-  Phone,
-  Mail,
-  MessageSquare,
-  Layers,
-  FileText,
-  Download,
-  Tag,
-  CheckCircle2,
-  Copy,
-} from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogFooter } from "@/components/ui/alert-dialog";
+import { Printer, Banknote, Landmark, AlertTriangle, Truck, ExternalLink, Package, User, MapPin, Phone, Mail, MessageSquare, Layers, FileText, Download, Tag, CheckCircle2, Copy } from "lucide-react";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
-import {
-  getOrderById,
-  updateOrderStatus,
-  updateOrderShipment,
-  updateOrderShippingQuote,
-} from "@/services/order.functions";
+import { getOrderById, updateOrderStatus, updateOrderShipment, updateOrderShippingQuote } from "@/services/order.functions";
 import { approvePayment, rejectPayment } from "@/services/payment.functions";
 import { getDeliveryProofsByOrderId, createDispatch, type DeliveryProof } from "@/services/dispatch.functions";
-import {
-  emitNFeInvoice,
-  getOrderInvoice,
-  type StoreNFeInvoiceDTO,
-} from "@/services/fiscal-nfe.functions";
-import {
-  buildZplShippingLabel,
-  buildEscPosReceipt,
-  sendZplToSerialPrinter,
-  sendBytesToSerialPrinter,
-} from "@/lib/thermal-printer";
+import { emitNFeInvoice, getOrderInvoice, type StoreNFeInvoiceDTO } from "@/services/fiscal-nfe.functions";
+import { buildZplShippingLabel, buildEscPosReceipt, sendZplToSerialPrinter, sendBytesToSerialPrinter } from "@/lib/thermal-printer";
 import { ChannelBadge, getChannelInfo } from "@/components/commerce/channel-badge";
 import { PickingWizard } from "@/components/admin/orders/picking-wizard";
 import { RmaRequestWizard } from "@/components/admin/orders/rma-request-wizard";
@@ -447,7 +399,7 @@ function AdminOrderDetailPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
             <PageHeader eyebrow="Vendas" title={`Pedido ${order.order_number || "#" + order.public_token}`} />
-            <ChannelBadge source={order.channel_source || order.metadata?.channel} />
+            <ChannelBadge source={order.origin_channel || order.channel_origin || order.channel_source || order.metadata?.channel} />
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -471,7 +423,7 @@ function AdminOrderDetailPage() {
             className="rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border-primary/20"
             onClick={() => setShippingModalOpen(true)}
           >
-            <Truck className="mr-1.5 h-3.5 w-3.5" /> Etiqueta & Despacho
+            <Truck className="mr-1.5 h-3.5 w-3.5" /> Etiqueta e Despacho
           </Button>
           <Button
             variant="outline"
@@ -597,7 +549,7 @@ function AdminOrderDetailPage() {
  <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80 space-y-4">
  <h3 className="font-bold text-base text-foreground flex items-center gap-2">
  <Package className="size-4 text-primary" />
- <span>Diretrizes de Atendimento & Separação</span>
+ <span>Diretrizes de Atendimento e Separação</span>
  </h3>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -676,7 +628,7 @@ function AdminOrderDetailPage() {
   <div className="p-6 bg-card text-card-foreground rounded-2xl border border-border/80">
     <div className="flex items-center justify-between mb-4">
       <h3 className="font-semibold text-base text-foreground">Resumo Financeiro</h3>
-      <ChannelBadge source={order.channel_source || order.metadata?.channel} />
+      <ChannelBadge source={order.origin_channel || order.channel_origin || order.channel_source || order.metadata?.channel} />
     </div>
     <div className="space-y-3 text-sm">
       <div className="flex justify-between">
@@ -687,16 +639,22 @@ function AdminOrderDetailPage() {
         <span className="text-muted-foreground">Frete</span>
         <span className="text-foreground">{formatMoney(order.shipping_cents)}</span>
       </div>
-      {order.metadata?.marketplace_fee_cents > 0 && (
+      {order.cost_breakdown && ((order.cost_breakdown.platform_fee_cents ?? 0) > 0 || (order.cost_breakdown.marketplace_fee_cents ?? 0) > 0) && (
         <div className="flex justify-between text-xs text-amber-600 dark:text-amber-400">
-          <span>Taxa ({getChannelInfo(order.channel_source || order.metadata?.channel).label})</span>
-          <span>-{formatMoney(order.metadata.marketplace_fee_cents)}</span>
+          <span>Taxa ({getChannelInfo(order.origin_channel || order.channel_origin || order.channel_source || order.metadata?.channel).label})</span>
+          <span>-{formatMoney(order.cost_breakdown.platform_fee_cents || order.cost_breakdown.marketplace_fee_cents)}</span>
         </div>
       )}
       <div className="flex justify-between font-bold text-base pt-3 mt-1 text-foreground border-t border-border/40">
         <span>Total</span>
         <span>{formatMoney(order.total_cents)}</span>
       </div>
+      {order.cost_breakdown && (order.cost_breakdown.net_revenue_cents !== undefined || order.cost_breakdown.net_payout_cents !== undefined) && (
+        <div className="flex justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400 pt-1">
+          <span>Repasse Líquido</span>
+          <span>{formatMoney(order.cost_breakdown.net_revenue_cents ?? order.cost_breakdown.net_payout_cents)}</span>
+        </div>
+      )}
     </div>
   </div>
 

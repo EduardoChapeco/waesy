@@ -4,24 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
- X,
- CaretLeft,
- CaretRight,
- SpeakerHigh,
- SpeakerSimpleSlash,
- ShoppingBag,
- SealCheck,
- Handshake,
- ArrowRight,
- Storefront,
- WhatsappLogo,
- ShareNetwork,
- Clock,
- WarningCircle,
- Play,
- Pause,
-} from "@phosphor-icons/react";
+import { X, CaretLeft, CaretRight, SpeakerHigh, SpeakerSimpleSlash, ShoppingBag, SealCheck, Handshake, ArrowRight, Storefront, WhatsappLogo, ShareNetwork, Clock, WarningCircle, Play, Pause } from "@phosphor-icons/react";
 import { type StoryGroupDTO, type StoryMediaItemDTO, recordStoryTelemetry } from "@/services/stories.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

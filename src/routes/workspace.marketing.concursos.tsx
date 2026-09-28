@@ -1,21 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Ticket,
-  Plus,
-  Calendar,
-  Trophy,
-  Users,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  Loader2,
-  Pencil,
-  Trash2,
-  Eye,
-  ImageIcon,
-} from "lucide-react";
+import { Ticket, Plus, Calendar, Trophy, Users, CheckCircle2, Clock, Star, Loader2, Pencil, Trash2, Eye, ImageIcon } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,14 +12,7 @@ import { SheetPage } from "@/components/ui/sheet-page";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  storeListConcursos,
-  storeCreateConcurso,
-  storeUpdateConcurso,
-  storeCancelConcurso,
-  storeDrawConcurso,
-  storeGetConcursoParticipants,
-} from "@/services/invite.functions";
+import { storeListConcursos, storeCreateConcurso, storeUpdateConcurso, storeCancelConcurso, storeDrawConcurso, storeGetConcursoParticipants } from "@/services/invite.functions";
 
 export const Route = createFileRoute("/workspace/marketing/concursos")({
   head: () => ({
@@ -405,7 +384,7 @@ function WorkspaceConcursosPage() {
                       {drawingId === c.id ? (
                         <Loader2 className="size-3.5 animate-spin" />
                       ) : (
-                        <Sparkles className="size-3.5" />
+                        <Star className="size-3.5" />
                       )}
                       <span>
                         {c.totalTickets === 0 ? "Aguardando Participantes" : "Sortear Agora"}

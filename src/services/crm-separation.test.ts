@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
- createCustomerSchema,
- updateCustomerSchema,
- createCustomerDocumentSchema,
- listCustomersInputSchema,
-} from "@/services/crm.functions";
+import { createCustomerSchema, updateCustomerSchema, createCustomerDocumentSchema, listCustomersInputSchema } from "@/services/crm.functions";
 
 describe("Separação Arquitetural: Carteira de Clientes 360° vs. Funil Comercial (CRM Kanban)", () => {
  it("valida o schema de criação de cliente individual (B2C) com CPF e dados cadastrais", () => {

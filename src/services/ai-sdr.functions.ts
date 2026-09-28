@@ -11,8 +11,9 @@ import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { sanitizeForAI } from "@/lib/ai/openrouter";
 import { getNextActiveKey, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
+import { getAiPersonaContextInternal } from "@/services/ai-persona.functions";
 
-// ─── Schema do Anúncio Pré-preenchido ──────────────────────────────────────────
+// ─── Schema do Anúncio Pré-preenchido (Omni-Extractor V121) ─────────────────
 const AIClassifiedSchema = z.object({
   category: z.enum([
     "sale",
@@ -30,6 +31,10 @@ const AIClassifiedSchema = z.object({
   content: z.string().optional().default("").describe("Descrição clara e bem estruturada."),
   description: z.string().optional().default("").describe("Descrição alternativa."),
   price_cents: z.number().nullable().optional().default(null).describe("Preço estimado em centavos, ou null se indefinido."),
+  location: z.string().optional().default("").describe("Bairro, cidade ou região inferida do anúncio."),
+  delivery_type: z.enum(["pickup", "shipping", "hand_delivery", "online", "negotiable"]).default("pickup").describe("Modalidade logística inferida."),
+  seo_meta_tags: z.array(z.string()).default([]).describe("Tags de indexação e busca SEO."),
+  search_tags: z.array(z.string()).default([]).describe("Palavras-chave de busca interna."),
   attributes: z.record(z.any()).optional().default({}).describe("Atributos extras baseados no texto."),
 }).transform((val) => ({
   ...val,
@@ -37,7 +42,7 @@ const AIClassifiedSchema = z.object({
   description: val.description || val.content || "",
 }));
 
-// ─── Fallback heurístico (sem IA) ──────────────────────────────────────────────
+// ─── Fallback heurístico estruturado (sem IA) ────────────────────────────────
 function parsePromptFallback(rawPrompt: string) {
   const prompt = rawPrompt.trim();
   const lower = prompt.toLowerCase();
@@ -68,13 +73,51 @@ function parsePromptFallback(rawPrompt: string) {
     if (!isNaN(parsed)) price_cents = Math.round(parsed * 100);
   }
 
+  // Extração de localização inferida
+  let location = "";
+  const locMatch = prompt.match(/(?:moro no|moro em|bairro|no centro|em|na regi[aã]o d[eoa])\s+([a-zA-ZÀ-ÿ\s]{3,25})(?:,|\.|\be\b|$)/i);
+  if (locMatch && locMatch[1]) {
+    location = locMatch[1].trim();
+  }
+
+  // Extração de logística inferida
+  let delivery_type: "pickup" | "shipping" | "hand_delivery" | "online" | "negotiable" = "pickup";
+  if (/entrego em m[aã]os|em m[aã]os/i.test(lower)) {
+    delivery_type = "hand_delivery";
+  } else if (/envio|correios|sedex|frete/i.test(lower)) {
+    delivery_type = "shipping";
+  } else if (/online|download|acesso imediato|digital/i.test(lower)) {
+    delivery_type = "online";
+  } else if (/retirada|retirar|buscar/i.test(lower)) {
+    delivery_type = "pickup";
+  }
+
   let title = prompt;
   if (priceMatch) title = title.replace(priceMatch[0], "").trim();
   title = title.replace(/^(quero\s+vender|vendo|vende-se|anuncio|anunciar|procuro|ofere[cç]o)\s+/i, "");
   title = title.charAt(0).toUpperCase() + title.slice(1);
   if (title.length > 70) title = title.slice(0, 67) + "...";
 
-  return { category, niche, title, content: prompt, description: prompt, price_cents, attributes: {} };
+  const search_tags = prompt
+    .toLowerCase()
+    .replace(/[^\w\sà-ÿ]/gi, "")
+    .split(/\s+/)
+    .filter((w) => w.length > 3)
+    .slice(0, 6);
+
+  return {
+    category,
+    niche,
+    title,
+    content: prompt,
+    description: prompt,
+    price_cents,
+    location,
+    delivery_type,
+    seo_meta_tags: search_tags,
+    search_tags,
+    attributes: {},
+  };
 }
 
 // ─── [REQ-1] Criar Anúncio com IA — Integrado ao Pool ──────────────────────────
@@ -100,32 +143,43 @@ export const createListingWithAI = createServerFn({ method: "POST" })
     // Identidade opcional — não barrar visitantes
     await getServerIdentity().catch(() => null);
 
-    const systemPrompt = `Você é um Assistente Criativo especializado em classificados da plataforma Waesy.
-O usuário enviará uma frase curta dizendo o que quer anunciar.
-Extraia a intenção e gere um JSON com os dados do anúncio pré-preenchidos.
+    const systemPrompt = `Você é o Omni-Extractor de IA da plataforma Waesy.
+O usuário enviará uma frase dizendo o que deseja anunciar (ex: "Vendo PS5 semi novo por 3000 reais, moro no centro e entrego em mãos").
+Extraia e infira TODAS as dimensões estruturadas: categoria, nicho, subcategoria, título, descrição, preço em centavos, localização, tipo de entrega, tags de SEO e busca.
 
 Regras de Nicho e Categoria:
 - "niche" DEVE ser OBRIGATORIAMENTE um destes valores canônicos:
-  * "desapego": para roupas, celulares, computadores, eletrônicos, móveis e usados em geral. (category: "sale")
-  * "veiculo": para carros, motos, barcos, utilitários. (category: "vehicle")
-  * "imovel": para casas, apartamentos, terrenos, salas comerciais à venda ou para alugar fixo. (category: "real_estate")
-  * "hospedagem": para chalés, diárias, pousadas, casas de temporada. (category: "real_estate")
-  * "servico": para prestadores de serviço, autônomos, assistências, fretes. (category: "service")
-  * "vaga": para vagas de emprego, estágios e contratações. (category: "job")
-  * "viagem": para pacotes de turismo, passagens, excursões. (category: "travel")
-  * "equipamento": para máquinas industriais, equipamentos pesados e ferramentas agro. (category: "equipment")
-  * "digital": para infoprodutos, cursos, e-books, softwares, templates. (category: "sale")
-  * "doacao": para itens gratuitos e desapego solidário. (category: "donation")
-  * "negocios": para repasse de ponto, venda de empresas ou quotas. (category: "sale")
+  * "desapego": roupas, celulares, computadores, videogames, eletrônicos, móveis, eletrodomésticos. (category: "sale")
+  * "veiculo": carros, motos, barcos, utilitários, peças. (category: "vehicle")
+  * "imovel": casas, apartamentos, terrenos, salas comerciais. (category: "real_estate")
+  * "hospedagem": chalés, diárias, pousadas, casas de temporada. (category: "real_estate")
+  * "servico": prestadores de serviço, autônomos, assistências, fretes. (category: "service")
+  * "vaga": vagas de emprego, estágios e contratações. (category: "job")
+  * "viagem": pacotes de turismo, passagens, excursões. (category: "travel")
+  * "equipamento": máquinas industriais, equipamentos pesados e agro. (category: "equipment")
+  * "digital": infoprodutos, cursos, e-books, softwares, templates. (category: "sale")
+  * "doacao": itens gratuitos e desapego solidário. (category: "donation")
+  * "negocios": repasse de ponto comercial, venda de empresas ou cotas. (category: "sale")
+
+Regras de Logística ("delivery_type"):
+- "pickup": retirada no local
+- "shipping": envio por correios/transportadora
+- "hand_delivery": entrega em mãos na região
+- "online": entrega digital/remota
+- "negotiable": a combinar
 
 Retorne APENAS UM JSON VÁLIDO:
 {
   "category": "sale",
   "niche": "desapego",
-  "subcategory": "celulares",
-  "title": "iPhone 13 Pro 128GB - Impecável",
-  "content": "Aparelho em excelente estado...",
-  "price_cents": 350000,
+  "subcategory": "games_consoles",
+  "title": "PlayStation 5 825GB Semi Novo com Controle",
+  "description": "PlayStation 5 semi novo em excelente estado...",
+  "price_cents": 300000,
+  "location": "Centro",
+  "delivery_type": "hand_delivery",
+  "seo_meta_tags": ["ps5", "playstation 5", "games", "sony", "videogame"],
+  "search_tags": ["ps5", "console", "seminovo", "videogame"],
   "attributes": {}
 }
 Sem blocos markdown adicionais. Apenas o JSON puro.`;
@@ -136,7 +190,7 @@ Sem blocos markdown adicionais. Apenas o JSON puro.`;
         userPrompt: sanitizedPrompt,
         responseFormat: "json_object",
         maxTokens: 600,
-        temperature: 0.3,
+        temperature: 0.2,
       });
       const parsedData = response.parsedJson || JSON.parse(response.content);
 
@@ -239,6 +293,26 @@ export const chatWithSDR = createServerFn({ method: "POST" })
 
     const isDonationListing = classified.niche === "donation" || classified.category === "donation" || basePriceCents === 0;
 
+    // 3. Buscar telemetria comportamental da Persona (Omni-Telemetry Brain)
+    let buyerPersonaBlock = "";
+    try {
+      const personaContext = await getAiPersonaContextInternal({
+        userId,
+        sessionId: sessionId || null,
+      });
+      buyerPersonaBlock = `
+=== PERFIL COMPORTAMENTAL DO COMPRADOR (TELEMETRIA SILENCIOSA) ===
+Intenção Inferida: ${personaContext.intent.toUpperCase()}
+Sensibilidade a Preço: ${personaContext.price_bracket.toUpperCase()}${personaContext.avg_ticket_cents > 0 ? ` (Ticket Médio Observado: R$ ${(personaContext.avg_ticket_cents / 100).toFixed(2)})` : ""}
+Tom Recomendado: ${personaContext.recommended_tone}
+Interesses e Afinidades: ${personaContext.affinities.join(", ") || "Nenhum histórico"}
+Buscas Recentes: ${personaContext.recent_searches.join(", ") || "Nenhuma"}
+Orientação Estratégica: Adapte sutilmente sua abordagem ao perfil (${personaContext.intent}) e faixa (${personaContext.price_bracket}). Jamais diga que possui acesso a estes dados de rastreamento. Seja natural, profissional e empático.
+`;
+    } catch (e) {
+      // Ignora falhas para manter chat resiliente
+    }
+
     const systemPrompt = `Você é o Especialista de Vendas e Negociação (SDR) da Waesy Platform.
 Sua missão é atender potenciais compradores com empatia, rigor comercial, simpatia e técnica consultiva de fechamento.
 
@@ -272,7 +346,7 @@ ${maxDiscountPct > 0
 - Faça perguntas curtas e inteligentes para entender o contexto do comprador (ex: "Você pretende retirar pessoalmente?", "Precisa do item com urgência para esta semana?").
 - Condução para o Fechamento Seguro: Quando o cliente concordar com as condições ou demonstrar interesse firme, oriente-o a usar o botão "Fazer Proposta" ou "Comprar" diretamente no anúncio. Enfatize que a negociação pela plataforma garante registro formal e transparente diretamente com o anunciante.
 - Mantenha respostas enxutas (2 a 4 frases por turno), humanas, elegantes e sem jargões de inteligência artificial.
-
+${buyerPersonaBlock}
 ${classified.ai_instructions
   ? `=== INSTRUÇÕES PARTICULARES DO ANUNCIANTE (Confidencial) ===\n${sanitizeForAI(classified.ai_instructions, 1000)}`
   : ""}

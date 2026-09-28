@@ -1,70 +1,20 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Megaphone,
-  Plus,
-  TrendingUp,
-  Eye,
-  DollarSign,
-  Play,
-  Pause,
-  MapPin,
-  Percent,
-  Zap,
-  ExternalLink,
-  MessageCircle,
-  ShoppingBag,
-  Target,
-  Image as ImageIcon,
-  Loader2,
-  Sliders,
-  Globe,
-  Share2,
-  Copy,
-  Check,
-  Sparkles,
-} from "lucide-react";
+import { Megaphone, Plus, Trash2, TrendingUp, Eye, DollarSign, Play, Pause, MapPin, Percent, Zap, ExternalLink, MessageCircle, ShoppingBag, Target, Image as ImageIcon, Loader2, Sliders, Globe, Share2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { formatMoney } from "@/lib/money";
-import {
-  listAdCampaigns,
-  toggleAdCampaignStatus,
-  createAdCampaign,
-  getStoreAdTargets,
-  getStoreAdChannelsSettings,
-  saveStoreAdChannelsSettings,
-  generateUtmTrackingLink,
-  type AdCampaign,
-  type StoreAdChannelsDTO,
-} from "@/services/ads.functions";
-import {
-  WorkspaceCanonicalToolbar,
-  type WorkspaceToolbarTab,
-} from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { listAdCampaigns, toggleAdCampaignStatus, deleteAdCampaign, createAdCampaign, getStoreAdTargets, getStoreAdChannelsSettings, saveStoreAdChannelsSettings, generateUtmTrackingLink, type AdCampaign, type StoreAdChannelsDTO } from "@/services/ads.functions";
+import { boostAdCampaignAtomic } from "@/services/deep-core.functions";
+import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CampaignDynamicBlock } from "@/components/marketing/campaign-dynamic-block";
 import { executeMcpTool } from "@/services/mcp-server.functions";
@@ -72,7 +22,7 @@ import type { DynamicRenderableBlock } from "@/types/ad-tech-mcp";
 import { Mic, MicOff, Send, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/marketing/anuncios")({
-  head: () => ({ meta: [{ title: "Campanhas de Anúncios | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Campanhas | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const [campaigns, storeTargets, channelsSettings] = await Promise.all([
@@ -95,12 +45,12 @@ export const Route = createFileRoute("/workspace/marketing/anuncios")({
 
 function WorkspaceAnunciosErrorComponent({ error }: { error: any }) {
   return (
-    <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-4">
+    <div className="w-full max-w-lg mx-auto p-4 sm:p-8 text-center space-y-4">
       <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-1">
         <Megaphone className="size-7" />
       </div>
       <div className="space-y-1">
-        <h2 className="text-lg font-bold text-foreground">Falha ao Carregar Campanhas de Anúncios</h2>
+        <h2 className="text-lg font-bold text-foreground">Falha ao Carregar Campanhas</h2>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
           Não foi possível sincronizar o módulo de anúncios no momento.
         </p>
@@ -263,8 +213,8 @@ function AnunciosWorkspacePage() {
     { id: "all", label: "Todas", count: safeCampaigns.length },
     { id: "active", label: "Veiculando", count: activeCount },
     { id: "paused", label: "Pausadas", count: pausedCount },
-    { id: "meta_ads", label: "Meta Ads & Instagram" },
-    { id: "google_ads", label: "Google Ads & Shopping" },
+    { id: "meta_ads", label: "Meta Ads e Instagram" },
+    { id: "google_ads", label: "Google Ads e Shopping" },
     { id: "utm_builder", label: "Gerador de Links UTM" },
   ];
 
@@ -396,7 +346,7 @@ function AnunciosWorkspacePage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-foreground">Meta Ads & Instagram Shopping</h3>
+                  <h3 className="text-base font-bold text-foreground">Meta Ads</h3>
                   <Badge variant={channelsSettings?.meta_ads?.connected ? "default" : "secondary"} className="text-[10px]">
                     {channelsSettings?.meta_ads?.connected ? "Integrado" : "Pendente"}
                   </Badge>
@@ -411,7 +361,7 @@ function AnunciosWorkspacePage() {
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <Sparkles className="size-3.5 text-primary" />
+                  <Globe className="size-3.5 text-primary" />
                   Feed de Produtos para o Meta Catalog (CSV Oficial)
                 </span>
                 <Button
@@ -496,7 +446,7 @@ function AnunciosWorkspacePage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-foreground">Google Ads & Merchant Center</h3>
+                  <h3 className="text-base font-bold text-foreground">Google Ads e Merchant Center</h3>
                   <Badge variant={channelsSettings?.google_ads?.connected ? "default" : "secondary"} className="text-[10px]">
                     {channelsSettings?.google_ads?.connected ? "Integrado" : "Pendente"}
                   </Badge>
@@ -720,7 +670,7 @@ function AnunciosWorkspacePage() {
                 Criador de Anúncios com IA (Protocolo MCP)
               </span>
               <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono text-muted-foreground border-border/60">
-                Linguagem Natural & Voz
+                Linguagem Natural e Voz
               </Badge>
             </div>
             {dynamicBlock && (
@@ -785,8 +735,7 @@ function AnunciosWorkspacePage() {
 
           {/* Sugestões Rápidas de Prompt em 1 Toque */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
-            <span className="text-[11px] text-muted-foreground shrink-0 flex items-center gap-1 mr-1">
-              <Sparkles className="size-3 text-primary" />
+            <span className="text-[11px] font-medium text-muted-foreground shrink-0 mr-1">
               Sugestões:
             </span>
             {[
@@ -846,7 +795,7 @@ function AnunciosWorkspacePage() {
               </Button>
               <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs font-medium shrink-0">
                 <Link to="/workspace/marketing/afiliados">
-                  Afiliados & Saques
+                  Afiliados
                 </Link>
               </Button>
               <Button
@@ -935,6 +884,34 @@ function AnunciosWorkspacePage() {
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                     <Button
+                      variant="default"
+                      size="sm"
+                      onClick={async () => {
+                        setUpdatingId(c.id);
+                        try {
+                          await boostAdCampaignAtomic({
+                            data: {
+                              campaignId: c.id,
+                              amountCents: 5000,
+                              priorityDelta: 50,
+                            },
+                          });
+                          toast.success("Boost ACID (+R$ 50,00) debitado no Ledger e prioridade sincronizada!");
+                          router.invalidate();
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao impulsionar campanha.");
+                        } finally {
+                          setUpdatingId(null);
+                        }
+                      }}
+                      disabled={updatingId === c.id}
+                      className="rounded-xl text-xs font-bold gap-1.5 h-11 px-3.5 min-h-[44px]"
+                    >
+                      <Zap className="size-3.5" />
+                      <span>Impulsionar</span>
+                    </Button>
+
+                    <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleToggle(c)}
@@ -953,6 +930,29 @@ function AnunciosWorkspacePage() {
                         </>
                       )}
                     </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Excluir campanha"
+                      onClick={async () => {
+                        if (!confirm("Deseja realmente excluir esta campanha?")) return;
+                        setUpdatingId(c.id);
+                        try {
+                          await deleteAdCampaign({ data: { campaignId: c.id } });
+                          toast.success("Campanha excluída com sucesso.");
+                          router.invalidate();
+                        } catch (err: any) {
+                          toast.error(err?.message || "Erro ao excluir campanha.");
+                        } finally {
+                          setUpdatingId(null);
+                        }
+                      }}
+                      disabled={updatingId === c.id}
+                      className="rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-11 min-h-[44px]"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -966,7 +966,7 @@ function AnunciosWorkspacePage() {
         <WorkspaceDashboardSheet
           open={dashboardOpen}
           onOpenChange={setDashboardOpen}
-          title="Performance de Marketing & Tráfego"
+          title="Performance"
           description="Acompanhamento em tempo real de alcance, cliques e investimento publicitário."
           metrics={dashboardMetrics}
         />

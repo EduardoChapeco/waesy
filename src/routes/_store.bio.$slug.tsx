@@ -1,4 +1,4 @@
-﻿import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { User2, ExternalLink, MessageCircle, QrCode, Copy, Check, Link as LinkIcon, Instagram, Youtube, Linkedin, Twitter, Mail, Send, Plane, Compass, FileCheck, ShieldCheck, Ship, GraduationCap, Briefcase, Heart, Layers, Clock, MapPin, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -332,7 +332,7 @@ function BiolinkPage() {
  { icon: "cruise", title: "Cruzeiros marítimos", subtitle: "Saídas nacionais e internacionais." },
  { icon: "school", title: "Viagens escolares", subtitle: "Formaturas e intercâmbios." },
  { icon: "corporate", title: "Viagens corporativas", subtitle: "Logística completa para sua empresa." },
- { icon: "honeymoon", title: "Lua de mel & grupos", subtitle: "Roteiros personalizados." },
+ { icon: "honeymoon", title: "Lua de mel e grupos", subtitle: "Roteiros personalizados." },
  { icon: "premium", title: "Experiências premium", subtitle: "Viagens especiais com curadoria." },
  ];
 

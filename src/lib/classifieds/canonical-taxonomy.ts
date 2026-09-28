@@ -211,16 +211,16 @@ export interface GoodsSegmentOption {
 }
 
 export const CANONICAL_GOODS_SEGMENTS: GoodsSegmentOption[] = [
- { id: "smartphones", label: "Celulares & Smartphones", iconName: "Smartphone", badge: "Alta Demanda" },
- { id: "computadores", label: "Notebooks, PCs & Acessórios", iconName: "Laptop", badge: "Informática" },
- { id: "eletrodomesticos", label: "Eletrodomésticos & Cozinha", iconName: "Refrigerator", badge: "Casa & Cozinha" },
- { id: "eletronicos", label: "Eletrônicos & Smart TVs", iconName: "Tv", badge: "Eletrônicos" },
- { id: "moveis", label: "Móveis & Decoração", iconName: "Armchair", badge: "Mobiliário" },
- { id: "moda_brecho", label: "Brechó, Roupas & Calçados", iconName: "Shirt", badge: "Moda Sustentável" },
- { id: "games_consoles", label: "Games & Videogames", iconName: "Gamepad2", badge: "Gamer" },
- { id: "som_instrumentos", label: "Som & Instrumentos Musicais", iconName: "Music", badge: "Áudio & Som" },
- { id: "garagem_ferramentas", label: "Venda de Garagem & Ferramentas", iconName: "Wrench", badge: "Lotes / Garagem" },
- { id: "outros", label: "Outros Bens & Objetos", iconName: "Package", badge: "Diversos" },
+ { id: "smartphones", label: "Celulares e Smartphones", iconName: "Smartphone", badge: "Alta Demanda" },
+ { id: "computadores", label: "Notebooks, PCs e Acessórios", iconName: "Laptop", badge: "Informática" },
+ { id: "eletrodomesticos", label: "Eletrodomésticos e Cozinha", iconName: "Refrigerator", badge: "Casa & Cozinha" },
+ { id: "eletronicos", label: "Eletrônicos e Smart TVs", iconName: "Tv", badge: "Eletrônicos" },
+ { id: "moveis", label: "Móveis e Decoração", iconName: "Armchair", badge: "Mobiliário" },
+ { id: "moda_brecho", label: "Brechó, Roupas e Calçados", iconName: "Shirt", badge: "Moda Sustentável" },
+ { id: "games_consoles", label: "Games e Videogames", iconName: "Gamepad2", badge: "Gamer" },
+ { id: "som_instrumentos", label: "Som e Instrumentos Musicais", iconName: "Music", badge: "Áudio & Som" },
+ { id: "garagem_ferramentas", label: "Venda de Garagem e Ferramentas", iconName: "Wrench", badge: "Lotes / Garagem" },
+ { id: "outros", label: "Outros Bens e Objetos", iconName: "Package", badge: "Diversos" },
 ];
 
 // Condição Canônica para Mensuração de Bens Físicos
@@ -489,8 +489,8 @@ export const CANONICAL_REAL_ESTATE_TYPES: RealEstateTypeDefinition[] = GLOBAL_RE
 export const CANONICAL_REAL_ESTATE_CATEGORIES = [
   { id: "residencial", label: "Residencial (Apartamentos, Casas, Sobrados)" },
   { id: "comercial", label: "Comercial (Salas, Lojas, Pontos Comerciais)" },
-  { id: "industrial", label: "Industrial & Logístico (Galpões, Docas)" },
-  { id: "terreno_incorporacao", label: "Terrenos & Lotes Urbanos/Condomínio" },
+  { id: "industrial", label: "Industrial e Logístico (Galpões, Docas)" },
+  { id: "terreno_incorporacao", label: "Terrenos e Lotes Urbanos/Condomínio" },
   { id: "rural", label: "Rural (Chácaras, Sítios, Fazendas)" },
 ];
 
@@ -528,49 +528,49 @@ export interface FoodSubNicheOption {
 export const CANONICAL_FOOD_SUBNICHES: FoodSubNicheOption[] = [
   {
     id: "sushi",
-    label: "Sushi & Culinária Japonesa",
+    label: "Sushi e Culinária Japonesa",
     description: "Combinados, temakis, sashimis, hots e pratos orientais com opções de wasabi e shoyu.",
     defaultPrepTime: "25-40 min",
     suggestedItems: ["Combinado 20 peças", "Temaki Salmão Completo", "Hot Filadélfia 10 un", "Sashimi Salmão 8 un"],
   },
   {
     id: "pizzaria",
-    label: "Pizzaria & Forneria",
+    label: "Pizzaria e Forneria",
     description: "Pizzas artesanais, calzones, bordas recheadas e tamanhos broto a família.",
     defaultPrepTime: "30-50 min",
     suggestedItems: ["Pizza Grande Calabresa Especial", "Pizza 4 Queijos Artesanal", "Calzone Presunto e Queijo", "Pizza Doce Nutella"],
   },
   {
     id: "hamburgueria",
-    label: "Hamburgueria & Smash Burgers",
+    label: "Hamburgueria e Smash Burgers",
     description: "Burgers artesanais, smash, carnes nobres, blends especiais e combos com batatas.",
     defaultPrepTime: "20-35 min",
     suggestedItems: ["Smash Burger Duplo Cheddar Bacon", "Burger Costela Artesanal", "Combo Burger + Fritas + Refri", "Porção Batata Rústica"],
   },
   {
     id: "marmitaria",
-    label: "Marmitaria & Prato Feito (PF)",
+    label: "Marmitaria e Prato Feito (PF)",
     description: "Comida caseira, marmitas do dia, opções fit, low carb e pratos executivos.",
     defaultPrepTime: "15-30 min",
     suggestedItems: ["Marmita Executiva Bife a Cavalo", "Marmita Fit Frango com Batata Doce", "PF Filé de Peixe", "Feijoada Completa"],
   },
   {
     id: "confeitaria",
-    label: "Confeitaria, Bolos & Doces",
+    label: "Confeitaria, Bolos e Doces",
     description: "Bolos de festa por encomenda, doces finos, brigadeiros gourmet e sobremesas.",
     defaultPrepTime: "Encomenda prévia",
     suggestedItems: ["Bolo de Aniversário 2kg", "Cento de Brigadeiros Gourmet", "Torta Holandesa", "Bolo no Pote"],
   },
   {
     id: "cafeteria",
-    label: "Cafeteria, Lanchonete & Salgados",
+    label: "Cafeteria, Lanchonete e Salgados",
     description: "Cafés especiais, cappuccinos, salgados assados/fritos, pão de queijo e lanches rápidos.",
     defaultPrepTime: "10-20 min",
     suggestedItems: ["Café Expresso Especial", "Cappuccino Italiano", "Coxinha de Frango com Catupiry", "Pão de Queijo Recheado"],
   },
   {
     id: "churrascaria",
-    label: "Churrasco, Espetos & Assados",
+    label: "Churrasco, Espetos e Assados",
     description: "Cortes nobres assados, espetinhos, costela na brasa e guarnições tradicionais.",
     defaultPrepTime: "30-45 min",
     suggestedItems: ["Picanha Fatiada na Brasa (500g)", "Espeto de Alcatra Completo", "Costela Gaúcha Assada", "Farofa de Alho & Vinagrete"],
@@ -591,7 +591,7 @@ export interface ServiceSubNicheOption {
 export const CANONICAL_SERVICE_SUBNICHES: ServiceSubNicheOption[] = [
   {
     id: "advocacia",
-    label: "Advocacia & Assessoria Jurídica",
+    label: "Advocacia e Assessoria Jurídica",
     councilName: "OAB",
     councilFieldLabel: "Número de Registro na OAB",
     councilPlaceholder: "Ex: 123456/SP",
@@ -609,7 +609,7 @@ export const CANONICAL_SERVICE_SUBNICHES: ServiceSubNicheOption[] = [
   },
   {
     id: "engenharia_arquitetura",
-    label: "Engenharia & Arquitetura",
+    label: "Engenharia e Arquitetura",
     councilName: "CREA / CAU",
     councilFieldLabel: "Número do CREA ou CAU",
     councilPlaceholder: "Ex: 5061234567-SP",
@@ -626,7 +626,7 @@ export const CANONICAL_SERVICE_SUBNICHES: ServiceSubNicheOption[] = [
   },
   {
     id: "saude_estetica",
-    label: "Saúde, Estética & Bem-Estar",
+    label: "Saúde, Estética e Bem-Estar",
     councilName: "CRM / CRBM / CRO / COREN",
     councilFieldLabel: "Conselho Profissional & Registro",
     councilPlaceholder: "Ex: CRM 123456 ou CRBM 7890",
@@ -643,7 +643,7 @@ export const CANONICAL_SERVICE_SUBNICHES: ServiceSubNicheOption[] = [
   },
   {
     id: "construcao_reformas",
-    label: "Construção Civil & Reformas",
+    label: "Construção Civil e Reformas",
     councilName: "Alvará / Registro Municipal",
     councilFieldLabel: "CNPJ ou Alvará da Construtora",
     councilPlaceholder: "Ex: 00.000.000/0001-00",
@@ -660,7 +660,7 @@ export const CANONICAL_SERVICE_SUBNICHES: ServiceSubNicheOption[] = [
   },
   {
     id: "contabilidade_bpo",
-    label: "Contabilidade & BPO Financeiro",
+    label: "Contabilidade e BPO Financeiro",
     councilName: "CRC",
     councilFieldLabel: "Número do Registro no CRC",
     councilPlaceholder: "Ex: 1SP123456/O",
@@ -676,7 +676,7 @@ export const CANONICAL_SERVICE_SUBNICHES: ServiceSubNicheOption[] = [
   },
   {
     id: "tecnologia_design",
-    label: "Tecnologia, Software & Design",
+    label: "Tecnologia, Software e Design",
     councilName: "Portfólio / Registro",
     councilFieldLabel: "GitHub, Portfólio ou CNPJ",
     councilPlaceholder: "https://seusite.com.br",
@@ -841,7 +841,7 @@ export interface GroceryDepartment {
 export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   {
     id: "acougue_carnes",
-    label: "Açougue & Carnes Frescas",
+    label: "Açougue e Carnes Frescas",
     iconName: "Flame",
     badge: "Açougue",
     suggestedUnits: ["kg", "g", "bandeja", "peça"],
@@ -851,7 +851,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "hortifruti",
-    label: "Hortifrúti & Feira Fresca",
+    label: "Hortifrúti e Feira Fresca",
     iconName: "Apple",
     badge: "Hortifrúti",
     suggestedUnits: ["kg", "un", "g", "bandeja", "maço"],
@@ -860,7 +860,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "padaria_confeitaria",
-    label: "Padaria & Confeitaria",
+    label: "Padaria e Confeitaria",
     iconName: "Croissant",
     badge: "Padaria",
     suggestedUnits: ["un", "kg", "pct", "bandeja"],
@@ -870,7 +870,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "frios_laticinios",
-    label: "Frios, Queijos & Laticínios",
+    label: "Frios, Queijos e Laticínios",
     iconName: "Milk",
     badge: "Frios & Queijos",
     suggestedUnits: ["g", "kg", "un", "bandeja", "pct"],
@@ -880,7 +880,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "bebidas_adega",
-    label: "Bebidas, Cervejas & Adega",
+    label: "Bebidas, Cervejas e Adega",
     iconName: "Wine",
     badge: "Bebidas",
     suggestedUnits: ["un", "L", "ml", "fardo", "pack", "garrafa"],
@@ -889,7 +889,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "mercearia_basicos",
-    label: "Mercearia & Alimentos Básicos",
+    label: "Mercearia e Alimentos Básicos",
     iconName: "Package",
     badge: "Mercearia",
     suggestedUnits: ["un", "kg", "pct", "cx"],
@@ -898,7 +898,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "bomboniere_snacks",
-    label: "Bomboniere, Chocolates & Snacks",
+    label: "Bomboniere, Chocolates e Snacks",
     iconName: "Candy",
     badge: "Bomboniere",
     suggestedUnits: ["un", "pct", "cx", "display"],
@@ -907,7 +907,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "congelados",
-    label: "Congelados & Pratos Prontos",
+    label: "Congelados e Pratos Prontos",
     iconName: "Snowflake",
     badge: "Congelados",
     suggestedUnits: ["un", "pct", "cx", "kg"],
@@ -916,8 +916,8 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "higiene_perfumaria",
-    label: "Higiene Pessoal & Perfumaria",
-    iconName: "Sparkles",
+    label: "Higiene Pessoal e Perfumaria",
+    iconName: "CheckCircle2",
     badge: "Higiene",
     suggestedUnits: ["un", "pct", "kit"],
     subCategories: ["Sabonetes & Banho", "Shampoos & Condicionadores", "Higiene Bucal", "Desodorantes", "Fraldas & Cuidados com Bebê"],
@@ -925,7 +925,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "limpeza_casa",
-    label: "Limpeza & Cuidados com a Casa",
+    label: "Limpeza e Cuidados com a Casa",
     iconName: "Home",
     badge: "Limpeza",
     suggestedUnits: ["un", "L", "ml", "kg", "pct"],
@@ -934,7 +934,7 @@ export const CANONICAL_GROCERY_DEPARTMENTS: GroceryDepartment[] = [
   },
   {
     id: "conveniencia_tabacaria",
-    label: "Conveniência Rápida & Tabacaria",
+    label: "Conveniência Rápida e Tabacaria",
     iconName: "Zap",
     badge: "Conveniência",
     suggestedUnits: ["un", "pct", "pack"],

@@ -1,38 +1,13 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import {
-  Plane,
-  Building2,
-  Car,
-  Ticket,
-  Shield,
-  Calendar,
-  Clock,
-  User,
-  MapPin,
-  CheckCircle2,
-  Loader2,
-  Luggage,
-} from "lucide-react";
+import { Plane, Building2, Car, Ticket, Shield, Calendar, Clock, User, MapPin, CheckCircle2, Loader2, Luggage } from "lucide-react";
 import { toast } from "sonner";
 import { createTravelVoucher } from "@/services/travel-vouchers.functions";
 import type { VoucherType } from "@/types/travel-vouchers";
@@ -176,7 +151,7 @@ export function VoucherCreationSheet({
         <SheetHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center gap-2 mb-1">
             <Badge variant="outline" className="text-[10px] font-mono font-bold bg-primary/10 text-primary border-primary/20">
-              Boarding Pass & Voucher
+              Boarding Pass e Voucher
             </Badge>
           </div>
           <SheetTitle className="text-lg font-black tracking-tight text-foreground flex items-center gap-2">
@@ -281,7 +256,7 @@ export function VoucherCreationSheet({
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
                 <Plane className="size-3.5 text-primary" />
-                <span>Detalhes do Voo & Cartão de Embarque</span>
+                <span>Detalhes do Voo e Cartão de Embarque</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -384,7 +359,7 @@ export function VoucherCreationSheet({
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
                 <Building2 className="size-3.5 text-primary" />
-                <span>Detalhes da Hospedagem & Quarto</span>
+                <span>Detalhes da Hospedagem e Quarto</span>
               </div>
 
               <div className="space-y-1.5">
@@ -462,7 +437,7 @@ export function VoucherCreationSheet({
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-2 pb-1 border-b border-border/40 font-bold text-foreground uppercase tracking-wider text-[11px]">
                 <Car className="size-3.5 text-primary" />
-                <span>Detalhes do Receptivo & Transfer</span>
+                <span>Detalhes do Receptivo e Transfer</span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -511,7 +486,7 @@ export function VoucherCreationSheet({
 
           {/* 4. OBSERVAÇÕES & ORIENTAÇÕES */}
           <div className="space-y-1.5 pt-2">
-            <Label className="text-xs font-semibold">Orientações de Embarque & Observações</Label>
+            <Label className="text-xs font-semibold">Orientações de Embarque e Observações</Label>
             <Textarea
               placeholder="Instruções sobre check-in, documentos exigidos ou pontos de encontro..."
               value={notes}

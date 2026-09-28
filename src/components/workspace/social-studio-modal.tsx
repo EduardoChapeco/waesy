@@ -1,22 +1,8 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  InstagramLogo,
-  WhatsappLogo,
-  DownloadSimple,
-  Copy,
-  Sparkle,
-  Image as ImageIcon,
-  ShareNetwork,
-} from "@phosphor-icons/react";
+import { InstagramLogo, WhatsappLogo, DownloadSimple, Copy, Star, Image as ImageIcon, ShareNetwork } from "@phosphor-icons/react";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 
@@ -112,7 +98,7 @@ export function SocialStudioModal({
                   {storeName}
                 </span>
                 <span className="text-[10px] font-semibold bg-emerald-500 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Sparkle className="w-3 h-3" /> {product.category || "Destaque"}
+                  <Star className="w-3 h-3" /> {product.category || "Destaque"}
                 </span>
               </div>
 

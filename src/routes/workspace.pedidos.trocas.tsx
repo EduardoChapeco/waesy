@@ -2,49 +2,22 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { listExchanges, updateExchangeStatus } from "@/services/exchanges.functions";
 import { formatMoney } from "@/lib/money";
 import { EmptyState } from "@/components/state/states";
-import {
-  Search,
-  KanbanSquare,
-  Table as TableIcon,
-  CheckCircle2,
-  Gift,
-  RefreshCw,
-  Banknote,
-  XCircle,
-  FileSpreadsheet,
-  RotateCcw,
-  Clock,
-  ShieldCheck,
-  AlertTriangle,
-} from "lucide-react";
+import { Search, KanbanSquare, Table as TableIcon, CheckCircle2, Gift, RefreshCw, Banknote, XCircle, FileSpreadsheet, RotateCcw, Clock, ShieldCheck, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { formatDate } from "@/lib/datetime";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/pedidos/trocas")({
-  head: () => ({ meta: [{ title: "Trocas e Devoluções (RMA) | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Trocas (RMA) | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const data = await listExchanges();
@@ -455,7 +428,7 @@ function ExchangesDashboardPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Pós-Venda & Logística Reversa"
-        title="Trocas & Devoluções (RMA)"
+        title="Trocas"
         description="Gerencie solicitações de trocas de produtos, estornos financeiros (Pix/Cartão) e emissão de vale-compras com baixa contábil."
         actions={
           <div className="flex items-center gap-2">
@@ -580,7 +553,7 @@ function ExchangesDashboardPage() {
           <Table>
             <TableHeader>
               <TableRow className="border-border/60 bg-muted/20">
-                <TableHead className="text-xs font-bold">Pedido & Origem</TableHead>
+                <TableHead className="text-xs font-bold">Pedido e Origem</TableHead>
                 <TableHead className="text-xs font-bold">Cliente</TableHead>
                 <TableHead className="text-xs font-bold">Motivo da Devolução</TableHead>
                 <TableHead className="text-xs font-bold">Data</TableHead>

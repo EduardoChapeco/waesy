@@ -4,34 +4,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders, Trash2 } from 'lucide-react';
 import { toast } from "sonner";
 
-import {
- saveSecretKey,
- listConfiguredSecrets,
- getAICapabilityBindings,
-} from "@/services/secret-vault.functions";
+import { saveSecretKey, listConfiguredSecrets, getAICapabilityBindings } from "@/services/secret-vault.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogTrigger,
-} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/configuracoes/ai")({
- head: () => ({ meta: [{ title: "Vault de Segredos & Inteligência Artificial | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Inteligência Artificial | Workspace Waesy" }] }),
  component: AIConfigurationPage,
 });
 
@@ -304,7 +287,7 @@ function AIConfigurationPage() {
  <div className="space-y-2.5">
  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
- <p className="font-bold text-foreground">Assistente de Cláusulas & Contratos</p>
+ <p className="font-bold text-foreground">Assistente de Cláusulas e Contratos</p>
  <p className="text-[11px] text-muted-foreground">
  Análise jurídica, sugestões de redação e conferência de riscos
  </p>
@@ -316,7 +299,7 @@ function AIConfigurationPage() {
 
  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
- <p className="font-bold text-foreground">Copywriter de Produtos & Classificados</p>
+ <p className="font-bold text-foreground">Copywriter de Produtos e Classificados</p>
  <p className="text-[11px] text-muted-foreground">
  Geração e otimização de títulos, fichas técnicas e descrições
  </p>
@@ -328,7 +311,7 @@ function AIConfigurationPage() {
 
  <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-center justify-between text-xs">
  <div>
- <p className="font-bold text-foreground">Visão Computacional & OCR de Documentos</p>
+ <p className="font-bold text-foreground">Visão Computacional e OCR de Documentos</p>
  <p className="text-[11px] text-muted-foreground">
  Extração automática de comprovantes de pagamento e CNH/RG
  </p>

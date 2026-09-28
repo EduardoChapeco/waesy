@@ -6,25 +6,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Receipt,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Building2,
-  User,
-  ShieldCheck,
-  ShieldAlert,
-  Search,
-  ExternalLink,
-  Eye,
-  Sliders,
-  DollarSign,
-  TrendingDown,
-  RotateCcw,
-  XCircle,
-  FileText,
-} from "lucide-react";
+import { Receipt, AlertTriangle, CheckCircle2, Clock, Building2, User, ShieldCheck, ShieldAlert, Search, ExternalLink, Eye, Sliders, DollarSign, TrendingDown, RotateCcw, XCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -33,22 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import {
-  listMasterCarnes,
-  getMasterCarnesOverview,
-  forceMasterConciliation,
-} from "@/services/receivables.functions";
+import { listMasterCarnes, getMasterCarnesOverview, forceMasterConciliation } from "@/services/receivables.functions";
 
 export const Route = createFileRoute("/admin-master/carnes")({
-  head: () => ({ meta: [{ title: "Carnês & Inadimplência Global | Admin Master Waesy" }] }),
+  head: () => ({ meta: [{ title: "Carnês e Inadimplência Global | Admin Master Waesy" }] }),
   loader: async () => {
     try {
       const [carnes, overview] = await Promise.all([

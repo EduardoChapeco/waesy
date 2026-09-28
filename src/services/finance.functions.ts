@@ -264,3 +264,64 @@ export const createManualTransaction = createServerFn({ method: "POST" })
  );
  }
  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OMNI-HUB ERP (V122): Resumo financeiro por canal de origem
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ChannelFinancialSummaryDTO {
+  channel: string;
+  order_count: number;
+  gross_sales_cents: number;
+  platform_fee_cents: number;
+  shipping_cost_cents: number;
+  payment_fee_cents: number;
+  net_revenue_cents: number;
+  avg_margin_percent: number;
+}
+
+const ChannelSummaryParamsSchema = z.object({
+  from: z.string().datetime().optional(), // ISO 8601 — ex: "2026-09-01T00:00:00Z"
+  to:   z.string().datetime().optional(),
+});
+
+/**
+ * Agrega vendas brutas, taxas de plataforma, custos logísticos e receita líquida
+ * por canal de origem (waesy_app, mercadolivre, ifood, pdv, whatsapp, etc.).
+ * Chama a função RPC `channel_financial_summary` criada na migration V122.
+ * Multi-Tenant: isolamento por store_id derivado da sessão segura (NUNCA do client).
+ */
+export const getChannelFinancialSummary = createServerFn({ method: "GET" })
+  .validator(ChannelSummaryParamsSchema)
+  .handler(async ({ data }): Promise<ChannelFinancialSummaryDTO[]> => {
+    try {
+      const identity = await getServerIdentity();
+      if (!identity.store_id) return [];
+
+      const supabase = getServerClient();
+
+      const params: Record<string, unknown> = {
+        p_store_id: identity.store_id,
+      };
+
+      // Período padrão: últimos 30 dias
+      if (data?.from) params.p_from = data.from;
+      if (data?.to)   params.p_to   = data.to;
+
+      const { data: rows, error } = await supabase.rpc(
+        "channel_financial_summary",
+        params,
+      );
+
+      if (error) {
+        console.error("[finance] getChannelFinancialSummary RPC error:", error.message);
+        return [];
+      }
+
+      return (rows || []) as ChannelFinancialSummaryDTO[];
+    } catch (e: unknown) {
+      if (e instanceof SupabaseUnconfiguredError) throw e;
+      console.error("[finance] getChannelFinancialSummary:", e instanceof Error ? e.message : String(e));
+      return [];
+    }
+  });

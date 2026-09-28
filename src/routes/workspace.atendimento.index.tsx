@@ -1,36 +1,18 @@
 import { cn } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import {
- listChatThreads,
- getChatMessages,
- sendChatMessage,
- assignChatThread,
- updateTicketStatus,
-} from "@/services/chat.functions";
+import { listChatThreads, getChatMessages, sendChatMessage, assignChatThread, updateTicketStatus } from "@/services/chat.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getBrowserClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, ArrowLeft, Search, Filter, Send, UserCheck, Building2, Clock, CheckCircle2, AlertTriangle, Package, DollarSign, Info, Loader2, RefreshCw, Layers, ShieldCheck, Bot, Sparkles, Flame, Target, HelpCircle, Copy, ExternalLink, MessageCircle } from 'lucide-react';
+import { MessageSquare, ArrowLeft, Search, Filter, Send, UserCheck, Building2, Clock, CheckCircle2, AlertTriangle, Package, DollarSign, Info, Loader2, RefreshCw, Layers, ShieldCheck, Bot, Star, Flame, Target, HelpCircle, Copy, ExternalLink, MessageCircle } from 'lucide-react';
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
@@ -834,7 +816,7 @@ function WorkspaceAtendimentoPage() {
               <div className="p-3 border-b border-border/80 flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">Customer 360º</span>
                 <Badge variant="outline" className="text-[10px]">
-                  Auditoria & Histórico
+                  Auditoria e Histórico
                 </Badge>
               </div>
               <Customer360Sidebar
@@ -932,7 +914,7 @@ function WorkspaceAtendimentoPage() {
                   </div>
                   <div>
                     <SheetTitle className="text-sm font-bold">
-                      Diálogo SDR & Inteligência de Vendas
+                      Diálogo SDR e Inteligência de Vendas
                     </SheetTitle>
                     <p className="text-[11px] text-muted-foreground">
                       {formatDate(selectedSdrSession.created_at)}

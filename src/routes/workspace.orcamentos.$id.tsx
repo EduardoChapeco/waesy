@@ -1,41 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import {
- ChevronLeft,
- Send,
- CheckCircle2,
- XCircle,
- Clock,
- MessageSquare,
- Package,
- Wrench,
- Box,
- Hash,
- Loader2,
- AlertCircle,
- FileSpreadsheet,
- Plane,
- Building2,
- FileCheck2,
- ExternalLink,
- Copy,
- Download,
- Share2,
- Calendar,
- User,
-} from "lucide-react";
+import { ChevronLeft, Send, CheckCircle2, XCircle, Clock, MessageSquare, Package, Wrench, Box, Hash, Loader2, AlertCircle, FileSpreadsheet, Plane, Building2, FileCheck2, ExternalLink, Copy, Download, Share2, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import {
- getQuoteDetail,
- updateQuoteStatus,
- approveQuote,
- addQuoteMessage,
- type QuoteItemDTO,
-} from "@/services/quotes.functions";
+import { getQuoteDetail, updateQuoteStatus, approveQuote, addQuoteMessage, type QuoteItemDTO } from "@/services/quotes.functions";
 import { createContractFromProposal } from "@/services/travel-contract.functions";
 import { formatMoney } from "@/lib/money";
 import { formatRelativeTime } from "@/lib/datetime";
@@ -180,7 +151,7 @@ function QuoteDetailPage() {
  </Badge>
  </div>
  <h1 className="text-xl font-bold text-foreground">
- {travelMeta?.title || quote.internal_notes || "Orçamento & Proposta"}
+ {travelMeta?.title || quote.internal_notes || "Orçamento"}
  </h1>
  </div>
  </div>
@@ -290,7 +261,7 @@ function QuoteDetailPage() {
  <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Building2 className="size-4 text-primary" />
- <span>Acomodação & Hospedagem</span>
+ <span>Acomodação e Hospedagem</span>
  </h3>
 
  <div className="space-y-3">
@@ -317,7 +288,7 @@ function QuoteDetailPage() {
  <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <MessageSquare className="size-4 text-primary" />
- <span>Histórico & Mensagens da Negociação</span>
+ <span>Histórico e Mensagens da Negociação</span>
  </h3>
 
  <div className="space-y-3">
@@ -403,7 +374,7 @@ function QuoteDetailPage() {
  className="w-full h-10 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer"
  >
  <CheckCircle2 className="size-3.5" />
- <span>Aprovar & Fechar Venda</span>
+ <span>Aprovar e Fechar Venda</span>
  </Button>
  <Button
  onClick={() => changeStatus.mutate("rejected")}

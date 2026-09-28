@@ -3,7 +3,7 @@
  *
  * - Usa ServerFn corretamente (não tRPC)
  * - Borda azul sutil (ring-1 ring-blue-500/25)
- * - Sem ícones Sparkles (proibido) — usa Bot
+ * - Sem ícones CheckCircle2 (proibido) — usa Bot
  * - Modal de instruções sobre o agente
  * - Cores neutras dark mode (sem gradientes neon)
  */
@@ -14,13 +14,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { chatWithSDR } from "@/services/ai-sdr.functions";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface ChatMessage {
   role: "user" | "assistant";

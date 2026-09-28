@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, CheckCircle2 } from "lucide-react";
 import { reportTagFraud } from "@/services/tag-audit.functions";

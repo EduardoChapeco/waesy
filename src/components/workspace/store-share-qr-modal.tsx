@@ -1,23 +1,7 @@
 import { useState, useMemo } from "react";
-import {
- QrCode,
- Copy,
- Check,
- Share2,
- Download,
- Printer,
- ExternalLink,
- Store,
-} from "lucide-react";
+import { QrCode, Copy, Check, Share2, Download, Printer, ExternalLink, Store } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

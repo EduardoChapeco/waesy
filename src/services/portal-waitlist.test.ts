@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  JoinPortalWaitlistSchema,
-} from "./portal-waitlist.functions";
+import { JoinPortalWaitlistSchema } from "./portal-waitlist.functions";
 
 describe("Portal Waitlist Contracts (BFF)", () => {
   it("valida schema de inscrição na lista VIP com módulos de interesse", () => {

@@ -7,14 +7,7 @@ import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CheckCircle2, FileCheck, ShieldCheck } from "lucide-react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { completeLawsuitDeadline } from "@/services/jus.functions";
@@ -64,7 +57,7 @@ export function CompleteDeadlineDialog({
  <DialogHeader className="space-y-2">
  <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold uppercase tracking-wider">
  <ShieldCheck className="size-4" />
- <span>Protocolo & Cumprimento</span>
+ <span>Protocolo e Cumprimento</span>
  </div>
  <DialogTitle className="text-base font-bold text-foreground">
  Concluir Prazo: "{deadline.title}"

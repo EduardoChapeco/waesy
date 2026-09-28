@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  AuditCnpjInputSchema,
-  AnalyzeOpportunityInputSchema,
-  GetCommercialPointTelemetrySchema,
-  type CnpjAuditResult,
-  type AcquisitionOpportunityAnalysis,
-  type CommercialPointTelemetryResult,
-} from './market-intelligence.functions';
+import { AuditCnpjInputSchema, AnalyzeOpportunityInputSchema, GetCommercialPointTelemetrySchema, type CnpjAuditResult, type AcquisitionOpportunityAnalysis, type CommercialPointTelemetryResult } from './market-intelligence.functions';
 
 describe('Fase 4: Backend Telemetry, Inteligência de Mercado & Squads de IA', () => {
   describe('4.1 Validação de Schemas e Contratos BFF', () => {

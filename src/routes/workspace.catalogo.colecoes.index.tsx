@@ -1,38 +1,17 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import {
- Plus,
- MoreHorizontal,
- Edit,
- Archive,
- RotateCcw,
- EyeOff,
- Check,
- Search,
-} from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Archive, RotateCcw, EyeOff, Check, Search } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { Button } from "@/components/ui/button";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { listCollections, updateCollection } from "@/services/admin-catalog.functions";
 
 export const Route = createFileRoute("/workspace/catalogo/colecoes/")({
- head: () => ({ meta: [{ title: "Coleções & Agrupamentos | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Coleções | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const res = await listCollections();
@@ -257,7 +236,7 @@ function AdminCollectionsPage() {
                   <TableRow className="bg-muted/40">
                     <TableHead className="w-16 py-3.5"></TableHead>
                     <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
-                      Coleção & Slug
+                      Coleção e Slug
                     </TableHead>
                     <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">
                       Status

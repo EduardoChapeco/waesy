@@ -26,20 +26,11 @@ vi.mock("@tanstack/react-start", () => ({
   }),
 }));
 
-import {
-  searchCentralProfessions,
-  searchCentralOnDemandServices,
-  getCentralMarketingCalendar,
-  getCentralDemographics,
-} from "./central-knowledge.functions";
+import { searchCentralProfessions, searchCentralOnDemandServices, getCentralMarketingCalendar, getCentralDemographics } from "./central-knowledge.functions";
 import { GLOBAL_PROFESSIONS_CATALOG } from "@/lib/data/professions-catalog";
 import { GLOBAL_ON_DEMAND_SERVICES_CATALOG } from "@/lib/data/services-catalog";
 import { GLOBAL_MASTER_PRODUCTS_CATALOG } from "@/lib/data/master-products-catalog";
-import {
-  IBGE_ECONOMIC_CLASSES,
-  BRAZIL_REGIONS_DEMOGRAPHICS,
-  generateSyntheticPopulations,
-} from "@/lib/data/ibge-demographics";
+import { IBGE_ECONOMIC_CLASSES, BRAZIL_REGIONS_DEMOGRAPHICS, generateSyntheticPopulations } from "@/lib/data/ibge-demographics";
 import { getHolidaysForYear } from "@/lib/data/holidays-calendar-catalog";
 
 describe("Fase 14: Central Knowledge Bases, Autopopulation & SimLab Expansion", () => {

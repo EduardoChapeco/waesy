@@ -1,26 +1,15 @@
-﻿import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ShoppingCart, Mail, Phone, Clock, RefreshCw, Send, Ghost } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 
-import {
- listAbandonedCarts,
- markRecoveryAttempt,
- scanAbandonedCarts,
-} from "@/services/marketing.functions";
+import { listAbandonedCarts, markRecoveryAttempt, scanAbandonedCarts } from "@/services/marketing.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 

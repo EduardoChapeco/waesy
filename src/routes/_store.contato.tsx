@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { submitContactMessage } from "@/services/contact.functions";
 
 export const Route = createFileRoute("/_store/contato")({
- head: () => ({ meta: [{ title: "Fale Conosco & Suporte | Waesy" }] }),
+ head: () => ({ meta: [{ title: "Fale Conosco e Suporte | Waesy" }] }),
  loader: async () => {
  try {
  const brand = await getPublicBrandSettings();
@@ -92,7 +92,7 @@ function ContatoPage() {
  {/* Topo Institucional */}
  <div className="text-center max-w-2xl mx-auto space-y-2">
  <span className="text-xs font-mono font-bold uppercase tracking-wider text-primary">
- Atendimento & Ouvidoria
+ Atendimento e Ouvidoria
  </span>
  <h1 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
  Como podemos ajudar você?

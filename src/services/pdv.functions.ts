@@ -313,35 +313,123 @@ export const processPosMultiPayment = createServerFn({ method: "POST" })
  throw new Error("Erro ao registrar pagamentos fracionados: " + insertErr.message);
  }
 
- // 3. Se houver caixa aberto, lançar os valores em dinheiro/PIX em cash_register_entries
- if (data.cashRegisterId) {
- const cashEntries = data.payments
- .filter((p) => ["cash", "pix", "debit_card", "credit_card"].includes(p.paymentMethod))
- .map((p) => ({
- cash_register_id: data.cashRegisterId,
- order_id: data.orderId,
- amount_cents: p.amountCents,
- entry_type: "sale",
- payment_method: p.paymentMethod,
- notes: `Recebimento PDV - Pedido #${data.orderId.slice(0, 8)}`,
- created_by: identity.id,
- }));
+  // 3. Se houver caixa aberto, lançar os valores em dinheiro/PIX/cartão em cash_register_entries (Centralized Cashier)
+  if (data.cashRegisterId) {
+    const cashEntries = data.payments
+      .filter((p) => ["cash", "pix", "debit_card", "credit_card"].includes(p.paymentMethod))
+      .map((p) => ({
+        cash_register_id: data.cashRegisterId,
+        order_id: data.orderId,
+        amount_cents: p.amountCents,
+        entry_type: "sale",
+        payment_method: p.paymentMethod,
+        notes: `Recebimento PDV - Pedido #${data.orderId.slice(0, 8)}`,
+        created_by: identity.id,
+        channel_source: "pos_counter",
+        channel_origin: "pos_counter",
+        marketplace_fee_cents: 0,
+        net_payout_cents: p.amountCents,
+        external_reference_id: data.orderId,
+      }));
 
- if (cashEntries.length > 0) {
- await supabase.from("cash_register_entries").insert(cashEntries);
- }
- }
+    if (cashEntries.length > 0) {
+      await supabase.from("cash_register_entries").insert(cashEntries);
+    }
+  }
 
- // 4. Atualizar Pedido para 'paid' e atribuir canal de origem
- await supabase
- .from("orders")
- .update({
- payment_status: "paid",
- status: "processing",
- channel_origin: data.tableId ? "table" : "pdv",
- updated_at: new Date().toISOString(),
- })
- .eq("id", data.orderId);
+  // 4. Baixa de estoque multi-armazém dos itens do pedido PDV (Omni-Hub ERP)
+  try {
+    const { data: defaultLocation } = await supabase
+      .from("inventory_locations")
+      .select("id")
+      .eq("store_id", identity.store_id)
+      .eq("is_default", true)
+      .maybeSingle();
+
+    const activeLocationId = defaultLocation?.id || null;
+
+    const { data: orderItems } = await supabase
+      .from("order_items")
+      .select("id, variant_sku, qty")
+      .eq("order_id", data.orderId);
+
+    if (orderItems && orderItems.length > 0) {
+      for (const item of orderItems) {
+        if (!item.variant_sku) continue;
+        const { data: variant } = await supabase
+          .from("product_variants")
+          .select("id, product_id, stock_on_hand")
+          .eq("sku", item.variant_sku)
+          .maybeSingle();
+
+        if (variant) {
+          const soldQty = item.qty || 1;
+          const newStock = Math.max(0, (variant.stock_on_hand || 0) - soldQty);
+          await supabase
+            .from("product_variants")
+            .update({ stock_on_hand: newStock, updated_at: new Date().toISOString() })
+            .eq("id", variant.id);
+
+          if (activeLocationId) {
+            const { data: locInv } = await supabase
+              .from("product_location_inventories")
+              .select("stock_qty")
+              .eq("location_id", activeLocationId)
+              .eq("variant_id", variant.id)
+              .maybeSingle();
+
+            if (locInv) {
+              await supabase
+                .from("product_location_inventories")
+                .update({
+                  stock_qty: Math.max(0, locInv.stock_qty - soldQty),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("location_id", activeLocationId)
+                .eq("variant_id", variant.id);
+            }
+          }
+
+          await supabase.from("stock_movements").insert({
+            store_id: identity.store_id,
+            variant_id: variant.id,
+            location_id: activeLocationId,
+            movement_type: "sale",
+            qty: -soldQty,
+            reference_type: "order",
+            reference_id: data.orderId,
+            channel_origin: "pdv",
+            channel_source: "pos_counter",
+            note: `Venda PDV Balcão - Pedido #${data.orderId.slice(0, 8)}`,
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
+    }
+  } catch (stockErr) {
+    console.warn("[processPosMultiPayment] Baixa de estoque PDV ignorada ou falhou:", stockErr);
+  }
+
+  // 5. Atualizar Pedido para 'paid' e atribuir canal de origem e margem limpa
+  const totalPaidCents = data.payments.reduce((acc, p) => acc + p.amountCents, 0);
+  await supabase
+    .from("orders")
+    .update({
+      payment_status: "paid",
+      status: "processing",
+      channel_origin: data.tableId ? "table" : "pdv",
+      origin_channel: "pdv",
+      cost_breakdown: {
+        platform_fee_cents: 0,
+        payment_fee_cents: 0,
+        shipping_cost_cents: 0,
+        net_revenue_cents: totalPaidCents,
+        net_payout_cents: totalPaidCents,
+        channel: "pdv",
+      },
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", data.orderId);
 
  // 5. Liberar mesa caso informada
  if (data.tableId) {

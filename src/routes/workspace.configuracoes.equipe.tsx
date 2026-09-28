@@ -1,15 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Users, UserPlus, ShieldCheck, ShieldAlert, Trash2, Mail, User, CheckCircle2, Lock, ArrowRight, Layers, Info, RefreshCw, Building2, Briefcase, ExternalLink, Wallet, Plus, Edit3 } from 'lucide-react';
-import {
-  listTeamMembers,
-  inviteTeamMember,
-  updateTeamMemberRole,
-  removeTeamMember,
-  listContractors,
-  upsertContractor,
-  deleteContractor,
-} from "@/services/admin-team.functions";
+import { listTeamMembers, inviteTeamMember, updateTeamMemberRole, removeTeamMember, listContractors, upsertContractor, deleteContractor } from "@/services/admin-team.functions";
 import { listMyStoreJobs, createStoreJob } from "@/services/jobs.functions";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
@@ -22,37 +14,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Link } from "@tanstack/react-router";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- AlertDialog,
- AlertDialogAction,
- AlertDialogCancel,
- AlertDialogContent,
- AlertDialogDescription,
- AlertDialogFooter,
- AlertDialogHeader,
- AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/configuracoes/equipe")({
  head: () => ({
  meta: [
- { title: "Equipe, Folha & Recrutamento | Workspace Waesy" },
+ { title: "Equipe | Workspace Waesy" },
  { name: "description", content: "Gerencie os membros, cargos, folha de pagamento e vagas de emprego da sua loja." },
  ],
  }),
@@ -101,12 +71,12 @@ const ROLE_DEFINITIONS: Record<
  color: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
  },
  stock: {
- label: "Estoque & Expedição",
+ label: "Estoque e Expedição",
  description: "Controle de inventário, reposição e despacho de entregas",
  color: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
  },
  content: {
- label: "Marketing & Conteúdo",
+ label: "Marketing e Conteúdo",
  description: "Criação de banners, histórias, cupons e vitrines",
  color: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30",
  },
@@ -290,7 +260,7 @@ export default function WorkspaceTeamPage() {
  {/* ── PageHeader Canônico Clean ── */}
  <PageHeader
  eyebrow="RH & Gestão"
- title="Equipe & Vagas"
+ title="Equipe"
  actions={
  <div className="flex items-center gap-2">
  <Button
@@ -387,7 +357,7 @@ export default function WorkspaceTeamPage() {
  </div>
  <div className="space-y-0.5 flex-1 min-w-0">
  <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
- <span>Privacidade & Isolamento Estrito de Workspace</span>
+ <span>Privacidade e Isolamento Estrito de Workspace</span>
  <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary font-bold">
  Zero-Trust RLS
  </Badge>
@@ -520,7 +490,7 @@ export default function WorkspaceTeamPage() {
     <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-xs">
       <div className="p-4 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-          <span>Prestadores Terceirizados & Freelancers</span>
+          <span>Prestadores Terceirizados e Freelancers</span>
           <Badge variant="secondary" className="text-[11px] font-bold">
             {contractorsList.length}
           </Badge>
@@ -872,7 +842,7 @@ export default function WorkspaceTeamPage() {
  </div>
 
  <div className="space-y-1.5">
- <Label className="text-xs font-bold">Descrição das Atividades & Responsabilidades</Label>
+ <Label className="text-xs font-bold">Descrição das Atividades e Responsabilidades</Label>
  <Textarea
  value={jobForm.description}
  onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
@@ -947,7 +917,7 @@ export default function WorkspaceTeamPage() {
  </div>
 
  <div className="space-y-1.5 text-left">
- <Label className="text-xs font-bold text-foreground">Cargo & Nível de Permissão</Label>
+ <Label className="text-xs font-bold text-foreground">Cargo e Nível de Permissão</Label>
  <Select
  value={inviteRole}
  onValueChange={(v: any) => setInviteRole(v)}

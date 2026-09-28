@@ -1,67 +1,23 @@
-﻿import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import {
- Plus,
- Edit3,
- Trash2,
- Search,
- FileText,
- Copy,
- ExternalLink,
- LayoutTemplate,
- Layers,
- Smartphone,
- CheckCircle2,
- Clock,
- Archive,
-} from "lucide-react";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { Plus, Edit3, Trash2, Search, FileText, Copy, ExternalLink, LayoutTemplate, Layers, Smartphone, CheckCircle2, Clock, Archive } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
- SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetTrigger } from "@/components/ui/sheet";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { listAdminPages, createPage, deletePage } from "@/services/cms.functions";
 import { createExperienceDocument, duplicateExperienceDocument } from "@/services/builder.functions";
 
 export const Route = createFileRoute("/workspace/cms/paginas/")({
- head: () => ({ meta: [{ title: "Páginas & Landing Pages | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Páginas | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const res = await listAdminPages();

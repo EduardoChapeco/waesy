@@ -1,30 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- ShieldCheck,
- CheckCircle2,
- XCircle,
- Eye,
- Loader2,
- Filter,
- User,
- AlertTriangle,
- BadgeAlert
-} from "lucide-react";
+import { ShieldCheck, CheckCircle2, XCircle, Eye, Loader2, Filter, User, AlertTriangle, BadgeAlert } from "lucide-react";
 import { toast } from "sonner";
 
 import { listKycVerificationsForAdmin, auditKycVerification } from "@/services/kyc.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/workspace/moderacao/kyc")({
@@ -75,7 +59,7 @@ function KycAuditPage() {
  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
  <div>
  <h1 className="text-2xl font-bold flex items-center gap-2">
- <ShieldCheck size={28} className="text-emerald-600" /> Auditoria KYC & Identidade
+ <ShieldCheck size={28} className="text-emerald-600" /> Auditoria KYC e Identidade
  </h1>
  <p className="text-muted-foreground text-sm">Central de averiguação de selos oficiais (Identity Vault).</p>
  </div>

@@ -6,33 +6,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  FileText,
-  Plus,
-  TrendingUp,
-  Eye,
-  MessageSquare,
-  Copy,
-  ExternalLink,
-  Pencil,
-  Trash2,
-  Check,
-  Search,
-  Filter,
-  Download,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  CheckCircle2,
-  Clock,
-  ChevronDown,
-  ChevronUp,
-  Loader2,
-  Phone,
-  Mail,
-  Calendar,
-  Layers,
-} from "lucide-react";
+import { FileText, Plus, TrendingUp, Eye, MessageSquare, Copy, ExternalLink, Pencil, Trash2, Check, Search, Filter, Download, ShieldCheck, Star, Users, CheckCircle2, Clock, ChevronDown, ChevronUp, Loader2, Phone, Mail, Calendar, Layers } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,21 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPhone } from "@/lib/document-validator";
-import {
-  listStoreLeadForms,
-  upsertLeadForm,
-  deleteLeadForm,
-  listLeadSubmissions,
-  updateLeadSubmissionStatus,
-  getLeadFormsKpis,
-  LeadFormDTO,
-  LeadFormFieldDTO,
-  LeadFormSubmissionDTO,
-} from "@/services/lead-forms.functions";
+import { listStoreLeadForms, upsertLeadForm, deleteLeadForm, listLeadSubmissions, updateLeadSubmissionStatus, getLeadFormsKpis, LeadFormDTO, LeadFormFieldDTO, LeadFormSubmissionDTO } from "@/services/lead-forms.functions";
 import { getStoreSettings } from "@/services/store.functions";
 
 export const Route = createFileRoute("/workspace/marketing/formularios")({
-  head: () => ({ meta: [{ title: "Formulários de Captura & CRM de Leads | Workspace" }] }),
+  head: () => ({ meta: [{ title: "Formulários de Captura e CRM de Leads | Workspace" }] }),
   loader: async () => {
     try {
       const [forms, kpis, store] = await Promise.all([
@@ -468,7 +432,7 @@ function WorkspaceLeadFormsPage() {
     <div className="w-full space-y-6 pb-12">
       {/* Cabeçalho Canônico */}
       <PageHeader
-        title="Formulários & CRM de Leads"
+        title="Formulários de Leads"
         description="Landing Pages mágicas para tráfego pago, formulários nos anúncios e gestão de conversão."
       >
         <div className="flex items-center gap-2">
@@ -1038,7 +1002,7 @@ function WorkspaceLeadFormsPage() {
                             </h4>
                             {sub.is_new_registered_user && (
                               <span className="text-[10px] bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <Sparkles className="w-3 h-3" />
+                                <Star className="w-3 h-3" />
                                 Registro Rápido
                               </span>
                             )}

@@ -1,65 +1,6 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
- Package,
- Tags,
- Tag,
- Store,
- LayoutDashboard,
- Settings,
- Calendar,
- Users,
- ShoppingBag,
- UserCircle,
- Truck,
- Boxes,
- Banknote,
- FileText,
- LayoutTemplate,
- Layers,
- Link2,
- Image as ImageIcon,
- ChevronDown,
- ChevronRight,
- ClipboardList,
- ShieldAlert,
- Megaphone,
- Flame,
- Newspaper,
- Plus,
- Sliders,
- BarChart3,
- DollarSign,
- Ticket,
- ArrowRightLeft,
- ArrowUpRight,
- User,
- LogOut,
- Bell,
- Check,
- ChevronsUpDown,
- Building2,
- ShieldCheck,
- UtensilsCrossed,
- Compass,
- ExternalLink,
- Coins,
- Zap,
- MessageSquare,
- Scale,
- Wrench,
- MapPin,
- Navigation,
- Briefcase,
- Plane,
- ShoppingCart,
- Eye,
- Receipt,
- AlertTriangle,
- ArrowDownUp,
- Search,
- HelpCircle,
-} from "lucide-react";
+import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, UserCircle, Truck, Boxes, Banknote, FileText, LayoutTemplate, Layers, Link2, Image as ImageIcon, ChevronDown, ChevronRight, ClipboardList, ShieldAlert, Megaphone, Flame, Newspaper, Plus, Sliders, BarChart3, DollarSign, Ticket, ArrowRightLeft, ArrowUpRight, User, LogOut, Bell, Check, ChevronsUpDown, Building2, ShieldCheck, UtensilsCrossed, Compass, ExternalLink, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Search, HelpCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { signOut } from "@/services/auth.functions";
@@ -68,30 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuLabel,
- DropdownMenuSeparator,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-import {
- resolveWorkspaceNavigation,
- type NavGroup,
- type NavItem,
-} from "@/lib/workspace-navigation";
+import { resolveWorkspaceNavigation, type NavGroup, type NavItem } from "@/lib/workspace-navigation";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { WorkspaceAccountSwitcher } from "./workspace-account-switcher";
 import { WorkspaceAllToolsDialog } from "./workspace-all-tools-dialog";
@@ -100,114 +23,115 @@ import { WorkspaceAccessDenied } from "./workspace-access-denied";
 
 
 function getStoreContextualAction(storeData: any) {
- const semantics = getNicheSemantics(storeData);
+  const semantics = getNicheSemantics(storeData);
 
- switch (semantics.nicheId) {
- case "gastronomy":
- return {
- label: "Ver Cardápio Online",
- icon: UtensilsCrossed,
- aba: "cardapio",
- };
- case "tourism":
- return {
- label: "Ver Espaço & Roteiros",
- icon: Compass,
- aba: "turismo",
- };
- case "services":
- return {
- label: "Ver Catálogo de Serviços",
- icon: Layers,
- aba: "servicos",
- };
- case "real_estate":
- return {
- label: "Ver Catálogo de Imóveis",
- icon: Building2,
- aba: "imoveis",
- };
- case "events":
- return {
- label: "Ver Eventos & Ingressos",
- icon: Compass,
- aba: "eventos",
- };
- case "jobs":
- return {
- label: "Ver Mural de Carreiras",
- icon: ArrowUpRight,
- aba: "vagas",
- };
- default:
- return {
- label: "Ver Loja Online",
- icon: ShoppingBag,
- aba: "catalogo",
- };
- }
+  switch (semantics.nicheId) {
+    case "gastronomy":
+      return {
+        label: "Cardápio",
+        icon: UtensilsCrossed,
+        aba: "cardapio",
+      };
+    case "tourism":
+      return {
+        label: "Roteiros",
+        icon: Compass,
+        aba: "turismo",
+      };
+    case "services":
+      return {
+        label: "Serviços",
+        icon: Layers,
+        aba: "servicos",
+      };
+    case "real_estate":
+      return {
+        label: "Imóveis",
+        icon: Building2,
+        aba: "imoveis",
+      };
+    case "events":
+      return {
+        label: "Eventos",
+        icon: Compass,
+        aba: "eventos",
+      };
+    case "jobs":
+      return {
+        label: "Carreiras",
+        icon: ArrowUpRight,
+        aba: "vagas",
+      };
+    default:
+      return {
+        label: "Vitrine",
+        icon: ShoppingBag,
+        aba: "catalogo",
+      };
+  }
 }
 
 function getStoreHeaderOperationalAction(storeData: any) {
- const semantics = getNicheSemantics(storeData);
+  const semantics = getNicheSemantics(storeData);
 
- switch (semantics.nicheId) {
- case "tourism":
- return {
- label: "Grupos & Excursões",
- path: "/workspace/turismo/grupos",
- icon: Users,
- };
- case "services":
- return {
- label: "Grade de Agendamentos",
- path: "/workspace/agenda",
- icon: Calendar,
- };
- case "legal":
- return {
- label: "Processos & Prazos",
- path: "/workspace/advocacia",
- icon: Scale,
- };
- case "real_estate":
- return {
- label: "Catálogo de Imóveis",
- path: "/workspace/catalogo/produtos",
- icon: Building2,
- };
- case "events":
- return {
- label: "Meus Eventos & Lotes",
- path: "/workspace/eventos",
- icon: Compass,
- };
- case "jobs":
- return {
- label: "Vagas & Candidaturas",
- path: "/workspace/empregos/candidatos",
- icon: Briefcase,
- };
- case "gastronomy":
- case "retail":
- case "supermarket":
- case "wholesale":
- default:
- return {
- label: "Frente de Caixa (PDV)",
- path: "/workspace/pdv",
- icon: Store,
- };
- }
+  switch (semantics.nicheId) {
+    case "tourism":
+      return {
+        label: "Excursões",
+        path: "/workspace/turismo/grupos",
+        icon: Users,
+      };
+    case "services":
+      return {
+        label: "Agenda",
+        path: "/workspace/agenda",
+        icon: Calendar,
+      };
+    case "legal":
+      return {
+        label: "Processos",
+        path: "/workspace/advocacia",
+        icon: Scale,
+      };
+    case "real_estate":
+      return {
+        label: "Imóveis",
+        path: "/workspace/catalogo/produtos",
+        icon: Building2,
+      };
+    case "events":
+      return {
+        label: "Eventos",
+        path: "/workspace/eventos",
+        icon: Compass,
+      };
+    case "jobs":
+      return {
+        label: "Candidaturas",
+        path: "/workspace/empregos/candidatos",
+        icon: Briefcase,
+      };
+    case "gastronomy":
+    case "retail":
+    case "supermarket":
+    case "wholesale":
+    default:
+      return {
+        label: "PDV",
+        path: "/workspace/pdv",
+        icon: Store,
+      };
+  }
 }
 
 export function WorkspaceShell({ children, session }: { children: ReactNode; session?: any }) {
- const navigate = useNavigate();
- const routerState = useRouterState();
- const currentPath = routerState.location.pathname;
+  const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
 
- const [isMasterAllVerticals, setIsMasterAllVerticals] = useState(false);
- const [isAllToolsOpen, setIsAllToolsOpen] = useState(false);
+  const [isMasterAllVerticals, setIsMasterAllVerticals] = useState(false);
+  const [isAllToolsOpen, setIsAllToolsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
  // Estado do Modal de Confirmação de Alternância de Contexto
  const [showPersonalSwitchModal, setShowPersonalSwitchModal] = useState(false);
@@ -548,190 +472,183 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
       {/* ── 2. ÁREA PRINCIPAL COM HEADER OPERACIONAL DEDICADO ── */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        <header className="h-14 bg-background/95 backdrop-blur-md border-b border-border/60 px-3.5 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Mobile Sheet Trigger */}
-        <div className="lg:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="size-11 min-w-[44px] min-h-[44px] rounded-lg">
-                <Sliders className="size-4" />
+        <header className="h-14 bg-background/95 backdrop-blur-md border-b border-border/60 px-3 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Mobile & Tablet Sheet Trigger */}
+            <div className="lg:hidden shrink-0">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="size-10 min-w-[40px] min-h-[40px] rounded-xl border-border/60">
+                    <Sliders className="size-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[290px] p-4">
+                  <div className="space-y-4">
+                    <div className="pb-2 border-b border-border/60">
+                      <WorkspaceAccountSwitcher
+                        memberships={memberships}
+                        activeStoreId={activeStoreId}
+                        activeStore={activeStore}
+                        userDisplayName={userDisplayName}
+                        userEmail={session?.email}
+                        isSwitching={isSwitching}
+                        onSwitchStore={handleSwitchStore}
+                      />
+                    </div>
+                    <ScrollArea className="h-[calc(100dvh-130px)] pr-2">
+                      <div onClick={() => setIsMobileMenuOpen(false)}>
+                        <NavLinks isMobile={true} />
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Identificação rápida da loja no Mobile/Tablet (< lg) */}
+            <div className="lg:hidden flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-bold text-foreground truncate max-w-[140px] sm:max-w-[220px]">
+                {activeStore?.name || "Workspace"}
+              </span>
+            </div>
+          </div>
+
+          {/* Ações do Header do Workspace */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Botão Contextual da Loja Pública */}
+            {(() => {
+              const storeData = activeStore?.store || activeStore;
+              const storeSlug = storeData?.slug || storeData?.store_slug || activeStoreId;
+              const contextualAction = getStoreContextualAction(storeData);
+              const ActionIcon = contextualAction.icon;
+
+              return (
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-8 rounded-xl text-xs font-bold gap-1.5 hidden sm:inline-flex border-border bg-card hover:bg-muted"
+                >
+                  <Link
+                    to="/perfil-da-loja"
+                    search={{ slug: storeSlug, aba: contextualAction.aba }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ActionIcon className="size-3.5 text-primary" />
+                    <span>{contextualAction.label}</span>
+                    <ExternalLink className="size-3 text-muted-foreground ml-0.5" />
+                  </Link>
+                </Button>
+              );
+            })()}
+
+            {/* Botão Admin Master */}
+            {isPlatformAdmin && (
+              <Button
+                asChild
+                size="sm"
+                className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:opacity-95 cursor-pointer"
+              >
+                <Link to="/admin-master">
+                  <ShieldAlert className="size-3.5" />
+                  <span className="hidden sm:inline">Admin Master</span>
+                </Link>
               </Button>
-            </SheetTrigger>
- <SheetContent side="left" className="w-[290px] p-4">
- <div className="space-y-4">
- <div className="font-bold text-sm text-foreground">Menu Operacional</div>
- <ScrollArea className="h-[calc(100dvh-100px)] pr-2">
- <NavLinks isMobile={true} />
- </ScrollArea>
- </div>
- </SheetContent>
- </Sheet>
- </div>
- </div>
+            )}
 
- {/* Ações do Header do Workspace */}
- <div className="flex items-center gap-2">
- {/* Botão Contextual da Loja Pública (Cardápio / Loja Online) */}
- {(() => {
- const storeData = activeStore?.store || activeStore;
- const storeSlug = storeData?.slug || storeData?.store_slug || activeStoreId;
- const contextualAction = getStoreContextualAction(storeData);
- const ActionIcon = contextualAction.icon;
+            {/* Ação Operacional Primária Contextual por Nicho */}
+            {(() => {
+              const storeData = activeStore?.store || activeStore;
+              const opAction = getStoreHeaderOperationalAction(storeData);
+              const OpIcon = opAction.icon;
 
- return (
- <Button
- asChild
- size="sm"
- variant="outline"
- className="h-8 rounded-xl text-xs font-bold gap-1.5 hidden md:inline-flex border-border bg-card hover:bg-muted"
- >
- <Link
- to="/perfil-da-loja"
- search={{ slug: storeSlug, aba: contextualAction.aba }}
- target="_blank"
- rel="noopener noreferrer"
- >
- <ActionIcon className="size-3.5 text-primary" />
- <span>{contextualAction.label}</span>
- <ExternalLink className="size-3 text-muted-foreground ml-0.5" />
- </Link>
- </Button>
- );
- })()}
+              return (
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-8 rounded-xl text-xs font-bold gap-1.5 hidden md:inline-flex border-border bg-card hover:bg-muted"
+                >
+                  <Link to={opAction.path as never}>
+                    <OpIcon className="size-3.5 text-primary" />
+                    <span>{opAction.label}</span>
+                  </Link>
+                </Button>
+              );
+            })()}
 
- {/* Botão Painel Global Master para Platform Admin */}
- {isPlatformAdmin && (
- <Button
- asChild
- size="sm"
- className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-gradient-to-r from-amber-500 via-primary to-indigo-600 text-white hover:opacity-95 shadow-xs cursor-pointer"
- >
- <Link to="/admin-master">
- <ShieldAlert className="size-3.5" />
- <span>Painel Global Master</span>
- </Link>
- </Button>
- )}
+            {/* Menu do Operador */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 p-1 pl-2 rounded-xl border border-border/60 bg-card hover:bg-muted/80 transition-all cursor-pointer"
+                >
+                  <span className="text-xs font-bold text-foreground max-w-[110px] truncate hidden md:inline-block">
+                    {userDisplayName}
+                  </span>
+                  <Avatar className="size-7 rounded-lg">
+                    <AvatarImage src="" alt={userDisplayName} />
+                    <AvatarFallback className="text-[10px] font-bold bg-primary text-primary-foreground">
+                      {userInitial}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
 
- {/* Ação Operacional Primária Contextual por Nicho */}
- {(() => {
- const storeData = activeStore?.store || activeStore;
- const opAction = getStoreHeaderOperationalAction(storeData);
- const OpIcon = opAction.icon;
+              <DropdownMenuContent align="end" className="w-60 rounded-2xl p-2 border border-border">
+                <DropdownMenuLabel className="font-normal px-2 py-1.5">
+                  <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
+                  <p className="text-[10px] font-mono text-muted-foreground truncate">{session?.email}</p>
+                  <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary border border-primary/20">
+                    {activeStore?.name || "Loja"}
+                  </span>
+                </DropdownMenuLabel>
 
- return (
- <Button
- asChild
- size="sm"
- variant="outline"
- className="h-8 rounded-xl text-xs font-bold gap-1.5 hidden sm:inline-flex border-border bg-card hover:bg-muted"
- >
- <Link to={opAction.path as never}>
- <OpIcon className="size-3.5 text-primary" />
- <span>{opAction.label}</span>
- </Link>
- </Button>
- );
- })()}
+                <DropdownMenuSeparator className="bg-border" />
 
- {/* Menu do Operador com Troca de Contexto Protegida */}
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <button
- type="button"
- className="flex items-center gap-2 p-1 pl-2.5 rounded-xl border border-border/60 bg-card hover:bg-muted/80 transition-all cursor-pointer"
- >
- <span className="text-xs font-bold text-foreground max-w-[120px] truncate hidden md:inline-block">
- {userDisplayName}
- </span>
- <Avatar className="size-7 rounded-lg">
- <AvatarImage src="" alt={userDisplayName} />
- <AvatarFallback className="text-[10px] font-bold bg-primary text-primary-foreground">
- {userInitial}
- </AvatarFallback>
- </Avatar>
- </button>
- </DropdownMenuTrigger>
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs">
+                  <Link to="/workspace/configuracoes">
+                    <Settings className="size-3.5 mr-2 text-muted-foreground" />
+                    <span>Configurações</span>
+                  </Link>
+                </DropdownMenuItem>
 
- <DropdownMenuContent align="end" className="w-60 rounded-2xl p-2 border border-border">
- <DropdownMenuLabel className="font-normal px-2 py-1.5">
- <p className="text-xs font-bold text-foreground truncate">{userDisplayName}</p>
- <p className="text-[10px] font-mono text-muted-foreground truncate">{session?.email}</p>
- <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary border border-primary/20">
- Operando: {activeStore?.name || "Loja"}
- </span>
- </DropdownMenuLabel>
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs">
+                  <Link to="/workspace/lojas">
+                    <Building2 className="size-3.5 mr-2 text-muted-foreground" />
+                    <span>Trocar Loja</span>
+                  </Link>
+                </DropdownMenuItem>
 
- <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuSeparator className="bg-border" />
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs">
- <Link to="/workspace/configuracoes">
- <Settings className="size-3.5 mr-2 text-muted-foreground" />
- <span>Configurações da Loja</span>
- </Link>
- </DropdownMenuItem>
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between">
+                  <Link to="/conta">
+                    <div className="flex items-center gap-2">
+                      <UserCircle className="size-3.5 text-primary" />
+                      <span>Conta Pessoal</span>
+                    </div>
+                    <ArrowUpRight className="size-3 text-muted-foreground" />
+                  </Link>
+                </DropdownMenuItem>
 
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs">
- <Link to="/workspace/lojas">
- <Building2 className="size-3.5 mr-2 text-muted-foreground" />
- <span>Trocar de Unidade / Loja</span>
- </Link>
- </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border" />
 
- <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="rounded-xl cursor-pointer text-xs text-destructive focus:text-destructive"
+                >
+                  <LogOut className="size-3.5 mr-2" />
+                  <span>Sair</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
 
- {/* Retorno direto ao perfil pessoal — sem modal */}
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between">
- <Link to="/conta">
- <div className="flex items-center gap-2">
- <UserCircle className="size-3.5 text-primary" />
- <span>Minha Conta Pessoal</span>
- </div>
- <ArrowUpRight className="size-3 text-muted-foreground" />
- </Link>
- </DropdownMenuItem>
-
- {(() => {
- const storeData = activeStore?.store || activeStore;
- const storeSlug = storeData?.slug || storeData?.store_slug || activeStoreId;
- const contextualAction = getStoreContextualAction(storeData);
- const ActionIcon = contextualAction.icon;
-
- return (
- <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-xs font-semibold text-foreground flex items-center justify-between">
- <Link
- to="/perfil-da-loja"
- search={{ slug: storeSlug, aba: contextualAction.aba }}
- target="_blank"
- rel="noopener noreferrer"
- className="flex items-center justify-between w-full"
- >
- <div className="flex items-center gap-2">
- <ActionIcon className="size-3.5 text-primary" />
- <span>{contextualAction.label}</span>
- </div>
- <ExternalLink className="size-3 text-muted-foreground" />
- </Link>
- </DropdownMenuItem>
- );
- })()}
-
- <DropdownMenuSeparator className="bg-border" />
-
- <DropdownMenuItem
- onClick={handleLogout}
- className="rounded-xl cursor-pointer text-xs text-destructive focus:text-destructive"
- >
- <LogOut className="size-3.5 mr-2" />
- <span>Encerrar Sessão</span>
- </DropdownMenuItem>
- </DropdownMenuContent>
- </DropdownMenu>
- </div>
- </header>
-
-        <main id="workspace-main-content" className="flex-1 w-full overflow-y-auto no-scrollbar">
+        <main id="workspace-main-content" className="main-container-query flex-1 w-full overflow-y-auto no-scrollbar">
           <div className="w-full max-w-7xl mx-auto px-[1px] sm:px-6 lg:px-8 py-2 sm:py-6 pb-24">
             {isAuthorized ? (
               children
@@ -744,7 +661,79 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
             )}
           </div>
         </main>
- </div>
+
+        {/* ── BARRA DE NAVEGAÇÃO INFERIOR NATIVA DO WORKSPACE (Mobile & Foldables < lg) ── */}
+        {(() => {
+          const storeData = activeStore?.store || activeStore;
+          const opAction = getStoreHeaderOperationalAction(storeData);
+          const OpIcon = opAction.icon;
+          const isOverview = currentPath === "/workspace" || currentPath === "/workspace/";
+          const isOpActive = currentPath.startsWith(opAction.path);
+          const isCatalogActive = currentPath.startsWith("/workspace/catalogo") || currentPath.startsWith("/workspace/agenda/servicos");
+          const isFinanceActive = currentPath.startsWith("/workspace/financeiro");
+
+          return (
+            <nav
+              aria-label="Navegação operacional móvel"
+              className="lg:hidden fixed inset-x-2.5 z-30 max-w-lg mx-auto grid grid-cols-5 items-center p-1.5 bg-background/95 backdrop-blur-md border border-border/80 rounded-[22px] select-none"
+              style={{ bottom: "max(calc(env(safe-area-inset-bottom) + 6px), 8px)" }}
+            >
+              <Link
+                to="/workspace"
+                className={cn(
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  isOverview ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
+                )}
+              >
+                <LayoutDashboard className="size-4" />
+                <span className="truncate">Painel</span>
+              </Link>
+
+              <Link
+                to={opAction.path as any}
+                className={cn(
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  isOpActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
+                )}
+              >
+                <OpIcon className="size-4" />
+                <span className="truncate">{opAction.label}</span>
+              </Link>
+
+              <Link
+                to="/workspace/catalogo/produtos"
+                className={cn(
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  isCatalogActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
+                )}
+              >
+                <Package className="size-4" />
+                <span className="truncate">Catálogo</span>
+              </Link>
+
+              <Link
+                to="/workspace/financeiro/caixa"
+                className={cn(
+                  "h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] transition-all active:scale-95",
+                  isFinanceActive ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground font-medium"
+                )}
+              >
+                <DollarSign className="size-4" />
+                <span className="truncate">Caixa</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground font-medium transition-all active:scale-95 cursor-pointer"
+              >
+                <Sliders className="size-4" />
+                <span className="truncate">Menu</span>
+              </button>
+            </nav>
+          );
+        })()}
+      </div>
 
  {/* ── 3. MODAL DE CONFIRMAÇÃO DE ALTERNÂNCIA DE CONTEXTO (PROTEÇÃO RIGOROSA) ── */}
  <Dialog open={showPersonalSwitchModal} onOpenChange={setShowPersonalSwitchModal}>

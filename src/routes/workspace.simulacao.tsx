@@ -1,35 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Layers,
-  Users,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle2,
-  DollarSign,
-  Loader2,
-  Play,
-  ArrowRight,
-  MessageSquare,
-  BarChart3,
-  ShieldCheck,
-  Search,
-  SlidersHorizontal,
-  Bot,
-  BrainCircuit,
-  Award,
-} from "lucide-react";
+import { Layers, Users, TrendingUp, AlertTriangle, CheckCircle2, DollarSign, Loader2, Play, ArrowRight, MessageSquare, BarChart3, ShieldCheck, Search, SlidersHorizontal, Bot, BrainCircuit, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  fetchSyntheticArchetypes,
-  createSimLabExperiment,
-  executeSimLabBatchSimulation,
-  getSimLabStatus,
-} from "@/services/simlab.functions";
+import { fetchSyntheticArchetypes, createSimLabExperiment, executeSimLabBatchSimulation, getSimLabStatus } from "@/services/simlab.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import type {
   SyntheticArchetype,
@@ -38,10 +15,7 @@ import type {
 } from "@/types/simlab";
 import { cn } from "@/lib/utils";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 
 export const Route = createFileRoute("/workspace/simulacao")({
   head: () => ({
@@ -78,13 +52,13 @@ export const Route = createFileRoute("/workspace/simulacao")({
 
 const NICHES = [
   { id: "all", label: "Todos os Nichos" },
-  { id: "eventos", label: "Eventos & Festas" },
-  { id: "gastronomia", label: "Gastronomia & Restaurante" },
-  { id: "moda", label: "Moda & Vestuário" },
-  { id: "turismo", label: "Turismo & Viagens" },
-  { id: "musica", label: "Música & Shows" },
+  { id: "eventos", label: "Eventos e Festas" },
+  { id: "gastronomia", label: "Gastronomia e Restaurante" },
+  { id: "moda", label: "Moda e Vestuário" },
+  { id: "turismo", label: "Turismo e Viagens" },
+  { id: "musica", label: "Música e Shows" },
   { id: "servicos", label: "Serviços Culturais" },
-  { id: "classificados", label: "Classificados & Desapego" },
+  { id: "classificados", label: "Classificados e Desapego" },
 ] as const;
 
 function SimulacaoPage() {
@@ -328,7 +302,7 @@ function SimulacaoPage() {
                   htmlFor="sim-desc"
                   className="text-xs font-semibold text-foreground"
                 >
-                  Pitch da Oferta & Condições
+                  Pitch da Oferta e Condições
                 </Label>
                 <textarea
                   id="sim-desc"
@@ -495,7 +469,7 @@ function SimulacaoPage() {
                   <div className="rounded-2xl border border-border/80 bg-card p-4 space-y-2 shadow-sm">
                     <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                       <AlertTriangle className="size-3.5 text-amber-500" />
-                      Fricções & Objeções Detectadas
+                      Fricções e Objeções Detectadas
                     </h4>
                     <ul className="space-y-1.5 text-xs text-muted-foreground">
                       {synthesis.top_3_friction_barriers.map((barrier, i) => (
@@ -584,7 +558,7 @@ function SimulacaoPage() {
 
       {/* ── 3. DASHBOARD SHEET DE MÉTRICAS SOB DEMANDA (APPLE HIG) ── */}
       <WorkspaceDashboardSheet
-        title="Telemetria & Estatística do SimLab"
+        title="Estatísticas do SimLab"
         open={isMetricsOpen}
         onOpenChange={setIsMetricsOpen}
         items={metricsItems}

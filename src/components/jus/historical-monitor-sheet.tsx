@@ -1,25 +1,6 @@
 import { useState, useTransition } from "react";
-import {
- Calendar,
- Trash2,
- Plus,
- SlidersHorizontal,
- X,
- Check,
- Building2,
- Tag,
- Users,
- Clock,
- ShieldAlert,
-} from "lucide-react";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { Calendar, Trash2, Plus, SlidersHorizontal, X, Check, Building2, Tag, Users, Clock, ShieldAlert } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -186,7 +167,7 @@ export function HistoricalMonitorSheet({
  <SheetHeader className="p-6 border-b border-border/80 bg-card/40">
  <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider font-mono">
  <Calendar className="size-4" />
- <span>Consulta Histórica & Monitoramento Contínuo</span>
+ <span>Consulta Histórica e Monitoramento Contínuo</span>
  </div>
  <SheetTitle className="text-xl font-bold tracking-tight text-foreground">
  Novo Monitoramento Judicial

@@ -1,27 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- Car,
- Bike,
- Truck,
- ArrowLeft,
- Loader2,
- User,
- Phone,
- CreditCard,
- FileText,
-} from "lucide-react";
+import { Car, Bike, Truck, ArrowLeft, Loader2, User, Phone, CreditCard, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createCourier, vehicleTypeEnum } from "@/services/fleet.functions";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
@@ -213,7 +197,7 @@ function NovoEntregadorPage() {
  <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
  <FileText className="size-3.5" />
- Financeiro & Observações
+ Financeiro e Observações
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

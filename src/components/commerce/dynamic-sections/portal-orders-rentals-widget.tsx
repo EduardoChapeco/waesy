@@ -56,7 +56,7 @@ export function PortalOrdersRentalsWidget({ content, design_tokens }: PortalOrde
  <div className="flex items-center gap-2">
  <Package className="w-6 h-6 text-primary" />
  <h2 className="text-xl font-bold tracking-tight text-foreground">
- {content?.title || "Compras, Aluguéis & Devoluções"}
+ {content?.title || "Compras"}
  </h2>
  </div>
  <p className="text-sm text-muted-foreground mt-1">

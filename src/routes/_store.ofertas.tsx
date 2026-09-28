@@ -1,3 +1,4 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { Tag, Lightning, Truck, ArrowRight, Storefront, ShoppingCart, Percent } from "@phosphor-icons/react";
@@ -6,13 +7,12 @@ import { PageSkeleton } from "@/components/state/loading";
 import { OfferCard } from "@/components/commerce/offer-card";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- getGlobalDealsPage,
- type GlobalDealNicheSection,
-} from "@/services/marketplace.functions";
+import { getGlobalDealsPage, type GlobalDealNicheSection } from "@/services/marketplace.functions";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { resolveNicheDepartments } from "@/lib/niche-helpers";
+
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 
 const SearchSchema = z.object({
  nicho: z.string().optional(),
@@ -37,13 +37,13 @@ const NICHE_CHIPS = [
 export const Route = createFileRoute("/_store/ofertas")({
  head: () => ({
  meta: [
- { title: "Ofertas & Promoções — As Melhores Ofertas da Região | Waesy" },
+ { title: "Ofertas e Promoções — As Melhores Ofertas da Região | Waesy" },
  {
  name: "description",
  content:
  "Descubra as melhores promoções e descontos de todos os segmentos: gastronomia, mercado, farmácia, moda, eletrônicos, beleza, pet shop e mais.",
  },
- { property: "og:title", content: "Ofertas & Promoções — Waesy" },
+ { property: "og:title", content: "Ofertas e Promoções — Waesy" },
  {
  property: "og:description",
  content: "As melhores promoções de todos os segmentos da plataforma Waesy em um só lugar.",
@@ -53,14 +53,15 @@ export const Route = createFileRoute("/_store/ofertas")({
  validateSearch: (search: Record<string, unknown>): OfertasSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async ({ deps: { nicho } }) => {
+ loader: async ({ location, deps: { nicho } }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [dealsPage, banners, hotpages] = await Promise.all([
  getGlobalDealsPage({
  data:
  nicho && nicho !== "todos" ? { nicheFilter: nicho, limit: 10 } : { limit: 8 },
  }).catch(() => ({ sections: [], totalDeals: 0, maxDiscount: 0, hasRealData: false })),
- listActiveBanners({ data: { placement: "ofertas" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "ofertas", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "ofertas" } }).catch(() => []),
  ]);
  return { dealsPage, banners, hotpages };
@@ -89,63 +90,46 @@ function OfertasPage() {
  });
  };
 
- const sections: GlobalDealNicheSection[] = dealsPage.sections || [];
- const totalDeals = dealsPage.totalDeals || 0;
- const maxDiscount = dealsPage.maxDiscount || 0;
+ const sections: GlobalDealNicheSection[] = dealsPage?.sections || [];
+ const totalDeals = dealsPage?.totalDeals || 0;
+ const maxDiscount = dealsPage?.maxDiscount || 0;
 
  return (
- <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
- {/* ── 1. Hero Banner ── */}
+ <div className="w-full max-w-6xl mx-auto px-0 sm:px-4 space-y-4 sm:space-y-6 pb-24">
+ <NativeMobileHeader
+   title="Ofertas de Hoje"
+   mobileOnly
+   badge={
+     maxDiscount > 0 ? (
+       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">
+         Até {maxDiscount}% OFF
+       </span>
+     ) : undefined
+   }
+ />
+
  {banners && banners.length > 0 ? (
  <section aria-label="Banners de Ofertas">
  <BannerHeroCarousel banners={banners} />
  </section>
  ) : (
- <section
- aria-label="Hub de Ofertas"
- className="relative w-full rounded-2xl overflow-hidden bg-linear-to-r from-red-600 via-rose-600 to-amber-600 p-6 sm:p-8"
- >
- <div
- className="absolute inset-0 opacity-10"
- style={{
- backgroundImage:
- "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)",
- backgroundSize: "40px 40px",
- }}
- />
- <div className="relative z-10 space-y-3 max-w-xl">
- <div className="flex items-center gap-2">
- <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-black uppercase tracking-widest bg-amber-400 text-black ">
- Tabloide Digital
- </span>
- {maxDiscount > 0 && (
- <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-black uppercase tracking-wider bg-white/20 text-white">
- Até {maxDiscount}% OFF
- </span>
- )}
- </div>
- <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-none flex items-center gap-3">
- <Lightning size={36} weight="fill" className="shrink-0 text-amber-300" />
- <span>Ofertas de Hoje</span>
- </h1>
- <p className="text-sm text-white/90 font-medium leading-relaxed">
- As melhores promoções de <strong>todos os segmentos</strong> da plataforma — gastronomia,
- mercado, moda, farmácia e muito mais.
- </p>
- {totalDeals > 0 && (
- <div className="flex items-center gap-4 pt-1">
- <div className="flex items-center gap-1.5 text-white/90">
- <Tag size={14} weight="fill" />
- <span className="text-xs font-semibold">{totalDeals} ofertas ativas</span>
- </div>
- <div className="flex items-center gap-1.5 text-white/90">
- <Truck size={14} weight="fill" />
- <span className="text-xs font-semibold">Frete grátis em selecionados</span>
- </div>
- </div>
- )}
- </div>
- </section>
+ <header className="hidden md:flex items-center justify-between gap-4 pt-2">
+   <div className="flex items-center gap-3">
+     <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+       <Lightning size={20} weight="fill" />
+     </div>
+     <div>
+       <h1 className="text-2xl font-bold tracking-tight text-foreground">
+         Ofertas de Hoje
+       </h1>
+       {totalDeals > 0 && (
+         <p className="text-xs text-muted-foreground">
+           {totalDeals} ofertas verificadas • Até {maxDiscount}% de economia
+         </p>
+       )}
+     </div>
+   </div>
+ </header>
  )}
 
  {/* ── 2. Hotpages / Destaques de Ofertas ── */}
@@ -155,39 +139,43 @@ function OfertasPage() {
  </section>
  )}
 
- <nav
- aria-label="Filtrar ofertas por categoria"
- className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 px-0"
- >
- {NICHE_CHIPS.map((chip) => (
- <button
- key={chip.id}
- type="button"
- id={`chip-ofertas-${chip.id}`}
- onClick={() => handleNicheChange(chip.id)}
- className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all border cursor-pointer active:scale-98 ${
- activeNiche === chip.id
- ? "bg-primary/10 text-primary border-primary/30 font-bold"
- : "bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
- }`}
- >
- {chip.emoji ? <span>{chip.emoji}</span> : null}
- <span>{chip.label}</span>
- </button>
- ))}
- </nav>
+ <div className="relative w-full overflow-hidden">
+   <div
+     aria-hidden="true"
+     className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background via-background/70 to-transparent z-10"
+   />
+   <nav
+     aria-label="Filtrar ofertas por categoria"
+     className="flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar gap-2 px-4 sm:px-0 py-2 pr-12"
+   >
+     {NICHE_CHIPS.map((chip) => (
+       <button
+         key={chip.id}
+         type="button"
+         id={`chip-ofertas-${chip.id}`}
+         onClick={() => handleNicheChange(chip.id)}
+         className={`snap-start shrink-0 h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap transition-all cursor-pointer select-none ${
+           activeNiche === chip.id
+             ? "bg-foreground text-background shadow-xs"
+             : "bg-card text-muted-foreground border border-border/60 hover:text-foreground hover:border-border"
+         }`}
+       >
+         {chip.emoji ? <span>{chip.emoji}</span> : null}
+         <span>{chip.label}</span>
+       </button>
+     ))}
+   </nav>
+ </div>
 
  {/* ── 3. Carrosséis de Ofertas por Nicho ── */}
  {sections.length === 0 ? (
- <div className="py-20 text-center space-y-3 bg-muted/10 rounded-2xl border-0 p-8">
- <Percent size={40} className="text-muted-foreground/40 mx-auto" />
- <h2 className="text-sm font-bold text-foreground">Nenhuma oferta ativa no momento</h2>
- <p className="text-xs text-muted-foreground max-w-sm mx-auto">
- Lojas e restaurantes da região publicarão promoções e descontos aqui. Verifique novamente em breve!
- </p>
- <Button asChild className="rounded-xl font-bold text-xs">
- <Link to="/mercado">Explorar o Mercado</Link>
- </Button>
+ <div className="py-16 px-4 flex flex-col items-center justify-center text-center select-none">
+   <div className="size-16 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground/35 mb-3">
+     <Percent size={34} weight="thin" />
+   </div>
+   <p className="text-sm font-medium text-muted-foreground">
+     Nenhuma oferta ativa neste filtro no momento.
+   </p>
  </div>
  ) : (
  <div className="space-y-8">

@@ -1,24 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Handshake,
-  Compass,
-  MessageSquare,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ArrowRight,
-  DollarSign,
-  FileSignature,
-  Loader2,
-  Tag,
-  Calendar,
-  MapPin,
-  ExternalLink,
-  Users,
-  Smartphone,
-} from "lucide-react";
+import { Handshake, Compass, MessageSquare, CheckCircle2, XCircle, Clock, ArrowRight, DollarSign, FileSignature, Loader2, Tag, Calendar, MapPin, ExternalLink, Users, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
 import { getDealsByUser, respondToDealProposal } from "@/services/deals.functions";
@@ -31,21 +14,13 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { CurrencyField } from "@/components/ui/currency-field";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DigitalCompanionCard,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-  type CompanionCardNiche,
-} from "@/components/documents/digital-companion-card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem, type CompanionCardNiche } from "@/components/documents/digital-companion-card";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
+
+import { FrostedCard, FrostedCardContent } from "@/components/ui/frosted-card";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 
 export const Route = createFileRoute("/_store/conta/negociacoes")({
   head: () => ({ meta: [{ title: "Minhas Negociações | Waesy" }] }),
@@ -64,10 +39,10 @@ function NegociacoesErrorComponent({ error, reset }: { error: any; reset: () => 
         {error?.message || "Não foi possível carregar o histórico de propostas e negociações."}
       </p>
       <div className="flex items-center justify-center gap-3">
-        <Button onClick={reset} className="rounded-xl font-bold">
+        <Button onClick={reset} className="rounded-xl font-bold h-11">
           Tentar Novamente
         </Button>
-        <Button asChild variant="outline" className="rounded-xl font-bold">
+        <Button asChild variant="outline" className="rounded-xl font-bold h-11">
           <Link to="/conta">Voltar para Conta</Link>
         </Button>
       </div>
@@ -86,48 +61,63 @@ const STATUS_CONFIG: Record<
   completed: { label: "Concluída", variant: "default" },
 };
 
-// Timeline de Progresso do Deal (Nielsen Norman: visibilidade do status do sistema)
+// Tracker de E-commerce Nativo: Barras de Progresso Contínuas com Cor Primária (V117 Fase 3)
 const DEAL_STEPS = [
   { key: "negotiating", label: "Proposta" },
   { key: "accepted", label: "Aceita" },
-  { key: "confirmed", label: "Paga" },
+  { key: "confirmed", label: "Confirmada" },
   { key: "completed", label: "Concluída" },
 ];
 
 function DealTimeline({ status }: { status: string }) {
-  const activeIndex = status === "negotiating" ? 0 : status === "accepted" ? 1 : status === "confirmed" ? 2 : status === "completed" ? 3 : -1;
+  const activeIndex =
+    status === "negotiating"
+      ? 0
+      : status === "accepted"
+      ? 1
+      : status === "confirmed"
+      ? 2
+      : status === "completed"
+      ? 3
+      : -1;
   if (activeIndex < 0) return null;
+
   return (
-    <div className="flex items-center gap-0 w-full py-1" role="progressbar" aria-valuenow={activeIndex} aria-valuemax={3}>
-      {DEAL_STEPS.map((step, i) => {
-        const isDone = i < activeIndex;
-        const isActive = i === activeIndex;
-        return (
-          <React.Fragment key={step.key}>
-            <div className="flex flex-col items-center gap-1 shrink-0">
-              <div className={`size-5 rounded-full flex items-center justify-center border-2 transition-all ${
-                isDone ? "bg-emerald-500 border-emerald-500 text-white" :
-                isActive ? "bg-primary border-primary text-primary-foreground" :
-                "bg-muted border-border"
-              }`}>
-                {isDone ? (
-                  <CheckCircle2 className="size-3" />
-                ) : (
-                  <span className="text-[9px] font-bold">{i + 1}</span>
-                )}
+    <div
+      className="w-full space-y-2 py-1"
+      role="progressbar"
+      aria-valuenow={activeIndex + 1}
+      aria-valuemax={4}
+    >
+      <div className="grid grid-cols-4 gap-2 w-full">
+        {DEAL_STEPS.map((step, i) => {
+          const isReached = i <= activeIndex;
+          const isCurrent = i === activeIndex;
+          return (
+            <div key={step.key} className="space-y-1.5">
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500",
+                    isReached ? "w-full bg-primary" : "w-0 bg-transparent",
+                    isCurrent && "animate-pulse"
+                  )}
+                />
               </div>
-              <span className={`text-[9px] font-semibold whitespace-nowrap ${
-                isDone || isActive ? "text-foreground" : "text-muted-foreground/60"
-              }`}>{step.label}</span>
+              <div className="flex items-center justify-between">
+                <span
+                  className={cn(
+                    "text-[11px] font-semibold tracking-tight truncate",
+                    isReached ? "text-foreground font-bold" : "text-muted-foreground/60"
+                  )}
+                >
+                  {step.label}
+                </span>
+              </div>
             </div>
-            {i < DEAL_STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-1 mb-3.5 rounded-full transition-all ${
-                isDone ? "bg-emerald-500" : "bg-border/50"
-              }`} />
-            )}
-          </React.Fragment>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -226,50 +216,27 @@ function NegociacoesPage() {
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-5 pb-24 px-0 sm:px-4 md:px-0">
-      {/* ── 1. Top Header Limpo & Direto (Apple HIG) ── */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-3 pt-1">
-        <div className="flex items-center gap-2.5">
-          <NativeBackButton fallbackHref="/conta" />
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-            Negociações
-          </h1>
-          {deals && deals.length > 0 && (
+      {/* ── 1. Cabeçalho Universal (Apple HIG / ML-Style) ── */}
+      <NativeMobileHeader
+        fallbackHref="/conta"
+        title="Negociações"
+        centerTitle={true}
+        badge={
+          deals && deals.length > 0 ? (
             <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
               {deals.length}
             </Badge>
-          )}
-        </div>
+          ) : null
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <Button
-            asChild
-            size="sm"
-            variant="default"
-            className="rounded-xl h-9 px-3 text-xs font-bold gap-1.5 cursor-pointer bg-primary text-primary-foreground shadow-xs"
-          >
-            <Link to="/conta/viagens">
-              <Compass className="size-3.5" />
-              <span>Minhas Viagens</span>
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="rounded-xl h-9 px-3.5 text-xs font-semibold cursor-pointer hover:bg-muted"
-          >
-            <Link to="/classificados">Explorar Anúncios</Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* ── 2. Toolbar: Abas Rápidas em Trilho Horizontal (Padrão Botão Grande) ── */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 w-full">
+      {/* ── 2. Toolbar: Abas Rápidas com Física Horizontal Snap ── */}
+      <div className="flex items-center gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar py-1 px-4 sm:px-0 w-full">
         <button
           type="button"
           onClick={() => setActiveTab("all")}
           className={cn(
-            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "all"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -281,7 +248,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("purchases")}
           className={cn(
-            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "purchases"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -293,7 +260,7 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("sales")}
           className={cn(
-            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "sales"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
@@ -305,30 +272,32 @@ function NegociacoesPage() {
           type="button"
           onClick={() => setActiveTab("bookings")}
           className={cn(
-            "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
+            "snap-start h-11 px-4 rounded-xl border text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 cursor-pointer shadow-2xs transition-all select-none active:scale-98",
             activeTab === "bookings"
               ? "bg-foreground text-background border-foreground font-bold shadow-xs"
               : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
           )}
         >
-          Hospedagens & Diárias
+          Hospedagens e Diárias
         </button>
       </div>
 
-      {/* ── Lista de Negociações ── */}
+      {/* ── 3. Lista de Negociações com <FrostedCard> (Valor Acordado, Condições e Ações) ── */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
           <Loader2 className="size-5 animate-spin" />
-          <p className="text-xs">Carregando...</p>
+          <p className="text-xs">Carregando negociações...</p>
         </div>
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center px-4">
           <p className="text-sm font-medium text-foreground">Não foi possível carregar as negociações</p>
           <p className="text-xs text-muted-foreground font-mono">{(error as any)?.message || "Erro desconhecido"}</p>
-          <Button variant="outline" size="sm" className="rounded-xl h-9 text-xs" onClick={() => window.location.reload()}>Tentar novamente</Button>
+          <Button variant="outline" className="rounded-xl h-11 text-xs" onClick={() => window.location.reload()}>
+            Tentar novamente
+          </Button>
         </div>
       ) : filteredDeals.length > 0 ? (
-        <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
+        <div className="px-4 sm:px-0 space-y-4">
           {filteredDeals.map((deal: any) => {
             const status = STATUS_CONFIG[deal.status] || { label: deal.status, variant: "outline" };
             const isNegotiating = deal.status === "negotiating";
@@ -339,151 +308,115 @@ function NegociacoesPage() {
             return (
               <div
                 key={deal.id}
-                className="bg-card rounded-2xl p-5 space-y-4 border border-border/60"
+                className="rounded-2xl p-4 sm:p-5 space-y-3.5 border border-border/60 bg-card shadow-2xs"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={status.variant}
-                        className="text-[10px] font-bold uppercase tracking-wider"
-                      >
-                        {status.label}
-                      </Badge>
-                      {deal.is_direct_booking && (
-                        <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30">
-                          Reserva Direta
+                {/* BLOCO 1 (<FrostedCard>): VALOR ACORDADO & TIMELINE */}
+                <FrostedCard intensity="standard" className="p-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={status.variant}
+                          className="text-[10px] font-bold uppercase tracking-wider"
+                        >
+                          {status.label}
                         </Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(deal.updated_at)}
+                        {deal.is_direct_booking && (
+                          <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30">
+                            Reserva Direta
+                          </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(deal.updated_at)}
+                        </span>
+                      </div>
+
+                      <h2 className="text-base font-bold text-foreground">
+                        {deal.classified?.title || "Negociação Comercial"}
+                      </h2>
+                    </div>
+
+                    <div className="sm:text-right">
+                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
+                        {isRental ? "Total da Estadia" : "Valor Acordado"}
+                      </span>
+                      <span className="text-xl font-black text-primary font-mono">
+                        {formatMoney(deal.total_price_cents || deal.proposed_price_cents)}
                       </span>
                     </div>
-
-                    <h2 className="text-base font-bold text-foreground">
-                      {deal.classified?.title || "Negociação / Reserva"}
-                    </h2>
                   </div>
 
-                  <div className="text-right sm:text-right">
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">
-                      {isRental ? "Total da Estadia" : "Valor Acordado"}
-                    </span>
-                    <span className="text-xl font-black text-primary font-mono">
-                      {formatMoney(deal.total_price_cents || deal.proposed_price_cents)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Timeline de Progresso do Deal */}
-                {["negotiating", "accepted", "confirmed", "completed"].includes(deal.status) && (
-                  <div className="px-0.5">
+                  {["negotiating", "accepted", "confirmed", "completed"].includes(deal.status) && (
                     <DealTimeline status={deal.status} />
-                  </div>
-                )}
+                  )}
+                </FrostedCard>
 
-                {/* Detalhes da Reserva / Proposta */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-muted/20 p-3.5 rounded-xl">
-                  <div>
-                    <span className="text-muted-foreground block text-[10px]">Comprador / Hóspede</span>
-                    <span className="font-semibold">{deal.buyer?.full_name || "Membro"}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[10px]">Anunciante / Anfitrião</span>
-                    <span className="font-semibold">{deal.seller?.full_name || "Membro"}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block text-[10px]">
-                      {isRental ? "Período & Diárias" : "Condições"}
-                    </span>
-                    <span className="font-semibold">
-                      {isRental && deal.start_date && deal.end_date
-                        ? `${formatDate(deal.start_date).split(" ")[0]} até ${formatDate(deal.end_date).split(" ")[0]} (${deal.nights_count || 1} noites)`
-                        : deal.installments_count > 1
-                        ? `${deal.installments_count}x parcelas`
-                        : "À vista"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Informações Extras de Locação por Temporada */}
-                {isRental && (
-                  <div className="p-3 rounded-xl bg-background text-xs space-y-2 border border-border/40">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 text-foreground font-semibold">
-                        <Calendar className="size-4 text-primary shrink-0" />
-                        <span>Check-in: {deal.start_date ? formatDate(deal.start_date).split(" ")[0] : "A definir"}</span>
-                        <span>•</span>
-                        <span>Check-out: {deal.end_date ? formatDate(deal.end_date).split(" ")[0] : "A definir"}</span>
-                      </div>
-                      {deal.guests_count && (
-                        <span className="flex items-center gap-1 text-muted-foreground font-medium">
-                          <Users className="size-3.5" />
-                          <span>{deal.guests_count} hóspede(s)</span>
-                        </span>
-                      )}
+                {/* BLOCO 2 (<FrostedCard>): CONDIÇÕES E PARTICIPANTES */}
+                <FrostedCard intensity="subtle" className="p-4 space-y-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Condições Acordadas
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <span className="text-muted-foreground block text-[10px]">Comprador / Hóspede</span>
+                      <span className="font-semibold text-foreground">{deal.buyer?.full_name || "Membro"}</span>
                     </div>
-
-                    {isAccepted && deal.classified?.location_name && (
-                      <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-border/40">
-                        <div className="flex items-center gap-1.5 text-foreground font-medium">
-                          <MapPin className="size-4 text-emerald-600 shrink-0" />
-                          <span>{deal.classified.location_name}</span>
-                        </div>
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(deal.classified.location_name)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-primary font-bold hover:underline"
-                        >
-                          <span>Abrir no Google Maps</span>
-                          <ExternalLink className="size-3" />
-                        </a>
-                      </div>
-                    )}
+                    <div>
+                      <span className="text-muted-foreground block text-[10px]">Anunciante / Anfitrião</span>
+                      <span className="font-semibold text-foreground">{deal.seller?.full_name || "Membro"}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[10px]">
+                        {isRental ? "Período e Diárias" : "Modalidade"}
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {isRental && deal.start_date && deal.end_date
+                          ? `${formatDate(deal.start_date).split(" ")[0]} até ${formatDate(deal.end_date).split(" ")[0]} (${deal.nights_count || 1} noites)`
+                          : deal.installments_count > 1
+                          ? `${deal.installments_count}x parcelas`
+                          : "À vista"}
+                      </span>
+                    </div>
                   </div>
-                )}
 
-                {deal.terms && (
-                  <p className="text-xs text-foreground/80 bg-background p-3 rounded-xl leading-relaxed border border-border/40">
-                    <strong className="text-foreground">Termos:</strong> {deal.terms}
-                  </p>
-                )}
+                  {deal.terms && (
+                    <p className="text-xs text-foreground/80 bg-background/60 p-3 rounded-xl leading-relaxed border border-border/40">
+                      <strong className="text-foreground">Termos:</strong> {deal.terms}
+                    </p>
+                  )}
+                </FrostedCard>
 
-                {/* Ações de Negociação */}
+                {/* BLOCO 3 (<FrostedCard>): AÇÕES DE NEGOCIAÇÃO */}
                 {isNegotiating && !isCountering && (
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <FrostedCard intensity="subtle" className="p-3.5 flex flex-wrap items-center gap-2">
                     {deal.seller_id === profile?.id ? (
                       <>
                         <Button
-                          size="sm"
                           onClick={() => handleAction(deal.id, "accept")}
                           disabled={respondMutation.isPending}
-                          className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                          className="h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
                         >
-                          <CheckCircle2 className="size-3.5" />
+                          <CheckCircle2 className="size-4" />
                           <span>Aceitar Proposta</span>
                         </Button>
 
                         <Button
-                          size="sm"
                           variant="outline"
                           onClick={() => setSelectedDealId(deal.id)}
                           disabled={respondMutation.isPending}
-                          className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                          className="h-11 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
                         >
-                          <DollarSign className="size-3.5 text-primary" />
+                          <DollarSign className="size-4 text-primary" />
                           <span>Fazer Contraproposta</span>
                         </Button>
 
                         <Button
-                          size="sm"
                           variant="ghost"
                           onClick={() => handleAction(deal.id, "reject")}
                           disabled={respondMutation.isPending}
-                          className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
+                          className="h-11 px-4 rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
                         >
-                          <XCircle className="size-3.5" />
+                          <XCircle className="size-4" />
                           <span>Recusar</span>
                         </Button>
                       </>
@@ -527,7 +460,7 @@ function NegociacoesPage() {
                         <span>Abrir Chat</span>
                       </Link>
                     </Button>
-                  </div>
+                  </FrostedCard>
                 )}
 
                 {/* Form de Contraproposta */}
@@ -690,7 +623,7 @@ function NegociacoesPage() {
           <Button asChild size="default" className="rounded-xl h-10 sm:h-11 px-6 text-xs sm:text-sm font-bold gap-2 mt-1 shadow-xs cursor-pointer">
             <Link to="/classificados">
               <Tag className="size-4" />
-              <span>Explorar Classificados & Imóveis</span>
+              <span>Explorar Classificados e Imóveis</span>
             </Link>
           </Button>
         </div>
@@ -777,20 +710,20 @@ function getDealCompanionData(deal: any) {
   const rules: CompanionRuleItem[] = isRental
     ? [
         {
-          title: "Horários de Entrada & Saída",
+          title: "Horários de Entrada e Saída",
           description:
             "Respeite o horário padrão de check-in (a partir das 14h) e check-out (até 11h) acordados com o anfitrião.",
           badge: "Horários",
           highlight: true,
         },
         {
-          title: "Normas de Convivência & Silêncio",
+          title: "Normas de Convivência e Silêncio",
           description:
             "Respeite a lei do silêncio e o regulamento interno do condomínio/bairro a partir das 22h00.",
           badge: "Condomínio",
         },
         {
-          title: "Chaves & Acesso",
+          title: "Chaves e Acesso",
           description:
             "Combine previamente com o anfitrião a entrega das chaves físicas ou senha da fechadura eletrônica.",
           badge: "Chaves",

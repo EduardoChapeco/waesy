@@ -1,27 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
- Utensils, 
- Plus, 
- Send, 
- Check, 
- Users, 
- Clock, 
- DollarSign, 
- Search,
- ArrowLeft,
- Trash2
-} from "lucide-react";
+import { Utensils, Plus, Send, Check, Users, Clock, DollarSign, Search, ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
- listRestaurantTables, 
- updateRestaurantTableStatus,
- listKdsActiveOrders 
-} from "@/services/pdv.functions";
+import { listRestaurantTables, updateRestaurantTableStatus, listKdsActiveOrders } from "@/services/pdv.functions";
 
 export const Route = createFileRoute("/_store/garcom")({
  head: () => ({ meta: [{ title: "App do Garçom | Terminal Móvel" }] }),
@@ -73,7 +58,7 @@ function GarcomTerminalPage() {
  <Utensils className="h-4 w-4" />
  </div>
  <div>
- <h1 className="font-bold text-sm leading-tight">Salão & Comandas</h1>
+ <h1 className="font-bold text-sm leading-tight">Comandas</h1>
  <p className="text-[11px] text-muted-foreground">Terminal do Garçom</p>
  </div>
  </div>

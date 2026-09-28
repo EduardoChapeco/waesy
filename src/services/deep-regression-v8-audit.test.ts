@@ -5,11 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  DEFAULT_BRAND_PALETTE,
-  DEFAULT_BRAND_SEVEN_SINS,
-  DEFAULT_BRAND_SWOT,
-} from "./market-radar.functions";
+import { DEFAULT_BRAND_PALETTE, DEFAULT_BRAND_SEVEN_SINS, DEFAULT_BRAND_SWOT } from "./market-radar.functions";
 import { summarizeCashEntries } from "@/lib/cash";
 import type { UniversalOcrResult } from "./multimodal-ocr.functions";
 
@@ -18,7 +14,7 @@ describe("Master Prompt V8 — Deep Regression & Structural Audit", () => {
     it("deve garantir que a interface UniversalOcrResult contenha propriedades canônicas de transporte e hotelaria", () => {
       const sampleOcr: UniversalOcrResult = {
         niche: "tourism",
-        title: "Passagem Aérea & Hospedagem",
+        title: "Passagem Aérea e Hospedagem",
         companyName: "LATAM Airlines",
         participants: ["Eduardo Silva"],
         sections: [],

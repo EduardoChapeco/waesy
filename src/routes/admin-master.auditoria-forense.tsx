@@ -1,23 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Lock,
-  Search,
-  RefreshCw,
-  Hash,
-  Database,
-  Globe,
-  Fingerprint,
-  FileCheck2,
-  AlertTriangle,
-  Copy,
-  ExternalLink,
-  Layers,
-  Terminal,
-} from "lucide-react";
+import { ShieldCheck, ShieldAlert, Lock, Search, RefreshCw, Hash, Database, Globe, Fingerprint, FileCheck2, AlertTriangle, Copy, ExternalLink, Layers, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -25,17 +9,14 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
-import {
-  listLedgerEntries,
-  verifyLedgerIntegrity,
-} from "@/services/immutable-ledger.functions";
+import { listLedgerEntries, verifyLedgerIntegrity } from "@/services/immutable-ledger.functions";
 import { getForensicAuditEvents } from "@/services/admin-logs.functions";
 
 export const Route = createFileRoute("/admin-master/auditoria-forense")({
   head: () => ({
     meta: [
       {
-        title: "Auditoria Forense & Ledger Criptográfico (Padrão Bacen) | Waesy Master",
+        title: "Auditoria Forense e Ledger Criptográfico (Padrão Bacen) | Waesy Master",
       },
       {
         name: "description",
@@ -157,7 +138,7 @@ function AdminMasterAuditoriaForensePage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-              Auditoria Forense & Ledger Criptográfico
+              Auditoria Forense e Ledger Criptográfico
             </h1>
             <Badge variant="outline" className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 gap-1">
               <Lock className="size-3" />
@@ -290,7 +271,7 @@ function AdminMasterAuditoriaForensePage() {
                 : "bg-card text-muted-foreground hover:text-foreground border-border/70 hover:bg-muted/50"
             )}
           >
-            Blindagem & Anti-DDoS
+            Blindagem e Anti-DDoS
           </button>
         </div>
 
@@ -477,7 +458,7 @@ function AdminMasterAuditoriaForensePage() {
           <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3 shadow-2xs">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
               <Terminal className="size-5" />
-              <span>Proteção Anti-DDoS & Rate Limiting Ativo</span>
+              <span>Proteção Anti-DDoS e Rate Limiting Ativo</span>
             </div>
             <div className="space-y-2 text-xs text-muted-foreground">
               <p>

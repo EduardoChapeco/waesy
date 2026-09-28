@@ -1,43 +1,11 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
-import {
-  ChefHat,
-  Eye,
-  EyeOff,
-  Edit2,
-  Copy,
-  Trash2,
-  ExternalLink,
-  Plus,
-  Search,
-  Clock,
-  Users,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
-  Save,
-  X,
-  RefreshCw,
-} from "lucide-react";
+import { ChefHat, Eye, EyeOff, Edit2, Copy, Trash2, ExternalLink, Plus, Search, Clock, Users, CheckCircle2, AlertCircle, Star, Save, X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  listAdminMinedRecipesFn,
-  updateMinedRecipeFn,
-  toggleMinedRecipeVisibilityFn,
-  duplicateMinedRecipeFn,
-  deleteMinedRecipeFn,
-  createMinedRecipeFn,
-  type MinedRecipeDTO,
-} from "@/services/mining.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { listAdminMinedRecipesFn, updateMinedRecipeFn, toggleMinedRecipeVisibilityFn, duplicateMinedRecipeFn, deleteMinedRecipeFn, createMinedRecipeFn, type MinedRecipeDTO } from "@/services/mining.functions";
 import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { cn } from "@/lib/utils";
@@ -298,7 +266,7 @@ function WorkspaceRecipesManagementPage() {
               <ChefHat className="size-4" />
             </div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Curadoria & Gestão de Receitas
+              Curadoria e Gestão de Receitas
             </h1>
             <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5">
               {recipes.length} extrações

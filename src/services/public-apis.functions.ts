@@ -2,12 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
-import {
-  validateCpfMod11,
-  validateCnpjMod11,
-  cleanDocument,
-  validateBirthDate,
-} from "@/lib/document-validator";
+import { validateCpfMod11, validateCnpjMod11, cleanDocument, validateBirthDate } from "@/lib/document-validator";
 import { executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
 

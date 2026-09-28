@@ -1,37 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Calendar,
-  Plus,
-  Plane,
-  Hotel,
-  CheckCircle2,
-  Circle,
-  ChevronLeft,
-  ChevronRight,
-  Send,
-  FileText,
-  ShieldAlert,
-  ExternalLink,
-  Loader2,
-  AlertTriangle,
-  Users,
-  MapPin,
-  Clock,
-  Upload,
-  X,
-  Star,
-  Download,
-  Smartphone,
-  Sparkles,
-} from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Calendar, Plus, Plane, Hotel, CheckCircle2, Circle, ChevronLeft, ChevronRight, Send, FileText, ShieldAlert, ExternalLink, Loader2, AlertTriangle, Users, MapPin, Clock, Upload, X, Star, Download, Smartphone } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DigitalCompanionCard } from '@/components/documents/digital-companion-card';
 import { MultimodalOcrUploader } from '@/components/documents/multimodal-ocr-uploader';
 import type { UniversalOcrResult } from '@/services/multimodal-ocr.functions';
@@ -39,35 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-canonical-toolbar';
 import { EmptyState } from '@/components/state/states';
 import { FileAttachmentUpload } from '@/components/ui/file-attachment-upload';
 import { toast } from 'sonner';
 import { humanizeErrorMessage } from '@/lib/humanize-error';
 import { getStoreSettings } from '@/services/store.functions';
-import {
-  listDepartureCards,
-  getDepartureWithChecklist,
-  createDepartureCard,
-  updateDepartureStage,
-  updateDepartureDetails,
-  toggleChecklistItem,
-  addChecklistItem,
-  uploadBoardingDocument,
-  deleteDepartureCard,
-  AIRLINE_CHECKIN_LINKS,
-  type DepartureWithChecklist,
-  type ChecklistItem,
-  type BoardingDocument,
-  type ChecklistCategory,
-  type DocumentType,
-} from '@/services/travel-departures.functions';
+import { listDepartureCards, getDepartureWithChecklist, createDepartureCard, updateDepartureStage, updateDepartureDetails, toggleChecklistItem, addChecklistItem, uploadBoardingDocument, deleteDepartureCard, AIRLINE_CHECKIN_LINKS, type DepartureWithChecklist, type ChecklistItem, type BoardingDocument, type ChecklistCategory, type DocumentType } from '@/services/travel-departures.functions';
 import { DEPARTURE_STAGES, type DepartureStage } from '@/types/travel-departures';
 import { useWorkspaceStore } from '@/lib/store-context';
 import { listCustomers } from '@/services/crm.functions';
@@ -340,8 +290,8 @@ function WorkspaceBoardingPage() {
         <div style="border: 1px solid #E8E4DC; padding: 30px; background-color: #FFFFFF; font-family: sans-serif;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000000; padding-bottom: 20px; margin-bottom: 25px;">
             <div>
-              <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: #151515; letter-spacing: -0.5px; text-transform: uppercase;">GUIA DE EMBARQUE & ROTEIRO</h1>
-              <p style="font-size: 11px; color: #777168; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Waesy Turismo & Inteligência Operacional</p>
+              <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: #151515; letter-spacing: -0.5px; text-transform: uppercase;">GUIA DE EMBARQUE e ROTEIRO</h1>
+              <p style="font-size: 11px; color: #777168; margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Waesy Turismo e Inteligência Operacional</p>
             </div>
             <div style="text-align: right;">
               <span style="font-size: 14px; font-weight: 800; color: #000000; font-family: monospace;">LOCALIZADOR: ${pnr}</span>
@@ -365,7 +315,7 @@ function WorkspaceBoardingPage() {
 
           ${detailObj.airline_code ? `
           <div style="margin-bottom: 20px; background-color: #F8F9FA; padding: 12px; border: 1px solid #E9ECEF; border-radius: 6px;">
-            <h2 style="font-size: 11px; font-weight: 700; color: #495057; text-transform: uppercase; margin: 0 0 8px 0;">Voo & Companhia Aérea</h2>
+            <h2 style="font-size: 11px; font-weight: 700; color: #495057; text-transform: uppercase; margin: 0 0 8px 0;">Voo e Companhia Aérea</h2>
             <p style="margin: 0; font-size: 12px; font-weight: bold; color: #212529;">${detailObj.airline_code} ${detailObj.flight_number || ""} — Localizador: ${pnr}</p>
           </div>` : ""}
 
@@ -484,7 +434,7 @@ function WorkspaceBoardingPage() {
     if (dep.airline_code || dep.flight_number) customWhatsAppText += `🛫 *Voo:* ${dep.airline_code || ''} ${dep.flight_number || ''}\n`;
     customWhatsAppText += `📅 *Data de Embarque:* ${depDate}\n`;
     if (dep.hotel_name) customWhatsAppText += `🏨 *Hospedagem:* ${dep.hotel_name}\n`;
-    customWhatsAppText += `\nLembrando de levar documento original com foto (RG/CNH ou Passaporte). Desejamos uma excelente viagem! ✨`;
+    customWhatsAppText += `\nLembrando de levar documento original com foto (RG/CNH ou Passaporte). Desejamos uma excelente viagem!`;
 
     setCompanionCardData({
       niche: 'tourism',
@@ -584,7 +534,7 @@ function WorkspaceBoardingPage() {
         }}
         secondaryAction={{
           label: 'Scanner 9:16 (IA)',
-          icon: Sparkles,
+          icon: Star,
           variant: 'outline',
           onClick: () => setOcrModalOpen(true),
         }}
@@ -1158,7 +1108,7 @@ function WorkspaceBoardingPage() {
                     </div>
 
                     <div className="space-y-3 border-t border-border/60 pt-4">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Hotel & Hospedagem</p>
+                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Hotel e Hospedagem</p>
                       <div className="space-y-1">
                         <Label className="text-xs">Nome do Hotel / Pousada</Label>
                         <Input defaultValue={detail.hotel_name || ''} placeholder="Ex: Hotel Serrano" className="h-9 text-xs" id="hotel_name_input" />
@@ -1211,7 +1161,7 @@ function WorkspaceBoardingPage() {
                           }
                         }}
                       >
-                        Salvar Voo & Hotel
+                        Salvar Voo e Hotel
                       </Button>
                     </div>
                   </div>
@@ -1401,8 +1351,8 @@ function WorkspaceBoardingPage() {
         <DialogContent className="max-w-lg p-0 overflow-hidden border-border bg-card rounded-2xl">
           <DialogHeader className="p-4 border-b border-border/70 bg-muted/30">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
-              <Sparkles className="size-4 text-primary" />
-              Scanner Inteligente de Embarque & Bilhetes
+              <Star className="size-4 text-primary" />
+              Scanner Inteligente de Embarque e Bilhetes
             </DialogTitle>
           </DialogHeader>
           <div className="p-4 max-h-[80vh] overflow-y-auto no-scrollbar">

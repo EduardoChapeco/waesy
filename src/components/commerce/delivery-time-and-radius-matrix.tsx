@@ -37,7 +37,7 @@ const DEFAULT_TIERS: DeliveryRadiusTier[] = [
 const PRESETS = [
  { label: "Padrão (15 min)", time: 15 },
  { label: "Rápido / Lanches (10 min)", time: 10 },
- { label: "Pizzas & Forno (25 min)", time: 25 },
+ { label: "Pizzas e Forno (25 min)", time: 25 },
  { label: "Pico de Jantar (35 min)", time: 35 },
  { label: "Alta Demanda / Chuva (45 min)", time: 45 },
 ];
@@ -145,7 +145,7 @@ export function DeliveryTimeAndRadiusMatrix({
  : "text-muted-foreground hover:text-foreground"
  )}
  >
- Operação atual & Raio
+ Operação atual e Raio
  </button>
 
  <button
@@ -166,7 +166,7 @@ export function DeliveryTimeAndRadiusMatrix({
  </div>
 
  <div className="text-[11px] text-muted-foreground font-medium hidden sm:block">
- Canal de venda: <strong className="text-foreground">App & Web Waesy</strong>
+ Canal de venda: <strong className="text-foreground">App e Web Waesy</strong>
  </div>
  </div>
 
@@ -178,7 +178,7 @@ export function DeliveryTimeAndRadiusMatrix({
  <div className="space-y-1.5">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <MapPin className="size-4 text-primary" />
- <span>Raio de Atendimento & Visualização</span>
+ <span>Raio de Atendimento e Visualização</span>
  </h3>
  <p className="text-xs text-muted-foreground">
  Como os clientes visualizam seu tempo de entrega e taxa no aplicativo da sua cidade.

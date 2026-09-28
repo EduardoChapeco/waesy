@@ -1,6 +1,6 @@
 import React from "react";
 import { SocialTemplateProps } from "../types";
-import { Plane, Calendar, MapPin, QrCode, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Plane, Calendar, MapPin, QrCode, ArrowRight, ShieldCheck, Star } from "lucide-react";
 
 export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, scale = 1, className = "" }) => {
   const isNineSixteen = data.aspectRatio === "9:16";
@@ -45,7 +45,7 @@ export const TravelPassportBoarding: React.FC<SocialTemplateProps> = ({ data, sc
           </div>
           <div>
             <span className="text-xs uppercase tracking-widest text-sky-400 font-bold block">
-              BOARDING PASS & EXPEDITION
+              BOARDING PASS e EXPEDITION
             </span>
             <span className="text-xl font-black tracking-tight text-white">
               {data.storeName || "Waesy Travel Club"}

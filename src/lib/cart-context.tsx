@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import {
- getCart,
- getGlobalCarts,
- updateCartItemQty,
- updateCartItemOptions,
- removeFromCart,
-} from "@/services/cart.functions";
+import { getCart, getGlobalCarts, updateCartItemQty, updateCartItemOptions, removeFromCart } from "@/services/cart.functions";
 import type { CartDTO } from "@/types/orders";
 import { toast } from "sonner";
 import { useRouter } from "@tanstack/react-router";

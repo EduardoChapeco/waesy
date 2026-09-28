@@ -110,7 +110,7 @@ export function EventoDocumentos({ eventId }: EventoDocumentosProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-border/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground">Compliance, Alvarás & Documentos Legais</h3>
+            <h3 className="text-base font-bold text-foreground">Compliance, Alvarás</h3>
             <Badge variant="outline" className="text-xs">
               {docs.length} {docs.length === 1 ? "documento anexado" : "documentos anexados"}
             </Badge>

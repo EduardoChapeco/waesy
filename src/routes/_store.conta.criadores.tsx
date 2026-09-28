@@ -2,38 +2,19 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Sparkles,
-  ArrowLeft,
-  Plus,
-  Globe,
-  PenSquare,
-  SlidersHorizontal,
-  ExternalLink,
-  Eye,
-  TrendingUp,
-  ShoppingBag,
-  Coins,
-  ShieldCheck,
-  CheckCircle2,
-  Share2,
-  Copy,
-  Edit3,
-} from "lucide-react";
+import { Star, ArrowLeft, Plus, Globe, PenSquare, SlidersHorizontal, ExternalLink, Eye, TrendingUp, ShoppingBag, Coins, ShieldCheck, CheckCircle2, Share2, Copy, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
 import { getCreatorNicheLabel } from "@/lib/constants/creator-niches";
 import { CreatorProfileSheetEditor, CreatorProfileSheetData } from "@/components/profile/creator-profile-sheet-editor";
-import {
-  getMyCreatorProfilesList,
-} from "@/services/affiliates.functions";
+import { getMyCreatorProfilesList } from "@/services/affiliates.functions";
 import { getProfile, getUserSession } from "@/services/auth.functions";
 
 export const Route = createFileRoute("/_store/conta/criadores")({
   head: () => ({
     meta: [
-      { title: "Perfis de Criador & Parcerias | Waesy" },
+      { title: "Perfis de Criador e Parcerias | Waesy" },
       {
         name: "description",
         content:
@@ -153,7 +134,7 @@ function CreatorProfilesManagementPage() {
             </Button>
             <div>
               <h1 className="text-base font-bold tracking-tight text-foreground flex items-center gap-2">
-                <span>Perfis de Criador & Parcerias</span>
+                <span>Perfis de Criador e Parcerias</span>
                 <Badge variant="outline" className="text-xs font-mono">
                   {creatorProfiles.length}
                 </Badge>
@@ -180,7 +161,7 @@ function CreatorProfilesManagementPage() {
         {creatorProfiles.length === 0 && !isLoading ? (
           <div className="p-8 sm:p-12 text-center rounded-3xl border border-border/60 bg-card space-y-4 max-w-lg mx-auto shadow-xs">
             <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
-              <Sparkles className="size-7" />
+              <Star className="size-7" />
             </div>
             <div className="space-y-1">
               <h2 className="text-base font-bold text-foreground">Nenhum perfil de criador ativo</h2>
@@ -256,7 +237,7 @@ function CreatorProfilesManagementPage() {
                           onClick={() => handleActivatePersona(cp)}
                           className="h-9 px-3 rounded-xl text-xs gap-1.5 font-medium cursor-pointer shrink-0"
                         >
-                          <Sparkles className="size-3.5 text-amber-500" />
+                          <Star className="size-3.5 text-amber-500" />
                           <span>Ativar Persona</span>
                         </Button>
                       )}
@@ -336,7 +317,7 @@ function CreatorProfilesManagementPage() {
                     <Button asChild size="sm" className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5">
                       <Link to="/afiliados">
                         <SlidersHorizontal className="size-3.5" />
-                        <span>Gerenciar Vitrine & Cupons</span>
+                        <span>Gerenciar Vitrine e Cupons</span>
                       </Link>
                     </Button>
                   </div>

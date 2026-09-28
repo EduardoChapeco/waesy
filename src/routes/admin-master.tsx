@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, isRedirect } from "@tanstack/react-router";
 import { getProfile, getUserSession } from "@/services/auth.functions";
-import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target, Lock, Sparkles, Zap } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, LayoutDashboard, DollarSign, Store, AlertTriangle, Users, UserCheck, Scale, Image as ImageIcon, Palette, Plug, Layers, ArrowUpRight, ExternalLink, Menu, X, Truck, Server, Eye, Coins, Sliders, Globe, Cpu, FlaskConical, Layout, Fingerprint, Radio, Gift, Receipt, Flame, Building2, Newspaper, Target, Lock, Zap } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -60,32 +60,32 @@ export const Route = createFileRoute("/admin-master")({
 
 const NAV_SECTIONS = [
   {
-    title: "Governança & Motor",
+    title: "Governança e Motor",
     items: [
       { to: "/admin-master", label: "Dashboard", icon: LayoutDashboard, exact: true },
-      { to: "/admin-master/crescimento", label: "Metas & Valuation", icon: Target },
+      { to: "/admin-master/crescimento", label: "Metas e Valuation", icon: Target },
       { to: "/admin-master/modulos", label: "Módulos", icon: Layers },
       { to: "/admin-master/algoritmo", label: "Algoritmo", icon: Sliders },
       { to: "/admin-master/curadoria", label: "Curadoria", icon: Eye },
       { to: "/admin-master/imprensa", label: "Imprensa", icon: Newspaper },
-      { to: "/admin-master/hubs", label: "Hubs & Cidades", icon: Globe },
+      { to: "/admin-master/hubs", label: "Hubs e Cidades", icon: Globe },
     ],
   },
   {
-    title: "Vitrines & Marketing",
+    title: "Vitrines e Marketing",
     items: [
-      { to: "/admin-master/pre-cadastro", label: "Pré-Cadastro & Lançamento", icon: Sparkles },
+      { to: "/admin-master/pre-cadastro", label: "Pré-Cadastro e Lançamento", icon: Star },
       { to: "/admin-master/portal-completo", label: "Portal Completo", icon: Building2 },
       { to: "/admin-master/vitrines", label: "Vitrines (CMS)", icon: Layout },
       { to: "/admin-master/banners", label: "Banners Globais", icon: ImageIcon },
       { to: "/admin-master/botoes", label: "Hotpages Globais", icon: Layers },
-      { to: "/admin-master/convite", label: "Sorteios & Prêmios", icon: Gift },
-      { to: "/admin-master/marca", label: "Identidade & Marca", icon: Palette },
+      { to: "/admin-master/convite", label: "Sorteios e Prêmios", icon: Gift },
+      { to: "/admin-master/marca", label: "Identidade e Marca", icon: Palette },
       { to: "/admin-master/tokens", label: "Tokens", icon: Coins },
     ],
   },
   {
-    title: "Operação & Ecossistema",
+    title: "Operação e Ecossistema",
     items: [
       { to: "/admin-master/lojas", label: "Lojas", icon: Store },
       { to: "/admin-master/carnes", label: "Carnês Globais", icon: Receipt },
@@ -99,7 +99,7 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: "Segurança & Compliance",
+    title: "Segurança e Compliance",
     items: [
       { to: "/admin-master/auditoria-forense", label: "Ledger Criptográfico (Bacen)", icon: Lock },
       { to: "/admin-master/seguranca", label: "Segurança Forense", icon: ShieldAlert },
@@ -109,7 +109,7 @@ const NAV_SECTIONS = [
       { to: "/admin-master/denuncias", label: "Denúncias", icon: AlertTriangle },
       { to: "/admin-master/logs", label: "Logs de Sistema", icon: Server },
       { to: "/admin-master/faturas", label: "Faturas", icon: DollarSign },
-      { to: "/admin-master/termos", label: "Termos & Legal", icon: Scale },
+      { to: "/admin-master/termos", label: "Termos e Legal", icon: Scale },
       { to: "/admin-master/integracoes", label: "Integrações", icon: Plug },
     ],
   },

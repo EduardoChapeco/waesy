@@ -8,14 +8,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
- Form,
- FormControl,
- FormField,
- FormItem,
- FormLabel,
- FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { listCustomerGiftCards, claimGiftCard } from "@/services/giftcard.functions";
 import { formatMoney } from "@/lib/money";

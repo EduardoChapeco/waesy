@@ -1,15 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Eye,
-  MousePointerClick,
-  TrendingUp,
-  Clock,
-  ExternalLink,
-  ShieldCheck,
-  CheckCircle2,
-  Share2,
-  Calendar,
-} from "lucide-react";
+import { Eye, MousePointerClick, TrendingUp, Clock, ExternalLink, ShieldCheck, CheckCircle2, Share2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getPublicSponsorReport, type PublicSponsorReportDTO } from "@/services/news.functions";
 import { toast } from "sonner";
@@ -86,7 +76,7 @@ function PublicSponsorReportPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-4xl mx-auto px-0 sm:px-4 py-8 space-y-8">
       {/* ── Topo do Relatório: Veículo de Imprensa & Selo Auditado ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-card border shadow-xs">
         <div className="flex items-center gap-3.5">

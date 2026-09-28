@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Clock, Eye, ShoppingBag, Flame, Sparkles, ChevronRight, Tag } from "lucide-react";
+import { Clock, Eye, ShoppingBag, Flame, Star, ChevronRight, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type PromotionalFlyerDTO } from "@/services/store-flyers.functions";
 import { FlyerInteractiveViewerModal } from "./flyer-interactive-viewer-modal";

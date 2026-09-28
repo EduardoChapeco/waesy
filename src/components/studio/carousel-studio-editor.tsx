@@ -10,22 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
-import { 
-  Download, 
-  Copy, 
-  Check, 
-  Share2, 
-  ChevronLeft, 
-  ChevronRight, 
-  Sparkles, 
-  Layers, 
-  Palette, 
-  Type, 
-  Maximize2,
-  Save,
-  RefreshCw,
-  X
-} from "lucide-react";
+import { Download, Copy, Check, Share2, ChevronLeft, ChevronRight, Star, Layers, Palette, Type, Maximize2, Save, RefreshCw, X } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { saveStudioProject, publishStudioCarouselToSocial, refineSlideTextWithAI, type RefinedSlideOption } from "@/services/studio.functions";
 
@@ -368,7 +353,7 @@ export function CarouselStudioEditor({
               disabled={isPublishing}
               className="gap-1.5 h-9 rounded-xl text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
             >
-              <Sparkles className="size-3.5" />
+              <Star className="size-3.5" />
               {isPublishing ? "Publicando..." : "Publicar Feed"}
             </Button>
 
@@ -513,7 +498,7 @@ export function CarouselStudioEditor({
                   }}
                   className="h-7 px-2.5 gap-1 rounded-lg text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/5 cursor-pointer"
                 >
-                  <Sparkles className="size-3 text-primary" />
+                  <Star className="size-3 text-primary" />
                   Refinar com IA
                 </Button>
               </div>
@@ -614,7 +599,7 @@ export function CarouselStudioEditor({
             {/* BRAND KIT APLICADO */}
             <div className="border-t border-border pt-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                <Sparkles className="size-3.5" />
+                <Star className="size-3.5" />
                 Identidade da Loja
               </h4>
 
@@ -656,7 +641,7 @@ export function CarouselStudioEditor({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                    <Sparkles className="size-4" />
+                    <Star className="size-4" />
                   </div>
                   <div>
                     <DialogTitle className="text-base font-bold text-foreground">
@@ -675,8 +660,8 @@ export function CarouselStudioEditor({
               <div className="flex items-center gap-1.5 flex-wrap">
                 {[
                   { id: "journalistic_editorial" as const, label: "Jornalístico" },
-                  { id: "direct_punchy" as const, label: "Impacto & Curto" },
-                  { id: "persuasive_cta" as const, label: "Persuasivo & CTA" },
+                  { id: "direct_punchy" as const, label: "Impacto e Curto" },
+                  { id: "persuasive_cta" as const, label: "Persuasivo e CTA" },
                   { id: "educational_authority" as const, label: "Educativo" },
                 ].map((t) => (
                   <button

@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  listStoreSquads,
-  triggerSquadRun,
-  approveSquadRun,
-} from "./squads-runtime.functions";
+import { listStoreSquads, triggerSquadRun, approveSquadRun } from "./squads-runtime.functions";
 
 describe("Store Squads Runtime & Virtual Offices (Big Tech Council)", () => {
   const realStoreId = "c6ccd3b2-aa54-42a2-b0fe-251daa5b97f7";

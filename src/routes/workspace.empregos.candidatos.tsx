@@ -1,47 +1,16 @@
-import {
-  LayoutGrid,
-  List,
-  MessageSquare,
-  ShieldCheck, createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { LayoutGrid, List, MessageSquare, ShieldCheck, createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- Briefcase,
- Search,
- Star,
- Calendar,
- Video,
- FileText,
- CheckCircle2,
- XCircle,
- Clock,
- UserCheck,
- Building,
- Phone,
- Mail,
- ExternalLink,
- Filter,
-} from "lucide-react";
+import { Briefcase, Search, Star, Calendar, Video, FileText, CheckCircle2, XCircle, Clock, UserCheck, Building, Phone, Mail, ExternalLink, Filter } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
- listStoreJobApplications,
- updateJobApplication,
- hireJobCandidate,
-} from "@/services/jobs.functions";
+import { listStoreJobApplications, updateJobApplication, hireJobCandidate } from "@/services/jobs.functions";
 import { formatMoney } from "@/lib/money";
 import { Lock, Users, Zap, ShieldAlert } from "lucide-react";
 import { getWorkspaceLinkedInStatus, searchTalentHunterPool, type HunterCandidateDTO } from "@/services/linkedin-integrations.functions";

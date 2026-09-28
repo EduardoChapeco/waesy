@@ -3,12 +3,7 @@ import type { BusSeatDTO } from "@/services/group-tours.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Users, User, Trash, Check, Lock, ShieldCheck } from "lucide-react";
 
 interface BusSeatMapProps {

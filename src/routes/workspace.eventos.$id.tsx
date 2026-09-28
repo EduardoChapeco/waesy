@@ -1,35 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Calendar,
- Ticket,
- QrCode,
- Users,
- DollarSign,
- Plus,
- ArrowLeft,
- ExternalLink,
- Clock,
- MapPin,
- CheckCircle2,
- Utensils,
- Megaphone,
- Settings,
- Edit,
- Trash2,
- Gift,
- Search,
- Receipt,
- TrendingUp,
- Percent,
- Kanban,
- FileSpreadsheet,
- Layers,
- Mic2,
- ShieldCheck,
- FileText,
-} from "lucide-react";
+import { Calendar, Ticket, QrCode, Users, DollarSign, Plus, ArrowLeft, ExternalLink, Clock, MapPin, CheckCircle2, Utensils, Megaphone, Settings, Edit, Trash2, Gift, Search, Receipt, TrendingUp, Percent, Kanban, FileSpreadsheet, Layers, Mic2, ShieldCheck, FileText } from "lucide-react";
 import { EventoKanban } from "@/components/eventos/evento-kanban";
 import { EventoOrcamentos } from "@/components/eventos/evento-orcamentos";
 import { EventoCustos } from "@/components/eventos/evento-custos";
@@ -48,33 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { EmptyState } from "@/components/state/states";
-import {
- getAdminEventById,
- listEventLots,
- listEventTickets,
- upsertEventLot,
- deleteEventLot,
- issueComplimentaryTicket,
- validateTicketCheckin,
-} from "@/services/events.functions";
+import { getAdminEventById, listEventLots, listEventTickets, upsertEventLot, deleteEventLot, issueComplimentaryTicket, validateTicketCheckin } from "@/services/events.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/eventos/$id")({
@@ -370,11 +320,11 @@ function SubPainelEventoPage() {
  </TabsTrigger>
  <TabsTrigger value="setores" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
  <Layers className="size-3.5" />
- Setores & Mapa
+ Setores e Mapa
  </TabsTrigger>
  <TabsTrigger value="subpaineis" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
  <Utensils className="size-3.5" />
- Bares & PDVs
+ Bares e PDVs
  </TabsTrigger>
  <TabsTrigger value="orcamentos" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
  <FileSpreadsheet className="size-3.5" />
@@ -390,11 +340,11 @@ function SubPainelEventoPage() {
  </TabsTrigger>
  <TabsTrigger value="documentos" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
  <FileText className="size-3.5" />
- Alvarás & Legal
+ Alvarás e Legal
  </TabsTrigger>
  <TabsTrigger value="credenciais" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
  <QrCode className="size-3.5" />
- Credenciais & Staff
+ Credenciais e Staff
  </TabsTrigger>
  <TabsTrigger value="auditoria" className="text-xs font-semibold gap-1.5 py-2 px-3 shrink-0">
  <ShieldCheck className="size-3.5" />
@@ -405,7 +355,7 @@ function SubPainelEventoPage() {
  {/* ── Aba 1: Lotes de Ingressos ── */}
  <TabsContent value="ingressos" className="space-y-4">
  <div className="flex items-center justify-between">
- <h3 className="text-sm font-bold text-foreground">Lotes & Setores de Ingressos</h3>
+ <h3 className="text-sm font-bold text-foreground">Lotes e Setores de Ingressos</h3>
  <div className="flex items-center gap-2">
  <Button
  variant="outline"
@@ -476,7 +426,7 @@ function SubPainelEventoPage() {
  {/* ── Aba 2: Lista de Inscritos / Ingressos Emitidos ── */}
  <TabsContent value="participantes" className="space-y-4">
  <div className="flex items-center justify-between">
- <h3 className="text-sm font-bold text-foreground">Participantes & Ingressos Emitidos</h3>
+ <h3 className="text-sm font-bold text-foreground">Participantes e Ingressos Emitidos</h3>
  <span className="text-xs text-muted-foreground">
  Total: {tickets.length} ingressos gerados
  </span>
@@ -493,8 +443,8 @@ function SubPainelEventoPage() {
  <TableHeader>
  <TableRow>
  <TableHead>Participante</TableHead>
- <TableHead>Setor / Lote</TableHead>
- <TableHead>Código / QR</TableHead>
+ <TableHead>Setor</TableHead>
+ <TableHead>Código</TableHead>
  <TableHead>Status</TableHead>
  <TableHead>Data Emissão</TableHead>
  </TableRow>

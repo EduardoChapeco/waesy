@@ -1,33 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PLATFORM_LOCATION } from "@/lib/brand.config";
-import {
- ArrowLeft,
- Loader2,
- Plus,
- Trash2,
- User,
- Plane,
- Building2,
- MapPin,
- Calendar,
- DollarSign,
- FileSpreadsheet,
- CheckCircle2,
- ShieldCheck,
- Luggage,
- Clock,
- Car,
- Compass,
- ArrowRight,
- FileCheck2,
- Image as ImageIcon,
- FileText,
- Boxes,
- Wrench,
- Package,
- MessageCircle,
-} from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Trash2, User, Plane, Building2, MapPin, Calendar, DollarSign, FileSpreadsheet, CheckCircle2, ShieldCheck, Luggage, Clock, Car, Compass, ArrowRight, FileCheck2, Image as ImageIcon, FileText, Boxes, Wrench, Package, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
@@ -35,33 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { PageHeader } from "@/components/commerce/page-header";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { useQuery } from "@tanstack/react-query";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
- createTravelProposal,
- updateTravelProposal,
- type FlightSegmentDTO,
- type HotelOptionDTO,
- type ItineraryDayDTO,
- type PricingBreakdownDTO,
-} from "@/services/travel-proposal.functions";
+import { createTravelProposal, updateTravelProposal, type FlightSegmentDTO, type HotelOptionDTO, type ItineraryDayDTO, type PricingBreakdownDTO } from "@/services/travel-proposal.functions";
 import { createQuote, type QuoteItemInput } from "@/services/quotes.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listCustomers } from "@/services/crm.functions";
@@ -72,10 +27,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { MasterCatalogSearchDialog } from "@/components/admin/catalog/master-catalog-search-dialog";
 import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
-import {
- CANONICAL_DESTINATIONS,
- type CanonicalDestination,
-} from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
 
 export const Route = createFileRoute("/workspace/orcamentos/novo")({
  head: () => ({ meta: [{ title: "Novo Orçamento Comercial | Workspace Waesy" }] }),
@@ -462,14 +414,14 @@ function NovoOrcamentoTravelosPage() {
  <div>
  <div className="flex items-center gap-2">
  <Badge variant="outline" className="text-[10px] px-2 py-0.5 rounded-lg border-primary/30 text-primary bg-primary/10 font-bold">
- Travelos & TravelAgências Standard
+ Travelos e TravelAgências Standard
  </Badge>
  <span className="text-xs text-muted-foreground font-mono">
  Total: {formatMoney(totalPriceCents)}
  </span>
  </div>
  <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
- Novo Orçamento & Roteiro sob Medida
+ Novo Orçamento e Roteiro sob Medida
  </h1>
  </div>
  </div>
@@ -489,7 +441,7 @@ function NovoOrcamentoTravelosPage() {
  className="h-10 rounded-xl text-xs font-bold gap-2 bg-primary text-primary-foreground shadow-sm cursor-pointer"
  >
  <FileSpreadsheet className="size-4" />
- <span>Salvar & Abrir Lâmina Visual</span>
+ <span>Salvar e Abrir Lâmina Visual</span>
  <ArrowRight className="size-4" />
  </Button>
  </div>
@@ -500,7 +452,7 @@ function NovoOrcamentoTravelosPage() {
  <TabsList className="flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar p-1 bg-muted/60 rounded-2xl h-12">
  <TabsTrigger value="geral" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
  <User className="size-3.5" />
- <span>1. Cliente & Destino</span>
+ <span>1. Cliente e Destino</span>
  </TabsTrigger>
  <TabsTrigger value="voos" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
  <Plane className="size-3.5" />
@@ -516,7 +468,7 @@ function NovoOrcamentoTravelosPage() {
  </TabsTrigger>
  <TabsTrigger value="financeiro" className="rounded-xl font-bold text-xs gap-1.5 whitespace-nowrap shrink-0 px-3.5 h-10">
  <DollarSign className="size-3.5" />
- <span>5. Financeiro & Lâmina</span>
+ <span>5. Financeiro e Lâmina</span>
  </TabsTrigger>
  </TabsList>
 
@@ -569,7 +521,7 @@ function NovoOrcamentoTravelosPage() {
  <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <MapPin className="size-4 text-primary" />
- <span>Destino & Configuração da Viagem</span>
+ <span>Destino e Configuração da Viagem</span>
  </h3>
  <div className="space-y-3">
  <div className="space-y-1.5">
@@ -728,7 +680,7 @@ function NovoOrcamentoTravelosPage() {
  <TabsContent value="voos" className="space-y-4">
  <div className="flex items-center justify-between">
  <div>
- <h3 className="text-base font-bold text-foreground">Malha Aérea & Trechos de Voo</h3>
+ <h3 className="text-base font-bold text-foreground">Malha Aérea e Trechos de Voo</h3>
  <p className="text-xs text-muted-foreground">Adicione voos de ida, volta e conexões com horários e bagagem inclusa.</p>
  </div>
  <Button onClick={handleAddFlight} variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5">
@@ -819,7 +771,7 @@ function NovoOrcamentoTravelosPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
  <div className="space-y-1">
- <Label className="text-[11px] font-bold">Horário de Partida & Chegada</Label>
+ <Label className="text-[11px] font-bold">Horário de Partida e Chegada</Label>
  <div className="flex items-center gap-2">
  <Input
  value={flight.departure_time}
@@ -882,7 +834,7 @@ function NovoOrcamentoTravelosPage() {
  <TabsContent value="hospedagem" className="space-y-4">
  <div className="flex items-center justify-between">
  <div>
- <h3 className="text-base font-bold text-foreground">Hospedagem, Resorts & Hotéis</h3>
+ <h3 className="text-base font-bold text-foreground">Hospedagem, Resorts e Hotéis</h3>
  <p className="text-xs text-muted-foreground">Cadastre as opções de hotel com regime de alimentação e noites.</p>
  </div>
  <Button onClick={handleAddHotel} variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5">
@@ -993,7 +945,7 @@ function NovoOrcamentoTravelosPage() {
  <TabsContent value="roteiro" className="space-y-4">
  <div className="flex items-center justify-between">
  <div>
- <h3 className="text-base font-bold text-foreground">Roteiro Visual & Itinerário Dia a Dia</h3>
+ <h3 className="text-base font-bold text-foreground">Roteiro Visual e Itinerário Dia a Dia</h3>
  <p className="text-xs text-muted-foreground">Monte o cronograma diário com fotos dos pontos turísticos e atividades.</p>
  </div>
  <div className="flex items-center gap-2">
@@ -1083,7 +1035,7 @@ function NovoOrcamentoTravelosPage() {
  <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <DollarSign className="size-4 text-emerald-600" />
- <span>Composição de Custos & Margem de Lucro</span>
+ <span>Composição de Custos e Margem de Lucro</span>
  </h3>
 
  <div className="space-y-3">
@@ -1182,7 +1134,7 @@ function NovoOrcamentoTravelosPage() {
  <div className="p-6 rounded-2xl bg-card border border-border/80 space-y-4">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <FileCheck2 className="size-4 text-primary" />
- <span>Itens Inclusos & Termos</span>
+ <span>Itens Inclusos e Termos</span>
  </h3>
 
  <div className="space-y-3">
@@ -1258,7 +1210,7 @@ function NovoOrcamentoTravelosPage() {
  const installLine = maxInstallments > 1 ? `   💳 Parcelado: ${maxInstallments}x de ${formatMoney(installmentValueCents)} sem juros` : '';
 
  const lines = [
- `✨ *PROPOSTA EXCLUSIVA — ${proposalData.title || `Pacote ${dest}`}* ✨`,
+ `*PROPOSTA — ${proposalData.title || `Pacote ${dest}`}*`,
  ``,
  `Olá, *${clientName.split(' ')[0]}*! Segue seu roteiro personalizado:`,
  ``,
@@ -1314,7 +1266,7 @@ function NovoOrcamentoTravelosPage() {
  const paxLine = `${totalPax} PAX${roomDistribution ? ` | ${roomDistribution}` : ''}`;
 
  const text = [
- `✨ *${proposalData.title || `Pacote ${dest}`}*`,
+ `*${proposalData.title || `Pacote ${dest}`}*`,
  `📍 ${dest} | 👥 ${paxLine}`,
  `💰 Total: *${formatMoney(totalPriceCents)}* | Pix: *${formatMoney(pixPrice)}*${installLine}`,
  `⏳ Válida por ${validUntilDays} dias.`,
@@ -1998,7 +1950,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
  <div className="p-6 rounded-2xl bg-card border border-border/70 space-y-4 shadow-xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <FileCheck2 className="size-4 text-primary" />
- <span>Condições Comerciais & Termos de Pagamento</span>
+ <span>Condições Comerciais e Termos de Pagamento</span>
  </div>
 
  {/* Presets Rápidos de Condição */}
@@ -2026,7 +1978,7 @@ function NovoOrcamentoComercialUniversalPage({ store }: { store?: any }) {
 
  <div className="space-y-3">
  <div className="space-y-1">
- <Label className="text-xs font-medium">Condições de Pagamento & Entrega</Label>
+ <Label className="text-xs font-medium">Condições de Pagamento e Entrega</Label>
  <Textarea
  value={conditions}
  onChange={(e) => setConditions(e.target.value)}

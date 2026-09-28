@@ -7,34 +7,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  CreditCard,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Upload,
-  FileText,
-  Building2,
-  Calendar,
-  DollarSign,
-  Copy,
-  ChevronRight,
-  ShieldCheck,
-  TrendingDown,
-  Info,
-  Check,
-  ExternalLink,
-  FileCheck,
-  MessageSquare,
-  Smartphone,
-} from "lucide-react";
-import {
-  DigitalCompanionCard,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
+import { ArrowLeft, CreditCard, CheckCircle2, Clock, AlertCircle, Upload, FileText, Building2, Calendar, DollarSign, Copy, ChevronRight, ShieldCheck, TrendingDown, Info, Check, ExternalLink, FileCheck, MessageSquare, Smartphone } from "lucide-react";
+import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -43,18 +17,12 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { listClientCarnes, submitInstallmentProof } from "@/services/receivables.functions";
 
 export const Route = createFileRoute("/_store/conta/carnes")({
-  head: () => ({ meta: [{ title: "Meus Carnês & Parcelas | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Meus Carnês e Parcelas | Waesy" }] }),
   loader: async () => {
     try {
       const data = await listClientCarnes();
@@ -360,7 +328,7 @@ function ClientCarnesPage() {
                             to="/verify/document/$code"
                             params={{ code: carne.contract.verification_code }}
                             className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
-                            title="Ver Contrato & Confissão de Dívida Digital"
+                            title="Contrato"
                           >
                             <FileCheck className="size-3" />
                             <span>Contrato Assinado</span>

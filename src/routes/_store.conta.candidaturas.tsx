@@ -1,30 +1,15 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Briefcase,
- Calendar,
- Video,
- Clock,
- CheckCircle2,
- XCircle,
- ExternalLink,
- Trash2,
- Building,
- ArrowRight,
- FileText,
-} from "lucide-react";
+import { Briefcase, Calendar, Video, Clock, CheckCircle2, XCircle, ExternalLink, Trash2, Building, ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
-import {
- listMyJobApplications,
- withdrawJobApplication,
-} from "@/services/jobs.functions";
+import { listMyJobApplications, withdrawJobApplication } from "@/services/jobs.functions";
 
 export const Route = createFileRoute("/_store/conta/candidaturas")({
  head: () => ({
- meta: [{ title: "Minhas Candidaturas & Processos Seletivos | Waesy" }],
+ meta: [{ title: "Candidaturas | Waesy" }],
  }),
  loader: async () => {
    try {
@@ -64,14 +49,14 @@ function MinhasCandidaturasPage() {
  return <Badge variant="secondary" className="text-[10px]">Em Análise</Badge>;
  case "reviewed":
  case "shortlisted":
- return <Badge variant="outline" className="text-[10px] text-primary border-primary/30">Currículo Selecionado</Badge>;
+ return <Badge variant="outline" className="text-[10px] text-primary border-primary/30">Selecionado</Badge>;
  case "interview_scheduled":
- return <Badge className="text-[10px] bg-amber-500 hover:bg-amber-600 text-white">Entrevista Agendada</Badge>;
+ return <Badge className="text-[10px] bg-amber-500 hover:bg-amber-600 text-white">Entrevista</Badge>;
  case "hired":
  case "approved":
- return <Badge className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white">Aprovado / Contratado</Badge>;
+ return <Badge className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white">Aprovado</Badge>;
  case "rejected":
- return <Badge variant="outline" className="text-[10px] text-muted-foreground">Não Selecionado</Badge>;
+ return <Badge variant="outline" className="text-[10px] text-muted-foreground">Recusado</Badge>;
  default:
  return <Badge variant="outline" className="text-[10px]">{status}</Badge>;
  }
@@ -96,11 +81,11 @@ function MinhasCandidaturasPage() {
           <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer gap-1.5">
             <Link to="/conta/curriculo">
               <FileText className="size-3.5" />
-              <span>Meu Currículo</span>
+              <span>Currículo</span>
             </Link>
           </Button>
           <Button asChild size="sm" variant="default" className="rounded-xl text-xs font-semibold h-8 px-3.5 cursor-pointer">
-            <Link to="/empregos">Explorar Vagas</Link>
+            <Link to="/empregos">Explorar</Link>
           </Button>
         </div>
       </div>
@@ -186,7 +171,7 @@ function MinhasCandidaturasPage() {
  rel="noopener noreferrer"
  >
  <Video className="size-3.5" />
- Entrar na Sala Virtual
+ Entrar na Sala
  </a>
  </Button>
  )}
@@ -201,7 +186,7 @@ function MinhasCandidaturasPage() {
 
  <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-bold gap-1">
  <Link to="/empregos/$id" params={{ id: app.job_id }}>
- Ver Detalhes da Vaga
+ Ver Vaga
  <ArrowRight className="size-3.5" />
  </Link>
  </Button>

@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  getLeadById,
-  updateLeadDetails,
-  updateLeadStaleness,
-  addLeadPassenger,
-  removeLeadPassenger,
-  addLeadActivity,
-} from "@/services/crm.functions";
+import { getLeadById, updateLeadDetails, updateLeadStaleness, addLeadPassenger, removeLeadPassenger, addLeadActivity } from "@/services/crm.functions";
 import { useConfirm } from "@/hooks/use-confirm";
 
 import { useLeadChecklist } from "./use-lead-checklist";

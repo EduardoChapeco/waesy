@@ -1,17 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import {
-  getPublicApiGovernanceSettings,
-  savePublicApiGovernanceSettings,
-  lookupCep,
-  lookupCnpj,
-  parseAddressWithAI,
-  pingPublicApis,
-  type PublicApiGovernanceDTO,
-  type ApiPingResult,
-  type ResolvedAddressDTO,
-  type CnpjCompanyDTO,
-  DEFAULT_PUBLIC_API_GOVERNANCE,
-} from "@/services/public-apis.functions";
+import { getPublicApiGovernanceSettings, savePublicApiGovernanceSettings, lookupCep, lookupCnpj, parseAddressWithAI, pingPublicApis, type PublicApiGovernanceDTO, type ApiPingResult, type ResolvedAddressDTO, type CnpjCompanyDTO, DEFAULT_PUBLIC_API_GOVERNANCE } from "@/services/public-apis.functions";
 import { formatCep, formatCnpj, formatPhone } from "@/lib/document-validator";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { Check, Compass, Navigation, Search, Cpu, Building2, Globe2 } from "lucide-react";
@@ -24,46 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  getLinkedInMasterCredentials,
-  saveLinkedInMasterCredentials,
-  type LinkedInMasterCredentialsDTO,
-} from "@/services/linkedin-integrations.functions";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- getPlatformApiIntegrations,
- updatePlatformApiIntegrations,
- type PlatformApiIntegrationsDTO,
-} from "@/services/master.functions";
-import {
-  listApiKeyPools,
-  saveApiKeyToPool,
-  toggleApiKeyStatus,
-  deleteApiKeyFromPool,
-  testPoolKeyConnection,
-  listMasterPrompts,
-  saveMasterPrompt,
-  type ApiKeyPoolDTO,
-  type MasterPromptDTO,
-  type ApiProvider,
-} from "@/services/api-orchestrator.functions";
+import { getLinkedInMasterCredentials, saveLinkedInMasterCredentials, type LinkedInMasterCredentialsDTO } from "@/services/linkedin-integrations.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getPlatformApiIntegrations, updatePlatformApiIntegrations, type PlatformApiIntegrationsDTO } from "@/services/master.functions";
+import { listApiKeyPools, saveApiKeyToPool, toggleApiKeyStatus, deleteApiKeyFromPool, testPoolKeyConnection, listMasterPrompts, saveMasterPrompt, type ApiKeyPoolDTO, type MasterPromptDTO, type ApiProvider } from "@/services/api-orchestrator.functions";
 
 export const Route = createFileRoute("/admin-master/integracoes")({
- head: () => ({ meta: [{ title: "APIs, Pools & Orquestrador Global | Waesy Master" }] }),
+ head: () => ({ meta: [{ title: "APIs, Pools e Orquestrador Global | Waesy Master" }] }),
  loader: async () => {
  try {
  const [integrations, pools, prompts] = await Promise.all([
@@ -474,7 +430,7 @@ function AdminMasterIntegracoesPage() {
  }`}
  >
  <Layers className="size-4" />
- <span>Pool de Chaves & Rotação</span>
+ <span>Pool de Chaves e Rotação</span>
  </button>
 
  <button
@@ -950,7 +906,7 @@ function AdminMasterIntegracoesPage() {
                 },
                 {
                   id: "isSimLabsClassifiedTelemetryActive",
-                  title: "Telemetria & SimLabs na Vitrine de Anúncios",
+                  title: "Telemetria e SimLabs na Vitrine de Anúncios",
                   desc: "Exibe score de atratividade comercial, viabilidade, payback e auditoria cadastral de CNPJ nos anúncios de negócios e pontos comerciais. (Desativado por padrão)",
                   checked: govSettings.isSimLabsClassifiedTelemetryActive ?? false,
                   onChange: (checked: boolean) =>
@@ -1668,14 +1624,14 @@ function AdminMasterIntegracoesPage() {
  <SelectContent className="rounded-2xl">
  <SelectItem value="openrouter">OpenRouter (Multi-Modelo: Llama 3.3, Claude, DeepSeek)</SelectItem>
  <SelectItem value="groq">Groq LPU (Inferência Ultra-rápida Llama 3.3)</SelectItem>
- <SelectItem value="gemini">Google Gemini (Flash & Pro)</SelectItem>
- <SelectItem value="openai">OpenAI (GPT-4o & Embeddings)</SelectItem>
- <SelectItem value="anthropic">Anthropic Claude (Sonnet & Opus)</SelectItem>
- <SelectItem value="firecrawl">Firecrawl (Web Scraping & Markdown)</SelectItem>
+ <SelectItem value="gemini">Google Gemini (Flash e Pro)</SelectItem>
+ <SelectItem value="openai">OpenAI (GPT-4o e Embeddings)</SelectItem>
+ <SelectItem value="anthropic">Anthropic Claude (Sonnet e Opus)</SelectItem>
+ <SelectItem value="firecrawl">Firecrawl (Web Scraping e Markdown)</SelectItem>
  <SelectItem value="steel">Steel.dev (Browser Automation Headless)</SelectItem>
  <SelectItem value="google_maps">Google Maps API</SelectItem>
  <SelectItem value="resend">Resend (E-mail Transacional)</SelectItem>
- <SelectItem value="asaas">Asaas Pagamentos (PIX & Boletos)</SelectItem>
+ <SelectItem value="asaas">Asaas Pagamentos (PIX e Boletos)</SelectItem>
  </SelectContent>
  </Select>
  </div>

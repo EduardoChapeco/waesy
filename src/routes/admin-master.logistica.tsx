@@ -8,15 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
- getLogisticsPresentationSettings,
- updateLogisticsPresentationSettings,
- type LogisticsPresentationSettings,
-} from "@/services/master.functions";
+import { getLogisticsPresentationSettings, updateLogisticsPresentationSettings, type LogisticsPresentationSettings } from "@/services/master.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin-master/logistica")({
- head: () => ({ meta: [{ title: "CMS Logística & MotoLink | Waesy Master" }] }),
+ head: () => ({ meta: [{ title: "CMS Logística e MotoLink | Waesy Master" }] }),
  loader: async () => {
  try {
  const settings = await getLogisticsPresentationSettings();
@@ -24,7 +20,7 @@ export const Route = createFileRoute("/admin-master/logistica")({
  } catch {
  return {
  settings: {
- title: "Logística Integrada & MotoLink",
+ title: "Logística Integrada e MotoLink",
  subtitle: "Conecte-se aos entregadores autônomos da sua cidade sem intermediários e com zero taxa de frete.",
  badge: "Zero Taxa de Intermediação",
  disclaimer: "O Waesy é uma infraestrutura tecnológica aberta. Não intermediamos pagamentos de fretes nem cobramos comissão entre entregadores e empresas. A relação comercial e operacional é direta e independente entre as partes.",
@@ -39,12 +35,12 @@ export const Route = createFileRoute("/admin-master/logistica")({
  icon: "BadgePercent",
  },
  {
- title: "Ficha Completa & Segurança",
+ title: "Ficha Completa e Segurança",
  desc: "Consulte foto, modelo da moto, placa, contato, selo de verificação e avaliações de outros lojistas da região.",
  icon: "ShieldCheck",
  },
  {
- title: "Frota de Confiança & Bloqueio",
+ title: "Frota de Confiança e Bloqueio",
  desc: "Favorite seus motoboys parceiros para chamadas prioritárias e bloqueie condutores com histórico inadequado.",
  icon: "Users",
  },
@@ -65,7 +61,7 @@ function AdminMasterLogisticaPage() {
  const { settings: initialSettings } = ((Route.useLoaderData?.() as any) || {});
  const router = useRouter();
 
- const [title, setTitle] = useState(initialSettings.title || "Logística Integrada & MotoLink");
+ const [title, setTitle] = useState(initialSettings.title || "Logística");
  const [subtitle, setSubtitle] = useState(initialSettings.subtitle || "");
  const [badge, setBadge] = useState(initialSettings.badge || "Zero Taxa de Intermediação");
  const [disclaimer, setDisclaimer] = useState(initialSettings.disclaimer || "");
@@ -125,10 +121,10 @@ function AdminMasterLogisticaPage() {
  <Truck className="size-4" />
  </div>
  <h1 className="text-xl font-bold tracking-tight text-foreground">
- CMS de Logística & MotoLink
+ CMS de Logística e MotoLink
  </h1>
  <Badge variant="outline" className="text-[10px] bg-muted/40 font-bold">
- Onboarding & Vitrine
+ Onboarding e Vitrine
  </Badge>
  </div>
  <p className="text-xs text-muted-foreground max-w-xl">
@@ -178,7 +174,7 @@ function AdminMasterLogisticaPage() {
  value={title}
  onChange={(e) => setTitle(e.target.value)}
  className="h-10 rounded-xl text-xs bg-background font-medium"
- placeholder="Logística Integrada & MotoLink"
+ placeholder="Logística"
  />
  </div>
 
@@ -222,7 +218,7 @@ function AdminMasterLogisticaPage() {
  <div className="space-y-0.5 pb-2 border-b border-border/60">
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <ShieldCheck className="size-4 text-primary" />
- <span>Disclaimer Legal & Não-Intermediação</span>
+ <span>Disclaimer Legal e Não-Intermediação</span>
  </h2>
  <p className="text-[11px] text-muted-foreground">
  Deixa claro para o empreendedor e para os entregadores a proposta de valor sem comissões da plataforma.

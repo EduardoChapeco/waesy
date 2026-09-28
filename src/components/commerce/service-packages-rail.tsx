@@ -7,13 +7,7 @@ import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buyServicePackageDirect } from "@/services/service-packages.functions";
@@ -72,7 +66,7 @@ export function ServicePackagesRail({
  <div>
  <div className="flex items-center gap-2">
  <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase bg-primary text-primary-foreground">
- Economia & Passes
+ Economia e Passes
  </span>
  </div>
  <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mt-1">

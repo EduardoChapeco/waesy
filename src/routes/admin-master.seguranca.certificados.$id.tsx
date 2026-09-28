@@ -1,27 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getCertificateDetail } from "@/services/security.functions";
-import {
- Shield,
- ShieldAlert,
- ShieldCheck,
- Globe,
- Fingerprint,
- Clock,
- Link as LinkIcon,
- CheckCircle2,
- XCircle,
- AlertTriangle,
- User,
- Lock,
- Hash,
- Eye,
- Package,
- ShoppingCart,
-  Calendar,
-  FileSignature,
-  CreditCard,
-  MapPin,
-} from "lucide-react";
+import { Shield, ShieldAlert, ShieldCheck, Globe, Fingerprint, Clock, Link as LinkIcon, CheckCircle2, XCircle, AlertTriangle, User, Lock, Hash, Eye, Package, ShoppingCart, Calendar, FileSignature, CreditCard, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 

@@ -2,31 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
- ArrowLeft,
- Receipt,
- Check,
- CreditCard,
- Banknote,
- QrCode,
- Printer,
- Download,
- UtensilsCrossed,
- Clock,
- Plus,
- ShoppingBag,
- AlertTriangle,
- Users,
- LayoutGrid,
- ListFilter,
- ExternalLink,
-} from "lucide-react";
-import {
- getSalonTablesOverview,
- closePdvComanda,
- openTableComanda,
- requestTableBill,
-} from "@/services/order.functions";
+import { ArrowLeft, Receipt, Check, CreditCard, Banknote, QrCode, Printer, Download, UtensilsCrossed, Clock, Plus, ShoppingBag, AlertTriangle, Users, LayoutGrid, ListFilter, ExternalLink } from "lucide-react";
+import { getSalonTablesOverview, closePdvComanda, openTableComanda, requestTableBill } from "@/services/order.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { QuickWaiterOrderModal } from "@/components/pos/quick-waiter-order-modal";
@@ -35,18 +12,13 @@ import { formatDateTime } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/pdv/comandas")({
- head: () => ({ meta: [{ title: "Salão & Comandas | PDV | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Comandas | PDV | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const [tables, store] = await Promise.all([
@@ -210,7 +182,7 @@ function PdvComandasPage() {
  return (
  <NicheOperationalGuard
  targetNiche="gastronomy"
- toolTitle="Salão & Comandas por Mesa"
+ toolTitle="Comandas de Salão"
  toolDescription="O controle de mesas físicas, consumo aberto e chamadas de garçom foi projetado especificamente para operações de bares, restaurantes e estabelecimentos gastronômicos."
  store={store}
  >
@@ -221,7 +193,7 @@ function PdvComandasPage() {
             <NativeBackButton fallbackHref="/workspace/pdv" />
  <div>
  <div className="flex items-center gap-2">
- <h1 className="text-xl font-bold tracking-tight text-foreground">Comandas & Mesas</h1>
+ <h1 className="text-xl font-bold tracking-tight text-foreground">Comandas</h1>
  <Badge variant="outline" className="text-[10px] font-mono font-bold">
  {summary?.occupied_count || 0}/{summary?.total_tables || 0} Ocupadas
  </Badge>
@@ -732,7 +704,7 @@ function PdvComandasPage() {
  <SheetHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 text-left">
  <SheetTitle className="font-bold text-base sm:text-lg flex items-center gap-2 text-foreground">
  <QrCode className="size-5 text-primary" />
- Displays de Mesa & QR Code para Impressão
+ Displays de Mesa e QR Code para Impressão
  </SheetTitle>
  </SheetHeader>
 

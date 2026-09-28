@@ -5,42 +5,12 @@ import { Surface } from "@/components/ui/surface";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  getSystemLogs,
-  getSystemLogsStats,
-  deleteSystemLog,
-  clearSystemLogs,
-  getForensicAuditEvents,
-  type SystemLogItem,
-  type SystemLogsStats,
-  type ForensicAuditEventItem,
-} from "@/services/admin-logs.functions";
-import {
-  AlertCircle,
-  AlertTriangle,
-  Check,
-  CheckCircle,
-  Clock,
-  Copy,
-  Database,
-  RefreshCw,
-  Search,
-  Server,
-  ShieldCheck,
-  Terminal,
-  Trash2,
-  User,
-  ChevronDown,
-  ChevronUp,
-  Fingerprint,
-  Lock,
-  History,
-  FileCode,
-} from "lucide-react";
+import { getSystemLogs, getSystemLogsStats, deleteSystemLog, clearSystemLogs, getForensicAuditEvents, type SystemLogItem, type SystemLogsStats, type ForensicAuditEventItem } from "@/services/admin-logs.functions";
+import { AlertCircle, AlertTriangle, Check, CheckCircle, Clock, Copy, Database, RefreshCw, Search, Server, ShieldCheck, Terminal, Trash2, User, ChevronDown, ChevronUp, Fingerprint, Lock, History, FileCode } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-master/logs")({
-  head: () => ({ meta: [{ title: "Logs & Telemetria Forense | Master Admin" }] }),
+  head: () => ({ meta: [{ title: "Logs e Telemetria Forense | Master Admin" }] }),
   loader: async () => {
     try {
       const [logs, stats, forensicEvents] = await Promise.all([
@@ -201,8 +171,8 @@ function SystemLogsPage() {
       {/* Header com Ações Rápidas */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <PageHeader
-          eyebrow="Auditoria & SRE"
-          title="Logs & Telemetria do Sistema"
+          eyebrow="Auditoria"
+          title="Logs do Sistema"
         />
         <div className="flex items-center gap-2">
           <Button
@@ -240,7 +210,7 @@ function SystemLogsPage() {
           className="rounded-xl text-xs font-bold gap-1.5"
         >
           <Server className="size-3.5" />
-          <span>Erros do Sistema & Telemetria ({logs.length})</span>
+          <span>Logs de Erro ({logs.length})</span>
         </Button>
         <Button
           variant={activeTab === "forensic" ? "default" : "outline"}
@@ -286,7 +256,7 @@ function SystemLogsPage() {
 
             <Surface className="p-4 flex items-center justify-between border-border/70">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Erros & Advertências</p>
+                <p className="text-xs font-medium text-muted-foreground">Erros e Advertências</p>
                 <p className="text-2xl font-bold tracking-tight text-foreground mt-1">
                   {stats.errors} <span className="text-xs font-normal text-muted-foreground">/ {stats.warnings} avisos</span>
                 </p>

@@ -42,7 +42,7 @@ export async function _listOrders(store_id: string) {
  .select(
  `
  id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, customer_snapshot, created_at, shipping_method,
- shipping_address, channel_origin, prep_started_at, ready_at, table_identifier, notes, custom_fields,
+ shipping_address, channel_origin, origin_channel, cost_breakdown, prep_started_at, ready_at, table_identifier, notes, custom_fields,
  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options )
  `,
  )
@@ -61,7 +61,7 @@ export async function _getOrderById(orderId: string, store_id: string) {
  .select(
  `
  id, order_number, public_token, status, total_cents, subtotal_cents, shipping_cents, discount_cents,
- customer_snapshot, created_at, shipping_method, shipping_address, notes, custom_fields,
+ customer_snapshot, created_at, shipping_method, shipping_address, channel_origin, origin_channel, cost_breakdown, notes, custom_fields,
  shipped_at, delivered_at,
  order_items ( id, product_title, variant_sku, qty, unit_price_cents, total_cents, metadata, item_type, item_id, selected_options ),
  shipments ( id, tracking_code, carrier_name, tracking_url, status, shipped_at, delivered_at )

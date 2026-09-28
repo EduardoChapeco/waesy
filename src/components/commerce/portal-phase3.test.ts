@@ -27,7 +27,7 @@ describe("Fase 3: Portal do Cliente 360 & Widgets Dinâmicos", () => {
  it("builderRegistry deve registrar portal_orders_rentals com manifest estrito", () => {
  const manifest = builderRegistry["portal_orders_rentals"];
  expect(manifest).toBeDefined();
- expect(manifest.name).toBe("Compras, Aluguéis & Devoluções");
+ expect(manifest.name).toBe("Compras");
  expect(manifest.icon).toBe("Package");
  });
 

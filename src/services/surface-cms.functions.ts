@@ -69,6 +69,7 @@ export interface SurfaceSectionDTO {
  item_limit: number;
  sort_order: number;
  is_active: boolean;
+	city_filter?: string | null;
  items?: any[];
  config?: Record<string, any> | null;
 }
@@ -178,9 +179,10 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  z.object({
  surfaceSlug: z.string(),
  storeId: z.string().optional(),
+			city: z.string().optional(),
  })
  )
- .handler(async ({ data: { surfaceSlug, storeId } }) => {
+ .handler(async ({ data: { surfaceSlug, storeId, city } }) => {
  const supabase = getServerClient();
  const isGlobal = !surfaceSlug || surfaceSlug === "home" || surfaceSlug === "todos";
  const normalizedNiche = isGlobal ? "global" : surfaceSlug.toLowerCase().trim();
@@ -202,12 +204,21 @@ export const getModularSurfaceFeed = createServerFn({ method: "GET" })
  }
 
  // 2. Busca seções ativas
- const { data: rawSections } = await supabase
- .from("marketplace_sections")
- .select("*")
- .eq("surface_id", surface.id)
- .eq("is_active", true)
- .order("sort_order", { ascending: true });
+		let secQuery = supabase
+			.from("marketplace_sections")
+			.select("*")
+			.eq("surface_id", surface.id)
+			.eq("is_active", true);
+
+		const cleanCity =
+			city && city !== "Global" && city !== "all" && city !== "Todas"
+				? city.trim()
+				: null;
+		if (cleanCity) {
+			secQuery = secQuery.or(`city_filter.eq."${cleanCity}",city_filter.is.null,city_filter.eq.all`);
+		}
+
+		const { data: rawSections } = await secQuery.order("sort_order", { ascending: true });
 
  if (!rawSections || rawSections.length === 0) {
  return { sections: [], allProducts: [] };
@@ -525,6 +536,7 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  item_limit: z.number().int().min(1).max(50).default(12),
  sort_order: z.number().int().default(0),
  is_active: z.boolean().default(true),
+		city_filter: z.string().optional().nullable(),
  config: z.record(z.any()).optional().nullable(),
  })
  )
@@ -580,6 +592,7 @@ export const upsertSurfaceSection = createServerFn({ method: "POST" })
  item_limit: payload.item_limit,
  sort_order: payload.sort_order,
  is_active: payload.is_active,
+				city_filter: payload.city_filter !== undefined ? payload.city_filter : null,
  updated_at: new Date().toISOString(),
  })
  .eq("id", payload.id)

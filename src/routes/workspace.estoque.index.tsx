@@ -1,71 +1,60 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- Boxes,
- PackageCheck,
- Clock,
- AlertTriangle,
- Plus,
- Minus,
- Search,
- History,
- ArrowRightLeft,
- Truck,
- ShieldAlert,
- SlidersHorizontal,
- Box,
-} from "lucide-react";
+import { Boxes, PackageCheck, Clock, AlertTriangle, Plus, Minus, Search, History, ArrowRightLeft, Truck, ShieldAlert, SlidersHorizontal, Box } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { SheetPage } from "@/components/ui/sheet-page";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/state/states";
-import { getStockLevels, adjustStock } from "@/services/stock.functions";
+import { getStockLevels, adjustStock, transferStock } from "@/services/stock.functions";
+import { listInventoryLocations, type InventoryLocationDTO } from "@/services/marketplace-hub.functions";
 import { StockAuditDialog } from "@/components/admin/stock-audit-dialog";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/estoque/")({
- head: () => ({ meta: [{ title: "Estoque Operacional | Workspace Waesy" }] }),
- loader: async () => {
-   try {
- const res = await getStockLevels({ data: {} }).catch(() => []);
- return res || [];
+  head: () => ({ meta: [{ title: "Estoque Operacional | Workspace Waesy" }] }),
+  loader: async () => {
+    try {
+      const [resStock, resLocations] = await Promise.all([
+        getStockLevels({ data: {} }).catch(() => []),
+        listInventoryLocations().catch(() => []),
+      ]);
+      return {
+        stock: Array.isArray(resStock) ? resStock : [],
+        locations: Array.isArray(resLocations) ? resLocations : [],
+      };
     } catch (err) {
       console.error("[loader:workspace.estoque.index] Unhandled loader error:", err);
-      return [] as any[];
-     }
- },
- component: AdminStockPage,
+      return { stock: [], locations: [] };
+    }
+  },
+  component: AdminStockPage,
 });
 
 function AdminStockPage() {
- const initialStock = Route.useLoaderData();
- const router = useRouter();
-  const [stock, setStock] = useState<any[]>(Array.isArray(initialStock) ? initialStock : []);
- const [search, setSearch] = useState("");
- const [statusTab, setStatusTab] = useState<string>("all");
- const [isUpdating, setIsUpdating] = useState(false);
+  const loaderData = Route.useLoaderData() as any;
+  const rawStock = Array.isArray(loaderData) ? loaderData : loaderData?.stock;
+  const rawLocations = Array.isArray(loaderData?.locations) ? loaderData.locations : [];
+
+  const router = useRouter();
+  const [stock, setStock] = useState<any[]>(Array.isArray(rawStock) ? rawStock : []);
+  const [locations] = useState<InventoryLocationDTO[]>(rawLocations);
+  const [selectedLocationId, setSelectedLocationId] = useState<string>(
+    rawLocations.find((l: InventoryLocationDTO) => l.is_default)?.id || rawLocations[0]?.id || ""
+  );
+  const [search, setSearch] = useState("");
+  const [statusTab, setStatusTab] = useState<string>("all");
+  const [destLocationId, setDestLocationId] = useState<string>("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
  // Modal Movement State
  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
@@ -116,71 +105,108 @@ function AdminStockPage() {
  }, [stock, search, statusTab]);
 
  // Open Dialog for line operation
- const handleOpenMovementModal = (variant: any, defaultType: any = "purchase") => {
+ const handleSelectLocation = async (locId: string) => {
+    setSelectedLocationId(locId);
+    try {
+      const res = await getStockLevels({ data: { locationId: locId === "all" ? undefined : locId, search } });
+      if (Array.isArray(res)) {
+        setStock(res);
+      }
+    } catch (err) {
+      console.error("[stock] Erro ao filtrar por armazém:", err);
+    }
+  };
+
+  const handleOpenMovementModal = (variant: any, defaultType: any = "purchase") => {
  setSelectedVariant(variant);
  setMovementType(defaultType);
  setQtyInput("1");
  setNoteInput("");
  };
+  // Submit Movement to server RPC adjust_stock / transferStock
+  const handleExecuteMovement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedVariant || isUpdating) return;
 
- // Submit Movement to server RPC adjust_stock
- const handleExecuteMovement = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!selectedVariant || isUpdating) return;
+    const parsedQty = parseInt(qtyInput, 10);
+    if (isNaN(parsedQty) || parsedQty <= 0) {
+      toast.error("Informe uma quantidade válida maior que zero.");
+      return;
+    }
 
- const parsedQty = parseInt(qtyInput, 10);
- if (isNaN(parsedQty) || parsedQty === 0) {
- toast.error("Informe uma quantidade válida diferente de zero.");
- return;
- }
+    if ((movementType === "damage" || movementType === "transfer") && !noteInput.trim()) {
+      toast.error("Justificativa é obrigatória para perdas/avarias e transferências.");
+      return;
+    }
 
- if ((movementType === "damage" || movementType === "transfer") && !noteInput.trim()) {
- toast.error("Justificativa é obrigatória para perdas/avarias e transferências.");
- return;
- }
+    setIsUpdating(true);
+    try {
+      if (movementType === "transfer") {
+        const sourceId = selectedLocationId === "all" ? (locations.find((l) => l.is_default)?.id || locations[0]?.id || "") : selectedLocationId;
+        if (!destLocationId || destLocationId === sourceId) {
+          toast.error("Selecione um armazém de destino diferente da origem.");
+          setIsUpdating(false);
+          return;
+        }
 
- // Determine final signed qty for RPC (negative for damage/output)
- const finalQty = movementType === "damage" ? -Math.abs(parsedQty) : parsedQty;
+        const res = await transferStock({
+          data: {
+            variantId: selectedVariant.id,
+            sourceLocationId: sourceId,
+            destinationLocationId: destLocationId,
+            qty: parsedQty,
+            note: noteInput || "Transferência entre armazéns",
+          },
+        });
 
- setIsUpdating(true);
- try {
- const res = await adjustStock({
- data: {
- variantId: selectedVariant.id,
- qty: finalQty,
- movementType,
- note: noteInput || `Movimentação ${movementType}`,
- },
- });
+        if (res) {
+          toast.success("Transferência entre armazéns concluída com sucesso!");
+          setSelectedVariant(null);
+          const updated = await getStockLevels({ data: { locationId: selectedLocationId === "all" ? undefined : selectedLocationId, search } });
+          if (Array.isArray(updated)) setStock(updated);
+          router.invalidate();
+        }
+      } else {
+        const finalQty = movementType === "damage" ? -Math.abs(parsedQty) : parsedQty;
+        const res = await adjustStock({
+          data: {
+            variantId: selectedVariant.id,
+            qty: finalQty,
+            movementType,
+            note: noteInput || `Movimentação ${movementType}`,
+            locationId: selectedLocationId === "all" ? undefined : selectedLocationId || undefined,
+          },
+        });
 
- if (res) {
- toast.success("Movimentação registrada com sucesso no banco de dados.");
- setSelectedVariant(null);
+        if (res) {
+          toast.success("Movimentação registrada com sucesso no banco de dados.");
+          setSelectedVariant(null);
+          setStock((prev) =>
+            prev.map((v) => {
+              if (v.id === selectedVariant.id) {
+                return {
+                  ...v,
+                  stock_on_hand: Math.max(0, (v.stock_on_hand ?? 0) + finalQty),
+                };
+              }
+              return v;
+            }),
+          );
+          router.invalidate();
+        } else {
+          toast.error((res as any)?.message || "Erro ao atualizar estoque.");
+        }
+      }
+    } catch (e: unknown) {
+      toast.error(
+        (e instanceof Error ? e.message : String(e)) || "Erro ao atualizar estoque.",
+      );
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
- // Optimistic update
- setStock((prev) =>
- prev.map((v) => {
- if (v.id === selectedVariant.id) {
- return {
- ...v,
- stock_on_hand: Math.max(0, (v.stock_on_hand ?? 0) + finalQty),
- };
- }
- return v;
- }),
- );
- router.invalidate();
- } else {
- toast.error((res as any).message || "Erro ao atualizar estoque.");
- }
- } catch (e: unknown) {
- toast.error("Erro inesperado ao registrar estoque.");
- } finally {
- setIsUpdating(false);
- }
- };
-
- return (
+  return (
     <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
       <PageHeader
         eyebrow="Estoque"
@@ -204,6 +230,45 @@ function AdminStockPage() {
           <div className="text-2xl font-bold text-warning-foreground mt-1">{metrics.criticalCount}</div>
         </div>
       </div>
+
+      {/* Seletor de Armazém / Local de Estoque (Omni-Hub ERP V122) */}
+      {locations.length > 0 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          <span className="text-xs font-semibold text-muted-foreground shrink-0 flex items-center gap-1.5">
+            <Box className="size-3.5 text-primary" /> Armazém:
+          </span>
+          <button
+            type="button"
+            onClick={() => handleSelectLocation("all")}
+            className={cn(
+              "px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shrink-0",
+              selectedLocationId === "all"
+                ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
+                : "border-border/60 bg-card hover:bg-muted/40 text-muted-foreground"
+            )}
+          >
+            Todos os Armazéns
+          </button>
+          {locations.map((loc) => (
+            <button
+              key={loc.id}
+              type="button"
+              onClick={() => handleSelectLocation(loc.id)}
+              className={cn(
+                "px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1.5",
+                selectedLocationId === loc.id
+                  ? "border-primary bg-primary/10 text-primary font-bold shadow-xs"
+                  : "border-border/60 bg-card hover:bg-muted/40 text-muted-foreground"
+              )}
+            >
+              <span>{loc.name}</span>
+              {loc.is_default && (
+                <span className="text-[10px] opacity-75 font-mono">(Principal)</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── TOOLBAR CANÔNICA SOBERANA Waesy ── */}
       <WorkspaceCanonicalToolbar
@@ -447,6 +512,68 @@ function AdminStockPage() {
  }
  >
  <form onSubmit={handleExecuteMovement} className="space-y-4 py-2">
+  {locations.length > 0 && movementType !== "transfer" && (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-bold">Armazém / Local de Estoque</Label>
+      <Select
+        value={selectedLocationId === "all" ? (locations.find((l) => l.is_default)?.id || locations[0]?.id || "") : selectedLocationId}
+        onValueChange={setSelectedLocationId}
+      >
+        <SelectTrigger className="h-10 rounded-xl text-xs">
+          <SelectValue placeholder="Selecione o local" />
+        </SelectTrigger>
+        <SelectContent className="rounded-xl">
+          {locations.map((loc) => (
+            <SelectItem key={loc.id} value={loc.id} className="text-xs">
+              {loc.name} {loc.is_default ? "(Principal)" : `(${loc.type})`}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )}
+
+  {locations.length > 0 && movementType === "transfer" && (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-muted/30 border border-border/50">
+      <div className="space-y-1.5">
+        <Label className="text-xs font-bold text-foreground">Origem (Saída)</Label>
+        <Select
+          value={selectedLocationId === "all" ? (locations.find((l) => l.is_default)?.id || locations[0]?.id || "") : selectedLocationId}
+          onValueChange={setSelectedLocationId}
+        >
+          <SelectTrigger className="h-10 rounded-xl text-xs">
+            <SelectValue placeholder="Armazém de Origem" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            {locations.map((loc) => (
+              <SelectItem key={loc.id} value={loc.id} className="text-xs">
+                {loc.name} {loc.is_default ? "(Principal)" : ""}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs font-bold text-foreground">Destino (Entrada)</Label>
+        <Select value={destLocationId} onValueChange={setDestLocationId}>
+          <SelectTrigger className="h-10 rounded-xl text-xs">
+            <SelectValue placeholder="Armazém de Destino" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            {locations
+              .filter((loc) => loc.id !== (selectedLocationId === "all" ? (locations.find((l) => l.is_default)?.id || locations[0]?.id || "") : selectedLocationId))
+              .map((loc) => (
+                <SelectItem key={loc.id} value={loc.id} className="text-xs">
+                  {loc.name} {loc.is_default ? "(Principal)" : ""}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  )}
+
  <div className="space-y-1.5">
  <Label className="text-xs font-bold">Tipo de Movimentação</Label>
  <Select value={movementType} onValueChange={(val: any) => setMovementType(val)}>

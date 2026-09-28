@@ -1,22 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ImageOff,
-  ShoppingBag,
-  ChevronRight,
-  Truck,
-  ShieldCheck,
-  Check,
-  MapPin,
-  MessageCircle,
-  Play,
-  Package,
-  Minus,
-  Plus,
-  Loader2,
-  ShieldAlert,
-  BellRing,
-} from "lucide-react";
+import { ImageOff, ShoppingBag, ChevronRight, Truck, ShieldCheck, Check, MapPin, MessageCircle, Play, Package, Minus, Plus, Loader2, ShieldAlert, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -432,7 +416,7 @@ export function ProductDetailDesktop({
               <div className="flex items-center justify-between text-xs font-bold text-foreground">
                 <div className="flex items-center gap-2">
                   <Truck className="size-4 text-primary" />
-                  <span>Calcular Frete & Prazo</span>
+                  <span>Calcular Frete e Prazo</span>
                 </div>
                 {storeLocation && (
                   <span className="text-[10px] text-muted-foreground font-mono">{storeLocation}</span>

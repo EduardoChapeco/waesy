@@ -1,29 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Plus,
-  Search,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  FileSpreadsheet,
-  Copy,
-  Check,
-  Calendar,
-  Building2,
-  Zap,
-  Tag,
-  Briefcase,
-  Layers,
-  Receipt,
-  Trash2,
-  TrendingDown,
-  DollarSign,
-  Landmark,
-  ShieldCheck,
-  XCircle,
-} from "lucide-react";
+import { Plus, Search, CheckCircle2, Clock, AlertTriangle, FileSpreadsheet, Copy, Check, Calendar, Building2, Zap, Tag, Briefcase, Layers, Receipt, Trash2, TrendingDown, DollarSign, Landmark, ShieldCheck, XCircle } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
@@ -33,36 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 import { SheetPage } from "@/components/ui/sheet-page";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  listFinancialObligations,
-  createFinancialObligation,
-  markObligationAsPaid,
-  deleteFinancialObligation,
-  exportObligationsCsv,
-  type FinancialObligation,
-  type ObligationCategory,
-  type ObligationStatus,
-} from "@/services/financial-obligations.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { listFinancialObligations, createFinancialObligation, markObligationAsPaid, deleteFinancialObligation, exportObligationsCsv, type FinancialObligation, type ObligationCategory, type ObligationStatus } from "@/services/financial-obligations.functions";
 import { formatMoney } from "@/lib/money";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/financeiro/contas-pagar")({
-  head: () => ({ meta: [{ title: "Contas a Pagar & Despesas | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Contas a Pagar | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const obligations = await listFinancialObligations();
@@ -77,10 +33,10 @@ export const Route = createFileRoute("/workspace/financeiro/contas-pagar")({
 
 const CATEGORY_LABELS: Record<ObligationCategory, { label: string; icon: any; color: string }> = {
   supplier: { label: "Fornecedor", icon: Briefcase, color: "text-blue-600 bg-blue-500/10 border-blue-500/20" },
-  rent: { label: "Aluguel & Imóvel", icon: Building2, color: "text-purple-600 bg-purple-500/10 border-purple-500/20" },
+  rent: { label: "Aluguel e Imóvel", icon: Building2, color: "text-purple-600 bg-purple-500/10 border-purple-500/20" },
   utilities: { label: "Água / Luz / Net", icon: Zap, color: "text-amber-600 bg-amber-500/10 border-amber-500/20" },
   payroll: { label: "Folha / Equipe", icon: Layers, color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" },
-  tax: { label: "Tributos & DAS", icon: Landmark, color: "text-rose-600 bg-rose-500/10 border-rose-500/20" },
+  tax: { label: "Tributos e DAS", icon: Landmark, color: "text-rose-600 bg-rose-500/10 border-rose-500/20" },
   marketing: { label: "Marketing / Ads", icon: Tag, color: "text-pink-600 bg-pink-500/10 border-pink-500/20" },
   software: { label: "Software / SaaS", icon: Receipt, color: "text-cyan-600 bg-cyan-500/10 border-cyan-500/20" },
   other: { label: "Outras Despesas", icon: DollarSign, color: "text-zinc-600 bg-zinc-500/10 border-zinc-500/20" },
@@ -446,10 +402,10 @@ function ContasPagarPage() {
             <SelectContent className="rounded-xl text-xs">
               <SelectItem value="all">Todas Categorias</SelectItem>
               <SelectItem value="supplier">Fornecedores</SelectItem>
-              <SelectItem value="rent">Aluguel & Imóvel</SelectItem>
+              <SelectItem value="rent">Aluguel e Imóvel</SelectItem>
               <SelectItem value="utilities">Água/Luz/Internet</SelectItem>
               <SelectItem value="payroll">Folha / Equipe</SelectItem>
-              <SelectItem value="tax">Tributos & DAS</SelectItem>
+              <SelectItem value="tax">Tributos e DAS</SelectItem>
               <SelectItem value="marketing">Marketing / Ads</SelectItem>
               <SelectItem value="software">Software / SaaS</SelectItem>
               <SelectItem value="other">Outras</SelectItem>
@@ -673,11 +629,11 @@ function ContasPagarPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
-                  <TableHead className="text-xs font-bold">Título & Categoria</TableHead>
-                  <TableHead className="text-xs font-bold">Fornecedor / Favorecido</TableHead>
+                  <TableHead className="text-xs font-bold">Título e Categoria</TableHead>
+                  <TableHead className="text-xs font-bold">Fornecedor</TableHead>
                   <TableHead className="text-xs font-bold">Vencimento</TableHead>
                   <TableHead className="text-xs font-bold font-mono">Valor a Pagar</TableHead>
-                  <TableHead className="text-xs font-bold">Linha Digitável / Pix</TableHead>
+                  <TableHead className="text-xs font-bold">Chave Pix</TableHead>
                   <TableHead className="text-xs font-bold text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -897,12 +853,12 @@ function ContasPagarPage() {
                 </SelectTrigger>
                 <SelectContent className="rounded-xl text-xs">
                   <SelectItem value="supplier">Fornecedor de Insumos</SelectItem>
-                  <SelectItem value="rent">Aluguel & Imóvel</SelectItem>
+                  <SelectItem value="rent">Aluguel e Imóvel</SelectItem>
                   <SelectItem value="utilities">Água, Luz e Internet</SelectItem>
                   <SelectItem value="payroll">Folha / Colaboradores</SelectItem>
-                  <SelectItem value="tax">Tributos & DAS</SelectItem>
-                  <SelectItem value="marketing">Marketing & Tráfego</SelectItem>
-                  <SelectItem value="software">Software & Plataformas</SelectItem>
+                  <SelectItem value="tax">Tributos e DAS</SelectItem>
+                  <SelectItem value="marketing">Marketing e Tráfego</SelectItem>
+                  <SelectItem value="software">Software e Plataformas</SelectItem>
                   <SelectItem value="other">Outras Despesas</SelectItem>
                 </SelectContent>
               </Select>

@@ -1,17 +1,10 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Books,
- BookOpen,
- PencilCircle,
- Gift,
- Student,
- PaintBrush,
- PuzzlePiece,
-} from "@phosphor-icons/react";
+import { Books, BookOpen, PencilCircle, Gift, Student, PaintBrush, PuzzlePiece } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +13,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { OfferCard } from "@/components/commerce/offer-card";
@@ -45,19 +34,19 @@ const SearchSchema = z.object({
 type LivrosSearch = z.infer<typeof SearchSchema>;
 
 const LIVROS_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo em Livros & Papelaria", icon: Tag },
- { id: "livros", label: "Livros & Best-sellers", icon: BookOpen },
- { id: "papelaria", label: "Papelaria & Material Escolar", icon: PencilCircle },
- { id: "presentes", label: "Presentes & Criativos", icon: Gift },
- { id: "arte", label: "Arte & Artesanato", icon: PaintBrush },
- { id: "jogos", label: "Jogos de Tabuleiro & Quebra-cabeças", icon: PuzzlePiece },
- { id: "academico", label: "Acadêmico & Concursos", icon: Student },
+ { id: "todos", label: "Tudo em Livros e Papelaria", icon: Tag },
+ { id: "livros", label: "Livros e Best-sellers", icon: BookOpen },
+ { id: "papelaria", label: "Papelaria e Material Escolar", icon: PencilCircle },
+ { id: "presentes", label: "Presentes e Criativos", icon: Gift },
+ { id: "arte", label: "Arte e Artesanato", icon: PaintBrush },
+ { id: "jogos", label: "Jogos de Tabuleiro e Quebra-cabeças", icon: PuzzlePiece },
+ { id: "academico", label: "Acadêmico e Concursos", icon: Student },
 ];
 
 export const Route = createFileRoute("/_store/livros")({
  head: () => ({
  meta: [
- { title: "Livros, Papelaria & Presentes Criativos | Waesy" },
+ { title: "Livros, Papelaria e Presentes Criativos | Waesy" },
  {
  name: "description",
  content:
@@ -67,12 +56,13 @@ export const Route = createFileRoute("/_store/livros")({
  }),
  validateSearch: (search: Record<string, unknown>): LivrosSearch => SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "livros" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "livros", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "livros" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "livros" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "livros", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "livros", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

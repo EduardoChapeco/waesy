@@ -4,28 +4,7 @@ import { listTransactionCertificates } from "@/services/security.functions";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
- Shield,
- ShieldAlert,
- ShieldCheck,
- Search,
- Filter,
- ExternalLink,
- AlertTriangle,
- CheckCircle2,
- Clock,
- Globe,
- Fingerprint,
- Link as LinkIcon,
- RefreshCw,
- ShoppingCart,
- Calendar,
- FileSignature,
- CreditCard,
- MapPin,
- Cpu,
- Package,
-} from "lucide-react";
+import { Shield, ShieldAlert, ShieldCheck, Search, Filter, ExternalLink, AlertTriangle, CheckCircle2, Clock, Globe, Fingerprint, Link as LinkIcon, RefreshCw, ShoppingCart, Calendar, FileSignature, CreditCard, MapPin, Cpu, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin-master/seguranca/certificados")({

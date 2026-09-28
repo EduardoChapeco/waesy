@@ -1,31 +1,8 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { 
-  getExecutiveGrowthMetrics, 
-  recordFinancialEntry, 
-  deleteFinancialEntry 
-} from "@/services/growth-targets.functions";
+import { getExecutiveGrowthMetrics, recordFinancialEntry, deleteFinancialEntry } from "@/services/growth-targets.functions";
 import { formatMoney } from "@/lib/money";
-import { 
-  TrendingUp, 
-  Target, 
-  Store, 
-  Users, 
-  DollarSign, 
-  BarChart3, 
-  ShieldCheck, 
-  Plus, 
-  Trash2, 
-  Building2, 
-  Coins, 
-  ArrowUpRight, 
-  Cpu, 
-  Code2, 
-  Scale, 
-  CheckCircle2, 
-  AlertCircle,
-  FileText
-} from "lucide-react";
+import { TrendingUp, Target, Store, Users, DollarSign, BarChart3, ShieldCheck, Plus, Trash2, Building2, Coins, ArrowUpRight, Cpu, Code2, Scale, CheckCircle2, AlertCircle, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +16,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin-master/crescimento")({
-  head: () => ({ meta: [{ title: "Metas Projetadas vs. Dados Reais & Valuation | Waesy Master" }] }),
+  head: () => ({ meta: [{ title: "Metas Projetadas vs. Dados Reais e Valuation | Waesy Master" }] }),
   loader: async () => {
     try {
       const data = await getExecutiveGrowthMetrics();
@@ -178,7 +155,7 @@ function GrowthValuationDashboard() {
             </Badge>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Metas Projetadas vs. Dados Reais & Valuation
+            Metas Projetadas vs. Dados Reais e Valuation
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Auditoria financeira em tempo real do ecossistema, fluxo de caixa corporativo e valor de mercado em escalas.
@@ -407,7 +384,7 @@ function GrowthValuationDashboard() {
                       <td className="py-3 px-4 text-emerald-600">R$ 225.000,00 / mês</td>
                     </tr>
                     <tr>
-                      <td className="py-3 px-4 font-sans font-medium text-foreground">Classificados, Ads & Destaques</td>
+                      <td className="py-3 px-4 font-sans font-medium text-foreground">Classificados, Ads e Destaques</td>
                       <td className="py-3 px-4">R$ 8.500,00 / mês</td>
                       <td className="py-3 px-4">R$ 18.000,00 / mês</td>
                       <td className="py-3 px-4 text-emerald-600">R$ 80.000,00 / mês</td>
@@ -425,7 +402,7 @@ function GrowthValuationDashboard() {
                       <td className="py-3 px-4 text-emerald-600">R$ 15.000.000,00</td>
                     </tr>
                     <tr>
-                      <td className="py-3 px-4 font-sans font-medium text-foreground">Custos Servidores & Gateways</td>
+                      <td className="py-3 px-4 font-sans font-medium text-foreground">Custos Servidores e Gateways</td>
                       <td className="py-3 px-4 text-rose-500">(R$ 7.700,00)</td>
                       <td className="py-3 px-4 text-rose-500">(R$ 14.800,00)</td>
                       <td className="py-3 px-4 text-rose-500">(R$ 60.500,00)</td>

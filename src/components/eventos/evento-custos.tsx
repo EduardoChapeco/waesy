@@ -2,17 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  Target, 
-  AlertCircle, 
-  PieChart,
-  Layers,
-  ShieldCheck,
-  Zap
-} from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Target, AlertCircle, PieChart, Layers, ShieldCheck, Zap } from "lucide-react";
 import { listEventBudgets } from "@/services/events.functions";
 
 interface EventoCustosProps {
@@ -102,7 +92,7 @@ export function EventoCustos({ eventId }: EventoCustosProps) {
       <div className="p-4 rounded-2xl bg-card border border-border/70 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground">DRE Operacional & Margens do Evento</h3>
+            <h3 className="text-base font-bold text-foreground">DRE Operacional</h3>
             <Badge variant="outline" className="text-xs font-mono">
               Margem Líquida: {summary.margemPercentual}%
             </Badge>

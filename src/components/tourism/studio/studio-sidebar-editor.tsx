@@ -18,22 +18,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import {
- Plus,
- Minus,
- Trash,
- Plane,
- Building2,
- Calendar,
- DollarSign,
- Info,
- CheckCircle,
- MapPin,
- Clock,
- Compass,
- Zap,
- BedDouble,
-} from "lucide-react";
+import { Plus, Minus, Trash, Plane, Building2, Calendar, DollarSign, Info, CheckCircle, MapPin, Clock, Compass, Zap, BedDouble } from "lucide-react";
 import type { ProposalRoomItem } from "../new-travel-proposal-sheet";
 
 interface StudioSidebarEditorProps {
@@ -307,8 +292,8 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  // Fallback inteligente
  const defaultDays: ItineraryDayDTO[] = [
  { id: "day_1", day_number: 1, title: "Dia 1 • Chegada e Check-in", description: "Recepção no aeroporto, transfer privativo para a hospedagem e descanso para aproveitar o resort." },
- { id: "day_2", day_number: 2, title: "Dia 2 • Tour de Reconhecimento & Praias", description: "Passeio pelas principais praias da região com parada para almoço em restaurante típico." },
- { id: "day_3", day_number: 3, title: "Dia 3 • Dia Livre & Experiências", description: "Aproveite a estrutura de lazer, piscinas e gastronomia ou faça passeios opcionais de barco/buggy." },
+ { id: "day_2", day_number: 2, title: "Dia 2 • Tour de Reconhecimento e Praias", description: "Passeio pelas principais praias da região com parada para almoço em restaurante típico." },
+ { id: "day_3", day_number: 3, title: "Dia 3 • Dia Livre e Experiências", description: "Aproveite a estrutura de lazer, piscinas e gastronomia ou faça passeios opcionais de barco/buggy." },
  { id: "day_4", day_number: 4, title: "Dia 4 • Check-out e Retorno", description: "Manhã livre para últimas fotos e compras locais, seguido de transfer de retorno ao aeroporto." },
  ];
  onChange({ itinerary: defaultDays });
@@ -421,7 +406,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
  <BedDouble className="size-3.5 text-primary" />
- <span>Quartos & Hóspedes</span>
+ <span>Quartos e Hóspedes</span>
  </div>
  <span className="text-[10px] text-muted-foreground font-medium">
  {currentRooms.length} {currentRooms.length === 1 ? "quarto" : "quartos"} • {totalAdults} adt{totalChildren > 0 ? `, ${totalChildren} chd` : ""}
@@ -678,7 +663,7 @@ export function StudioSidebarEditor({ proposal, onChange }: StudioSidebarEditorP
  {/* ── ABA 3: HOTELARIA & HOSPEDAGENS ── */}
  <TabsContent value="hotel" className="space-y-3">
  <div className="flex items-center justify-between">
- <span className="text-[11px] font-bold text-foreground">Hotéis & Pousadas</span>
+ <span className="text-[11px] font-bold text-foreground">Hotéis e Pousadas</span>
  <Button
  type="button"
  size="sm"

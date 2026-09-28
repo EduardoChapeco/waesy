@@ -1,24 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  Search,
-  Briefcase,
-  GraduationCap,
-  DollarSign,
-  Clock,
-  Sparkles,
-  CheckCircle2,
-  X,
-  Loader2,
-  TrendingUp,
-  Tag,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Search, Briefcase, GraduationCap, DollarSign, Clock, Star, CheckCircle2, X, Loader2, TrendingUp, Tag } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,8 +16,8 @@ interface ProfessionSearchDialogProps {
 
 const CATEGORY_TABS = [
   { id: "all", label: "Todas as Áreas" },
-  { id: "Tecnologia & Software", label: "Tecnologia & Dev" },
-  { id: "Design & Produto", label: "Design & UX" },
+  { id: "Tecnologia & Software", label: "Tecnologia e Dev" },
+  { id: "Design & Produto", label: "Design e UX" },
   { id: "Marketing & Comunicação", label: "Marketing" },
   { id: "Vendas & Comercial", label: "Comercial" },
   { id: "Finanças & Contabilidade", label: "Finanças" },
@@ -101,9 +83,9 @@ export function ProfessionSearchDialog({
         <SheetHeader className="p-4 sm:p-6 border-b border-border/40 bg-muted/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-primary">
-              <Sparkles className="w-5 h-5 text-amber-500" />
+              <Star className="w-5 h-5 text-amber-500" />
               <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
-                Banco Central de Profissões & Médias Salariais
+                Catálogo de Profissões
               </span>
             </div>
             <button
@@ -114,7 +96,7 @@ export function ProfessionSearchDialog({
             </button>
           </div>
           <SheetTitle className="text-xl font-bold tracking-tight text-foreground mt-1">
-            Autopreenchimento de Cargos & Ocupações
+            Catálogo de Cargos
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
             Selecione uma ocupação oficial para carregar automaticamente faixas salariais de mercado e competências recomendadas.

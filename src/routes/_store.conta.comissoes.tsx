@@ -1,13 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getMyCommissionProfile,
-  getAffiliateLink,
-  requestAffiliatePayout,
-  listMyPayoutRequests,
-  registerAffiliate,
-} from "@/services/affiliates.functions";
+import { getMyCommissionProfile, getAffiliateLink, requestAffiliatePayout, listMyPayoutRequests, registerAffiliate } from "@/services/affiliates.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -17,36 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Coins,
-  Copy,
-  Check,
-  QrCode,
-  ArrowUpRight,
-  TrendingUp,
-  MousePointerClick,
-  ShoppingBag,
-  Wallet,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  Sparkles,
-  ChevronLeft,
-} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Coins, Copy, Check, QrCode, ArrowUpRight, TrendingUp, MousePointerClick, ShoppingBag, Wallet, Clock, CheckCircle2, XCircle, AlertCircle, Star, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/comissoes")({
   head: () => ({
     meta: [
-      { title: "Comissões & Programa de Afiliados | Minha Conta" },
+      { title: "Comissões e Programa de Afiliados | Minha Conta" },
       { name: "description", content: "Gerencie seus ganhos, links de indicação e solicite saques de comissão via PIX." },
     ],
   }),
@@ -175,7 +147,7 @@ function AffiliateCommissionsPage() {
 
         <div className="bg-card border border-border/80 rounded-2xl p-6 sm:p-8 text-center space-y-4">
           <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
-            <Sparkles className="h-7 w-7" />
+            <Star className="h-7 w-7" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">Ativar Programa de Parceiros</h1>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
@@ -291,7 +263,7 @@ function AffiliateCommissionsPage() {
             {/* ── NativeMobileHeader Canônico ── */}
       <NativeMobileHeader
         fallbackHref="/conta"
-        title="Comissões & Afiliados"
+        title="Comissões"
         rightActions={
           <Button
             onClick={handleOpenPayout}
@@ -305,7 +277,7 @@ function AffiliateCommissionsPage() {
       />
 
       <div className="space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Comissões & Afiliados</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Comissões</h1>
         <p className="text-sm text-muted-foreground">
           Acompanhe suas métricas de indicação, conversões registradas e gerencie seus recebimentos via PIX.
         </p>

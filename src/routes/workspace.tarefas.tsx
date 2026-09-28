@@ -1,32 +1,13 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Plus,
-  Sun,
-  ListTodo,
-  Kanban,
-  CheckCircle2,
-  Calendar,
-  AlertCircle,
-  Clock,
-  Flame,
-  CheckCheck,
-} from "lucide-react";
+import { Plus, Sun, ListTodo, Kanban, CheckCircle2, Calendar, AlertCircle, Clock, Flame, CheckCheck } from "lucide-react";
 
 import { EmptyState } from "@/components/state/states";
 
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  listWorkspaceTasks,
-  updateTaskStatus,
-  toggleTaskMyDay,
-  getDailyTaskDigest,
-} from "@/services/tasks.functions";
-import {
-  listKanbanStages,
-  type KanbanStageDTO,
-} from "@/services/kanban-config.functions";
+import { listWorkspaceTasks, updateTaskStatus, toggleTaskMyDay, getDailyTaskDigest } from "@/services/tasks.functions";
+import { listKanbanStages, type KanbanStageDTO } from "@/services/kanban-config.functions";
 
 import type { WorkspaceTask, TaskStatus } from "@/components/tasks/task-types";
 import { TaskItemCard } from "@/components/tasks/task-item-card";
@@ -372,7 +353,7 @@ function WorkspaceTasksPage() {
       <WorkspaceDashboardSheet
         open={isDashboardOpen}
         onOpenChange={setIsDashboardOpen}
-        title="Painel de Produtividade & Tarefas"
+        title="Tarefas"
         description="Indicadores de foco, volume pendente, conclusões e atrasos da equipe."
         metrics={dashboardMetrics}
         breakdown={{

@@ -1,28 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Briefcase,
- Hammer,
- Scales,
- Calculator,
- PaintBrush,
- Wrench,
- Desktop,
- Broom,
- CarProfile,
- Snowflake,
- PhoneCall,
- CheckCircle,
- PaperPlaneTilt,
- MapPin,
- Star,
- Truck,
- Compass,
- Tree,
- Package,
-} from "@phosphor-icons/react";
+import { Briefcase, Hammer, Scales, Calculator, PaintBrush, Wrench, Desktop, Broom, CarProfile, Snowflake, PhoneCall, CheckCircle, PaperPlaneTilt, MapPin, Star, Truck, Compass, Tree, Package } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -149,7 +130,7 @@ const SERVICE_CATEGORIES: ServiceCategory[] = [
 export const Route = createFileRoute("/_store/servicos")({
  head: () => ({
  meta: [
- { title: "Serviços Especializados & Orçamentos | Waesy" },
+ { title: "Serviços Especializados e Orçamentos | Waesy" },
  {
  name: "description",
  content:
@@ -159,12 +140,13 @@ export const Route = createFileRoute("/_store/servicos")({
  }),
  validateSearch: (search: Record<string, unknown>): ServicosSearch => SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, packages] = await Promise.all([
- listActiveBanners({ data: { placement: "servicos" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "servicos", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "servicos" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "servicos" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "servicos", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublicStorePackages().catch(() => []),
  ]);
 
@@ -277,7 +259,16 @@ function ServicosVerticalPage() {
  }, [marketplaceFeed, activeCategory, searchTerm]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
+    <div className="w-full max-w-5xl mx-auto pb-24">
+      <NativeMobileHeader
+        title="Serviços"
+        centerTitle
+        backTo="/"
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Buscar eletricistas, médicos, salões..."
+      />
+      <div className="px-4 sm:px-5 space-y-6 pt-2 sm:pt-4">
  {/* ── 1. Banners ── */}
  {banners && banners.length > 0 && (
  <section aria-label="Banners de Serviços">
@@ -377,31 +368,33 @@ function ServicosVerticalPage() {
               {serviceStores.map((store: any) => (
                 <div
                   key={store.id}
-                  className="p-4 rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  className="group relative overflow-hidden rounded-2xl bg-card border border-border/60 hover:border-foreground/30 transition-all min-h-[132px] pl-32 sm:pl-40 pr-4 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="size-12 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center font-bold text-primary text-lg">
-                      {store.logo_url ? (
-                        <img src={store.logo_url} alt={store.name} className="size-full object-cover" />
-                      ) : (
-                        store.name.charAt(0)
-                      )}
+                  <Link
+                    to="/diretorio/$id"
+                    params={{ id: store.id }}
+                    className="absolute inset-y-0 left-0 w-32 sm:w-40 rounded-l-2xl bg-muted overflow-hidden flex items-center justify-center font-bold text-primary text-2xl"
+                  >
+                    {store.banner_url || store.logo_url ? (
+                      <img src={store.banner_url || store.logo_url} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      store.name.charAt(0)
+                    )}
+                  </Link>
+                  <div className="min-w-0 pl-2 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Link to="/diretorio/$id" params={{ id: store.id }} className="font-bold text-sm sm:text-base text-foreground hover:underline truncate">
+                        {store.name}
+                      </Link>
+                      <Badge variant="outline" className="text-[10px] uppercase font-semibold bg-primary/10 text-primary border-primary/20 shrink-0">
+                        Verificado
+                      </Badge>
                     </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Link to="/diretorio/$id" params={{ id: store.id }} className="font-bold text-sm text-foreground hover:underline truncate">
-                          {store.name}
-                        </Link>
-                        <Badge variant="outline" className="text-[10px] uppercase font-semibold bg-primary/10 text-primary border-primary/20 shrink-0">
-                          Verificado
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                        {store.description || "Prestador de serviços especializado."}
-                      </p>
-                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {store.description || "Prestador de serviços especializado."}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto pl-2">
                     <Button
                       onClick={() => handleOpenQuote(store)}
                       size="sm"
@@ -500,7 +493,8 @@ function ServicosVerticalPage() {
  storePhone={selectedProvider.phone}
  defaultCategory={selectedProvider.category}
  />
- )}
- </div>
- );
+      )}
+      </div>
+    </div>
+  );
 }

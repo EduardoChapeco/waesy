@@ -1,16 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  FastForward,
-  Rewind,
-  Zap,
-  Layers,
-  Film,
-  Maximize2,
-  Volume2,
-} from "lucide-react";
+import { Play, Pause, RotateCcw, FastForward, Rewind, Zap, Layers, Film, Maximize2, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type {

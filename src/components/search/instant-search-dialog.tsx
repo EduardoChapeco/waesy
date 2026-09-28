@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { Search, Loader2, Store, ShoppingBag, ArrowRight, Clock, X } from "lucide-react";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,7 +102,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  <Dialog open={open} onOpenChange={onOpenChange}>
  <DialogContent className="sm:max-w-2xl p-0 overflow-hidden sm:rounded-2xl border-border/80 bg-card">
  <DialogHeader className="sr-only">
- <DialogTitle>Buscar Produtos, Lojas e Eventos</DialogTitle>
+ <DialogTitle>Buscar</DialogTitle>
  </DialogHeader>
 
  {/* Input Bar Silencioso */}
@@ -199,7 +194,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  {/* Lojas & Negócios */}
  {results.stores.length > 0 && (
  <div className="space-y-2">
- <span className="text-xs font-bold text-foreground">Lojas & Negócios</span>
+ <span className="text-xs font-bold text-foreground">Lojas e Negócios</span>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {results.stores.map((store: any) => (
  <Link
@@ -247,7 +242,7 @@ export function InstantSearchDialog({ open, onOpenChange }: InstantSearchDialogP
  {/* Produtos */}
  {results.products.length > 0 && (
  <div className="space-y-2">
- <span className="text-xs font-bold text-foreground">Produtos & Ofertas</span>
+ <span className="text-xs font-bold text-foreground">Produtos e Ofertas</span>
  <div className="space-y-1.5">
  {results.products.map((prod: any) => (
  <Link

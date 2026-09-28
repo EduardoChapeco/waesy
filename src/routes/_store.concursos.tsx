@@ -1,37 +1,17 @@
 import { createFileRoute, Link, useRouter, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import {
-  Ticket,
-  Store,
-  Clock,
-  Trophy,
-  Loader2,
-  Share2,
-  CheckCircle2,
-  ArrowRight,
-} from "lucide-react";
+import { Ticket, Store, Clock, Trophy, Loader2, Share2, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  getAllPublicConcursos,
-  participateInRaffle,
-  type RaffleDTO,
-} from "@/services/invite.functions";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getAllPublicConcursos, participateInRaffle, type RaffleDTO } from "@/services/invite.functions";
 
 export const Route = createFileRoute("/_store/concursos")({
   head: () => ({
     meta: [
-      { title: "Sorteios & Prêmios | Comunidade Waesy" },
+      { title: "Sorteios e Prêmios | Comunidade Waesy" },
       {
         name: "description",
         content:
@@ -139,10 +119,10 @@ function ConcursosPublicPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div className="space-y-1">
           <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
-            Comunidade & Prêmios
+            Comunidade e Prêmios
           </span>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-            Sorteios & Prêmios
+            Sorteios e Prêmios
           </h1>
         </div>
 

@@ -3,10 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
-import {
-  interpolateContractVariables,
-  autoPositionSignatureFieldsFromContent,
-} from "@/lib/contracts/contract-semantic-dictionary";
+import { interpolateContractVariables, autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
 
 export const ContractCategoryEnum = z.enum([
   "real_estate_rental",
@@ -1378,10 +1375,7 @@ export const settleContractAndIssueDischarge = createServerFn({ method: "POST" }
   });
 
 // ─── 9. BANCO CENTRALIZADO DE MODELOS DE CONTRATOS & MINUTAS JURÍDICAS ────────
-import {
-  ADVANCED_CONTRACT_TEMPLATES,
-  ContractTemplateDefinition,
-} from "@/lib/data/advanced-contract-templates";
+import { ADVANCED_CONTRACT_TEMPLATES, ContractTemplateDefinition } from "@/lib/data/advanced-contract-templates";
 
 const listContractTemplatesSchema = z.object({
   category: z.string().optional(),

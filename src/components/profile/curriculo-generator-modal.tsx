@@ -1,38 +1,9 @@
 import { useState, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  Printer,
-  Download,
-  Share2,
-  Eye,
-  EyeOff,
-  Sparkles,
-  QrCode,
-  Globe,
-  Phone,
-  Mail,
-  MapPin,
-  Building2,
-  GraduationCap,
-  Award,
-  HeartHandshake,
-  Check,
-  Copy,
-  Sliders,
-  Layers,
-  FileText,
-  Smartphone,
-  ExternalLink,
-} from "lucide-react";
+import { Printer, Download, Share2, Eye, EyeOff, Star, QrCode, Globe, Phone, Mail, MapPin, Building2, GraduationCap, Award, HeartHandshake, Check, Copy, Sliders, Layers, FileText, Smartphone, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type CurriculoFormat = "a4" | "story";

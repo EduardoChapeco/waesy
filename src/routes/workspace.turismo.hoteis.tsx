@@ -1,51 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Hotel,
-  Plus,
-  Search,
-  Award,
-  MapPin,
-  Utensils,
-  Phone,
-  Globe,
-  Camera,
-  Edit2,
-  Trash2,
-  Check,
-  Building,
-  ExternalLink,
-  ShieldCheck,
-  Zap,
-  Coffee,
-  Waves,
-  HeartHandshake,
-  Compass,
-  Copy,
-  Eye,
-  BedDouble,
-  Users,
-  Maximize2,
-  Info,
-  Clock,
-  Dog,
-  Ban,
-  LayoutGrid,
-  Table as TableIcon,
-  Navigation,
-  CheckCircle2,
-  X,
-  UploadCloud,
-  Building2,
-} from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Hotel, Plus, Search, Award, MapPin, Utensils, Phone, Globe, Camera, Edit2, Trash2, Check, Building, ExternalLink, ShieldCheck, Zap, Coffee, Waves, HeartHandshake, Compass, Copy, Eye, BedDouble, Users, Maximize2, Info, Clock, Dog, Ban, LayoutGrid, Table as TableIcon, Navigation, CheckCircle2, X, UploadCloud, Building2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
@@ -53,39 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "sonner";
-import {
- listHotelsBank,
- createHotel,
- updateHotel,
- deleteHotel,
- duplicateHotel,
- listDestinations,
- type HotelBankDTO,
- type DestinationDTO,
- type HotelRoomCategory,
- type HotelPolicies,
- type HotelStructure,
- type HotelRestaurant,
-} from "@/services/travel-catalog.functions";
+import { listHotelsBank, createHotel, updateHotel, deleteHotel, duplicateHotel, listDestinations, type HotelBankDTO, type DestinationDTO, type HotelRoomCategory, type HotelPolicies, type HotelStructure, type HotelRestaurant } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
@@ -636,7 +567,7 @@ function WorkspaceHotelsPage() {
  return (
  <NicheOperationalGuard
  targetNiche="tourism"
- toolTitle="Hotéis e Resorts"
+ toolTitle="Hotéis"
  toolDescription="Catálogo de hospedagens, redes hoteleiras e resorts com acomodações estruturadas, fotos, comodidades, políticas e tarifas base para pacotes e propostas."
  store={store}
  >
@@ -1145,7 +1076,7 @@ function WorkspaceHotelsPage() {
  <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
  <h4 className="font-bold text-foreground text-xs flex items-center gap-1.5">
  <Clock className="size-3.5 text-primary" />
- <span>Políticas & Condições de Estadia</span>
+ <span>Políticas e Condições de Estadia</span>
  </h4>
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[11px]">
  <div>
@@ -1259,7 +1190,7 @@ function WorkspaceHotelsPage() {
  value="dados"
  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
  >
- 1. Dados & Localização
+ 1. Dados e Localização
  </TabsTrigger>
  <TabsTrigger
  value="galeria"
@@ -1277,13 +1208,13 @@ function WorkspaceHotelsPage() {
  value="estrutura"
  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
  >
- 4. Lazer & Gastronomia
+ 4. Lazer e Gastronomia
  </TabsTrigger>
  <TabsTrigger
  value="politicas"
  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 pb-2 text-xs font-bold"
  >
- 5. Políticas & Regras
+ 5. Políticas e Regras
  </TabsTrigger>
  <TabsTrigger
  value="editorial"
@@ -1364,7 +1295,7 @@ function WorkspaceHotelsPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1.5">
- <Label className="font-semibold text-foreground">Endereço Completo & Bairro</Label>
+ <Label className="font-semibold text-foreground">Endereço Completo e Bairro</Label>
  <Input
  value={formData.address}
  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -1558,7 +1489,7 @@ function WorkspaceHotelsPage() {
  <TabsContent value="quartos" className="space-y-4 m-0">
  <div className="flex items-center justify-between">
  <div>
- <h4 className="font-bold text-foreground text-xs">Tipos de Quarto & Suítes Cadastrados</h4>
+ <h4 className="font-bold text-foreground text-xs">Tipos de Quarto e Suítes Cadastrados</h4>
  <p className="text-[11px] text-muted-foreground">
  Essas categorias aparecem para seleção imediata no Studio de Propostas.
  </p>
@@ -1734,7 +1665,7 @@ function WorkspaceHotelsPage() {
  </div>
 
  <div className="space-y-1.5">
- <Label className="font-semibold text-foreground">Recreação & Kids Club</Label>
+ <Label className="font-semibold text-foreground">Recreação e Kids Club</Label>
  <Input
  value={formData.structure.kids_club_details || ""}
  onChange={(e) =>
@@ -1841,7 +1772,7 @@ function WorkspaceHotelsPage() {
  </div>
 
  <div className="space-y-1.5">
- <Label className="font-semibold text-foreground">Política de Cancelamento & Reembolso</Label>
+ <Label className="font-semibold text-foreground">Política de Cancelamento e Reembolso</Label>
  <Input
  value={formData.policies.cancellation_policy || ""}
  onChange={(e) =>

@@ -1,35 +1,12 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Ticket,
-  Store,
-  Clock,
-  Trophy,
-  ArrowLeft,
-  Share2,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Calendar,
-  ShieldCheck,
-} from "lucide-react";
+import { Ticket, Store, Clock, Trophy, ArrowLeft, Share2, CheckCircle2, AlertCircle, Loader2, Calendar, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  getPublicConcursoById,
-  participateInRaffle,
-  type RaffleDTO,
-} from "@/services/invite.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { getPublicConcursoById, participateInRaffle, type RaffleDTO } from "@/services/invite.functions";
 
 export const Route = createFileRoute("/_store/concurso/$id")({
   head: ({ loaderData }) => ({

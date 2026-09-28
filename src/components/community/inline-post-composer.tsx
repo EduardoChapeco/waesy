@@ -1,25 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import {
-  ImageSquare,
-  X,
-  CircleNotch,
-  FilmStrip,
-  SignIn,
-  ChatCircleText,
-  AirplaneTilt,
-  Newspaper,
-  SquaresFour,
-  Slideshow,
-  IdentificationBadge,
-  Sparkle,
-  Storefront,
-  MapPin,
-  Tag,
-  UserPlus,
-  SlidersHorizontal,
-} from "@phosphor-icons/react";
+import { ImageSquare, X, CircleNotch, FilmStrip, SignIn, ChatCircleText, AirplaneTilt, Newspaper, SquaresFour, Slideshow, IdentificationBadge, Star, Storefront, MapPin, Tag, UserPlus, SlidersHorizontal } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -520,7 +502,7 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Sparkle className="size-3 text-primary" weight="fill" />
+                <Star className="size-3 text-primary" weight="fill" />
                 <span>@{activeCreatorHandle}</span>
               </button>
             </div>

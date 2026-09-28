@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  GLOBAL_PROFESSIONS_CATALOG,
-  findProfessionByTitle,
-  type ProfessionDefinition,
-} from "@/lib/data/professions-catalog";
+import { GLOBAL_PROFESSIONS_CATALOG, findProfessionByTitle, type ProfessionDefinition } from "@/lib/data/professions-catalog";
 import { formatMoney } from "@/lib/money";
-import { Briefcase, Sparkles, Check } from "lucide-react";
+import { Briefcase, Star, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface OccupationAutocompleteProps {
@@ -165,7 +161,7 @@ export function OccupationAutocomplete({
       {matchedProfession && (
         <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-muted-foreground">
           <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono font-medium">
-            <Sparkles className="size-3" />
+            <Star className="size-3" />
             Média de mercado: {formatMoney(matchedProfession.junior_salary_cents)} a {formatMoney(matchedProfession.senior_salary_cents)}
           </span>
           <span className="text-border">•</span>

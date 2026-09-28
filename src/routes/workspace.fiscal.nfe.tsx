@@ -1,54 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  FileText,
-  ShieldCheck,
-  Download,
-  FileCode,
-  Building,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Plus,
-  ArrowUpRight,
-  RefreshCw,
-} from "lucide-react";
+import { FileText, ShieldCheck, Download, FileCode, Building, CheckCircle2, AlertCircle, Clock, Plus, ArrowUpRight, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  getStoreNFeConfig,
-  saveStoreNFeConfig,
-  emitNFeInvoice,
-  listStoreNFeInvoices,
-  type StoreNFeConfigDTO,
-  type StoreNFeInvoiceDTO,
-  type NFeProvider,
-  type TaxRegime,
-} from "@/services/fiscal-nfe.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { getStoreNFeConfig, saveStoreNFeConfig, emitNFeInvoice, listStoreNFeInvoices, type StoreNFeConfigDTO, type StoreNFeInvoiceDTO, type NFeProvider, type TaxRegime } from "@/services/fiscal-nfe.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/fiscal/nfe")({
   head: () => ({
-    meta: [{ title: "Módulo Fiscal & NF-e | Workspace Waesy" }],
+    meta: [{ title: "Notas Fiscais | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -169,7 +136,7 @@ function FiscalNFePage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <PageHeader
           eyebrow="Compliance & Tributação"
-          title="Emissão Fiscal & NF-e"
+          title="Emissão Fiscal"
           description="Gestão de notas fiscais eletrônicas, integração com SEFAZ, prefeituras e emissor nacional."
         />
         <div className="flex items-center gap-2 flex-wrap">
@@ -212,7 +179,7 @@ function FiscalNFePage() {
             activeTab === "config" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
           )}
         >
-          Configurações Fiscais & Certificado
+          Configurações Fiscais e Certificado
         </button>
       </div>
 
@@ -233,7 +200,7 @@ function FiscalNFePage() {
               </p>
             </div>
             <div className="bg-card border border-border/60 rounded-xl p-3.5 space-y-1">
-              <span className="text-[11px] text-muted-foreground font-medium">NFS-e (Serviços & Turismo)</span>
+              <span className="text-[11px] text-muted-foreground font-medium">NFS-e (Serviços e Turismo)</span>
               <p className="text-base font-bold text-purple-600">
                 {invoices.filter((i: any) => i.invoice_type === "nfse").length} emitidas
               </p>
@@ -483,7 +450,7 @@ function FiscalNFePage() {
           {/* Automação de Emissão em Background */}
           <div className="pt-4 border-t border-border/50 space-y-3">
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-              Automação & Inteligência Fiscal
+              Automação e Inteligência Fiscal
             </h4>
             
             <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-muted/20">
@@ -522,7 +489,7 @@ function FiscalNFePage() {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Acesso da Contabilidade & Lote SPED
+                  Acesso da Contabilidade e Lote SPED
                 </h4>
                 <p className="text-[11px] text-muted-foreground">
                   Permita que seu contador acesse a DRE, notas e extratos diretamente pelo portal contábil.

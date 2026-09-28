@@ -9,43 +9,43 @@ import { executeUnifiedAiCall } from "./api-orchestrator.functions";
 // ── DEFINIÇÃO DOS 7 PECADOS & GATILHOS PSICOLÓGICOS ─────────────────────────
 export const SEVEN_SINS_DEFINITIONS = {
   orgulho: {
-    label: "Orgulho & Exclusividade",
+    label: "Orgulho e Exclusividade",
     subconscious: "Necessidade de status, validação, ser visto como especial ou superior à média.",
     defaultAngle: "Você não aceita o básico. Feito exclusivamente para quem exige o melhor.",
     color: "#EAB308", // Amber
   },
   ganancia: {
-    label: "Ganância & Retorno",
+    label: "Ganância e Retorno",
     subconscious: "Sensação de estar lucrando, economizando dinheiro real ou levando vantagem justa.",
     defaultAngle: "Leve o dobro de valor investindo menos. A matemática joga a seu favor.",
     color: "#16A34A", // Emerald
   },
   luxuria: {
-    label: "Luxúria & Desejo Sensorial",
+    label: "Luxúria e Desejo Sensorial",
     subconscious: "Ativação de prazer imediato, apetite visual incontrolável e indulgência sensorial.",
     defaultAngle: "Uma experiência tão irresistível que é impossível experimentar apenas uma vez.",
     color: "#E11D48", // Rose
   },
   inveja: {
-    label: "Inveja & Destaque Social",
+    label: "Inveja e Destaque Social",
     subconscious: "Desejo de possuir o que os outros cobiçam e ser o modelo seguido pelo grupo.",
     defaultAngle: "O segredo que seus amigos vão perguntar de onde você tirou.",
     color: "#8B5CF6", // Violet
   },
   gula: {
-    label: "Gula & Abundância",
+    label: "Gula e Abundância",
     subconscious: "Fartura, saciedade máxima, porções generosas sem sensação de escassez.",
     defaultAngle: "Porções generosas, sabor arrebatador e zero arrependimento a cada mordida.",
     color: "#EA580C", // Orange
   },
   ira: {
-    label: "Ira & Inconformismo",
+    label: "Ira e Inconformismo",
     subconscious: "Revolta contra abusos de mercado, indignação com produtos ruins ou promessas falsas.",
     defaultAngle: "Chega de pagar caro por promessas vazias e entregas que atrasam.",
     color: "#DC2626", // Red
   },
   preguica: {
-    label: "Preguiça & Zero Esforço",
+    label: "Preguiça e Zero Esforço",
     subconscious: "Conveniência máxima, fricção eliminada, entrega pronta sem burocracia ou perda de tempo.",
     defaultAngle: "Em apenas 1 clique tudo resolvido. Sem filas, sem complicações.",
     color: "#0A84FF", // Blue
@@ -214,7 +214,7 @@ export const SIMLAB_BASE_PERSONAS = [
   {
     persona_id: "persona_lucas_universitario",
     name: "Lucas Menezes, 23 anos",
-    archetype_label: "Universitário Pragmático & Ágil",
+    archetype_label: "Universitário Pragmático e Ágil",
     avatar_url: null,
     preferredSins: ["preguica", "ganancia", "gula"],
     bias: 0.85,
@@ -222,7 +222,7 @@ export const SIMLAB_BASE_PERSONAS = [
   {
     persona_id: "persona_claudia_mae",
     name: "Cláudia Silveira, 41 anos",
-    archetype_label: "Mãe Gestora & Família",
+    archetype_label: "Mãe Gestora e Família",
     avatar_url: null,
     preferredSins: ["ganancia", "ira", "orgulho"],
     bias: 0.78,
@@ -230,7 +230,7 @@ export const SIMLAB_BASE_PERSONAS = [
   {
     persona_id: "persona_rodrigo_executivo",
     name: "Rodrigo Carvalho, 36 anos",
-    archetype_label: "Executivo Sem Tempo & Status",
+    archetype_label: "Executivo Sem Tempo e Status",
     avatar_url: null,
     preferredSins: ["orgulho", "preguica", "inveja"],
     bias: 0.92,
@@ -238,7 +238,7 @@ export const SIMLAB_BASE_PERSONAS = [
   {
     persona_id: "persona_amanda_foodie",
     name: "Amanda Fontana, 28 anos",
-    archetype_label: "Entusiasta Experiencial & Design",
+    archetype_label: "Entusiasta Experiencial e Design",
     avatar_url: null,
     preferredSins: ["luxuria", "orgulho", "inveja"],
     bias: 0.88,

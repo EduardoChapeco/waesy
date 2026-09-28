@@ -6,20 +6,7 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState, useTransition, useMemo } from "react";
 import { Scale, Search, Plus, Radio, SlidersHorizontal, Building2, Calendar, DollarSign, Users, ShieldCheck, ShieldAlert, Clock, Layers, Paperclip, CheckCircle2, FileText, Trash2, Share2, Star, RefreshCw, Eye, Send, Filter, AlertTriangle, FileCheck } from 'lucide-react';
-import {
- listMarketplaceDemands,
- sendJusProposal,
- listMyLawsuits,
- listLawsuitMonitors,
- deleteLawsuitMonitor,
- searchProcessByCNJ,
- getLawsuitAnalytics,
- toggleLawsuitMonitoring,
- toggleLawsuitFavorite,
- listLawsuitDeadlines,
- deleteLawsuitDeadline,
- getLawsuitDeadlinesDigest,
-} from "@/services/jus.functions";
+import { listMarketplaceDemands, sendJusProposal, listMyLawsuits, listLawsuitMonitors, deleteLawsuitMonitor, searchProcessByCNJ, getLawsuitAnalytics, toggleLawsuitMonitoring, toggleLawsuitFavorite, listLawsuitDeadlines, deleteLawsuitDeadline, getLawsuitDeadlinesDigest } from "@/services/jus.functions";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -27,14 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { HistoricalMonitorSheet } from "@/components/jus/historical-monitor-sheet";
 import { LawsuitDetailsSheet } from "@/components/jus/lawsuit-details-sheet";
 import { DeadlineFormSheet } from "@/components/jus/deadline-form-sheet";
@@ -44,7 +24,7 @@ import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/advocacia/")({
- head: () => ({ meta: [{ title: "Painel Jurídico & Processos 360° | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Painel Jurídico | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const [demandsRes, lawsuitsRes, monitorsRes, analyticsRes, deadlinesRes, digestRes] =
@@ -367,7 +347,7 @@ function WorkspaceAdvocaciaPage() {
           >
             <Link to="/workspace/contratos/novo">
               <FileText className="size-3.5 text-primary" />
-              <span>Procuração & Honorários</span>
+              <span>Procuração e Honorários</span>
             </Link>
           </Button>
  <Button
@@ -615,7 +595,7 @@ function WorkspaceAdvocaciaPage() {
  Preclusão / Urgência
  </TableHead>
  <TableHead className="text-[11px] font-bold font-mono uppercase">
- Ato Processual & Tipo
+ Ato Processual e Tipo
  </TableHead>
  <TableHead className="text-[11px] font-bold font-mono uppercase">
  Processo (CNJ) / Tribunal
@@ -757,8 +737,8 @@ function WorkspaceAdvocaciaPage() {
  <TableHeader className="bg-muted/30">
  <TableRow>
  <TableHead className="w-12 text-center">Fav</TableHead>
- <TableHead>Processo / Partes</TableHead>
- <TableHead>Tribunal / Grau</TableHead>
+ <TableHead>Processo</TableHead>
+ <TableHead>Tribunal</TableHead>
  <TableHead>Última Movimentação</TableHead>
  <TableHead className="w-32 text-center">Monitoramento</TableHead>
  <TableHead className="w-20 text-right">Ação</TableHead>

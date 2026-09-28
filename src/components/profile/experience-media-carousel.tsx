@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Download,
-  FileText,
-  Sparkles,
-  Maximize2,
-} from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ExternalLink, Download, FileText, Star, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { ExperienceMediaItem } from "@/lib/schemas/resume-experience.schema";
@@ -84,7 +75,7 @@ export function ExperienceMediaCarousel({
     <>
       <div className={cn("pt-2 space-y-2", className)}>
         <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-          <Sparkles className="size-3.5 text-primary" />
+          <Star className="size-3.5 text-primary" />
           <span>Portfólio & Evidências Visuais ({normalizedItems.length})</span>
         </div>
 

@@ -1,22 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Globe,
-  Plus,
-  Search,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  FileCheck,
-  Calendar,
-  User,
-  Trash2,
-  FileSpreadsheet,
-  ShieldCheck,
-  Percent,
-  Compass,
-} from "lucide-react";
+import { Globe, Plus, Search, CheckCircle2, Clock, AlertCircle, FileCheck, Calendar, User, Trash2, FileSpreadsheet, ShieldCheck, Percent, Compass } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,18 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { getStoreSettings } from "@/services/store.functions";
-import {
-  listTravelVisas,
-  updateTravelVisaStatus,
-  deleteTravelVisa,
-} from "@/services/travel-visas.functions";
+import { listTravelVisas, updateTravelVisaStatus, deleteTravelVisa } from "@/services/travel-visas.functions";
 import { VISA_STATUS_LABELS, type VisaStatus, type TravelVisaDTO } from "@/types/travel-visas";
 import { NewVisaWizard } from "@/components/tourism/visas/new-visa-wizard";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { playCashRegisterSound, playMessageChime } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/turismo/vistos")({
-  head: () => ({ meta: [{ title: "Passaportes & Vistos Consulares | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Vistos Consulares | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const store = await getStoreSettings().catch(() => null);
@@ -196,7 +177,7 @@ function WorkspaceVisasPage() {
   return (
     <NicheOperationalGuard
       targetNiche="tourism"
-      toolTitle="Passaportes & Vistos Consulares"
+      toolTitle="Vistos Consulares"
       toolDescription="Acompanhamento de processos consulares (EUA B1/B2, Canadá, ETIAS Europa), formulários e agendamentos de entrevista."
       store={store}
     >
@@ -204,7 +185,7 @@ function WorkspaceVisasPage() {
         {/* ── HEADER DA PÁGINA ── */}
         <PageHeader
           eyebrow="Turismo & Assessoria Consular"
-          title="Passaportes & Vistos Consulares"
+          title="Vistos Consulares"
           description="Acompanhamento de processos de vistos (EUA, Canadá, ETIAS Europa), formulários DS-160 e agendamentos de entrevista no CASV/Consulado."
           actions={
             <div className="flex items-center gap-2">

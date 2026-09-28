@@ -1,15 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Shield,
-  ShieldCheck,
-  ShieldAlert,
-  History,
-  Search,
-  CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
-  Lock,
-} from "lucide-react";
+import { Shield, ShieldCheck, ShieldAlert, History, Search, CheckCircle2, AlertTriangle, RefreshCw, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -74,7 +64,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Lock className="size-5 text-primary" />
-            Governança, Trilha de Auditoria & Integridade
+            Governança, Trilha de Auditoria e Integridade
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Registro criptográfico e imutável de todas as ações de ingressos, equipe, lotes e portaria.
@@ -111,7 +101,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
 
         <Card className="bg-card rounded-2xl border border-border/60">
           <CardHeader className="pb-1 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-muted-foreground">Portaria & Check-ins</CardTitle>
+            <CardTitle className="text-xs font-semibold text-muted-foreground">Portaria</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div className="text-2xl font-bold text-blue-600">
@@ -122,7 +112,7 @@ export function EventoAuditoria({ eventId }: EventoAuditoriaProps) {
 
         <Card className="bg-card rounded-2xl border border-border/60">
           <CardHeader className="pb-1 pt-4 px-4">
-            <CardTitle className="text-xs font-semibold text-muted-foreground">Gestão de Lotes & Loja</CardTitle>
+            <CardTitle className="text-xs font-semibold text-muted-foreground">Gestão de Lotes</CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div className="text-2xl font-bold text-amber-600">

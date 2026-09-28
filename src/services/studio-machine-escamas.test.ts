@@ -5,11 +5,7 @@ import type {
   StudioBrandProfile, 
   EscamasLayerElement 
 } from "@/types/studio-machine";
-import { 
-  DEFAULT_BRAND_PROFILE, 
-  VISUAL_STYLES, 
-  GOAL_OPTIONS 
-} from "@/lib/studio-machine-constants";
+import { DEFAULT_BRAND_PROFILE, VISUAL_STYLES, GOAL_OPTIONS } from "@/lib/studio-machine-constants";
 
 describe("STUDIO MACHINE: SISTEMA ESCAMAS & MINING BRIDGE", () => {
   // ─── 1. CONTRATOS ARQUITETURAIS DO SISTEMA ESCAMAS ───

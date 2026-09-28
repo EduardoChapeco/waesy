@@ -1,12 +1,6 @@
 import { useState, useTransition } from "react";
 import { Scale, Calendar, Clock, Building2, Users, DollarSign, FileText, Share2, RotateCw, Layers, CheckCircle2, AlertTriangle, Radio, ExternalLink, ChevronRight, ShieldCheck } from 'lucide-react';
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -239,7 +233,7 @@ export function LawsuitDetailsSheet({
  </TabsTrigger>
  <TabsTrigger value="informacoes" className="text-xs font-bold rounded-lg gap-2">
  <FileText className="size-3.5" />
- <span>Informações & Partes</span>
+ <span>Informações e Partes</span>
  </TabsTrigger>
  <TabsTrigger value="jus_ia" className="text-xs font-bold rounded-lg gap-2">
  <Layers className="size-3.5 text-primary" />

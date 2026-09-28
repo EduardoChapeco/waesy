@@ -6,13 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/money";
 
 export interface BomItem {
@@ -138,7 +132,7 @@ export function ProductBomCard({
  <div className="space-y-1">
  <CardTitle className="text-base font-bold flex items-center gap-2">
  <Boxes className="size-4 text-primary" />
- <span>Ficha Técnica & Composição de Insumos</span>
+ <span>Ficha Técnica e Composição de Insumos</span>
  <Badge variant="outline" className="text-[10px] font-mono uppercase">
  Estoque Composto
  </Badge>

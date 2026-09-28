@@ -76,12 +76,7 @@ vi.mock("@/lib/supabase", () => ({
   })),
 }));
 
-import {
-  internalGetStoreCashSafesSummary,
-  internalListSupplierInvoicesForD0,
-  internalScheduleSupplierInvoiceD0,
-  internalSimulateWorkingCapital,
-} from "./cash-safes.functions";
+import { internalGetStoreCashSafesSummary, internalListSupplierInvoicesForD0, internalScheduleSupplierInvoiceD0, internalSimulateWorkingCapital } from "./cash-safes.functions";
 
 describe("Cash Safes & Zero-Mock Obligations Services", () => {
   it("1. Deve calcular o resumo dos cofres blindados baseado em dados reais da loja", async () => {

@@ -6,43 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
- Tabs,
- TabsContent,
- TabsList,
- TabsTrigger,
-} from "@/components/ui/tabs";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Sheet,
- SheetContent,
- SheetDescription,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
-import {
- listLegalDocuments,
- updateLegalDocument,
- listConsentLogs,
- getConsentStats,
-} from "@/services/legal.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { listLegalDocuments, updateLegalDocument, listConsentLogs, getConsentStats } from "@/services/legal.functions";
 
 export const Route = createFileRoute("/admin-master/termos")({
- head: () => ({ meta: [{ title: "Termos & Políticas da Plataforma | Waesy Master" }] }),
+ head: () => ({ meta: [{ title: "Termos e Políticas da Plataforma | Waesy Master" }] }),
  loader: async () => {
    try {
  const [documents, logsRes, stats] = await Promise.all([
@@ -152,14 +123,14 @@ function AdminMasterTermosPage() {
  <div>
  <div className="flex items-center gap-2">
  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
- Governança & Compliance
+ Governança e Compliance
  </span>
  <Badge variant="outline" className="text-[10px] rounded-full border-primary/30 text-primary">
  <ShieldCheck className="size-3 mr-1 inline" /> LGPD Ativo
  </Badge>
  </div>
  <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mt-1">
- Termos & Políticas da Plataforma
+ Termos e Políticas da Plataforma
  </h1>
  <p className="text-xs text-muted-foreground mt-0.5">
  Documentos legais, termos de uso e conformidade LGPD
@@ -195,13 +166,13 @@ function AdminMasterTermosPage() {
 
  <div className="p-4 rounded-2xl bg-card ">
  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
- Termos & LGPD
+ Termos e LGPD
  </span>
  <p className="text-xl sm:text-2xl font-black text-foreground mt-1">
  {stats.privacyAcceptances + stats.termsAcceptances}
  </p>
  <span className="text-[10px] text-muted-foreground font-medium">
- Políticas & Contratos
+ Políticas e Contratos
  </span>
  </div>
 
@@ -574,7 +545,7 @@ function AdminMasterTermosPage() {
  <span className="text-foreground">{selectedLog.ip_address || "Não informado"}</span>
  </div>
  <div>
- <span className="text-muted-foreground block text-[10px] uppercase font-bold">Data & Hora (UTC)</span>
+ <span className="text-muted-foreground block text-[10px] uppercase font-bold">Data e Hora (UTC)</span>
  <span className="text-foreground">{selectedLog.accepted_at}</span>
  </div>
  </div>

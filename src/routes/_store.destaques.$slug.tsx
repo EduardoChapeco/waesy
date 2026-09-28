@@ -2,7 +2,7 @@ import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Storefront, MagnifyingGlass, SquaresFour, ListDashes, Truck, Flame, ArrowRight, CaretLeft, ShareNetwork, Lightning, House, Briefcase, Plus, Clock, CurrencyCircleDollar, Percent, CheckCircle, ForkKnife, ShoppingBag, Heartbeat, Coffee,  } from "@phosphor-icons/react";
+import { Storefront, MagnifyingGlass, SquaresFour, ListDashes, Truck, Flame, ArrowRight, CaretLeft, ShareNetwork, Lightning, House, Briefcase, Plus, Clock, CurrencyCircleDollar, Percent, CheckCircle, ForkKnife, ShoppingBag, Heartbeat, Coffee } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -100,24 +100,24 @@ const HOTPAGE_THEMES: Record<
 const MODULE_CHIPS_MAP: Record<string, Array<{ id: string; label: string; icon: any }>> = {
  turismo: [
  { id: "todos", label: "Todos os Roteiros", icon: Tag },
- { id: "passeios", label: "Passeios & Catamarã", icon: Tag },
- { id: "pousadas", label: "Cabanas & Pousadas", icon: House },
- { id: "gastronomia", label: "Vinícolas & Sabores", icon: ForkKnife },
- { id: "aventura", label: "Trilhas & Aventura", icon: Lightning },
+ { id: "passeios", label: "Passeios e Catamarã", icon: Tag },
+ { id: "pousadas", label: "Cabanas e Pousadas", icon: House },
+ { id: "gastronomia", label: "Vinícolas e Sabores", icon: ForkKnife },
+ { id: "aventura", label: "Trilhas e Aventura", icon: Lightning },
  ],
  empregos: [
  { id: "todos", label: "Todas as Vagas", icon: Tag },
- { id: "clt", label: "Comércio & CLT", icon: Briefcase },
- { id: "tech", label: "Tech & TI", icon: Lightning },
- { id: "vendas", label: "Vendas & Comercial", icon: Flame },
- { id: "estagio", label: "Estágios & Trainee", icon: Briefcase },
+ { id: "clt", label: "Comércio e CLT", icon: Briefcase },
+ { id: "tech", label: "Tech e TI", icon: Lightning },
+ { id: "vendas", label: "Vendas e Comercial", icon: Flame },
+ { id: "estagio", label: "Estágios e Trainee", icon: Briefcase },
  ],
  bebidas: [
  { id: "todos", label: "Todas as Bebidas", icon: Tag },
- { id: "cervejas", label: "Cervejas & Chopp", icon: Flame },
- { id: "vinhos", label: "Vinhos & Adegas", icon: Coffee },
- { id: "destilados", label: "Destilados & Gin", icon: Lightning },
- { id: "gelo", label: "Gelo & Carvão", icon: Truck },
+ { id: "cervejas", label: "Cervejas e Chopp", icon: Flame },
+ { id: "vinhos", label: "Vinhos e Adegas", icon: Coffee },
+ { id: "destilados", label: "Destilados e Gin", icon: Lightning },
+ { id: "gelo", label: "Gelo e Carvão", icon: Truck },
  ],
  acougue: [
  { id: "todos", label: "Todos os Cortes", icon: Tag },
@@ -130,84 +130,84 @@ const MODULE_CHIPS_MAP: Record<string, Array<{ id: string; label: string; icon: 
  { id: "todos", label: "Todas as Peças", icon: Tag },
  { id: "feminino", label: "Moda Feminina", icon: Tag },
  { id: "masculino", label: "Moda Masculina", icon: Tag },
- { id: "calcados", label: "Calçados & Tênis", icon: Lightning },
- { id: "acessorios", label: "Bolsas & Acessórios", icon: Tag },
+ { id: "calcados", label: "Calçados e Tênis", icon: Lightning },
+ { id: "acessorios", label: "Bolsas e Acessórios", icon: Tag },
  ],
  eletronicos: [
  { id: "todos", label: "Toda a Linha Tech", icon: Tag },
- { id: "smartphones", label: "Smartphones & 5G", icon: Lightning },
- { id: "informatica", label: "Notebooks & PC", icon: Lightning },
- { id: "audio", label: "Fones & Caixas de Som", icon: Tag },
+ { id: "smartphones", label: "Smartphones e 5G", icon: Lightning },
+ { id: "informatica", label: "Notebooks e PC", icon: Lightning },
+ { id: "audio", label: "Fones e Caixas de Som", icon: Tag },
  { id: "tvs", label: "Smart TVs 4K", icon: Lightning },
  ],
  pet: [
  { id: "todos", label: "Tudo para Pets", icon: Tag },
- { id: "caes", label: "Cães & Rações", icon: Tag },
- { id: "gatos", label: "Gatos & Areias", icon: Tag },
+ { id: "caes", label: "Cães e Rações", icon: Tag },
+ { id: "gatos", label: "Gatos e Areias", icon: Tag },
  { id: "veterinaria", label: "Farmácia Pet", icon: Heartbeat },
- { id: "higiene", label: "Banho & Tosa", icon: Tag },
+ { id: "higiene", label: "Banho e Tosa", icon: Tag },
  ],
  servicos: [
  { id: "todos", label: "Todos os Serviços", icon: Tag },
- { id: "obras", label: "Obras & Reformas", icon: Briefcase },
- { id: "manutencao", label: "Manutenção & Reparos", icon: Lightning },
- { id: "limpeza", label: "Diaristas & Faxinas", icon: Tag },
- { id: "profissionais", label: "Consultoria & Jurídico", icon: Briefcase },
+ { id: "obras", label: "Obras e Reformas", icon: Briefcase },
+ { id: "manutencao", label: "Manutenção e Reparos", icon: Lightning },
+ { id: "limpeza", label: "Diaristas e Faxinas", icon: Tag },
+ { id: "profissionais", label: "Consultoria e Jurídico", icon: Briefcase },
  ],
  imoveis: [
  { id: "todos", label: "Todos os Imóveis", icon: Tag },
  { id: "aluguel", label: "Aluguel Fácil", icon: House },
- { id: "venda", label: "Venda & Lançamentos", icon: House },
- { id: "terrenos", label: "Terrenos & Lotes", icon: Tag },
- { id: "comercial", label: "Salas & Galpões", icon: Briefcase },
+ { id: "venda", label: "Venda e Lançamentos", icon: House },
+ { id: "terrenos", label: "Terrenos e Lotes", icon: Tag },
+ { id: "comercial", label: "Salas e Galpões", icon: Briefcase },
  ],
  construcao: [
  { id: "todos", label: "Todos os Materiais", icon: Tag },
- { id: "tintas", label: "Tintas & Acabamento", icon: Tag },
+ { id: "tintas", label: "Tintas e Acabamento", icon: Tag },
  { id: "ferramentas", label: "Ferramentas Pro", icon: Lightning },
- { id: "eletrica", label: "Elétrica & Fios", icon: Lightning },
- { id: "hidraulica", label: "Hidráulica & Tubos", icon: Truck },
+ { id: "eletrica", label: "Elétrica e Fios", icon: Lightning },
+ { id: "hidraulica", label: "Hidráulica e Tubos", icon: Truck },
  ],
  casa: [
  { id: "todos", label: "Tudo para Casa", icon: Tag },
- { id: "moveis", label: "Móveis & Estofados", icon: House },
- { id: "decoracao", label: "Decoração & Quadros", icon: Tag },
- { id: "iluminacao", label: "Lustres & Luzes", icon: Lightning },
- { id: "utilidades", label: "Cama, Mesa & Banho", icon: Tag },
+ { id: "moveis", label: "Móveis e Estofados", icon: House },
+ { id: "decoracao", label: "Decoração e Quadros", icon: Tag },
+ { id: "iluminacao", label: "Lustres e Luzes", icon: Lightning },
+ { id: "utilidades", label: "Cama, Mesa e Banho", icon: Tag },
  ],
  beleza: [
  { id: "todos", label: "Todos os Cuidados", icon: Tag },
  { id: "barbearia", label: "Barbearias Premium", icon: Tag },
  { id: "salao", label: "Salões de Beleza", icon: Tag },
- { id: "unhas", label: "Unhas & Manicure", icon: Heartbeat },
- { id: "estetica", label: "Estética & Massagem", icon: Heartbeat },
+ { id: "unhas", label: "Unhas e Manicure", icon: Heartbeat },
+ { id: "estetica", label: "Estética e Massagem", icon: Heartbeat },
  ],
  limpeza: [
  { id: "todos", label: "Toda a Linha", icon: Tag },
  { id: "pesada", label: "Limpeza Pesada", icon: Lightning },
- { id: "lavanderia", label: "Lavanderia & Roupas", icon: Tag },
- { id: "cozinha", label: "Cozinha & Desengordurantes", icon: Tag },
- { id: "descartaveis", label: "Descartáveis & Papéis", icon: Truck },
+ { id: "lavanderia", label: "Lavanderia e Roupas", icon: Tag },
+ { id: "cozinha", label: "Cozinha e Desengordurantes", icon: Tag },
+ { id: "descartaveis", label: "Descartáveis e Papéis", icon: Truck },
  ],
  livros: [
  { id: "todos", label: "Todo o Catálogo", icon: Tag },
- { id: "bestsellers", label: "Best-sellers & Livros", icon: Tag },
+ { id: "bestsellers", label: "Best-sellers e Livros", icon: Tag },
  { id: "papelaria", label: "Papelaria Criativa", icon: Tag },
- { id: "presentes", label: "Presentes & Canecas", icon: Tag },
- { id: "jogos", label: "Jogos & Board Games", icon: Lightning },
+ { id: "presentes", label: "Presentes e Canecas", icon: Tag },
+ { id: "jogos", label: "Jogos e Board Games", icon: Lightning },
  ],
  mobilidade: [
  { id: "todos", label: "Todos os Serviços", icon: Tag },
  { id: "corridas", label: "Corridas Rápidas", icon: Lightning },
  { id: "entregas", label: "MotoLink Flash", icon: Truck },
- { id: "fretes", label: "Fretes & Vans", icon: Truck },
+ { id: "fretes", label: "Fretes e Vans", icon: Truck },
  { id: "executivo", label: "Transporte VIP", icon: Tag },
  ],
  ofertas: [
  { id: "todos", label: "Todas as Ofertas", icon: Tag },
  { id: "50off", label: "Até 50% OFF", icon: Flame },
  { id: "fretegratis", label: "Frete Grátis", icon: Truck },
- { id: "combos", label: "Combos & Pague Menos", icon: Tag },
+ { id: "combos", label: "Combos e Pague Menos", icon: Tag },
  { id: "queima", label: "Últimas Unidades", icon: Lightning },
  ],
 };
@@ -542,7 +542,7 @@ function DedicatedHotpageView() {
  <div className="flex items-center justify-between">
  <h2 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
  <Storefront size={18} weight="bold" className={theme.accentColor} />
- <span>Lojas & Restaurantes Participantes</span>
+ <span>Lojas e Restaurantes Participantes</span>
  </h2>
  <span className="text-xs text-muted-foreground font-mono font-bold">
  {relatedStores.length} parceiros

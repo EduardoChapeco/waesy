@@ -1,46 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- ShieldAlert,
- Flag,
- CheckCircle2,
- XCircle,
- Eye,
- Trash2,
- AlertTriangle,
- Loader2,
- Filter,
- User,
- ExternalLink,
- ShieldCheck,
- MessageSquare,
-} from "lucide-react";
+import { ShieldAlert, Flag, CheckCircle2, XCircle, Eye, Trash2, AlertTriangle, Loader2, Filter, User, ExternalLink, ShieldCheck, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 import { listModerationReports, resolveModerationReport } from "@/services/moderation.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { formatRelativeTime, formatDate } from "@/lib/datetime";
 
 export const Route = createFileRoute("/workspace/moderacao/")({
- head: () => ({ meta: [{ title: "Central de Moderação & Denúncias | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Moderação | Workspace Waesy" }] }),
  component: ModerationQueuePage,
 });
 
@@ -298,7 +272,7 @@ function ModerationQueuePage() {
  }}
  className="rounded-xl text-xs font-semibold"
  >
- Avaliar & Aplicar Ação
+ Avaliar e Aplicar Ação
  </Button>
  </div>
  )}

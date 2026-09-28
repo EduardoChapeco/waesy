@@ -1,23 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Share2,
-  ImageOff,
-  ShoppingBag,
-  BellRing,
-  Truck,
-  ShieldCheck,
-  Check,
-  MapPin,
-  MessageCircle,
-  Plus,
-  Minus,
-  Loader2,
-  ShieldAlert,
-  Play,
-  Package,
-} from "lucide-react";
+import { ArrowLeft, Share2, ImageOff, ShoppingBag, BellRing, Truck, ShieldCheck, Check, MapPin, MessageCircle, Plus, Minus, Loader2, ShieldAlert, Play, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -422,7 +405,7 @@ export function ProductDetailMobile({
         <div className="space-y-2 pt-1 border-t border-border/40">
           <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
             <Truck className="size-4 text-primary" />
-            <span>Consultar Frete & Prazo</span>
+            <span>Consultar Frete e Prazo</span>
           </div>
           <form onSubmit={handleCalculateShipping} className="flex gap-2">
             <Input

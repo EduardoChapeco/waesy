@@ -1,43 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Briefcase,
-  Plus,
-  Users,
-  Eye,
-  MapPin,
-  Building,
-  CheckCircle2,
-  Clock,
-  ArrowRight,
-  Share2 ,
-} from "lucide-react";
+import { Briefcase, Plus, Users, Eye, MapPin, Building, CheckCircle2, Clock, ArrowRight, Share2 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  listMyStoreJobs,
-  createStoreJob,
-} from "@/services/jobs.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listMyStoreJobs, createStoreJob } from "@/services/jobs.functions";
 import { OccupationAutocomplete } from "@/components/profile/occupation-autocomplete";
 import { Linkedin, Lock, ExternalLink, RefreshCw, AlertCircle } from "lucide-react";
 import { getWorkspaceLinkedInStatus, syndicateJobToLinkedIn } from "@/services/linkedin-integrations.functions";
@@ -427,13 +400,13 @@ function WorkspaceJobsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
-                    <SelectItem value="comercial">Comércio & Vendas</SelectItem>
-                    <SelectItem value="clt">Administrativo & CLT</SelectItem>
-                    <SelectItem value="tech">TI & Tecnologia</SelectItem>
-                    <SelectItem value="operacional">Operacional & Logística</SelectItem>
-                    <SelectItem value="saude">Saúde & Clínicas</SelectItem>
-                    <SelectItem value="estagio">Estágios & Trainees</SelectItem>
-                    <SelectItem value="pj">PJ & Prestação de Serviços</SelectItem>
+                    <SelectItem value="comercial">Comércio e Vendas</SelectItem>
+                    <SelectItem value="clt">Administrativo e CLT</SelectItem>
+                    <SelectItem value="tech">TI e Tecnologia</SelectItem>
+                    <SelectItem value="operacional">Operacional e Logística</SelectItem>
+                    <SelectItem value="saude">Saúde e Clínicas</SelectItem>
+                    <SelectItem value="estagio">Estágios e Trainees</SelectItem>
+                    <SelectItem value="pj">PJ e Prestação de Serviços</SelectItem>
                     <SelectItem value="outros">Outros Setores</SelectItem>
                   </SelectContent>
                 </Select>

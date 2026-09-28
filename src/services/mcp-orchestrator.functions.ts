@@ -191,7 +191,7 @@ export const orchestrateCampaignIntent = createServerFn({ method: "POST" })
         },
         actionButtons: {
           primaryAction: {
-            label: "Aprovar & Ativar Campanha",
+            label: "Aprovar e Ativar Campanha",
             apiEndpoint: "/api/marketing/campaigns/approve",
             payloadToken: `sig_${Date.now()}_${identity.store_id.slice(0, 8)}`,
           },

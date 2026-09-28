@@ -1,15 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  FastRegisterCompanySchema,
-  UpdateCompanyLeadStatusSchema,
-  ToggleCompanyClassifiedStatusSchema,
-  RegisterWorkspaceProWaitlistSchema,
-  RegisterClassifiedLeadSchema,
-} from "./company-mvp.functions";
-import {
-  UpdatePortalCompletoContentSchema,
-  MigrateCompanyToFullWorkspaceSchema,
-} from "./portal-completo.functions";
+import { FastRegisterCompanySchema, UpdateCompanyLeadStatusSchema, ToggleCompanyClassifiedStatusSchema, RegisterWorkspaceProWaitlistSchema, RegisterClassifiedLeadSchema } from "./company-mvp.functions";
+import { UpdatePortalCompletoContentSchema, MigrateCompanyToFullWorkspaceSchema } from "./portal-completo.functions";
 import { classifiedCategorySchema, CLASSIFIED_CATEGORY_LABELS } from "@/types/community";
 
 describe("Company MVP & Classifieds Niches Contracts", () => {

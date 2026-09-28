@@ -1,38 +1,16 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
- Briefcase,
- MapPin,
- Buildings,
- Laptop,
- GraduationCap,
- Heartbeat,
- Truck,
- Storefront,
- WhatsappLogo,
- ArrowRight,
- UserCheck,
- Money,
- CheckCircle,
- CalendarDots,
- Clock,
- ShareNetwork,
- ArrowSquareOut,
- FileText,
-} from "@phosphor-icons/react";
+import { Briefcase, MapPin, Buildings, Laptop, GraduationCap, Heartbeat, Truck, Storefront, WhatsappLogo, ArrowRight, UserCheck, Money, CheckCircle, CalendarDots, Clock, ShareNetwork, ArrowSquareOut, FileText } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicJobs, type JobItemDTO } from "@/services/jobs.functions";
@@ -62,10 +40,11 @@ export const Route = createFileRoute("/_store/empregos/")({
  },
  ],
  }),
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, jobs] = await Promise.all([
- listActiveBanners({ data: { placement: "empregos" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "empregos", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "empregos" } }).catch(() => []),
  listPublicJobs().catch(() => []),
  ]);
@@ -130,7 +109,17 @@ function JobsMasterPage() {
   }, [jobsList]);
 
  return (
- <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-6 pb-24">
+ <div className="w-full max-w-5xl mx-auto px-4 sm:px-5 space-y-6 pb-24">
+      <div className="-mx-4 sm:-mx-5">
+        <NativeMobileHeader
+          title="Vagas"
+          centerTitle
+          backTo="/"
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Buscar cargo, empresa ou vaga..."
+        />
+      </div>
  {/* ── 1. Banners Contextuais de Empregos ── */}
  {banners && banners.length > 0 && (
  <BannerHeroCarousel banners={banners} className="w-full" />
@@ -243,13 +232,7 @@ function JobsMasterPage() {
 
  {/* Feed Geral de Oportunidades no Fim da Página */}
  <div className="space-y-4 pt-6">
- <div className="flex items-center justify-between">
- <h2 className="text-base font-bold text-foreground flex items-center gap-2">
- <Briefcase size={18} weight="bold" className="text-primary" />
- <span>Todas as Vagas Recentes da Região</span>
- </h2>
  
- </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  {jobsList.map((job: any) => (
@@ -492,98 +475,98 @@ function JobPostCard({ job }: { job: JobItemDTO }) {
 
 // ─── COMPONENTE: ITEM DE VAGA EM MODO LISTA COMPACTA ──────────────────────────
 function JobListItem({ job }: { job: JobItemDTO }) {
- const coverUrl = (job as any).cover_image_url || job.company_logo_url;
- const whatsappNumber = (job.contact_whatsapp || "").replace(/\D/g, "");
- const matchedProfession = useMemo(() => findProfessionByTitle(job.title), [job.title]);
+  const coverUrl = (job as any).cover_image_url || job.company_logo_url;
+  const whatsappNumber = (job.contact_whatsapp || "").replace(/\D/g, "");
+  const matchedProfession = useMemo(() => findProfessionByTitle(job.title), [job.title]);
 
- return (
- <div className="flex items-center justify-between p-3 sm:p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all gap-3.5 group">
- <Link
- to="/empregos/$id"
- params={{ id: job.id }}
- className="flex items-center gap-3.5 min-w-0 flex-1 focus-visible:outline-none"
- >
- {/* Thumbnail de Capa */}
- <div className="relative size-16 sm:size-20 rounded-xl overflow-hidden bg-muted/40 shrink-0 flex items-center justify-center">
- {coverUrl ? (
- <img
- src={coverUrl}
- alt={job.company_name}
- loading="lazy"
- className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
- />
- ) : (
- <Briefcase size={20} className="text-primary/30" />
- )}
- {job.company_logo_url && coverUrl !== job.company_logo_url && (
- <img
- src={job.company_logo_url}
- alt=""
- className="absolute bottom-1 right-1 size-6 rounded-md border border-background object-cover bg-card"
- />
- )}
- </div>
+  return (
+    <div className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[128px] pl-28 sm:pl-36 p-3.5 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-3.5">
+      <Link
+        to="/empregos/$id"
+        params={{ id: job.id }}
+        className="absolute inset-y-0 left-0 w-28 sm:w-36 overflow-hidden rounded-l-2xl bg-muted/40 border-r border-border/40 flex items-center justify-center focus-visible:outline-none"
+      >
+        {coverUrl ? (
+          <img
+            src={coverUrl}
+            alt={job.company_name}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <Briefcase size={24} className="text-primary/30" />
+        )}
+        {job.company_logo_url && coverUrl !== job.company_logo_url && (
+          <img
+            src={job.company_logo_url}
+            alt=""
+            className="absolute bottom-1.5 right-1.5 size-6 rounded-md border border-background object-cover bg-card shadow-2xs"
+          />
+        )}
+      </Link>
 
- {/* Informações da Vaga */}
- <div className="min-w-0 space-y-1">
- <div className="flex items-center gap-2">
- <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-1.5 py-0 h-4">
- {job.workplace_type || "Presencial"}
- </Badge>
- <span className="text-xs text-muted-foreground font-bold truncate">
- {job.company_name}
- </span>
- </div>
+      <Link
+        to="/empregos/$id"
+        params={{ id: job.id }}
+        className="min-w-0 flex-1 space-y-1.5 pl-1 focus-visible:outline-none"
+      >
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-1.5 py-0 h-4">
+            {job.workplace_type || "Presencial"}
+          </Badge>
+          <span className="text-xs text-muted-foreground font-bold truncate">
+            {job.company_name}
+          </span>
+        </div>
 
- <h3 className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">
- {job.title}
- </h3>
+        <h3 className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {job.title}
+        </h3>
 
- <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
- <span className="font-bold font-mono text-primary">
- {job.salary_display || "A combinar"}
- </span>
- {matchedProfession && (
- <>
- <span>•</span>
- <span
- className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold"
- title={`CBO ${matchedProfession.cbo_code} • Piso ${formatMoney(matchedProfession.junior_salary_cents)}`}
- >
- {matchedProfession.sector}
- </span>
- </>
- )}
- <span>•</span>
- <span className="truncate">{job.location || "Regional"}</span>
- </div>
- </div>
- </Link>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span className="font-bold font-mono text-primary">
+            {job.salary_display || "A combinar"}
+          </span>
+          {matchedProfession && (
+            <>
+              <span>•</span>
+              <span
+                className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-foreground font-semibold"
+                title={`CBO ${matchedProfession.cbo_code} • Piso ${formatMoney(matchedProfession.junior_salary_cents)}`}
+              >
+                {matchedProfession.sector}
+              </span>
+            </>
+          )}
+          <span>•</span>
+          <span className="truncate">{job.location || "Regional"}</span>
+        </div>
+      </Link>
 
- {/* Botões de Ação na Lista */}
- <div className="flex items-center gap-2 shrink-0">
- {whatsappNumber && (
- <a
- href={`https://wa.me/55${whatsappNumber}?text=${encodeURIComponent(
- `Olá! Vi a vaga de ${job.title} no Waesy e gostaria de mais informações.`,
- )}`}
- target="_blank"
- rel="noopener noreferrer"
- className="size-8 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 flex items-center justify-center transition-all cursor-pointer"
- title="WhatsApp"
- >
- <WhatsappLogo size={16} weight="bold" />
- </a>
- )}
+      {/* Botões de Ação na Lista */}
+      <div className="flex items-center gap-2 shrink-0">
+        {whatsappNumber && (
+          <a
+            href={`https://wa.me/55${whatsappNumber}?text=${encodeURIComponent(
+              `Olá! Vi a vaga de ${job.title} no Waesy e gostaria de mais informações.`,
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="size-10 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 flex items-center justify-center transition-all cursor-pointer"
+            title="WhatsApp"
+          >
+            <WhatsappLogo size={18} weight="bold" />
+          </a>
+        )}
 
         {job.is_external && job.external_url ? (
           <Button
             asChild
             size="sm"
-            className="h-8 px-3 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-1"
+            className="h-9 px-3 rounded-xl font-bold text-xs bg-primary text-primary-foreground hover:bg-primary/90 gap-1"
           >
             <a href={job.external_url} target="_blank" rel="noopener noreferrer">
-              <span>Site Oficial</span>
+              <span>Site</span>
               <ArrowSquareOut size={12} weight="bold" />
             </a>
           </Button>
@@ -591,14 +574,14 @@ function JobListItem({ job }: { job: JobItemDTO }) {
           <Button
             asChild
             size="sm"
-            className="h-8 px-3 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
+            className="h-9 px-3 rounded-xl font-bold text-xs bg-foreground text-background hover:bg-foreground/90"
           >
             <Link to="/empregos/$id" params={{ id: job.id }}>
-              Candidatar
+              Ver
             </Link>
           </Button>
         )}
- </div>
- </div>
- );
+      </div>
+    </div>
+  );
 }

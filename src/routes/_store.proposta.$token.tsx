@@ -1,40 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
-  Download,
-  Share2,
-  CheckCircle,
-  MessageCircle,
-  ShieldCheck,
-  MapPin,
-  Clock,
-  Sparkles,
-  Bot,
-  Send,
-  Loader2,
-  ArrowRight,
-  Info,
-  ChevronRight,
-} from "lucide-react";
+import { Download, Share2, CheckCircle, MessageCircle, ShieldCheck, MapPin, Clock, Star, Bot, Send, Loader2, ArrowRight, Info, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import {
-  getPublicTravelProposalByToken,
-  approveTravelProposal,
-  askProposalSalesAdvisorAI,
-  type TravelProposalDTO,
-  type TravelProposalOptionDTO,
-} from "@/services/travel-proposal.functions";
+import { getPublicTravelProposalByToken, approveTravelProposal, askProposalSalesAdvisorAI, type TravelProposalDTO, type TravelProposalOptionDTO } from "@/services/travel-proposal.functions";
 import { ProposalCanvasRenderer } from "@/components/tourism/studio/proposal-canvas-renderer";
 import { TravelProposalCheckoutModal } from "@/components/tourism/studio/travel-proposal-checkout-modal";
 import { exportElementAsPdf } from "@/lib/pdf-export";
@@ -275,7 +248,7 @@ function PublicTravelProposalPage() {
             onClick={() => setIsAdvisorOpen(true)}
             className="rounded-xl text-xs font-bold gap-1.5 h-10 border-amber-500/40 text-amber-700 bg-amber-50/50 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:text-amber-300 cursor-pointer"
           >
-            <Sparkles className="size-3.5 text-amber-600 dark:text-amber-400" />
+            <Star className="size-3.5 text-amber-600 dark:text-amber-400" />
             <span>Consultor IA</span>
           </Button>
 
@@ -335,7 +308,7 @@ function PublicTravelProposalPage() {
           onClick={() => setIsAdvisorOpen(true)}
           className="h-11 px-3 rounded-xl text-xs font-bold shrink-0 border-amber-500/40 text-amber-700 bg-amber-50/50 cursor-pointer"
         >
-          <Sparkles className="size-4 text-amber-600 mr-1" />
+          <Star className="size-4 text-amber-600 mr-1" />
           <span>IA</span>
         </Button>
 
@@ -372,7 +345,7 @@ function PublicTravelProposalPage() {
           <SheetHeader className="p-4 border-b border-border/60 shrink-0 bg-muted/20">
             <div className="flex items-center gap-2.5">
               <div className="h-9 w-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600">
-                <Sparkles className="size-5" />
+                <Star className="size-5" />
               </div>
               <div>
                 <SheetTitle className="text-sm font-bold text-foreground">Consultor de Viagens IA</SheetTitle>

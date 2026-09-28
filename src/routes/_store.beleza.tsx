@@ -1,17 +1,10 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Heartbeat,
- Scissors,
- Drop,
- Sun,
- HandSoap,
- FirstAid,
- Smiley,
-} from "@phosphor-icons/react";
+import { Heartbeat, Scissors, Drop, Sun, HandSoap, FirstAid, Smiley } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +13,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { OfferCard } from "@/components/commerce/offer-card";
@@ -47,20 +36,20 @@ const SearchSchema = z.object({
 type BelezaSearch = z.infer<typeof SearchSchema>;
 
 const BELEZA_DEPARTMENTS: FilterChipOption[] = [
- { id: "todos", label: "Tudo em Beleza & Saúde", icon: Tag },
- { id: "perfumaria", label: "Perfumaria & Fragrâncias", icon: Drop },
+ { id: "todos", label: "Tudo em Beleza e Saúde", icon: Tag },
+ { id: "perfumaria", label: "Perfumaria e Fragrâncias", icon: Drop },
  { id: "cabelos", label: "Cuidados com Cabelos", icon: Scissors },
- { id: "skincare", label: "Skincare & Rosto", icon: Sun },
- { id: "corpo-banho", label: "Corpo & Banho", icon: HandSoap },
- { id: "maquiagem", label: "Maquiagem & Unhas", icon: Smiley },
- { id: "dermocosmeticos", label: "Dermocosméticos & Farmácia", icon: FirstAid },
- { id: "suplementos", label: "Suplementos & Bem-Estar", icon: Heartbeat },
+ { id: "skincare", label: "Skincare e Rosto", icon: Sun },
+ { id: "corpo-banho", label: "Corpo e Banho", icon: HandSoap },
+ { id: "maquiagem", label: "Maquiagem e Unhas", icon: Smiley },
+ { id: "dermocosmeticos", label: "Dermocosméticos e Farmácia", icon: FirstAid },
+ { id: "suplementos", label: "Suplementos e Bem-Estar", icon: Heartbeat },
 ];
 
 export const Route = createFileRoute("/_store/beleza")({
  head: () => ({
  meta: [
- { title: "Beleza, Cosméticos, Perfumaria & Saúde | Waesy" },
+ { title: "Beleza, Cosméticos, Perfumaria e Saúde | Waesy" },
  {
  name: "description",
  content:
@@ -70,12 +59,13 @@ export const Route = createFileRoute("/_store/beleza")({
  }),
  validateSearch: (search: Record<string, unknown>): BelezaSearch => SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, packages, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "beleza" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "beleza", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "beleza" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "beleza" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "beleza", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublicStorePackages().catch(() => []),
  listPublishedProducts({ data: { niche: "beleza", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
@@ -209,7 +199,7 @@ function BelezaVerticalPage() {
  <section aria-label="Pacotes de Estética">
  <ServicePackagesRail
  packages={packages}
- title="Pacotes de Estética, Cabelo & Barbearia"
+ title="Pacotes"
  subtitle="Adquira combos de sessões e cortes com desconto garantido."
  />
  </section>

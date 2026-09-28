@@ -31,7 +31,7 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  const jobs: JobPostingItem[] = content?.jobs || [
  {
  id: "job-1",
- title: "Consultor de Vendas & Turismo Senior",
+ title: "Consultor de Vendas e Turismo Senior",
  department: "Comercial & Vendas",
  location: "São Paulo, SP",
  work_model: "hybrid",
@@ -51,7 +51,7 @@ export function CareersJobGrid({ content, design_tokens }: CareersJobGridProps) 
  },
  {
  id: "job-3",
- title: "Analista de Expedição & WMS",
+ title: "Analista de Expedição e WMS",
  department: "Operações & Logística",
  location: "Campinas, SP",
  work_model: "on_site",

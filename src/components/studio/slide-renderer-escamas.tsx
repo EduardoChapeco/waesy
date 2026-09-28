@@ -1,6 +1,6 @@
 import React from "react";
 import type { EscamasSlide, StudioBrandProfile, EscamasAspectRatio } from "@/types/studio-machine";
-import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Star, CheckCircle2 } from "lucide-react";
 
 export function getSlideDimensions(aspectRatio: EscamasAspectRatio = "portrait_4_5"): { width: number; height: number } {
   switch (aspectRatio) {
@@ -126,7 +126,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
               color: brand.secondaryColor || "#38bdf8",
             }}
           >
-            <Sparkles className="w-4 h-4" />
+            <Star className="w-4 h-4" />
             <span>{slide.text_content.badge}</span>
           </div>
         ) : (
@@ -255,7 +255,7 @@ export const SlideRendererEscamas: React.FC<SlideRendererEscamasProps> = ({
             Sintetizando 8 Camadas Escamas...
           </p>
           <p className="text-xs text-slate-400 mt-2 font-mono">
-            Isolamento de DNA, Tipografia & Composição
+            Isolamento de DNA, Tipografia e Composição
           </p>
         </div>
       )}

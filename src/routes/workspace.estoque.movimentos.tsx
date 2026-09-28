@@ -3,36 +3,16 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
-import { Plus, Loader2, History } from "lucide-react";
+import { Plus, Loader2, History, Box } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ChannelBadge } from "@/components/commerce/channel-badge";
 import { EmptyState } from "@/components/state/states";
@@ -179,31 +159,22 @@ function MovementsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Data</TableHead>
-                <TableHead>Canal / Origem</TableHead>
-                <TableHead>Produto / SKU</TableHead>
+                <TableHead>Canal</TableHead>
+                <TableHead>Armazém</TableHead>
+                <TableHead>Produto</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead className="text-right">Qtd</TableHead>
-                <TableHead>Referência / Nota</TableHead>
+                <TableHead>Nota</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {movements.map((mov: any) => {
                 const inferredChannel =
+                  mov.channel_source ||
+                  mov.channel_origin ||
                   mov.metadata?.channel_source ||
                   mov.metadata?.channel ||
-                  (mov.note?.toLowerCase().includes("mercado livre")
-                    ? "mercadolivre"
-                    : mov.note?.toLowerCase().includes("ifood")
-                    ? "ifood"
-                    : mov.note?.toLowerCase().includes("shopee")
-                    ? "shopee"
-                    : mov.note?.toLowerCase().includes("amazon")
-                    ? "amazon"
-                    : mov.note?.toLowerCase().includes("magalu")
-                    ? "magalu"
-                    : mov.reference_type === "order"
-                    ? "online_store"
-                    : "pos");
+                  (mov.reference_type === "order" ? "online_store" : "pos");
 
                 return (
                   <TableRow key={mov.id}>
@@ -212,6 +183,16 @@ function MovementsPage() {
                     </TableCell>
                     <TableCell>
                       <ChannelBadge source={inferredChannel} />
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {mov.location?.name ? (
+                        <span className="font-medium text-foreground flex items-center gap-1.5">
+                          <Box className="size-3 text-muted-foreground" />
+                          {mov.location.name}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Depósito Central</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="font-medium text-sm">{mov.variant?.product?.title || "Desconhecido"}</div>

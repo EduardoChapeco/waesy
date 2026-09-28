@@ -1,17 +1,6 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Briefcase,
-  MapPin,
-  Clock,
-  Buildings,
-  ShareNetwork,
-  ArrowLeft,
-  PaperPlaneTilt,
-  User,
-  ShieldCheck,
-  LinkSimple,
-} from "@phosphor-icons/react";
+import { Briefcase, MapPin, Clock, Buildings, ShareNetwork, ArrowLeft, PaperPlaneTilt, User, ShieldCheck, LinkSimple } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";

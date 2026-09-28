@@ -1,49 +1,19 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Package,
-  Search,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  RotateCcw,
-  KeyRound,
-  MapPin,
-  Phone,
-  User,
-  Plus,
-  ShieldCheck,
-  FileSpreadsheet,
-  TrendingUp,
-  Boxes,
-  Percent,
-} from "lucide-react";
+import { Package, Search, CheckCircle2, Clock, AlertTriangle, RotateCcw, KeyRound, MapPin, Phone, User, Plus, ShieldCheck, FileSpreadsheet, TrendingUp, Boxes, Percent } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  listStorePudoPackages,
-  checkInPudoPackage,
-  deliverPudoPackageToCustomer,
-  reportPackageDamageAndReturn,
-  type PudoPackageDTO,
-} from "@/services/pudo.functions";
+import { listStorePudoPackages, checkInPudoPackage, deliverPudoPackageToCustomer, reportPackageDamageAndReturn, type PudoPackageDTO } from "@/services/pudo.functions";
 import { playCashRegisterSound, playMessageChime } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/logistica/pudo")({
-  head: () => ({ meta: [{ title: "Ponto de Retirada (PUDO) & Logística Reversa | Workspace" }] }),
+  head: () => ({ meta: [{ title: "Ponto de Retirada (PUDO) e Logística Reversa | Workspace" }] }),
   loader: async () => {
     try {
       const packages = await listStorePudoPackages().catch(() => []);
@@ -288,7 +258,7 @@ function WorkspacePudoLogisticsPage() {
       {/* ── HEADER DA PÁGINA ── */}
       <PageHeader
         eyebrow="Logística & Last-Mile"
-        title="Ponto de Retirada (PUDO) & Logística Reversa"
+        title="Pontos de Retirada"
         description="Gestão de guarda temporária de volumes, retirada rápida por token e triagem de devoluções."
         actions={
           <div className="flex items-center gap-2">
@@ -391,7 +361,7 @@ function WorkspacePudoLogisticsPage() {
             disabled={isProcessing}
             className="h-11 px-6 rounded-xl font-bold bg-primary text-primary-foreground text-xs shrink-0 cursor-pointer shadow-2xs"
           >
-            Validar & Entregar Pacote
+            Validar e Entregar Pacote
           </Button>
         </form>
       </div>
@@ -612,7 +582,7 @@ function WorkspacePudoLogisticsPage() {
         <DialogContent className="sm:max-w-md sm:p-6 rounded-2xl bg-card">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-destructive">
-              Solicitar Logística Reversa & Avaria
+              Solicitar Logística Reversa e Avaria
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Relate o problema detectado na embalagem ou solicitação de devolução para envio ao remetente.

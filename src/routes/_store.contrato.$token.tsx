@@ -1,29 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
- FileText,
- ShieldCheck,
- CheckCircle,
- Download,
- Calendar,
- Users,
- MapPin,
- Lock,
- ArrowLeft,
- DollarSign,
- AlertCircle,
-} from "lucide-react";
+import { FileText, ShieldCheck, CheckCircle, Download, Calendar, Users, MapPin, Lock, ArrowLeft, DollarSign, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
- getPublicTravelContractByToken,
- signTravelContract,
- type TravelContractDTO,
-} from "@/services/travel-contract.functions";
+import { getPublicTravelContractByToken, signTravelContract, type TravelContractDTO } from "@/services/travel-contract.functions";
 import { SignaturePad } from "@/components/tourism/contract/signature-pad";
 import { exportElementAsPdf } from "@/lib/pdf-export";
 import { formatMoney } from "@/lib/money";
@@ -187,7 +171,7 @@ function PublicTravelContractSignaturePage() {
  {/* Resumo dos Serviços & Passageiros */}
  <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
  <h3 className="font-black text-slate-900 uppercase tracking-wider text-[11px]">
- 2. ESPECIFICAÇÃO DOS SERVIÇOS & PASSAGEIROS
+ 2. ESPECIFICAÇÃO DOS SERVIÇOS
  </h3>
  <p className="font-medium text-slate-800 whitespace-pre-line">
  {contract.package_summary}
@@ -209,7 +193,7 @@ function PublicTravelContractSignaturePage() {
  {/* Resumo Financeiro & Condições de Pagamento */}
  <div className="space-y-2 p-4 rounded-2xl bg-slate-900 text-white text-xs">
  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">
- 3. PREÇO & CONDIÇÕES DE PAGAMENTO
+ 3. PREÇO e CONDIÇÕES DE PAGAMENTO
  </span>
  <div className="text-2xl font-black font-mono">
  {formatMoney(contract.total_value_cents)}

@@ -1,35 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  Calendar,
-  Star,
-  CheckSquare,
-  MessageSquare,
-  Archive,
-  Send,
-  Clock,
-  Check,
-  Plus,
-  Play,
-  Pause,
-  RotateCcw,
-  Copy,
-  Tag,
-  Repeat,
-  Link as LinkIcon,
-  AlertTriangle,
-} from "lucide-react";
+import { X, Calendar, Star, CheckSquare, MessageSquare, Archive, Send, Clock, Check, Plus, Play, Pause, RotateCcw, Copy, Tag, Repeat, Link as LinkIcon, AlertTriangle } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,24 +15,8 @@ import type {
   TaskChecklistItem,
   TaskCommentItem,
 } from "./task-types";
-import {
-  CONTEXT_TYPE_LABELS,
-  PRIORITY_LABELS,
-  STATUS_LABELS,
-} from "./task-types";
-import {
-  getTaskDetails,
-  updateWorkspaceTask,
-  updateTaskStatus,
-  toggleTaskMyDay,
-  deleteWorkspaceTask,
-  toggleChecklistItem,
-  addChecklistItem,
-  addTaskComment,
-  startTaskTimer,
-  stopTaskTimer,
-  resetTaskTimer,
-} from "@/services/tasks.functions";
+import { CONTEXT_TYPE_LABELS, PRIORITY_LABELS, STATUS_LABELS } from "./task-types";
+import { getTaskDetails, updateWorkspaceTask, updateTaskStatus, toggleTaskMyDay, deleteWorkspaceTask, toggleChecklistItem, addChecklistItem, addTaskComment, startTaskTimer, stopTaskTimer, resetTaskTimer } from "@/services/tasks.functions";
 
 interface TaskDetailSheetProps {
   task: WorkspaceTask | null;

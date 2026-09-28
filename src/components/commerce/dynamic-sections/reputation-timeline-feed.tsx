@@ -62,7 +62,7 @@ export function ReputationTimelineFeed({ content, design_tokens }: ReputationTim
  <div className={cn("w-full max-w-5xl mx-auto py-8 px-4", design_tokens?.className)}>
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
  <div>
- <h3 className="text-lg font-bold text-foreground">Manifestações Públicas & Resoluções</h3>
+ <h3 className="text-lg font-bold text-foreground">Manifestações Públicas</h3>
  <p className="text-xs text-muted-foreground">Histórico auditado de reclamações e soluções oficiais.</p>
  </div>
 

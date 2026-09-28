@@ -6,7 +6,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getPublicLeadFormBySlug, LeadFormDTO } from "@/services/lead-forms.functions";
 import { LeadFormRenderer } from "@/components/leads/lead-form-renderer";
-import { ShieldCheck, Sparkles, Building2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Star, Building2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
@@ -136,7 +136,7 @@ function LeadLandingPage() {
             <span className="text-xs text-muted-foreground">Privacidade e Dados 100% Protegidos</span>
           </div>
           <div className="flex items-center gap-2 p-3 rounded-xl border border-border/40 bg-muted/20">
-            <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+            <Star className="w-4 h-4 text-amber-500 shrink-0" />
             <span className="text-xs text-muted-foreground">Atendimento Prioritário e Ágil</span>
           </div>
         </div>

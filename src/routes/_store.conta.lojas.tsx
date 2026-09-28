@@ -1,16 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- Store,
- Plus,
- ArrowRight,
- ExternalLink,
- CheckCircle2,
- Package,
- Building2,
- MapPin,
- ShieldCheck,
-} from "lucide-react";
+import { Store, Plus, ArrowRight, ExternalLink, CheckCircle2, Package, Building2, MapPin, ShieldCheck } from "lucide-react";
 import { getMyStoresList } from "@/services/store.functions";
 import { setTenantContext } from "@/services/identity.functions";
 import { Button } from "@/components/ui/button";
@@ -19,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/lojas")({
- head: () => ({ meta: [{ title: "Minhas Lojas & Negócios | Waesy" }] }),
+ head: () => ({ meta: [{ title: "Minhas Lojas e Negócios | Waesy" }] }),
  loader: async () => {
    try {
  const stores = await getMyStoresList().catch(() => []);

@@ -1,19 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Palette,
-  Save,
-  Wand2,
-  RefreshCw,
-  CheckCircle2,
-  Plus,
-  Trash2,
-  Eye,
-  Type,
-  Layers,
-  Image as ImageIcon,
-  Sliders,
-} from "lucide-react";
+import { Palette, Save, Wand2, RefreshCw, CheckCircle2, Plus, Trash2, Eye, Type, Layers, Image as ImageIcon, Sliders } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,24 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  saveBrandKit,
-  getBrandKit,
-  generateBrandKitWithAI,
-  type BrandKitDTO,
-} from "@/services/studio.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { saveBrandKit, getBrandKit, generateBrandKitWithAI, type BrandKitDTO } from "@/services/studio.functions";
 import { getStoreSettings } from "@/services/store.functions";
 
 export const Route = createFileRoute("/workspace/marketing/brand-kit")({
   head: () => ({
-    meta: [{ title: "Brand Kit & DNA Visual | Workspace Waesy" }],
+    meta: [{ title: "Brand Kit | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -411,7 +387,7 @@ export function BrandKitPage() {
                 )}
               </div>
               <h1 className="text-xl font-semibold tracking-tight mt-1 text-foreground">
-                Brand Kit & DNA Visual
+                Brand Kit
               </h1>
             </div>
             <div className="flex items-center gap-2">
@@ -494,7 +470,7 @@ export function BrandKitPage() {
               </div>
             </SectionCard>
 
-            <SectionCard title="Fundos & Texto" icon={Layers}>
+            <SectionCard title="Tipografia" icon={Layers}>
               <div className="space-y-3">
                 <ColorSwatch
                   label="Background Dark"
@@ -521,7 +497,7 @@ export function BrandKitPage() {
               </div>
             </SectionCard>
 
-            <SectionCard title="Status & Semânticas" icon={CheckCircle2}>
+            <SectionCard title="Cores de Status" icon={CheckCircle2}>
               <div className="space-y-3">
                 <ColorSwatch
                   label="Sucesso"
@@ -672,7 +648,7 @@ export function BrandKitPage() {
             <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-border/30 flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Perfil & Vitrines)</Label>
+                  <Label className="text-sm font-semibold">Capa Panorâmica da Loja (Perfil e Vitrines)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Banner oficial exibido no cabeçalho do perfil público da loja e nos destaques do ecossistema Waesy
                   </p>

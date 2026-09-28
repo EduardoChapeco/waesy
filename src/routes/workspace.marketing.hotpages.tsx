@@ -1,14 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Tag, Plus,
- Trash2,
- Loader2,
- Eye,
- Pencil,
- ArrowRight,
- Shield,
- Layers,
- Image as ImageIcon, } from "lucide-react";
+import { Tag, Plus, Trash2, Loader2, Eye, Pencil, ArrowRight, Shield, Layers, Image as ImageIcon } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,20 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { SheetPage } from "@/components/ui/sheet-page";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- listHotpages,
- saveHotpage,
- deleteHotpage,
- type HotpageDTO,
- type HotpageModule,
-} from "@/services/hotpage.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listHotpages, saveHotpage, deleteHotpage, type HotpageDTO, type HotpageModule } from "@/services/hotpage.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getUserSession } from "@/services/auth.functions";
 import { toast } from "sonner";
@@ -39,7 +19,7 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { DestinationPicker } from "@/components/ui/destination-picker";
 
 export const Route = createFileRoute("/workspace/marketing/hotpages")({
- head: () => ({ meta: [{ title: "Destaques & Hotpages da Loja | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Destaques e Hotpages da Loja | Workspace" }] }),
  loader: async () => {
    try {
  const [store, session] = await Promise.all([
@@ -181,7 +161,7 @@ function WorkspaceStoreHotpagesPage() {
  {/* ── PageHeader Canônico Clean ── */}
  <PageHeader
  eyebrow="Vitrine & Divulgação"
- title="Destaques & Hotpages"
+ title="Hotpages"
  actions={
  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
  <Select
@@ -195,7 +175,7 @@ function WorkspaceStoreHotpagesPage() {
  <SelectItem value="home">Home / Perfil da Loja</SelectItem>
  <SelectItem value="gastronomia">Gastronomia</SelectItem>
  <SelectItem value="mercado">Supermercados</SelectItem>
- <SelectItem value="moda">Moda & Vestuário</SelectItem>
+ <SelectItem value="moda">Moda e Vestuário</SelectItem>
  <SelectItem value="turismo">Turismo</SelectItem>
  <SelectItem value="pet">Pet Shop</SelectItem>
  <SelectItem value="beleza">Beleza</SelectItem>
@@ -353,17 +333,17 @@ function WorkspaceStoreHotpagesPage() {
  <SelectContent className="rounded-xl">
  <SelectItem value="home">Página Inicial / Perfil da Loja (Home)</SelectItem>
  <SelectItem value="gastronomia">Gastronomia / Restaurantes</SelectItem>
- <SelectItem value="mercado">Supermercados & Empórios</SelectItem>
- <SelectItem value="moda">Moda & Vestuário</SelectItem>
- <SelectItem value="turismo">Turismo & Viagens</SelectItem>
- <SelectItem value="pet">Pet Shop & Veterinária</SelectItem>
- <SelectItem value="beleza">Beleza & Estética</SelectItem>
+ <SelectItem value="mercado">Supermercados e Empórios</SelectItem>
+ <SelectItem value="moda">Moda e Vestuário</SelectItem>
+ <SelectItem value="turismo">Turismo e Viagens</SelectItem>
+ <SelectItem value="pet">Pet Shop e Veterinária</SelectItem>
+ <SelectItem value="beleza">Beleza e Estética</SelectItem>
  <SelectItem value="servicos">Serviços Profissionais</SelectItem>
- <SelectItem value="casa">Casa & Decoração</SelectItem>
- <SelectItem value="eletronicos">Eletrônicos & Tecnologia</SelectItem>
- <SelectItem value="construcao">Construção & Reformas</SelectItem>
- <SelectItem value="imoveis">Imóveis & Locação</SelectItem>
- <SelectItem value="eventos">Eventos & Ingressos</SelectItem>
+ <SelectItem value="casa">Casa e Decoração</SelectItem>
+ <SelectItem value="eletronicos">Eletrônicos e Tecnologia</SelectItem>
+ <SelectItem value="construcao">Construção e Reformas</SelectItem>
+ <SelectItem value="imoveis">Imóveis e Locação</SelectItem>
+ <SelectItem value="eventos">Eventos e Ingressos</SelectItem>
  <SelectItem value="all">Todas as Vitrines (Global)</SelectItem>
  </SelectContent>
  </Select>

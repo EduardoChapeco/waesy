@@ -9,13 +9,10 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
- QuickStoreEditorDialog,
- type QuickStoreData,
-} from "@/components/workspace/quick-store-editor-dialog";
+import { QuickStoreEditorDialog, type QuickStoreData } from "@/components/workspace/quick-store-editor-dialog";
 
 export const Route = createFileRoute("/workspace/lojas/")({
- head: () => ({ meta: [{ title: "Minhas Lojas & Negócios | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Minhas Lojas | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const stores = await getMyStoresList();
@@ -177,7 +174,7 @@ export default function WorkspaceLojasPage() {
  onClick={() => setSelectedType("ecommerce")}
  className="rounded-xl text-xs font-semibold h-8"
  >
- Lojas & E-commerce
+ Lojas e E-commerce
  </Button>
  <Button
  variant={selectedType === "food_service" ? "default" : "outline"}

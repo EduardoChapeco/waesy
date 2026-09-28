@@ -8,39 +8,20 @@ import { OccupationAutocomplete } from "@/components/profile/occupation-autocomp
 import { updateMemberResumeData } from "@/services/social.functions";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ArrowLeft,
-  Save,
-  Printer,
-  Download,
-  Plus,
-  Trash2 ,
-  FileText,
-  Smartphone,
-  Eye,
-  Building2,
-  GraduationCap,
-  Award,
-  Globe,
-  Phone,
-  Mail,
-  MapPin,
-  Check,
-  ExternalLink,
-  Briefcase,
-  Layers,
-  QrCode,
-  User, Linkedin } from "lucide-react";
+import { ArrowLeft, Save, Printer, Download, Plus, Trash2, FileText, Smartphone, Eye, Building2, GraduationCap, Award, Globe, Phone, Mail, MapPin, Check, ExternalLink, Briefcase, Layers, QrCode, User, Linkedin, SlidersHorizontal, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/_store/conta/curriculo")({
   head: () => ({
     meta: [
-      { title: "Currículo Profissional | Waesy" },
+      { title: "Currículo | Waesy" },
       {
         name: "description",
         content:
@@ -76,6 +57,7 @@ export default function MeuCurriculoPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isLinkedInImportOpen, setIsLinkedInImportOpen] = useState(false);
+  const [isToolsSheetOpen, setIsToolsSheetOpen] = useState(false);
   const [format, setFormat] = useState<"a4" | "story">("a4");
   const [template, setTemplate] = useState<"minimal" | "modern" | "editorial">("minimal");
 
@@ -129,6 +111,7 @@ export default function MeuCurriculoPage() {
         experiences,
         educations,
         certifications,
+        licenses,
         skills,
         custom_format: format,
         custom_template: template,
@@ -260,20 +243,62 @@ export default function MeuCurriculoPage() {
     setSkills(skills.filter((s) => s !== skillToRemove));
   };
 
-  const handleLinkedInImport = (data: any) => {
-    if (data.headline && !occupation) setOccupation(data.headline);
-    if (data.summary) setSummary(data.summary);
-    if (Array.isArray(data.experiences) && data.experiences.length > 0) {
-      setExperiences((prev) => [...data.experiences, ...prev]);
+  const handleLinkedInImport = async (data: any) => {
+    const nextOccupation = data.headline && !occupation ? data.headline : occupation;
+    const nextSummary = data.summary || summary;
+    const nextExperiences =
+      Array.isArray(data.experiences) && data.experiences.length > 0
+        ? [...data.experiences, ...experiences]
+        : experiences;
+    const nextEducations =
+      Array.isArray(data.educations) && data.educations.length > 0
+        ? [...data.educations, ...educations]
+        : educations;
+    const nextSkills =
+      Array.isArray(data.skills) && data.skills.length > 0
+        ? Array.from(new Set([...skills, ...data.skills]))
+        : skills;
+
+    setOccupation(nextOccupation);
+    setSummary(nextSummary);
+    setExperiences(nextExperiences);
+    setEducations(nextEducations);
+    setSkills(nextSkills);
+
+    try {
+      const updatedResumeData = {
+        ...(profile?.resume_data || {}),
+        summary: nextSummary,
+        experiences: nextExperiences,
+        educations: nextEducations,
+        certifications,
+        licenses,
+        skills: nextSkills,
+        custom_format: format,
+        custom_template: template,
+        updated_at: new Date().toISOString(),
+      };
+      await Promise.all([
+        updateMemberResumeData({ data: { resumeData: updatedResumeData } }),
+        updateProfile({
+          data: {
+            fullName,
+            occupation: nextOccupation,
+            phone,
+            city,
+            state,
+            website,
+            bio: nextSummary,
+          },
+        }),
+      ]);
+      toast.success("Currículo do LinkedIn importado e salvo no banco de dados!");
+      router.invalidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Importado na tela, mas houve erro ao persistir no banco.");
     }
-    if (Array.isArray(data.educations) && data.educations.length > 0) {
-      setEducations((prev) => [...data.educations, ...prev]);
-    }
-    if (Array.isArray(data.skills) && data.skills.length > 0) {
-      setSkills((prev) => Array.from(new Set([...prev, ...data.skills])));
-    }
-    toast.success("Dados do LinkedIn incorporados ao currículo com sucesso!");
   };
+
   if (!profile) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center space-y-4">
@@ -293,103 +318,92 @@ export default function MeuCurriculoPage() {
 
   return (
     <div className="w-full min-h-[100dvh] flex flex-col bg-background font-sans text-foreground">
-      {/* ── Top Bar Canônica: Meu Currículo Digital ── */}
-      <header className="h-14 px-3 sm:px-6 border-b border-border/50 bg-background/95 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between gap-3 shrink-0">
+      {/* ── V118 Universal Header Mobile (< Título ⚙️ + Salvar) ── */}
+      <NativeMobileHeader
+        title="Currículo"
+        centerTitle
+        backTo="/conta"
+        rightAction={
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setIsToolsSheetOpen(true)}
+              aria-label="Opções e Ferramentas do Currículo"
+              className="w-11 h-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted/70 active:scale-95 transition-all cursor-pointer"
+            >
+              <SlidersHorizontal className="size-5" />
+            </button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-9 rounded-xl text-xs font-bold bg-primary text-primary-foreground px-3 cursor-pointer"
+            >
+              {isSaving ? "..." : "Salvar"}
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Barra Secundária Mobile Silenciosa: Alternador Editar / Prévia */}
+      <div className="lg:hidden px-4 py-2 border-b border-border/40 bg-card/60 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/60 border border-border/40 text-xs font-semibold flex-1">
+          <button
+            type="button"
+            onClick={() => setActiveMobileView("edit")}
+            className={cn(
+              "flex-1 py-1.5 rounded-lg transition-colors cursor-pointer min-h-[36px]",
+              activeMobileView === "edit" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
+            )}
+          >
+            Editar
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveMobileView("preview")}
+            className={cn(
+              "flex-1 py-1.5 rounded-lg transition-colors cursor-pointer min-h-[36px]",
+              activeMobileView === "preview" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
+            )}
+          >
+            Prévia PDF ({format.toUpperCase()})
+          </button>
+        </div>
+      </div>
+
+      {/* ── Top Bar Desktop: Currículo ── */}
+      <header className="hidden lg:flex h-14 px-6 border-b border-border/50 bg-background/95 backdrop-blur-md sticky top-0 z-40 items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
           <NativeBackButton fallbackHref="/conta" />
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (profile?.resume_data) {
-                  if (Array.isArray(profile.resume_data.experiences)) setExperiences(profile.resume_data.experiences);
-                  if (Array.isArray(profile.resume_data.educations)) setEducations(profile.resume_data.educations);
-                  if (Array.isArray(profile.resume_data.certifications)) setCertifications(profile.resume_data.certifications);
-    if (Array.isArray(profile.resume_data.licenses)) setLicenses(profile.resume_data.licenses);
-                  if (Array.isArray(profile.resume_data.skills)) setSkills(profile.resume_data.skills);
-                  if (profile.resume_data.summary) setSummary(profile.resume_data.summary);
-                  toast.success("Dados sincronizados com seu Perfil Profissional!");
-                } else {
-                  toast.info("Nenhum dado profissional encontrado no perfil.");
-                }
-              }}
-              className="h-8 rounded-xl text-xs gap-1.5 font-bold cursor-pointer"
-            >
-              <RefreshCw className="size-3 text-primary" />
-              <span>Sincronizar do Perfil</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsLinkedInImportOpen(true)}
-              className="h-8 rounded-xl text-xs gap-1.5 font-bold border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
-            >
-              <Linkedin className="size-3 text-[#0A66C2] fill-current" />
-              <span>Importar LinkedIn</span>
-            </Button>
-            <span className="text-sm font-bold text-foreground">Meu Currículo</span>
-            <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
-            <span className="text-xs text-muted-foreground hidden sm:inline">Portfólio Profissional</span>
-          </div>
+          <span className="text-sm font-bold text-foreground">Currículo</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsLinkedInImportOpen(true)}
+            className="h-8 rounded-xl text-xs gap-1.5 font-bold border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+          >
+            <Linkedin className="size-3 text-[#0A66C2] fill-current" />
+            <span>LinkedIn</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsToolsSheetOpen(true)}
+            className="h-8 rounded-xl text-xs gap-1.5 font-semibold cursor-pointer"
+          >
+            <SlidersHorizontal className="size-3.5" />
+            <span>Formato</span>
+          </Button>
         </div>
 
-        {/* Seletor de Formato & Ações de Exportação */}
         <div className="flex items-center gap-2">
-          {/* Alternador Mobile Editar / Visualizar */}
-          <div className="flex lg:hidden items-center gap-1 p-0.5 rounded-xl bg-muted/60 border border-border/40 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setActiveMobileView("edit")}
-              className={cn(
-                "px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer min-h-[36px]",
-                activeMobileView === "edit" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
-              )}
-            >
-              Editar
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveMobileView("preview")}
-              className={cn(
-                "px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer min-h-[36px]",
-                activeMobileView === "preview" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
-              )}
-            >
-              Prévia
-            </button>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-1 p-0.5 rounded-xl bg-muted/50 border border-border/40 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setFormat("a4")}
-              className={cn(
-                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
-                format === "a4" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
-              )}
-            >
-              A4 Folha
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormat("story")}
-              className={cn(
-                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
-                format === "story" ? "bg-background text-foreground shadow-2xs font-bold" : "text-muted-foreground"
-              )}
-            >
-              Story 9:16
-            </button>
-          </div>
-
           <Button
             variant="outline"
             size="sm"
             onClick={handlePrint}
-            className="h-9 min-h-[44px] rounded-xl text-xs font-semibold gap-1.5 cursor-pointer hidden md:flex"
+            className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
           >
             <Printer className="size-3.5" />
             <span>Imprimir</span>
@@ -400,23 +414,141 @@ export default function MeuCurriculoPage() {
             size="sm"
             onClick={handleDownloadPdf}
             disabled={isExporting}
-            className="h-9 min-h-[44px] rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+            className="h-9 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
           >
             <Download className="size-3.5" />
-            <span className="hidden sm:inline">Baixar PDF</span>
+            <span>PDF</span>
           </Button>
 
           <Button
             size="sm"
             onClick={handleSave}
             disabled={isSaving}
-            className="h-9 min-h-[44px] rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-xs cursor-pointer px-4"
+            className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground shadow-xs cursor-pointer px-4"
           >
             <Save className="size-3.5" />
             <span>{isSaving ? "Salvando..." : "Salvar"}</span>
           </Button>
         </div>
       </header>
+
+      {/* ── MODAL 100dvh DE OPÇÕES E FERRAMENTAS DO CURRÍCULO (V118 Progressive Disclosure) ── */}
+      <Dialog open={isToolsSheetOpen} onOpenChange={setIsToolsSheetOpen}>
+        <DialogContent className="w-screen h-[100dvh] max-w-none sm:max-w-md sm:h-auto sm:max-h-[85vh] rounded-none sm:rounded-2xl p-5 space-y-5 overflow-y-auto">
+          <DialogHeader className="pb-2 border-b border-border/40">
+            <DialogTitle className="text-base font-bold">Opções do Currículo</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-muted-foreground block">
+                Importação e Sincronização
+              </span>
+              <div className="grid grid-cols-1 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsToolsSheetOpen(false);
+                    setIsLinkedInImportOpen(true);
+                  }}
+                  className="h-11 rounded-xl text-xs font-bold justify-start gap-2.5 border-blue-500/30 text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+                >
+                  <Linkedin className="size-4 text-[#0A66C2] fill-current" />
+                  <span>Importar do LinkedIn</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (profile?.resume_data) {
+                      if (Array.isArray(profile.resume_data.experiences)) setExperiences(profile.resume_data.experiences);
+                      if (Array.isArray(profile.resume_data.educations)) setEducations(profile.resume_data.educations);
+                      if (Array.isArray(profile.resume_data.certifications)) setCertifications(profile.resume_data.certifications);
+                      if (Array.isArray(profile.resume_data.licenses)) setLicenses(profile.resume_data.licenses);
+                      if (Array.isArray(profile.resume_data.skills)) setSkills(profile.resume_data.skills);
+                      if (profile.resume_data.summary) setSummary(profile.resume_data.summary);
+                      toast.success("Dados sincronizados com seu Perfil Profissional!");
+                      setIsToolsSheetOpen(false);
+                    } else {
+                      toast.info("Nenhum dado profissional adicional encontrado no perfil.");
+                    }
+                  }}
+                  className="h-11 rounded-xl text-xs font-semibold justify-start gap-2.5 cursor-pointer"
+                >
+                  <RefreshCw className="size-4 text-primary" />
+                  <span>Sincronizar</span>
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-muted-foreground block">
+                Formato de Exportação
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormat("a4")}
+                  className={cn(
+                    "h-11 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer",
+                    format === "a4"
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-card text-muted-foreground border-border/60"
+                  )}
+                >
+                  A4 (Documento)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormat("story")}
+                  className={cn(
+                    "h-11 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer",
+                    format === "story"
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-card text-muted-foreground border-border/60"
+                  )}
+                >
+                  Story (9:16)
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-muted-foreground block">
+                Exportar e Compartilhar
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsToolsSheetOpen(false);
+                    handleDownloadPdf();
+                  }}
+                  disabled={isExporting}
+                  className="h-11 rounded-xl text-xs font-bold gap-2 cursor-pointer"
+                >
+                  <Download className="size-4" />
+                  <span>Baixar PDF</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsToolsSheetOpen(false);
+                    handlePrint();
+                  }}
+                  className="h-11 rounded-xl text-xs font-bold gap-2 cursor-pointer"
+                >
+                  <Printer className="size-4" />
+                  <span>Imprimir</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Split Screen: Editor Modular à Esquerda, Truthful Preview à Direita ── */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
@@ -430,7 +562,7 @@ export default function MeuCurriculoPage() {
           {/* Seção 1: Dados Pessoais & Contatos */}
           <div className="space-y-4 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
-              <span>1. Identificação & Contato</span>
+              <span>Identificação</span>
               <span className="text-[10px] text-muted-foreground font-mono">Cabeçalho</span>
             </h3>
             <div className="space-y-3 text-xs">
@@ -485,7 +617,7 @@ export default function MeuCurriculoPage() {
           {/* Seção 2: Resumo Executivo / Sobre */}
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center justify-between">
-              <span>2. Resumo Profissional</span>
+              <span>Resumo</span>
               
             </h3>
             <Textarea
@@ -501,7 +633,7 @@ export default function MeuCurriculoPage() {
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                3. Experiências ({experiences.length})
+                Experiências ({experiences.length})
               </h3>
               <Button
                 type="button"
@@ -564,7 +696,7 @@ export default function MeuCurriculoPage() {
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                4. Formação Acadêmica ({educations.length})
+                Formação ({educations.length})
               </h3>
               <Button
                 type="button"
@@ -610,7 +742,7 @@ export default function MeuCurriculoPage() {
           {/* Seção 5: Competências & Habilidades */}
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              5. Competências
+              Competências
             </h3>
             <div className="flex gap-2">
               <Input
@@ -651,7 +783,7 @@ export default function MeuCurriculoPage() {
           {/* Seção 6: Personalização Visual */}
           <div className="space-y-3 p-4 rounded-2xl bg-card border border-border/50 shadow-2xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              6. Personalização
+              Estilo
             </h3>
             <div className="space-y-2 text-xs">
               <Label className="text-[11px]">Template Visual</Label>

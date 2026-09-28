@@ -4,56 +4,12 @@
  * Paradigma Apple HIG & Clean Design, alvos de 44px, fonte Inter e RLS estrito (auth.uid() = profile_id).
  */
 
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useTransition, useMemo } from "react";
-import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  Wallet,
-  Calendar,
-  Receipt,
-  Plus,
-  Trash2,
-  Image as ImageIcon,
-  Eye,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  CreditCard,
-  Search,
-  CheckCircle2,
-  SlidersHorizontal,
-  ArrowLeft,
-  Utensils,
-  Car,
-  Home,
-  HeartPulse,
-  GraduationCap,
-  Palmtree,
-  ShoppingBag,
-  Briefcase,
-  TrendingUp,
-  Landmark,
-  ScanLine,
-  Lock,
-  Coins,
-  Shield,
-  Activity,
-  ExternalLink,
-} from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Wallet, Calendar, Receipt, Plus, Trash2, Image as ImageIcon, Eye, X, ChevronLeft, ChevronRight, CreditCard, Search, CheckCircle2, SlidersHorizontal, ArrowLeft, Utensils, Car, Home, HeartPulse, GraduationCap, Palmtree, ShoppingBag, Briefcase, TrendingUp, Landmark, ScanLine, Lock, Coins, Shield, Activity, ExternalLink } from "lucide-react";
 import { getUserTokenWallet } from "@/services/tokens.functions";
-import {
-  getPersonalFinanceSummary,
-  listPersonalFinanceEntries,
-  listPersonalFinanceCategories,
-  createPersonalFinanceEntry,
-  deletePersonalFinanceEntry,
-  analyzeReceiptWithAI,
-  type PersonalFinanceSummaryDTO,
-  type PersonalFinancialEntryDTO,
-  type PersonalFinancialCategoryDTO,
-  type OcrReceiptResult,
-} from "@/services/personal-finance.functions";
+import { getPersonalFinanceSummary, listPersonalFinanceEntries, listPersonalFinanceCategories, createPersonalFinanceEntry, deletePersonalFinanceEntry, analyzeReceiptWithAI, type PersonalFinanceSummaryDTO, type PersonalFinancialEntryDTO, type PersonalFinancialCategoryDTO, type OcrReceiptResult } from "@/services/personal-finance.functions";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,7 +18,7 @@ import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 
 export const Route = createFileRoute("/_store/conta/financas")({
-  head: () => ({ meta: [{ title: "Gestão Financeira Pessoal | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Finanças | Waesy" }] }),
   loader: async () => {
     try {
     const now = new Date();
@@ -344,7 +300,8 @@ function PersonalFinancePage() {
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0">
       {/* ── 1. Clean Minimalist Header ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
+      <NativeMobileHeader title="Finanças" fallbackHref="/conta" mobileOnly rightActions={<Button size="sm" onClick={() => setIsNewEntryOpen(true)} className="rounded-xl h-8 px-2.5 text-xs font-semibold gap-1 bg-foreground text-background shrink-0"><Plus className="size-3.5" /><span>Lançar</span></Button>} />
+      <div className="hidden sm:flex items-center justify-between gap-4 border-b border-border/40 pb-4 pt-1">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Finanças
@@ -357,7 +314,7 @@ function PersonalFinancePage() {
           className="rounded-xl h-8 px-3.5 text-xs font-semibold gap-1.5 bg-foreground text-background hover:bg-foreground/90 shrink-0 shadow-xs cursor-pointer"
         >
           <Plus className="size-3.5" />
-          <span>Novo Lançamento</span>
+          <span>Lançar</span>
         </Button>
       </div>
 
@@ -397,7 +354,7 @@ function PersonalFinancePage() {
           <div className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between text-muted-foreground mb-2">
               <span className="text-xs uppercase tracking-wider font-semibold">
-                Saldo do Período
+                Saldo
               </span>
               <Wallet className="h-4 w-4" />
             </div>
@@ -457,14 +414,14 @@ function PersonalFinancePage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                    Carteira de Tokens & Fidelidade
+                    Tokens e Fidelidade
                   </h2>
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                    <Shield className="h-2.5 w-2.5" /> Segurança Militar
+                    <Shield className="h-2.5 w-2.5" /> Protegido
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Ledger criptográfico pétreo e intransferível de utilidade regional
+                  Extrato e saldo de utilidade regional
                 </p>
               </div>
             </div>
@@ -476,7 +433,7 @@ function PersonalFinancePage() {
               className="rounded-xl text-xs font-semibold h-8 gap-1.5 self-start sm:self-auto border-border/80"
             >
               <Link to="/conta/tokens">
-                <span>Ver Ledger & Extrato</span>
+                <span>Extrato</span>
                 <ExternalLink className="h-3 w-3 text-muted-foreground" />
               </Link>
             </Button>
@@ -485,7 +442,7 @@ function PersonalFinancePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-1">
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
-                Saldo de Tokens Disponíveis
+                Saldo Disponível
               </span>
               <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-mono">
                 {Number(tokenWallet?.balance || 0).toLocaleString()}{" "}
@@ -498,7 +455,7 @@ function PersonalFinancePage() {
 
             <div className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-1">
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
-                Tokens em Liberação (Ganhos Programados)
+                Tokens em Liberação
               </span>
               <div className="text-xl sm:text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
                 {Number(tokenWallet?.balance_pending_maturity || 0).toLocaleString()}{" "}
@@ -513,7 +470,7 @@ function PersonalFinancePage() {
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-muted/20 px-3 py-2 rounded-xl border border-border/30">
             <Lock className="h-3.5 w-3.5 shrink-0 text-primary" />
             <span>
-              <strong>Proteção da Carteira:</strong> Seus tokens são vinculados com segurança jurídica ao seu CPF, garantindo rastreabilidade e proteção contra fraudes.
+              <strong>Proteção da Carteira:</strong> Seus tokens são vinculados ao seu CPF com rastreabilidade e proteção.
             </span>
           </div>
         </div>
@@ -523,7 +480,7 @@ function PersonalFinancePage() {
           <div className="bg-card border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                Distribuição de Gastos
+                Distribuição
               </h2>
               <span className="text-xs text-muted-foreground">
                 {summary.byCategory.length} categoria{summary.byCategory.length !== 1 ? "s" : ""}

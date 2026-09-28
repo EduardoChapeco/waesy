@@ -67,7 +67,7 @@ export const PERSONAL_NAV_GROUPS: NavigationGroup[] = [
  },
  {
     id: "social-negociacoes",
-    title: "Negociações & Anúncios",
+    title: "Negociações",
     items: [
       { to: "/conta/negociacoes", label: "Minhas Negociações", icon: Handshake },
  { to: "/conta/classificados", label: "Meus Anúncios", icon: Tag },
@@ -76,15 +76,15 @@ export const PERSONAL_NAV_GROUPS: NavigationGroup[] = [
  },
  {
  id: "commerce",
- title: "Compras & Pagamentos",
+ title: "Compras",
  items: [
  { to: "/conta/pedidos", label: "Minhas Compras", icon: Package },
- { to: "/conta/pacotes", label: "Pacotes & Aulas", icon: Ticket },
- { to: "/conta/pagamentos", label: "Pagamentos & Parcelas", icon: CreditCard },
- { to: "/conta/creditos", label: "Carteira & Créditos", icon: Coins },
+ { to: "/conta/pacotes", label: "Pacotes", icon: Ticket },
+ { to: "/conta/pagamentos", label: "Pagamentos", icon: CreditCard },
+ { to: "/conta/creditos", label: "Carteira", icon: Coins },
  { to: "/conta/gift-cards", label: "Vales-Presente", icon: Gift },
  { to: "/conta/enderecos", label: "Endereços", icon: MapPin },
- { to: "/conta/trocas", label: "Trocas & Devoluções", icon: RefreshCcw },
+ { to: "/conta/trocas", label: "Devoluções", icon: RefreshCcw },
  ],
  },
 ];
@@ -98,7 +98,7 @@ export const FEED_NAV_GROUPS: NavigationGroup[] = [
     title: "Feed da Comunidade",
     items: [
       { to: "/feed", label: "Para Você", icon: Sliders, exact: true },
-      { to: "/feed?type=simple", label: "Fotos & Ideias", icon: MessageSquare },
+      { to: "/feed?type=simple", label: "Publicações", icon: MessageSquare },
       { to: "/feed?type=news", label: "Novidades Locais", icon: Flame },
       { to: "/feed?type=travel", label: "Roteiros", icon: Compass },
     ],
@@ -114,9 +114,9 @@ export const NEWS_NAV_GROUPS: NavigationGroup[] = [
     title: "Portal de Notícias",
     items: [
       { to: "/noticias", label: "Todas as Notícias", icon: Newspaper, exact: true },
-      { to: "/noticias?category=cidade", label: "Cidade & Região", icon: MapPin },
-      { to: "/noticias?category=economia", label: "Negócios & Economia", icon: Flame },
-      { to: "/noticias?category=cultura", label: "Cultura & Lazer", icon: Calendar },
+      { to: "/noticias?category=cidade", label: "Cidade", icon: MapPin },
+      { to: "/noticias?category=economia", label: "Economia", icon: Flame },
+      { to: "/noticias?category=cultura", label: "Cultura", icon: Calendar },
     ],
   },
 ];
@@ -130,7 +130,7 @@ export const AFFILIATES_NAV_GROUPS: NavigationGroup[] = [
     title: "Programa de Afiliados",
     items: [
       { to: "/afiliados", label: "Visão Geral", icon: Target, exact: true },
-      { to: "/conta/tokens", label: "Meus Tokens & Saldo", icon: Coins },
+      { to: "/conta/tokens", label: "Tokens", icon: Coins },
       { to: "/workspace/financeiro/afiliados", label: "Painel Comercial", icon: LayoutDashboard },
     ],
   },
@@ -180,11 +180,11 @@ export const MARKET_NAV_GROUPS: NavigationGroup[] = [
 export const EVENTS_NAV_GROUPS: NavigationGroup[] = [
   {
     id: "events-explore",
-    title: "Eventos & Shows",
+    title: "Eventos",
     items: [
       { to: "/eventos", label: "Todos os Eventos", icon: Ticket, exact: true },
-      { to: "/eventos?category=shows", label: "Shows & Festivais", icon: Ticket },
-      { to: "/eventos?category=gastronomico", label: "Gastronomia & Feiras", icon: Utensils },
+      { to: "/eventos?category=shows", label: "Shows", icon: Ticket },
+      { to: "/eventos?category=gastronomico", label: "Gastronomia", icon: Utensils },
       { to: "/conta/ingressos", label: "Meus Ingressos", icon: Ticket },
     ],
   },
@@ -218,8 +218,8 @@ export const MAP_NAV_GROUPS: NavigationGroup[] = [
  items: [
  { to: "/mapa", label: "Ver Tudo", icon: MapPin, exact: true },
  { to: "/mapa?type=moment", label: "Moments da Galera", icon: Flame },
- { to: "/mapa?type=store", label: "Lojas & Pontos", icon: Store },
- { to: "/mapa?type=event", label: "Eventos & Shows", icon: Calendar },
+ { to: "/mapa?type=store", label: "Lojas", icon: Store },
+ { to: "/mapa?type=event", label: "Eventos", icon: Calendar },
  ],
  },
 ];
@@ -266,11 +266,11 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
  };
  }
 
- // 2.5. Mobilidade & Fretes
+ // 2.5. Mobilidade
  if (pathname.startsWith("/mobilidade")) {
  return {
  moduleId: "mobility",
- title: "Mobilidade & Fretes",
+ title: "Mobilidade",
  subtitle: "Corridas, entregas flash e mudanças na cidade",
  groups: [
  {
@@ -479,7 +479,7 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
  if (pathname.startsWith("/mobilidade")) {
  return {
  moduleId: "mobility",
- title: "Mobilidade & Corridas",
+ title: "Mobilidade",
  subtitle: "Chame corridas e entregas em tempo real",
  groups: [],
  widthMode: "full",
@@ -499,9 +499,9 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
           title: "Guia da Cidade",
           items: [
             { to: "/diretorio", label: "Todos os Locais", icon: Compass, exact: true },
-            { to: "/diretorio?category=gastronomia", label: "Gastronomia & Delivery", icon: Utensils },
-            { to: "/diretorio?category=servicos", label: "Serviços & Autônomos", icon: Briefcase },
-            { to: "/diretorio?category=comercio", label: "Comércio & Varejo", icon: Store },
+            { to: "/diretorio?category=gastronomia", label: "Gastronomia", icon: Utensils },
+            { to: "/diretorio?category=servicos", label: "Serviços", icon: Briefcase },
+            { to: "/diretorio?category=comercio", label: "Comércio", icon: Store },
             { to: "/conta/perfil", label: "Meu Perfil", icon: User },
           ],
         },
@@ -572,7 +572,7 @@ export function resolveContextNavigation(pathname: string, session?: any): Conte
  if (pathname.startsWith("/criar-negocio") || pathname.startsWith("/conta/lojas")) {
  return {
  moduleId: "business-onboarding",
- title: "Espaços & Lojas",
+ title: "Lojas",
  subtitle: "Gestão e abertura de novos negócios",
  groups: [
  {

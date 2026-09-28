@@ -1,19 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  Clock, 
-  MapPin, 
-  ShieldCheck, 
-  UserCheck, 
-  AlertCircle, 
-  CheckCircle2,
-  Edit3,
-  Search,
-  Users,
-  TrendingUp,
-  SlidersHorizontal
-} from "lucide-react";
+import { Clock, MapPin, ShieldCheck, UserCheck, AlertCircle, CheckCircle2, Edit3, Search, Users, TrendingUp, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,7 +95,7 @@ function WorkspaceRHPontoPage() {
       <WorkspaceDashboardSheet
         isOpen={isDashboardOpen}
         onClose={() => setIsDashboardOpen(false)}
-        title="Telemetria de Jornada e Ponto Eletrônico"
+        title="Ponto Eletrônico"
         description="Métricas em tempo real de assiduidade, conformidade geolocalizada e ajustes."
         metrics={[
           {
@@ -145,7 +133,7 @@ function WorkspaceRHPontoPage() {
               <tr>
                 <th className="py-3.5 px-4">Colaborador</th>
                 <th className="py-3.5 px-4">Tipo de Batida</th>
-                <th className="py-3.5 px-4">Data & Horário</th>
+                <th className="py-3.5 px-4">Data e Horário</th>
                 <th className="py-3.5 px-4">Geolocalização / IP</th>
                 <th className="py-3.5 px-4">Origem</th>
                 <th className="py-3.5 px-4">Status</th>

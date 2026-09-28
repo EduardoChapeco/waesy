@@ -3,24 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listVehicleLayouts } from "@/services/vehicle-layouts.functions";
 import { createGroupTour } from "@/services/group-tours.functions";
 import { uploadMediaUniversal } from "@/services/storage.functions";
-import {
-  X,
-  Check,
-  ChevronRight,
-  ChevronLeft,
-  Map,
-  Plane,
-  Plus,
-  Trash2,
-  Upload,
-  Hotel,
-  Star,
-  Video,
-  BedDouble,
-  DollarSign,
-  Info,
-  Layers,
-} from "lucide-react";
+import { X, Check, ChevronRight, ChevronLeft, Map, Plane, Plus, Trash2, Upload, Hotel, Star, Video, BedDouble, DollarSign, Info, Layers } from "lucide-react";
 import { Field } from "@/components/ui/field";
 import { FormInput as Input } from "@/components/ui/input";
 import { NativeSelect as Select } from "@/components/ui/select";
@@ -663,7 +646,7 @@ export function NewGroupTourWizard({
                 <div className="flex items-center justify-between pb-2 border-b border-border">
                   <div className="flex items-center gap-2">
                     <BedDouble className="h-5 w-5 text-brand" />
-                    <h3 className="font-semibold text-base">Acomodações & Tarifas</h3>
+                    <h3 className="font-semibold text-base">Acomodações</h3>
                   </div>
                   <Button
                     variant="ghost"
@@ -783,7 +766,7 @@ export function NewGroupTourWizard({
 
                 <div className="flex items-center gap-2 pt-4 pb-2 border-b border-border">
                   <Layers className="h-5 w-5 text-brand" />
-                  <h3 className="font-semibold text-base">Serviços Extras & Opcionais</h3>
+                  <h3 className="font-semibold text-base">Serviços Extras</h3>
                 </div>
 
                 {/* Form to add a new extra option */}

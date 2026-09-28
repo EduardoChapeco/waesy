@@ -1,32 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
- Clock, 
- MapPin, 
- FileText, 
- Send, 
- CheckCircle2, 
- Calendar, 
- CreditCard, 
- Briefcase,
- Download,
- AlertCircle,
- HelpCircle,
- Camera
-} from "lucide-react";
+import { Clock, MapPin, FileText, Send, CheckCircle2, Calendar, CreditCard, Briefcase, Download, AlertCircle, HelpCircle, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  recordTimeClock, 
-  listEmployeeTimeEntries, 
-  listEmployeePayslips, 
-  acknowledgePayslip,
-  createEmployeeRequest,
-  getMyEmployeeRecord,
-} from "@/services/hr.functions";
+import { recordTimeClock, listEmployeeTimeEntries, listEmployeePayslips, acknowledgePayslip, createEmployeeRequest, getMyEmployeeRecord } from "@/services/hr.functions";
 import { formatDateTime, formatTimeOnly } from "@/lib/datetime";
 
 export const Route = createFileRoute("/_store/conta/colaborador")({
@@ -179,7 +159,7 @@ function ColaboradorPortalPage() {
                 activeTab === "solicitacoes" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Vales & Férias
+              Vales e Férias
             </button>
           </div>
         </div>
@@ -286,7 +266,7 @@ function ColaboradorPortalPage() {
 
  {activeTab === "holerites" && (
  <div className="space-y-4">
- <h3 className="font-bold text-base text-foreground">Meus Holerites & Demonstrativos de Pagamento</h3>
+ <h3 className="font-bold text-base text-foreground">Meus Holerites e Demonstrativos de Pagamento</h3>
  {payslips.length === 0 ? (
  <div className="bg-card p-12 text-center rounded-2xl border border-border text-muted-foreground text-sm">
  Nenhum holerite emitido até o momento.

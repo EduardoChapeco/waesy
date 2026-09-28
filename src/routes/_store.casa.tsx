@@ -1,19 +1,10 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- House,
- Armchair,
- Lamp,
- Bed,
- CookingPot,
- FlowerLotus,
- Storefront,
- ShoppingBag,
- ArrowsInLineVertical,
-} from "@phosphor-icons/react";
+import { House, Armchair, Lamp, Bed, CookingPot, FlowerLotus, Storefront, ShoppingBag, ArrowsInLineVertical } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +13,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { OfferCard } from "@/components/commerce/offer-card";
@@ -48,18 +35,18 @@ type CasaSearch = z.infer<typeof SearchSchema>;
 
 const CASA_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo para Casa", icon: Tag },
- { id: "moveis", label: "Móveis & Estofados", icon: Armchair },
- { id: "decoracao", label: "Decoração & Quadros", icon: FlowerLotus },
- { id: "iluminacao", label: "Iluminação & Luminárias", icon: Lamp },
- { id: "cama_mesa_banho", label: "Cama, Mesa & Banho", icon: Bed },
- { id: "utilidades", label: "Utilidades Domésticas & Panelas", icon: CookingPot },
- { id: "organizacao", label: "Organizadores & Cestos", icon: ArrowsInLineVertical },
+ { id: "moveis", label: "Móveis e Estofados", icon: Armchair },
+ { id: "decoracao", label: "Decoração e Quadros", icon: FlowerLotus },
+ { id: "iluminacao", label: "Iluminação e Luminárias", icon: Lamp },
+ { id: "cama_mesa_banho", label: "Cama, Mesa e Banho", icon: Bed },
+ { id: "utilidades", label: "Utilidades Domésticas e Panelas", icon: CookingPot },
+ { id: "organizacao", label: "Organizadores e Cestos", icon: ArrowsInLineVertical },
 ];
 
 export const Route = createFileRoute("/_store/casa")({
  head: () => ({
  meta: [
- { title: "Casa, Móveis, Decoração & Utilidades | Waesy" },
+ { title: "Casa, Móveis, Decoração e Utilidades | Waesy" },
  {
  name: "description",
  content:
@@ -69,12 +56,13 @@ export const Route = createFileRoute("/_store/casa")({
  }),
  validateSearch: (search: Record<string, unknown>): CasaSearch => SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "casa" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "casa", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "casa" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "casa" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "casa", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "casa", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

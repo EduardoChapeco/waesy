@@ -1,22 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  MapPin,
-  Check,
-  ChevronsUpDown,
-  Search,
-  Crosshair,
-  Building,
-  X,
-} from "lucide-react";
+import { MapPin, Check, ChevronsUpDown, Search, Crosshair, Building, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  CANONICAL_CITIES,
-  searchCanonicalCities,
-  type CityRecord,
-  findCityByLabel,
-} from "@/lib/constants/cities";
+import { CANONICAL_CITIES, searchCanonicalCities, type CityRecord, findCityByLabel } from "@/lib/constants/cities";
 import { useMasterLocation } from "@/components/location/location-master-pill";
 
 // ── Vaul Drawer primitives (mobile) ─────────────────────────────────────────

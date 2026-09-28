@@ -2,24 +2,7 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- Plus,
- Search,
- MoreVertical,
- Copy,
- Eye,
- Edit3,
- Archive,
- CheckCircle2,
- FileText,
- Trash2,
- Download,
- Package,
- Filter,
- Layers,
- Palette,
- Globe,
-} from "lucide-react";
+import { Plus, Search, MoreVertical, Copy, Eye, Edit3, Archive, CheckCircle2, FileText, Trash2, Download, Package, Filter, Layers, Palette, Globe } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
@@ -28,36 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Surface } from "@/components/ui/surface";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuLabel,
- DropdownMenuSeparator,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { EmptyState } from "@/components/state/states";
 import { CatalogComplementsTab } from "@/components/commerce/catalog-complements-tab";
 import { ImportCatalogModal } from "@/components/admin/catalog/import-catalog-modal";
-import {
- listAdminProducts,
- duplicateProduct,
- toggleProductStatus,
- bulkUpdateProductStatus,
- updateProduct,
-} from "@/services/admin-catalog.functions";
+import { listAdminProducts, duplicateProduct, toggleProductStatus, bulkUpdateProductStatus, updateProduct } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { getNicheCatalogContext } from "@/lib/catalog-niche-context";
@@ -66,7 +29,7 @@ import { cn } from "@/lib/utils";
 import type { AdminProductRow } from "@/types/catalog";
 
 export const Route = createFileRoute("/workspace/catalogo/produtos/")({
- head: () => ({ meta: [{ title: "Catálogo & Itens | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Produtos | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const [products, store] = await Promise.all([
@@ -216,7 +179,7 @@ function EditableStockCell({
 
 const CATALOGO_TOUR_SLIDES: TourSlide[] = [
   {
-    title: "Gestão Ágil de Produtos & Serviços",
+    title: "Gestão Ágil de Produtos e Serviços",
     description: "Cadastre itens com fotos em alta definição, descrições ricas, categorias e visibilidade instantânea na vitrine digital e no PDV.",
     icon: Package,
     highlightBadge: "Catálogo Unificado",
@@ -230,7 +193,7 @@ const CATALOGO_TOUR_SLIDES: TourSlide[] = [
     tip: "Aba 'Complementos & Adicionais' permite reutilizar grupos em múltiplos produtos.",
   },
   {
-    title: "Canais de Venda & Sincronização",
+    title: "Canais de Venda e Sincronização",
     description: "Escolha onde cada item deve ser vendido: Loja Física (PDV), Vitrine Online, Delivery ou Catálogo no WhatsApp.",
     icon: Globe,
     highlightBadge: "Omnichannel",
@@ -704,7 +667,7 @@ function AdminProductsPage() {
  </TableHead>
  <TableHead>Produto</TableHead>
  <TableHead>Status</TableHead>
- <TableHead>Tipo / Marca</TableHead>
+ <TableHead>Tipo</TableHead>
  <TableHead>Preço de Venda</TableHead>
  <TableHead>Estoque</TableHead>
  <TableHead className="text-right">Ações</TableHead>

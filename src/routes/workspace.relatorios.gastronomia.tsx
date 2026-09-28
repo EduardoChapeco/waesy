@@ -1,17 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
- TrendingUp,
- ShoppingBag,
- UtensilsCrossed,
- Bike,
- Store,
- Coffee,
- ChefHat,
- PackageCheck,
- BarChart3,
- Flame,
-} from "lucide-react";
+import { TrendingUp, ShoppingBag, UtensilsCrossed, Bike, Store, Coffee, ChefHat, PackageCheck, BarChart3, Flame } from "lucide-react";
 import { getGastronomyReports, type GastronomyReportsDTO } from "@/services/order.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -243,12 +232,12 @@ function GastronomyReportsPage() {
  return (
  <NicheOperationalGuard
  targetNiche="gastronomy"
- toolTitle="Relatórios de Gastronomia & Salão"
+ toolTitle="Relatórios de Gastronomia"
  toolDescription="Métricas de tempo de preparo de cozinha, canais de pedidos (mesa, balcão, delivery) e pratos mais vendidos aplicam-se a negócios de alimentação e gastronomia."
  store={store}
  >
  <div className="w-full space-y-6">
- <PageHeader title="Relatórios Gastronomia" />
+ <PageHeader title="Gastronomia" />
 
  {/* ── KPIs Hoje ── */}
  <section>

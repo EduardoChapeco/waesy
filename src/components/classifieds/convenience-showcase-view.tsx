@@ -1,64 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { createQuickOrder } from "@/services/quick-order.functions";
-import {
-  ArrowLeft,
-  Share2,
-  MapPin,
-  Check,
-  ShieldCheck,
-  Clock,
-  Phone,
-  MessageCircle,
-  Truck,
-  Package,
-  CreditCard,
-  QrCode,
-  Banknote,
-  Minus,
-  Plus,
-  ShoppingBag,
-  Zap,
-  Sparkles,
-  Info,
-  BadgePercent,
-  CheckCircle2,
-  Store,
-  ExternalLink,
-  Edit3,
-  Calendar,
-  Clock3,
-  FileText,
-  Scale,
-  User,
-  Building2,
-  Loader2,
-  Maximize2,
-} from "lucide-react";
+import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Clock, Phone, MessageCircle, Truck, Package, CreditCard, QrCode, Banknote, Minus, Plus, ShoppingBag, Zap, Star, Info, BadgePercent, CheckCircle2, Store, ExternalLink, Edit3, Calendar, Clock3, FileText, Scale, User, Building2, Loader2, Maximize2 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getMyStoresList } from "@/services/store.functions";
 import { linkClassifiedToStore } from "@/services/classifieds.functions";
-import {
-  GroceryFreshPricing,
-  GroceryRipenessConfig,
-  ProgressiveDiscountTier,
-  OrderBumpOffer,
-  RipenessStage,
-  DEFAULT_RIPENESS_LABELS,
-  calculateProgressiveDiscount,
-} from "@/lib/classifieds/canonical-taxonomy";
+import { GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS, calculateProgressiveDiscount } from "@/lib/classifieds/canonical-taxonomy";
 
 export interface ConveniencePreviewData {
   title: string;
@@ -1165,7 +1118,7 @@ export function ConvenienceShowcaseView({
             <div className="mx-3.5 sm:mx-0 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 space-y-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-primary" />
-                <span>Especificações & Características</span>
+                <span>Especificações e Características</span>
               </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
@@ -1570,7 +1523,7 @@ export function ConvenienceShowcaseView({
                       />
                     ) : (
                       <div className="size-10 rounded-lg bg-background flex items-center justify-center border shrink-0 text-amber-600">
-                        <Sparkles className="size-4" />
+                        <Star className="size-4" />
                       </div>
                     )}
                     <div className="min-w-0">

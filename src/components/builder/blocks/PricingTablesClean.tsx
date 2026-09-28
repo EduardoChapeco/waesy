@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { PricingBlockData } from "../types";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface PricingTablesCleanProps {
@@ -78,7 +78,7 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ data, cl
                 {/* Badge Popular */}
                 {tier.isPopular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-md flex items-center gap-1.5">
-                    <Sparkles className="size-3.5 fill-current" />
+                    <Star className="size-3.5 fill-current" />
                     <span>Mais Escolhido</span>
                   </div>
                 )}

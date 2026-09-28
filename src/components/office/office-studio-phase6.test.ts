@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
- replaceContractVariables,
- DEFAULT_CLAUSES,
-} from './contract-clause-library';
+import { replaceContractVariables, DEFAULT_CLAUSES } from './contract-clause-library';
 import { builderRegistry, BUILDER_BLOCK_DEFINITIONS } from '@/lib/builder-registry';
 
 describe('[FASE 6 AUDIT] Waesy Office Suite & Waesy Creative Studio', () => {

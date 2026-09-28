@@ -1,19 +1,5 @@
 import { useState } from "react";
-import {
-  ShieldCheck,
-  ShieldAlert,
-  AlertTriangle,
-  Zap,
-  TrendingUp,
-  DollarSign,
-  Users,
-  CheckCircle2,
-  RefreshCw,
-  Loader2,
-  Brain,
-  Layers,
-  ArrowRight,
-} from "lucide-react";
+import { ShieldCheck, ShieldAlert, AlertTriangle, Zap, TrendingUp, DollarSign, Users, CheckCircle2, RefreshCw, Loader2, Brain, Layers, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -127,7 +113,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
             )}
           </div>
           <h3 className="text-base font-bold text-foreground">
-            Auditoria Executiva & Veredito de Consumidores Sintéticos
+            Auditoria Executiva
           </h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Submeta hipóteses, copys ou preços para estimar taxa de aprovação, NPS sintético e objeções reais da população.
@@ -305,7 +291,7 @@ export function SimlabReviewPanel({ storeId, onRefresh }: SimlabReviewPanelProps
             <div className="p-4 rounded-xl border border-border/70 bg-muted/10 space-y-2.5">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                 <AlertTriangle className="size-3.5 text-amber-500" />
-                <span>Top Barreiras & Objeções a Superar</span>
+                <span>Top Barreiras e Objeções a Superar</span>
               </span>
               <ul className="space-y-1.5">
                 {synthesis.top_3_friction_barriers.map((barr, i) => (

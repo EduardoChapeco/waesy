@@ -1,30 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import {
-  CookingPot,
-  Clock,
-  Users,
-  Search,
-  CheckCircle2,
-  Share2,
-  Copy,
-  ExternalLink,
-  BookOpen,
-  Sparkles,
-  ShoppingBag,
-  ArrowLeft,
-  ChevronRight,
-} from "lucide-react";
+import { CookingPot, Clock, Users, Search, CheckCircle2, Share2, Copy, ExternalLink, BookOpen, Star, ShoppingBag, ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { listPublicRecipesFn, type MinedRecipeDTO } from "@/services/mining.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -32,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_store/receitas/")({
   head: () => ({
     meta: [
-      { title: "Receitas & Gastronomia Local | Waesy" },
+      { title: "Receitas e Gastronomia Local | Waesy" },
       {
         name: "description",
         content: "Explore receitas culinárias tradicionais e contemporâneas, com lista de ingredientes do comércio local.",
@@ -123,7 +103,7 @@ function PublicRecipesPage() {
               <CookingPot className="size-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Receitas & Culinária
+              Receitas e Culinária
             </h1>
             <Badge variant="outline" className="text-xs font-mono py-0 px-2 border-primary/30 text-primary">
               {filteredRecipes.length} receitas

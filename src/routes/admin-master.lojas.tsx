@@ -12,7 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin-master/lojas")({
- head: () => ({ meta: [{ title: "Lojas & Empresas | Admin Master" }] }),
+ head: () => ({ meta: [{ title: "Lojas e Empresas | Admin Master" }] }),
   loader: async () => {
     try {
       const stores = await getPlatformStoresList();

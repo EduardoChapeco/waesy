@@ -11,19 +11,7 @@ import { CreatorNicheSelect } from "@/components/profile/creator-niche-select";
 import { getPostMediaSignedUrl, uploadProfileMediaDirect } from "@/services/storage.functions";
 import { upsertCreatorProfile, registerAffiliate } from "@/services/affiliates.functions";
 import { toast } from "sonner";
-import {
-  Camera,
-  Image as ImageIcon,
-  User,
-  Sparkles,
-  Globe,
-  Instagram,
-  Share2,
-  ShieldCheck,
-  Check,
-  Loader2,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Camera, Image as ImageIcon, User, Star, Globe, Instagram, Share2, ShieldCheck, Check, Loader2, SlidersHorizontal } from "lucide-react";
 
 export interface CreatorProfileSheetData {
   handle: string;
@@ -231,7 +219,7 @@ export function CreatorProfileSheetEditor({
         size="lg"
         title={
           <div className="flex items-center gap-2.5">
-            <Sparkles className="size-5 text-primary" />
+            <Star className="size-5 text-primary" />
             <span>
               {isNew ? "Ativar Perfil de Criador & Marca" : `Editar Perfil de Criador`}
             </span>
@@ -283,14 +271,14 @@ export function CreatorProfileSheetEditor({
                 className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-1.5"
               >
                 <User className="size-3.5" />
-                <span>Identidade & Visual</span>
+                <span>Identidade e Visual</span>
               </TabsTrigger>
               <TabsTrigger
                 value="redes"
                 className="flex-1 sm:flex-initial h-9 rounded-lg text-xs font-bold gap-1.5"
               >
                 <Share2 className="size-3.5" />
-                <span>Redes & Canais</span>
+                <span>Redes e Canais</span>
               </TabsTrigger>
               <TabsTrigger
                 value="avancado"
@@ -397,7 +385,7 @@ export function CreatorProfileSheetEditor({
               <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                   <User className="size-4 text-primary shrink-0" />
-                  <span>2. Identificação & Segmento</span>
+                  <span>2. Identificação e Segmento</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -469,7 +457,7 @@ export function CreatorProfileSheetEditor({
               <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                   <Share2 className="size-4 text-primary shrink-0" />
-                  <span>Canais Sociais & Pontos de Contato</span>
+                  <span>Canais Sociais e Pontos de Contato</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -546,7 +534,7 @@ export function CreatorProfileSheetEditor({
               <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60 shadow-2xs">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                   <ShieldCheck className="size-4 text-primary shrink-0" />
-                  <span>Governança & Privacidade da Vitrine</span>
+                  <span>Governança e Privacidade da Vitrine</span>
                 </div>
 
                 <div className="p-4 rounded-xl border border-border/40 bg-muted/10 space-y-3">
@@ -585,7 +573,7 @@ export function CreatorProfileSheetEditor({
 
                 <div className="p-4 rounded-xl border border-border/40 bg-muted/10 space-y-2">
                   <h4 className="text-xs font-bold text-foreground">
-                    Monetização & Comissões
+                    Monetização e Comissões
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Seus links de afiliação e cupons de 10% vinculados ao seu @handle continuam ativos e gerando comissões no CPF titular registrado na sua conta.

@@ -5,43 +5,19 @@
  */
 
 import React, { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  Download,
-  ImagePlus,
-  Sparkles,
-  Palette,
-  Check,
-  Loader2,
-  ArrowLeft,
-  Sliders,
-  Type,
-  ImageIcon,
-  ShieldCheck,
-  Maximize2,
-  RefreshCw,
-  Dices,
-} from "lucide-react";
+import { Download, ImagePlus, Star, Palette, Check, Loader2, ArrowLeft, Sliders, Type, ImageIcon, ShieldCheck, Maximize2, RefreshCw, Dices } from "lucide-react";
 import { TravelPromoArtboard, type TravelPromoData, type PromoAspectRatio } from "./travel-promo-artboard";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { convertToCorsSafeDataUri, preloadImage } from "@/lib/canvas/cors-safe-image";
 import { formatMoney } from "@/lib/money";
-import {
-  getAllSocialTemplates,
-  getDefaultTemplateForNiche,
-  getNextTemplateInNiche,
-  getDynamicCTAsForNiche,
-  getNextCTAOption,
-} from "@/components/social-templates";
+import { getAllSocialTemplates, getDefaultTemplateForNiche, getNextTemplateInNiche, getDynamicCTAsForNiche, getNextCTAOption } from "@/components/social-templates";
 
 export interface TravelPromoFlyerModalProps {
   open?: boolean;
@@ -599,7 +575,7 @@ export function TravelPromoFlyerModal({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold flex items-center gap-1.5">
-                        <Sparkles className="size-3.5 text-primary" />
+                        <Star className="size-3.5 text-primary" />
                         <span>Modelo Visual (Template)</span>
                       </Label>
                       <button
@@ -644,7 +620,7 @@ export function TravelPromoFlyerModal({
                   <div className="space-y-2 pt-2 border-t border-border/50">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold flex items-center gap-1.5">
-                        <Sparkles className="size-3.5 text-amber-400" />
+                        <Star className="size-3.5 text-amber-400" />
                         <span>Chamada para Ação (CTA Dinâmico)</span>
                       </Label>
                       <button
@@ -718,7 +694,7 @@ export function TravelPromoFlyerModal({
                         { id: "emerald_nature", label: "Natureza", color: "bg-emerald-600" },
                         { id: "midnight_luxury", label: "Midnight", color: "bg-slate-900" },
                         { id: "caribbean_turquoise", label: "Caribe", color: "bg-cyan-600" },
-                        { id: "nordic_snow", label: "Neve & Inverno", color: "bg-slate-700" },
+                        { id: "nordic_snow", label: "Neve e Inverno", color: "bg-slate-700" },
                       ].map((t) => (
                         <button
                           key={t.id}
@@ -741,7 +717,7 @@ export function TravelPromoFlyerModal({
                   <div className="space-y-2 pt-2 border-t border-border/50">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs font-semibold flex items-center gap-1.5">
-                        <Sparkles className="size-3.5 text-amber-500" />
+                        <Star className="size-3.5 text-amber-500" />
                         <span>Selo de Destaque</span>
                       </Label>
                       {promoBadge && (

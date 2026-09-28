@@ -1,51 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- ArrowLeft,
- Bus,
- CheckCircle2,
- Clock,
- AlertTriangle,
- Search,
- Plus,
- Phone,
- UserCheck,
- UserX,
- MapPin,
- Filter,
- Check,
- Trash2,
- Download,
- Printer,
-} from "lucide-react";
+import { ArrowLeft, Bus, CheckCircle2, Clock, AlertTriangle, Search, Plus, Phone, UserCheck, UserX, MapPin, Filter, Check, Trash2, Download, Printer } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 import { getStoreSettings } from "@/services/store.functions";
 import { getGroupTourById } from "@/services/group-tours.functions";
-import {
- getTourBoardingOverview,
- togglePassengerCheckin,
- createTourBoardingPoint,
- deleteTourBoardingPoint,
-} from "@/services/group-tour-boarding.functions";
+import { getTourBoardingOverview, togglePassengerCheckin, createTourBoardingPoint, deleteTourBoardingPoint } from "@/services/group-tour-boarding.functions";
 
 export const Route = createFileRoute("/workspace/turismo/grupos/$id/embarque")({
- head: () => ({ meta: [{ title: "Central de Embarque & Check-in | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Central de Embarque e Check-in | Workspace" }] }),
  loader: async ({ params }: { params: { id: string } }) => {
    try {
  const store = await getStoreSettings().catch(() => null);

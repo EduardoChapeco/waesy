@@ -100,11 +100,11 @@ export function GroceryProductCard({
  ? Math.round(((compareAtCents - priceCents) / compareAtCents) * 100)
  : 0;
 
- if (viewMode === "list") {
+  if (viewMode === "list") {
     return (
       <div
         className={cn(
-          "group relative flex items-center w-full min-h-[76px] sm:min-h-[96px] rounded-none sm:rounded-2xl bg-card hover:bg-muted/30 transition-all overflow-hidden p-2.5 sm:p-3 gap-3",
+          "group relative flex items-center justify-between w-full min-h-[112px] sm:min-h-[124px] rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all overflow-hidden pl-28 sm:pl-36 pr-3.5 py-3 gap-3",
           className,
         )}
       >
@@ -112,23 +112,23 @@ export function GroceryProductCard({
           to="/produto/$slug"
           params={{ slug: product.slug }}
           search={product.variantId ? { v: product.variantId } : undefined}
-          className="relative size-16 sm:size-20 rounded-xl bg-muted/40 overflow-hidden shrink-0 block focus-visible:outline-none border border-border/40"
+          className="absolute inset-y-0 left-0 w-28 sm:w-36 rounded-l-2xl bg-muted/40 overflow-hidden block focus-visible:outline-none"
         >
           {product.coverUrl ? (
             <img
               src={product.coverUrl}
               alt={product.coverAlt || product.title}
               loading="lazy"
-              className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="size-full flex items-center justify-center text-muted-foreground">
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               <ImageOff className="size-6 sm:size-8" />
             </div>
           )}
 
           {hasDiscount && discountPercent > 0 && (
-            <div className="absolute top-1 left-1 z-10">
+            <div className="absolute top-2 left-2 z-10">
               <Badge className="bg-destructive text-destructive-foreground text-[9px] font-black px-1.5 py-0 rounded-md">
                 -{discountPercent}%
               </Badge>
@@ -144,7 +144,7 @@ export function GroceryProductCard({
           )}
         </Link>
 
-        <div className="flex-1 flex flex-col justify-center min-w-0 space-y-0.5">
+        <div className="flex-1 flex flex-col justify-center min-w-0 space-y-1 pl-2">
           <Link
             to="/produto/$slug"
             params={{ slug: product.slug }}
@@ -157,7 +157,7 @@ export function GroceryProductCard({
               </span>
             )}
 
-            <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-1 leading-snug group-hover:text-primary transition-colors">
+            <h3 className="text-xs sm:text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
               {product.title}
             </h3>
 

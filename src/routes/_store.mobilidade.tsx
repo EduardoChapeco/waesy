@@ -1,50 +1,21 @@
 import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import {
- Car,
- Bike,
- Zap,
- Truck,
- Boxes,
- MapPin,
- Clock,
- CheckCircle2,
- Loader2,
- Navigation,
- Crosshair,
- ChevronDown,
- ChevronUp,
- X,
- CreditCard,
- QrCode,
- Banknote,
- RotateCw,
- ArrowLeft,
- Smartphone,
- Check,
- Send,
-} from "lucide-react";
+import { Car, Bike, Zap, Truck, Boxes, MapPin, Clock, CheckCircle2, Loader2, Navigation, Crosshair, ChevronDown, ChevronUp, X, CreditCard, QrCode, Banknote, RotateCw, ArrowLeft, Smartphone, Check, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getStoredLocation } from "@/components/location/location-master-pill";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
-import {
- calculateMobilityQuote,
- createMobilityRequest,
- type MobilityServiceType,
- type MobilityRequestDTO,
- type MobilityQuoteEstimate,
-} from "@/services/mobility.functions";
+import { calculateMobilityQuote, createMobilityRequest, type MobilityServiceType, type MobilityRequestDTO, type MobilityQuoteEstimate } from "@/services/mobility.functions";
 import { MapLibreCanvas, type MapPoint } from "@/components/mobility/maplibre-canvas";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/mobilidade")({
   head: () => ({
     meta: [
-      { title: "Solicitar Corrida & Entregas | Waesy" },
+      { title: "Solicitar Corrida e Entregas | Waesy" },
       {
         name: "description",
         content:

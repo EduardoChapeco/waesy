@@ -1,19 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- BeerBottle,
- Wine,
- Flame,
- Snowflake,
- Coffee,
- Drop,
- Storefront,
- Clock,
- ArrowRight,
- ShoppingBag,
-} from "@phosphor-icons/react";
+import { BeerBottle, Wine, Flame, Snowflake, Coffee, Drop, Storefront, Clock, ArrowRight, ShoppingBag } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +12,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
@@ -48,18 +34,18 @@ type BebidasSearch = z.infer<typeof SearchSchema>;
 
 const BEBIDAS_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", icon: Tag },
- { id: "cervejas", label: "Cervejas & Chopp", icon: BeerBottle },
- { id: "vinhos", label: "Vinhos & Espumantes", icon: Wine },
- { id: "destilados", label: "Destilados & Gin", icon: Flame },
- { id: "gelo_conveniencia", label: "Gelo & Carvão", icon: Snowflake },
- { id: "refrigerantes", label: "Sucos & Refris", icon: Drop },
- { id: "energeticos", label: "Energéticos & Isotônicos", icon: Tag },
+ { id: "cervejas", label: "Cervejas e Chopp", icon: BeerBottle },
+ { id: "vinhos", label: "Vinhos e Espumantes", icon: Wine },
+ { id: "destilados", label: "Destilados e Gin", icon: Flame },
+ { id: "gelo_conveniencia", label: "Gelo e Carvão", icon: Snowflake },
+ { id: "refrigerantes", label: "Sucos e Refris", icon: Drop },
+ { id: "energeticos", label: "Energéticos e Isotônicos", icon: Tag },
 ];
 
 export const Route = createFileRoute("/_store/bebidas")({
  head: () => ({
  meta: [
- { title: "Distribuidoras de Bebidas, Adegas & Gelo | Waesy" },
+ { title: "Distribuidoras de Bebidas, Adegas e Gelo | Waesy" },
  {
  name: "description",
  content:
@@ -70,12 +56,13 @@ export const Route = createFileRoute("/_store/bebidas")({
  validateSearch: (search: Record<string, unknown>): BebidasSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "bebidas" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "bebidas", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "bebidas" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "bebidas" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "bebidas", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "bebidas", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

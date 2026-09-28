@@ -1,37 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- Car,
- Bike,
- Truck,
- ArrowLeft,
- Loader2,
- User,
- Phone,
- CreditCard,
- CheckCircle2,
- XCircle,
- Clock,
- Ban,
- Save,
-} from "lucide-react";
+import { Car, Bike, Truck, ArrowLeft, Loader2, User, Phone, CreditCard, CheckCircle2, XCircle, Clock, Ban, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- listCouriers,
- updateCourier,
- type CourierSummaryDTO,
-} from "@/services/fleet.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listCouriers, updateCourier, type CourierSummaryDTO } from "@/services/fleet.functions";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/state/states";
 
@@ -324,7 +300,7 @@ function EntregadorDetailPage() {
  {/* ── Financeiro ── */}
  <div className="bg-card rounded-2xl border border-border/60 p-5 space-y-4">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
- Taxa & Observações
+ Taxa e Observações
  </div>
 
  <div className="space-y-1.5 max-w-xs">

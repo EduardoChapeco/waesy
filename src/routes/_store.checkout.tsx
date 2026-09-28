@@ -5,45 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/money";
-import {
- getCart,
- getGlobalCarts,
- cancelCart,
- updateCartShipping,
- applyCouponToCart,
- updateCartContact,
-} from "@/services/cart.functions";
+import { getCart, getGlobalCarts, cancelCart, updateCartShipping, applyCouponToCart, updateCartContact } from "@/services/cart.functions";
 import { useCartContext } from "@/lib/cart-context";
 import { checkGiftCardBalance } from "@/services/giftcard.functions";
 import { processCheckout, getStoreCheckoutConfig, type CheckoutDynamicConfig } from "@/services/checkout.functions";
-import {
- initiatePaymentTransaction,
- getPublicPaymentMethods,
- getGatewayStatus,
-} from "@/services/payment.functions";
+import { initiatePaymentTransaction, getPublicPaymentMethods, getGatewayStatus } from "@/services/payment.functions";
 import { calculateShipping } from "@/services/shipping.functions";
 import { getPublicStoreProfile } from "@/services/catalog.functions";
 import { getProfile } from "@/services/auth.functions";
 import { getCustomerAddresses } from "@/services/customer.functions";
 import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus } from 'lucide-react';
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { humanizeErrorMessage } from "@/lib/humanize-error";
 import { DocumentField } from "@/components/ui/document-field";
 import { CepField } from "@/components/ui/cep-field";
 import { PhoneField } from "@/components/ui/phone-field";
-import {
-  CreditCardNumberInput,
-  CardExpiryInput,
-  CardCvvInput,
-} from "@/components/ui/credit-card-field";
+import { CreditCardNumberInput, CardExpiryInput, CardCvvInput } from "@/components/ui/credit-card-field";
 import { Surface } from "@/components/ui/surface";
 
 export const Route = createFileRoute("/_store/checkout")({

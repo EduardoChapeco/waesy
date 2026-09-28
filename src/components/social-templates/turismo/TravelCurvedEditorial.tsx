@@ -1,6 +1,6 @@
 import React from "react";
 import { SocialTemplateProps } from "../types";
-import { MapPin, Calendar, CheckCircle2, ShieldCheck, Sparkles, ArrowRight } from "lucide-react";
+import { MapPin, Calendar, CheckCircle2, ShieldCheck, Star, ArrowRight } from "lucide-react";
 
 export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, scale = 1, className = "" }) => {
   const isNineSixteen = data.aspectRatio === "9:16";
@@ -51,7 +51,7 @@ export const TravelCurvedEditorial: React.FC<SocialTemplateProps> = ({ data, sca
                 className="w-7 h-7 rounded-full object-cover"
               />
             ) : (
-              <Sparkles className="w-5 h-5 text-amber-400" />
+              <Star className="w-5 h-5 text-amber-400" />
             )}
             <span className="text-white text-lg font-semibold tracking-wide">
               {data.storeName || "Waesy Turismo"}

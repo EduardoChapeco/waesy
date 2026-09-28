@@ -1,22 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Gift,
-  Heart,
-  Plus,
-  ArrowUpRight,
-  Eye,
-  MapPin,
-  Tag,
-  Calendar,
-} from "lucide-react";
+import { Gift, Heart, Plus, ArrowUpRight, Eye, MapPin, Tag, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
 import { listStoreDonations } from "@/services/classifieds.functions";
 
 export const Route = createFileRoute("/workspace/doacoes/")({
-  head: () => ({ meta: [{ title: "Doações & Solidariedade | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Doações | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const donations = await listStoreDonations().catch(() => []);
@@ -43,7 +34,7 @@ function WorkspaceDoacoesHubPage() {
       {/* ── CABEÇALHO COM AÇÃO RÁPIDA ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <PageHeader title="Doações & Campanhas Solidárias" />
+          <PageHeader title="Campanhas" />
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Gestão de desapegos gratuitos, doações de móveis, alimentos, roupas e equipamentos da sua loja para a comunidade local.
           </p>

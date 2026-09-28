@@ -1,18 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  LinkedInRawProfileSchema,
-  translateLinkedInToWaesyResume,
-  getLinkedInMasterCredentials,
-  saveLinkedInMasterCredentials,
-  getLinkedInAuthRedirectUrl,
-  parseAndImportLinkedInJson,
-  syndicateJobToLinkedIn,
-  getWorkspaceLinkedInStatus,
-  getJobSyndicationLogs,
-  searchTalentHunterPool,
-  disconnectLinkedInCompanyPage,
-  assertWorkspacePlanPro,
-} from "./linkedin-integrations.functions";
+import { LinkedInRawProfileSchema, translateLinkedInToWaesyResume, getLinkedInMasterCredentials, saveLinkedInMasterCredentials, getLinkedInAuthRedirectUrl, parseAndImportLinkedInJson, syndicateJobToLinkedIn, getWorkspaceLinkedInStatus, getJobSyndicationLogs, searchTalentHunterPool, disconnectLinkedInCompanyPage, assertWorkspacePlanPro } from "./linkedin-integrations.functions";
 import { encryptSecret, decryptSecret, maskSecret } from "@/lib/crypto-vault.server";
 
 describe("LinkedIn Omni-Bridge & B2B Syndication Test Suite", () => {

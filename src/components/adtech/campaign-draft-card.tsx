@@ -5,26 +5,7 @@
  */
 
 import { useState } from "react";
-import {
-  ShieldCheck,
-  Sliders,
-  DollarSign,
-  MapPin,
-  Users,
-  Eye,
-  TrendingUp,
-  Sparkles,
-  ExternalLink,
-  ChevronRight,
-  Heart,
-  MessageCircle,
-  Send,
-  Bookmark,
-  MoreHorizontal,
-  CheckCircle2,
-  Loader2,
-  Trash2,
-} from "lucide-react";
+import { ShieldCheck, Sliders, DollarSign, MapPin, Users, Eye, TrendingUp, Star, ExternalLink, ChevronRight, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -115,7 +96,7 @@ export function CampaignDraftCard({
         <div className="size-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
           <CheckCircle2 className="size-6" />
         </div>
-        <h4 className="text-sm font-bold text-foreground">Campanha Aprovada & Em Veiculação</h4>
+        <h4 className="text-sm font-bold text-foreground">Campanha Aprovada e Em Veiculação</h4>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
           Os criativos e orçamentos foram autenticados e enviados aos canais de tráfego pago da loja.
         </p>
@@ -134,7 +115,7 @@ export function CampaignDraftCard({
       <div className="p-4 px-5 border-b border-border/60 bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
           <div className="size-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-            <Sparkles className="size-4" />
+            <Star className="size-4" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
@@ -413,7 +394,7 @@ export function CampaignDraftCard({
               ) : (
                 <>
                   <ShieldCheck className="size-4" />
-                  <span>Aprovar & Ativar Campanha</span>
+                  <span>Aprovar e Ativar Campanha</span>
                 </>
               )}
             </Button>

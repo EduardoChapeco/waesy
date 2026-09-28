@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Sparkles } from "lucide-react";
+import { Plus, Clock, Edit3, Archive, Loader2, Save, Wrench, Star } from "lucide-react";
 import { ServiceSearchDialog } from "@/components/admin/services/service-search-dialog";
 import type { OnDemandMarketplaceService } from "@/lib/data/services-catalog";
 
@@ -11,36 +11,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
-import {
- listBookingServices,
- upsertBookingService,
- deleteBookingService,
-} from "@/services/booking.functions";
+import { listBookingServices, upsertBookingService, deleteBookingService } from "@/services/booking.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/agenda/servicos/")({
- head: () => ({ meta: [{ title: "Serviços & Procedimentos | Workspace Waesy" }] }),
- component: ServicesIndexPage,
+  head: () => ({ meta: [{ title: "Serviços | Workspace Waesy" }] }),
+  component: ServicesIndexPage,
 });
 
 interface ServiceFormState {
@@ -170,7 +153,7 @@ function ServicesIndexPage() {
      size="sm"
      className="rounded-xl font-bold text-xs gap-1.5 border-border/60 hover:bg-muted/30 text-foreground shadow-sm"
    >
-     <Sparkles className="size-3.5 text-amber-500" />
+     <Star className="size-3.5 text-amber-500" />
      <span>Importar do Catálogo</span>
    </Button>
    <Button onClick={handleOpenCreate} size="sm" className="rounded-xl font-bold text-xs gap-1.5 bg-primary text-primary-foreground">
@@ -207,7 +190,7 @@ function ServicesIndexPage() {
  <TableHeader>
  <TableRow className="bg-muted/40">
  <TableHead className="w-12"></TableHead>
- <TableHead className="font-semibold text-xs">Serviço & Descrição</TableHead>
+ <TableHead className="font-semibold text-xs">Serviço e Descrição</TableHead>
  <TableHead className="font-semibold text-xs">Duração</TableHead>
  <TableHead className="font-semibold text-xs">Preço</TableHead>
  <TableHead className="font-semibold text-xs">Status</TableHead>

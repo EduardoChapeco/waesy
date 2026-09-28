@@ -1,16 +1,5 @@
 import { useState, useRef, ChangeEvent, DragEvent } from "react";
-import {
- UploadCloud,
- FileText,
- Paperclip,
- Trash2,
- ExternalLink,
- Loader2,
- CheckCircle2,
- ImageIcon,
- Link as LinkIcon,
- X,
-} from "lucide-react";
+import { UploadCloud, FileText, Paperclip, Trash2, ExternalLink, Loader2, CheckCircle2, ImageIcon, Link as LinkIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";

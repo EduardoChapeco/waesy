@@ -48,7 +48,7 @@ export function ReputationScoreHeader({ content, design_tokens }: ReputationScor
  </h1>
  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 text-xs gap-1">
  <ShieldCheck className="w-3.5 h-3.5" />
- Auditada & Verificada
+ Auditada e Verificada
  </Badge>
  </div>
  <p className="text-xs text-muted-foreground">

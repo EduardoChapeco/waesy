@@ -3,11 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
 import { enforceRateLimit } from "@/lib/rate-limiter";
-import {
- inspectPromptSecurity,
- buildSandboxedPromptPayload,
- sanitizeAiOutput,
-} from "@/lib/prompt-shield";
+import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
 import { getNextActiveKey, executeUnifiedAiCall } from "./api-orchestrator.functions";
 
 // AI Router Function

@@ -6,12 +6,7 @@ import { cn } from "@/lib/utils";
 import type { TravelPackageData } from "@/types/travel-package";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
-import {
-  CANONICAL_BUS_CATEGORIES,
-  CANONICAL_GUIDE_SERVICES,
-  DEPARTURE_STATUS_CONFIG,
-  type DepartureOption,
-} from "@/lib/classifieds/canonical-airports";
+import { CANONICAL_BUS_CATEGORIES, CANONICAL_GUIDE_SERVICES, DEPARTURE_STATUS_CONFIG, type DepartureOption } from "@/lib/classifieds/canonical-airports";
 
 interface TravelPackageDetailViewProps {
  packageData?: Partial<TravelPackageData>;
@@ -271,7 +266,7 @@ export function TravelPackageDetailView({
  )}
  >
  <Compass className="size-3.5" />
- <span>Voos & Mapa</span>
+ <span>Voos e Mapa</span>
  </button>
  </nav>
  </header>
@@ -390,7 +385,7 @@ export function TravelPackageDetailView({
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Calendar className="size-4 text-primary" />
-              <span>Datas & Saídas Disponíveis</span>
+              <span>Datas e Saídas Disponíveis</span>
             </h3>
             <span className="text-[11px] font-mono text-primary font-semibold">
               {departureOptions.length} opções de embarque
@@ -795,7 +790,7 @@ export function TravelPackageDetailView({
  {activeTab === "explore" && (
  <div className="px-4 sm:px-6 py-4 space-y-4 animate-in fade-in duration-200">
  <div className="space-y-1">
- <h3 className="text-sm font-bold text-foreground">Logística & Como Chegar</h3>
+ <h3 className="text-sm font-bold text-foreground">Logística</h3>
  <p className="text-xs text-muted-foreground">Planeje sua chegada e localize os melhores pontos da região.</p>
  </div>
 
@@ -1131,7 +1126,7 @@ export function TravelPackageDetailView({
  <div className="flex items-center gap-2">
  <Calendar className="size-4 text-primary" />
  <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
- Datas & Saídas Disponíveis
+ Datas e Saídas Disponíveis
  </h4>
  </div>
  <span className="text-[11px] font-mono text-muted-foreground border border-border/60 px-2 py-0.5 rounded-full">

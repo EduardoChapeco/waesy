@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Briefcase, Star, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck , Linkedin, ArrowRight, Loader2, FileJson, Check } from 'lucide-react';
+import { Briefcase, Star, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck, Linkedin, ArrowRight, Loader2, FileJson, Check } from 'lucide-react';
 import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
 import { ExperienceMediaCarousel } from "@/components/profile/experience-media-carousel";
 import { MediaUploader } from "@/components/ui/media-uploader";
@@ -12,21 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Badge } from "@/components/ui/badge";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { getPostMediaSignedUrl } from "@/services/storage.functions";
 import { searchStoresForCompanyAutocomplete } from "@/services/social.functions";
@@ -290,7 +277,7 @@ export function ProfessionalResumeEditor({
       location: { name: "São Paulo, SP" },
       positions: [
         {
-          title: "Tech Lead & Arquiteto de Software",
+          title: "Tech Lead e Arquiteto de Software",
           companyName: "Waesy Platform",
           employmentType: "Full-time",
           location: "São Miguel do Oeste, SC",
@@ -1934,7 +1921,7 @@ function ExperienceEditSheet({
             <div className="space-y-2 pt-2 border-t border-border/40">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold flex items-center gap-1.5">
-                  <span>Mídias & Portfólio do Cargo</span>
+                  <span>Mídias e Portfólio do Cargo</span>
                 </Label>
                 <span className="text-[10px] text-muted-foreground">Fotos do local, certificados, projetos</span>
               </div>
@@ -1954,7 +1941,7 @@ function ExperienceEditSheet({
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Building2 className="size-3.5 text-primary" />
-                  <span>Avaliação & Salário (Comunidade de Talentos)</span>
+                  <span>Avaliação e Salário (Comunidade de Talentos)</span>
                 </Label>
                 <span className="text-[10px] text-muted-foreground font-mono">Opcional</span>
               </div>

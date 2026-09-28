@@ -2,33 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import {
-  Flame,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  Loader2,
-  RefreshCw,
-  ExternalLink,
-  Search,
-  CheckCheck,
-  AlertCircle,
-} from "lucide-react";
-import {
-  listBoostPayments,
-  confirmBoostPaymentAdmin,
-} from "@/services/classifieds.functions";
+import { Flame, CheckCircle2, Clock, XCircle, Loader2, RefreshCw, ExternalLink, Search, CheckCheck, AlertCircle } from "lucide-react";
+import { listBoostPayments, confirmBoostPaymentAdmin } from "@/services/classifieds.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/money";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin-master/boost-payments")({
   head: () => ({ meta: [{ title: "Boost Payments | Admin Master · Waesy" }] }),

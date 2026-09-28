@@ -33,11 +33,11 @@ const PALETTE_PRESETS = [
 ];
 
 const FONT_PRESETS = [
- { id: "Inter, sans-serif", label: "Inter (Moderna & Neutra)" },
+ { id: "Inter, sans-serif", label: "Inter (Moderna e Neutra)" },
  { id: "'Plus Jakarta Sans', sans-serif", label: "Plus Jakarta Sans (Fintech/SaaS)" },
- { id: "Outfit, sans-serif", label: "Outfit (Geométrica & Elegante)" },
- { id: "'Playfair Display', serif", label: "Playfair Display (Editorial & Luxo)" },
- { id: "Montserrat, sans-serif", label: "Montserrat (Impacto & Títulos)" },
+ { id: "Outfit, sans-serif", label: "Outfit (Geométrica e Elegante)" },
+ { id: "'Playfair Display', serif", label: "Playfair Display (Editorial e Luxo)" },
+ { id: "Montserrat, sans-serif", label: "Montserrat (Impacto e Títulos)" },
 ];
 
 const RADIUS_OPTIONS = [
@@ -177,7 +177,7 @@ export function BuilderGlobalThemePanel({
  <div className="space-y-3">
  <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
  <Type className="size-3.5 text-primary" />
- Tipografia & Fontes
+ Tipografia e Fontes
  </Label>
 
  <div className="space-y-1">
@@ -202,7 +202,7 @@ export function BuilderGlobalThemePanel({
  <div className="space-y-3">
  <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
  <Square className="size-3.5 text-primary" />
- Cantos & Geometria
+ Cantos e Geometria
  </Label>
 
  <div className="grid grid-cols-2 gap-2">

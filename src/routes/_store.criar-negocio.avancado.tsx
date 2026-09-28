@@ -10,25 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CitySelect } from "@/components/ui/city-select";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
- BusinessLocationPicker,
- type BusinessLocationData,
- type BusinessModelType,
-} from "@/components/commerce/business-location-picker";
-import {
- BUSINESS_SEGMENTS,
- BUSINESS_CATEGORIES,
- type BusinessSegment,
-} from "@/lib/constants/business-segments";
+import { BusinessLocationPicker, type BusinessLocationData, type BusinessModelType } from "@/components/commerce/business-location-picker";
+import { BUSINESS_SEGMENTS, BUSINESS_CATEGORIES, type BusinessSegment } from "@/lib/constants/business-segments";
 import { BusinessHoursEditor } from "@/components/commerce/business-hours-editor";
 import { getPresetForSegment, type WeeklySchedule } from "@/lib/business-hours";
 import { setTenantContext } from "@/services/identity.functions";
@@ -720,7 +706,7 @@ function CriarNegocioPage() {
  onClick={() => setStep(4)}
  className="rounded-xl text-xs font-bold h-11 px-6 gap-2 bg-primary text-primary-foreground shadow-xs"
  >
- <span>Avançar para Operação & Entrega</span>
+ <span>Avançar para Operação e Entrega</span>
  <ArrowRight className="size-3.5" />
  </Button>
  </div>
@@ -750,7 +736,7 @@ function CriarNegocioPage() {
  </Badge>
  </div>
  <h2 className="text-base sm:text-xl font-black tracking-tight text-white">
- {logisticsInfo?.title || "Logística Integrada & MotoLink"}
+ {logisticsInfo?.title || "Logística"}
  </h2>
  <p className="text-xs text-white/90 line-clamp-2 leading-relaxed">
  {logisticsInfo?.subtitle ||
@@ -782,7 +768,7 @@ function CriarNegocioPage() {
  <div className="space-y-0.5">
  <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
  <Truck className="size-4 text-primary" />
- <span>Delivery & MotoLink</span>
+ <span>Delivery e MotoLink</span>
  </p>
  <p className="text-[11px] text-muted-foreground">
  Entregas no endereço do cliente via motoboys ou frota própria.
@@ -888,7 +874,7 @@ function CriarNegocioPage() {
  <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border/70 space-y-6 shadow-xs">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <div className="flex items-center justify-between">
- <h2 className="text-lg font-bold text-foreground">Documentos & Regularização</h2>
+ <h2 className="text-lg font-bold text-foreground">Documentos e Regularização</h2>
  <Badge variant="outline" className="text-[10px]">Opcional</Badge>
  </div>
  <p className="text-xs text-muted-foreground">
@@ -970,7 +956,7 @@ function CriarNegocioPage() {
  <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border/70 space-y-6 shadow-xs">
  <div className="space-y-1 pb-2 border-b border-border/60">
  <div className="flex items-center justify-between">
- <h2 className="text-lg font-bold text-foreground">Equipe & Permissões</h2>
+ <h2 className="text-lg font-bold text-foreground">Equipe e Permissões</h2>
  <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-bold">
  Última Etapa
  </Badge>
@@ -1108,7 +1094,7 @@ function CriarNegocioPage() {
  {isSubmitting ? (
  <>
  <Loader2 className="size-4 animate-spin" />
- <span>Criando Loja & Provisionando...</span>
+ <span>Criando Loja e Provisionando...</span>
  </>
  ) : (
  <>
@@ -1253,7 +1239,7 @@ function CriarNegocioPage() {
  {selectedSegment.id === "tourism" ? (
  <>
  <div className="py-2 px-3 rounded-xl bg-muted/40 text-center text-[11px] font-bold text-foreground border border-border/40 truncate">
- Ver Roteiros & Pacotes
+ Ver Roteiros e Pacotes
  </div>
  <div className="py-2 px-3 rounded-xl bg-primary text-center text-[11px] font-bold text-primary-foreground shadow-xs truncate">
  Solicitar Cotação

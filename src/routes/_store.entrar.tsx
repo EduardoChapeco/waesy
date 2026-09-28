@@ -5,22 +5,8 @@ import { ArrowRight, ArrowLeft, Shield, ShieldAlert, ShieldCheck, Eye, EyeOff, U
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
-import {
- signInWithPassword,
- signUpWithPassword,
- signInWithOAuth,
- getUserSession,
- resetPasswordForEmail,
- checkIdentifierExists,
-} from "@/services/auth.functions";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { signInWithPassword, signUpWithPassword, signInWithOAuth, getUserSession, resetPasswordForEmail, checkIdentifierExists } from "@/services/auth.functions";
 import { getPublicBrandSettings } from "@/services/master.functions";
 import { LegalTermsSheet } from "@/components/legal/legal-terms-sheet";
 

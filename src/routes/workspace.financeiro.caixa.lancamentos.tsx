@@ -1,20 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Plus,
-  Wallet,
-  ArrowLeft,
-  Download,
-  Search,
-  ArrowDownLeft,
-  ArrowUpRight,
-  History,
-  TrendingUp,
-  AlertTriangle,
-  FileSpreadsheet,
-  CheckCircle2,
-} from "lucide-react";
+import { Plus, Wallet, ArrowLeft, Download, Search, ArrowDownLeft, ArrowUpRight, History, TrendingUp, AlertTriangle, FileSpreadsheet, CheckCircle2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 import { PageHeader } from "@/components/commerce/page-header";
@@ -23,29 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 import { getActiveRegister, addRegisterEntry } from "@/services/cash.functions";
@@ -171,7 +138,7 @@ function CaixaLancamentosPage() {
         <div>
           <NativeBackButton fallbackHref="/workspace/financeiro/caixa" />
         </div>
-        <PageHeader title="Lançamentos do Caixa" />
+        <PageHeader title="Lançamentos" />
         <EmptyState
           title="Nenhum caixa aberto"
           description="Abra um turno no PDV ou no Painel do Caixa para começar a registrar sangrias e suprimentos."
@@ -273,7 +240,7 @@ function CaixaLancamentosPage() {
 
       <PageHeader
         eyebrow="Financeiro"
-        title="Lançamentos & Movimentações do Caixa"
+        title="Lançamentos"
         description="Extrato analítico de vendas, retiradas (sangrias) e aportes de troco (suprimentos) no turno atual."
         actions={
           <div className="flex items-center gap-2">
@@ -576,7 +543,7 @@ function CaixaLancamentosPage() {
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
                   <TableHead className="text-xs font-bold">Data/Hora</TableHead>
-                  <TableHead className="text-xs font-bold">Descrição / Detalhe</TableHead>
+                  <TableHead className="text-xs font-bold">Descrição</TableHead>
                   <TableHead className="text-xs font-bold">Canal</TableHead>
                   <TableHead className="text-xs font-bold">Forma</TableHead>
                   <TableHead className="text-right text-xs font-bold font-mono">Valor</TableHead>

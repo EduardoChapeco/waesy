@@ -274,7 +274,7 @@ function CanonicalDirectoryDetailPage() {
       isOwner={isOwner}
       source="directory"
       backUrl="/diretorio"
-      backLabel="Guia & Diretório"
+      backLabel="Guia e Diretório"
     />
   );
 }

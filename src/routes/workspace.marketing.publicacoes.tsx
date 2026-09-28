@@ -1,42 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Plus,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Globe,
-  Trash2,
-  Image as ImageIcon,
-  CalendarCheck,
-  Send,
-} from "lucide-react";
-import {
-  InstagramLogo,
-  FacebookLogo,
-  TiktokLogo,
-  TwitterLogo,
-  ThreadsLogo,
-} from "@phosphor-icons/react";
+import { Plus, Clock, CheckCircle2, AlertCircle, Globe, Trash2, Image as ImageIcon, CalendarCheck, Send } from "lucide-react";
+import { InstagramLogo, FacebookLogo, TiktokLogo, TwitterLogo, ThreadsLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  listSocialPosts,
-  createSocialPost,
-  publishSocialPost,
-  deleteSocialPost,
-  type SocialPostDTO,
-  type SocialNetwork,
-} from "@/services/social-publisher.functions";
+import { listSocialPosts, createSocialPost, publishSocialPost, deleteSocialPost, type SocialPostDTO, type SocialNetwork } from "@/services/social-publisher.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";

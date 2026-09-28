@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
- generateDefaultBusSeatMap,
- CreateVehicleLayoutSchema,
- UpdateVehicleLayoutSchema,
-} from "./vehicle-layouts.functions";
+import { generateDefaultBusSeatMap, CreateVehicleLayoutSchema, UpdateVehicleLayoutSchema } from "./vehicle-layouts.functions";
 
 describe("Vehicle Layouts & 2D Seat Engine (Microfase 75C)", () => {
  it("gera layout Single Deck com motorista, porta, corredor e poltronas executivas", () => {

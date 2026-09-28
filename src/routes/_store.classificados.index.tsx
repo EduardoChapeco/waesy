@@ -1,43 +1,9 @@
-import {
-  Tag,
-  ShieldCheck,
-  ShieldAlert,
-  FileText,
-  Check,
-  Home,
-  Car as CarIcon,
-  Laptop as LaptopIcon,
-  Wrench as WrenchIcon,
-  Plane,
-  Utensils,
-  Gift,
-  Briefcase,
-  Lock,
-  RefreshCw,
-} from "lucide-react";
+import { resolveActiveCity } from "@/lib/city-helper";
+import { Tag, ShieldCheck, ShieldAlert, FileText, Check, Home, Car as CarIcon, Laptop as LaptopIcon, Wrench as WrenchIcon, Plane, Utensils, Gift, Briefcase, Lock, RefreshCw } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  MagnifyingGlass,
-  MapPin,
-  Clock,
-  Plus,
-  Bed,
-  Car,
-  Ruler,
-  Users,
-  Truck,
-  CreditCard,
-  ArrowsLeftRight,
-  Rows,
-  SquaresFour,
-  ListDashes,
-  Flame,
-  ArrowRight,
-  WhatsappLogo,
-  X,
-} from "@phosphor-icons/react";
+import { MagnifyingGlass, MapPin, Clock, Plus, Bed, Car, Ruler, Users, Truck, CreditCard, ArrowsLeftRight, Rows, SquaresFour, ListDashes, Flame, ArrowRight, WhatsappLogo, X } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +14,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
@@ -87,7 +54,7 @@ export const Route = createFileRoute("/_store/classificados/")({
   }),
   head: () => ({
     meta: [
-      { title: "Classificados, Imóveis & Desapegos | Waesy" },
+      { title: "Classificados, Imóveis e Desapegos | Waesy" },
       {
         name: "description",
         content:
@@ -95,10 +62,11 @@ export const Route = createFileRoute("/_store/classificados/")({
       },
     ],
   }),
-  loader: async () => {
+  loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
     try {
       const [banners, hotpages, classifieds] = await Promise.all([
-        listActiveBanners({ data: { placement: "classificados" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "classificados", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "classificados" } }).catch(() => []),
         getPublicClassifieds({ data: {} }).catch(() => []),
       ]);
@@ -163,7 +131,7 @@ const CLASSIFIEDS_HOTPAGES = [
     title: "Hospedagem",
     slug: "real_estate_temporada",
     cover_image_url: "",
-    badge_label: "Diária & Temporada",
+    badge_label: "Diária e Temporada",
     show_title: false,
     show_overlay: false,
   },
@@ -204,7 +172,7 @@ const REAL_ESTATE_DEAL_TYPES = [
   { id: "todos", label: "Todos Imóveis" },
   { id: "aluguel", label: "Aluguel Mensal" },
   { id: "venda", label: "Comprar / Venda" },
-  { id: "temporada", label: "Hospedagem & Temporada" },
+  { id: "temporada", label: "Hospedagem e Temporada" },
 ];
 
 const REAL_ESTATE_FACETS = [
@@ -232,11 +200,11 @@ const VEHICLE_FUEL_OPTIONS = [
 const DESAPEGO_SUB_OPTIONS = [
   { id: "todos", label: "Todos Desapegos" },
   { id: "smartphones", label: "Smartphones" },
-  { id: "computadores", label: "Notebooks & PCs" },
+  { id: "computadores", label: "Notebooks e PCs" },
   { id: "moveis", label: "Móveis" },
   { id: "eletrodomesticos", label: "Eletrodomésticos" },
   { id: "games", label: "Games" },
-  { id: "moda_brecho", label: "Roupas & Calçados" },
+  { id: "moda_brecho", label: "Roupas e Calçados" },
 ];
 
 const SERVICE_MODALITY_OPTIONS = [
@@ -276,18 +244,18 @@ const FOOD_SUBNICHE_OPTIONS = [
   { id: "todos", label: "Toda Gastronomia" },
   { id: "pizzaria", label: "🍕 Pizzaria" },
   { id: "hamburgueria", label: "🍔 Hamburgueria" },
-  { id: "confeitaria", label: "🎂 Doces & Bolos" },
+  { id: "confeitaria", label: "🎂 Doces e Bolos" },
   { id: "marmitaria", label: "🍱 Marmitaria" },
   { id: "cafe", label: "☕ Cafeteria" },
   { id: "padaria", label: "🥖 Panificação" },
-  { id: "artesanal", label: "🧀 Queijos & Vinhos" },
+  { id: "artesanal", label: "🧀 Queijos e Vinhos" },
 ];
 
 const BUSINESS_GOAL_OPTIONS = [
   { id: "todos", label: "Todos os Negócios" },
   { id: "venda", label: "Empresas à Venda" },
   { id: "ponto", label: "Pontos Comerciais" },
-  { id: "investimento", label: "Investimento & Sócios" },
+  { id: "investimento", label: "Investimento e Sócios" },
 ];
 
 const SERVICE_AUDIENCE_OPTIONS = [
@@ -640,7 +608,19 @@ function ClassifiedsMasterPage() {
   });
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-0 sm:px-6 space-y-4 pb-24">
+    <div className="w-full max-w-7xl mx-auto pb-24">
+      <NativeMobileHeader
+        title="Classificados"
+        centerTitle
+        backTo="/"
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Buscar imóveis, carros, serviços..."
+        onFilterClick={() => setMobileFilterSheetOpen(true)}
+        activeFiltersCount={activeFiltersCount}
+      />
+
+      <div className="px-4 sm:px-6 space-y-4 pt-2 sm:pt-4">
         {/* ── NÍVEL 1 & NÍVEL 2: TOOLBAR CONSOLIDADA DE 2 NÍVEIS (APPLE & AIRBNB STANDARD) ── */}
         <div className="sticky top-0 lg:static z-20 bg-background lg:bg-transparent px-0 pt-1 pb-2 space-y-2 border-b border-border/40 lg:border-b-0">
           {/* NÍVEL 1: A Barra de Ação Principal (Tudo na mesma linha) */}
@@ -752,8 +732,14 @@ function ClassifiedsMasterPage() {
             </Button>
           </div>
 
-          {/* NÍVEL 2: Navegação de Categorias (Clean Tabs Dinâmicas do CMS - Padrão Botão Grande) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 w-full focus:outline-none">
+          {/* NÍVEL 2: Navegação de Categorias (Snap & Fade Physics) */}
+          <div
+            className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory py-0.5 pr-6 w-full focus:outline-none"
+            style={{
+              maskImage: "linear-gradient(to right, black 88%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to right, black 88%, transparent 100%)",
+            }}
+          >
             {dynamicCategoryChips.map((cat) => {
               const isActive = selectedCategory === cat.id;
               const Icon = cat.icon;
@@ -766,7 +752,7 @@ function ClassifiedsMasterPage() {
                     if (cat.id !== "real_estate") setSelectedDealType("todos");
                   }}
                   className={cn(
-                    "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
+                    "h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl border text-xs sm:text-sm font-semibold shrink-0 snap-start flex items-center gap-2 transition-all cursor-pointer select-none active:scale-98",
                     isActive
                       ? "bg-foreground text-background border-foreground font-bold"
                       : "bg-card hover:bg-muted/50 text-muted-foreground hover:text-foreground border-border/70"
@@ -811,9 +797,9 @@ function ClassifiedsMasterPage() {
           </section>
         )}
 
-        {/* ── MODAL FULL DE FILTROS AVANÇADOS (PROGRESSIVE DISCLOSURE) ── */}
+        {/* ── MODAL FULL DE FILTROS AVANÇADOS (V117 100dvh ML-FILTER MODAL) ── */}
         <Dialog open={mobileFilterSheetOpen} onOpenChange={setMobileFilterSheetOpen}>
-          <DialogContent className="max-w-lg rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+          <DialogContent className="w-screen h-[100dvh] max-w-none sm:max-w-lg sm:h-auto sm:max-h-[85vh] rounded-none sm:rounded-2xl p-5 space-y-4 overflow-y-auto">
             <DialogHeader className="flex flex-row items-center justify-between pb-2 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="size-4 text-primary" />
@@ -950,7 +936,7 @@ function ClassifiedsMasterPage() {
               {selectedCategory === "real_estate" && (
                 <div className="space-y-3 pt-2 border-t border-border/40">
                   <span className="font-bold font-mono uppercase text-muted-foreground block text-[10px] tracking-wider">
-                    Opções de Imóveis & Hospedagem
+                    Opções de Imóveis e Hospedagem
                   </span>
                   <div className="space-y-1.5">
                     <Label className="text-[11px] text-muted-foreground">Finalidade</Label>
@@ -1316,7 +1302,7 @@ function ClassifiedsMasterPage() {
             </div>
           </div>
         ) : viewMode === "list" ? (
-          /* ── MODO LISTA ── */
+          /* ── MODO LISTA EXPANDIDA (V117 Full-Height Left Edge-to-Edge Image) ── */
           <section className="flex flex-col space-y-3 w-full">
             {filtered.map((item: any) => {
               const img = getClassifiedCover(item);
@@ -1328,22 +1314,22 @@ function ClassifiedsMasterPage() {
               return (
                 <div
                   key={item.id}
-                  className="group flex flex-col sm:flex-row items-stretch justify-between rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all overflow-hidden p-0 w-full"
+                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[144px] pl-32 sm:pl-48 w-full"
                 >
                   <Link
                     to="/classificados/$id"
                     params={{ id: item.id }}
-                    className="relative w-full sm:w-60 md:w-72 h-48 sm:h-auto min-h-[160px] overflow-hidden bg-muted/40 shrink-0 flex items-center justify-center cursor-pointer"
+                    className="absolute inset-y-0 left-0 w-32 sm:w-48 overflow-hidden rounded-l-2xl bg-muted/40 flex items-center justify-center cursor-pointer"
                   >
                     {img ? (
                       <img
                         src={img}
                         alt={item.title}
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="size-full bg-muted/40 flex items-center justify-center">
+                      <div className="w-full h-full bg-muted/40 flex items-center justify-center">
                         <Tag size={28} className="text-muted-foreground/30" />
                       </div>
                     )}
@@ -1359,7 +1345,7 @@ function ClassifiedsMasterPage() {
                     </div>
                   </Link>
 
-                  <div className="flex-1 min-w-0 p-4 sm:p-5 flex flex-col justify-between space-y-3">
+                  <div className="p-3.5 sm:p-4 flex flex-col justify-between min-h-[144px] gap-2">
                     <Link to="/classificados/$id" params={{ id: item.id }} className="space-y-1.5 block cursor-pointer">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {(item.attributes?.accepts_trade || item.accepts_trade) && (
@@ -1454,7 +1440,7 @@ function ClassifiedsMasterPage() {
 
               const catTitle =
                 catKey === "travel"
-                  ? "Viagens & Turismo"
+                  ? "Turismo"
                   : catKey === "real_estate"
                   ? "Imóveis"
                   : catKey === "vehicle"
@@ -1462,7 +1448,7 @@ function ClassifiedsMasterPage() {
                   : catKey === "business"
                   ? "Negócios"
                   : catKey === "food"
-                  ? "Gastronomia & Restaurantes"
+                  ? "Gastronomia"
                   : catKey === "sale"
                   ? "Desapego"
                   : catKey === "digital"
@@ -1709,6 +1695,7 @@ function ClassifiedsMasterPage() {
             })}
           </section>
         )}
+      </div>
     </div>
   );
 }

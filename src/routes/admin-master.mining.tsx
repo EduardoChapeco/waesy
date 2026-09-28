@@ -6,81 +6,11 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition, useRef } from "react";
-import {
- Globe,
- Rss,
- Queue,
- Plus,
- Clock,
- CheckCircle,
- XCircle,
- ArrowClockwise,
- Play,
- SpinnerGap,
- Warning,
- Eye,
- ThumbsUp,
- ThumbsDown,
- MagnifyingGlass,
- Robot,
- Database,
- Broadcast,
- Shield,
- Lightning,
- Star,
- ArrowRight,
- ToggleLeft,
- ToggleRight,
- Funnel,
- PencilSimple,
- TrashSimple,
- Ticket,
- Buildings,
- ArrowsClockwise,
- Calendar,
- MapPin,
- CurrencyDollar,
- ArrowSquareOut,
- FileText,
- Check,
- Users,
- Briefcase,
- Article,
- Sparkle,
- LinkSimple,
-} from "@phosphor-icons/react";
-import {
- getMiningStats,
- listCrawlQueue,
- listRssFeeds,
- listMinedArticles,
- listScraperConfigs,
- addUrlToCrawlQueue,
- processUrlWithAI,
- curateMineArticle,
- triggerRssFeedFetch,
- upsertRssFeed,
- toggleRssFeed,
- reprocessFailedQueueItems,
- syncPncpMunicipalBids,
- listPncpContractsAction,
- convertPncpBidToNewsArticle,
- type MinedArticleDTO,
- type ScraperConfigDTO,
-} from "@/services/mining.functions";
-import {
-  isHealthyImageUrl,
-  getFallbackThematicImage,
-} from "@/services/mining/integrity-gate";
-import {
-  mineAndPublishExternalJob,
-  listExternalJobs,
-  type JobItemDTO,
-} from "@/services/jobs.functions";
-import {
- mineAndPublishExternalEvent,
- listExternalEvents,
-} from "@/services/events/external-events.functions";
+import { Globe, Rss, Queue, Plus, Clock, CheckCircle, XCircle, ArrowClockwise, Play, SpinnerGap, Warning, Eye, ThumbsUp, ThumbsDown, MagnifyingGlass, Robot, Database, Broadcast, Shield, Lightning, Star, ArrowRight, ToggleLeft, ToggleRight, Funnel, PencilSimple, TrashSimple, Ticket, Buildings, ArrowsClockwise, Calendar, MapPin, CurrencyDollar, ArrowSquareOut, FileText, Check, Users, Briefcase, Article, LinkSimple } from "@phosphor-icons/react";
+import { getMiningStats, listCrawlQueue, listRssFeeds, listMinedArticles, listScraperConfigs, addUrlToCrawlQueue, processUrlWithAI, curateMineArticle, triggerRssFeedFetch, upsertRssFeed, toggleRssFeed, reprocessFailedQueueItems, syncPncpMunicipalBids, listPncpContractsAction, convertPncpBidToNewsArticle, type MinedArticleDTO, type ScraperConfigDTO } from "@/services/mining.functions";
+import { isHealthyImageUrl, getFallbackThematicImage } from "@/services/mining/integrity-gate";
+import { mineAndPublishExternalJob, listExternalJobs, type JobItemDTO } from "@/services/jobs.functions";
+import { mineAndPublishExternalEvent, listExternalEvents } from "@/services/events/external-events.functions";
 import { generateCarouselFromMinedContent } from "@/services/studio.functions";
 import { CarouselStudioEditor } from "@/components/studio/carousel-studio-editor";
 import type { EscamasCarouselProject } from "@/types/studio-machine";
@@ -89,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin-master/mining")({
-  head: () => ({ meta: [{ title: "Mining Hub & Content Factory | Admin Master" }] }),
+  head: () => ({ meta: [{ title: "Mining Hub e Content Factory | Admin Master" }] }),
   loader: async () => {
     try {
       const [stats, queue, feeds, mined, scrapers, events, jobs] = await Promise.all([
@@ -525,9 +455,9 @@ function AdminMiningHubPage() {
   const TABS: { id: Tab; icon: React.ReactNode; label: string; badge?: number }[] = [
     { id: "mined", icon: <Robot className="h-4 w-4" />, label: "Artigos Minerados", badge: stats.mined.pending_review },
     { id: "queue", icon: <Queue className="h-4 w-4" />, label: "Fila de Extração", badge: stats.queue.pending },
-    { id: "events", icon: <Ticket className="h-4 w-4" />, label: "Eventos & RSVP", badge: eventsList.length },
-    { id: "pncp", icon: <Buildings className="h-4 w-4" />, label: "Editais & PNCP", badge: pncpList.length },
-    { id: "jobs", icon: <Briefcase className="h-4 w-4" />, label: "Vagas & Empregos", badge: jobsList.length },
+    { id: "events", icon: <Ticket className="h-4 w-4" />, label: "Eventos e RSVP", badge: eventsList.length },
+    { id: "pncp", icon: <Buildings className="h-4 w-4" />, label: "Editais e PNCP", badge: pncpList.length },
+    { id: "jobs", icon: <Briefcase className="h-4 w-4" />, label: "Vagas e Empregos", badge: jobsList.length },
     { id: "feeds", icon: <Rss className="h-4 w-4" />, label: "Feeds RSS", badge: stats.feeds.active },
     { id: "scrapers", icon: <Globe className="h-4 w-4" />, label: "Scrapers", badge: stats.scrapers.active },
     { id: "import", icon: <Lightning className="h-4 w-4" />, label: "Importar URL" },
@@ -541,7 +471,7 @@ function AdminMiningHubPage() {
  <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
  <div>
  <h1 className="text-xl font-bold tracking-tight text-foreground">
- Extração & Curadoria de Conteúdo
+ Extração e Curadoria de Conteúdo
  </h1>
  <p className="text-xs text-muted-foreground mt-0.5">
  Content Factory, revisão editorial, licitações PNCP e publicação em notícias.
@@ -550,7 +480,7 @@ function AdminMiningHubPage() {
  <Link to="/workspace/mining">
  <button className="inline-flex items-center gap-1.5 rounded-xl border border-border/70 bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted/50 transition-all">
  <Database className="h-4 w-4 text-primary" />
- Telemetria & Fila Contínua
+ Telemetria e Fila Contínua
  </button>
  </Link>
  </div>
@@ -603,7 +533,7 @@ function AdminMiningHubPage() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] font-bold uppercase text-primary tracking-wider">
-                    Inspeção & Curadoria Forense
+                    Inspeção e Curadoria Forense
                   </span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs font-mono text-muted-foreground">{focusedArticle.source_domain}</span>
@@ -640,7 +570,7 @@ function AdminMiningHubPage() {
                     {isGeneratingCarousel ? (
                       <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
                     ) : (
-                      <Sparkle className="h-3.5 w-3.5" />
+                      <Star className="h-3.5 w-3.5" />
                     )}
                     Gerar Carrossel no Studio
                   </button>
@@ -967,7 +897,7 @@ function AdminMiningHubPage() {
  <table className="w-full text-left text-xs">
  <thead className="border-b border-border text-muted-foreground uppercase">
  <tr>
- <th className="py-2.5 pr-4 font-bold">Domínio & URL</th>
+ <th className="py-2.5 pr-4 font-bold">Domínio e URL</th>
  <th className="py-2.5 pr-4 font-bold">Tipo</th>
  <th className="py-2.5 pr-4 font-bold">Prioridade</th>
  <th className="py-2.5 font-bold">Status</th>
@@ -1027,7 +957,7 @@ function AdminMiningHubPage() {
   <div className="flex items-center gap-2">
   <Ticket className="h-5 w-5 text-primary" />
   <div>
-  <h2 className="text-base font-bold text-foreground">Minerar & Indexar Eventos Externos</h2>
+  <h2 className="text-base font-bold text-foreground">Minerar e Indexar Eventos Externos</h2>
   <p className="text-xs text-muted-foreground">
   Extraia eventos do Sympla, Eventbrite ou portais municipais com dados completos de ingressos, local e cobertura jornalística.
   </p>
@@ -1051,12 +981,12 @@ function AdminMiningHubPage() {
   {isMiningEvent ? (
   <>
   <SpinnerGap className="h-4 w-4 animate-spin" />
-  Minerando & Redigindo Matéria...
+  Minerando e Redigindo Matéria...
   </>
   ) : (
   <>
   <Ticket className="h-4 w-4" />
-  Extrair Evento & Gerar Cobertura
+  Extrair Evento e Gerar Cobertura
   </>
   )}
   </button>
@@ -1176,7 +1106,7 @@ function AdminMiningHubPage() {
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-foreground">Minerar & Publicar Vaga Externa</h2>
+              <h2 className="text-base font-bold text-foreground">Minerar e Publicar Vaga Externa</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Cadastre vagas de portais regionais, SINE ou empresas com link oficial de candidatura.
               </p>
@@ -1218,10 +1148,10 @@ function AdminMiningHubPage() {
                   <option value="clt">CLT</option>
                   <option value="pj">PJ</option>
                   <option value="estagio">Estágio</option>
-                  <option value="tech">Tecnologia & Dev</option>
-                  <option value="comercial">Comercial & Vendas</option>
+                  <option value="tech">Tecnologia e Dev</option>
+                  <option value="comercial">Comercial e Vendas</option>
                   <option value="operacional">Operacional</option>
-                  <option value="saude">Saúde & Cuidados</option>
+                  <option value="saude">Saúde e Cuidados</option>
                   <option value="outros">Outros</option>
                 </select>
               </div>
@@ -1298,8 +1228,8 @@ function AdminMiningHubPage() {
             <table className="w-full text-left text-xs">
               <thead className="border-b border-border text-muted-foreground uppercase">
                 <tr>
-                  <th className="py-2.5 pr-4 font-bold">Vaga & Empresa</th>
-                  <th className="py-2.5 pr-4 font-bold">Categoria & Local</th>
+                  <th className="py-2.5 pr-4 font-bold">Vaga e Empresa</th>
+                  <th className="py-2.5 pr-4 font-bold">Categoria e Local</th>
                   <th className="py-2.5 pr-4 font-bold">Salário</th>
                   <th className="py-2.5 pr-4 font-bold">Fonte</th>
                   <th className="py-2.5 font-bold">Ação</th>
@@ -1352,7 +1282,7 @@ function AdminMiningHubPage() {
                             className="inline-flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all"
                             title="Gerar Carrossel de Vaga para Instagram"
                           >
-                            <Sparkle className="h-3 w-3" />
+                            <Star className="h-3 w-3" />
                             Carrossel
                           </button>
                         </div>
@@ -1490,7 +1420,7 @@ function AdminMiningHubPage() {
         className="inline-flex items-center gap-1 rounded-lg bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 transition-all disabled:opacity-50"
         title="Gerar Carrossel para Redes Sociais"
       >
-        <Sparkle className="h-3.5 w-3.5" />
+        <Star className="h-3.5 w-3.5" />
         Carrossel Studio
       </button>
     </div>
@@ -1676,7 +1606,7 @@ function AdminMiningHubPage() {
  <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
  <div className="flex items-center gap-2">
  <Lightning className="h-5 w-5 text-primary" />
- <h2 className="text-base font-bold text-foreground">Importar & Estruturar com IA</h2>
+ <h2 className="text-base font-bold text-foreground">Importar e Estruturar com IA</h2>
  </div>
 
  <div className="rounded-xl bg-primary/5 border border-primary/20 p-3.5 text-xs text-muted-foreground space-y-1">
@@ -1744,7 +1674,7 @@ function AdminMiningHubPage() {
  ) : (
  <>
  <Robot className="h-4 w-4" />
- Importar & Estruturar com IA
+ Importar e Estruturar com IA
  <ArrowRight className="h-4 w-4" />
  </>
  )}

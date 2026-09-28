@@ -16,7 +16,7 @@ export const DYNAMIC_CTA_REGISTRY: Record<SocialNiche, DynamicCTAOption[]> = {
   imoveis: [
     { id: "imob_visita", label: "Agendar Visita", intent: "conversion" },
     { id: "imob_corretor", label: "Falar com Corretor", intent: "contact" },
-    { id: "imob_planta", label: "Receber Planta & Valores", intent: "discovery" },
+    { id: "imob_planta", label: "Receber Planta e Valores", intent: "discovery" },
     { id: "imob_simular", label: "Simular Financiamento", intent: "conversion" },
     { id: "imob_condicoes", label: "Consultar Condições", intent: "contact" },
     { id: "imob_tour", label: "Fazer Tour Virtual", intent: "discovery" },

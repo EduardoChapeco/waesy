@@ -6,22 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
-import {
-  listEventStoreProducts,
-  upsertEventStoreProduct,
-  deleteEventStoreProduct,
-} from "@/services/events.functions";
+import { listEventStoreProducts, upsertEventStoreProduct, deleteEventStoreProduct } from "@/services/events.functions";
 
 interface EventoLojaProps {
   eventId: string;
@@ -146,7 +135,7 @@ export function EventoLoja({ eventId }: EventoLojaProps) {
         <div>
           <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <ShoppingBag className="size-5 text-primary" />
-            Loja Oficial & Bar do Evento
+            Loja Oficial e Bar do Evento
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Gestão de cardápio, fichas de consumo, merchandising oficial, copos colecionáveis e combos.

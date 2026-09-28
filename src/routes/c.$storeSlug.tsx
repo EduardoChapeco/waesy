@@ -240,7 +240,7 @@ function CustomerPortalWhitelabelPage() {
  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-[44px] px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2"
  >
  <QrCode className="w-4 h-4" />
- Carnês & PIX
+ Carnês e PIX
  </TabsTrigger>
 
  <TabsTrigger
@@ -264,7 +264,7 @@ function CustomerPortalWhitelabelPage() {
  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-h-[44px] px-4 rounded-xl text-xs font-medium border border-border/60 bg-card gap-2"
  >
  <Package className="w-4 h-4" />
- Compras & Locações
+ Compras e Locações
  </TabsTrigger>
  </TabsList>
 

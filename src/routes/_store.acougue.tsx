@@ -1,18 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Flame,
- Knife,
- Storefront,
- Clock,
- MapPin,
- ArrowRight,
- ShoppingBag,
- ShieldCheck,
- CheckCircle,
-} from "@phosphor-icons/react";
+import { Flame, Knife, Storefront, Clock, MapPin, ArrowRight, ShoppingBag, ShieldCheck, CheckCircle } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,11 +12,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
@@ -47,18 +34,18 @@ type AcougueSearch = z.infer<typeof SearchSchema>;
 
 const ACOUQUE_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", icon: Tag },
- { id: "cortes_nobres", label: "Cortes Nobres & Angus", icon: Flame },
+ { id: "cortes_nobres", label: "Cortes Nobres e Angus", icon: Flame },
  { id: "kits_churrasco", label: "Kits Churrasco", icon: Flame },
  { id: "dia_a_dia", label: "Carnes do Dia a Dia", icon: Knife },
- { id: "linguicas", label: "Linguiças & Defumados", icon: Flame },
- { id: "aves", label: "Frangos & Aves", icon: Knife },
- { id: "suinos", label: "Suínos & Costelinhas", icon: Knife },
+ { id: "linguicas", label: "Linguiças e Defumados", icon: Flame },
+ { id: "aves", label: "Frangos e Aves", icon: Knife },
+ { id: "suinos", label: "Suínos e Costelinhas", icon: Knife },
 ];
 
 export const Route = createFileRoute("/_store/acougue")({
  head: () => ({
  meta: [
- { title: "Boutiques de Carnes, Açougues & Churrasco | Waesy" },
+ { title: "Boutiques de Carnes, Açougues e Churrasco | Waesy" },
  {
  name: "description",
  content:
@@ -69,12 +56,13 @@ export const Route = createFileRoute("/_store/acougue")({
  validateSearch: (search: Record<string, unknown>): AcougueSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "acougue" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "acougue", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "acougue" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "acougue" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "acougue", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "acougue", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

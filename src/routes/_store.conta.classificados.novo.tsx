@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch, Link, redirect } from "@tansta
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Sparkles, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine } from 'lucide-react';
+import { Tag, Car, Home as HomeIcon, Briefcase, Wrench, Sliders, ArrowLeft, ChevronRight, Eye, EyeOff, Edit3, ImagePlus, MapPin, MessageCircle, ShieldCheck, Check, Loader2, Phone, FileText, DollarSign, Layers, ChevronLeft, Building, Key, Truck, Package, CreditCard, QrCode, RefreshCw, Banknote, DownloadCloud, FileArchive, Search, Utensils, Plane, Thermometer, CreditCard as CreditCardIcon, PlusCircle, Coins, Wand2, Bot, BadgePercent, Landmark, Info, Trash2, Plus, Bus, Ship, Train, Navigation, Route as RouteIcon, Users, Calendar, Clock, ChevronDown, ChevronUp, X, CheckCircle, GraduationCap, Award, SlidersHorizontal, Store as StoreIcon, Star, Lock, ShieldAlert, FileSpreadsheet, Receipt, BookOpenCheck, Zap, Apple, Flame, Croissant, Milk, Wine, Palette } from 'lucide-react';
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { ItineraryDayEditor, type ItineraryDay } from "@/components/classifieds/itinerary-day-editor";
 import { WeatherWidget } from "@/components/classifieds/weather-widget";
@@ -23,13 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { formatMoney } from "@/lib/money";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { DigitalFileDropzone } from "@/components/classifieds/digital-file-dropzone";
 import { ChoiceCard } from "@/components/ui/choice-card";
@@ -42,63 +36,8 @@ import { listStoreLeadForms } from "@/services/lead-forms.functions";
 import { createListingWithAI } from "@/services/ai-sdr.functions";
 import { analyzeCommercialPointPotential, auditCnpjWithSimLabs } from "@/services/market-intelligence.functions";
 import { lookupCnpj } from "@/services/public-apis.functions";
-import {
- CANONICAL_VEHICLE_BRANDS,
- CANONICAL_TRANSMISSIONS,
- CANONICAL_FUELS,
- CANONICAL_VEHICLE_COLORS,
- CANONICAL_VEHICLE_OPTIONS,
- CANONICAL_VEHICLE_PROVENANCE,
- CANONICAL_GOODS_SEGMENTS,
- CANONICAL_ITEM_CONDITIONS,
- CANONICAL_SMARTPHONE_BRANDS,
- CANONICAL_COMPUTER_TYPES,
- CANONICAL_COMPUTER_BRANDS,
- CANONICAL_PROCESSORS,
- CANONICAL_RAM_OPTIONS,
- CANONICAL_STORAGE_OPTIONS,
- CANONICAL_APPLIANCE_TYPES,
- CANONICAL_APPLIANCE_BRANDS,
- CANONICAL_VOLTAGES,
- CANONICAL_GAME_CONSOLES,
- CANONICAL_FASHION_CATEGORIES,
- CANONICAL_FASHION_SIZES,
- CANONICAL_FOOD_SUBNICHES,
- CANONICAL_SERVICE_SUBNICHES,
- CANONICAL_BUSINESS_TYPES,
- CANONICAL_BUSINESS_SEGMENTS,
- CANONICAL_SALE_REASONS,
- CANONICAL_EMPLOYEES_RANGES,
- CANONICAL_COMMERCIAL_POINT_TYPES,
- CANONICAL_INVESTMENT_MODELS,
- CANONICAL_PROJECT_STAGES,
- CANONICAL_USE_OF_FUNDS,
- CANONICAL_GROCERY_DEPARTMENTS,
- CANONICAL_UNIT_TYPES,
- CANONICAL_STORAGE_TEMPERATURES,
- CANONICAL_MEAT_CUT_OPTIONS,
- CANONICAL_BAKERY_PREP_OPTIONS,
- GroceryFreshPricing,
- GroceryRipenessConfig,
- ProgressiveDiscountTier,
- OrderBumpOffer,
- RipenessStage,
- DEFAULT_RIPENESS_LABELS,
-} from "@/lib/classifieds/canonical-taxonomy";
-import {
- CANONICAL_EDUCATION_LEVELS,
- CANONICAL_EXPERIENCE_LEVELS,
- CANONICAL_JOB_REGIMES,
- CANONICAL_WORKPLACE_MODELS,
- CANONICAL_WORK_SCHEDULES,
- CANONICAL_SALARY_RANGES,
- CANONICAL_JOB_BENEFITS,
- SUGGESTED_JOB_SKILLS,
- getEducationLabel,
- getExperienceLabel,
- getRegimeLabel,
- getWorkplaceModelLabel,
-} from "@/lib/classifieds/canonical-hiring";
+import { CANONICAL_VEHICLE_BRANDS, CANONICAL_TRANSMISSIONS, CANONICAL_FUELS, CANONICAL_VEHICLE_COLORS, CANONICAL_VEHICLE_OPTIONS, CANONICAL_VEHICLE_PROVENANCE, CANONICAL_GOODS_SEGMENTS, CANONICAL_ITEM_CONDITIONS, CANONICAL_SMARTPHONE_BRANDS, CANONICAL_COMPUTER_TYPES, CANONICAL_COMPUTER_BRANDS, CANONICAL_PROCESSORS, CANONICAL_RAM_OPTIONS, CANONICAL_STORAGE_OPTIONS, CANONICAL_APPLIANCE_TYPES, CANONICAL_APPLIANCE_BRANDS, CANONICAL_VOLTAGES, CANONICAL_GAME_CONSOLES, CANONICAL_FASHION_CATEGORIES, CANONICAL_FASHION_SIZES, CANONICAL_FOOD_SUBNICHES, CANONICAL_SERVICE_SUBNICHES, CANONICAL_BUSINESS_TYPES, CANONICAL_BUSINESS_SEGMENTS, CANONICAL_SALE_REASONS, CANONICAL_EMPLOYEES_RANGES, CANONICAL_COMMERCIAL_POINT_TYPES, CANONICAL_INVESTMENT_MODELS, CANONICAL_PROJECT_STAGES, CANONICAL_USE_OF_FUNDS, CANONICAL_GROCERY_DEPARTMENTS, CANONICAL_UNIT_TYPES, CANONICAL_STORAGE_TEMPERATURES, CANONICAL_MEAT_CUT_OPTIONS, CANONICAL_BAKERY_PREP_OPTIONS, GroceryFreshPricing, GroceryRipenessConfig, ProgressiveDiscountTier, OrderBumpOffer, RipenessStage, DEFAULT_RIPENESS_LABELS } from "@/lib/classifieds/canonical-taxonomy";
+import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 // (ChevronDown, ChevronUp merged into main lucide import above)
 import { z } from "zod";
 
@@ -346,19 +285,19 @@ const NICHE_CARDS: NicheDefinition[] = [
 
 // ─── Taxonomia Canônica Completa de Desapego ───────────────────────────────
 export const DESAPEGO_TAXONOMY = [
-  { id: "smartphones", label: "Smartphones & Celulares", desc: "iPhones, Samsung Galaxy, Xiaomi e marcas" },
-  { id: "computadores", label: "Notebooks & Computadores", desc: "Notebooks Dell, Apple Mac, PCs gamer e tablets" },
-  { id: "moveis", label: "Móveis & Decoração", desc: "Sofás, mesas, armários, camas e decoração" },
-  { id: "eletrodomesticos", label: "Eletrodomésticos & Cozinha", desc: "Geladeiras, fogões, micro-ondas e lavadoras" },
-  { id: "moda_brecho", label: "Roupas & Moda", desc: "Jaquetas, vestidos, camisas e calças" },
-  { id: "tenis_calcados", label: "Tênis & Calçados", desc: "Sneakers, tênis esportivos e calçados sociais" },
-  { id: "joias_relogios", label: "Joias & Relógios", desc: "Relógios automáticos, anéis e correntes" },
-  { id: "eletronicos", label: "Eletrônicos & Som", desc: "TVs, caixas JBL, fones e áudio" },
-  { id: "games_consoles", label: "Games & Consoles", desc: "PS5, Xbox, Nintendo Switch e jogos" },
+  { id: "smartphones", label: "Smartphones e Celulares", desc: "iPhones, Samsung Galaxy, Xiaomi e marcas" },
+  { id: "computadores", label: "Notebooks e Computadores", desc: "Notebooks Dell, Apple Mac, PCs gamer e tablets" },
+  { id: "moveis", label: "Móveis e Decoração", desc: "Sofás, mesas, armários, camas e decoração" },
+  { id: "eletrodomesticos", label: "Eletrodomésticos e Cozinha", desc: "Geladeiras, fogões, micro-ondas e lavadoras" },
+  { id: "moda_brecho", label: "Roupas e Moda", desc: "Jaquetas, vestidos, camisas e calças" },
+  { id: "tenis_calcados", label: "Tênis e Calçados", desc: "Sneakers, tênis esportivos e calçados sociais" },
+  { id: "joias_relogios", label: "Joias e Relógios", desc: "Relógios automáticos, anéis e correntes" },
+  { id: "eletronicos", label: "Eletrônicos e Som", desc: "TVs, caixas JBL, fones e áudio" },
+  { id: "games_consoles", label: "Games e Consoles", desc: "PS5, Xbox, Nintendo Switch e jogos" },
   { id: "instrumentos", label: "Instrumentos Musicais", desc: "Guitarras, violões, teclados e pedais" },
-  { id: "esportes_fitness", label: "Esportes & Ciclismo", desc: "Bicicletas, esteiras e artigos esportivos" },
-  { id: "bebes_criancas", label: "Bebês & Crianças", desc: "Carrinhos, berços, roupas e brinquedos" },
-  { id: "ferramentas", label: "Ferramentas & Garagem", desc: "Furadeiras, serras e oficina" },
+  { id: "esportes_fitness", label: "Esportes e Ciclismo", desc: "Bicicletas, esteiras e artigos esportivos" },
+  { id: "bebes_criancas", label: "Bebês e Crianças", desc: "Carrinhos, berços, roupas e brinquedos" },
+  { id: "ferramentas", label: "Ferramentas e Garagem", desc: "Furadeiras, serras e oficina" },
   { id: "outros", label: "Outros Desapegos", desc: "Livros, colecionáveis e itens variados" },
 ];
 
@@ -520,12 +459,16 @@ function NovoClassificadoPage() {
             content: listing.content || listing.description || "",
             description: listing.description || listing.content || "",
             price_cents: listing.price_cents ?? undefined,
+            location_name: listing.location || "",
             negotiable: true,
             attributes: {
               ...(listing.attributes || {}),
               niche: resolvedNiche,
               subcategory: resolvedSub,
               pricing_type: listing.price_cents ? "fixed" : "free",
+              delivery_type: listing.delivery_type || "pickup",
+              search_tags: listing.search_tags || [],
+              seo_meta_tags: listing.seo_meta_tags || [],
             },
           };
 
@@ -883,7 +826,7 @@ function CreateTypePicker({
         {(scopeTab === "all" || scopeTab === "business") && businessNiches.length > 0 && (
           <div className="space-y-3 pt-4 border-t border-border/30">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-              Para o Seu Negócio (Varejo & Serviços)
+              Para o Seu Negócio (Varejo e Serviços)
             </span>
 
             <div className="flex flex-row gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar py-1 px-0.5 scroll-smooth">
@@ -1102,11 +1045,13 @@ function SpecializedClassifiedEditor({
   const [offerLimit, setOfferLimit] = useState<string>(
     initialData?.offer_limit != null ? String(initialData.offer_limit) : ""
   );
- const [locationName, setLocationName] = useState("");
- const [structuredLoc, setStructuredLoc] = useState<StructuredLocationValue | null>(null);
- const [whatsapp, setWhatsapp] = useState("");
- const [images, setImages] = useState<string[]>([]);
- const [activePreviewImage, setActivePreviewImage] = useState(0);
+  const [locationName, setLocationName] = useState(
+    initialData?.location_name || initialData?.location || ""
+  );
+  const [structuredLoc, setStructuredLoc] = useState<StructuredLocationValue | null>(null);
+  const [whatsapp, setWhatsapp] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [activePreviewImage, setActivePreviewImage] = useState(0);
 
   // Vínculo com Formulário de Captura de Leads / Landing Page
   const [selectedFormId, setSelectedFormId] = useState<string | null>(
@@ -1120,18 +1065,19 @@ function SpecializedClassifiedEditor({
     enabled: !!effectiveStoreId,
   });
 
-  // Template de Exibição (Padrão Comercial vs Vitrine Imersiva / Glamour)
+  // Template de Exibição (Auto-Theming Inteligente pelo Nicho - V121)
   const [templateStyle, setTemplateStyle] = useState<"standard" | "editorial" | "conveniencia">(
     initialData?.attributes?.template_style === "editorial" || initialData?.attributes?.template_style === "instagram"
       ? "editorial"
       : initialData?.attributes?.template_style === "conveniencia"
       ? "conveniencia"
-      : niche.id === "viagem"
+      : (niche.id === "viagem" || niche.id === "imovel" || niche.id === "hospedagem")
       ? "editorial"
-      : niche.id === "mercado"
+      : (niche.id === "mercado" || niche.id === "gastronomia")
       ? "conveniencia"
       : "standard"
   );
+  const [isTemplateStyleOpen, setIsTemplateStyleOpen] = useState(false);
 
   // ── Motor de Precificação Dinâmica & Avisos ──
   const [pricingType, setPricingType] = useState<
@@ -3310,15 +3256,15 @@ function SpecializedClassifiedEditor({
         </div>
       </div>
 
-      {/* ── 5-Step Adaptive Stepper Tracker (Apple Clean / Minimalist) ── */}
+      {/* ── 5-Step Adaptive Stepper Tracker (Media-First & Snap-X V121) ── */}
       <div className="w-full bg-card rounded-2xl border border-border/60 p-2 sm:p-2.5">
-        <div className="grid grid-cols-5 gap-1 sm:gap-2">
+        <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-1 sm:grid sm:grid-cols-5 sm:gap-2">
           {[
             { step: 1, label: "Nicho", short: "Nicho" },
-            { step: 2, label: "Especificações", short: "Specs" },
-            { step: 3, label: "Fotos & Mídia", short: "Mídia" },
+            { step: 2, label: "Fotos e Mídia", short: "Mídia" },
+            { step: 3, label: "Especificações", short: "Specs" },
             { step: 4, label: "Condições Comerciais", short: "Comercial" },
-            { step: 5, label: "Prévia & Publicar", short: "Publicar" },
+            { step: 5, label: "Prévia e Publicar", short: "Publicar" },
           ].map((s) => {
             const isCurrent = currentStep === s.step;
             const isPast = currentStep > s.step;
@@ -3331,9 +3277,9 @@ function SpecializedClassifiedEditor({
                   else setCurrentStep(s.step as any);
                 }}
                 className={cn(
-                  "flex items-center justify-center gap-1.5 py-2 px-1 sm:px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer text-center",
+                  "flex items-center justify-center gap-1.5 py-2 px-2.5 sm:px-2 rounded-xl text-xs font-semibold transition-all cursor-pointer text-center shrink-0 snap-center min-w-[76px] sm:min-w-0",
                   isCurrent
-                    ? "bg-primary text-primary-foreground  font-bold"
+                    ? "bg-primary text-primary-foreground font-bold"
                     : isPast
                     ? "bg-muted/50 text-foreground hover:bg-muted"
                     : "text-muted-foreground hover:bg-muted/30 opacity-70"
@@ -3593,72 +3539,37 @@ function SpecializedClassifiedEditor({
  className={`md:col-span-5 space-y-6 ${mobileTab === "edit" ? "block" : "hidden md:block"} `}
  >
           <div className="space-y-6">
- {/* Section 1: Informações Fundamentais */}
- {/* Section 1: Informações Fundamentais */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
-              <FileText className="size-4 text-primary shrink-0" />
-              <span>Informações Básicas</span>
-            </div>
-
-            {/* Seletor de Template Visual (Padrão vs Vitrine Imersiva vs Mercado) */}
-            <div className="space-y-1.5 pb-1">
-              <Label className="text-xs text-foreground font-semibold">
-                Estilo Visual da Página
-              </Label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTemplateStyle("standard")}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    templateStyle === "standard"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border/60 hover:bg-muted/40"
-                  }`}
-                >
-                  <p className="text-xs font-bold text-foreground">Padrão</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Visual limpo
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setTemplateStyle("editorial")}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    templateStyle === "editorial" || (templateStyle as string) === "instagram"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border/60 hover:bg-muted/40"
-                  }`}
-                >
-                  <p className="text-xs font-bold text-foreground flex items-center gap-1">
-                    <span>Imersiva</span>
-                    <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Roteiro e abas
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setTemplateStyle("conveniencia")}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    templateStyle === "conveniencia"
-                      ? "border-primary bg-primary/5 ring-1 ring-primary"
-                      : "border-border/60 hover:bg-muted/40"
-                  }`}
-                >
-                  <p className="text-xs font-bold text-foreground flex items-center gap-1">
-                    <span>Mercado</span>
-                    <span className="size-1.5 rounded-full bg-emerald-500" />
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Frescor & gôndola
-                  </p>
-                </button>
+            {/* Section 1: Fotos & Mídia (Inversão do Funil - Media-First Flow V121) */}
+            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
+                  <ImagePlus className="size-4 text-primary shrink-0" />
+                  <span>1. Mídia</span>
+                </div>
+                <span className="text-[11px] font-mono text-muted-foreground">
+                  {images.length} adicionada(s)
+                </span>
               </div>
+
+              <MediaUploader
+                value={images}
+                onChange={setImages}
+                onUploadingStateChange={setIsUploadingMedia}
+                bucket="post-media"
+                folder="classifieds"
+                aspect={4 / 3}
+                enableCrop={true}
+                lockAspect={true}
+                maxFiles={8}
+              />
             </div>
+
+            {/* Section 2: Informações Básicas (Design Silencioso V121) */}
+            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+                <FileText className="size-4 text-primary shrink-0" />
+                <span>2. Informações</span>
+              </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs text-foreground font-medium">Título do Anúncio *</Label>
@@ -3693,7 +3604,7 @@ function SpecializedClassifiedEditor({
                   onClick={handleRefineDescriptionWithAI}
                   className="h-6 px-2 text-[11px] font-semibold text-primary hover:text-primary hover:bg-primary/10 gap-1 rounded-lg"
                 >
-                  <Sparkles className="size-3" />
+                  <Star className="size-3" />
                   {isRefiningDescription ? "Aprimorando..." : "Refinar com IA"}
                 </Button>
               </div>
@@ -5130,7 +5041,7 @@ function SpecializedClassifiedEditor({
  {/* Comodidades & Diferenciais do Imóvel */}
  <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3 pt-2">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-semibold text-foreground tracking-tight">Comodidades & Infraestrutura do Imóvel</Label>
+ <Label className="text-xs font-semibold text-foreground tracking-tight">Comodidades e Infraestrutura do Imóvel</Label>
  <span className="text-[10px] text-muted-foreground font-mono">{reAmenities.length} selecionada(s)</span>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -5296,7 +5207,7 @@ function SpecializedClassifiedEditor({
  {/* Opcionais & Diferenciais do Veículo */}
  <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3 pt-2">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-semibold text-foreground tracking-tight">Opcionais & Diferenciais do Veículo</Label>
+ <Label className="text-xs font-semibold text-foreground tracking-tight">Opcionais e Diferenciais do Veículo</Label>
  <span className="text-[10px] text-muted-foreground font-mono">{vehicleFeatures.length} selecionado(s)</span>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -5359,7 +5270,7 @@ function SpecializedClassifiedEditor({
                   {/* Procedência & Histórico do Veículo */}
                   <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold text-foreground tracking-tight">Procedência & Histórico</Label>
+                      <Label className="text-xs font-semibold text-foreground tracking-tight">Procedência e Histórico</Label>
                       <span className="text-[10px] text-muted-foreground font-mono">{vehicleProvenance.length} selecionado(s)</span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -5390,7 +5301,7 @@ function SpecializedClassifiedEditor({
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                     <Wrench className="size-4 text-primary" />
-                    <span>2. Parâmetros do Serviço & Conselho</span>
+                    <span>Parâmetros do Serviço</span>
                   </div>
 
                   {/* Sub-nicho Canônico Especializado com Smart Cascade Pills */}
@@ -5589,10 +5500,10 @@ function SpecializedClassifiedEditor({
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Utensils className="size-4 text-primary" />
-                      <span>2. Parâmetros Gastronômicos & Delivery</span>
+                      <span>Parâmetros Gastronômicos</span>
                     </div>
                     <Badge variant="outline" className="text-[10px] font-semibold text-primary">
-                      Culinária & Balcão
+                      Culinária e Balcão
                     </Badge>
                   </div>
 
@@ -5641,7 +5552,7 @@ function SpecializedClassifiedEditor({
                   {/* Canais de Atendimento & Entrega */}
                   <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold text-foreground tracking-tight">Canais de Atendimento & Entrega</Label>
+                      <Label className="text-xs font-semibold text-foreground tracking-tight">Canais de Atendimento e Entrega</Label>
                       <span className="text-[10px] text-muted-foreground font-mono">{foodDeliveryModes.length} ativo(s)</span>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -5703,7 +5614,7 @@ function SpecializedClassifiedEditor({
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Zap className="size-4 text-emerald-600" />
-                      <span>2. Parâmetros de Conveniência & Delivery</span>
+                      <span>Parâmetros de Conveniência</span>
                     </div>
                     <Badge variant="outline" className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                       Pronta Entrega
@@ -5816,7 +5727,7 @@ function SpecializedClassifiedEditor({
                   <div className="flex items-center justify-between pb-2 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <StoreIcon className="size-4 text-primary" />
-                      <span>2. Parâmetros de Mercado, Perecíveis & Conveniência</span>
+                      <span>Parâmetros de Mercado</span>
                     </div>
                     <Badge variant="outline" className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                       Varejo Alimentar
@@ -6029,7 +5940,7 @@ function SpecializedClassifiedEditor({
                   {/* Selos de Saúde, Alérgenos & Restrições */}
                   <div className="p-3.5 rounded-xl border border-border/50 bg-muted/20 space-y-3">
                     <Label className="text-xs font-semibold text-foreground block">
-                      Selos de Saúde, Alérgenos & Restrições
+                      Selos de Saúde, Alérgenos e Restrições
                     </Label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       <div
@@ -6117,7 +6028,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label className="text-xs font-bold text-foreground">
-                          Hortifrúti & Produtos Frescos (Peso Variável / Maturação)
+                          Hortifrúti e Produtos Frescos (Peso Variável / Maturação)
                         </Label>
                         <p className="text-[11px] text-muted-foreground">
                           Permite ao cliente alternar entre compra por unidade ou peso e escolher o nível de maturação.
@@ -6534,7 +6445,7 @@ function SpecializedClassifiedEditor({
                       <div className="flex items-center justify-between pb-1 border-b border-primary/20">
                         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
                           <Coins className="size-4" />
-                          <span>Parâmetros da Captação de Investimento & Sócios</span>
+                          <span>Parâmetros de Captação</span>
                         </div>
                         <Badge variant="outline" className="text-[10px] font-bold border-primary/40 text-primary bg-primary/10">
                           Oportunidade de Parceria
@@ -6725,7 +6636,7 @@ function SpecializedClassifiedEditor({
                   <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-4">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                       <Building className="size-4 text-primary" />
-                      <span>Instalações & Ponto Comercial</span>
+                      <span>Ponto Comercial</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -6841,7 +6752,7 @@ function SpecializedClassifiedEditor({
                         <div className="space-y-0.5">
                           <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                             <FileSpreadsheet className="size-3.5 text-amber-600 dark:text-amber-400" />
-                            Documentos Confidenciais & DRE (Acesso Restrito via NDA)
+                            Documentos Confidenciais e DRE (Acesso Restrito via NDA)
                           </Label>
                           <p className="text-[11px] text-muted-foreground leading-snug">
                             Anexe DRE, balanços, inventário ou contratos em PDF, XLSX ou CSV. Os arquivos só poderão ser baixados por investidores após assinatura digital do termo de sigilo.
@@ -6924,7 +6835,7 @@ function SpecializedClassifiedEditor({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
                         <Zap className="size-4 text-primary" />
-                        <span>Telemetria de Ponto & Viabilidade Comercial</span>
+                        <span>Viabilidade Comercial</span>
                       </div>
                       <Button
                         type="button"
@@ -7312,7 +7223,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Briefcase className="size-4 text-primary" />
- <span>Parâmetros de Contratação & Mensuração</span>
+ <span>Parâmetros de Contratação</span>
  </div>
  
  </div>
@@ -7472,7 +7383,7 @@ function SpecializedClassifiedEditor({
  {/* Habilidades & Competências com Tags Interativas */}
  <div className="space-y-2 pt-2 border-t border-border/40">
  <div className="flex items-center justify-between">
- <Label className="text-xs text-foreground font-medium">Competências & Habilidades Desejadas</Label>
+ <Label className="text-xs text-foreground font-medium">Competências e Habilidades Desejadas</Label>
  <span className="text-[11px] text-muted-foreground font-mono">{jobSkills.length} adicionada(s)</span>
  </div>
 
@@ -7683,7 +7594,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Truck className="size-4 text-primary" />
- <span>3. Entrega e Retirada</span>
+ <span>Logística</span>
  </div>
  <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
  Waesy Express
@@ -7836,7 +7747,7 @@ function SpecializedClassifiedEditor({
                   <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                     <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                       <Award className="size-4 text-primary shrink-0" />
-                      <span>Destaques & Diferenciais</span>
+                      <span>Destaques</span>
                     </div>
                     <Badge variant="outline" className="text-[10px] font-bold">
                       Livre / Opcional
@@ -8426,37 +8337,12 @@ function SpecializedClassifiedEditor({
                 </div>
               </div>
 
-              {/* Section 3: Fotos & Mídias com Upload Seguro */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
- <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
- <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <ImagePlus className="size-4 text-primary" />
- <span>4. Fotos e Vídeos</span>
- </div>
- <span className="text-[11px] font-mono text-muted-foreground">
- {images.length} adicionada(s)
- </span>
- </div>
-
- <MediaUploader
- value={images}
- onChange={setImages}
- onUploadingStateChange={setIsUploadingMedia}
- bucket="post-media"
- folder="classifieds"
- aspect={4 / 3}
- enableCrop={true}
- lockAspect={true}
- maxFiles={8}
- />
- </div>
-
- {/* Section 4: Localização Padronizada & WhatsApp */}
-          <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
- <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
- <MapPin className="size-4 text-primary" />
- <span>5. Localização e Contato</span>
- </div>
+              {/* Seção: Localização */}
+              <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
+                  <MapPin className="size-4 text-primary shrink-0" />
+                  <span>Localização</span>
+                </div>
 
  <CityCombobox
  value={locationName}
@@ -8511,10 +8397,10 @@ function SpecializedClassifiedEditor({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                     <FileText className="size-4 text-primary shrink-0" />
-                    <span>Captura de Leads & Landing Page (Opcional)</span>
+                    <span>Captura de Leads (Opcional)</span>
                   </div>
                   <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
-                    Campanhas Ads & CRM
+                    Campanhas Ads e CRM
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -8675,6 +8561,80 @@ function SpecializedClassifiedEditor({
                           O agente pode conceder até {maxDiscountPct}% de desconto como último recurso. Ele negociará profissionalmente antes de ceder.
                         </p>
                       )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Seletor Silencioso de Estilo Visual (Auto-Design & Collapsible no Fundo - V121) */}
+              <div className="bg-card rounded-2xl p-4 border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setIsTemplateStyleOpen(!isTemplateStyleOpen)}
+                  className="w-full flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Palette className="size-4 text-primary shrink-0" />
+                    <span>Design da Página</span>
+                    <Badge variant="outline" className="text-[10px] font-normal uppercase tracking-wider">
+                      {templateStyle === "editorial" ? "Imersiva" : templateStyle === "conveniencia" ? "Mercado" : "Padrão"}
+                    </Badge>
+                  </div>
+                  {isTemplateStyleOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                </button>
+                {isTemplateStyleOpen && (
+                  <div className="mt-3 pt-3 border-t border-border/40 space-y-2">
+                    <p className="text-[11px] text-muted-foreground">
+                      O Waesy define o melhor layout automaticamente pelo nicho. Você pode alternar manualmente se preferir.
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setTemplateStyle("standard")}
+                        className={cn(
+                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          templateStyle === "standard"
+                            ? "border-primary bg-primary/5 ring-1 ring-primary"
+                            : "border-border/60 hover:bg-muted/40"
+                        )}
+                      >
+                        <p className="text-xs font-bold text-foreground">Padrão</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Visual limpo</p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setTemplateStyle("editorial")}
+                        className={cn(
+                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          templateStyle === "editorial" || (templateStyle as string) === "instagram"
+                            ? "border-primary bg-primary/5 ring-1 ring-primary"
+                            : "border-border/60 hover:bg-muted/40"
+                        )}
+                      >
+                        <p className="text-xs font-bold text-foreground flex items-center gap-1">
+                          <span>Imersiva</span>
+                          <span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Roteiro e abas</p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setTemplateStyle("conveniencia")}
+                        className={cn(
+                          "p-2.5 rounded-xl border text-left transition-all cursor-pointer",
+                          templateStyle === "conveniencia"
+                            ? "border-primary bg-primary/5 ring-1 ring-primary"
+                            : "border-border/60 hover:bg-muted/40"
+                        )}
+                      >
+                        <p className="text-xs font-bold text-foreground flex items-center gap-1">
+                          <span>Mercado</span>
+                          <span className="size-1.5 rounded-full bg-emerald-500" />
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Gôndola</p>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -8957,7 +8917,7 @@ function SpecializedClassifiedEditor({
  {deliveryMode === "both" && (
  <Badge variant="outline" className="text-[10px] font-medium gap-1 bg-muted/40">
  <Truck className="size-3 text-primary" />
- <span>Retirada & Entrega Local</span>
+ <span>Entrega Local</span>
  </Badge>
  )}
  {deliveryMode === "local_delivery" && (
@@ -9037,7 +8997,7 @@ function SpecializedClassifiedEditor({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
  <Truck className="size-4 text-primary" />
- <span>Simulação de Frete & Entrega (Comprador)</span>
+ <span>Simulação de Frete</span>
  </div>
  <Badge variant="default" className="text-[9px] font-mono bg-primary text-primary-foreground">
  Waesy Express
@@ -9083,7 +9043,7 @@ function SpecializedClassifiedEditor({
  <div className="rounded-xl p-4 bg-muted/20 space-y-3">
  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
  <Key className="size-3.5 text-primary" />
- <span>Detalhes da Estadia & Regras</span>
+ <span>Regras da Estadia</span>
  </h3>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
  <div>

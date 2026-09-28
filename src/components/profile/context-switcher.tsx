@@ -11,26 +11,8 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  User,
-  Building2,
-  Sparkles,
-  Check,
-  Plus,
-  ChevronDown,
-  ShieldCheck,
-  Store,
-  Layers,
-  ArrowRight,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { User, Building2, Star, Check, Plus, ChevronDown, ShieldCheck, Store, Layers, ArrowRight } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -223,7 +205,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               ) : currentContextType === "store" ? (
                 <Building2 className="size-4 text-primary" />
               ) : currentContextType === "creator" ? (
-                <Sparkles className="size-4 text-amber-500" />
+                <Star className="size-4 text-amber-500" />
               ) : (
                 <User className="size-4 text-foreground" />
               )}
@@ -245,7 +227,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               ) : currentContextType === "store" ? (
                 <Building2 className="size-3 text-primary" />
               ) : currentContextType === "creator" ? (
-                <Sparkles className="size-3 text-amber-500" />
+                <Star className="size-3 text-amber-500" />
               ) : (
                 <User className="size-3 text-foreground" />
               )}
@@ -322,7 +304,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         {resolvedPersonas.length > 0 && (
           <div className="mt-2 space-y-0.5">
             <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-              Personas & Marcas Pessoais
+              Personas e Marcas Pessoais
             </span>
 
             {resolvedPersonas.map((persona) => {
@@ -346,7 +328,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                       {persona.avatarUrl ? (
                         <img src={persona.avatarUrl} alt={persona.name} className="size-full object-cover" />
                       ) : (
-                        <Sparkles className="size-4" />
+                        <Star className="size-4" />
                       )}
                     </div>
                     <div className="min-w-0 space-y-0.5">
@@ -379,7 +361,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         {stores.length > 0 && (
           <div className="mt-2 space-y-0.5">
             <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-              Minhas Empresas & Lojas
+              Minhas Empresas e Lojas
             </span>
 
             {stores.map((store) => {
@@ -451,7 +433,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             }}
             className="p-2 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-muted/60 cursor-pointer flex items-center gap-2"
           >
-            <Sparkles className="size-3.5 text-amber-500" />
+            <Star className="size-3.5 text-amber-500" />
             <span>+ Criar Nova Persona de Criador</span>
           </DropdownMenuItem>
         </div>

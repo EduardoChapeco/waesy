@@ -1,21 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import {
-  Clock,
-  Users,
-  ChevronLeft,
-  Share2,
-  Printer,
-  Sparkles,
-  ShoppingBag,
-  ExternalLink,
-  CheckCircle2,
-  Circle,
-  ChefHat,
-  Bookmark,
-  ArrowRight,
-  Pencil,
-} from "lucide-react";
+import { Clock, Users, ChevronLeft, Share2, Printer, Star, ShoppingBag, ExternalLink, CheckCircle2, Circle, ChefHat, Bookmark, ArrowRight, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getPublicRecipeByIdFn, type MinedRecipeDTO } from "@/services/mining.functions";
@@ -86,7 +71,7 @@ function RecipeDetailPage() {
 
   if (!recipe) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-4">
+      <div className="max-w-3xl mx-auto px-0 sm:px-4 py-16 text-center space-y-4">
         <ChefHat className="size-12 text-muted-foreground/40 mx-auto" />
         <h2 className="text-lg font-bold text-foreground">Receita não encontrada</h2>
         <p className="text-xs text-muted-foreground">
@@ -214,7 +199,7 @@ function RecipeDetailPage() {
               className="rounded-xl h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-1.5"
               title="Gerar Story para Instagram (9:16)"
             >
-              <Sparkles className="size-3.5 text-primary" />
+              <Star className="size-3.5 text-primary" />
               <span className="hidden sm:inline">Gerar Story</span>
             </Button>
 
@@ -262,7 +247,7 @@ function RecipeDetailPage() {
         {isOwner && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 print:hidden">
             <div className="flex items-center gap-2">
-              <Sparkles className="size-4 text-amber-600 shrink-0" />
+              <Star className="size-4 text-amber-600 shrink-0" />
               <span>
                 <strong>Modo de Curadoria:</strong> Você tem autoridade para moderar, editar ingredientes e alterar a visibilidade desta receita.
               </span>

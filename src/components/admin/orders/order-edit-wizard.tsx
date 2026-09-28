@@ -3,13 +3,7 @@ import { toast } from "sonner";
 import { useRouter } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/money";
-import {
- Sheet,
- SheetContent,
- SheetDescription,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { editOrderItems } from "@/services/order.functions";
 import { Minus, Plus, Trash2 } from "lucide-react";
 

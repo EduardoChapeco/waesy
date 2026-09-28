@@ -29,19 +29,19 @@ export const getPortalCompletoContent = createServerFn({ method: "GET" })
       feature_modules: [
         {
           id: "pdv",
-          title: "PDV & Comandas Ágeis",
+          title: "PDV e Comandas Ágeis",
           desc: "Operação de balcão, mesas, pedidos rápidos e integração fiscal.",
           icon: "Receipt",
         },
         {
           id: "estoque",
-          title: "Controle de Estoque & Grade",
+          title: "Controle de Estoque e Grade",
           desc: "Gestão de variações, estoque mínimo, alertas automáticos e insumos.",
           icon: "Package",
         },
         {
           id: "logistica",
-          title: "Logística & Frota MotoLink",
+          title: "Logística e Frota MotoLink",
           desc: "Roteirização inteligente, despacho em tempo real e tracking de entregadores.",
           icon: "Truck",
         },
@@ -53,13 +53,13 @@ export const getPortalCompletoContent = createServerFn({ method: "GET" })
         },
         {
           id: "financeiro",
-          title: "Gestão Financeira & Split",
+          title: "Gestão Financeira e Split",
           desc: "Contas a pagar/receber, conciliação Pix e split de pagamentos automático.",
           icon: "Wallet",
         },
         {
           id: "equipe",
-          title: "Gestão de Equipe & Permissões",
+          title: "Gestão de Equipe e Permissões",
           desc: "RBAC granular por colaborador, pontos de atendimento e auditoria de ações.",
           icon: "Users",
         },

@@ -9,28 +9,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import {
- listAgencyTravelQuotes,
- createAgencyTravelQuote,
- updateAgencyTravelQuote,
- deleteAgencyTravelQuote,
- type TravelQuoteRequestDTO,
-} from "@/services/tourism.functions";
+import { listAgencyTravelQuotes, createAgencyTravelQuote, updateAgencyTravelQuote, deleteAgencyTravelQuote, type TravelQuoteRequestDTO } from "@/services/tourism.functions";
 import { createTravelProposal } from "@/services/travel-proposal.functions";
 import { listDestinations } from "@/services/travel-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
@@ -46,7 +28,7 @@ import { useConfirm } from "@/hooks/use-confirm";
 
 export const Route = createFileRoute("/workspace/turismo/cotacoes")({
  head: () => ({
- meta: [{ title: "Cotações & Leads | Workspace Waesy" }],
+ meta: [{ title: "Cotações | Workspace Waesy" }],
  }),
  validateSearch: (search: Record<string, unknown>): {
     leadName?: string;
@@ -237,7 +219,7 @@ export default function AgencyQuotesPage() {
  return (
  <NicheOperationalGuard
  targetNiche="tourism"
- toolTitle="Central de Cotações & CRM de Viagens"
+ toolTitle="Cotações de Viagem"
  toolDescription="O pipeline de cotações, orçamentos e captação de passageiros para pacotes aéreos, cruzeiros e hotéis foi projetado especificamente para agências de viagens e turismo."
  store={store}
  >
@@ -392,7 +374,7 @@ export default function AgencyQuotesPage() {
           <div className="flex gap-4 overflow-x-auto pb-4 min-h-[calc(100dvh-16rem)] no-scrollbar">
             {[
               { id: "new", title: "Novas Solicitações", icon: Clock, color: "#3b82f6" },
-              { id: "analyzing", title: "Em Análise & Cotação", icon: ChatCircleDots, color: "#f59e0b" },
+              { id: "analyzing", title: "Em Análise e Cotação", icon: ChatCircleDots, color: "#f59e0b" },
               { id: "quoted", title: "Proposta Enviada", icon: FileText, color: "#8b5cf6" },
               { id: "won", title: "Fechadas / Ganhas", icon: CheckCircle, color: "#10b981" },
               { id: "lost", title: "Perdidas", icon: Trash, color: "#f43f5e" },
@@ -871,7 +853,7 @@ export default function AgencyQuotesPage() {
          </div>
 
          <div className="space-y-1.5 md:col-span-2">
-           <Label className="text-xs font-bold">Notas Internas da Negociação & Preferências</Label>
+           <Label className="text-xs font-bold">Notas Internas da Negociação e Preferências</Label>
            <Textarea
              value={editAgencyNotes}
              onChange={(e) => setEditAgencyNotes(e.target.value)}
@@ -934,7 +916,7 @@ export default function AgencyQuotesPage() {
  <WorkspaceDashboardSheet
  open={isDashboardOpen}
  onOpenChange={setIsDashboardOpen}
- title="Painel de Cotações & Leads de Turismo"
+ title="Cotações de Turismo"
  description="Indicadores de volume orçado, conversão de passageiros e demanda por tipo de viagem."
  metrics={[
  {

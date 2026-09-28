@@ -3,14 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ShieldCheck, FileText, Lock, Layers, AlertTriangle, ExternalLink, CheckCircle2, Calendar } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { getLegalBundle } from "@/services/legal.functions";
 
 interface LegalTermsSheetProps {
@@ -88,7 +81,7 @@ export function LegalTermsSheet({
  </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground">
- Documentação Legal & Governança LGPD
+ Termos Legais
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
  Termos contratuais, privacidade e proteção aos seus dados pessoais
@@ -107,8 +100,8 @@ export function LegalTermsSheet({
  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
  {[
  { slug: "termos", label: "Termos Gerais de Uso" },
- { slug: "privacidade", label: "Privacidade & LGPD" },
- { slug: "uso-de-ia", label: "IA & Biometria" },
+ { slug: "privacidade", label: "Privacidade e LGPD" },
+ { slug: "uso-de-ia", label: "IA e Biometria" },
  { slug: "isencao", label: "Isenção de Negociações" },
  { slug: "cookies", label: "Cookies" },
  { slug: "lojistas", label: "Lojistas" },

@@ -1,15 +1,6 @@
 import React, { useState } from "react";
-import {
-  Plus, X, Calendar, Star, AlertCircle, CheckSquare, Trash2,
-  Tag, Repeat, Clock, Link as LinkIcon, Briefcase,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Plus, X, Calendar, Star, AlertCircle, CheckSquare, Trash2, Tag, Repeat, Clock, Link as LinkIcon, Briefcase } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

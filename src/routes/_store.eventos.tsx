@@ -1,3 +1,4 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag as LucideTag, X as LucideX, Calendar as CalendarIcon, ChevronDown as LucideChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -5,19 +6,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import {
-  CalendarDots,
-  CalendarBlank,
-  MapPin,
-  MagnifyingGlass,
-  CaretRight,
-  Clock,
-  Ticket,
-  ForkKnife,
-  GraduationCap,
-  CircleNotch,
-  WarningCircle,
-} from "@phosphor-icons/react";
+import { CalendarDots, CalendarBlank, MapPin, MagnifyingGlass, CaretRight, Clock, Ticket, ForkKnife, GraduationCap, CircleNotch, WarningCircle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -27,11 +16,8 @@ import { listHotpages, type HotpageDTO } from "@/services/hotpage.functions";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { ProceduralInfiniteFeed } from "@/components/commerce/procedural-infinite-feed";
 import { formatDate } from "@/lib/datetime";
 
@@ -42,23 +28,23 @@ const SearchSchema = z.object({
 
 const EVENT_SUBCATEGORIES_BUTTONS = [
   { id: "todos", label: "Todos os Eventos", icon: "🎟️" },
-  { id: "shows", label: "Shows de Rock & Pop", icon: "🎸" },
-  { id: "sertanejo", label: "Sertanejo & Baladas", icon: "🤠" },
-  { id: "pagode", label: "Samba & Pagode", icon: "🥁" },
-  { id: "gastronomico", label: "Gastronomia & Feiras", icon: "🍔" },
-  { id: "teatro", label: "Teatro & Stand-up", icon: "🎭" },
-  { id: "feiras", label: "Bazaares & Pets", icon: "🛍️" },
-  { id: "workshops", label: "Cursos & Workshops", icon: "🎓" },
-  { id: "infantil", label: "Infantil & Família", icon: "🎈" },
+  { id: "shows", label: "Shows de Rock e Pop", icon: "🎸" },
+  { id: "sertanejo", label: "Sertanejo e Baladas", icon: "🤠" },
+  { id: "pagode", label: "Samba e Pagode", icon: "🥁" },
+  { id: "gastronomico", label: "Gastronomia e Feiras", icon: "🍔" },
+  { id: "teatro", label: "Teatro e Stand-up", icon: "🎭" },
+  { id: "feiras", label: "Bazaares e Pets", icon: "🛍️" },
+  { id: "workshops", label: "Cursos e Workshops", icon: "🎓" },
+  { id: "infantil", label: "Infantil e Família", icon: "🎈" },
   { id: "gratis", label: "Entrada Gratuita", icon: "🏷️" },
 ];
 
 const EVENT_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Todas Categorias", emoji: "🎟️", icon: LucideTag },
-  { id: "shows", label: "Shows & Festivais", emoji: "🎸", icon: Ticket },
-  { id: "gastronomico", label: "Gastronomia & Feiras", emoji: "🍔", icon: ForkKnife },
-  { id: "feiras", label: "Bazaares & Pets", emoji: "🛍️", icon: LucideTag },
-  { id: "workshops", label: "Cursos & Workshops", emoji: "🎓", icon: GraduationCap },
+  { id: "shows", label: "Shows e Festivais", emoji: "🎸", icon: Ticket },
+  { id: "gastronomico", label: "Gastronomia e Feiras", emoji: "🍔", icon: ForkKnife },
+  { id: "feiras", label: "Bazaares e Pets", emoji: "🛍️", icon: LucideTag },
+  { id: "workshops", label: "Cursos e Workshops", emoji: "🎓", icon: GraduationCap },
 ];
 
 const PRESET_DATE_FILTERS = [
@@ -108,10 +94,11 @@ export const Route = createFileRoute("/_store/eventos")({
       },
     ],
   }),
-  loader: async () => {
+  loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
     try {
       const [banners, hotpages] = await Promise.all([
-        listActiveBanners({ data: { placement: "eventos" } }).catch(() => []),
+        listActiveBanners({ data: { placement: "eventos", city: activeCity } }).catch(() => []),
         listHotpages({ data: { module: "eventos" } }).catch(() => []),
       ]);
       return {
@@ -496,7 +483,7 @@ function EventosPage() {
     if (shows.length > 0) {
       rails.push({
         id: "shows-rail",
-        title: "Grandes Shows & Festivais",
+        title: "Grandes Shows e Festivais",
         categoryKey: "shows",
         items: shows,
       });
@@ -505,7 +492,7 @@ function EventosPage() {
     if (gastro.length > 0) {
       rails.push({
         id: "gastro-rail",
-        title: "Festivais Gastronômicos & Noite",
+        title: "Festivais Gastronômicos e Noite",
         categoryKey: "gastronomico",
         items: gastro,
       });
@@ -514,7 +501,7 @@ function EventosPage() {
     if (teatro.length > 0) {
       rails.push({
         id: "teatro-rail",
-        title: "Teatro, Stand-up & Cultura",
+        title: "Teatro, Stand-up e Cultura",
         categoryKey: "teatro",
         items: teatro,
       });
@@ -523,7 +510,7 @@ function EventosPage() {
     if (workshops.length > 0) {
       rails.push({
         id: "workshops-rail",
-        title: "Cursos, Workshops & Negócios",
+        title: "Cursos, Workshops e Negócios",
         categoryKey: "workshops",
         items: workshops,
       });
@@ -572,7 +559,16 @@ function EventosPage() {
   }, [selectedDateFilter, nextDays, availableMonths]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-0 sm:px-4 space-y-7 pb-24">
+    <div className="w-full max-w-5xl mx-auto pb-24">
+      <NativeMobileHeader
+        title="Eventos"
+        centerTitle
+        backTo="/"
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar shows, festivais, eventos..."
+      />
+      <div className="px-4 sm:px-5 space-y-6 pt-2 sm:pt-4">
       {/* ── 1. Top Universal Banner Hero Carousel (Canônico & Editável no Admin) ── */}
       {displayBanners.length > 0 && (
         <section aria-label="Destaques & Banners de Eventos">
@@ -920,51 +916,49 @@ function EventosPage() {
         </div>
       )}
 
-      {/* MODO 3: LISTA CRONOLÓGICA ELEGANTE (WhatsApp List no Mobile / Lista Rica no Desktop) */}
+      {/* MODO 3: LISTA EXPANDIDA (V118 Full-Height Left Edge-to-Edge Image) */}
       {!isLoading && !isError && filteredEvents.length > 0 && viewMode === "list" && (
-        <div className="divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden shadow-xs">
+        <div className="space-y-3">
           {filteredEvents.map((event) => (
             <Link
               key={event.id}
               to="/evento/$id"
               params={{ id: event.id }}
-              className="px-3 sm:px-4 py-3 sm:py-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors group cursor-pointer w-full"
+              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-all min-h-[136px] pl-32 sm:pl-44 pr-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer w-full"
             >
-              <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                <div className="size-16 sm:size-20 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-border/40">
-                  <img
-                    src={getEventCover(event)}
-                    alt={event.title}
-                    className="size-full object-cover group-hover:scale-105 transition-transform"
-                    onError={(e) => {
-                      e.currentTarget.src = FALLBACK_EVENT_COVERS.default;
-                    }}
-                  />
-                </div>
-
-                <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold text-primary uppercase">
-                      {formatDate(event.event_date)}
-                    </span>
-                  </div>
-                  <h3 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                    {event.title}
-                  </h3>
-                  {event.location && (
-                    <div className="flex items-center gap-1 text-[11px] sm:text-xs text-muted-foreground truncate">
-                      <MapPin size={12} weight="bold" className="shrink-0" />
-                      <span className="truncate">{event.location}</span>
-                    </div>
-                  )}
-                </div>
+              <div className="absolute inset-y-0 left-0 w-32 sm:w-44 rounded-l-2xl overflow-hidden bg-muted">
+                <img
+                  src={getEventCover(event)}
+                  alt={event.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  onError={(e) => {
+                    e.currentTarget.src = FALLBACK_EVENT_COVERS.default;
+                  }}
+                />
               </div>
 
-              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-4 shrink-0 pl-1">
+              <div className="space-y-1 min-w-0 flex-1 pl-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold text-primary uppercase">
+                    {formatDate(event.event_date)}
+                  </span>
+                </div>
+                <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                  {event.title}
+                </h3>
+                {event.location && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                    <MapPin size={12} weight="bold" className="shrink-0 text-primary" />
+                    <span className="truncate">{event.location}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-4 shrink-0 pl-1">
                 <span className="text-xs sm:text-sm font-bold text-primary font-mono">
                   {(event as any).price_cents ? `R$ ${((event as any).price_cents / 100).toFixed(2)}` : "Gratuito"}
                 </span>
-                <Button size="sm" variant="outline" className="h-7 sm:h-9 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-semibold gap-1 cursor-pointer">
+                <Button size="sm" variant="outline" className="h-8 sm:h-9 px-3 sm:px-4 rounded-xl text-xs font-semibold gap-1 cursor-pointer">
                   <span>Ingressos</span>
                   <CaretRight size={12} weight="bold" />
                 </Button>
@@ -973,6 +967,7 @@ function EventosPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

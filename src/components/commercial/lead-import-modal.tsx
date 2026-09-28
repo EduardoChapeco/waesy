@@ -1,23 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Upload,
-  FileText,
-  AlertCircle,
-  CheckCircle2,
-  Users,
-  ArrowRight,
-  Download,
-  X,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Upload, FileText, AlertCircle, CheckCircle2, Users, ArrowRight, Download, X } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -126,7 +110,7 @@ export function LeadImportModal({ isOpen, onClose, onSuccess }: LeadImportModalP
           <SheetHeader className="space-y-1">
             <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <Users className="size-4 text-primary" />
-              Importação em Massa de Oportunidades & Leads
+              Importação em Massa de Oportunidades e Leads
             </SheetTitle>
             <SheetDescription className="text-xs text-muted-foreground">
               Cole contatos no formato CSV ou colunas tabuladas (Nome, Telefone, E-mail, Destino, Valor Estimado, Qtd Passageiros).

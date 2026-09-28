@@ -5,25 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
- Shield,
- ShieldAlert,
- ShieldCheck,
- Globe,
- MapPin,
- Clock,
- Search,
- RefreshCw,
- AlertTriangle,
- Radio,
- Server,
- User,
- CheckCircle2,
- XCircle,
- Activity,
- Layers,
- Lock,
-} from "lucide-react";
+import { Shield, ShieldAlert, ShieldCheck, Globe, MapPin, Clock, Search, RefreshCw, AlertTriangle, Radio, Server, User, CheckCircle2, XCircle, Activity, Layers, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/admin-master/seguranca/")({
  head: () => ({ meta: [{ title: "Centro de Segurança Global | Admin Master" }] }),
@@ -86,13 +68,13 @@ function AdminSecurityOverviewPage() {
           to="/admin-master/seguranca"
           className="px-3.5 py-1.5 rounded-xl font-bold transition-colors bg-primary text-primary-foreground shadow-sm"
         >
-          Visão Geral & Autenticações
+          Visão Geral e Autenticações
         </Link>
         <Link
           to="/admin-master/seguranca/telemetria"
           className="px-3.5 py-1.5 rounded-xl font-semibold transition-colors hover:bg-muted/60 text-muted-foreground hover:text-foreground"
         >
-          Telemetria de Ataques & Invasões
+          Telemetria de Ataques e Invasões
         </Link>
         <Link
           to="/admin-master/seguranca/certificados"
@@ -107,7 +89,7 @@ function AdminSecurityOverviewPage() {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <ShieldCheck className="size-6 text-emerald-500" />
-            Centro de Segurança Global & Autenticação
+            Centro de Segurança Global e Autenticação
           </h1>
           <p className="text-xs text-muted-foreground">
             Auditoria forense de sessões, integridade multi-tenant e monitoramento de conexões Cloudflare.
@@ -252,10 +234,10 @@ function AdminSecurityOverviewPage() {
  <tr>
  <th className="p-3.5">Status / Evento</th>
  <th className="p-3.5">Usuário / Perfil</th>
- <th className="p-3.5">IP & Localização</th>
+ <th className="p-3.5">IP e Localização</th>
  <th className="p-3.5">Dispositivo</th>
  <th className="p-3.5">Risco</th>
- <th className="p-3.5 text-right">Data & Hora</th>
+ <th className="p-3.5 text-right">Data e Hora</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-border/60">

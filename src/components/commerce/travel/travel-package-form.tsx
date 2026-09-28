@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plane, Bus, Ship, Anchor, Hotel, Calendar, Check, Plus, Trash2, Sliders, MapPin, Clock, ShieldCheck, ShieldAlert, Sun, Camera, Layers, Utensils, Coffee, ChevronDown, ChevronUp, Star, X, Compass, ArrowUp, ArrowDown, Loader2, CreditCard, Car, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Plane, Bus, Ship, Anchor, Hotel, Calendar, Check, Plus, Trash2, Sliders, MapPin, Clock, ShieldCheck, ShieldAlert, Sun, Camera, Layers, Utensils, Coffee, ChevronDown, ChevronUp, Star, X, Compass, ArrowUp, ArrowDown, Loader2, CreditCard, Car, Award, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,27 +9,8 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
- listHotelsBank,
- createHotel,
- listDestinations,
- createDestination,
- type HotelBankDTO,
- type DestinationDTO,
-} from "@/services/travel-catalog.functions";
-import {
- DEFAULT_TRAVEL_INCLUSIONS_PRESETS,
- DEFAULT_TRAVEL_EXCLUSIONS_PRESETS,
- type TravelPackageData,
- type TravelItineraryDay,
- type TravelNearbyRecommendation,
- CANONICAL_AIRLINES,
- CANONICAL_BUS_CATEGORIES,
- CANONICAL_CRUISE_LINES,
- CANONICAL_CABIN_CATEGORIES,
- type FlightDetails,
- type PaymentConditions,
-} from "@/types/travel-package";
+import { listHotelsBank, createHotel, listDestinations, createDestination, type HotelBankDTO, type DestinationDTO } from "@/services/travel-catalog.functions";
+import { DEFAULT_TRAVEL_INCLUSIONS_PRESETS, DEFAULT_TRAVEL_EXCLUSIONS_PRESETS, type TravelPackageData, type TravelItineraryDay, type TravelNearbyRecommendation, CANONICAL_AIRLINES, CANONICAL_BUS_CATEGORIES, CANONICAL_CRUISE_LINES, CANONICAL_CABIN_CATEGORIES, type FlightDetails, type PaymentConditions } from "@/types/travel-package";
 import { StoryHighlightUploader, type StoryHighlight } from "@/components/classifieds/story-highlight-uploader";
 import { uploadClassifiedMedia } from "@/lib/classifieds/upload-classified-media";
 import { formatMoney } from "@/lib/money";
@@ -589,7 +570,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {/* Campos condicionais por tipo */}
  {(value.transport_type === "aereo" || !value.transport_type) && (
  <p className="text-[11px] text-muted-foreground">
- Configure os detalhes do voo na seção <strong>Voo & Logística Aérea</strong> abaixo.
+ Configure os detalhes do voo na seção <strong>Voo e Logística Aérea</strong> abaixo.
  </p>
  )}
  {value.transport_type === "terrestre" && (
@@ -638,7 +619,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  )}
  {value.transport_type === "misto" && (
  <p className="text-[11px] text-muted-foreground">
- Este pacote combina múltiplos modais. Configure os detalhes de cada trecho na seção de Voo & Logística abaixo e use o campo de Observações para detalhar os trechos terrestres ou marítimos.
+ Este pacote combina múltiplos modais. Configure os detalhes de cada trecho na seção de Voo e Logística abaixo e use o campo de Observações para detalhar os trechos terrestres ou marítimos.
  </p>
  )}
  </div>
@@ -648,7 +629,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Hotel className="size-4 text-primary" />
- <span>Hospedagem, Resort & Comodidades</span>
+ <span>Hospedagem, Resort e Comodidades</span>
  </div>
 
  <div className="flex items-center gap-2">
@@ -1042,7 +1023,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <CreditCard className="size-4 text-primary" />
- <span>Condições de Pagamento & Parcelamento</span>
+ <span>Condições de Pagamento e Parcelamento</span>
  </div>
  </div>
 
@@ -1535,7 +1516,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {/* Embarque e Desembarque Rodoviário */}
  <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
  <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
- <Bus className="size-3.5 text-primary" /> Trecho Rodoviário de Ida & Volta
+ <Bus className="size-3.5 text-primary" /> Trecho Rodoviário de Ida e Volta
  </span>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div className="space-y-1">
@@ -1683,7 +1664,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  {/* Portos e Horários de Embarque / Desatracação */}
  <div className="p-3.5 rounded-xl bg-muted/20 border border-border/50 space-y-3">
  <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
- <Anchor className="size-3.5 text-primary" /> Portos & Horários Portuários
+ <Anchor className="size-3.5 text-primary" /> Portos e Horários Portuários
  </span>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1794,7 +1775,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  <div className="flex items-center gap-2">
  <Compass className="size-4 text-primary" />
  <div>
- <h4 className="text-xs font-bold text-foreground">Curadoria Local (Restaurantes, Praias & Dicas)</h4>
+ <h4 className="text-xs font-bold text-foreground">Curadoria Local (Restaurantes, Praias e Dicas)</h4>
  <p className="text-[11px] text-muted-foreground">Pontos de interesse próximos exibidos na aba de roteiro e explore</p>
  </div>
  </div>
@@ -1870,7 +1851,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <CreditCard className="size-4 text-primary" />
- <span>Condições Comerciais & Parcelamento</span>
+ <span>Condições Comerciais e Parcelamento</span>
  </div>
  <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
  Regra 22: 1-24x
@@ -1959,7 +1940,7 @@ export function TravelPackageForm({ value, onChange, priceCents }: TravelPackage
  <div className="bg-card rounded-2xl p-5 space-y-4 border border-border/70 shadow-2xs">
  <div className="flex items-center justify-between pb-2 border-b border-border/40">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
- <Sparkles className="size-4 text-primary" />
+ <Star className="size-4 text-primary" />
  <span>Destaques Visuais (Story Highlights)</span>
  </div>
  <Badge variant="outline" className="text-[10px] font-mono text-primary bg-primary/10 border-primary/30">

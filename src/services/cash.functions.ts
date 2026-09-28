@@ -1,15 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
- summarizeCashEntries,
- type ActiveCashRegister,
- type CashEntryMethod,
- type CashRegisterEntry,
- type CashRegisterHistoryItem,
- type CashRegisterProfile,
- type CashRegisterStatus,
-} from "@/lib/cash";
+import { summarizeCashEntries, type ActiveCashRegister, type CashEntryMethod, type CashRegisterEntry, type CashRegisterHistoryItem, type CashRegisterProfile, type CashRegisterStatus } from "@/lib/cash";
 import { getServerClient } from "@/lib/supabase";
 import { assertStoreAccess, getServerIdentity } from "@/lib/server-access";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
@@ -64,29 +56,13 @@ async function getEntriesForRegister(registerId: string): Promise<CashRegisterEn
   const supabase = getServerClient();
   const { data, error } = await supabase
     .from("cash_register_entries")
-    .select("id, cash_register_id, order_id, amount_cents, entry_type, notes, created_at, channel, marketplace_fee_cents")
+    .select("id, cash_register_id, order_id, amount_cents, entry_type, notes, created_at, channel_source, channel_origin, marketplace_fee_cents, net_payout_cents, external_reference_id")
     .eq("cash_register_id", registerId)
     .order("created_at", { ascending: false });
 
   if (error) {
-    // Fallback gracefully if optional columns aren't yet in this DB instance
-    const fallbackRes = await supabase
-      .from("cash_register_entries")
-      .select("id, cash_register_id, order_id, amount_cents, entry_type, notes, created_at")
-      .eq("cash_register_id", registerId)
-      .order("created_at", { ascending: false });
-    if (fallbackRes.error) throw new Error("Erro ao buscar lançamentos do caixa: " + fallbackRes.error.message);
-    return (fallbackRes.data ?? []).map((entry: any) => ({
-      id: entry.id,
-      register_id: entry.cash_register_id,
-      order_id: entry.order_id,
-      amount_cents: entry.amount_cents,
-      method: entry.entry_type as CashEntryMethod,
-      description: entry.notes,
-      created_at: entry.created_at,
-      channel: (entry.notes?.toLowerCase().includes("mercado livre") ? "mercadolivre" : entry.notes?.toLowerCase().includes("ifood") ? "ifood" : entry.notes?.toLowerCase().includes("whatsapp") ? "whatsapp" : "pos_counter") as any,
-      marketplace_fee_cents: 0,
-    }));
+    console.error("[cash] Erro ao buscar lançamentos do caixa:", error);
+    throw new Error("Erro ao buscar lançamentos do caixa: " + error.message);
   }
 
   return (data ?? []).map((entry: any) => ({
@@ -97,8 +73,10 @@ async function getEntriesForRegister(registerId: string): Promise<CashRegisterEn
     method: entry.entry_type as CashEntryMethod,
     description: entry.notes,
     created_at: entry.created_at,
-    channel: (entry.channel || (entry.notes?.toLowerCase().includes("mercado livre") ? "mercadolivre" : entry.notes?.toLowerCase().includes("ifood") ? "ifood" : entry.notes?.toLowerCase().includes("whatsapp") ? "whatsapp" : "pos_counter")) as any,
+    channel: (entry.channel_source || entry.channel_origin || "pos_counter") as any,
     marketplace_fee_cents: entry.marketplace_fee_cents || 0,
+    net_payout_cents: entry.net_payout_cents || (entry.amount_cents - (entry.marketplace_fee_cents || 0)),
+    external_reference_id: entry.external_reference_id || null,
   }));
 }
 

@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { type Proposal, type Tour } from "@/services/proposals";
-import {
-  Accordion,
-  Card,
-  AddBtn,
-  L,
-  Inp,
-  SMALL_INPUT,
-} from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddBtn, L, Inp, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { useAgency } from "@/lib/agency-context";
 import { listGroupTours } from "@/services/group-tours.functions";

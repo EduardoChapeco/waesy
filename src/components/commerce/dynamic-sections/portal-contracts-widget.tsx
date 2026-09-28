@@ -37,7 +37,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
     content?.contracts || [
       {
         id: "ct-001",
-        title: "Contrato de Prestação de Serviços & Pacote",
+        title: "Contrato de Prestação de Serviços e Pacote",
         category: "Viagem & Turismo",
         status: "pending_signature",
         total_value_cents: 345000,
@@ -102,7 +102,7 @@ export function PortalContractsWidget({ content, design_tokens }: PortalContract
  <div className="flex items-center gap-2">
  <FileText className="w-6 h-6 text-primary" />
  <h2 className="text-xl font-bold tracking-tight text-foreground">
- {content?.title || "Meus Contratos & Documentos"}
+ {content?.title || "Contratos"}
  </h2>
  </div>
  <p className="text-sm text-muted-foreground mt-1">

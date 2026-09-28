@@ -1,14 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { PlusCircle, Calendar, Tag, Package, PenTool, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuLabel,
- DropdownMenuSeparator,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { getIdentity } from "@/services/identity.functions";
 
@@ -92,7 +85,7 @@ export function PublishSheet() {
  <div>
  <p className="font-bold text-sm">Evento ou Festa</p>
  <p className="text-[11px] text-muted-foreground mt-0.5">
- Criar lotes & vender ingressos
+ Criar lotes e vender ingressos
  </p>
  </div>
  </Link>

@@ -14,15 +14,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import {
-  Home,
-  Search,
-  Plus,
-  MessageCircle,
-  Menu,
-  ShoppingCart,
-  ArrowRight,
-} from "lucide-react";
+import { Home, Search, Plus, MessageCircle, Menu, ShoppingCart, ArrowRight } from "lucide-react";
 import { QuickCreateModal } from "@/components/commerce/quick-create-modal";
 import { GlobalMenuHub } from "@/components/shell/global-menu-hub";
 import { useCartContext } from "@/lib/cart-context";

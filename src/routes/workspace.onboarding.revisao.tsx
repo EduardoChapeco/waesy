@@ -1,38 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import {
-  Package,
-  CheckCircle2,
-  Camera,
-  Layers,
-  Barcode,
-  Table,
-  Plus,
-  Trash2,
-  ArrowRight,
-  ShieldCheck,
-  Search,
-  ExternalLink,
-  Loader2,
-  Cpu,
-} from "lucide-react";
+import { Package, CheckCircle2, Camera, Layers, Barcode, Table, Plus, Trash2, ArrowRight, ShieldCheck, Search, ExternalLink, Loader2, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  searchMasterCatalog,
-  importMasterCatalogProduct,
-  importProductsTraditional,
-  approveOnboardingProducts,
-} from "@/services/multimodal-onboarding.functions";
+import { searchMasterCatalog, importMasterCatalogProduct, importProductsTraditional, approveOnboardingProducts } from "@/services/multimodal-onboarding.functions";
 import type { GlobalMasterCatalogItemDTO } from "@/types/squads-and-onboarding";
 
 export const Route = createFileRoute("/workspace/onboarding/revisao")({
   head: () => ({
     meta: [
       {
-        title: "Revisão de Onboarding Multimodal & Master Catalog | Waesy",
+        title: "Revisão de Onboarding Multimodal e Master Catalog | Waesy",
       },
     ],
   }),
@@ -240,7 +220,7 @@ export function OnboardingReviewPage() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-foreground tracking-tight">
-              Onboarding & Ingestão de Catálogo
+              Onboarding e Ingestão de Catálogo
             </h1>
             <p className="text-xs text-muted-foreground">
               OCR Multimodal · Master SKU Catalog · Modo Tradicional 100% Opcional
@@ -329,7 +309,7 @@ export function OnboardingReviewPage() {
                   <span>Diagnóstico do The Visual Parser</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Nicho detectado: <strong className="text-foreground">Gastronomia & Restaurante</strong>. Ticket médio estimado em R$ 45,00. 4 categorias estruturadas.
+                  Nicho detectado: <strong className="text-foreground">Gastronomia e Restaurante</strong>. Ticket médio estimado em R$ 45,00. 4 categorias estruturadas.
                 </p>
               </div>
             </section>
@@ -394,7 +374,7 @@ export function OnboardingReviewPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-muted-foreground">Descrição & Ingredientes</label>
+                      <label className="text-[11px] font-medium text-muted-foreground">Descrição e Ingredientes</label>
                       <Input
                         value={item.description}
                         onChange={(e) => handleUpdateItem(item.id, "description", e.target.value)}

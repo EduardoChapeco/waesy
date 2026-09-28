@@ -3,37 +3,8 @@ import { Loader2 } from "lucide-react";
 import { parseUniversalDocumentOCR } from "@/services/multimodal-ocr.functions";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  FileText,
-  Plane,
-  Building2,
-  Calendar,
-  DollarSign,
-  Send,
-  MapPin,
-  CheckCircle2,
-  ExternalLink,
-  Plus,
-  Trash2,
-  Layers,
-  Copy,
-  Tag,
-  Check,
-  Compass,
-  CreditCard,
-  QrCode,
-  Users,
-  Sparkles,
-  Eye,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { FileText, Plane, Building2, Calendar, DollarSign, Send, MapPin, CheckCircle2, ExternalLink, Plus, Trash2, Layers, Copy, Tag, Check, Compass, CreditCard, QrCode, Users, Star, Eye } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -257,7 +228,7 @@ export function LeadVisualProposalSheet({
             },
             {
               day_number: 2,
-              title: "Dia Livre All-Inclusive & Praia",
+              title: "Dia Livre All-Inclusive e Praia",
               description: "Aproveite a gastronomia internacional e piscinas do resort.",
             },
           ],
@@ -342,7 +313,7 @@ export function LeadVisualProposalSheet({
                   </>
                 ) : (
                   <>
-                    <Sparkles className="size-3.5 text-primary" />
+                    <Star className="size-3.5 text-primary" />
                     <span>Importar Cotação (OCR)</span>
                   </>
                 )}
@@ -535,7 +506,7 @@ export function LeadVisualProposalSheet({
             {/* ── 1. Destino & Apresentação ── */}
             <div className="space-y-3">
               <Label className="text-xs font-bold text-foreground uppercase tracking-wider">
-                1. Destino & Apresentação
+                1. Destino e Apresentação
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -591,7 +562,7 @@ export function LeadVisualProposalSheet({
             {/* ── 2. Voos e Hospedagem (Banco Oficial) ── */}
             <div className="space-y-3 pt-2 border-t border-border/80">
               <Label className="text-xs font-bold text-foreground uppercase tracking-wider">
-                2. Aéreo & Hospedagem
+                2. Aéreo e Hospedagem
               </Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Voo */}
@@ -624,7 +595,7 @@ export function LeadVisualProposalSheet({
                 <div className="p-3.5 rounded-xl border border-border bg-card space-y-2.5 relative">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      <Building2 className="size-4" /> Hotel & Resort (Banco de Hotéis)
+                      <Building2 className="size-4" /> Hotel e Resort (Banco de Hotéis)
                     </div>
                     {hasHotel && (
                       <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-600">
@@ -686,7 +657,7 @@ export function LeadVisualProposalSheet({
             <div className="space-y-3 pt-2 border-t border-border/80">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  3. Transfers & Atrativos Inclusos (1 Toque)
+                  3. Transfers e Atrativos Inclusos (1 Toque)
                 </Label>
                 <span className="text-[10px] text-muted-foreground">
                   {selectedTours.length} selecionado(s)
@@ -717,7 +688,7 @@ export function LeadVisualProposalSheet({
             {/* ── 4. Valores & Simulador Dinâmico de Parcelas ── */}
             <div className="space-y-3 pt-2 border-t border-border/80">
               <Label className="text-xs font-bold text-foreground uppercase tracking-wider">
-                4. Valores & Condições de Pagamento
+                4. Valores e Condições de Pagamento
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">

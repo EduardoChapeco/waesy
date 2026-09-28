@@ -2,17 +2,9 @@ import React from "react";
 import { Bell, Check, Clock, User, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  listCompanyNotifications,
-  markNotificationAsRead,
-} from "@/services/notifications-push.functions";
+import { listCompanyNotifications, markNotificationAsRead } from "@/services/notifications-push.functions";
 import { cn } from "@/lib/utils";
 
 export function CompanyNotificationsBell() {

@@ -13,35 +13,19 @@
 
 import React, { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  BrainCircuit,
-  Wand2,
-  Save,
-  RefreshCw,
-  Trash2,
-  Plus,
-  CheckCircle2,
-  BarChart3,
-  Users,
-  Target,
-} from "lucide-react";
+import { BrainCircuit, Wand2, Save, RefreshCw, Trash2, Plus, CheckCircle2, BarChart3, Users, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  getBrandBriefing,
-  saveBrandBriefing,
-  generateBrandBriefingWithAI,
-  type BrandBriefingDTO,
-} from "@/services/studio.functions";
+import { getBrandBriefing, saveBrandBriefing, generateBrandBriefingWithAI, type BrandBriefingDTO } from "@/services/studio.functions";
 import { getStoreSettings } from "@/services/store.functions";
 
 // ── Rota ─────────────────────────────────────────────────────────────────────
 export const Route = createFileRoute("/workspace/marketing/briefing")({
   head: () => ({
-    meta: [{ title: "Brand Briefing & DNA Estratégico | Workspace Waesy" }],
+    meta: [{ title: "Brand Briefing | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -373,7 +357,7 @@ export function BrandBriefingPage() {
                 </span>
               </div>
               <h1 className="text-xl font-semibold tracking-tight mt-1 text-foreground">
-                Brand Briefing & DNA Estratégico
+                Brand Briefing
               </h1>
             </div>
             <div className="flex items-center gap-2">
@@ -478,7 +462,7 @@ export function BrandBriefingPage() {
 
           {/* Audiência e Persona */}
           <SectionCard
-            title="Audiência e Persona"
+            title="Público"
             description="Defina para quem você cria e o que essa pessoa espera."
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

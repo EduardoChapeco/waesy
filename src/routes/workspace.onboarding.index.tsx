@@ -1,19 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  CheckCircle2,
-  Clock,
-  Store,
-  Camera,
-  Layers,
-  ShoppingBag,
-  CreditCard,
-  Truck,
-  ChevronRight,
-  ShieldCheck,
-  ArrowRight,
-  Percent,
-  Sliders,
-} from "lucide-react";
+import { CheckCircle2, Clock, Store, Camera, Layers, ShoppingBag, CreditCard, Truck, ChevronRight, ShieldCheck, ArrowRight, Percent, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -24,7 +10,7 @@ export const Route = createFileRoute("/workspace/onboarding/")({
   head: () => ({
     meta: [
       {
-        title: "Onboarding & Ativação da Loja | Workspace Waesy",
+        title: "Onboarding | Workspace Waesy",
       },
     ],
   }),
@@ -61,7 +47,7 @@ interface NicheCopy {
 const NICHE_COPIES: Record<string, NicheCopy> = {
   tourism: {
     badgeLabel: "Ativação de Turismo & Hospedagem",
-    title: "Ativação da Agência & Experiências",
+    title: "Ativação da Agência e Experiências",
     subtitle: "Configure seus pacotes, excursões, meios de pagamento e canais de reserva direta para clientes e viajantes.",
     multimodalTitle: "Importação de Tarifários & Vouchers de Turismo",
     multimodalDescription: "Digitalize orçamentos em PDF ou crie pacotes completos com roteiro dia a dia sem digitação manual.",
@@ -69,7 +55,7 @@ const NICHE_COPIES: Record<string, NicheCopy> = {
   },
   restaurant: {
     badgeLabel: "Ativação de Gastronomia & Delivery",
-    title: "Ativação do Restaurante & Cardápio",
+    title: "Ativação do Restaurante e Cardápio",
     subtitle: "Cadastre seus pratos, defina taxas de entrega com MotoLink e ative pagamentos instantâneos via Pix e Cartão.",
     multimodalTitle: "Digitalização Rápida de Cardápio com IA",
     multimodalDescription: "Envie uma foto do seu cardápio físico para importar pratos, combos e adicionais automaticamente.",
@@ -77,7 +63,7 @@ const NICHE_COPIES: Record<string, NicheCopy> = {
   },
   services: {
     badgeLabel: "Ativação de Escritório & Serviços",
-    title: "Ativação do Escritório & Serviços Profissionais",
+    title: "Ativação do Escritório e Serviços Profissionais",
     subtitle: "Defina sua grade de atendimento, tabela de honorários e canais seguros de cobrança e agendamento.",
     multimodalTitle: "Importação de Portfólio & Tabela de Serviços",
     multimodalDescription: "Digitalize sua tabela de serviços ou converta propostas em itens contratáveis com 1 clique.",
@@ -85,7 +71,7 @@ const NICHE_COPIES: Record<string, NicheCopy> = {
   },
   retail: {
     badgeLabel: "Ativação Comercial & Catálogo",
-    title: "Ativação da Vitrine & Catálogo Comercial",
+    title: "Ativação da Vitrine e Catálogo Comercial",
     subtitle: "Complete os passos essenciais para liberar pagamentos online, cálculo de frete automático e vitrine ativa.",
     multimodalTitle: "Ingestão Rápida com IA & Catálogo Mestre",
     multimodalDescription: "Fotografe seus produtos ou importe itens validados do catálogo comunitário sem digitação manual.",

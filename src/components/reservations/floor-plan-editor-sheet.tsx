@@ -5,29 +5,12 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import {
- LayoutGrid,
- Plus,
- Trash2,
- Armchair,
- CheckCircle2,
- Columns,
-} from "lucide-react";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { LayoutGrid, Plus, Trash2, Armchair, CheckCircle2, Columns } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
- saveStoreFloorPlan,
- DEFAULT_CANONICAL_TABLES,
-} from "@/services/reservations.functions";
+import { saveStoreFloorPlan, DEFAULT_CANONICAL_TABLES } from "@/services/reservations.functions";
 
 export interface SalonTable {
  id: string;
@@ -132,7 +115,7 @@ export function FloorPlanEditorSheet({
  <span>Gestão do Salão • Mesas 2D</span>
  </div>
  <SheetTitle className="text-base font-bold text-foreground">
- Personalizar Planta & Mesas do Restaurante
+ Planta do Salão
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
  Configure as mesas disponíveis, quantidade de assentos e formato para reservas e pedidos.

@@ -1,49 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  DollarSign,
-  CheckCircle2,
-  Clock,
-  Download,
-  Calendar,
-  Users,
-  CreditCard,
-  Building,
-  Loader2,
-  Inbox,
-  Truck,
-  Search,
-  Eye,
-  FileSpreadsheet,
-  Coins,
-  TrendingUp,
-} from "lucide-react";
+import { DollarSign, CheckCircle2, Clock, Download, Calendar, Users, CreditCard, Building, Loader2, Inbox, Truck, Search, Eye, FileSpreadsheet, Coins, TrendingUp } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { toast } from "sonner";
-import {
-  listLogisticsInvoices,
-  settleLogisticsInvoice,
-  type LogisticsInvoiceDTO,
-} from "@/services/mobility.functions";
+import { listLogisticsInvoices, settleLogisticsInvoice, type LogisticsInvoiceDTO } from "@/services/mobility.functions";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/logistica/faturas")({
   head: () => ({
-    meta: [{ title: "Faturas & Repasses de Frota | Workspace Waesy" }],
+    meta: [{ title: "Faturas de Frota | Workspace Waesy" }],
   }),
   component: WorkspaceLogisticsInvoicesPage,
 });
@@ -164,7 +136,7 @@ function WorkspaceLogisticsInvoicesPage() {
       {/* ── HEADER DA PÁGINA ── */}
       <PageHeader
         eyebrow="Logística & Frota"
-        title="Faturas & Fechamentos de Frota"
+        title="Faturas da Frota"
         description="Controle financeiro de repasses quinzenais para motoristas autônomos e transportadoras parceiras."
         actions={
           <div className="flex items-center gap-2">
@@ -314,7 +286,7 @@ function WorkspaceLogisticsInvoicesPage() {
               >
                 <Link to="/workspace/pedidos/frota">
                   <Truck className="size-3.5 mr-1.5" />
-                  <span>Gerenciar Frota & Despachos</span>
+                  <span>Gerenciar Frota e Despachos</span>
                 </Link>
               </Button>
             </div>

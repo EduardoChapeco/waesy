@@ -172,7 +172,7 @@ function StoreSlugCanonicalPage() {
 
   if (!profile) {
     return (
-      <div className="py-20 max-w-lg mx-auto px-4 text-center space-y-4">
+      <div className="py-20 max-w-lg mx-auto px-0 sm:px-4 text-center space-y-4">
         <UnconfiguredState
           title="Empresa Não Encontrada"
           description="A loja ou vitrine que você está procurando não existe ou teve seu endereço alterado."

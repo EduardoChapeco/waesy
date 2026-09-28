@@ -1,40 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  TrendingDown,
-  TrendingUp,
-  Download,
-  BarChart3,
-  ShoppingCart,
-  Package,
-  Filter,
-  Search,
-  ArrowUpDown,
-  FileSpreadsheet,
-  PieChart,
-  Layers,
-  Sparkles,
-} from "lucide-react";
+import { TrendingDown, TrendingUp, Download, BarChart3, ShoppingCart, Package, Filter, Search, ArrowUpDown, FileSpreadsheet, PieChart, Layers, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableFooter,
-} from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { PageHeader } from "@/components/commerce/page-header";
 import { EmptyState } from "@/components/state/states";
 import { getChannelDRE, exportChannelDRECsv } from "@/services/channel-reports.functions";
@@ -45,7 +17,7 @@ import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/financeiro/relatorios-canal")({
   head: () => ({
-    meta: [{ title: "DRE por Canal & Marketplaces | Workspace Waesy" }],
+    meta: [{ title: "DRE por Canal | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -188,7 +160,7 @@ function ChannelDREPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Financeiro & Inteligência"
-        title="DRE por Canal de Venda & Marketplaces"
+        title="DRE por Canal"
         description="Demonstrativo de Resultado com faturamento bruto, taxas retidas pelas plataformas e margem líquida real de cada canal."
         actions={
           <div className="flex items-center gap-2">
@@ -275,7 +247,7 @@ function ChannelDREPage() {
 
         <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-1 shadow-2xs">
           <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="size-3.5 text-amber-500" />
+            <Star className="size-3.5 text-amber-500" />
             Margem Média
           </span>
           <div className="text-2xl font-mono font-bold text-foreground">
@@ -385,7 +357,7 @@ function ChannelDREPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
-                  <TableHead className="text-xs font-bold">Canal / Origem</TableHead>
+                  <TableHead className="text-xs font-bold">Canal</TableHead>
                   <TableHead className="text-right text-xs font-bold font-mono">Pedidos</TableHead>
                   <TableHead className="text-right text-xs font-bold font-mono">Bruto</TableHead>
                   <TableHead className="text-right text-xs font-bold font-mono">Taxas Plataforma</TableHead>

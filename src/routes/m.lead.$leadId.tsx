@@ -1,23 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Plane,
-  Calendar,
-  MapPin,
-  CheckCircle2,
-  ShieldCheck,
-  Phone,
-  User,
-  HeartPulse,
-  Send,
-  AlertCircle,
-  Plus,
-  Trash2,
-  Users,
-  Zap,
-  Info,
-} from "lucide-react";
+import { Plane, Calendar, MapPin, CheckCircle2, ShieldCheck, Phone, User, HeartPulse, Send, AlertCircle, Plus, Trash2, Users, Zap, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,30 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  getPublicLeadByToken,
-  submitPublicLeadForm,
-} from "@/services/crm.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getPublicLeadByToken, submitPublicLeadForm } from "@/services/crm.functions";
 
 export const Route = createFileRoute("/m/lead/$leadId")({
   head: () => ({
     meta: [
       {
-        title: "Preferências de Viagem & Acompanhantes | Central do Passageiro",
+        title: "Preferências de Viagem e Acompanhantes | Central do Passageiro",
       },
     ],
   }),
@@ -332,7 +301,7 @@ function PublicLeadPassageirosPage() {
               <div>
                 <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                   <Users className="size-4 text-primary" />
-                  <span>Acompanhantes & Familiares</span>
+                  <span>Acompanhantes e Familiares</span>
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   Quem viajará com você ({paxList.length} cadastrado(s))
@@ -418,7 +387,7 @@ function PublicLeadPassageirosPage() {
             <div>
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <HeartPulse className="size-4 text-rose-500" />
-                <span>Acessibilidade & Cuidados Especiais</span>
+                <span>Acessibilidade e Cuidados Especiais</span>
               </h3>
               <p className="text-xs text-muted-foreground">
                 Informações essenciais para reserva de assentos especiais, hotéis acessíveis e atendimento prioritário em aeroportos.

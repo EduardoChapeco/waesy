@@ -159,7 +159,7 @@ const SERVICE_CONFIGS: Record<
  helper_fee_cents: 3000,
  },
  moving_truck: {
- label: "Caminhão de Mudança & Frete",
+ label: "Caminhão de Mudança e Frete",
  description: "Mudanças completas residenciais e comerciais com opção de ajudantes.",
  icon_name: "Boxes",
  base_fee_cents: 8000,

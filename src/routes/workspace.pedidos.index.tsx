@@ -7,25 +7,11 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { formatHumanOrderId } from "@/lib/order-id";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ChannelBadge } from "@/components/commerce/channel-badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuLabel,
- DropdownMenuSeparator,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/state/states";
 import { FilterBottomSheet, FilterTriggerButton } from "@/components/workspace/filter-bottom-sheet";
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
@@ -38,7 +24,7 @@ import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 import { generateContractFromOrder } from "@/services/contracts.functions";
 
 export const Route = createFileRoute("/workspace/pedidos/")({
- head: () => ({ meta: [{ title: "Emissões & Vendas | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Pedidos | Workspace Waesy" }] }),
  loader: async () => {
    try {
  const [orders, store] = await Promise.all([
@@ -124,7 +110,7 @@ function AdminOrdersPage() {
     }
     if (isRetail) {
       return [
-        { id: "picking" as ViewMode, label: "Separação & Expedição", icon: ShoppingBag },
+        { id: "picking" as ViewMode, label: "Separação e Expedição", icon: ShoppingBag },
         { id: "table" as ViewMode, label: "Tabela de Vendas", icon: List },
       ];
     }
@@ -184,8 +170,10 @@ function AdminOrdersPage() {
 
       let matchesChannel = true;
       if (channelFilter !== "all") {
-        const rawChannel = (order.channel_source || order.metadata?.channel || "pos").toLowerCase();
-        if (channelFilter === "mercadolivre") matchesChannel = rawChannel.includes("mercado");
+        const rawChannel = (order.origin_channel || order.channel_source || order.metadata?.channel || "pos").toLowerCase();
+        if (channelFilter === "waesy_app") matchesChannel = rawChannel.includes("waesy") || rawChannel === "app";
+        else if (channelFilter === "whatsapp") matchesChannel = rawChannel.includes("whatsapp") || rawChannel.includes("zap");
+        else if (channelFilter === "mercadolivre") matchesChannel = rawChannel.includes("mercado") || rawChannel === "ml";
         else if (channelFilter === "ifood") matchesChannel = rawChannel.includes("ifood");
         else if (channelFilter === "shopee") matchesChannel = rawChannel.includes("shopee");
         else if (channelFilter === "amazon") matchesChannel = rawChannel.includes("amazon");
@@ -309,7 +297,7 @@ function AdminOrdersPage() {
  >
  <Link to="/workspace/turismo/grupos">
  <Users className="size-3.5 text-primary" />
- <span>Grupos & Excursões</span>
+ <span>Grupos e Excursões</span>
  </Link>
  </Button>
  <Button
@@ -561,7 +549,7 @@ function AdminOrdersPage() {
  variant="outline"
  size="icon"
  className="size-9 rounded-xl shrink-0"
- title="Imprimir Contrato & Voucher"
+ title="Imprimir Contrato"
  >
  <Link to={`/workspace/pedidos/${order.id}/recibo` as never} target="_blank">
  <Printer className="size-4" />
@@ -957,7 +945,7 @@ function AdminOrdersPage() {
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Separação de Gôndola & Conferência de Itens
+ Separação de Gôndola e Conferência de Itens
  </h2>
  <p className="text-xs text-muted-foreground">
  Confira cada produto na prateleira antes de fechar a embalagem de entrega
@@ -1170,6 +1158,8 @@ function AdminOrdersPage() {
                 className="hidden sm:inline-flex h-8 rounded-xl border border-border bg-card px-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-40 shrink-0"
               >
                 <option value="all">Todos os Canais</option>
+                <option value="waesy_app">App Waesy</option>
+                <option value="whatsapp">WhatsApp</option>
                 <option value="mercadolivre">Mercado Livre</option>
                 <option value="ifood">iFood</option>
                 <option value="shopee">Shopee</option>
@@ -1205,11 +1195,11 @@ function AdminOrdersPage() {
  <Table>
  <TableHeader>
  <TableRow className="bg-muted/40">
- <TableHead>{isTourism ? "Reserva / Token" : "Pedido"}</TableHead>
+ <TableHead>{isTourism ? "Reserva" : "Pedido"}</TableHead>
  <TableHead>Canal</TableHead>
- <TableHead>Data & Hora</TableHead>
- <TableHead>{isTourism ? "Passageiro / Titular" : "Cliente"}</TableHead>
- <TableHead>{isTourism ? "Roteiro / Detalhes" : "Meio / Envio"}</TableHead>
+ <TableHead>Data e Hora</TableHead>
+ <TableHead>{isTourism ? "Passageiro" : "Cliente"}</TableHead>
+ <TableHead>{isTourism ? "Roteiro" : "Meio"}</TableHead>
  <TableHead className="text-right">Total Final</TableHead>
  <TableHead className="text-center">Status da Emissão</TableHead>
  <TableHead className="text-right">Ações</TableHead>
@@ -1235,7 +1225,7 @@ function AdminOrdersPage() {
  </TableCell>
 
  <TableCell>
- <ChannelBadge source={order.channel_source || order.metadata?.channel} />
+ <ChannelBadge source={order.origin_channel || order.channel_source || order.metadata?.channel} />
  </TableCell>
 
  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
@@ -1308,7 +1298,7 @@ function AdminOrdersPage() {
 								</DropdownMenuItem>
 								<DropdownMenuItem onClick={() => handleGenerateContract(order.id)}>
 									<FileText className="size-3.5 mr-2 text-indigo-600 dark:text-indigo-400" />
-									Gerar Contrato & Assinatura Digital
+									Gerar Contrato e Assinatura Digital
 								</DropdownMenuItem>
  <DropdownMenuSeparator />
 
@@ -1369,6 +1359,34 @@ function AdminOrdersPage() {
  }}
  />
  )}
+
+      {/* Bottom Sheet de Filtros no Mobile (Omni-Hub ERP) */}
+      <FilterBottomSheet
+        open={isChannelSheetOpen}
+        onOpenChange={setIsChannelSheetOpen}
+        title="Filtrar por Canal"
+        filters={[
+          {
+            id: "channel",
+            label: "Canal de Venda",
+            value: channelFilter,
+            defaultValue: "all",
+            onChange: (val) => setChannelFilter(val),
+            options: [
+              { label: "Todos os Canais", value: "all" },
+              { label: "App Waesy", value: "waesy_app" },
+              { label: "WhatsApp", value: "whatsapp" },
+              { label: "Mercado Livre", value: "mercadolivre" },
+              { label: "iFood", value: "ifood" },
+              { label: "Shopee", value: "shopee" },
+              { label: "Amazon", value: "amazon" },
+              { label: "Magalu", value: "magalu" },
+              { label: "Loja Online", value: "online_store" },
+              { label: "Balcão / PDV", value: "pos" },
+            ],
+          },
+        ]}
+      />
  </div>
  );
 }

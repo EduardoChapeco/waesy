@@ -6,10 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
-import {
-  GLOBAL_MASTER_PRODUCTS_CATALOG,
-  MasterProductRecord,
-} from "@/lib/data/master-products-catalog";
+import { GLOBAL_MASTER_PRODUCTS_CATALOG, MasterProductRecord } from "@/lib/data/master-products-catalog";
 
 const searchMasterProductsSchema = z.object({
   query: z.string().optional().default(""),

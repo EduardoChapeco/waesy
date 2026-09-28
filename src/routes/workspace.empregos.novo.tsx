@@ -1,22 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Briefcase,
-  Building,
-  MapPin,
-  Clock,
-  DollarSign,
-  Plus,
-  Trash2,
-  ArrowLeft,
-  Share2,
-  CheckCircle2 ,
-  Lock,
-  Linkedin,
-  AlertCircle,
-  ExternalLink,
-} from "lucide-react";
+import { Briefcase, Building, MapPin, Clock, DollarSign, Plus, Trash2, ArrowLeft, Share2, CheckCircle2, Lock, Linkedin, AlertCircle, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,19 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OccupationAutocomplete } from "@/components/profile/occupation-autocomplete";
 import { createStoreJob } from "@/services/jobs.functions";
-import {
-  getWorkspaceLinkedInStatus,
-  syndicateJobToLinkedIn,
-} from "@/services/linkedin-integrations.functions";
+import { getWorkspaceLinkedInStatus, syndicateJobToLinkedIn } from "@/services/linkedin-integrations.functions";
 import { ProUpgradePaywallModal } from "@/components/monetization/pro-upgrade-paywall-modal";
 
 export const Route = createFileRoute("/workspace/empregos/novo")({
@@ -213,7 +189,7 @@ function WorkspaceNewJobPage() {
         <div className="p-5 sm:p-6 rounded-2xl bg-card border border-border/70 space-y-4">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Briefcase className="size-4 text-primary" />
-            <span>Dados da Posição & Perfil</span>
+            <span>Dados da Posição e Perfil</span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -244,11 +220,11 @@ function WorkspaceNewJobPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="comercial">Comercial & Vendas</SelectItem>
-                  <SelectItem value="operacional">Operacional & Logística</SelectItem>
-                  <SelectItem value="tech">Tecnologia & Inovação</SelectItem>
-                  <SelectItem value="saude">Saúde & Bem-Estar</SelectItem>
-                  <SelectItem value="estagio">Estágio & Jovem Aprendiz</SelectItem>
+                  <SelectItem value="comercial">Comercial e Vendas</SelectItem>
+                  <SelectItem value="operacional">Operacional e Logística</SelectItem>
+                  <SelectItem value="tech">Tecnologia e Inovação</SelectItem>
+                  <SelectItem value="saude">Saúde e Bem-Estar</SelectItem>
+                  <SelectItem value="estagio">Estágio e Jovem Aprendiz</SelectItem>
                   <SelectItem value="clt">Geral CLT</SelectItem>
                   <SelectItem value="pj">Prestação de Serviços PJ</SelectItem>
                   <SelectItem value="outros">Outros Setores</SelectItem>

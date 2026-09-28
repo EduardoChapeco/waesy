@@ -105,7 +105,7 @@ export const CONTRACT_SEMANTIC_GROUPS: ContractNicheGroup[] = [
     description: "Compra e venda de carros, motos, termos de vistoria e test-drive",
     variables: [
       { key: "veiculo_marca", token: "{{veiculo_marca}}", label: "Marca do Veículo", category: "automotivo", example: "Toyota", description: "Fabricante do automóvel ou moto" },
-      { key: "veiculo_modelo", token: "{{veiculo_modelo}}", label: "Modelo & Versão", category: "automotivo", example: "Corolla Cross XRE 2.0", description: "Descrição comercial completa" },
+      { key: "veiculo_modelo", token: "{{veiculo_modelo}}", label: "Modelo e Versão", category: "automotivo", example: "Corolla Cross XRE 2.0", description: "Descrição comercial completa" },
       { key: "veiculo_ano", token: "{{veiculo_ano}}", label: "Ano Fab / Mod", category: "automotivo", example: "2024/2025", description: "Ano de fabricação e ano modelo" },
       { key: "veiculo_placa", token: "{{veiculo_placa}}", label: "Placa Mercosul", category: "automotivo", example: "ABC-1D23", description: "Placa oficial de registro do veículo" },
       { key: "veiculo_renavam", token: "{{veiculo_renavam}}", label: "Código RENAVAM", category: "automotivo", example: "12345678901", description: "Registro Nacional de Veículos Automotores" },
@@ -157,7 +157,7 @@ export const CONTRACT_SEMANTIC_GROUPS: ContractNicheGroup[] = [
       { key: "prazo_devolucao_dias", token: "{{prazo_devolucao_dias}}", label: "Prazo para Devolução (Dias)", category: "condicional", example: "2 (dois) dias úteis", description: "Tempo que o cliente pode ficar com as peças" },
       { key: "data_limite", token: "{{data_limite}}", label: "Data Limite de Devolução", category: "condicional", example: "18/09/2026 às 18h", description: "Horário improrrogável para devolução ou compra" },
       { key: "valor_total_sacola", token: "{{valor_total_sacola}}", label: "Valor Total das Peças", category: "condicional", example: "R$ 1.850,00", description: "Soma do valor das peças sob responsabilidade" },
-      { key: "tabela_pecas", token: "{{tabela_pecas}}", label: "Tabela de Peças & Valores", category: "condicional", example: "• 1x Vestido Linho (R$ 380) | 1x Calça Alfaiataria (R$ 290)", description: "Relação discriminada de peças entregues para prova" },
+      { key: "tabela_pecas", token: "{{tabela_pecas}}", label: "Tabela de Peças e Valores", category: "condicional", example: "• 1x Vestido Linho (R$ 380) | 1x Calça Alfaiataria (R$ 290)", description: "Relação discriminada de peças entregues para prova" },
     ],
   },
   {

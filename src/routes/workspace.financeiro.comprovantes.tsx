@@ -1,55 +1,17 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Check,
-  X,
-  FileText,
-  ExternalLink,
-  AlertTriangle,
-  Search,
-  Eye,
-  Clock,
-  DollarSign,
-  ShieldCheck,
-  CheckCircle2,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Check, X, FileText, ExternalLink, AlertTriangle, Search, Eye, Clock, DollarSign, ShieldCheck, CheckCircle2, Image as ImageIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  listPendingManualPayments,
-  approvePayment,
-  rejectPayment,
-} from "@/services/payment.functions";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { listPendingManualPayments, approvePayment, rejectPayment } from "@/services/payment.functions";
 import { formatMoney } from "@/lib/money";
 import { EmptyState } from "@/components/state/states";
 import { formatDate } from "@/lib/datetime";
@@ -425,7 +387,7 @@ function ReceiptsPage() {
                 className="rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
               >
                 <CheckCircle2 className="size-3.5" />
-                <span>Confirmar & Aprovar</span>
+                <span>Confirmar e Aprovar</span>
               </Button>
             </div>
           </DialogFooter>

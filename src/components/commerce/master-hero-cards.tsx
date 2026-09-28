@@ -22,19 +22,19 @@ const DEFAULT_HERO_MODULES = [
  {
  slug: "classificados",
  to: "/classificados",
- title: "Classificados & Autos",
+ title: "Classificados e Autos",
  defaultCover: "",
  },
  {
  slug: "mercado",
  to: "/mercado",
- title: "Supermercado & Feira",
+ title: "Supermercado e Feira",
  defaultCover: "",
  },
  {
  slug: "gastronomia",
  to: "/gastronomia",
- title: "Gastronomia & Delivery",
+ title: "Gastronomia e Delivery",
  defaultCover: "",
  },
  {
@@ -58,7 +58,7 @@ const DEFAULT_HERO_MODULES = [
  {
  slug: "turismo",
  to: "/turismo",
- title: "Turismo & Hospedagem",
+ title: "Turismo e Hospedagem",
  defaultCover: "",
  },
  {

@@ -1,13 +1,5 @@
 import { useState, useRef } from "react";
-import {
-  CalendarDots,
-  Trash,
-  Plus,
-  ForkKnife,
-  Bed,
-  Bus,
-  Camera,
-} from "@phosphor-icons/react";
+import { CalendarDots, Trash, Plus, ForkKnife, Bed, Bus, Camera } from "@phosphor-icons/react";
 import { ChevronDown, ChevronUp, Loader2, ImagePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";

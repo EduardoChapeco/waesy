@@ -87,6 +87,34 @@ export function getChannelInfo(source?: string | null): ChannelInfo {
       badgeClass: "text-sky-600 dark:text-sky-400",
     };
   }
+  if (norm.includes("whatsapp") || norm.includes("zap")) {
+    return {
+      id: "whatsapp",
+      label: "WhatsApp",
+      badgeClass: "text-emerald-600 dark:text-emerald-400",
+    };
+  }
+  if (norm.includes("waesy_app") || norm.includes("app")) {
+    return {
+      id: "waesy_app",
+      label: "App Waesy",
+      badgeClass: "text-primary",
+    };
+  }
+  if (norm.includes("rappi")) {
+    return {
+      id: "rappi",
+      label: "Rappi",
+      badgeClass: "text-orange-600 dark:text-orange-400",
+    };
+  }
+  if (norm.includes("direct_link")) {
+    return {
+      id: "direct_link",
+      label: "Link Direto",
+      badgeClass: "text-purple-600 dark:text-purple-400",
+    };
+  }
   if (
     norm.includes("online_store") ||
     norm.includes("store") ||

@@ -5,46 +5,14 @@ import { JobApplySheet } from "@/components/jobs/job-apply-sheet";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
-import {
- Briefcase,
- MapPin,
- Clock,
- CurrencyDollar,
- Buildings,
- CheckCircle,
- WhatsappLogo,
- ShareNetwork,
- ArrowLeft,
- PaperPlaneTilt,
- CircleNotch,
- User,
- EnvelopeSimple,
- Phone,
- LinkSimple,
- ChatText,
- ShieldCheck,
-} from "@phosphor-icons/react";
+import { Briefcase, MapPin, Clock, CurrencyDollar, Buildings, CheckCircle, WhatsappLogo, ShareNetwork, ArrowLeft, PaperPlaneTilt, CircleNotch, User, EnvelopeSimple, Phone, LinkSimple, ChatText, ShieldCheck } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogTrigger,
- DialogDescription,
-} from "@/components/ui/dialog";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetTrigger,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { getPublicJobById, applyToJob, getEmployerProfileInsights, type JobItemDTO, type EmployerProfileInsightsDTO } from "@/services/jobs.functions";
 import { getUserSession, getProfile } from "@/services/auth.functions";
 import { formatDate } from "@/lib/datetime";

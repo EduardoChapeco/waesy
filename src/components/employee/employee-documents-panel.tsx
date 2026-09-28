@@ -1,29 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  FileText,
-  Download,
-  Eye,
-  Search,
-  BookOpen,
-  Shield,
-  Settings,
-  Calendar,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  ExternalLink,
-} from "lucide-react";
+import { FileText, Download, Eye, Search, BookOpen, Shield, Settings, Calendar, CheckCircle2, AlertCircle, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/datetime";
-import {
-  listCompanyDocuments,
-  acknowledgeCompanyDocumentRead,
-  type CompanyDocumentDTO,
-} from "@/services/hr.functions";
+import { listCompanyDocuments, acknowledgeCompanyDocumentRead, type CompanyDocumentDTO } from "@/services/hr.functions";
 
 interface EmployeeDocumentsPanelProps {
   storeId?: string;

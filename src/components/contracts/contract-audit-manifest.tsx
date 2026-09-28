@@ -1,16 +1,5 @@
 import React from "react";
-import {
-  ShieldCheck,
-  Lock,
-  Hash,
-  Clock,
-  CheckCircle2,
-  ExternalLink,
-  QrCode,
-  FileCheck2,
-  Camera,
-  Globe,
-} from "lucide-react";
+import { ShieldCheck, Lock, Hash, Clock, CheckCircle2, ExternalLink, QrCode, FileCheck2, Camera, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/datetime";
 
@@ -76,7 +65,7 @@ export function ContractAuditManifest({
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-              Protocolo de Assinatura & Validade Jurídica
+              Protocolo de Assinatura
             </h2>
             <p className="text-xs text-muted-foreground">
               Registro Criptográfico Imutável emitido pela Infraestrutura Waesy
@@ -152,7 +141,7 @@ export function ContractAuditManifest({
       <div className="space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <FileCheck2 className="size-4 text-primary" />
-          Trilha de Auditoria & Signatários (Audit Trail)
+          Trilha de Auditoria e Signatários (Audit Trail)
         </h3>
 
         <div className="space-y-3">

@@ -8,24 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/datetime";
-import {
-  getTicketThread,
-  sendTicketMessage,
-  listCustomerTickets,
-  createCustomerTicket,
-  closeCustomerTicket,
-} from "@/services/ticket.functions";
+import { getTicketThread, sendTicketMessage, listCustomerTickets, createCustomerTicket, closeCustomerTicket } from "@/services/ticket.functions";
 
 export const Route = createFileRoute("/_store/conta/suporte")({
-  head: () => ({ meta: [{ title: "Atendimento & Suporte | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Atendimento e Suporte | Waesy" }] }),
   loader: async () => {
     try {
       return (await listCustomerTickets().catch(() => [])) || [];

@@ -1,27 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Printer,
-  Download,
-  Share2,
-  Loader2,
-  Check,
-  Compass,
-  Smartphone,
-  FileText,
-} from "lucide-react";
+import { Printer, Download, Share2, Loader2, Check, Compass, Smartphone, FileText } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getPublicVoucherByToken } from "@/services/travel-lifecycle.functions";
 import { VoucherBoardingCard } from "@/components/tourism/voucher-boarding-card";
 import { exportElementAsPdf } from "@/lib/pdf-export";
-import {
-  DigitalCompanionCard,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
+import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/voucher/$token")({

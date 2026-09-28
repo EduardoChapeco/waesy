@@ -94,6 +94,26 @@ export interface ProductMarketplaceMappingDTO {
   }>;
 }
 
+export interface InventoryLocationDTO {
+  id: string;
+  store_id: string;
+  name: string;
+  slug: string | null;
+  type: "warehouse" | "storefront" | "dark_store" | "kitchen" | "fulfillment_center";
+  is_default: boolean;
+  is_active: boolean;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  lat: number | null;
+  lng: number | null;
+  dispatch_radius_km: number | null;
+  settings: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface MarketplaceSyncLogDTO {
   id: string;
   platform: string;
@@ -731,6 +751,7 @@ export const syncProductStockToMarketplaces = createServerFn({ method: "POST" })
 
 /**
  * Mapeia produto local para anúncio externo (Mercado Livre, Shopee, iFood, etc.)
+ * Persiste na tabela canônica channel_listings e sincroniza com products.availability_channels.
  */
 export const mapProductToMarketplace = createServerFn({ method: "POST" })
   .validator(
@@ -753,18 +774,53 @@ export const mapProductToMarketplace = createServerFn({ method: "POST" })
 
     const { data: product, error: fetchErr } = await supabase
       .from("products")
-      .select("id, availability_channels")
+      .select("id, price_cents, availability_channels")
       .eq("id", data.productId)
       .eq("store_id", targetStoreId)
       .single();
 
     if (fetchErr || !product) throw new Error("Produto não encontrado.");
 
+    const basePriceCents = product.price_cents || 0;
+    const channelPriceCents = data.priceMarginPercent > 0
+      ? Math.round(basePriceCents * (1 + data.priceMarginPercent / 100))
+      : basePriceCents;
+
+    // 1. Grava na tabela relacional channel_listings (V122/V123 Omni-Hub ERP)
+    const { error: listingErr } = await supabase
+      .from("channel_listings")
+      .upsert(
+        {
+          store_id: targetStoreId,
+          product_id: data.productId,
+          channel: data.platform,
+          external_listing_id: data.externalListingId.trim(),
+          external_sku: data.externalSku?.trim() || null,
+          price_cents: channelPriceCents,
+          channel_status: "active",
+          is_active: true,
+          commission_rate: 0,
+          last_synced_at: new Date().toISOString(),
+          attributes: {
+            price_margin_percent: data.priceMarginPercent,
+            base_price_cents: basePriceCents,
+          },
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "store_id,product_id,channel" }
+      );
+
+    if (listingErr) {
+      console.warn("[mapProductToMarketplace] Erro ao gravar em channel_listings:", listingErr.message);
+    }
+
+    // 2. Mantém sincronia no JSONB availability_channels para leitura legada
     const currentChannels = (product.availability_channels as Record<string, any>) || {};
     currentChannels[data.platform] = {
       listing_id: data.externalListingId.trim(),
       external_sku: data.externalSku?.trim() || null,
       price_margin_percent: data.priceMarginPercent,
+      price_cents: channelPriceCents,
       synced_at: new Date().toISOString(),
       status: "active",
     };
@@ -787,7 +843,62 @@ export const mapProductToMarketplace = createServerFn({ method: "POST" })
   });
 
 /**
+ * Remove o vínculo de um produto com um marketplace.
+ */
+export const deleteProductChannelListing = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      productId: z.string().uuid(),
+      platform: z.enum(MARKETPLACE_PLATFORMS),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = data.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    // Remove da tabela relacional channel_listings
+    await supabase
+      .from("channel_listings")
+      .delete()
+      .eq("store_id", targetStoreId)
+      .eq("product_id", data.productId)
+      .eq("channel", data.platform);
+
+    // Remove do JSONB availability_channels
+    const { data: product } = await supabase
+      .from("products")
+      .select("availability_channels")
+      .eq("id", data.productId)
+      .eq("store_id", targetStoreId)
+      .single();
+
+    if (product) {
+      const current = (product.availability_channels as Record<string, any>) || {};
+      delete current[data.platform];
+      await supabase
+        .from("products")
+        .update({
+          availability_channels: current,
+          publish_to_marketplace: Object.keys(current).length > 0,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", data.productId);
+    }
+
+    return {
+      success: true,
+      message: `Anúncio desvinculado do canal ${data.platform.toUpperCase()} com sucesso.`,
+    };
+  });
+
+/**
  * Lista os produtos da loja com informações de mapeamento em marketplaces.
+ * Consulta prioritariamente a tabela relacional channel_listings.
  */
 export const listProductMarketplaceMappings = createServerFn({ method: "GET" })
   .validator(z.object({ storeId: z.string().optional() }).optional())
@@ -799,21 +910,45 @@ export const listProductMarketplaceMappings = createServerFn({ method: "GET" })
     const targetStoreId = data?.storeId || identity.store_id;
     if (!targetStoreId) return [];
 
-    const { data: products, error } = await supabase
-      .from("products")
-      .select(`
-        id, title, price_cents, availability_channels, publish_to_marketplace,
-        product_variants ( id, sku, stock_on_hand )
-      `)
-      .eq("store_id", targetStoreId)
-      .order("title", { ascending: true })
-      .limit(60);
+    const [{ data: products, error }, { data: listings }] = await Promise.all([
+      supabase
+        .from("products")
+        .select(`
+          id, title, price_cents, availability_channels, publish_to_marketplace,
+          product_variants ( id, sku, stock_on_hand )
+        `)
+        .eq("store_id", targetStoreId)
+        .order("title", { ascending: true })
+        .limit(60),
+      supabase
+        .from("channel_listings")
+        .select("product_id, channel, price_cents, external_listing_id, external_sku, channel_status, last_synced_at, attributes")
+        .eq("store_id", targetStoreId),
+    ]);
 
     if (error || !products) return [];
 
+    // Mapeia channel_listings por produto
+    const listingsByProduct = new Map<string, Record<string, any>>();
+    for (const listing of listings || []) {
+      const current = listingsByProduct.get(listing.product_id) || {};
+      const attrs = (listing.attributes as Record<string, any>) || {};
+      current[listing.channel] = {
+        listing_id: listing.external_listing_id || undefined,
+        external_sku: listing.external_sku || undefined,
+        price_margin_percent: attrs.price_margin_percent || 0,
+        price_cents: listing.price_cents,
+        synced_at: listing.last_synced_at || undefined,
+        status: listing.channel_status === "paused" ? "paused" : listing.channel_status === "error" ? "error" : "active",
+      };
+      listingsByProduct.set(listing.product_id, current);
+    }
+
     return products.map((p) => {
       const firstVariant = (p.product_variants as any[])?.[0];
-      const channels = (p.availability_channels as Record<string, any>) || {};
+      const jsonbChannels = (p.availability_channels as Record<string, any>) || {};
+      const relationalChannels = listingsByProduct.get(p.id) || {};
+      const mergedMappings = { ...jsonbChannels, ...relationalChannels };
 
       return {
         id: p.id,
@@ -822,7 +957,7 @@ export const listProductMarketplaceMappings = createServerFn({ method: "GET" })
         price_cents: p.price_cents || 0,
         stock_on_hand: firstVariant?.stock_on_hand || 0,
         publish_to_marketplace: p.publish_to_marketplace ?? false,
-        mappings: channels,
+        mappings: mergedMappings,
       };
     });
   });
@@ -947,3 +1082,460 @@ export const syncGoogleBusinessProfile = createServerFn({ method: "POST" })
       syncedAt: new Date().toISOString(),
     };
   });
+
+/**
+ * Lista todos os locais de estoque (Depósitos, Dark Stores, Lojas Físicas) da loja.
+ */
+export const listInventoryLocations = createServerFn({ method: "GET" })
+  .validator(z.object({ storeId: z.string().optional() }).optional())
+  .handler(async ({ data }): Promise<InventoryLocationDTO[]> => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = data?.storeId || identity.store_id;
+    if (!targetStoreId) return [];
+
+    const { data: locations, error } = await supabase
+      .from("inventory_locations")
+      .select("*")
+      .eq("store_id", targetStoreId)
+      .order("is_default", { ascending: false })
+      .order("name", { ascending: true });
+
+    if (error) {
+      await logSystemError({
+        operation: "listInventoryLocations",
+        error,
+        table_name: "inventory_locations",
+        contract_name: "listInventoryLocations",
+      });
+      return [];
+    }
+
+    return (locations || []) as InventoryLocationDTO[];
+  });
+
+/**
+ * Cria ou atualiza um local de estoque (Dark Store, Depósito Central, etc.)
+ */
+export const saveInventoryLocation = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      id: z.string().uuid().optional(),
+      name: z.string().min(2),
+      type: z.enum(["warehouse", "storefront", "dark_store", "kitchen", "fulfillment_center"]).default("warehouse"),
+      is_default: z.boolean().default(false),
+      is_active: z.boolean().default(true),
+      address: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      postal_code: z.string().optional(),
+      dispatch_radius_km: z.number().min(0).max(200).default(10),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
+
+    const targetStoreId = data.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    if (data.is_default) {
+      // Se este for o padrão, remove a marca de padrão dos outros
+      await supabase
+        .from("inventory_locations")
+        .update({ is_default: false, updated_at: new Date().toISOString() })
+        .eq("store_id", targetStoreId);
+    }
+
+    const payload = {
+      store_id: targetStoreId,
+      name: data.name.trim(),
+      type: data.type,
+      is_default: data.is_default,
+      is_active: data.is_active,
+      address: data.address?.trim() || null,
+      city: data.city?.trim() || null,
+      state: data.state?.trim() || null,
+      postal_code: data.postal_code?.trim() || null,
+      dispatch_radius_km: data.dispatch_radius_km,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.id) {
+      const { error } = await supabase
+        .from("inventory_locations")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("store_id", targetStoreId);
+
+      if (error) throw new Error(`Falha ao atualizar armazém: ${error.message}`);
+      return { success: true, message: "Local de estoque atualizado com sucesso!", id: data.id };
+    } else {
+      const { data: created, error } = await supabase
+        .from("inventory_locations")
+        .insert(payload)
+        .select("id")
+        .single();
+
+      if (error) throw new Error(`Falha ao criar armazém: ${error.message}`);
+      return { success: true, message: "Novo local de estoque criado com sucesso!", id: created.id };
+    }
+  });
+
+/**
+ * Remove um local de estoque da loja. Não permite remover o armazém padrão.
+ */
+export const deleteInventoryLocation = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      id: z.string().uuid(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin"]);
+
+    const targetStoreId = data.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    const { data: target } = await supabase
+      .from("inventory_locations")
+      .select("is_default")
+      .eq("id", data.id)
+      .eq("store_id", targetStoreId)
+      .single();
+
+    if (target?.is_default) {
+      throw new Error("Não é possível remover o local de estoque padrão da loja.");
+    }
+
+    const { error } = await supabase
+      .from("inventory_locations")
+      .delete()
+      .eq("id", data.id)
+      .eq("store_id", targetStoreId);
+
+    if (error) throw new Error(`Falha ao remover armazém: ${error.message}`);
+    return { success: true, message: "Local de estoque removido com sucesso." };
+  });
+
+/**
+ * ============================================================================
+ * IMPORTAÇÃO REAL E2E DE PRODUTOS DO MERCADO LIVRE (API OFICIAL OPEN DATA)
+ * ============================================================================
+ */
+export const importProductFromMercadoLivre = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      mlbIdOrUrl: z.string().min(5, "Informe o ID MLB ou o link do anúncio"),
+      locationId: z.string().uuid().optional(),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = input.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    // 1. Extração cirúrgica do MLB ID (aceita tanto MLB123... quanto URL completa)
+    const match = input.mlbIdOrUrl.match(/MLB-?(\d+)/i);
+    const cleanMlbId = match ? `MLB${match[1]}` : input.mlbIdOrUrl.trim().toUpperCase();
+
+    if (!/^MLB\d+$/i.test(cleanMlbId)) {
+      throw new Error("Formato de ID do Mercado Livre inválido. Ex: MLB1234567890 ou link completo do anúncio.");
+    }
+
+    // 2. Fetch real na API pública oficial do Mercado Livre
+    const mlbRes = await fetch(`https://api.mercadolibre.com/items/${cleanMlbId}`, {
+      headers: { "User-Agent": "Waesy/1.0" },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!mlbRes.ok) {
+      if (mlbRes.status === 404) {
+        throw new Error(`Anúncio ${cleanMlbId} não encontrado no Mercado Livre.`);
+      }
+      throw new Error(`Falha na comunicação com a API do Mercado Livre (HTTP ${mlbRes.status}).`);
+    }
+
+    const item = await mlbRes.json();
+    const priceCents = Math.round((Number(item.price) || 0) * 100);
+    const title = (item.title || "Produto Importado ML").trim();
+    const stockQty = Math.max(1, Number(item.available_quantity) || 1);
+
+    // Gera slug amigável único
+    const baseSlug = title
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 50);
+    const uniqueSlug = `${baseSlug}-${cleanMlbId.toLowerCase()}`;
+
+    // 3. Local de estoque alvo (armazém padrão se não especificado)
+    let warehouseId = input.locationId;
+    if (!warehouseId) {
+      const { data: defaultLoc } = await supabase
+        .from("inventory_locations")
+        .select("id")
+        .eq("store_id", targetStoreId)
+        .eq("is_default", true)
+        .maybeSingle();
+
+      warehouseId = defaultLoc?.id;
+    }
+
+    // 4. Insere o produto em `products`
+    const { data: product, error: prodErr } = await supabase
+      .from("products")
+      .insert({
+        store_id: targetStoreId,
+        title,
+        slug: uniqueSlug,
+        description: item.condition === "new" ? "Produto Novo importado via Mercado Livre." : "Produto Usado importado via Mercado Livre.",
+        price_cents: priceCents,
+        status: "active",
+        brand: item.attributes?.find((a: any) => a.id === "BRAND")?.value_name || null,
+        ean: item.attributes?.find((a: any) => a.id === "GTIN")?.value_name || null,
+        publish_to_marketplace: true,
+        availability_channels: {
+          mercadolivre: {
+            listing_id: cleanMlbId,
+            external_sku: item.seller_custom_field || cleanMlbId,
+            price_cents: priceCents,
+            price_margin_percent: 0,
+            synced_at: new Date().toISOString(),
+            status: item.status === "active" ? "active" : "paused",
+          },
+        },
+        attributes: {
+          permalink: item.permalink,
+          condition: item.condition,
+          pictures: (item.pictures || []).map((p: any) => p.secure_url || p.url).filter(Boolean),
+          imported_from: "mercadolivre",
+          imported_at: new Date().toISOString(),
+        },
+      })
+      .select()
+      .single();
+
+    if (prodErr) {
+      console.error("[marketplace-hub] Erro ao cadastrar produto do Mercado Livre:", prodErr);
+      throw new Error(`Erro ao salvar produto importado: ${prodErr.message}`);
+    }
+
+    // 5. Cria a variante padrão com SKU do MLB
+    const { data: variant, error: varErr } = await supabase
+      .from("product_variants")
+      .insert({
+        product_id: product.id,
+        sku: item.seller_custom_field || `MLB-${cleanMlbId}`,
+        price_cents: priceCents,
+        stock_on_hand: stockQty,
+      })
+      .select()
+      .single();
+
+    if (varErr) {
+      console.warn("[marketplace-hub] Aviso ao criar variante para produto importado:", varErr.message);
+    }
+
+    // 6. Cadastra imagens em `product_media`
+    const pictures = (item.pictures || []).slice(0, 5);
+    for (let i = 0; i < pictures.length; i++) {
+      const picUrl = pictures[i].secure_url || pictures[i].url;
+      if (picUrl) {
+        await supabase.from("product_media").insert({
+          product_id: product.id,
+          url: picUrl,
+          alt: `${title} - Foto ${i + 1}`,
+          media_type: "image",
+          sort_order: i,
+        });
+      }
+    }
+
+    // 7. Reflete no inventário do armazém se disponível
+    if (warehouseId && variant?.id) {
+      await supabase.from("product_location_inventories").upsert(
+        {
+          store_id: targetStoreId,
+          location_id: warehouseId,
+          product_id: product.id,
+          variant_id: variant.id,
+          stock_qty: stockQty,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "location_id,product_id,variant_id" }
+      );
+    }
+
+    // 8. Grava no channel_listings relacional
+    await supabase.from("channel_listings").upsert(
+      {
+        store_id: targetStoreId,
+        product_id: product.id,
+        channel: "mercadolivre",
+        external_listing_id: cleanMlbId,
+        external_sku: item.seller_custom_field || cleanMlbId,
+        price_cents: priceCents,
+        channel_status: item.status === "active" ? "active" : "paused",
+        is_active: item.status === "active",
+        commission_rate: 0.16,
+        last_synced_at: new Date().toISOString(),
+        attributes: {
+          permalink: item.permalink,
+          condition: item.condition,
+          imported: true,
+        },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "store_id,product_id,channel" }
+    );
+
+    // 9. Grava no log de sincronização
+    await supabase.from("marketplace_sync_logs").insert({
+      store_id: targetStoreId,
+      platform: "mercadolivre",
+      sync_type: "catalog_import",
+      direction: "inbound",
+      status: "completed",
+      items_processed: 1,
+      items_created: 1,
+      items_updated: 0,
+      items_failed: 0,
+      duration_ms: 120,
+      errors: [],
+      metadata: {
+        product_id: product.id,
+        mlb_id: cleanMlbId,
+        title,
+        price_cents: priceCents,
+      },
+    });
+
+    return {
+      success: true,
+      product: {
+        id: product.id,
+        title: product.title,
+        price_cents: product.price_cents,
+        stock: stockQty,
+        mlb_id: cleanMlbId,
+        permalink: item.permalink,
+        image_url: pictures[0]?.secure_url || pictures[0]?.url || null,
+      },
+      message: `Produto "${title}" importado com sucesso do Mercado Livre!`,
+    };
+  });
+
+/**
+ * ============================================================================
+ * CÁLCULO DE PREÇO MULTI-CANAL CONTROLADO POR BACKEND (COMMISSION + MARKUP)
+ * ============================================================================
+ */
+export const calculateAndApplyChannelPricing = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      storeId: z.string().optional(),
+      productId: z.string().uuid(),
+      channel: z.enum(MARKETPLACE_PLATFORMS),
+      priceMarginPercent: z.number().min(0).max(300).default(0),
+      applyChannelCommissionMarkup: z.boolean().default(true),
+    })
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager"]);
+
+    const targetStoreId = input.storeId || identity.store_id;
+    if (!targetStoreId) throw new Error("Loja não identificada.");
+
+    const { data: product } = await supabase
+      .from("products")
+      .select("id, price_cents, availability_channels")
+      .eq("id", input.productId)
+      .eq("store_id", targetStoreId)
+      .single();
+
+    if (!product) throw new Error("Produto não encontrado.");
+
+    const basePriceCents = product.price_cents || 0;
+
+    // Taxas padrão de comissão por marketplace (BFF Rules)
+    const channelCommissions: Record<string, number> = {
+      mercadolivre: 0.16, // 16% (Clássico/Premium Médio)
+      ifood: 0.12,        // 12% (Básico de Entrega)
+      shopee: 0.14,       // 14% padrão
+      amazon: 0.15,       // 15% categoria geral
+      magalu: 0.16,       // 16%
+      carrefour: 0.15,    // 15%
+    };
+
+    const commRate = channelCommissions[input.channel] || 0.15;
+
+    // Cálculo de compensação de margem: PreçoFinal = Base * (1 + margin%) / (1 - comissão)
+    let calculatedCents = basePriceCents;
+    if (input.priceMarginPercent > 0) {
+      calculatedCents = Math.round(calculatedCents * (1 + input.priceMarginPercent / 100));
+    }
+    if (input.applyChannelCommissionMarkup && commRate > 0) {
+      calculatedCents = Math.round(calculatedCents / (1 - commRate));
+    }
+
+    // 1. Atualiza na tabela relacional channel_listings
+    await supabase.from("channel_listings").upsert(
+      {
+        store_id: targetStoreId,
+        product_id: input.productId,
+        channel: input.channel,
+        price_cents: calculatedCents,
+        commission_rate: commRate,
+        attributes: {
+          base_price_cents: basePriceCents,
+          price_margin_percent: input.priceMarginPercent,
+          apply_commission_markup: input.applyChannelCommissionMarkup,
+          commission_cents: Math.round(calculatedCents * commRate),
+          net_receipt_cents: calculatedCents - Math.round(calculatedCents * commRate),
+        },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "store_id,product_id,channel" }
+    );
+
+    // 2. Atualiza no jsonb legado
+    const channels = (product.availability_channels as Record<string, any>) || {};
+    channels[input.channel] = {
+      ...(channels[input.channel] || {}),
+      price_cents: calculatedCents,
+      price_margin_percent: input.priceMarginPercent,
+      updated_at: new Date().toISOString(),
+    };
+
+    await supabase
+      .from("products")
+      .update({ availability_channels: channels, updated_at: new Date().toISOString() })
+      .eq("id", input.productId);
+
+    return {
+      success: true,
+      channel: input.channel,
+      basePriceCents,
+      channelPriceCents: calculatedCents,
+      commissionRate: commRate,
+      estimatedCommissionCents: Math.round(calculatedCents * commRate),
+      netReceiptCents: calculatedCents - Math.round(calculatedCents * commRate),
+    };
+  });
+

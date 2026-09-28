@@ -1,41 +1,14 @@
 import React, { useState } from "react";
-import {
- FileText,
- AlertTriangle,
- Clock,
- Plus,
- Trash2,
- ExternalLink,
- ShieldCheck,
- CheckCircle2,
- Calendar,
- Loader2,
- Upload,
-} from "lucide-react";
+import { FileText, AlertTriangle, Clock, Plus, Trash2, ExternalLink, ShieldCheck, CheckCircle2, Calendar, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { FileAttachmentUpload } from "@/components/ui/file-attachment-upload";
-import {
- createCustomerDocument,
- deleteCustomerDocument,
-} from "@/services/crm.functions";
+import { createCustomerDocument, deleteCustomerDocument } from "@/services/crm.functions";
 
 const DOC_TYPES = [
  { value: "passport", label: "Passaporte" },
@@ -134,7 +107,7 @@ export function DocumentsPanel({
  </div>
  <div>
  <div className="flex items-center gap-2">
- <h3 className="font-bold text-sm text-foreground">Documentos & Vistos</h3>
+ <h3 className="font-bold text-sm text-foreground">Documentos</h3>
  <Badge variant="outline" className="font-mono text-xs">
  {documents.length}
  </Badge>

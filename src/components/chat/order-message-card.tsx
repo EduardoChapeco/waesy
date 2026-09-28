@@ -120,10 +120,10 @@ export const OrderMessageCard: React.FC<OrderMessageCardProps> = ({
  size="sm"
  className="h-8 text-xs font-bold rounded-xl"
  >
- <a href={`/conta/pedidos/${order.id}`} target="_blank" rel="noreferrer">
+ <Link to={`/conta/pedidos/${order.id}` as any}>
  Ver Detalhes
  <ArrowUpRight className="size-3 ml-1" />
- </a>
+ </Link>
  </Button>
  </div>
  </div>

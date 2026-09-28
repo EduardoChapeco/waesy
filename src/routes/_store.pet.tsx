@@ -1,19 +1,10 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- Bone,
- Heartbeat,
- FirstAid,
- Storefront,
- Clock,
- MapPin,
- ArrowRight,
- ShoppingBag,
- Scissors,
-} from "@phosphor-icons/react";
+import { Bone, Heartbeat, FirstAid, Storefront, Clock, MapPin, ArrowRight, ShoppingBag, Scissors } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,11 +13,7 @@ import { PageSkeleton } from "@/components/state/loading";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
 import { OfferCard } from "@/components/commerce/offer-card";
@@ -48,18 +35,18 @@ type PetSearch = z.infer<typeof SearchSchema>;
 
 const PET_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", icon: Tag },
- { id: "racoes", label: "Rações Cães & Gatos", icon: Bone },
- { id: "petiscos", label: "Petiscos & Sachês", icon: Bone },
+ { id: "racoes", label: "Rações Cães e Gatos", icon: Bone },
+ { id: "petiscos", label: "Petiscos e Sachês", icon: Bone },
  { id: "farmacia_vet", label: "Farmácia Veterinária", icon: FirstAid },
- { id: "higiene", label: "Higiene & Areias", icon: Tag },
- { id: "brinquedos", label: "Brinquedos & Camas", icon: ShoppingBag },
- { id: "agro", label: "Agropecuária & Jardim", icon: Tag },
+ { id: "higiene", label: "Higiene e Areias", icon: Tag },
+ { id: "brinquedos", label: "Brinquedos e Camas", icon: ShoppingBag },
+ { id: "agro", label: "Agropecuária e Jardim", icon: Tag },
 ];
 
 export const Route = createFileRoute("/_store/pet")({
  head: () => ({
  meta: [
- { title: "Pet Shops, Rações, Veterinária & Agro | Waesy" },
+ { title: "Pet Shops, Rações, Veterinária e Agro | Waesy" },
  {
  name: "description",
  content:
@@ -70,12 +57,13 @@ export const Route = createFileRoute("/_store/pet")({
  validateSearch: (search: Record<string, unknown>): PetSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async () => {
+ loader: async ({ location }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "pet" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "pet", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "pet" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "pet" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "pet", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  listPublishedProducts({ data: { niche: "pet", limit: 40 } }).catch(() => ({ status: "empty" as const, data: [] as ProductCardDTO[] })),
  ]);
  return {

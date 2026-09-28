@@ -202,3 +202,86 @@ export const linkEventInteractionToCrmFn = createServerFn({ method: "POST" })
 
     return res as { success: boolean; lead_id?: string; customer_id?: string; event_id?: string };
   });
+
+export const ingestTelemetryBatchFn = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      events: z.array(
+        z.object({
+          sessionId: z.string().optional(),
+          userId: z.string().uuid().optional(),
+          civilId: z.string().uuid().optional(),
+          eventType: z.string(),
+          path: z.string(),
+          referrer: z.string().optional(),
+          userAgent: z.string().optional(),
+          ipMasked: z.string().optional(),
+          dwellTimeMs: z.number().int().optional().default(0),
+          metadata: z.record(z.any()).optional().default({}),
+          createdAt: z.string().optional(),
+        })
+      ).default([]),
+      searches: z.array(
+        z.object({
+          sessionId: z.string().optional(),
+          userId: z.string().uuid().optional(),
+          civilId: z.string().uuid().optional(),
+          query: z.string(),
+          niche: z.string().optional().default("geral"),
+          resultsCount: z.number().int().optional().default(0),
+          filters: z.record(z.any()).optional().default({}),
+          createdAt: z.string().optional(),
+        })
+      ).default([]),
+    })
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity().catch(() => null);
+    const userId = identity?.customer_id || null;
+    const sessionToken = identity?.session_token || null;
+
+    let req: Request | null = null;
+    try { req = getRequest(); } catch {}
+    const telemetry = req ? captureRequestTelemetry(req) : null;
+
+    const formattedEvents = data.events.map((e) => ({
+      session_id: e.sessionId || sessionToken || "anonymous",
+      user_id: e.userId || userId,
+      civil_id: e.civilId || userId,
+      event_type: e.eventType,
+      path: e.path,
+      referrer: e.referrer || (req ? req.headers.get("referer") || undefined : undefined),
+      user_agent: e.userAgent || (req ? req.headers.get("user-agent") || undefined : undefined),
+      ip_masked: e.ipMasked || (telemetry ? telemetry.ip : undefined),
+      dwell_time_ms: e.dwellTimeMs || 0,
+      metadata: {
+        ...e.metadata,
+        ...(telemetry ? { geo_city: telemetry.geo.city, device: telemetry.deviceType } : {}),
+      },
+      created_at: e.createdAt || new Date().toISOString(),
+    }));
+
+    const formattedSearches = data.searches.map((s) => ({
+      session_id: s.sessionId || sessionToken || "anonymous",
+      user_id: s.userId || userId,
+      civil_id: s.civilId || userId,
+      query: s.query,
+      niche: s.niche || "geral",
+      results_count: s.resultsCount || 0,
+      filters: s.filters || {},
+      created_at: s.createdAt || new Date().toISOString(),
+    }));
+
+    const { data: res, error } = await supabase.rpc("ingest_telemetry_batch", {
+      p_events: formattedEvents as any,
+      p_searches: formattedSearches as any,
+    });
+
+    if (error) {
+      console.warn("[telemetry] Erro no batch ingest:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, result: res };
+  });

@@ -1,8 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import { Flame, Storefront, ForkKnife, Coffee, Heartbeat, Clock, ShieldCheck, Truck, ArrowRight, Package, Broom, CheckCircle, CalendarCheck, ShoppingBag, MagnifyingGlass, SlidersHorizontal, MapPin, Leaf, Grains, Drop, Buildings,  } from "@phosphor-icons/react";
+import { Flame, Storefront, ForkKnife, Coffee, Heartbeat, Clock, ShieldCheck, Truck, ArrowRight, Package, Broom, CheckCircle, CalendarCheck, ShoppingBag, MagnifyingGlass, SlidersHorizontal, MapPin, Leaf, Grains, Drop, Buildings } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,18 +14,10 @@ import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { OfferCard } from "@/components/commerce/offer-card";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
-import {
- listPublishedProducts,
- listPublishedCategories,
- listAvailableAttributes,
-} from "@/services/catalog.functions";
+import { listPublishedProducts, listPublishedCategories, listAvailableAttributes } from "@/services/catalog.functions";
 import { getMarketplaceFeed } from "@/services/marketplace.functions";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
@@ -59,7 +52,7 @@ const SUPERMARKET_DEPARTMENTS: FilterChipOption[] = [
  { id: "tabloide", label: "Tabloide da Semana", badge: "Ofertas" },
  { id: "hortifruti", label: "Hortifrúti" },
  { id: "carnes", label: "Açougue" },
- { id: "padaria", label: "Padaria & Frios" },
+ { id: "padaria", label: "Padaria e Frios" },
  { id: "laticinios", label: "Laticínios" },
  { id: "bebidas", label: "Bebidas" },
  { id: "mercearia", label: "Mercearia" },
@@ -80,7 +73,7 @@ const DIETARY_FILTERS = [
 export const Route = createFileRoute("/_store/mercado")({
  head: () => ({
  meta: [
- { title: "Mercado — Supermercados & Mercearias da Região | Waesy" },
+ { title: "Mercado — Supermercados e Mercearias da Região | Waesy" },
  {
  name: "description",
  content:
@@ -107,8 +100,8 @@ export const Route = createFileRoute("/_store/mercado")({
  }).catch(() => ({ status: "ok" as const, data: [] as ProductCardDTO[] })),
  listPublishedCategories().catch(() => []),
  listAvailableAttributes().catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: search.niche || "mercado" } }).catch(() => ({ sections: [], allProducts: [] })),
- listActiveBanners({ data: { placement: "mercado" } }).catch(() => []),
+ getModularSurfaceFeed({ data: { surfaceSlug: search.niche || "mercado", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
+ listActiveBanners({ data: { placement: "mercado", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "mercado" } }).catch(() => []),
  listActiveStoreFlyers({ data: {} }).catch(() => []),
  ]);
@@ -249,7 +242,7 @@ function SupermarketMasterPage() {
  {flyers && flyers.length > 0 && (
  <PromotionalFlyersRail
  flyers={flyers}
- title="Encartes & Tabloides da Semana"
+ title="Encartes"
  subtitle="Folhetos das redes e atacados locais com ofertas válidas por tempo limitado"
  />
  )}

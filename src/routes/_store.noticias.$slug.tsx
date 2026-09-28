@@ -1,17 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import {
-  Clock,
-  Calendar,
-  Share2,
-  Quote,
-  Newspaper,
-  ChevronRight,
-  Ticket,
-  MapPin,
-  Users,
-  ArrowRight,
-} from "lucide-react";
+import { Clock, Calendar, Share2, Quote, Newspaper, ChevronRight, Ticket, MapPin, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getArticleDetail, type NewsArticleDTO, type SponsorDTO } from "@/services/news.functions";
 import { NewsSponsorBanner } from "@/components/news/news-sponsor-banner";
@@ -88,7 +77,7 @@ function NoticiaDetailPage() {
 
   if (!article) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-4">
+      <div className="max-w-2xl mx-auto px-0 sm:px-4 py-20 text-center space-y-4">
         <h2 className="text-xl font-bold text-foreground">Matéria não encontrada</h2>
         <Button asChild variant="outline" className="rounded-xl font-bold">
           <Link to="/noticias">
@@ -128,7 +117,7 @@ function NoticiaDetailPage() {
         />
       </div>
 
-      <article className="max-w-2xl mx-auto px-4 space-y-8 pb-20 pt-4">
+      <article className="max-w-2xl mx-auto px-0 sm:px-4 space-y-8 pb-20 pt-4">
         {/* Breadcrumb Apple HIG */}
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Link to="/noticias" className="hover:text-foreground transition-colors">
@@ -320,7 +309,7 @@ function NoticiaDetailPage() {
           <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
               <Ticket className="size-4" />
-              <span>Evento & Ingressos Relacionados</span>
+              <span>Evento e Ingressos Relacionados</span>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -355,7 +344,7 @@ function NoticiaDetailPage() {
 
               <Button asChild className="rounded-xl font-bold text-xs h-10 px-4 shrink-0">
                 <Link to="/evento/$id" params={{ id: linkedEvent.id }}>
-                  <span>Ver Ingressos & RSVP</span>
+                  <span>Ver Ingressos e RSVP</span>
                   <ArrowRight className="size-3.5 ml-1.5" />
                 </Link>
               </Button>

@@ -1,10 +1,4 @@
-import {
-  fetchWithRetry,
-  normalizeUrl,
-  isCloudflareOrBotChallenge,
-  setDomainCooldown,
-  extractDomain,
-} from './scraper-utils';
+import { fetchWithRetry, normalizeUrl, isCloudflareOrBotChallenge, setDomainCooldown, extractDomain } from './scraper-utils';
 import { getNextActiveKey, markKeyError } from '@/services/api-orchestrator.functions';
 
 export type FirecrawlFormat = 'markdown' | 'html' | 'rawHtml' | 'links' | 'summary';

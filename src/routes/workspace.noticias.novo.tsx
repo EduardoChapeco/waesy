@@ -1,22 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- Newspaper,
- Plus,
- Trash2,
- Image,
- Quote,
- Heading,
- AlignLeft,
- ArrowLeft,
- CheckCircle2,
- Loader2,
- Eye,
- Sliders,
- Globe,
- Link as LinkIcon,
- X,
-} from "lucide-react";
+import { Newspaper, Plus, Trash2, Image, Quote, Heading, AlignLeft, ArrowLeft, CheckCircle2, Loader2, Eye, Sliders, Globe, Link as LinkIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Input } from "@/components/ui/input";
@@ -311,12 +295,12 @@ function WorkspaceNovaMateriaPage() {
  onChange={(e) => setCategory(e.target.value)}
  className="w-full h-10 px-3 rounded-xl border border-border/60 bg-background text-xs font-semibold"
  >
- <option value="cidade">Cidade & Região</option>
+ <option value="cidade">Cidade e Região</option>
  <option value="politica">Política</option>
- <option value="economia">Economia & Negócios</option>
- <option value="cultura">Cultura & Lazer</option>
+ <option value="economia">Economia e Negócios</option>
+ <option value="cultura">Cultura e Lazer</option>
  <option value="esportes">Esportes</option>
- <option value="tecnologia">Inovação & Tecnologia</option>
+ <option value="tecnologia">Inovação e Tecnologia</option>
  <option value="geral">Geral</option>
  </select>
  </div>

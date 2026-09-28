@@ -33,20 +33,8 @@ import { playMessageChime } from "@/lib/audio-chimes";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ExperienceRenderer } from "@/components/commerce/experience-renderer";
-import {
- getProductReviewStats,
- getProductReviewsList,
- getStoreFollowStatus,
- toggleStoreFollow,
- submitProductReview,
-} from "@/services/social.functions";
-import {
- Sheet,
- SheetContent,
- SheetDescription,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
+import { getProductReviewStats, getProductReviewsList, getStoreFollowStatus, toggleStoreFollow, submitProductReview } from "@/services/social.functions";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Surface } from "@/components/ui/surface";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";

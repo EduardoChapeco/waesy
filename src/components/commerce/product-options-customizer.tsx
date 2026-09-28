@@ -64,7 +64,7 @@ export function ProductOptionsCustomizer({
  Personalize seu Pedido
  </h3>
  <span className="text-[11px] text-muted-foreground font-medium">
- Adicionais & Opções
+ Adicionais e Opções
  </span>
  </div>
 

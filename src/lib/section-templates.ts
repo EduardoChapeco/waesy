@@ -604,7 +604,7 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  block_type: "restaurant_hours_delivery",
  parent_id: genId("section"),
  content: {
- title: "Horários de Atendimento & Entrega",
+ title: "Horários de Atendimento e Entrega",
  },
  },
  ],
@@ -713,7 +713,7 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  block_type: "specialist_team_grid",
  parent_id: genId("section"),
  content: {
- title: "Corpo Clínico & Especialistas",
+ title: "Corpo Clínico e Especialistas",
  subtitle: "Profissionais certificados com vasta experiência para cuidar de você.",
  },
  },
@@ -754,7 +754,7 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  block_type: "service_pricing_table",
  parent_id: genId("container"),
  content: {
- title: "Planos & Tabela de Procedimentos",
+ title: "Planos e Tabela de Procedimentos",
  subtitle: "Escolha o pacote ideal para suas necessidades.",
  },
  },
@@ -842,7 +842,7 @@ export const sectionTemplates: Record<string, SectionTemplate> = {
  links: [
  { id: "l1", title: "Fale Conosco no WhatsApp", url: "/contato", isHighlight: true },
  { id: "l2", title: "Acessar Catálogo de Produtos", url: "/produtos" },
- { id: "l3", title: "Nossa Localização & Horários", url: "#" },
+ { id: "l3", title: "Nossa Localização e Horários", url: "#" },
  ],
  },
  },

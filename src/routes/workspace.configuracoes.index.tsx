@@ -1,19 +1,8 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Store, Save, Loader2, Building2, Phone, Mail, MapPin, Clock, ShieldCheck, CreditCard, FileText, Upload, Image as ImageIcon, Check, CheckCircle2, ExternalLink, ChevronRight, Layers, Plus, Trash2, HelpCircle, ListChecks } from 'lucide-react';
-import {
- getStoreSettings,
- saveStoreSettings,
- getWorkingHours,
- saveWorkingHours,
- getPolicies,
- savePolicies,
-} from "@/services/store.functions";
-import {
- listManualPaymentMethods,
- saveManualPaymentMethod,
- deleteManualPaymentMethod,
-} from "@/services/payment.functions";
+import { getStoreSettings, saveStoreSettings, getWorkingHours, saveWorkingHours, getPolicies, savePolicies } from "@/services/store.functions";
+import { listManualPaymentMethods, saveManualPaymentMethod, deleteManualPaymentMethod } from "@/services/payment.functions";
 import { uploadStoreMedia } from "@/services/storage.functions";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
@@ -27,10 +16,7 @@ import { CitySelect } from "@/components/ui/city-select";
 import { ThemeSelector } from "@/components/settings/theme-selector";
 import { BusinessHoursEditor } from "@/components/commerce/business-hours-editor";
 import { NeighborhoodsManager } from "@/components/commerce/neighborhoods-manager";
-import {
- DeliveryTimeAndRadiusMatrix,
- type DeliveryLogisticsConfig,
-} from "@/components/commerce/delivery-time-and-radius-matrix";
+import { DeliveryTimeAndRadiusMatrix, type DeliveryLogisticsConfig } from "@/components/commerce/delivery-time-and-radius-matrix";
 import { CHAPECO_NEIGHBORHOODS, type NeighborhoodPreset } from "@/lib/constants/cities";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -39,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 
 export const Route = createFileRoute("/workspace/configuracoes/")({
- head: () => ({ meta: [{ title: "Configurações da Loja & Perfil Comercial | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Configurações | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const [settingsRes, hoursRes, policiesRes, manualMethodsRes] = await Promise.all([
@@ -466,7 +452,7 @@ export default function WorkspaceConfiguracoesPage() {
   const hasDeliveryModule = enabledModules.includes("delivery") && isPhysicalDeliveryNiche;
 
  return (
- <div className="space-y-6 animate-in fade-in duration-200 max-w-6xl mx-auto w-full pb-20">
+ <div className="space-y-6 animate-in fade-in duration-200 max-w-6xl mx-auto w-full px-0 sm:px-4 md:px-0 pb-20">
  {/* ── 1. Header Minimalista & Direto ── */}
  <PageHeader
  eyebrow={`Loja • ${currentNiche.name}`}
@@ -476,7 +462,7 @@ export default function WorkspaceConfiguracoesPage() {
             <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-semibold gap-1.5 h-9">
               <Link to="/workspace/configuracoes/privacidade-loja">
                 <ShieldCheck className="size-3.5 text-primary" />
-                <span>Privacidade & Marketplace</span>
+                <span>Privacidade</span>
               </Link>
             </Button>
 
@@ -520,17 +506,17 @@ export default function WorkspaceConfiguracoesPage() {
  <Tabs defaultValue="geral" className="w-full space-y-6">
  <TabsList className={cn("grid bg-muted/60 p-1 rounded-2xl", hasDeliveryModule ? "grid-cols-2 sm:grid-cols-7" : "grid-cols-2 sm:grid-cols-6")}>
  <TabsTrigger value="geral" className="rounded-xl text-xs font-semibold">
- Marca & Vitrine
+ Vitrine
  </TabsTrigger>
  <TabsTrigger value="nicho" className="rounded-xl text-xs font-semibold">
- Nicho & Recursos
+ Nicho
  </TabsTrigger>
  <TabsTrigger value="contato" className="rounded-xl text-xs font-semibold">
- Contato & Endereço
+ Contato
  </TabsTrigger>
  {hasDeliveryModule && (
  <TabsTrigger value="entrega" className="rounded-xl text-xs font-semibold">
- Entrega & Bairros
+ Entrega
  </TabsTrigger>
  )}
  <TabsTrigger value="horarios" className="rounded-xl text-xs font-semibold">
@@ -548,7 +534,7 @@ export default function WorkspaceConfiguracoesPage() {
  <TabsContent value="geral" className="space-y-6">
  <Card className="p-6 rounded-2xl border-border bg-card space-y-6 ">
  <div className=" pb-4">
- <h2 className="text-base font-bold text-foreground">Identidade Visual da Loja</h2>
+ <h2 className="text-base font-bold text-foreground">Identidade Visual</h2>
  <p className="text-xs text-muted-foreground">
  Estes elementos aparecem na vitrine pública, no cabeçalho e nas sacolas de compras.
  </p>
@@ -628,7 +614,7 @@ export default function WorkspaceConfiguracoesPage() {
  </div>
 
  <div className="space-y-1.5">
- <Label className="text-xs font-bold text-foreground">Slogan & Bio da Loja</Label>
+ <Label className="text-xs font-bold text-foreground">Slogan e Bio da Loja</Label>
  <Textarea
  value={description}
  onChange={(e) => setDescription(e.target.value)}
@@ -748,7 +734,7 @@ export default function WorkspaceConfiguracoesPage() {
  ) : (
    <div className="p-5 rounded-2xl bg-muted/20 border border-border/80 space-y-3">
      <div className="space-y-0.5">
-       <Label className="text-xs font-bold text-foreground">Canais de Atendimento & Prestação de Serviço</Label>
+       <Label className="text-xs font-bold text-foreground">Canais de Atendimento e Prestação de Serviço</Label>
        <p className="text-[11px] text-muted-foreground">
          Defina as formas de atendimento oferecidas pelo seu negócio.
        </p>
@@ -786,7 +772,7 @@ export default function WorkspaceConfiguracoesPage() {
  {/* Tema do Workspace */}
  <Card className="p-6 rounded-2xl border-border bg-card space-y-4">
  <div>
- <h2 className="text-base font-bold text-foreground">Aparência do Painel & Tema</h2>
+ <h2 className="text-base font-bold text-foreground">Tema do Painel</h2>
  <p className="text-xs text-muted-foreground">
  Escolha a preferência visual para a navegação do seu painel e vitrines.
  </p>
@@ -799,7 +785,7 @@ export default function WorkspaceConfiguracoesPage() {
  <TabsContent value="nicho" className="space-y-6">
  <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
  <div className="pb-2">
- <h2 className="text-base font-bold text-foreground">Nicho & Modelo de Operação</h2>
+ <h2 className="text-base font-bold text-foreground">Modelo de Operação</h2>
  <p className="text-xs text-muted-foreground">
  Ajusta automaticamente os módulos, menus e ferramentas da barra lateral para a realidade do seu negócio.
  </p>
@@ -809,87 +795,87 @@ export default function WorkspaceConfiguracoesPage() {
  {[
  {
  id: "gastronomy",
- title: "Gastronomia & Delivery",
+ title: "Gastronomia e Delivery",
  desc: "Restaurantes, pizzarias, hamburguerias e cafés. Inclui KDS, comandas e taxa de entrega.",
  },
  {
  id: "ecommerce",
- title: "Varejo & Moda",
+ title: "Varejo e Moda",
  desc: "Roupas, calçados e comércio geral. Inclui variações de grade, estoque e fretes.",
  },
  {
  id: "services",
- title: "Serviços, Saúde & Beleza",
+ title: "Serviços, Saúde e Beleza",
  desc: "Salões, barbearias, clínicas e estética. Inclui agenda de profissionais, salas e passes.",
  },
  {
  id: "jobs",
- title: "Empregos & Recrutamento",
+ title: "Empregos e Recrutamento",
  desc: "Agências de RH, consultorias e empresas. Inclui vagas, candidaturas e banco de talentos.",
  },
  {
  id: "events",
- title: "Eventos & Ingressos",
+ title: "Eventos e Ingressos",
  desc: "Casas de show, baladas, festivais e teatro. Inclui lotes de ingressos, check-in e flyers.",
  },
  {
  id: "automotive",
- title: "Automóveis & Veículos",
+ title: "Automóveis e Veículos",
  desc: "Lojas de carros, motos e garagens. Inclui estoque de veículos, propostas e financiamento.",
  },
  {
  id: "pet",
- title: "Pet Shop & Veterinária",
+ title: "Pet Shop e Veterinária",
  desc: "Banho & tosa, clínicas e agropecuária. Inclui agenda de procedimentos, rações e vacinas.",
  },
  {
  id: "supermarket",
- title: "Supermercado & Hortifrúti",
+ title: "Supermercado e Hortifrúti",
  desc: "Mercados, empórios e açougues. Inclui itens por KG/unidade, validades e separação de pedidos.",
  },
  {
  id: "pharmacy",
- title: "Farmácia & Cosméticos",
+ title: "Farmácia e Cosméticos",
  desc: "Drogarias, farmácias e suplementos. Inclui balcão de medicamentos e tele-entrega express.",
  },
  {
  id: "news",
- title: "Jornalismo & Notícias",
+ title: "Jornalismo e Notícias",
  desc: "Portais de notícias, jornais e revistas. Inclui redação de matérias e banners de anunciantes.",
  },
  {
  id: "rental_events",
- title: "Locação & Estruturas",
+ title: "Locação e Estruturas",
  desc: "Aluguel de som, luz, tendas e palcos. Inclui inventário de bens, agenda de locação e contratos.",
  },
  {
  id: "tech_repair",
- title: "Assistência & Mecânica",
+ title: "Assistência e Mecânica",
  desc: "Conserto de celular, oficinas e informática. Inclui Ordens de Serviço (OS) e peças.",
  },
  {
  id: "legal",
- title: "Advocacia & Jurídico",
+ title: "Advocacia e Jurídico",
  desc: "Escritórios de advocacia. Inclui controle de processos, prazos, audiências e honorários.",
  },
  {
  id: "real_estate",
- title: "Imobiliária & Imóveis",
+ title: "Imobiliária e Imóveis",
  desc: "Corretores e imobiliárias. Inclui catálogo de imóveis, vistorias e contratos de aluguel.",
  },
  {
  id: "tourism",
- title: "Turismo & Viagens",
+ title: "Turismo e Viagens",
  desc: "Agências de viagem, pousadas e guias. Inclui cotações de pacotes, passeios e reservas.",
  },
  {
  id: "education",
- title: "Cursos & Educação",
+ title: "Cursos e Educação",
  desc: "Escolas, cursos e workshops. Inclui grade de aulas, matrículas e turmas de alunos.",
  },
  {
  id: "wholesale",
- title: "Atacado & B2B",
+ title: "Atacado e B2B",
  desc: "Indústrias e distribuidoras. Inclui tabelas de preço PJ, orçamentos em lote e faturamento.",
  },
  ].map((n) => {
@@ -938,7 +924,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div>
  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
  <ListChecks className="size-4 text-primary" />
- Módulos & Ferramentas Habilitadas
+ Módulos Habilitados
  </h2>
  <p className="text-xs text-muted-foreground">
  Ative somente os recursos que sua operação utiliza para manter o menu do Workspace limpo e focado.
@@ -1037,43 +1023,43 @@ export default function WorkspaceConfiguracoesPage() {
  },
  {
  id: "news",
- title: "Notícias & Redação",
+ title: "Notícias e Redação",
  desc: "Publicação de matérias jornalísticas e conteúdos editoriais.",
  icon: "📰",
  },
  {
  id: "events",
- title: "Eventos & Ingressos",
+ title: "Eventos e Ingressos",
  desc: "Venda de ingressos com lotes, setores e validação QR Code.",
  icon: "🎟️",
  },
  {
  id: "jobs",
- title: "Empregos & Recrutamento",
+ title: "Empregos e Recrutamento",
  desc: "Abertura de vagas e recebimento de currículos de candidatos.",
  icon: "💼",
  },
  {
  id: "vehicles",
- title: "Veículos & Concessionária",
+ title: "Veículos e Concessionária",
  desc: "Estoque de seminovos, propostas de financiamento e placas.",
  icon: "🚗",
  },
  {
  id: "real_estate",
- title: "Imóveis & Imobiliária",
+ title: "Imóveis e Imobiliária",
  desc: "Catálogo de imóveis para venda/locação e vistorias.",
  icon: "🏠",
  },
  {
  id: "tourism",
- title: "Turismo & Passeios",
+ title: "Turismo e Passeios",
  desc: "Pacotes de viagem, pousadas e reservas de passeios locais.",
  icon: "✈️",
  },
  {
  id: "education",
- title: "Cursos & Workshops",
+ title: "Cursos e Workshops",
  desc: "Gestão de turmas, materiais didáticos e matrículas.",
  icon: "🎓",
  },
@@ -1117,7 +1103,7 @@ export default function WorkspaceConfiguracoesPage() {
  <TabsContent value="contato" className="space-y-6">
  <Card className="p-6 rounded-2xl border-border bg-card space-y-5 ">
  <div className=" pb-4">
- <h2 className="text-base font-bold text-foreground">Canais de Contato & Localização</h2>
+ <h2 className="text-base font-bold text-foreground">Contato e Localização</h2>
  <p className="text-xs text-muted-foreground">
  Dados utilizados para emissão de pedidos, frete local e comunicação com o cliente.
  </p>
@@ -1198,7 +1184,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
  <div className="pb-2">
- <h3 className="text-sm font-bold text-foreground">Taxas Personalizadas por Bairro</h3>
+ <h3 className="text-sm font-bold text-foreground">Taxas por Bairro</h3>
  <p className="text-xs text-muted-foreground">
  Complemente o raio de entrega definindo regras e exceções por bairros específicos da cidade.
  </p>
@@ -1215,7 +1201,7 @@ export default function WorkspaceConfiguracoesPage() {
  <TabsContent value="horarios" className="space-y-6">
  <Card className="p-6 rounded-2xl border-border bg-card space-y-5">
  <div className="pb-2">
- <h2 className="text-base font-bold text-foreground">Grade de Horários de Funcionamento</h2>
+ <h2 className="text-base font-bold text-foreground">Horários de Funcionamento</h2>
  <p className="text-xs text-muted-foreground">
  Define os momentos em que a loja aceita pedidos imediatos para entrega, agendamentos ou retirada no balcão.
  </p>
@@ -1240,7 +1226,7 @@ export default function WorkspaceConfiguracoesPage() {
  <TabsContent value="politicas" className="space-y-6">
  <Card className="p-6 rounded-2xl border-border bg-card space-y-5 ">
  <div className=" pb-4">
- <h2 className="text-base font-bold text-foreground">Políticas & Termos Comerciais</h2>
+ <h2 className="text-base font-bold text-foreground">Políticas Comerciais</h2>
  <p className="text-xs text-muted-foreground">
  Exibidos no rodapé da loja e nas páginas de checkout para garantir conformidade jurídica.
  </p>
@@ -1248,7 +1234,7 @@ export default function WorkspaceConfiguracoesPage() {
 
  <div className="space-y-4">
  <div className="space-y-1.5">
- <Label className="text-xs font-bold text-foreground">Termos de Compra & Uso</Label>
+ <Label className="text-xs font-bold text-foreground">Termos de Compra e Uso</Label>
  <Textarea
  value={terms}
  onChange={(e) => setTerms(e.target.value)}
@@ -1336,7 +1322,7 @@ export default function WorkspaceConfiguracoesPage() {
             <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xs font-bold text-foreground">Quem Irá Receber as Compras</h3>
+                  <h3 className="text-xs font-bold text-foreground">Recebedor</h3>
                   <p className="text-[11px] text-muted-foreground">Permite indicar outra pessoa (nome e telefone de contato)</p>
                 </div>
                 <Switch
@@ -1350,7 +1336,7 @@ export default function WorkspaceConfiguracoesPage() {
             <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xs font-bold text-foreground">Política de Falta de Itens (Mercado / Hortifrúti)</h3>
+                  <h3 className="text-xs font-bold text-foreground">Falta de Itens</h3>
                   <p className="text-[11px] text-muted-foreground">Opções para quando um produto estiver esgotado no momento da separação</p>
                 </div>
                 <Switch
@@ -1379,7 +1365,7 @@ export default function WorkspaceConfiguracoesPage() {
             <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xs font-bold text-foreground">Talheres & Descartáveis (Gastronomia)</h3>
+                  <h3 className="text-xs font-bold text-foreground">Talheres e Descartáveis</h3>
                   <p className="text-[11px] text-muted-foreground">Pergunta ecológica: enviar talheres e guardanapos descartáveis?</p>
                 </div>
                 <Switch
@@ -1393,7 +1379,7 @@ export default function WorkspaceConfiguracoesPage() {
             <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-3 md:col-span-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xs font-bold text-foreground">Observações Individuais por Item</h3>
+                  <h3 className="text-xs font-bold text-foreground">Observações por Item</h3>
                   <p className="text-[11px] text-muted-foreground">Permite ao cliente adicionar observações em itens individuais ("+ Observação do item")</p>
                 </div>
                 <Switch
@@ -1410,7 +1396,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div>
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <CreditCard className="size-4 text-primary" />
- <span>Meios de Pagamento & Gateway da Loja</span>
+ <span>Meios de Pagamento</span>
  </h2>
  <p className="text-xs text-muted-foreground mt-0.5">
  Escolha se sua loja prefere vender via Gateway Integrado da Plataforma ou com Pagamento Direto.
@@ -1491,7 +1477,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div>
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <CreditCard className="size-4 text-primary" />
- <span>Pagamento Presencial / na Entrega</span>
+ <span>Pagamento na Entrega</span>
  </h2>
  <p className="text-xs text-muted-foreground mt-0.5">
  Opções para o cliente pagar ao motorista/entregador ou no balcão da loja.
@@ -1655,7 +1641,7 @@ export default function WorkspaceConfiguracoesPage() {
  <div>
  <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
  <ListChecks className="size-4 text-primary" />
- <span>Campos do Checkout ({currentNiche.name})</span>
+ <span>Campos ({currentNiche.name})</span>
  </h2>
  <p className="text-xs text-muted-foreground mt-0.5">
  Perguntas adicionais que o cliente responde durante o fechamento do pedido.

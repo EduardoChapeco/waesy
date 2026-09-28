@@ -1,14 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  executeUnifiedAiCall,
-  getNextActiveKey,
-  getSimLabKeyStatus,
-} from "./api-orchestrator.functions";
-import {
-  internalGetCityWeather,
-  internalConvertCurrency,
-  internalLookupCnpj,
-} from "./public-apis.functions";
+import { executeUnifiedAiCall, getNextActiveKey, getSimLabKeyStatus } from "./api-orchestrator.functions";
+import { internalGetCityWeather, internalConvertCurrency, internalLookupCnpj } from "./public-apis.functions";
 import { internalTestSecretKeyConnection } from "./secret-vault.functions";
 
 describe("Unified Integrations Hub, AI Orchestration & Real-time Weather Tests", () => {

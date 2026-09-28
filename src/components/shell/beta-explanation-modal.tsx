@@ -1,12 +1,6 @@
 import React from "react";
 import { Zap, ShieldCheck, MessageCircle, X, HelpCircle, ArrowUpRight } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -67,7 +61,7 @@ export function BetaExplanationModal({
           <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 space-y-1.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <ShieldCheck className="size-4 text-emerald-500 shrink-0" />
-              <span>Seus Dados & Negociações são Reais</span>
+              <span>Seus Dados e Negociações são Reais</span>
             </div>
             <p className="text-[11.5px] text-muted-foreground leading-relaxed pl-6">
               Todos os anúncios, mensagens, contatos de WhatsApp e agendamentos acontecem em tempo

@@ -12,30 +12,15 @@ import { CurrencyField } from "@/components/ui/currency-field";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- listWorkspacePackages,
- saveServicePackage,
- deleteServicePackage,
-} from "@/services/service-packages.functions";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listWorkspacePackages, saveServicePackage, deleteServicePackage } from "@/services/service-packages.functions";
 import { listBookingServices } from "@/services/booking.functions";
 import { formatMoney } from "@/lib/money";
 import { EmptyState } from "@/components/state/states";
 
 export const Route = createFileRoute("/workspace/pacotes/")({
- head: () => ({ meta: [{ title: "Gestão de Pacotes & Passes de Aulas | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Gestão de Pacotes e Passes de Aulas | Workspace" }] }),
  component: WorkspacePackagesPage,
 });
 
@@ -107,7 +92,7 @@ function WorkspacePackagesPage() {
  return (
  <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
  <PageHeader
- title="Pacotes & Passes de Aulas"
+ title="Pacotes de Aulas"
  actions={
  <Button
  onClick={handleOpenNew}

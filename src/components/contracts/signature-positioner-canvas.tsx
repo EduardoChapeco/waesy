@@ -1,28 +1,8 @@
 import React, { useState, useRef } from "react";
-import {
-  FileText,
-  Trash2,
-  Copy,
-  Layers,
-  Calendar,
-  User,
-  Hash,
-  CheckSquare,
-  PenTool,
-  Upload,
-  ArrowRight,
-  RefreshCw,
-  Info,
-} from "lucide-react";
+import { FileText, Trash2, Copy, Layers, Calendar, User, Hash, CheckSquare, PenTool, Upload, ArrowRight, RefreshCw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { type SignatureFieldDTO } from "@/services/contracts.functions";

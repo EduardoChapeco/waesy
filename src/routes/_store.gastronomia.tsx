@@ -1,21 +1,9 @@
+import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useState, useMemo } from "react";
-import {
- ForkKnife,
- Pizza,
- Hamburger,
- Coffee,
- Fish,
- Cookie,
- Flame,
- Clock,
- MapPin,
- Storefront,
- ArrowRight,
- ShoppingBag,
-} from "@phosphor-icons/react";
+import { ForkKnife, Pizza, Hamburger, Coffee, Fish, Cookie, Flame, Clock, MapPin, Storefront, ArrowRight, ShoppingBag } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,11 +13,7 @@ import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { StoreCard } from "@/components/commerce/store-card";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
-import {
- DiscoveryControlBar,
- type ViewModeType,
- type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { GroceryProductCard } from "@/components/commerce/grocery-product-card";
 import { getModularSurfaceFeed } from "@/services/surface-cms.functions";
 import { ModularSurfaceFeed } from "@/components/commerce/modular-surface-feed";
@@ -54,18 +38,18 @@ type GastronomiaSearch = z.infer<typeof SearchSchema>;
 
 const GASTRONOMIA_DEPARTMENTS: FilterChipOption[] = [
  { id: "todos", label: "Tudo", emoji: "🍽️", icon: Tag },
- { id: "burgers", label: "Burgers & Sandubas", emoji: "🍔", icon: Hamburger },
- { id: "pizzas", label: "Pizzas & Massas", emoji: "🍕", icon: Pizza },
- { id: "oriental", label: "Sushi & Oriental", emoji: "🍣", icon: Fish },
- { id: "marmitas", label: "Marmitas & Almoço", emoji: "🍱", icon: ForkKnife },
- { id: "churrasco", label: "Carnes & Grelhados", emoji: "🥩", icon: Flame },
- { id: "doces", label: "Cafés & Sobremesas", emoji: "🍰", icon: Coffee },
+ { id: "burgers", label: "Burgers e Sandubas", emoji: "🍔", icon: Hamburger },
+ { id: "pizzas", label: "Pizzas e Massas", emoji: "🍕", icon: Pizza },
+ { id: "oriental", label: "Sushi e Oriental", emoji: "🍣", icon: Fish },
+ { id: "marmitas", label: "Marmitas e Almoço", emoji: "🍱", icon: ForkKnife },
+ { id: "churrasco", label: "Carnes e Grelhados", emoji: "🥩", icon: Flame },
+ { id: "doces", label: "Cafés e Sobremesas", emoji: "🍰", icon: Coffee },
 ];
 
 export const Route = createFileRoute("/_store/gastronomia")({
  head: () => ({
  meta: [
- { title: "Gastronomia & Delivery de Restaurantes | Waesy" },
+ { title: "Gastronomia e Delivery de Restaurantes | Waesy" },
  {
  name: "description",
  content:
@@ -76,12 +60,13 @@ export const Route = createFileRoute("/_store/gastronomia")({
  validateSearch: (search: Record<string, unknown>): GastronomiaSearch =>
  SearchSchema.parse(search),
  loaderDeps: ({ search }) => search,
- loader: async ({ deps: search }) => {
+ loader: async ({ location, deps: search }) => {
+    const activeCity = resolveActiveCity(location?.search);
    try {
  const [banners, hotpages, marketplaceFeed, productsRes] = await Promise.all([
- listActiveBanners({ data: { placement: "gastronomia" } }).catch(() => []),
+ listActiveBanners({ data: { placement: "gastronomia", city: activeCity } }).catch(() => []),
  listHotpages({ data: { module: "gastronomia" } }).catch(() => []),
- getModularSurfaceFeed({ data: { surfaceSlug: "gastronomia" } }).catch(() => ({ sections: [], allProducts: [] })),
+ getModularSurfaceFeed({ data: { surfaceSlug: "gastronomia", city: activeCity } }).catch(() => ({ sections: [], allProducts: [] })),
  // Fallback robusto: produtos do catálogo filtrados por niche real
  listPublishedProducts({
  data: { niche: "gastronomia", limit: 40, sort: search.sort ?? "newest" },

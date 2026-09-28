@@ -1,46 +1,22 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Users,
- Search,
- ShieldAlert,
- FileText,
- Key,
- Ban,
- CheckCircle2,
- AlertTriangle,
- Loader2,
- Lock,
- Download,
- Copy,
-} from "lucide-react";
-import {
- listAllUsers,
- applyUserSanction,
- getUser360Dossier,
- adminTriggerPasswordReset,
- adminUpdateUserRole,
-} from "@/services/master.functions";
+import { Users, Search, ShieldAlert, FileText, Key, Ban, CheckCircle2, AlertTriangle, Loader2, Lock, Download, Copy } from "lucide-react";
+import { listAllUsers, applyUserSanction, getUser360Dossier, adminTriggerPasswordReset, adminUpdateUserRole } from "@/services/master.functions";
+import { triggerCivilIdentityRippleCascade } from "@/services/deep-core.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDateTime } from "@/lib/datetime";
 
 import { ErrorState } from "@/components/state/states";
 
 export const Route = createFileRoute("/admin-master/usuarios")({
- head: () => ({ meta: [{ title: "Gestão Global de Usuários & Sanções | Admin Master" }] }),
+ head: () => ({ meta: [{ title: "Gestão Global de Usuários e Sanções | Admin Master" }] }),
  loader: async () => {
  try {
  const users = await listAllUsers().catch(() => []);
@@ -146,7 +122,27 @@ function AdminUsuariosPage() {
  },
  });
 
+ // FASE 3 (V113): Dispara Efeito Cascata Cross-Module (Personas, Classificados, Vagas/Currículos e Ad-Tech)
+ if (sanctionType !== "warning") {
+ const cascadeRes = await triggerCivilIdentityRippleCascade({
+ data: {
+ targetProfileId: selectedUser.id,
+ action: sanctionType.includes("permanent") ? "ban" : "suspend",
+ reason: sanctionReason,
+ },
+ }).catch(() => null);
+
+ if (cascadeRes?.ripple_effect) {
+ const r = cascadeRes.ripple_effect;
+ toast.success(
+ `Cascata executada: ${r.archived_classifieds} classificados arquivados, ${r.withdrawn_job_applications} candidaturas retiradas e ${r.paused_ad_campaigns} campanhas pausadas.`
+ );
+ } else {
+ toast.success("Sanção disciplinar e cascata sistêmica aplicadas!");
+ }
+ } else {
  toast.success("Sanção disciplinar aplicada com sucesso!");
+ }
  setIsSanctionModalOpen(false);
  setSelectedUser(null);
  setSanctionReason("");
@@ -331,7 +327,7 @@ function AdminUsuariosPage() {
  </span>
  </div>
  <div className="p-3 border rounded-lg bg-card">
- <span className="text-muted-foreground block text-[10px]">Corridas & Fretes</span>
+ <span className="text-muted-foreground block text-[10px]">Corridas e Fretes</span>
  <span className="text-base font-bold font-mono">
  {dossierData.dossier.mobility_rides.length}
  </span>
@@ -353,7 +349,7 @@ function AdminUsuariosPage() {
  {/* Detalhe dos Termos Aceitos (LGPD) */}
  <div className="space-y-2">
  <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
- Consentimento & Aceites Legais (LGPD)
+ Consentimento e Aceites Legais (LGPD)
  </h4>
  <div className="border rounded-lg p-3 bg-card space-y-2 text-xs">
  {dossierData.dossier.terms_acceptances.length === 0 ? (

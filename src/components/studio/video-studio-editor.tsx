@@ -32,7 +32,7 @@ export function VideoStudioEditor({
  </div>
  <div>
  <h2 className="text-sm font-bold text-foreground">
- Waesy Video Studio · Editor & Legendador de Reels e Vídeos
+ Waesy Video Studio · Editor
  </h2>
  <p className="text-[11px] text-muted-foreground">
  Composição em timeline multi-faixas nativa do Waesy

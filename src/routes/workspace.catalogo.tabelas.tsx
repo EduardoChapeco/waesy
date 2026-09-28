@@ -1,56 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
- DollarSign,
- Plus,
- Search,
- Percent,
- TrendingDown,
- TrendingUp,
- Tag,
- ExternalLink,
- Edit2,
- Trash2,
- CheckCircle2,
- Package,
- Layers,
- Link as LinkIcon,
- Copy,
- Save,
-} from "lucide-react";
+import { DollarSign, Plus, Search, Percent, TrendingDown, TrendingUp, Tag, ExternalLink, Edit2, Trash2, CheckCircle2, Package, Layers, Link as LinkIcon, Copy, Save } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Badge } from "@/components/ui/badge";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/state/states";
-import {
- listPriceTables,
- createPriceTable,
- updatePriceTable,
- deletePriceTable,
- listPriceTableItems,
- upsertPriceTableItem,
- type PriceTableDTO,
- type PriceTableItemDTO,
-} from "@/services/price-tables.functions";
+import { listPriceTables, createPriceTable, updatePriceTable, deletePriceTable, listPriceTableItems, upsertPriceTableItem, type PriceTableDTO, type PriceTableItemDTO } from "@/services/price-tables.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/catalogo/tabelas")({

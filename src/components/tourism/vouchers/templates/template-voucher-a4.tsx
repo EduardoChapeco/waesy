@@ -25,10 +25,10 @@ export function TemplateVoucherA4({
  <div className="border-b-2 border-slate-900 pb-6 flex items-start justify-between">
  <div>
  <span className="text-[11px] font-mono font-bold tracking-widest text-sky-600 uppercase">
- Voucher Oficial de Viagem & Confirmação de Reserva
+ Voucher Oficial de Viagem e Confirmação de Reserva
  </span>
  <h1 className="text-2xl font-extrabold uppercase text-slate-900 mt-1">
- {voucher.title || 'Cartão de Embarque & Hospedagem'}
+ {voucher.title || 'Cartão de Embarque'}
  </h1>
  <p className="text-xs text-slate-500 mt-0.5">{agencyName}</p>
  </div>
@@ -64,7 +64,7 @@ export function TemplateVoucherA4({
  {isFlight && (
  <div className="space-y-4 my-auto">
  <div className="flex items-center gap-2 text-sky-600 font-bold text-xs uppercase tracking-wider">
- <Plane className="size-4" /> Dados do Voo & Trecho Aéreo
+ <Plane className="size-4" /> Dados do Voo e Trecho Aéreo
  </div>
 
  <div className="p-6 rounded-2xl bg-sky-50/50 border-2 border-dashed border-sky-200 space-y-4">
@@ -115,7 +115,7 @@ export function TemplateVoucherA4({
  {isHotel && (
  <div className="space-y-4 my-auto">
  <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wider">
- <Building2 className="size-4" /> Voucher de Hospedagem & Check-in
+ <Building2 className="size-4" /> Voucher de Hospedagem e Check-in
  </div>
 
  <div className="p-6 rounded-2xl bg-emerald-50/50 border-2 border-dashed border-emerald-200 space-y-4">

@@ -3,11 +3,7 @@ import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getServerIdentity } from "@/lib/server-access";
 import { getNextActiveKey, markKeyError, executeUnifiedAiCall } from "@/services/api-orchestrator.functions";
-import {
-  MarketCompetitorDTO,
-  CompetitorSnapshotDTO,
-  BrandDnaProfileDTO,
-} from "../types/squads-and-onboarding";
+import { MarketCompetitorDTO, CompetitorSnapshotDTO, BrandDnaProfileDTO } from "../types/squads-and-onboarding";
 
 export const DEFAULT_BRAND_PALETTE = {
   primary: "#0A84FF",

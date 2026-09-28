@@ -11,46 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  Clock,
-  CalendarDots,
-  ArrowLeft,
-  Storefront,
-  CheckCircle,
-  WarningCircle,
-  Sparkle,
-  ShieldCheck,
-  Phone,
-  User,
-  CaretRight,
-  CircleNotch,
-  Ticket,
-  CreditCard,
-  QrCode,
-  Money,
-  MapPin,
-  WhatsappLogo,
-  Star,
-  Check,
-  ArrowRight,
-  ChatCircleDots,
-  ArrowSquareOut,
-  SlidersHorizontal,
-} from "@phosphor-icons/react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Clock, CalendarDots, ArrowLeft, Storefront, CheckCircle, WarningCircle, Star, ShieldCheck, Phone, User, CaretRight, CircleNotch, Ticket, CreditCard, QrCode, Money, MapPin, WhatsappLogo, Check, ArrowRight, ChatCircleDots, ArrowSquareOut, SlidersHorizontal } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import {
-  getBookingServiceById,
-  getAvailableSlots,
-  createAppointment,
-  listMyPassesForService,
-} from "@/services/booking.functions";
+import { getBookingServiceById, getAvailableSlots, createAppointment, listMyPassesForService } from "@/services/booking.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { cn } from "@/lib/utils";
 
@@ -190,7 +154,7 @@ function ServiceDetailPage() {
         <Button asChild className="rounded-xl font-bold" variant="outline">
           <Link to="/agendar">
             <ArrowLeft size={16} weight="bold" className="mr-2" />
-            Voltar para Serviços & Agendamentos
+            Voltar para Serviços e Agendamentos
           </Link>
         </Button>
       </div>

@@ -3,22 +3,13 @@ import { Users, Plus, Trash2, ShieldCheck, Clock, CheckCircle2, Building2 } from
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
-import {
-  listEventStaffAllocations,
-  saveEventStaffAllocation,
-} from "@/services/events.functions";
+import { listEventStaffAllocations, saveEventStaffAllocation } from "@/services/events.functions";
 import { listContractors } from "@/services/admin-team.functions";
 
 interface AlocarEquipeSheetProps {
@@ -137,7 +128,7 @@ export function AlocarEquipeSheet({
         <SheetHeader className="pb-4 border-b border-border/40">
           <div className="flex items-center gap-2">
             <Users className="size-5 text-primary" />
-            <SheetTitle className="text-base font-bold">Escala de Equipe & Staff</SheetTitle>
+            <SheetTitle className="text-base font-bold">Escala de Equipe</SheetTitle>
           </div>
           <SheetDescription className="text-xs">
             Alocação de coordenadores, seguranças, recepcionistas, caixas e parceiros terceirizados.
@@ -147,7 +138,7 @@ export function AlocarEquipeSheet({
         <div className="py-5 space-y-6">
           {/* Formulário Rápido de Alocação */}
           <form onSubmit={handleAddAllocation} className="p-4 bg-muted/20 border border-border/60 rounded-2xl space-y-3.5">
-            <h4 className="text-xs font-bold text-foreground">Alocar Novo Colaborador / Terceirizado</h4>
+            <h4 className="text-xs font-bold text-foreground">Alocar Colaborador</h4>
 
             {contractors.length > 0 && (
               <div className="space-y-1.5">

@@ -1,171 +1,230 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Layers, ArrowRight, Play, Pause } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Layers, ArrowRight } from "lucide-react";
 import type { BannerDTO } from "@/services/banner.functions";
 
 export interface BannerHeroCarouselProps {
- banners: BannerDTO[];
- className?: string;
- autoPlayIntervalMs?: number;
+  banners: BannerDTO[];
+  className?: string;
+  autoPlayIntervalMs?: number;
 }
 
 export function BannerHeroCarousel({
- banners,
- className = "",
- autoPlayIntervalMs = 6000,
+  banners,
+  className = "",
+  autoPlayIntervalMs = 6000,
 }: BannerHeroCarouselProps) {
- const [currentIndex, setCurrentIndex] = useState(0);
- const [isPlaying, setIsPlaying] = useState(true);
- const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
- const activeBanners = banners && banners.length > 0 ? banners : [];
+  const activeBanners = banners && banners.length > 0 ? banners : [];
 
- useEffect(() => {
- if (!isPlaying || activeBanners.length <= 1) return;
+  useEffect(() => {
+    if (!isPlaying || activeBanners.length <= 1) return;
 
- timerRef.current = setInterval(() => {
- setCurrentIndex((prev) => (prev + 1) % activeBanners.length);
- }, autoPlayIntervalMs);
+    timerRef.current = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % activeBanners.length);
+    }, autoPlayIntervalMs);
 
- return () => {
- if (timerRef.current) clearInterval(timerRef.current);
- };
- }, [isPlaying, activeBanners.length, autoPlayIntervalMs]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isPlaying, activeBanners.length, autoPlayIntervalMs]);
 
- if (activeBanners.length === 0) return null;
+  if (activeBanners.length === 0) return null;
 
- const currentBanner = activeBanners[currentIndex];
+  const currentBanner = activeBanners[currentIndex];
 
- const handleNext = () => {
- setCurrentIndex((prev) => (prev + 1) % activeBanners.length);
- };
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % activeBanners.length);
+  };
 
- const handlePrev = () => {
- setCurrentIndex((prev) => (prev - 1 + activeBanners.length) % activeBanners.length);
- };
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + activeBanners.length) % activeBanners.length);
+  };
 
- const renderMedia = (banner: BannerDTO) => {
- if (banner.media_type === "video") {
- return (
- <video
- src={banner.media_url}
- autoPlay
- loop
- muted
- playsInline
- className="size-full object-cover"
- />
- );
- }
- return (
- <img
- src={banner.media_url}
- alt={banner.title}
- className="size-full object-cover"
- loading="eager"
- onError={(e) => {
- (e.currentTarget as HTMLImageElement).style.display = "none";
- }}
- />
- );
- };
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+    setIsPlaying(false);
+  };
 
- const targetLink = bannerTargetLink(currentBanner) || "/mercado";
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+    setTouchStartX(null);
+    setIsPlaying(true);
+  };
 
- return (
- <div
- className={`relative w-full overflow-hidden rounded-2xl bg-card group select-none ${className}`}
- onMouseEnter={() => setIsPlaying(false)}
- onMouseLeave={() => setIsPlaying(true)}
- >
- {/* ── Responsive Aspect Ratio Container: 16:9 mobile, 21:9 desktop ── */}
- <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden bg-muted">
- {/* Render Actual Image / Video */}
- {renderMedia(currentBanner)}
+  const renderMedia = (banner: BannerDTO) => {
+    if (banner.media_type === "video") {
+      return (
+        <div className="relative size-full overflow-hidden">
+          <video
+            src={banner.media_url}
+            autoPlay
+            loop
+            muted
+            playsInline
+            aria-hidden="true"
+            className="absolute inset-0 size-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none"
+          />
+          <video
+            src={banner.media_url}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="relative size-full object-contain md:object-cover"
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="relative size-full overflow-hidden">
+        {/* Camada Ambiente: Desfoque suave que preenche as laterais sem cortar as bordas do anúncio */}
+        <img
+          src={banner.media_url}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 size-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none select-none"
+        />
+        {/* Mídia Principal: Escala Proporcional Verdadeira sem Cortes (Zero Image Clipping) */}
+        <img
+          src={banner.media_url}
+          alt={banner.title}
+          className="relative size-full object-contain md:object-cover transition-transform duration-500 will-change-transform select-none"
+          loading="eager"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
+        />
+      </div>
+    );
+  };
 
- {/* Clickable entire card link */}
- <Link
- to={targetLink as any}
- className="absolute inset-0 z-10"
- aria-label={currentBanner.title || "Banner em Destaque"}
- />
+  const targetLink = bannerTargetLink(currentBanner) || "/mercado";
 
- {/* Gradient Overlay & Text (DESATIVADO POR PADRÃO — Apenas se explicitamente ativado no Admin) */}
- {currentBanner.show_overlay === true &&
- (currentBanner.title ||
- currentBanner.subtitle ||
- currentBanner.badge_text ||
- currentBanner.cta_label) && (
- <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-end sm:justify-center p-6 sm:p-10 lg:p-12 text-white pointer-events-none z-10">
- <div className="max-w-xl space-y-2 sm:space-y-3 z-10 pointer-events-auto">
- {currentBanner.show_badge === true && currentBanner.badge_text && (
- <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white border border-white/30 ">
- <Layers className="size-3 text-amber-300" />
- <span>{currentBanner.badge_text}</span>
- </div>
- )}
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-2xl bg-card group select-none ${className}`}
+      onMouseEnter={() => setIsPlaying(false)}
+      onMouseLeave={() => setIsPlaying(true)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* ── Responsive Proportional Aspect Ratio: 2.35:1 mobile, 2.6:1 tablet, 21:9 desktop ── */}
+      <div className="relative w-full aspect-[2.35/1] sm:aspect-[2.6/1] md:aspect-[21/9] overflow-hidden bg-muted">
+        {/* Render Actual Image / Video */}
+        {renderMedia(currentBanner)}
 
- {currentBanner.show_title === true && currentBanner.title && (
- <h2 className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight line-clamp-2 text-white drop-">
- {currentBanner.title}
- </h2>
- )}
+        {/* Clickable entire card link */}
+        <Link
+          to={targetLink as any}
+          className="absolute inset-0 z-10"
+          aria-label={currentBanner.title || "Banner em Destaque"}
+        />
 
- {currentBanner.show_description === true && currentBanner.subtitle && (
- <p className="text-xs sm:text-sm text-zinc-200 line-clamp-2 leading-relaxed max-w-lg">
- {currentBanner.subtitle}
- </p>
- )}
+        {/* Gradient Overlay & Text (DESATIVADO POR PADRÃO — Apenas se explicitamente ativado no Admin) */}
+        {currentBanner.show_overlay === true &&
+          (currentBanner.title ||
+            currentBanner.subtitle ||
+            currentBanner.badge_text ||
+            currentBanner.cta_label) && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/50 sm:to-transparent flex flex-col justify-end sm:justify-center p-4 sm:p-8 lg:p-12 text-white pointer-events-none z-10">
+              <div className="max-w-xl space-y-1.5 sm:space-y-3 z-10 pointer-events-auto">
+                {currentBanner.show_badge === true && currentBanner.badge_text && (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-xs font-bold uppercase tracking-wider text-white border border-white/30">
+                    <Layers className="size-3 text-amber-300" />
+                    <span>{currentBanner.badge_text}</span>
+                  </div>
+                )}
 
- {currentBanner.show_cta === true && (
- <div className="pt-2">
- <Link
- to={targetLink as any}
- className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-all"
- >
- <span>{currentBanner.cta_label || "Conferir"}</span>
- <ArrowRight className="size-4" />
- </Link>
- </div>
- )}
- </div>
- </div>
- )}
+                {currentBanner.show_title === true && currentBanner.title && (
+                  <h2 className="text-base sm:text-2xl lg:text-4xl font-black tracking-tight leading-tight line-clamp-2 text-white">
+                    {currentBanner.title}
+                  </h2>
+                )}
 
- {/* Navigation Arrows (Desktop) */}
- {activeBanners.length > 1 && (
- <>
- <button
- onClick={handlePrev}
- aria-label="Banner anterior"
- className="absolute left-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20"
- >
- <ChevronLeft className="size-5" />
- </button>
- <button
- onClick={handleNext}
- aria-label="Próximo banner"
- className="absolute right-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20"
- >
- <ChevronRight className="size-5" />
- </button>
- </>
- )}
- </div>
- </div>
- );
+                {currentBanner.show_description === true && currentBanner.subtitle && (
+                  <p className="text-[11px] sm:text-sm text-zinc-200 line-clamp-2 leading-relaxed max-w-lg">
+                    {currentBanner.subtitle}
+                  </p>
+                )}
+
+                {currentBanner.show_cta === true && (
+                  <div className="pt-1.5 sm:pt-2">
+                    <Link
+                      to={targetLink as any}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-white text-black font-bold text-xs sm:text-sm hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-all"
+                    >
+                      <span>{currentBanner.cta_label || "Conferir"}</span>
+                      <ArrowRight className="size-3.5 sm:size-4" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+        {/* Navigation Arrows (Desktop) */}
+        {activeBanners.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              aria-label="Banner anterior"
+              className="absolute left-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <button
+              onClick={handleNext}
+              aria-label="Próximo banner"
+              className="absolute right-3 top-1/2 -translate-y-1/2 size-10 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+
+            {/* Indicadores de Paginação Suaves (Dots) */}
+            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 pointer-events-none">
+              {activeBanners.map((_, i) => (
+                <span
+                  key={i}
+                  className={`transition-all duration-300 rounded-full ${
+                    i === currentIndex
+                      ? "w-5 h-1.5 bg-white shadow-sm"
+                      : "w-1.5 h-1.5 bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function bannerTargetLink(banner: BannerDTO): string {
- if (banner.target_url) return banner.target_url;
- if (banner.target_type === "category" && banner.target_id) {
- return `/mercado?categoria=${banner.target_id}`;
- }
- if (banner.target_type === "product" && banner.target_id) {
- return `/produto/${banner.target_id}`;
- }
- if (banner.target_type === "store" && banner.target_id) {
- return `/perfil-da-loja?store=${banner.target_id}`;
- }
- return "/mercado";
+  if (banner.target_url) return banner.target_url;
+  switch (banner.target_type) {
+    case "product":
+      return banner.target_id ? `/loja/produto/${banner.target_id}` : "/mercado";
+    case "store":
+      return banner.target_id ? `/loja/${banner.target_id}` : "/mercado";
+    case "category":
+      return banner.target_id ? `/mercado?categoria=${banner.target_id}` : "/mercado";
+    case "hotpage":
+    default:
+      return "/mercado";
+  }
 }

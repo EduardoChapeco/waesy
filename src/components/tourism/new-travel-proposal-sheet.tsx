@@ -3,13 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,47 +12,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { formatMoney } from "@/lib/money";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
- Search,
- User,
- UserPlus,
- Compass,
- PlaneTakeoff,
- Calendar,
- Users,
- ScanText,
- Upload,
- Check,
- X,
- FileText,
- Clock,
- ShieldCheck,
- ChevronRight,
- Plus,
- Minus,
- DollarSign,
- Loader2,
- FolderPlus,
- HelpCircle,
- BedDouble,
- Trash2,
- Building2,
- Tag,
-} from "lucide-react";
+import { Search, User, UserPlus, Compass, PlaneTakeoff, Calendar, Users, ScanText, Upload, Check, X, FileText, Clock, ShieldCheck, ChevronRight, Plus, Minus, DollarSign, Loader2, FolderPlus, HelpCircle, BedDouble, Trash2, Building2, Tag } from "lucide-react";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listHotelsBank, type HotelBankDTO } from "@/services/travel-catalog.functions";
-import {
- createTravelProposal,
- type ProposalCanvasFormat,
-} from "@/services/travel-proposal.functions";
-import {
- TRAVEL_PACKAGE_TEMPLATES,
- type TravelPackageTemplate,
-} from "@/lib/tourism-templates";
-import {
- CANONICAL_DESTINATIONS,
- type CanonicalDestination,
-} from "@/lib/destinations-catalog";
+import { createTravelProposal, type ProposalCanvasFormat } from "@/services/travel-proposal.functions";
+import { TRAVEL_PACKAGE_TEMPLATES, type TravelPackageTemplate } from "@/lib/tourism-templates";
+import { CANONICAL_DESTINATIONS, type CanonicalDestination } from "@/lib/destinations-catalog";
 
 export interface ProposalRoomItem {
  id: string;
@@ -593,7 +552,7 @@ export function NewTravelProposalSheet({
  className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
  >
  <User className="mr-1.5 size-3.5" />
- Consultor & CRM
+ Consultor e CRM
  </TabsTrigger>
  <TabsTrigger
  value="template"
@@ -873,7 +832,7 @@ export function NewTravelProposalSheet({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Compass className="size-4 text-primary" />
- <span>Destino & Datas da Viagem</span>
+ <span>Destino e Datas da Viagem</span>
  </div>
  {nightsCount !== null && (
  <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground border-border/80">
@@ -1010,7 +969,7 @@ export function NewTravelProposalSheet({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <BedDouble className="size-4 text-primary" />
- <span>Quartos & Hóspedes</span>
+ <span>Quartos e Hóspedes</span>
  </div>
  <span className="text-[11px] font-medium text-muted-foreground">
  {rooms.length} {rooms.length === 1 ? "quarto" : "quartos"} • {totalAdults} {totalAdults === 1 ? "adulto" : "adultos"}
@@ -1179,7 +1138,7 @@ export function NewTravelProposalSheet({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Building2 className="size-4 text-emerald-600 dark:text-emerald-400" />
- <span>Hospedagem & Resort (Banco Oficial)</span>
+ <span>Hospedagem e Resort (Banco Oficial)</span>
  </div>
  {selectedHotel && (
  <Badge variant="secondary" className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
@@ -1290,7 +1249,7 @@ export function NewTravelProposalSheet({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Tag className="size-4 text-primary" />
- <span>Transfers, Passeios & Atrativos Inclusos</span>
+ <span>Transfers, Passeios e Atrativos Inclusos</span>
  </div>
  <span className="text-[10px] text-muted-foreground">
  {selectedProposalTags.length} selecionado(s)
@@ -1405,7 +1364,7 @@ export function NewTravelProposalSheet({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <DollarSign className="size-4 text-emerald-600 dark:text-emerald-400" />
- <span>Orçamento & Parcelamento</span>
+ <span>Orçamento e Parcelamento</span>
  </div>
  <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
  Personalizado
@@ -1494,7 +1453,7 @@ export function NewTravelProposalSheet({
  <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3 shadow-xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <DollarSign className="size-4 text-primary" />
- <span>Moeda, Validade & Apresentação</span>
+ <span>Moeda, Validade e Apresentação</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1554,7 +1513,7 @@ export function NewTravelProposalSheet({
  {activeTab === "template" && (
  <div className="space-y-4 text-xs">
  <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 space-y-1">
- <p className="font-bold text-foreground">Biblioteca de Pacotes & Roteiros de Sucesso</p>
+ <p className="font-bold text-foreground">Biblioteca de Pacotes e Roteiros de Sucesso</p>
  <p className="text-muted-foreground text-[11px]">
  Selecione um pacote pré-formatado para clonar voos, hotéis, roteiro dia a dia, inclusões e exclusões em 1 clique.
  </p>

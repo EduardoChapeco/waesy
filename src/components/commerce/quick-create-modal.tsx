@@ -1,21 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import {
- Tag,
- Camera,
- Briefcase,
- Plus,
- Store,
- X,
- LogIn,
-} from "lucide-react";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetTrigger,
-} from "@/components/ui/sheet";
+import { Tag, Camera, Briefcase, Plus, Store, X, LogIn } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { PostCreationDrawer } from "@/components/community/post-creation-drawer";
@@ -129,7 +115,7 @@ export function QuickCreateModal({
  },
  {
  id: "empregos",
- title: "Vagas & Oportunidades",
+ title: "Vagas e Oportunidades",
  subtitle: "Consulte vagas de trabalho, estágios e oportunidades na região.",
  icon: Briefcase,
  iconBg: "bg-emerald-500/10",
@@ -143,11 +129,11 @@ export function QuickCreateModal({
  return (
  <>
  <Sheet open={open} onOpenChange={setOpen}>
- <SheetTrigger asChild>
+  <SheetTrigger asChild>
  <button
  type="button"
  onClick={handleTriggerClick}
- aria-label="Criar ou Anunciar"
+ aria-label="Publicar"
  className={
  asNavButton
  ? "size-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-xs active:scale-90 transition-transform focus:outline-none cursor-pointer"
@@ -159,7 +145,7 @@ export function QuickCreateModal({
  </SheetTrigger>
 
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] md:sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] flex flex-col p-0 bg-background max-sm:!inset-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:rounded-none max-sm:border-none overflow-hidden"
+ side="right" size="wide" className="w-full sm:max-w-xl md:max-w-2xl flex flex-col p-0 bg-background max-sm:!inset-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:rounded-none max-sm:border-none overflow-hidden"
  >
  <SheetHeader className="p-4 flex items-center justify-between shrink-0 bg-background/95 backdrop-blur-md">
  <div className="flex items-center gap-3">
@@ -171,7 +157,7 @@ export function QuickCreateModal({
  <X size={18} />
  </button>
  <SheetTitle className="text-base font-bold tracking-tight text-foreground">
- Criar & Anunciar
+ Novo Anúncio
  </SheetTitle>
  </div>
  </SheetHeader>

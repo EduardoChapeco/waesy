@@ -12,18 +12,9 @@ import { z } from "zod";
 import { getServerClient, getAnonServerClient } from "@/lib/supabase";
 import { getServerIdentity, requireAdmin, assertStoreAccess } from "@/lib/server-access";
 import { enforceRateLimit } from "@/lib/rate-limiter";
-import {
-  inspectPromptSecurity,
-  buildSandboxedPromptPayload,
-  sanitizeAiOutput,
-} from "@/lib/prompt-shield";
+import { inspectPromptSecurity, buildSandboxedPromptPayload, sanitizeAiOutput } from "@/lib/prompt-shield";
 import { extractContentMechanically } from "./mining/mechanical-extractor";
-import {
-  validateMechanicalCompleteness,
-  generateTitleHash,
-  isHealthyImageUrl,
-  getFallbackThematicImage,
-} from "./mining/integrity-gate";
+import { validateMechanicalCompleteness, generateTitleHash, isHealthyImageUrl, getFallbackThematicImage } from "./mining/integrity-gate";
 import { curateWithEditorialSquad } from "./mining/editorial-squad";
 import { fetchPncpContracts, convertPncpToExtractionResult } from "./mining/pncp-extractor";
 import { executeUnifiedAiCall } from "./api-orchestrator.functions";
@@ -31,12 +22,7 @@ import { executeContinuousCrawl } from "@/lib/mining/continuous-crawler.engine";
 import { parseFeed } from "@/lib/mining/rss-ingester.engine";
 import { fetchAllMarketIndicators } from "@/lib/mining/market-data-miner.engine";
 import { enrichCnpj } from "@/lib/mining/cnpj-enrichment.engine";
-import {
-  extractDomain,
-  isDomainInCooldown,
-  setDomainCooldown,
-  clearDomainCooldown,
-} from "@/lib/mining/scraper-utils";
+import { extractDomain, isDomainInCooldown, setDomainCooldown, clearDomainCooldown } from "@/lib/mining/scraper-utils";
 import type {
   MiningStats,
   CrawlQueueItem,

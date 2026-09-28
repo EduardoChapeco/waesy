@@ -2,30 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Users,
- Search,
- CheckCircle2,
- Clock,
- Banknote,
- MoreVertical,
- Loader2,
- TrendingUp,
-} from "lucide-react";
+import { Users, Search, CheckCircle2, Clock, Banknote, MoreVertical, Loader2, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/commerce/page-header";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
- getAffiliatePerformance,
- getCommissionSummary,
- payAffiliateCommission,
-} from "@/services/affiliates.functions";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { getAffiliatePerformance, getCommissionSummary, payAffiliateCommission } from "@/services/affiliates.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/financeiro/afiliados")({
@@ -87,7 +69,7 @@ function AfiliadosFinanceiroPage() {
     <div className="flex flex-col h-full gap-6 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0 pb-20 font-sans animate-in fade-in duration-200">
       {/* Header Canônico */}
       <PageHeader
-        title="Comissões de Parceiros & Equipe"
+        title="Comissões de Parceiros"
         description="Desempenho e repasses consolidados de vendedores e afiliados."
       />
 

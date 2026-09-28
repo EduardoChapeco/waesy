@@ -1,52 +1,20 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import {
-  Car,
-  Bike,
-  Plus,
-  Truck,
-  Ban,
-  Clock,
-  CheckCircle2,
-  Loader2,
-  MoreVertical,
-  Sliders,
-  Phone,
-  DollarSign,
-  Activity,
-  ShieldCheck,
-} from "lucide-react";
+import { Car, Bike, Plus, Truck, Ban, Clock, CheckCircle2, Loader2, MoreVertical, Sliders, Phone, DollarSign, Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { listCouriers, updateCourier, type CourierSummaryDTO } from "@/services/fleet.functions";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
-import {
-  WorkspaceCanonicalToolbar,
-  type WorkspaceToolbarTab,
-} from "@/components/workspace/workspace-canonical-toolbar";
-import {
-  WorkspaceDashboardSheet,
-  type MetricCardItem,
-} from "@/components/workspace/workspace-dashboard-sheet";
+import { WorkspaceCanonicalToolbar, type WorkspaceToolbarTab } from "@/components/workspace/workspace-canonical-toolbar";
+import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 
 export const Route = createFileRoute("/workspace/pedidos/entregadores/")({
-  head: () => ({ meta: [{ title: "Entregadores & Frota | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Entregadores | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const data = await listCouriers({ data: {} });
@@ -453,7 +421,7 @@ function CouriersListPage() {
         <WorkspaceDashboardSheet
           open={dashboardOpen}
           onOpenChange={setDashboardOpen}
-          title="Telemetria & Produtividade da Frota"
+          title="Telemetria da Frota"
           description="Controle em tempo real de disponibilidade, taxas e entregas ativas."
           metrics={dashboardMetrics}
         />
@@ -515,7 +483,7 @@ function CouriersListPage() {
                         to="/workspace/pedidos/entregadores/$id"
                         params={{ id: selectedCourier.id }}
                       >
-                        Abrir Perfil & Extrato Completo
+                        Abrir Perfil e Extrato Completo
                       </Link>
                     </Button>
 

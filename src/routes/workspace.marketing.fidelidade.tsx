@@ -8,45 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogTrigger,
-} from "@/components/ui/dialog";
-import {
- Award,
- QrCode,
- Smartphone,
- Coffee,
- Utensils,
- Gift,
- Scissors,
- Plane,
- HeartHandshake,
- Check,
- Plus,
- Stamp,
- Users,
- CreditCard,
- Share2,
-} from "lucide-react";
-import {
- getStoreLoyaltyProgram,
- saveStoreLoyaltyProgram,
- listStoreLoyaltyCustomers,
- stampCustomerCard,
- redeemLoyaltyReward,
-} from "@/services/loyalty.functions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Award, QrCode, Smartphone, Coffee, Utensils, Gift, Scissors, Plane, HeartHandshake, Check, Plus, Stamp, Users, CreditCard, Share2 } from "lucide-react";
+import { getStoreLoyaltyProgram, saveStoreLoyaltyProgram, listStoreLoyaltyCustomers, stampCustomerCard, redeemLoyaltyReward } from "@/services/loyalty.functions";
 import type { CustomerLoyaltyCard } from "@/services/loyalty.functions";
 import { cn } from "@/lib/utils";
 
@@ -239,7 +204,7 @@ export default function LoyaltyDashboardPage() {
  <TabsList className="bg-muted/60 p-1 rounded-xl mb-6">
  <TabsTrigger value="config" className="rounded-lg font-bold text-xs gap-1.5">
  <CreditCard className="size-4" />
- Configurar Cartão & Wallet
+ Configurar Cartão e Wallet
  </TabsTrigger>
  <TabsTrigger value="customers" className="rounded-lg font-bold text-xs gap-1.5">
  <Users className="size-4" />
@@ -465,7 +430,7 @@ export default function LoyaltyDashboardPage() {
   {/* Compatibilidade de Carteira Digital */}
   <div className="flex items-center justify-center gap-4 text-[11px] font-semibold text-muted-foreground pt-1">
   <span className="flex items-center gap-1.5">
-  <Smartphone className="size-3.5 text-foreground" /> Carteira Digital & QR Code
+  <Smartphone className="size-3.5 text-foreground" /> Carteira Digital e QR Code
   </span>
   </div>
  </div>
@@ -488,7 +453,7 @@ export default function LoyaltyDashboardPage() {
  <Table>
  <TableHeader>
  <TableRow>
- <TableHead>Cliente / WhatsApp</TableHead>
+ <TableHead>Cliente</TableHead>
  <TableHead>Código do Cartão</TableHead>
  <TableHead>Selos Atuais</TableHead>
  <TableHead>Total Acumulado</TableHead>

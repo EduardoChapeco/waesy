@@ -1,34 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Tag,
-  Newspaper,
-  Briefcase,
-  CalendarDots,
-  MapPin,
-  Clock,
-  WhatsappLogo,
-  Buildings,
-  Sparkle,
-  Star,
-  CheckCircle,
-  Storefront,
-  ArrowRight,
-  Ticket,
-  UserCircle,
-  Target,
-  Rss,
-  ChatCircleDots,
-} from "@phosphor-icons/react";
+import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { NewsCard } from "@/components/news/news-card";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -97,7 +74,7 @@ const CANONICAL_PILLARS = [
 ];
 
 const DISCOVERY_CATEGORIES: FilterChipOption[] = [
-  { id: "todos", label: "Todos os Anúncios", emoji: "✨" },
+  { id: "todos", label: "Todos os Anúncios", emoji: "🌐" },
   { id: "places", label: "Places (Lista Telefônica)", emoji: "📍" },
   { id: "classificados", label: "Classificados", emoji: "🏷️" },
   { id: "feed", label: "Feed", emoji: "📡" },
@@ -112,7 +89,7 @@ const DISCOVERY_CATEGORIES: FilterChipOption[] = [
 export const Route = createFileRoute("/_store/explorar")({
   head: () => ({
     meta: [
-      { title: "Waesy — Explorar Vitrine Comunitária & Negócios Locais" },
+      { title: "Waesy — Explorar Vitrine Comunitária e Negócios Locais" },
       {
         name: "description",
         content:
@@ -1339,7 +1316,7 @@ function CommunityHomePage() {
           <div className="p-6 sm:p-8 rounded-3xl border border-border/60 bg-card space-y-4">
             <div className="max-w-xl space-y-1">
               <Badge variant="outline" className="text-[10px] font-mono uppercase tracking-wider font-bold">
-                Empresas & Negócios
+                Empresas e Negócios
               </Badge>
               <h2 className="text-lg sm:text-xl font-black tracking-tight text-foreground">
                 Divulgue seu negócio no <PlacesHighlightBadge className="text-lg sm:text-xl" />

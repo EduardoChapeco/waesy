@@ -1,11 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  generateSevenSinCopyLogic,
-  runSimLabPersonaTestLogic,
-  saveSevenSinHookToStoreLogic,
-  listStoreProductsQuickLogic,
-  SEVEN_SINS_DEFINITIONS,
-} from "./seven-sins-simlab.functions";
+import { generateSevenSinCopyLogic, runSimLabPersonaTestLogic, saveSevenSinHookToStoreLogic, listStoreProductsQuickLogic, SEVEN_SINS_DEFINITIONS } from "./seven-sins-simlab.functions";
 
 describe("Seven Sins Canvas & SimLab V2 (Big Tech Council)", () => {
   const realStoreId = "c6ccd3b2-aa54-42a2-b0fe-251daa5b97f7";

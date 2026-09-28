@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  ListCompanyJobApplicationsSchema,
-  UpdateCompanyJobApplicationStatusSchema,
-  CompanyCustomFormFieldSchema,
-  UpdateCompanyCustomFormSettingsSchema,
-} from "./company-mvp.functions";
+import { ListCompanyJobApplicationsSchema, UpdateCompanyJobApplicationStatusSchema, CompanyCustomFormFieldSchema, UpdateCompanyCustomFormSettingsSchema } from "./company-mvp.functions";
 
 describe("Company Candidates & Custom Form Schemas", () => {
   describe("ListCompanyJobApplicationsSchema", () => {

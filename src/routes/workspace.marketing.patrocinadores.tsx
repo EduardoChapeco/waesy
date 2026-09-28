@@ -1,47 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Megaphone,
-  Plus,
-  Trash2,
-  ExternalLink,
-  Sliders,
-  CheckCircle2,
-  Loader2,
-  Building2,
-  Eye,
-  MousePointerClick,
-  TrendingUp,
-  Share2,
-  Copy,
-  Video,
-  Sparkles,
-  Link2,
-} from "lucide-react";
+import { Megaphone, Plus, Trash2, ExternalLink, Sliders, CheckCircle2, Loader2, Building2, Eye, MousePointerClick, TrendingUp, Share2, Copy, Video, Star, Link2 } from "lucide-react";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  listWorkspaceSponsors,
-  createSponsor,
-  updateSponsor,
-  deleteSponsor,
-  type SponsorDTO,
-} from "@/services/news.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { listWorkspaceSponsors, createSponsor, updateSponsor, deleteSponsor, type SponsorDTO } from "@/services/news.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/marketing/patrocinadores")({
-  head: () => ({ meta: [{ title: "Gestão de Patrocinadores & Rede Display | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Patrocinadores | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const sponsors = await listWorkspaceSponsors().catch(() => []);
@@ -187,12 +158,12 @@ function WorkspacePatrocinadoresPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-              Marketing & Monetização
+              Marketing e Monetização
             </span>
-            <span className="text-xs text-muted-foreground font-mono">Rede Display & Telemetria</span>
+            <span className="text-xs text-muted-foreground font-mono">Rede Display e Telemetria</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">
-            Patrocinadores & Anunciantes
+            Patrocinadores e Anunciantes
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Cadastre anunciantes locais. As mídias e vídeos aparecem randomicamente nas suas notícias e feed com telemetria e links mágicos de auditoria.

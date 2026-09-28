@@ -7,35 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import {
- listAllSurfaces,
- listSurfaceSections,
- upsertSurfaceSection,
- deleteSurfaceSection,
- reorderSurfaceSections,
- type SurfaceSectionDTO,
- type SurfaceSectionType,
- type SurfaceDataSource,
- type SurfaceRankingStrategy,
- type SurfaceLayoutVariant,
- type MarketplaceSurfaceDTO,
-} from "@/services/surface-cms.functions";
+import { listAllSurfaces, listSurfaceSections, upsertSurfaceSection, deleteSurfaceSection, reorderSurfaceSections, type SurfaceSectionDTO, type SurfaceSectionType, type SurfaceDataSource, type SurfaceRankingStrategy, type SurfaceLayoutVariant, type MarketplaceSurfaceDTO } from "@/services/surface-cms.functions";
 
 const SearchSchema = z.object({
  surface: z.string().optional(),
@@ -43,7 +18,7 @@ const SearchSchema = z.object({
 
 export const Route = createFileRoute("/admin-master/vitrines")({
  validateSearch: (search: Record<string, unknown>) => SearchSchema.parse(search),
- head: () => ({ meta: [{ title: "Vitrines & Seções CMS | Admin Master" }] }),
+ head: () => ({ meta: [{ title: "Vitrines e Seções CMS | Admin Master" }] }),
  loader: async () => {
    try {
  const surfaces = await listAllSurfaces().catch(() => []);
@@ -59,7 +34,7 @@ export const Route = createFileRoute("/admin-master/vitrines")({
 const SECTION_TYPE_OPTIONS: Array<{ id: SurfaceSectionType; label: string; icon: any }> = [
  { id: "product_rail", label: "Trilho de Produtos (Carrossel)", icon: Tag },
  { id: "flash_deal_rail", label: "Trilho de Ofertas Relâmpago", icon: Tag },
- { id: "store_rail", label: "Trilho de Lojas & Estabelecimentos", icon: Store },
+ { id: "store_rail", label: "Trilho de Lojas e Estabelecimentos", icon: Store },
  { id: "grid_4col", label: "Grade de 4 Colunas (Grid)", icon: Grid },
  { id: "bento_grid", label: "Bento Grid (1 Destaque + 2 Médios)", icon: Layout },
  { id: "banner_single_21_9", label: "Banner Único Panorâmico (21:9)", icon: Layout },
@@ -71,15 +46,15 @@ const DATA_SOURCE_OPTIONS: Array<{ id: SurfaceDataSource; label: string }> = [
  { id: "all_products", label: "Todos os Produtos do Nicho" },
  { id: "flash_deals", label: "Produtos com Desconto / Promoção" },
  { id: "stores", label: "Lojas e Estabelecimentos Parceiros" },
- { id: "top_sellers", label: "Mais Vendidos & Populares" },
+ { id: "top_sellers", label: "Mais Vendidos e Populares" },
  { id: "banners", label: "Banners da Plataforma" },
- { id: "custom_buttons", label: "Botões & Atalhos Rápidos" },
+ { id: "custom_buttons", label: "Botões e Atalhos Rápidos" },
 ];
 
 const RANKING_OPTIONS: Array<{ id: SurfaceRankingStrategy; label: string; desc: string }> = [
  { id: "random_shuffle", label: "🎲 Randomização Rotativa (Shuffle)", desc: "Embaralha itens para visibilidade justa" },
  { id: "discount", label: "🏷️ Maior Desconto Percentual", desc: "Prioriza os maiores descontos" },
- { id: "popularity", label: "⭐ Mais Vendidos & Avaliados", desc: "Baseado em volume de pedidos" },
+ { id: "popularity", label: "⭐ Mais Vendidos e Avaliados", desc: "Baseado em volume de pedidos" },
  { id: "recency", label: "⏱️ Mais Recentes (Novidades)", desc: "Cadastrados recentemente" },
  { id: "curated_fixed", label: "📌 Ordem Fixa Manual", desc: "Respeita a ordem exata do painel" },
 ];
@@ -252,7 +227,7 @@ function AdminMasterVitrinesPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
  <div>
  <h1 className="text-xl font-bold tracking-tight text-foreground">
- Vitrines & Seções
+ Vitrines e Seções
  </h1>
  </div>
 

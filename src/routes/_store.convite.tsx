@@ -1,55 +1,18 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Gift,
-  Copy,
-  Check,
-  Share2,
-  Trophy,
-  Ticket,
-  Users,
-  Award,
-  ArrowRight,
-  ShieldCheck,
-  Flame,
-  Calendar,
-  ChevronRight,
-  Loader2,
-  Clock,
-  Sparkles,
-  Store,
-  FileCheck,
-} from "lucide-react";
+import { Gift, Copy, Check, Share2, Trophy, Ticket, Users, Award, ArrowRight, ShieldCheck, Flame, Calendar, ChevronRight, Loader2, Clock, Star, Store, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  getMyInviteOverview,
-  getInviteLeaderboard,
-  getAvailableRewards,
-  getActiveRaffles,
-  claimReward,
-  participateInRaffle,
-  type InviteOverviewDTO,
-  type AmbassadorLeaderboardItem,
-  type InviteRewardDTO,
-  type RaffleDTO,
-} from "@/services/invite.functions";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getMyInviteOverview, getInviteLeaderboard, getAvailableRewards, getActiveRaffles, claimReward, participateInRaffle, type InviteOverviewDTO, type AmbassadorLeaderboardItem, type InviteRewardDTO, type RaffleDTO } from "@/services/invite.functions";
 
 export const Route = createFileRoute("/_store/convite")({
   head: () => ({
     meta: [
-      { title: "Membros Fundadores & Concursos de Sorte | Waesy" },
+      { title: "Membros Fundadores e Concursos de Sorte | Waesy" },
       {
         name: "description",
         content:
@@ -174,7 +137,7 @@ function ConvitePage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className="font-mono text-xs uppercase px-2.5 py-0.5 rounded-lg bg-primary/15 text-primary border border-primary/30 flex items-center gap-1">
-                  <Sparkles className="size-3" />
+                  <Star className="size-3" />
                   <span>Membro Fundador</span>
                 </Badge>
 
@@ -195,7 +158,7 @@ function ConvitePage() {
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-                Comunidade & Convites
+                Comunidade e Convites
               </h1>
             </div>
 
@@ -304,7 +267,7 @@ function ConvitePage() {
         <section className="space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-foreground">Sorteios & Prêmios</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground">Sorteios</h2>
               <p className="text-xs text-muted-foreground">
                 Participe dos sorteios e concorra a prêmios promovidos pelas lojas da região.
               </p>
@@ -396,7 +359,7 @@ function ConvitePage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-foreground">Prêmios & Vouchers Resgatáveis</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground">Prêmios e Vouchers Resgatáveis</h2>
               <p className="text-xs text-muted-foreground">Troque seus pontos acumulados por benefícios na região.</p>
             </div>
             <Badge variant="outline" className="font-mono text-xs">

@@ -53,7 +53,7 @@ export function PortalAppointmentsWidget({ content, design_tokens }: PortalAppoi
  <div className="flex items-center gap-2">
  <Calendar className="w-6 h-6 text-primary" />
  <h2 className="text-xl font-bold tracking-tight text-foreground">
- {content?.title || "Meus Agendamentos & Serviços"}
+ {content?.title || "Agendamentos"}
  </h2>
  </div>
  <p className="text-sm text-muted-foreground mt-1">

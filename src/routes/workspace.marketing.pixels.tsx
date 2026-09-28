@@ -1,39 +1,18 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  ArrowLeft,
-  Check,
-  Globe,
-  Radio,
-  Share2,
-  ShieldCheck,
-  Sliders,
-  Sparkles,
-  Copy,
-  ExternalLink,
-} from "lucide-react";
-import {
-  WhatsappLogo,
-  GoogleLogo,
-  TiktokLogo,
-  MetaLogo,
-} from "@phosphor-icons/react";
+import { ArrowLeft, Check, Globe, Radio, Share2, ShieldCheck, Sliders, Star, Copy, ExternalLink } from "lucide-react";
+import { WhatsappLogo, GoogleLogo, TiktokLogo, MetaLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  getStorePixelConfig,
-  saveStorePixelConfig,
-  dispatchMetaCapiEvent,
-  type StorePixelConfigDTO,
-} from "@/services/pixels.functions";
+import { getStorePixelConfig, saveStorePixelConfig, dispatchMetaCapiEvent, type StorePixelConfigDTO } from "@/services/pixels.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/marketing/pixels")({
   head: () => ({
-    meta: [{ title: "Pixels & Telemetria Multicanal | Workspace Waesy" }],
+    meta: [{ title: "Pixels | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -159,7 +138,7 @@ export default function WorkspaceMarketingPixelsPage() {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Pixels & Telemetria Multicanal
+              Pixels
             </h1>
             <p className="text-xs text-muted-foreground">
               Acompanhamento de conversões no Meta Ads, Google Ads e TikTok com suporte a CAPI server-side.
@@ -175,7 +154,7 @@ export default function WorkspaceMarketingPixelsPage() {
             className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
           >
             <Link to="/workspace/marketing/studio">
-              <Sparkles className="size-3.5 text-amber-500" />
+              <Star className="size-3.5 text-amber-500" />
               <span>Social Studio</span>
             </Link>
           </Button>
@@ -202,7 +181,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 <MetaLogo size={20} weight="bold" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-foreground">Meta Ads (Facebook & Instagram)</h2>
+                <h2 className="text-sm font-bold text-foreground">Meta Ads (Facebook e Instagram)</h2>
                 <p className="text-xs text-muted-foreground">
                   Rastreamento via Pixel no navegador e Conversions API (CAPI) pelo servidor.
                 </p>
@@ -253,7 +232,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 <GoogleLogo size={20} weight="bold" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-foreground">Google Ads & GA4</h2>
+                <h2 className="text-sm font-bold text-foreground">Google Ads e GA4</h2>
                 <p className="text-xs text-muted-foreground">
                   Acompanhamento de tráfego, buscas e tags de conversão do Google.
                 </p>
@@ -522,7 +501,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 className="size-4 rounded-md accent-primary mt-0.5"
               />
               <div className="space-y-0.5">
-                <span className="font-bold text-foreground block">InitiateCheckout & Purchase</span>
+                <span className="font-bold text-foreground block">InitiateCheckout e Purchase</span>
                 <span className="text-muted-foreground">Dispara ao abrir o checkout e concluir o pedido.</span>
               </div>
             </label>
@@ -537,7 +516,7 @@ export default function WorkspaceMarketingPixelsPage() {
                 <Globe className="size-5" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-foreground">Feeds de Catálogo & WebMCP</h2>
+                <h2 className="text-sm font-bold text-foreground">Feeds de Catálogo e WebMCP</h2>
                 <p className="text-xs text-muted-foreground">
                   URLs padronizadas para sincronização automática com Meta Commerce Manager, Google Merchant Center e agentes de IA.
                 </p>
@@ -617,7 +596,7 @@ export default function WorkspaceMarketingPixelsPage() {
             <div className="space-y-1.5">
               <Label className="text-xs font-bold flex items-center justify-between">
                 <span>Manifesto WebMCP para Agentes de IA (JSON)</span>
-                <span className="text-[10px] font-normal text-muted-foreground">Indexação Gemini, Claude & Perplexity</span>
+                <span className="text-[10px] font-normal text-muted-foreground">Indexação Gemini, Claude e Perplexity</span>
               </Label>
               <div className="flex items-center gap-2">
                 <Input

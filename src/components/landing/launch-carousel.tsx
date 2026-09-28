@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { LaunchSlideDTO } from "@/services/launch.functions";
@@ -25,8 +25,8 @@ export function LaunchCarousel({ slides }: LaunchCarouselProps) {
       {/* Botões de navegação no desktop */}
       <div className="hidden sm:flex items-center justify-between px-1">
         <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-          <Sparkles className="size-3.5 text-primary" />
-          Atrações Confirmadas & Destaques do Circuito
+          <Star className="size-3.5 text-primary" />
+          Atrações Confirmadas e Destaques do Circuito
         </span>
         <div className="flex items-center gap-1">
           <Button

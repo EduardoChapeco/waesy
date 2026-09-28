@@ -1,54 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- Search,
- Plus,
- Loader2,
-} from "lucide-react";
+import { Search, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
- Tabs,
- TabsContent,
- TabsList,
- TabsTrigger,
-} from "@/components/ui/tabs";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- listStoresForCuration,
- listMysteryShopperAuditsAdmin,
- createMysteryShopperAudit,
- resolveHardshipAndBoostStore,
-} from "@/services/curadoria.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listStoresForCuration, listMysteryShopperAuditsAdmin, createMysteryShopperAudit, resolveHardshipAndBoostStore } from "@/services/curadoria.functions";
 
 export const Route = createFileRoute("/admin-master/curadoria")({
- head: () => ({ meta: [{ title: "Curadoria & Auditoria | Waesy Master" }] }),
+ head: () => ({ meta: [{ title: "Curadoria e Auditoria | Waesy Master" }] }),
  loader: async () => {
  try {
  const [stores, audits] = await Promise.all([
@@ -181,7 +147,7 @@ function CuradoriaAdminPage() {
  {/* Header Silencioso */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
  <div>
- <h1 className="text-xl font-bold tracking-tight">Curadoria & Cliente Oculto</h1>
+ <h1 className="text-xl font-bold tracking-tight">Curadoria</h1>
  <p className="text-xs text-muted-foreground mt-0.5">
  Inspeções de qualidade, missões anônimas e apoio solidário com impulsos no feed.
  </p>

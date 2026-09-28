@@ -11,23 +11,7 @@ import { Button } from "@/components/ui/button";
  *   - isEdit: modo edição vs. criação
  */
 import { useState, useRef } from "react";
-import {
-  ArrowLeft,
-  Download,
-  Plane,
-  Hotel,
-  Bus,
-  User,
-  Phone,
-  Umbrella,
-  ChevronDown,
-  ChevronRight,
-  Instagram,
-  Upload,
-  Save,
-  Eye,
-  SlidersHorizontal,
-} from "lucide-react";
+import { ArrowLeft, Download, Plane, Hotel, Bus, User, Phone, Umbrella, ChevronDown, ChevronRight, Instagram, Upload, Save, Eye, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 // ⚡ html2canvas is loaded on-demand to prevent build heap exhaustion.
 // Do NOT revert to a static import — this library is ~150 KB and triggers
@@ -40,12 +24,7 @@ async function getHtml2Canvas() {
   }
   return _html2canvas;
 }
-import {
-  type Voucher,
-  type VoucherFlight,
-  type VoucherAccommodation,
-  type VoucherTransfer,
-} from "@/services/vouchers";
+import { type Voucher, type VoucherFlight, type VoucherAccommodation, type VoucherTransfer } from "@/services/vouchers";
 import { StudioFrame, type CanvasFormat } from "@/components/studio/StudioFrame";
 import TemplateVoucherEmbarqueA4 from "./templates/TemplateVoucherEmbarqueA4";
 import TemplateVoucherStory from "./templates/TemplateVoucherStory";
@@ -53,10 +32,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAgency } from "@/lib/agency-context";
 import { FormInput as Input } from "@/components/ui/input";
 import { FormTextarea as Textarea } from "@/components/ui/textarea";
-import {
-  SupplierAutocomplete,
-  type SupplierOption,
-} from "@/components/suppliers/SupplierAutocomplete";
+import { SupplierAutocomplete, type SupplierOption } from "@/components/suppliers/SupplierAutocomplete";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -164,7 +140,7 @@ export function VoucherStudio({
     <>
       {draft.source_type === "operator_pdf" && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-3 ds-meta text-amber-800 leading-normal space-y-1">
-          <span className="font-semibold block">Leitura de Documento & Modo de Contingência</span>
+          <span className="font-semibold block">Leitura de Documento e Modo de Contingência</span>
           <p>
             O comprovante da operadora foi anexado com sucesso. Caso o leitor digital de documentos
             não tenha preenchido automaticamente todos os detalhes de voos ou hospedagens por

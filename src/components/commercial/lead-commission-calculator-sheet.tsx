@@ -1,25 +1,7 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  Calculator,
-  DollarSign,
-  Percent,
-  CreditCard,
-  CheckCircle2,
-  TrendingUp,
-  FileCheck,
-  Building,
-  User,
-  X,
-} from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Calculator, DollarSign, Percent, CreditCard, CheckCircle2, TrendingUp, FileCheck, Building, User, X } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -111,7 +93,7 @@ export function LeadCommissionCalculatorSheet({
           <div className="flex items-center gap-2">
             <Calculator className="size-5 text-primary" />
             <SheetTitle className="text-base font-bold text-foreground">
-              Régua de Comissão & Markup Comercial
+              Calculadora de Comissão
             </SheetTitle>
           </div>
           <SheetDescription className="text-xs text-muted-foreground">

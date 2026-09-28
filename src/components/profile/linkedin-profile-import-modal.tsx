@@ -1,32 +1,12 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  CheckCircle2,
-  AlertCircle,
-  Building2,
-  GraduationCap ,
-  FileCode2,
-  Linkedin,
-  Loader2,
-  ArrowRight,
-  Check,
-} from "lucide-react";
-import {
-  getLinkedInAuthRedirectUrl,
-  parseAndImportLinkedInJson,
-} from "@/services/linkedin-integrations.functions";
+import { CheckCircle2, AlertCircle, Building2, GraduationCap, FileCode2, Linkedin, Loader2, ArrowRight, Check } from "lucide-react";
+import { getLinkedInAuthRedirectUrl, parseAndImportLinkedInJson } from "@/services/linkedin-integrations.functions";
 
 export interface LinkedInImportResult {
   headline?: string;
@@ -105,7 +85,7 @@ export function LinkedInProfileImportModal({
       const res = await parseAndImportLinkedInJson({
         data: {
           rawJson: jsonText.trim(),
-          autoSaveToProfile: false,
+          autoSaveToProfile: true,
         },
       });
 

@@ -9,23 +9,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- getMyCustomerPasses,
- bookAppointmentWithPass,
-} from "@/services/service-packages.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { getMyCustomerPasses, bookAppointmentWithPass } from "@/services/service-packages.functions";
 import { getAvailableSlots } from "@/services/booking.functions";
 import { EmptyState } from "@/components/state/states";
 import { PageSkeleton } from "@/components/state/loading";
 
 export const Route = createFileRoute("/_store/conta/pacotes")({
- head: () => ({ meta: [{ title: "Meus Pacotes & Aulas | Waesy" }] }),
+ head: () => ({ meta: [{ title: "Meus Pacotes e Aulas | Waesy" }] }),
  component: CustomerPassesPage,
  pendingComponent: PageSkeleton,
 });
@@ -116,7 +107,7 @@ function CustomerPassesPage() {
  to="/servicos"
  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-bold bg-primary text-primary-foreground "
  >
- Ver Serviços & Pacotes Disponíveis <ArrowRight size={14} />
+ Ver Serviços e Pacotes Disponíveis <ArrowRight size={14} />
  </Link>
  }
  />

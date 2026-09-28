@@ -1,12 +1,7 @@
 import React, { useState, useEffect, forwardRef } from "react";
 import { Input } from "./input";
 import { cn } from "@/lib/utils";
-import {
-  maskCreditCardNumber,
-  maskCardExpiry,
-  detectCardBrand,
-  type CardBrand,
-} from "@/lib/document-validator";
+import { maskCreditCardNumber, maskCardExpiry, detectCardBrand, type CardBrand } from "@/lib/document-validator";
 import { CreditCard, Lock } from "lucide-react";
 
 export interface CreditCardNumberInputProps

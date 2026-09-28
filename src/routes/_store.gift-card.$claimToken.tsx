@@ -76,7 +76,7 @@ function ClaimGiftCardPage() {
 
  if (error || !card) {
  return (
- <div className="container max-w-lg py-24 mx-auto px-4 text-center">
+ <div className="container max-w-lg py-24 mx-auto px-0 sm:px-4 text-center">
  <div className="size-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
  <Lock className="size-8 text-destructive" />
  </div>
@@ -95,7 +95,7 @@ function ClaimGiftCardPage() {
  }
 
  return (
- <div className="container max-w-4xl py-12 mx-auto px-4">
+ <div className="container max-w-4xl py-12 mx-auto px-0 sm:px-4">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
  {/* Left Side: Premium Glowing Gift Card Reveal */}
  <div className="flex justify-center items-center">

@@ -1,29 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
-import {
- Newspaper,
- Plus,
- Eye,
- Trash2,
- Edit,
- ExternalLink,
- Calendar,
- Clock,
- CheckCircle2,
- FileText,
- Radio,
- Inbox,
- User,
- Phone,
- Megaphone,
- Bot,
- ThumbsUp,
- ThumbsDown,
- Loader2,
- Sparkles,
-  Zap,
-  CheckSquare,
-} from "lucide-react";
+import { Newspaper, Plus, Eye, Trash2, Edit, ExternalLink, Calendar, Clock, CheckCircle2, FileText, Radio, Inbox, User, Phone, Megaphone, Bot, ThumbsUp, ThumbsDown, Loader2, Star, Zap, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -31,22 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateCarouselFromMinedContent } from "@/services/studio.functions";
 import { CarouselStudioEditor } from "@/components/studio/carousel-studio-editor";
 import type { EscamasCarouselProject } from "@/types/studio-machine";
-import {
- listWorkspaceArticles,
- deleteArticle,
- listCommunityNewsTips,
- type NewsArticleDTO,
-} from "@/services/news.functions";
-import {
- listMinedArticles,
- curateMineArticle,
-  batchCurateMineArticlesFn,
- type MinedArticleDTO,
-} from "@/services/mining.functions";
-import {
-  isHealthyImageUrl,
-  getFallbackThematicImage,
-} from "@/services/mining/integrity-gate";
+import { listWorkspaceArticles, deleteArticle, listCommunityNewsTips, type NewsArticleDTO } from "@/services/news.functions";
+import { listMinedArticles, curateMineArticle, batchCurateMineArticlesFn, type MinedArticleDTO } from "@/services/mining.functions";
+import { isHealthyImageUrl, getFallbackThematicImage } from "@/services/mining/integrity-gate";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/commerce/page-header";
 import { EmptyState } from "@/components/state/states";
@@ -54,7 +18,7 @@ import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { AiCurationUpgradeModal } from "@/components/commerce/ai-curation-upgrade-modal";
 
 export const Route = createFileRoute("/workspace/noticias/")({
- head: () => ({ meta: [{ title: "Redação & Gestão de Notícias | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Notícias | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const [articles, tips, mined] = await Promise.all([
@@ -243,7 +207,7 @@ function WorkspaceNoticiasIndexPage() {
  <div className="w-full space-y-6">
  {/* Header */}
  <PageHeader
- title="Redação & Notícias"
+ title="Notícias"
  actions={
  <div className="flex items-center gap-2">
                   <Button
@@ -253,13 +217,13 @@ function WorkspaceNoticiasIndexPage() {
                     className="h-8 px-2.5 rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
                     title="Configurar Chave de IA própria (BYOK) ou Plano"
                   >
-                    <Sparkles className="size-3.5 text-primary" />
+                    <Star className="size-3.5 text-primary" />
                     <span>Curadoria IA (BYOK)</span>
                   </Button>
  <Button asChild variant="outline" size="sm" className="rounded-xl font-bold text-xs gap-1.5">
  <Link to="/workspace/marketing/patrocinadores">
  <Megaphone className="size-3.5" />
- Patrocinadores & Ads
+ Patrocinadores e Ads
  </Link>
  </Button>
  <Button asChild size="sm" className="rounded-xl font-bold gap-1.5 text-xs">
@@ -352,7 +316,7 @@ function WorkspaceNoticiasIndexPage() {
                       customActions={[
                         {
                           label: "Gerar Carrossel (Studio)",
-                          icon: Sparkles,
+                          icon: Star,
                           onClick: () => handleGenerateCarouselFromArticle(art),
                         },
                       ]}
@@ -499,7 +463,7 @@ function WorkspaceNoticiasIndexPage() {
                     className="rounded-xl font-bold text-xs border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 gap-1 h-8"
                     title="Gerar Carrossel no Studio para Instagram"
                   >
-                    <Sparkles className="size-3.5" />
+                    <Star className="size-3.5" />
                     Carrossel
                   </Button>
                   <Button

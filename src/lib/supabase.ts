@@ -79,21 +79,48 @@ export class SupabaseUnconfiguredError extends Error {
 let _browserClient: SupabaseClient | null = null;
 
 export function getBrowserClient(): SupabaseClient {
- if (_browserClient) return _browserClient;
+  if (_browserClient) return _browserClient;
 
- const env = BrowserEnvSchema.safeParse({
- VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
- VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
- });
+  const env = BrowserEnvSchema.safeParse({
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+  });
 
- if (!env.success) {
- throw new SupabaseUnconfiguredError(env.error.issues.map((i) => i.message).join("; "));
- }
+  if (!env.success) {
+    throw new SupabaseUnconfiguredError(env.error.issues.map((i) => i.message).join("; "));
+  }
 
- _browserClient = createBrowserClient(env.data.VITE_SUPABASE_URL, env.data.VITE_SUPABASE_ANON_KEY);
+  // ── PWA Native Singularity: Auth Persistence ──────────────────────────────
+  // flowType: "pkce"       → Evita access_token na URL (o SW não cacheia tokens).
+  // persistSession: true   → Grava em localStorage (compartilhado browser/PWA iOS 16.4+).
+  // autoRefreshToken: true → Mantém sessão viva em background (standalone/installed).
+  // detectSessionInUrl: false → Sem loops de redirect no contexto standalone.
+  // storageKey fixo        → Browser e PWA usam exatamente o mesmo key no localStorage.
+  _browserClient = createBrowserClient(
+    env.data.VITE_SUPABASE_URL,
+    env.data.VITE_SUPABASE_ANON_KEY,
+    {
+      auth: {
+        flowType: "pkce",
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+        storageKey: "waesy-auth-token",
+      },
+      cookieOptions: {
+        maxAge: 60 * 60 * 24 * 365, // 1 ano — sessão PWA nunca expira por tempo
+        sameSite: "Lax",
+        secure:
+          typeof window !== "undefined" &&
+          window.location.protocol === "https:",
+        path: "/",
+      },
+    }
+  );
 
- return _browserClient;
+  return _browserClient;
 }
+
 
 // ---------------------------------------------------------------------------
 // Server client (service_role — server-side only)

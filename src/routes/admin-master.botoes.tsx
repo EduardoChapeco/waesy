@@ -10,24 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { SheetPage } from "@/components/ui/sheet-page";
-import {
- listHotpages,
- createHotpage,
- updateHotpage,
- deleteHotpage,
- syncDefaultHotpages,
- type HotpageDTO,
- type HotpageModule,
- type HotpageTemplateType,
-} from "@/services/hotpage.functions";
+import { listHotpages, createHotpage, updateHotpage, deleteHotpage, syncDefaultHotpages, type HotpageDTO, type HotpageModule, type HotpageTemplateType } from "@/services/hotpage.functions";
 import { DestinationPicker } from "@/components/ui/destination-picker";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DynamicMediaChip } from "@/components/commerce/dynamic-media-chip";
@@ -70,7 +55,7 @@ export const Route = createFileRoute("/admin-master/botoes")({
  tab: z.enum(["hero_module", "category_hub", "editorial_card"]).optional(),
  module: z.string().optional(),
  }),
- head: () => ({ meta: [{ title: "Cards Herói, Chips & Hotpages | Admin Master" }] }),
+ head: () => ({ meta: [{ title: "Cards Herói, Chips e Hotpages | Admin Master" }] }),
  loader: async () => {
    try {
  const hotpages = await listHotpages({ data: { module: "all" } }).catch(() => []);
@@ -357,7 +342,7 @@ function AdminMasterHotpagesPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-4">
  <div>
  <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
- <span>Hotpages & Destaques</span>
+ <span>Hotpages e Destaques</span>
  <Badge variant="outline" className="text-xs">
  {filteredItems.length}
  </Badge>
@@ -431,7 +416,7 @@ function AdminMasterHotpagesPage() {
  )}
  >
  <Layers className="size-4 text-primary" />
- <span>3. Coleções & Hotpages Editoriais</span>
+ <span>3. Coleções e Hotpages Editoriais</span>
  </button>
  </div>
 
@@ -842,7 +827,7 @@ function AdminMasterHotpagesPage() {
  Botão de Supercategoria (Chip de Continuação)
  </SelectItem>
  <SelectItem value="editorial_card" className="text-xs">
- Coleção & Hotpage Editorial
+ Coleção e Hotpage Editorial
  </SelectItem>
  </SelectContent>
  </Select>
@@ -932,7 +917,7 @@ function AdminMasterHotpagesPage() {
  <div className="p-3 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
  <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
  <Tag className="size-3.5 text-primary" />
- Badges & Tags Promocionais
+ Badges e Tags Promocionais
  </span>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

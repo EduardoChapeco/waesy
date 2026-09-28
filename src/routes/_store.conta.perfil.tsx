@@ -11,50 +11,17 @@ import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { CitySelect } from "@/components/ui/city-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NativeMobileHeader } from "@/components/navigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  User,
-  Camera,
-  ExternalLink,
-  Loader2,
-  Image as ImageIcon,
-  Trash2,
-  Check,
-  Briefcase,
-  Link as LinkIcon,
-  ShieldCheck,
-  Eye,
-  EyeOff,
-  Building2,
-  ShieldAlert,
-  Phone,
-  Calendar,
-  Lock,
-} from "lucide-react";
+import { User, Camera, ExternalLink, Loader2, Image as ImageIcon, Trash2, Check, Briefcase, Link as LinkIcon, ShieldCheck, Eye, EyeOff, Building2, ShieldAlert, Phone, Calendar, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ProfessionalResumeEditor, ResumeDataDTO } from "@/components/profile/professional-resume-editor";
+import { triggerCivilIdentityRippleCascade } from "@/services/deep-core.functions";
 
 export const Route = createFileRoute("/_store/conta/perfil")({
-  head: () => ({ meta: [{ title: "Perfil Civil & Identidade | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Perfil Civil e Identidade | Waesy" }] }),
   validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
     tab: typeof search.tab === "string" ? search.tab : undefined,
   }),
@@ -270,6 +237,14 @@ function ProfileCivilPage() {
         },
       });
 
+      await triggerCivilIdentityRippleCascade({
+        data: {
+          fullName: formData.fullName.trim(),
+          avatarUrl: formData.avatarUrl || undefined,
+          phone: formData.phone.replace(/\D/g, "") || undefined,
+        },
+      }).catch(() => null);
+
       toast.success("Conta Civil e preferências salvas com sucesso!");
       router.invalidate();
     } catch (err) {
@@ -299,10 +274,10 @@ function ProfileCivilPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-6 animate-in fade-in duration-200">
+    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-20 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── 1. Canonical Navigation Header ── */}
       <NativeMobileHeader
-        title="Conta Civil"
+        title="Perfil"
         fallbackHref="/conta"
         rightActions={
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -337,7 +312,7 @@ function ProfileCivilPage() {
                     ? `${window.location.origin}/membro/@${handle}`
                     : `${window.location.origin}/membro/${profile.id}`;
                   navigator.clipboard.writeText(link);
-                  toast.success("Link do perfil civil copiado!");
+                  toast.success("Link do perfil copiado!");
                 }
               }}
             >
@@ -355,7 +330,7 @@ function ProfileCivilPage() {
         </div>
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-foreground text-sm">Conta Civil Soberana</h3>
+            <h3 className="font-bold text-foreground text-sm">Conta Civil</h3>
             <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
               Root Transacional
             </Badge>
@@ -382,21 +357,21 @@ function ProfileCivilPage() {
                 className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <User className="size-3.5" strokeWidth={1.75} />
-                <span>Dados & Identidade Civil</span>
+                <span>Identidade</span>
               </TabsTrigger>
               <TabsTrigger
                 value="profissional"
                 className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <Briefcase className="size-3.5" strokeWidth={1.75} />
-                <span>Perfil Profissional & RH</span>
+                <span>Currículo</span>
               </TabsTrigger>
               <TabsTrigger
                 value="privacidade"
                 className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:border-primary/20 border border-transparent text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <Lock className="size-3.5" strokeWidth={1.75} />
-                <span>Privacidade & Segurança</span>
+                <span>Privacidade</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -409,7 +384,7 @@ function ProfileCivilPage() {
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                 <Camera className="size-4 text-primary shrink-0" />
-                <span>1. Fotos da Conta Civil</span>
+                <span>Fotos</span>
               </div>
 
               {/* Capa Panorâmica (Proporção 3:1 Canônica e Responsiva) */}
@@ -522,7 +497,7 @@ function ProfileCivilPage() {
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                 <User className="size-4 text-primary shrink-0" />
-                <span>2. Identidade Legal & Documentos</span>
+                <span>Documentos</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -662,7 +637,7 @@ function ProfileCivilPage() {
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                 <LinkIcon className="size-4 text-primary shrink-0" />
-                <span>3. Cidade & Contato Digital Pessoal</span>
+                <span>Endereço e Contato</span>
               </div>
 
               <div className="pt-1">
@@ -705,7 +680,7 @@ function ProfileCivilPage() {
             <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 flex items-start gap-3 text-xs text-foreground">
               <Briefcase className="size-4 text-primary shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <p className="font-semibold text-foreground">Vínculo Profissional & Candidaturas</p>
+                <p className="font-semibold text-foreground">Vínculo Profissional e Candidaturas</p>
                 <p className="text-[11px] text-muted-foreground">
                   Seu currículo profissional é utilizado para candidaturas a vagas locais, prestação de serviços e
                   habilitação operacional (ex: entregadores MotoLink e motoristas).
@@ -730,7 +705,7 @@ function ProfileCivilPage() {
               <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ShieldCheck className="size-4 text-primary shrink-0" />
-                  <span>1. Visibilidade do Perfil Civil</span>
+                  <span>Visibilidade</span>
                 </div>
                 <Badge variant="outline" className="text-[10px] font-mono">
                   {formData.isAnonymous ? "Perfil Discreto" : "Perfil Público"}
@@ -749,7 +724,7 @@ function ProfileCivilPage() {
                       ) : (
                         <Eye className="size-3.5 text-primary" />
                       )}
-                      <span>Perfil Civil Discreto (Ocultar de Buscas e Diretório Comunitário)</span>
+                      <span>Perfil Discreto (Ocultar do Diretório)</span>
                     </Label>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
                       Quando ativo, sua conta civil não é indexada na busca de membros nem no diretório público. Suas
@@ -768,7 +743,7 @@ function ProfileCivilPage() {
                 <div className="pt-3 border-t border-border/30 flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <Label htmlFor="location-switch" className="text-xs font-bold text-foreground cursor-pointer">
-                      Ocultar Cidade / Localização Precisa
+                      Ocultar Cidade / Localização
                     </Label>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
                       Impede que sua cidade seja exibida publicamente nos feeds comunitários.
@@ -789,13 +764,13 @@ function ProfileCivilPage() {
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground pb-2.5 border-b border-border/40">
                 <Lock className="size-4 text-primary shrink-0" />
-                <span>2. Preferências de Comunicação</span>
+                <span>Comunicação</span>
               </div>
 
               <div className="p-4 rounded-xl bg-muted/20 border border-border/40 flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <Label htmlFor="newsletter-switch" className="text-xs font-bold text-foreground cursor-pointer">
-                    Comunicados da Comunidade & Atualizações Legais
+                    Comunicados e Atualizações Legais
                   </Label>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Receba resumos de transações, atualizações de termos de uso e novidades dos comércios locais no seu
@@ -816,7 +791,7 @@ function ProfileCivilPage() {
             <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-destructive/30 bg-destructive/5">
               <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-destructive pb-2.5 border-b border-destructive/20">
                 <ShieldAlert className="size-4 text-destructive shrink-0" />
-                <span>3. Exclusão de Conta & Direito ao Esquecimento (LGPD)</span>
+                <span>Exclusão de Conta</span>
               </div>
 
               <div className="space-y-2">
@@ -886,22 +861,43 @@ function ProfileCivilPage() {
           </TabsContent>
         </Tabs>
 
-        {/* ── Botão Salvar Principal (Cravado em h-11) ── */}
+        {/* ── Botão Salvar Principal (Desktop: Alinhado à Direita | Mobile: Espaçado) ── */}
         <div className="flex items-center justify-end gap-3 pt-2 w-full">
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto rounded-xl px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-sm active:scale-98"
+            className="w-full sm:w-auto rounded-xl px-6 h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                <span>Salvando Dados Civis...</span>
+                <span>Salvando...</span>
               </>
             ) : (
               <>
                 <Check className="size-4 stroke-[2.5]" />
-                <span>Salvar Conta Civil</span>
+                <span>Salvar Perfil</span>
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* ── Barra de Ação Flutuante Mobile (<640px) para Salvar sem Rolar a Página Toda ── */}
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 bg-background/95 backdrop-blur-md border-t border-border/40 z-30">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-xl h-11 text-xs font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-md"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                <span>Salvando...</span>
+              </>
+            ) : (
+              <>
+                <Check className="size-4 stroke-[2.5]" />
+                <span>Salvar Perfil</span>
               </>
             )}
           </Button>

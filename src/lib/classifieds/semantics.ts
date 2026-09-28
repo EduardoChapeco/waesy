@@ -7,55 +7,9 @@
  * 3. Cada nicho possui vocabulário, badges, fichas técnicas e CTAs contextuais dedicados.
  */
 
-import {
-  Home,
-  Building,
-  Key,
-  Car,
-  Tag,
-  Wrench,
-  Tractor,
-  Calendar,
-  Clock,
-  MapPin,
-  CheckCircle2,
-  ShieldCheck,
-  Package,
-  Truck,
-  Layers,
-  RefreshCw,
-  CreditCard,
-  QrCode,
-  FileCheck,
-  UserCheck,
-  Lock,
-  Plane,
-  HeartHandshake,
-  Utensils,
-  Users,
-  Banknote,
-  Briefcase,
-  Download,
-  DownloadCloud,
-  FileArchive,
-  Gauge,
-  Coins,
-  TrendingUp,
-  ShieldAlert,
-  Sparkles,
-  Store,
-  Flame,
-  Apple,
-  Bath,
-  Fuel,
-} from "lucide-react";
+import { Home, Building, Key, Car, Tag, Wrench, Tractor, Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, Package, Truck, Layers, RefreshCw, CreditCard, QrCode, FileCheck, UserCheck, Lock, Plane, HeartHandshake, Utensils, Users, Banknote, Briefcase, Download, DownloadCloud, FileArchive, Gauge, Coins, TrendingUp, ShieldAlert, Star, Store, Flame, Apple, Bath, Fuel } from "lucide-react";
 import { formatMoney } from "@/lib/money";
-import {
-  getEducationLabel,
-  getExperienceLabel,
-  getRegimeLabel,
-  getWorkplaceModelLabel,
-} from "@/lib/classifieds/canonical-hiring";
+import { getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 
 export type ClassifiedNicheId =
   | "hospitality_stay" // Hospedagem & Temporada (Chalés, Cabanas, Pousadas, Studios)
@@ -686,7 +640,7 @@ export function getSemanticBadges(classified: any): Array<{ label: string; icon:
   if (niche.id === "goods") {
     const deliveryMode = attrs.delivery_mode;
     if (deliveryMode === "both") {
-      badges.push({ label: "Retirada em Mãos & Entrega Local", icon: Truck, variant: "outline" });
+      badges.push({ label: "Retirada em Mãos e Entrega Local", icon: Truck, variant: "outline" });
     } else if (deliveryMode === "pickup") {
       badges.push({ label: "Somente Retirada em Mãos", icon: Package, variant: "outline" });
     } else if (deliveryMode === "local_delivery") {
@@ -1467,7 +1421,7 @@ export function getSemanticCondition(classified: any): { label: string; value: s
     const checkin = attrs.checkin_type === "smart_lock" || attrs.checkin_type === "self_checkin"
       ? "Self Check-in (Fechadura Digital)"
       : "Check-in Presencial com Anfitrião";
-    return { label: "Acesso & Entrada", value: checkin };
+    return { label: "Acesso e Entrada", value: checkin };
   }
 
   if (niche.id === "real_estate_sale" || niche.id === "real_estate_rent") {

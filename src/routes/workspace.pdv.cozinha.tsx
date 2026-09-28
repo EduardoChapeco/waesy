@@ -2,29 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- Clock,
- ChefHat,
- Check,
- UtensilsCrossed,
- PackageCheck,
- AlertCircle,
- Maximize,
- Minimize,
- Volume2,
- VolumeX,
- Flame,
- CheckSquare,
- Square,
- ArrowLeft,
- Printer,
- Layers,
- Thermometer,
- Coffee,
- Beer,
- CakeSlice,
- Utensils,
-} from "lucide-react";
+import { Clock, ChefHat, Check, UtensilsCrossed, PackageCheck, AlertCircle, Maximize, Minimize, Volume2, VolumeX, Flame, CheckSquare, Square, ArrowLeft, Printer, Layers, Thermometer, Coffee, Beer, CakeSlice, Utensils } from "lucide-react";
 import { toast } from "sonner";
 
 import { listOrders, updateOrderStatus } from "@/services/order.functions";
@@ -33,19 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatTimeOnly, formatDateTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import { playNewOrderAlert } from "@/lib/audio-chimes";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 
@@ -299,7 +266,7 @@ function KDSDashboard() {
  return (
  <NicheOperationalGuard
  targetNiche="gastronomy"
- toolTitle="KDS Cozinha & Estação de Preparo"
+ toolTitle="KDS Cozinha"
  toolDescription="O painel KDS (Kitchen Display System) com tempos de cocção, alertas sonoros e divisão por estações de cozinha é desenhado especificamente para restaurantes e gastronomia."
  store={store}
  >

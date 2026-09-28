@@ -1,38 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
- Eye,
- Percent,
- ShieldCheck,
- Megaphone,
- WhatsappLogo,
- CheckCircle,
- ChatCircle,
- Funnel,
- Buildings,
- ClockCounterClockwise,
- ChartBar,
- TrendUp,
- CursorClick,
-} from "@phosphor-icons/react";
+import { Eye, Percent, ShieldCheck, Megaphone, WhatsappLogo, CheckCircle, ChatCircle, Funnel, Buildings, ClockCounterClockwise, ChartBar, TrendUp, CursorClick } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
- getSponsorMetricsDashboard,
- type SponsorMetricsDTO,
-} from "@/services/telemetry.functions";
-import {
- getStoreWhatsAppAnalytics,
- listStoreWhatsAppLeads,
- updateWhatsAppLeadStatus,
- type WhatsAppLeadDTO,
- type WhatsAppAnalyticsDTO,
-} from "@/services/whatsapp-leads.functions";
+import { getSponsorMetricsDashboard, type SponsorMetricsDTO } from "@/services/telemetry.functions";
+import { getStoreWhatsAppAnalytics, listStoreWhatsAppLeads, updateWhatsAppLeadStatus, type WhatsAppLeadDTO, type WhatsAppAnalyticsDTO } from "@/services/whatsapp-leads.functions";
 
 export const Route = createFileRoute("/workspace/marketing/telemetria")({
  head: () => ({
- meta: [{ title: "Telemetria de Audiência, WhatsApp & Patrocinadores | Workspace Waesy" }],
+ meta: [{ title: "Telemetria | Workspace Waesy" }],
  }),
  loader: async () => {
    try {
@@ -188,7 +165,7 @@ function WorkspaceTelemetriaPage() {
  <div>
  <div className="flex items-center gap-2">
  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
- Telemetria & Analytics
+ Telemetria e Analytics
  </span>
  <span className="text-xs text-muted-foreground font-mono">Dados Auditados em Tempo Real</span>
  </div>
@@ -201,7 +178,7 @@ function WorkspaceTelemetriaPage() {
  <Button asChild variant="outline" className="rounded-xl font-bold text-xs h-9">
  <Link to="/workspace/marketing/pixels">
  <CursorClick size={16} weight="bold" className="mr-1.5 text-primary" />
- Pixels & CAPI
+ Pixels e CAPI
  </Link>
  </Button>
  <Button asChild variant="outline" className="rounded-xl font-bold text-xs h-9">

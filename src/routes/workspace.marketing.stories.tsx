@@ -1,28 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import {
-  ArrowLeft,
-  Download,
-  Share2,
-  Copy,
-  Sparkles,
-  Smartphone,
-  Square,
-  Maximize2,
-  Image as ImageIcon,
-  Check,
-  RefreshCw,
-  ExternalLink,
-} from "lucide-react";
+import { ArrowLeft, Download, Share2, Copy, Star, Smartphone, Square, Maximize2, Image as ImageIcon, Check, RefreshCw, ExternalLink } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  generateSocialStoryCard,
-  type SocialCardResultDTO,
-} from "@/services/studio.functions";
+import { generateSocialStoryCard, type SocialCardResultDTO } from "@/services/studio.functions";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { toast } from "sonner";
@@ -30,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/marketing/stories")({
   head: () => ({
-    meta: [{ title: "Gerador de Stories & Redes Sociais | Workspace Waesy" }],
+    meta: [{ title: "Gerador de Stories | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -164,7 +148,7 @@ export default function WorkspaceMarketingStoriesPage() {
               <ArrowLeft className="size-4" />
             </Link>
             <h1 className="text-2xl font-black tracking-tight text-foreground">
-              Estúdio de Stories & Redes Sociais
+              Estúdio de Stories e Redes Sociais
             </h1>
           </div>
           <p className="text-xs text-muted-foreground ml-10">
@@ -372,7 +356,7 @@ export default function WorkspaceMarketingStoriesPage() {
               {isGenerating ? (
                 <RefreshCw className="size-4 animate-spin" />
               ) : (
-                <Sparkles className="size-4" />
+                <Star className="size-4" />
               )}
               <span>Gerar Card Social</span>
             </Button>

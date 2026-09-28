@@ -1,51 +1,7 @@
 import { createFileRoute, Link, useNavigate, isRedirect } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Tag,
-  MapPin,
-  MessageCircle,
-  Share2,
-  ShieldCheck,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  User,
-  AlertTriangle,
-  ArrowLeft,
-  Handshake,
-  HeartHandshake,
-  Loader2,
-  Image as ImageIcon,
-  Play,
-  Maximize2,
-  ExternalLink,
-  Edit3,
-  Truck,
-  Package,
-  PackageCheck,
-  CreditCard,
-  QrCode,
-  RefreshCw,
-  Calendar,
-  Users,
-  Check,
-  Download,
-  FileArchive,
-  DownloadCloud,
-  Briefcase,
-  CheckCircle2,
-  TrendingUp,
-  Wrench,
-  Banknote,
-  Utensils,
-  Store as StoreIcon,
-  Hotel,
-  Building2,
-  BookOpenCheck,
-  Receipt,
-  FileSpreadsheet,
-} from "lucide-react";
+import { Tag, MapPin, MessageCircle, Share2, ShieldCheck, ChevronLeft, ChevronRight, Clock, User, AlertTriangle, ArrowLeft, Handshake, HeartHandshake, Loader2, Image as ImageIcon, Play, Maximize2, ExternalLink, Edit3, Truck, Package, PackageCheck, CreditCard, QrCode, RefreshCw, Calendar, Users, Check, Download, FileArchive, DownloadCloud, Briefcase, CheckCircle2, TrendingUp, Wrench, Banknote, Utensils, Store as StoreIcon, Hotel, Building2, BookOpenCheck, Receipt, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -58,21 +14,8 @@ import { AiSdrChat } from "@/components/commerce/ai-sdr-chat";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatMoney } from "@/lib/money";
 import { formatRelativeTime, formatDate } from "@/lib/datetime";
@@ -80,44 +23,15 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { ProtectedContactButton } from "@/components/common/protected-contact-button";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
 import { getStoredLocation } from "@/components/location/location-master-pill";
-import {
-  getPublicClassifiedById,
-  updateClassifiedStatus,
-  deleteClassified,
-  getDigitalDownloadSignedUrl,
-  listClassifiedJobApplications,
-  trackClassifiedView,
-} from "@/services/classifieds.functions";
-import {
-  getEducationLabel,
-  getExperienceLabel,
-  getRegimeLabel,
-  getWorkplaceModelLabel,
-} from "@/lib/classifieds/canonical-hiring";
+import { getPublicClassifiedById, updateClassifiedStatus, deleteClassified, getDigitalDownloadSignedUrl, listClassifiedJobApplications, trackClassifiedView } from "@/services/classifieds.functions";
+import { getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 import { createDealProposal, getClassifiedBookedDates } from "@/services/deals.functions";
 import { getProfile } from "@/services/auth.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
-import {
-  resolveClassifiedNiche,
-  getSemanticBadges,
-  getSemanticCondition,
-  getClassifiedFeatureCards,
-  getClassifiedPaymentMethods,
-} from "@/lib/classifieds/semantics";
-import {
-  CANONICAL_TRANSFER_VEHICLES,
-  DEPARTURE_STATUS_CONFIG,
-  type DepartureOption,
-} from "@/lib/classifieds/canonical-airports";
+import { resolveClassifiedNiche, getSemanticBadges, getSemanticCondition, getClassifiedFeatureCards, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
+import { CANONICAL_TRANSFER_VEHICLES, DEPARTURE_STATUS_CONFIG, type DepartureOption } from "@/lib/classifieds/canonical-airports";
 import { cn } from "@/lib/utils";
-import {
-  DigitalCompanionCard,
-  type DigitalCompanionCardProps,
-  type CompanionCardNiche,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
+import { DigitalCompanionCard, type DigitalCompanionCardProps, type CompanionCardNiche, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
 
 export const Route = createFileRoute("/_store/classificados/$id")({
   head: ({
@@ -377,8 +291,18 @@ function ClassifiedDetailPage() {
 
   const isAvailableToOrder = classified?.status === "active" && !isOfferExpired && !isOfferLimitReached && status !== "sold" && status !== "reserved";
 
-  // FASE 1: Rastreio de Visualizações Real com Prevenção Anti-Spam de Refresh (Sessão)
+  // FASE 1 (V114): Scroll Restoration imediato + Rastreio de Visualizações Real
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const mainContainer = document.querySelector("main");
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+        mainContainer.scrollTop = 0;
+      }
+    }
     const targetId = classified?.id;
     if (!targetId || typeof window === "undefined") return;
 

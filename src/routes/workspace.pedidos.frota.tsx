@@ -1,54 +1,21 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- Truck,
- Plus,
- Copy,
- ExternalLink,
- MapPin,
- Clock,
- KeyRound,
- DollarSign,
- Loader2,
- Trash2,
- Settings2,
- Car,
- Bike,
- Zap,
- Boxes,
-} from "lucide-react";
+import { Truck, Plus, Copy, ExternalLink, MapPin, Clock, KeyRound, DollarSign, Loader2, Trash2, Settings2, Car, Bike, Zap, Boxes } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetTrigger,
-} from "@/components/ui/sheet";
-import {
- listDispatches,
- createDispatch,
- listPendingDeliveryOrders,
- type DispatchRecord,
-} from "@/services/dispatch.functions";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { listDispatches, createDispatch, listPendingDeliveryOrders, type DispatchRecord } from "@/services/dispatch.functions";
 import { listCouriers, type CourierSummaryDTO } from "@/services/fleet.functions";
-import {
- listLogisticsPriceTables,
- saveLogisticsPriceTable,
- deleteLogisticsPriceTable,
- type MobilityServiceType,
-} from "@/services/mobility.functions";
+import { listLogisticsPriceTables, saveLogisticsPriceTable, deleteLogisticsPriceTable, type MobilityServiceType } from "@/services/mobility.functions";
 import { formatMoney } from "@/lib/money";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/workspace/pedidos/frota")({
- head: () => ({ meta: [{ title: "Frota & Despacho de Entregas | Waesy" }] }),
+ head: () => ({ meta: [{ title: "Frota e Despacho de Entregas | Waesy" }] }),
  loader: async () => {
    try {
  const [dispatches, priceTables, pendingOrders, couriers] = await Promise.all([
@@ -242,7 +209,7 @@ function FrotaEntregasPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
  <div>
  <h1 className="text-xl font-semibold text-foreground tracking-tight">
- Frota, Entregadores & Mobilidade
+ Frota, Entregadores e Mobilidade
  </h1>
  <p className="text-xs text-muted-foreground">
  Gerencie despachos em tempo real e tabelas de preços de frete e corridas.
@@ -327,7 +294,7 @@ function FrotaEntregasPage() {
  )}
 
  <div className="flex items-center justify-between">
- <h2 className="text-sm font-bold text-foreground">Despachos & Rotas Ativas ({dispatches.length})</h2>
+ <h2 className="text-sm font-bold text-foreground">Despachos Ativos ({dispatches.length})</h2>
  <Sheet open={isOpen} onOpenChange={setIsOpen}>
  <SheetTrigger asChild>
  <Button className="rounded-xl h-10 px-4 font-semibold text-xs bg-foreground text-background hover:opacity-90 gap-1.5 cursor-pointer">
@@ -473,7 +440,7 @@ function FrotaEntregasPage() {
  <span>Gerando Despacho...</span>
  </div>
  ) : (
- <span>Criar Despacho & Link Mágico</span>
+ <span>Criar Despacho e Link Mágico</span>
  )}
  </Button>
  </div>

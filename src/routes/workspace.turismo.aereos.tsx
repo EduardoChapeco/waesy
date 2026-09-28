@@ -1,39 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Plane,
-  Plus,
-  Search,
-  Hash,
-  MapPin,
-  Calendar,
-  Clock,
-  Briefcase,
-  Layers,
-  CheckCircle2,
-  Trash2,
-  ArrowRight,
-  ShieldCheck,
-  Building,
-  User,
-  Ticket,
-  Copy,
-  DollarSign,
-  Percent,
-  Zap,
-} from 'lucide-react';
+import { Plane, Plus, Search, Hash, MapPin, Calendar, Clock, Briefcase, Layers, CheckCircle2, Trash2, ArrowRight, ShieldCheck, Building, User, Ticket, Copy, DollarSign, Percent, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/sheet';
 import { WorkspaceDashboardSheet, type MetricCardItem } from '@/components/workspace/workspace-dashboard-sheet';
 import { WorkspaceCanonicalToolbar } from '@/components/workspace/workspace-canonical-toolbar';
 import { toast } from 'sonner';
@@ -60,7 +32,7 @@ const CONSOLIDATOR_PRESETS = [
 ];
 
 export const Route = createFileRoute('/workspace/turismo/aereos')({
-  head: () => ({ meta: [{ title: 'Emissões Aéreas & Bilhetes GDS | Workspace Waesy' }] }),
+  head: () => ({ meta: [{ title: 'Emissões Aéreas | Workspace Waesy' }] }),
   loader: async () => {
     try {
       const store = await getStoreSettings().catch(() => null);
@@ -308,7 +280,7 @@ export default function FlightsPage() {
       color: "emerald",
     },
     {
-      title: "Comissões & RAV Acumuladas",
+      title: "Comissões e RAV Acumuladas",
       value: formatMoney(totalCommissionsCents),
       description: "Receita de emissão da agência",
       icon: DollarSign,
@@ -337,7 +309,7 @@ export default function FlightsPage() {
       />
 
       <WorkspaceDashboardSheet
-        title="Painel de Emissões & Consolidadoras"
+        title="Emissões Aéreas"
         open={isMetricsOpen}
         onOpenChange={setIsMetricsOpen}
         items={dashboardMetrics}
@@ -352,7 +324,7 @@ export default function FlightsPage() {
                 <Ticket className="size-5" />
               </div>
               <div>
-                <SheetTitle className="text-base font-bold">Registrar Emissão Aérea (GDS & Consolidadora)</SheetTitle>
+                <SheetTitle className="text-base font-bold">Registrar Emissão Aérea (GDS e Consolidadora)</SheetTitle>
                 <SheetDescription className="text-xs text-muted-foreground">
                   Cadastre o bilhete eletrônico, PNR, rota, dados do passageiro e comissionamento da agência.
                 </SheetDescription>
@@ -365,7 +337,7 @@ export default function FlightsPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Building className="size-4 text-primary" />
-                1. Emissor, Consolidadora & Passageiro
+                1. Emissor, Consolidadora e Passageiro
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -426,7 +398,7 @@ export default function FlightsPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Hash className="size-4 text-primary" />
-                2. Códigos de Reserva & Bilhete Eletrônico
+                2. Códigos de Reserva e Bilhete Eletrônico
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -473,7 +445,7 @@ export default function FlightsPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Plane className="size-4 text-primary" />
-                3. Trecho Voo, Companhia & Horários
+                3. Trecho Voo, Companhia e Horários
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -610,7 +582,7 @@ export default function FlightsPage() {
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label className="text-xs font-semibold">Cabine & Franquia de Bagagem</Label>
+                  <Label className="text-xs font-semibold">Cabine e Franquia de Bagagem</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       className="h-11 px-3 rounded-xl border border-input bg-background text-sm font-medium focus:outline-none"
@@ -648,7 +620,7 @@ export default function FlightsPage() {
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
                   <DollarSign className="size-4" />
-                  4. Composição Tarifária, RAV & Comissões da Agência
+                  4. Composição Tarifária, RAV e Comissões da Agência
                 </h4>
                 <span className="text-xs font-bold text-foreground">
                   Valor Final Cliente: <strong className="text-primary text-sm">{formatMoney(Math.round(totalTicketPrice * 100))}</strong>

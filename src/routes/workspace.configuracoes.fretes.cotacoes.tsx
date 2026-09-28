@@ -6,20 +6,10 @@ import { PageHeader } from "@/components/commerce/page-header";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/state/states";
 import { listShippingZones, calculateShipping } from "@/services/shipping.functions";
-import {
- listOrdersAwaitingShippingQuote,
- updateOrderShippingQuote,
-} from "@/services/order.functions";
+import { listOrdersAwaitingShippingQuote, updateOrderShippingQuote } from "@/services/order.functions";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/datetime";
@@ -104,7 +94,7 @@ function FretesCotacoesPage() {
 
  return (
  <div className="space-y-8">
- <PageHeader title="Cotações de Frete" />
+ <PageHeader title="Cotações" />
 
  {/* Solicitações Pendentes */}
  <div className="bg-surface-paper rounded-xl p-6">

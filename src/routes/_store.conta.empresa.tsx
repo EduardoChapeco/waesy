@@ -2,40 +2,7 @@ import { createFileRoute, Link, redirect, isRedirect } from "@tanstack/react-rou
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Store,
-  ExternalLink,
-  Plus,
-  Phone,
-  FileText,
-  Printer,
-  Share2,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Eye,
-  Edit,
-  Package,
-  Layers,
-  ArrowUpRight,
-  TrendingUp,
-  MessageCircle,
-  Building2,
-  MapPin,
-  ShieldCheck,
-  Check,
-  X,
-  Loader2,
-  Star,
-  Sliders,
-  ArrowRight,
-  Bike,
-  Briefcase,
-  GraduationCap,
-  Award,
-  Trash2,
-  HelpCircle,
-} from "lucide-react";
+import { Store, ExternalLink, Plus, Phone, FileText, Printer, Share2, CheckCircle2, Clock, AlertCircle, Eye, Edit, Package, Layers, ArrowUpRight, TrendingUp, MessageCircle, Building2, MapPin, ShieldCheck, Check, X, Loader2, Star, Sliders, ArrowRight, Bike, Briefcase, GraduationCap, Award, Trash2, HelpCircle } from "lucide-react";
 import { NativeMobileHeader } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,32 +10,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getUserSession } from "@/services/auth.functions";
-import {
-  listCompanyLeadsAndOrders,
-  updateCompanyLeadStatus,
-  getCompanyReceiptData,
-  listCompanyCatalogClassifieds,
-  toggleCompanyClassifiedStatus,
-  listCompanyJobApplications,
-  updateCompanyJobApplicationStatus,
-  getCompanyCustomFormSettings,
-  updateCompanyCustomFormSettings,
-} from "@/services/company-mvp.functions";
+import { listCompanyLeadsAndOrders, updateCompanyLeadStatus, getCompanyReceiptData, listCompanyCatalogClassifieds, toggleCompanyClassifiedStatus, listCompanyJobApplications, updateCompanyJobApplicationStatus, getCompanyCustomFormSettings, updateCompanyCustomFormSettings } from "@/services/company-mvp.functions";
 import { listStoreDealReviews } from "@/services/deal-reviews.functions";
 import { CompanyReputationCard } from "@/components/deals/company-reputation-card";
 import { DealReviewModal } from "@/components/deals/deal-review-modal";
@@ -320,7 +265,7 @@ function PainelEmpresaPage() {
       <NativeMobileHeader
         fallbackHref="/conta"
         title={store.name}
-        subtitle={`${store.settings?.category || "Comércio & Serviços"} • ${store.city || "Chapecó"}, ${store.state || "SC"}`}
+        subtitle={`${store.settings?.category || "Comércio"} • ${store.city || "Chapecó"}, ${store.state || "SC"}`}
         rightActions={
           <div className="flex items-center gap-1.5 sm:gap-2">
             <CompanyNotificationsBell />
@@ -347,7 +292,7 @@ function PainelEmpresaPage() {
           <Button asChild variant="outline" size="sm" className="h-9 px-3 rounded-xl text-xs gap-1.5 border-border/80 hover:bg-muted/50 shrink-0">
             <Link to="/workspace/marketing/brand-kit">
               <Edit className="size-3.5 text-primary" />
-              <span>Editar Perfil & Marca</span>
+              <span>Editar Perfil e Marca</span>
             </Link>
           </Button>
 

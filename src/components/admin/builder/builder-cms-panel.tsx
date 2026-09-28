@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Link } from "@tanstack/react-router";
 import { Database, ShoppingBag, MapPin, Hotel, Star, Store, Plus, ExternalLink, Sliders, CheckCircle2, Layers } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,7 +51,7 @@ export function BuilderCmsPanel({
  },
  {
  id: "reviews",
- title: "Avaliações & Provas Sociais",
+ title: "Avaliações e Provas Sociais",
  description: "Depoimentos de clientes e viajantes com notas em estrelas.",
  icon: Star,
  count: 12,
@@ -62,7 +63,7 @@ export function BuilderCmsPanel({
  },
  {
  id: "store_profile",
- title: "Dados da Empresa & Loja",
+ title: "Dados da Empresa e Loja",
  description: "Logo, WhatsApp, endereço, horário de funcionamento e capa.",
  icon: Store,
  count: 1,
@@ -131,15 +132,13 @@ export function BuilderCmsPanel({
  </p>
 
  <div className="pt-2 border-t border-border/50 flex items-center justify-between gap-2">
- <a
- href={col.managementUrl}
- target="_blank"
- rel="noreferrer"
+ <Link
+ to={col.managementUrl as any}
  className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1"
  >
  <span>Gerenciar</span>
  <ExternalLink className="size-2.5" />
- </a>
+ </Link>
 
  <Button
  type="button"

@@ -6,22 +6,12 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
-import { 
-  Brain, 
-  Users, 
-  Play, 
-  CheckCircle, 
-  Sliders, 
-  Plus, 
-  ChartBar, 
-  Target, 
-  Lightbulb
-} from "@phosphor-icons/react";
+import { Brain, Users, Play, CheckCircle, Sliders, Plus, ChartBar, Target, Lightbulb } from "@phosphor-icons/react";
 import { listSimLabPersonas, listResearchSessions, createSimLabPersona, runSimLabResearch } from "@/services/simlab.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-master/simlabs")({
-  head: () => ({ meta: [{ title: "SimLabs & Personas Sintéticas | Waesy" }] }),
+  head: () => ({ meta: [{ title: "SimLabs e Personas Sintéticas | Waesy" }] }),
   loader: async () => {
     try {
       const [personas, sessions] = await Promise.all([

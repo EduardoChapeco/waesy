@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,10 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Layers, Link as LinkIcon, FileText, Loader2, CheckCircle2, AlertCircle, PackageCheck, Utensils, ChevronRight } from 'lucide-react';
-import {
- importFullCatalogMenu,
- type ImportedCatalogDTO,
-} from "@/services/api-orchestrator.functions";
+import { importFullCatalogMenu, type ImportedCatalogDTO } from "@/services/api-orchestrator.functions";
 import { batchCreateCatalogMenu } from "@/services/admin-catalog.functions";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
@@ -113,7 +103,7 @@ export function ImportCatalogModal({
  </div>
  <div>
  <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
- <span>Importador de Cardápio & Catálogo (IA)</span>
+ <span>Importador de Cardápio e Catálogo (IA)</span>
  <Badge variant="outline" className="text-[10px] font-mono border-primary/40 text-primary">
  iFood / Link / Texto
  </Badge>

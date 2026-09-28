@@ -80,7 +80,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "RS"
     },
     curriculum: {
-      profession_title: "Professora de Ensino Fundamental & Gestora do Lar",
+      profession_title: "Professora de Ensino Fundamental e Gestora do Lar",
       occupation_sector: "Educação Pública Municipal",
       work_experience_years: 11,
       education_degree: "Superior Completo (Licenciatura em Pedagogia)",
@@ -183,7 +183,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "SC"
     },
     curriculum: {
-      profession_title: "Engenheiro de Software & Fundador de Micro-SaaS",
+      profession_title: "Engenheiro de Software e Fundador de Micro-SaaS",
       occupation_sector: "Tecnologia / Trabalho Remoto Internacional",
       work_experience_years: 6,
       education_degree: "Superior Completo (Ciência da Computação)",
@@ -233,7 +233,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "SP"
     },
     curriculum: {
-      profession_title: "Proprietária de Armarinho & Artigos de Costura",
+      profession_title: "Proprietária de Armarinho e Artigos de Costura",
       occupation_sector: "Comércio Varejista do Interior",
       work_experience_years: 22,
       education_degree: "Ensino Médio Completo",
@@ -283,7 +283,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "MG"
     },
     curriculum: {
-      profession_title: "Consultor de Growth & Performance Marketing",
+      profession_title: "Consultor de Growth e Performance Marketing",
       occupation_sector: "Agências Digitais & Consultoria de Vendas",
       work_experience_years: 8,
       education_degree: "Superior Completo (Administração / Marketing)",
@@ -333,7 +333,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "BA"
     },
     curriculum: {
-      profession_title: "Aposentada & Cuidadora Familiar",
+      profession_title: "Aposentada e Cuidadora Familiar",
       occupation_sector: "Previdência Social (INSS) & Economia do Cuidado",
       work_experience_years: 38,
       education_degree: "Ensino Fundamental Incompleto",
@@ -383,7 +383,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "PR"
     },
     curriculum: {
-      profession_title: "Médica Cardiologista & Professora Universitária",
+      profession_title: "Médica Cardiologista e Professora Universitária",
       occupation_sector: "Saúde Privada & Hospital de Alta Complexidade",
       work_experience_years: 14,
       education_degree: "Doutorado em Ciências Médicas",
@@ -482,7 +482,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "DF"
     },
     curriculum: {
-      profession_title: "Arquiteta de Interiores & Designer Comercial",
+      profession_title: "Arquiteta de Interiores e Designer Comercial",
       occupation_sector: "Arquitetura, Urbanismo e Design",
       work_experience_years: 10,
       education_degree: "Superior Completo (Arquitetura e Urbanismo)",
@@ -531,7 +531,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "SC"
     },
     curriculum: {
-      profession_title: "Engenheiro Agrônomo & Produtor de Grãos",
+      profession_title: "Engenheiro Agrônomo e Produtor de Grãos",
       occupation_sector: "Agronegócio e Cooperativismo Rural",
       work_experience_years: 18,
       education_degree: "Superior Completo (Agronomia)",
@@ -581,7 +581,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "PE"
     },
     curriculum: {
-      profession_title: "Estudante Universitária & Estagiária em RH",
+      profession_title: "Estudante Universitária e Estagiária em RH",
       occupation_sector: "Ensino Superior e Serviços Corporativos",
       work_experience_years: 2,
       education_degree: "Superior Incompleto (Administração 5º período)",
@@ -630,7 +630,7 @@ export const CANONICAL_BRAZIL_ARCHETYPES: SyntheticArchetype[] = [
       state: "GO"
     },
     curriculum: {
-      profession_title: "Mestre de Obras Autônomo & Empreiteiro",
+      profession_title: "Mestre de Obras Autônomo e Empreiteiro",
       occupation_sector: "Construção Civil Residencial e Comercial",
       work_experience_years: 32,
       education_degree: "Ensino Médio Incompleto",

@@ -84,7 +84,7 @@ export function CookieBanner() {
  </div>
  <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
  <div className="flex items-center gap-2 mb-0.5">
- <span className="font-bold text-foreground text-xs sm:text-sm">Privacidade & Cookies LGPD</span>
+ <span className="font-bold text-foreground text-xs sm:text-sm">Privacidade e Cookies LGPD</span>
  <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.2 rounded-md">
  <ShieldCheck className="size-3" /> Seguro
  </span>

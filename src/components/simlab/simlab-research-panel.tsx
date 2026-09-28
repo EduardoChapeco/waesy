@@ -1,31 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  Zap,
-  Activity,
-  FileLineChart,
-  BrainCircuit,
-  Users,
-  Search,
-  Rocket,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  ChevronRight,
-  RefreshCw,
-  Loader2,
-  History,
-} from "lucide-react";
+import { Zap, Activity, FileLineChart, BrainCircuit, Users, Search, Rocket, Clock, CheckCircle2, XCircle, AlertTriangle, ChevronRight, RefreshCw, Loader2, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  listResearchSessions,
-  createSimLabExperiment,
-  executeSimLabBatchSimulation,
-  fetchSyntheticArchetypes,
-} from "@/services/simlab.functions";
+import { listResearchSessions, createSimLabExperiment, executeSimLabBatchSimulation, fetchSyntheticArchetypes } from "@/services/simlab.functions";
 import type { SyntheticArchetype } from "@/types/simlab";
 
 export type ResearchTab = "market" | "brand" | "planning";

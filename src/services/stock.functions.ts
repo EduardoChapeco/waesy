@@ -9,28 +9,51 @@ import { dispatchMarketplaceChannelSync } from "./marketplace-hub.functions";
 // Handlers (decoupled for unit testing)
 // ---------------------------------------------------------------------------
 
-export async function _getStockLevels(params: { search?: string }, store_id: string) {
- const db = getServerClient();
+export async function _getStockLevels(params: { search?: string; locationId?: string }, store_id: string) {
+  const db = getServerClient();
 
- let query = db
- .from("product_variants")
- .select(
- `
- id, sku, stock_on_hand,
- products!inner ( id, title, status, store_id )
- `,
- )
- .eq("products.store_id", store_id)
- .order("sku");
+  let query = db
+    .from("product_variants")
+    .select(
+      `
+      id, sku, stock_on_hand,
+      products!inner ( id, title, status, store_id )
+      `,
+    )
+    .eq("products.store_id", store_id)
+    .order("sku");
 
- if (params.search) {
- query = query.ilike("sku", `%${params.search}%`);
- }
+  if (params.search) {
+    query = query.ilike("sku", `%${params.search}%`);
+  }
 
- const { data, error } = await query;
+  const { data, error } = await query;
 
- if (error) throw error;
- return data || [];
+  if (error) throw error;
+  if (!data || data.length === 0) return [];
+
+  // Se locationId informado, consulta o saldo específico deste armazém
+  if (params.locationId && params.locationId !== "all") {
+    try {
+      const { data: locInventories } = await db
+        .from("product_location_inventories")
+        .select("variant_id, stock_qty")
+        .eq("store_id", store_id)
+        .eq("location_id", params.locationId);
+
+      const locMap = new Map((locInventories || []).map((li) => [li.variant_id, li.stock_qty]));
+
+      return data.map((v) => ({
+        ...v,
+        stock_on_hand: locMap.has(v.id) ? (locMap.get(v.id) as number) : 0,
+        total_stock_all_locations: v.stock_on_hand,
+      }));
+    } catch (locErr) {
+      console.warn("[stock] Falha ao consultar saldos por local:", locErr);
+    }
+  }
+
+  return data || [];
 }
 
 export const getStockLevels = createServerFn({ method: "GET" })
@@ -38,6 +61,7 @@ export const getStockLevels = createServerFn({ method: "GET" })
  z
  .object({
  search: z.string().optional(),
+        locationId: z.string().optional(),
  })
  .default({}),
  )
@@ -62,34 +86,71 @@ export const getStockLevels = createServerFn({ method: "GET" })
 // ---------------------------------------------------------------------------
 
 export async function _adjustStock(
- params: {
- variantId: string;
- qty: number;
- movementType: "purchase" | "adjustment" | "damage" | "transfer" | "return";
- note?: string;
- },
- store_id: string,
+  params: {
+    variantId: string;
+    qty: number;
+    movementType: "purchase" | "adjustment" | "damage" | "transfer" | "return";
+    note?: string;
+    locationId?: string;
+  },
+  store_id: string,
 ) {
- const db = getServerClient();
+  const db = getServerClient();
 
- // Verify ownership
- const { data: variant, error: vError } = await db
- .from("product_variants")
- .select("id, products!inner(store_id)")
- .eq("id", params.variantId)
- .eq("products.store_id", store_id)
- .single();
+  // Verify ownership
+  const { data: variant, error: vError } = await db
+    .from("product_variants")
+    .select("id, products!inner(id, store_id)")
+    .eq("id", params.variantId)
+    .eq("products.store_id", store_id)
+    .single();
 
- if (vError || !variant) throw new Error("Variante não encontrada ou acesso negado");
+  if (vError || !variant) throw new Error("Variante não encontrada ou acesso negado");
 
- const { error } = await db.rpc("adjust_stock", {
- p_variant_id: params.variantId,
- p_qty: params.qty,
- p_movement_type: params.movementType,
- p_note: params.note || null,
- });
+  const { error } = await db.rpc("adjust_stock", {
+    p_variant_id: params.variantId,
+    p_qty: params.qty,
+    p_movement_type: params.movementType,
+    p_note: params.note || null,
+  });
 
- if (error) throw error;
+  if (error) throw error;
+
+  // Se um local de estoque específico foi informado, reflete em product_location_inventories
+  if (params.locationId) {
+    try {
+      const { data: updatedVariant } = await db
+        .from("product_variants")
+        .select("stock_on_hand")
+        .eq("id", params.variantId)
+        .single();
+
+      const currentStock = updatedVariant?.stock_on_hand ?? 0;
+      await db
+        .from("product_location_inventories")
+        .upsert(
+          {
+            store_id,
+            location_id: params.locationId,
+            product_id: (variant as any).products?.id,
+            variant_id: params.variantId,
+            stock_qty: Math.max(0, currentStock),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "location_id,product_id,variant_id" }
+        );
+
+      await db
+        .from("stock_movements")
+        .update({ location_id: params.locationId })
+        .eq("store_id", store_id)
+        .eq("variant_id", params.variantId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+    } catch (locErr) {
+      console.warn("[stock] Falha ao atualizar estoque por local:", locErr);
+    }
+  }
 
   // Disparo assíncrono defensivo de sincronização de estoque com canais de marketplace
   try {
@@ -121,6 +182,45 @@ export async function _adjustStock(
  return { status: "ok" as const, message: "Estoque ajustado com sucesso." };
 }
 
+export const transferStock = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      variantId: z.string().uuid(),
+      sourceLocationId: z.string().uuid(),
+      destinationLocationId: z.string().uuid(),
+      qty: z.number().int().positive("A quantidade deve ser maior que zero"),
+      note: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: params }) => {
+    try {
+      await requireAdmin();
+      const identity = await getServerIdentity();
+      if (!identity.store_id) throw new Error("Contexto de loja inválido");
+
+      const db = getServerClient();
+      const { data, error } = await db.rpc("transfer_stock_between_locations", {
+        p_store_id: identity.store_id,
+        p_variant_id: params.variantId,
+        p_source_location_id: params.sourceLocationId,
+        p_dest_location_id: params.destinationLocationId,
+        p_qty: params.qty,
+        p_note: params.note || null,
+      });
+
+      if (error) {
+        console.error("[stock.functions] transferStock RPC error:", error);
+        throw new Error(error.message || "Falha ao transferir estoque entre armazéns.");
+      }
+
+      return data;
+    } catch (e: unknown) {
+      if (e instanceof SupabaseUnconfiguredError) throw e;
+      console.error("[stock.functions] transferStock:", e instanceof Error ? e.message : String(e));
+      throw new Error((e instanceof Error ? e.message : String(e)) || "Erro ao transferir estoque.");
+    }
+  });
+
 export const adjustStock = createServerFn({ method: "POST" })
  .validator(
  z.object({
@@ -128,6 +228,7 @@ export const adjustStock = createServerFn({ method: "POST" })
  qty: z.number().int(),
  movementType: z.enum(["purchase", "adjustment", "damage", "transfer", "return"]),
  note: z.string().optional(),
+ locationId: z.string().uuid().optional(),
  }),
  )
  .handler(async ({ data: params }) => {
@@ -160,6 +261,10 @@ export async function _getStockMovements(limit: number, store_id: string) {
  note,
  created_at,
  actor_id,
+      channel_source,
+      channel_origin,
+      location_id,
+      location:inventory_locations(id, name, slug, type),
  variant:product_variants!inner(
  sku,
  product:products!inner(title, store_id)

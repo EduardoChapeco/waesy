@@ -2,35 +2,7 @@ import { createFileRoute, useNavigate, isRedirect } from "@tanstack/react-router
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
- Type,
- Square,
- Image as ImageIcon,
- Palette,
- Award,
- Layers,
- Save,
- Download,
- Play,
- Pause,
- Plus,
- Trash2,
- Copy,
- Undo2,
- Redo2,
- ZoomIn,
- ZoomOut,
- Video,
- Film,
- Music,
- Scissors,
- ArrowLeft,
- Smartphone,
- Check,
- Loader2,
- ChevronRight,
- Maximize2,
-} from "lucide-react";
+import { Type, Square, Image as ImageIcon, Palette, Award, Layers, Save, Download, Play, Pause, Plus, Trash2, Copy, Undo2, Redo2, ZoomIn, ZoomOut, Video, Film, Music, Scissors, ArrowLeft, Smartphone, Check, Loader2, ChevronRight, Maximize2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -38,28 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import {
- type StudioElement,
- type SlideBackground,
- type StudioAspectRatio,
- STUDIO_DIMENSIONS,
- DEFAULT_TEXT_PROPERTIES,
- DEFAULT_SHAPE_PROPERTIES,
-} from "@/types/studio";
+import { type StudioElement, type SlideBackground, type StudioAspectRatio, STUDIO_DIMENSIONS, DEFAULT_TEXT_PROPERTIES, DEFAULT_SHAPE_PROPERTIES } from "@/types/studio";
 import { StudioCanvas } from "@/components/studio/studio-canvas";
-import {
- listStudioProjects,
- listStudioTemplates,
- saveStudioProject,
- getStudioProjectById,
- type StudioProjectDTO,
- type StudioTemplateDTO,
-} from "@/services/studio.functions";
+import { listStudioProjects, listStudioTemplates, saveStudioProject, getStudioProjectById, type StudioProjectDTO, type StudioTemplateDTO } from "@/services/studio.functions";
 import { getProductById } from "@/services/admin-catalog.functions";
 import { exportElementAsImage } from "@/lib/pdf-export";
 
 export const Route = createFileRoute("/workspace/estudio/")({
- head: () => ({ meta: [{ title: "Waesy Studio — Criação & Vídeo | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Estúdio | Workspace Waesy" }] }),
  validateSearch: (search: Record<string, unknown>) => {
  return {
  projectId: search.projectId as string | undefined,

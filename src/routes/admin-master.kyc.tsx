@@ -1,31 +1,11 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- UserCheck,
- CheckCircle2,
- XCircle,
- AlertCircle,
- FileText,
- Eye,
- Loader2,
- ShieldCheck,
- RefreshCw,
-} from "lucide-react";
-import {
- listKycVerifications,
- reviewKycVerification,
-} from "@/services/master.functions";
+import { UserCheck, CheckCircle2, XCircle, AlertCircle, FileText, Eye, Loader2, ShieldCheck, RefreshCw } from "lucide-react";
+import { listKycVerifications, reviewKycVerification } from "@/services/master.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { formatDateTime } from "@/lib/datetime";
@@ -33,7 +13,7 @@ import { formatDateTime } from "@/lib/datetime";
 import { ErrorState } from "@/components/state/states";
 
 export const Route = createFileRoute("/admin-master/kyc")({
- head: () => ({ meta: [{ title: "Verificação Facial & KYC | Admin Waesy" }] }),
+ head: () => ({ meta: [{ title: "Verificação Facial e KYC | Admin Waesy" }] }),
  loader: async () => {
  try {
  const kycList = await listKycVerifications({ data: { status: "all" } }).catch(() => []);
@@ -117,7 +97,7 @@ function AdminKycPage() {
  <div>
  <h1 className="text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
  <UserCheck className="size-6 text-info" />
- Verificação & KYC
+ Verificação e KYC
  </h1>
  <p className="text-sm text-muted-foreground">
  Auditoria de selfies, provas de vida e documentos oficiais para emissão do selo de perfil autêntico.
@@ -259,7 +239,7 @@ function AdminKycPage() {
  onClick={() => handleOpenReview(k, "approved")}
  >
  <CheckCircle2 className="size-3.5 mr-1" />
- Aprovar & Conceder Selo
+ Aprovar e Conceder Selo
  </Button>
  </div>
  )}

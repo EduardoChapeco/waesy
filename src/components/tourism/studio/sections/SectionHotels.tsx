@@ -1,13 +1,5 @@
 import { type Proposal, type Hotel, type HotelRoom } from "@/services/proposals";
-import {
-  Accordion,
-  Card,
-  AddBtn,
-  L,
-  Inp,
-  SMALL_INPUT,
-  FileUploadList,
-} from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddBtn, L, Inp, SMALL_INPUT, FileUploadList } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { MapPin, Star, Utensils, Wifi, Plane as Pool } from "lucide-react";
 import { useAgency } from "@/lib/agency-context";
@@ -20,10 +12,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FormInput as Input } from "@/components/ui/input";
 import { NativeSelect as Select } from "@/components/ui/select";
-import {
-  SupplierAutocomplete,
-  type SupplierOption,
-} from "@/components/suppliers/SupplierAutocomplete";
+import { SupplierAutocomplete, type SupplierOption } from "@/components/suppliers/SupplierAutocomplete";
 
 interface Props {
   draft: Proposal;

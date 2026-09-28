@@ -1,28 +1,9 @@
 import { useState } from "react";
-import {
-  Boxes,
-  Plus,
-  Trash2,
-  Zap,
-  Bot,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Loader2,
-  Layers,
-  Cpu,
-} from "lucide-react";
+import { Boxes, Plus, Trash2, Zap, Bot, ArrowRight, ShieldCheck, CheckCircle2, Loader2, Layers, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { createCustomSquadFromArchitectFn } from "@/services/squads-runtime.functions";
 
@@ -38,7 +19,7 @@ const CANONICAL_CATALOG_AGENTS: ArchitectAgent[] = [
   {
     id: "agent-copywriter",
     name: "Copywriter Estratégico",
-    role_label: "Conversão & Conteúdo",
+    role_label: "Conversão e Conteúdo",
     specialty: "Headlines persuasivas, e-mails e criativos",
     color: "text-purple-500 bg-purple-500/10 border-purple-500/20",
   },
@@ -59,14 +40,14 @@ const CANONICAL_CATALOG_AGENTS: ArchitectAgent[] = [
   {
     id: "agent-security",
     name: "Auditor de Risco & Conformidade",
-    role_label: "Segurança & Validação",
+    role_label: "Segurança e Validação",
     specialty: "Auditoria de fraudes, KYC e RLS multi-tenant",
     color: "text-rose-500 bg-rose-500/10 border-rose-500/20",
   },
   {
     id: "agent-logistics",
     name: "Despachante MotoLink Autônomo",
-    role_label: "Roteamento & Entregas",
+    role_label: "Roteamento e Entregas",
     specialty: "Surge pricing, raio de atendimento e frota",
     color: "text-amber-500 bg-amber-500/10 border-amber-500/20",
   },

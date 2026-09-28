@@ -6,14 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
- Form,
- FormControl,
- FormField,
- FormItem,
- FormLabel,
- FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { signUpWithPassword, signInWithOAuth, getUserSession } from "@/services/auth.functions";

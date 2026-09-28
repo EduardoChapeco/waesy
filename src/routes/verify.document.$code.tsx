@@ -1,17 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  FileText,
-  UserCheck,
-  Hash,
-  AlertTriangle,
-  ArrowLeft,
-  Calendar,
-  Lock,
-  Download,
-} from "lucide-react";
+import { ShieldCheck, CheckCircle2, Clock, FileText, UserCheck, Hash, AlertTriangle, ArrowLeft, Calendar, Lock, Download } from "lucide-react";
 
 import { verifyDocumentPublic } from "@/services/contracts.functions";
 import { Badge } from "@/components/ui/badge";
@@ -143,7 +131,7 @@ function DocumentVerificationPage() {
             <div className="space-y-1 flex-1">
               <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                 <h2 className="text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300">
-                  Termo de Quitação Plena & Irrevogável (Quitado ✓)
+                  Termo de Quitação Plena e Irrevogável (Quitado ✓)
                 </h2>
                 <Badge className="bg-emerald-600 text-white font-mono text-[10px]">
                   OBRIGAÇÃO EXTINTA

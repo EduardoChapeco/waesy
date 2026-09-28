@@ -1,13 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import {
-  getPlatformInvoicesList,
-  getPlatformStoresList,
-  updateInvoiceStatus,
-  createPlatformInvoice,
-  duplicatePlatformInvoice,
-  deletePlatformInvoice,
-  toggleStoreDebtBlock,
-} from "@/services/master.functions";
+import { getPlatformInvoicesList, getPlatformStoresList, updateInvoiceStatus, createPlatformInvoice, duplicatePlatformInvoice, deletePlatformInvoice, toggleStoreDebtBlock } from "@/services/master.functions";
 import { formatMoney, parseMoney } from "@/lib/money";
 import { DollarSign, Plus, Receipt, Copy, Trash2, ExternalLink, FileText, ShieldAlert, ShieldCheck, Filter, Smartphone, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,25 +9,9 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DigitalCompanionCard,
-  type CompanionCardSectionItem,
-  type CompanionRuleItem,
-  type CompanionContactItem,
-} from "@/components/documents/digital-companion-card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DigitalCompanionCard, type CompanionCardSectionItem, type CompanionRuleItem, type CompanionContactItem } from "@/components/documents/digital-companion-card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +39,7 @@ export function calculateReformaTributaria2026(amountCents: number) {
 }
 
 export const Route = createFileRoute("/admin-master/faturas")({
-  head: () => ({ meta: [{ title: "Faturas & Planos | Admin Master" }] }),
+  head: () => ({ meta: [{ title: "Faturas e Planos | Admin Master" }] }),
   loader: async () => {
     try {
       const [invoices, stores] = await Promise.all([
@@ -270,7 +246,7 @@ function MasterFaturasPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Faturas & Planos
+            Faturas e Planos
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Emissão de cobranças, cálculo automático de juros pós-vencimento e gestão de bloqueio por inadimplência.
@@ -595,7 +571,7 @@ function MasterFaturasPage() {
                               onClick={() => handleUpdateStatus(inv.id, "paid")}
                             >
                               <CheckCircle2 className="size-3.5" />
-                              <span>Aprovar & Baixar</span>
+                              <span>Aprovar e Baixar</span>
                             </Button>
                           ) : (
                             <Button

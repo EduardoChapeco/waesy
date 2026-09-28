@@ -1,36 +1,9 @@
 import React, { useMemo } from 'react';
-import {
-  MessageSquare,
-  Clock,
-  MapPin,
-  Calendar,
-  Users,
-  CheckCircle2,
-  ChevronRight,
-  ChevronLeft,
-  DollarSign,
-  User,
-  ExternalLink,
-  Archive,
-  UserCheck,
-  MoreVertical,
-  Edit3,
-  FileText,
-  Calculator,
-  Plane,
-  Trash2,
-  AlertTriangle,
-} from 'lucide-react';
+import { MessageSquare, Clock, MapPin, Calendar, Users, CheckCircle2, ChevronRight, ChevronLeft, DollarSign, User, ExternalLink, Archive, UserCheck, MoreVertical, Edit3, FileText, Calculator, Plane, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 
@@ -215,7 +188,7 @@ export function LeadCard({
               {onOpenFlightGrid && (
                 <DropdownMenuItem onClick={() => onOpenFlightGrid(lead)} className="cursor-pointer font-medium text-sky-500">
                   <Plane className="size-3.5 mr-2" />
-                  Malha Aérea & Voos
+                  Malha Aérea e Voos
                 </DropdownMenuItem>
               )}
 

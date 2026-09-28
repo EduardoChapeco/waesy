@@ -3,19 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Clock,
-  CalendarDots,
-  ArrowLeft,
-  Storefront,
-  ShieldCheck,
-  Sparkle,
-  Check,
-  X,
-  MapPin,
-  WhatsappLogo,
-  CaretRight,
-} from "@phosphor-icons/react";
+import { Clock, CalendarDots, ArrowLeft, Storefront, ShieldCheck, Star, Check, X, MapPin, WhatsappLogo, CaretRight } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 
 export interface BookingDetailMobileProps {
@@ -105,7 +93,7 @@ export function BookingDetailMobile({
             Profissional Certificado
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/40 border border-border/40 text-[10px] font-semibold text-muted-foreground">
-            <Sparkle size={12} weight="bold" className="text-amber-500" />
+            <Star size={12} weight="bold" className="text-amber-500" />
             Biossegurança 100%
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/40 border border-border/40 text-[10px] font-semibold text-muted-foreground">

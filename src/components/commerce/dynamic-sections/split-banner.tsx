@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Star, ArrowRight } from "lucide-react";
 
 interface SplitBannerProps {
   node_id?: string;
@@ -84,7 +84,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
     if (!mediaUrl) {
       return (
         <div className="w-full min-h-[320px] h-full flex flex-col items-center justify-center p-8 text-center bg-muted/30 border border-border/40 rounded-2xl">
-          <Sparkles className="size-8 text-muted-foreground/40 mb-2" />
+          <Star className="size-8 text-muted-foreground/40 mb-2" />
           <span className="text-xs font-semibold text-muted-foreground">
             Mídia não configurada
           </span>
@@ -182,7 +182,7 @@ export function SplitBanner({ content, design_tokens }: SplitBannerProps) {
             {badge && (
               <div>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                  <Sparkles className="size-3" />
+                  <Star className="size-3" />
                   {badge}
                 </span>
               </div>

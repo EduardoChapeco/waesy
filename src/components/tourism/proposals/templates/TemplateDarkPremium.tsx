@@ -193,7 +193,7 @@ export default function TemplateDarkPremium({ proposal: p, agency }: TemplatePro
                   className="border border-slate-200 rounded-3xl overflow-hidden break-inside-avoid"
                 >
                   <div className="bg-amber-50 px-6 py-3 flex justify-between items-center border-b border-amber-100">
-                    <span className="ds-label-caps text-amber-700">Hotel & Resort</span>
+                    <span className="ds-label-caps text-amber-700">Hotel e Resort</span>
                     <span className="ds-label-caps text-amber-800 bg-amber-100/50 px-3 py-1 rounded-full">
                       {h.meal_plan || "Só Hospedagem"}
                     </span>

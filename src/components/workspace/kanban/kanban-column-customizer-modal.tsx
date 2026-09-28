@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowUp, ArrowDown, Eye, EyeOff, RotateCcw, Check } from "lucide-react";
-import {
-  type KanbanStageDTO,
-  type KanbanPurpose,
-  saveKanbanStages,
-  resetKanbanStages,
-} from "@/services/kanban-config.functions";
+import { type KanbanStageDTO, type KanbanPurpose, saveKanbanStages, resetKanbanStages } from "@/services/kanban-config.functions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

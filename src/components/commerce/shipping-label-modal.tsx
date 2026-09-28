@@ -1,24 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Printer,
-  FileText,
-  Download,
-  Copy,
-  Check,
-  Truck,
-  ExternalLink,
-  ShieldCheck,
-  Package,
-  Layers,
-  Sparkles,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Printer, FileText, Download, Copy, Check, Truck, ExternalLink, ShieldCheck, Package, Layers, Star } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,12 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
-import {
-  getOrderShippingLabelData,
-  generateZplShippingLabel,
-  updateOrderShippingDispatch,
-  type ShippingLabelPayload,
-} from "@/services/shipping.functions";
+import { getOrderShippingLabelData, generateZplShippingLabel, updateOrderShippingDispatch, type ShippingLabelPayload } from "@/services/shipping.functions";
 
 interface ShippingLabelModalProps {
   orderId: string;
@@ -159,7 +136,7 @@ export function ShippingLabelModal({
             <div>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
                 <Truck className="size-4 text-primary" />
-                <span>Despacho & Etiquetas de Envio</span>
+                <span>Despacho e Etiquetas de Envio</span>
                 {labelData && (
                   <Badge variant="outline" className="text-xs font-mono">
                     #{labelData.order.order_number}

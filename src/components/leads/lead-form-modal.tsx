@@ -4,13 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { LeadFormDTO, getPublicLeadFormBySlug } from "@/services/lead-forms.functions";
 import { LeadFormRenderer } from "./lead-form-renderer";
 import { Loader2 } from "lucide-react";

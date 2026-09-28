@@ -8,11 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
-import {
- getAlgorithmParameters,
- updateAlgorithmParameters,
- type AlgorithmParameters,
-} from "@/services/algorithm.functions";
+import { getAlgorithmParameters, updateAlgorithmParameters, type AlgorithmParameters } from "@/services/algorithm.functions";
 
 export const Route = createFileRoute("/admin-master/algoritmo")({
  head: () => ({ meta: [{ title: "Motor Algorítmico | Admin Master Waesy" }] }),
@@ -131,7 +127,7 @@ export default function AdminAlgorithmSettingsPage() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
  <div>
  <h1 className="text-xl font-bold tracking-tight text-foreground">
- Algoritmo & Recomendações
+ Algoritmo e Recomendações
  </h1>
  <p className="text-xs text-muted-foreground mt-0.5">
  Controle central dos pesos do algoritmo de ranking (Waesy Pulse). Ajustes entram em vigor imediatamente na vitrine pública.
@@ -321,7 +317,7 @@ export default function AdminAlgorithmSettingsPage() {
  <Award className="size-4" />
  </div>
  <div>
- <h2 className="text-xs font-bold text-foreground">Qualidade da Loja & Selo Curado</h2>
+ <h2 className="text-xs font-bold text-foreground">Qualidade da Loja e Selo Curado</h2>
  <span className="text-[11px] text-muted-foreground">Pontuação baseada em avaliações e verificação KYC</span>
  </div>
  </div>
@@ -367,7 +363,7 @@ export default function AdminAlgorithmSettingsPage() {
  {/* Parâmetros Espaciais Globais */}
  <Card className="p-5 rounded-2xl border-border/60 bg-card space-y-4">
  <div>
- <h2 className="text-sm font-bold text-foreground">Parâmetros Espaciais & Meia-Vida</h2>
+ <h2 className="text-sm font-bold text-foreground">Parâmetros Espaciais e Meia-Vida</h2>
  <p className="text-xs text-muted-foreground">
  Definições de raio de cobertura e velocidade de decaimento da novidade dos anúncios.
  </p>

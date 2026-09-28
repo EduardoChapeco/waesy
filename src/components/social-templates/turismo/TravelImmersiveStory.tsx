@@ -1,6 +1,6 @@
 import React from "react";
 import { SocialTemplateProps } from "../types";
-import { MapPin, Sun, Check, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { MapPin, Sun, Check, ArrowRight, ShieldCheck, Star } from "lucide-react";
 
 export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scale = 1, className = "" }) => {
   const isNineSixteen = data.aspectRatio === "9:16";
@@ -52,7 +52,7 @@ export const TravelImmersiveStory: React.FC<SocialTemplateProps> = ({ data, scal
               className="w-7 h-7 rounded-full object-cover"
             />
           ) : (
-            <Sparkles className="w-5 h-5 text-amber-400" />
+            <Star className="w-5 h-5 text-amber-400" />
           )}
           <span className="text-white text-lg font-bold tracking-wide">
             {data.storeName || "Waesy Experience"}

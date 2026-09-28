@@ -1,50 +1,14 @@
 import React, { useState, useRef } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import {
-  Plus,
-  Flame,
-  Clock,
-  Sparkles,
-  ShoppingBag,
-  Eye,
-  Edit3,
-  Trash2,
-  Calendar,
-  Tag,
-  Check,
-  Search,
-  ExternalLink,
-  Layers,
-  ArrowRight,
-  AlertCircle,
-  Copy,
-  ChevronRight,
-  Store,
-  RefreshCw,
-} from "lucide-react";
-import {
-  listStoreFlyersAdmin,
-  createStoreFlyer,
-  updateStoreFlyer,
-  deleteStoreFlyer,
-  type StoreFlyerDTO,
-  type FlyerHotspotDTO,
-  type FlyerTheme,
-} from "@/services/store-flyers.functions";
+import { Plus, Flame, Clock, Star, ShoppingBag, Eye, Edit3, Trash2, Calendar, Tag, Check, Search, ExternalLink, Layers, ArrowRight, AlertCircle, Copy, ChevronRight, Store, RefreshCw } from "lucide-react";
+import { listStoreFlyersAdmin, createStoreFlyer, updateStoreFlyer, deleteStoreFlyer, type StoreFlyerDTO, type FlyerHotspotDTO, type FlyerTheme } from "@/services/store-flyers.functions";
 import { listPublishedProducts } from "@/services/catalog.functions";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { MediaUploader } from "@/components/ui/media-uploader";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -55,7 +19,7 @@ export const Route = createFileRoute("/workspace/marketing/encartes")({
   head: () => ({
     meta: [
       {
-        title: "Encartes & Tabloides da Semana | Workspace Waesy",
+        title: "Encartes | Workspace Waesy",
       },
       {
         name: "description",
@@ -322,10 +286,10 @@ export default function WorkspaceMarketingEncartesPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
               <Flame className="size-6 text-red-600 fill-red-600 shrink-0" />
-              <span>Encartes & Tabloides Promocionais</span>
+              <span>Encartes e Tabloides Promocionais</span>
             </h1>
             <Badge variant="outline" className="text-xs font-semibold uppercase tracking-wider">
-              Varejo & Mercados
+              Varejo e Mercados
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
@@ -466,7 +430,7 @@ export default function WorkspaceMarketingEncartesPage() {
                               : "bg-muted text-muted-foreground"
                           )}
                         >
-                          {isRetro ? "🎨 Retrô Mercadista" : "✨ Clean"}
+                          {isRetro ? "🎨 Retrô Mercadista" : "Editorial Clean"}
                         </span>
                       </div>
 
@@ -655,7 +619,7 @@ export default function WorkspaceMarketingEncartesPage() {
                       {formTheme === "clean" && <div className="size-2 rounded-full bg-primary" />}
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold">✨ Clean & Editorial (Moderno)</h4>
+                      <h4 className="text-xs font-bold">Clean e Editorial</h4>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
                         Bordas finas, superfícies neutras, minimalismo padrão Apple HIG e alta nitidez.
                       </p>

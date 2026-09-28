@@ -1,25 +1,9 @@
 import React from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  CheckCircle,
-  CircleNotch,
-  User,
-  EnvelopeSimple,
-  Phone,
-  LinkSimple,
-  ChatText,
-  Briefcase,
-  Lightning,
-} from "@phosphor-icons/react";
+import { CheckCircle, CircleNotch, User, EnvelopeSimple, Phone, LinkSimple, ChatText, Briefcase, Lightning } from "@phosphor-icons/react";
 
 export interface JobApplySheetProps {
   isOpen: boolean;

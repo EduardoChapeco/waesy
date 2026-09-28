@@ -383,6 +383,78 @@
     background-color: var(--color-primary);
     color: var(--color-primary-foreground);
   }
+
+  /* ── PWA Native Singularity: Web Smell Purge ────────────────────────────────
+   * Elimina os últimos comportamentos de "site barato" na experiência PWA:
+   * 1. Sem drag fantasma em imagens e ícones
+   * 2. Cursor default em todos os elementos não interativos (como apps nativos)
+   * 3. user-select:none forçado em elementos de navegação/menu
+   * 4. Sem brilho azul de tap em QUALQUER elemento (reforço em toda a árvore)
+   * ─────────────────────────────────────────────────────────────────────────── */
+
+  /* Anti-drag fantasma: imagens e svgs não são arrastáveis */
+  img,
+  svg,
+  picture,
+  video {
+    -webkit-user-drag: none;
+    user-drag: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Elementos de navegação/UI nunca selecionáveis */
+  nav,
+  header,
+  footer,
+  menu,
+  [role="navigation"],
+  [role="menu"],
+  [role="menubar"],
+  [role="menuitem"],
+  [role="tab"],
+  [role="tablist"],
+  [role="toolbar"],
+  label,
+  button,
+  [role="button"],
+  [role="switch"],
+  [role="radio"],
+  [role="checkbox"],
+  summary {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Cursor padrão em cards, badges e superfícies não-clicáveis */
+  [data-card]:not([data-interactive]),
+  .badge,
+  .chip,
+  .tag {
+    cursor: default;
+  }
+
+  /* Cursor pointer APENAS em elementos explicitamente interativos */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  [role="link"],
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="menuitem"],
+  [role="option"],
+  [role="switch"],
+  label[for],
+  select:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  /* Inputs mantêm cursor de texto */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not(:disabled),
+  textarea:not(:disabled),
+  [contenteditable="true"] {
+    cursor: text;
+  }
 }
 
 /* ===========================================================================
@@ -740,3 +812,47 @@
   height: 0px !important;
   background: transparent !important;
 }
+
+/* ── NATIVE MULTI-FORM-FACTOR: FOLDABLES, DUAL-SCREEN & CONTAINER QUERIES ── */
+@utility main-container-query {
+  container-type: inline-size;
+  container-name: main-viewport;
+}
+
+/* Grid auto-adaptativo baseado na largura REAL do container (@container), nunca espremendo cards */
+.adaptive-card-grid {
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@container main-viewport (min-width: 480px) {
+  .adaptive-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@container main-viewport (min-width: 760px) {
+  .adaptive-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+}
+
+@container main-viewport (min-width: 1080px) {
+  .adaptive-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Suporte a telas dobráveis (Galaxy Z Fold, Pixel Fold, iPhone Fold/Duo) com dobra central */
+@media (horizontal-viewport-segments: 2) {
+  .foldable-split-aware {
+    display: grid;
+    grid-template-columns: env(viewport-segment-width 0 0, 1fr) env(viewport-segment-width 1 0, 1fr);
+    column-gap: calc(env(viewport-segment-left 1 0, 0px) - env(viewport-segment-right 0 0, 0px));
+  }
+}
+

@@ -2,13 +2,7 @@ import React, { useState, useMemo } from "react";
 import { MapPin, Search, Plus } from "lucide-react";
 import { BRAZILIAN_STATES } from "@/lib/constants/brazilian-states";
 import { CANONICAL_CITIES, getCitiesByState, type CityRecord } from "@/lib/constants/cities";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";

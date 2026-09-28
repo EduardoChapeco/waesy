@@ -1,52 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Coins, Copy, Loader2, TrendingDown, Sliders, CreditCard, CheckCircle2, Shield, Layers, ArrowDownLeft, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Coins, Copy, Loader2, TrendingDown, Sliders, CreditCard, CheckCircle2, Shield, Layers, ArrowDownLeft, ArrowUpRight, Star } from 'lucide-react';
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
- Tabs,
- TabsContent,
- TabsList,
- TabsTrigger,
-} from "@/components/ui/tabs";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import {
- getStoreTokenWallet,
- getStoreGrowthAndBounties,
- purchaseTokenPackage,
- getStoreEconomyComparison,
- updateStoreTokenBillingConfig,
- type TokenPackage,
-} from "@/services/tokens.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getStoreTokenWallet, getStoreGrowthAndBounties, purchaseTokenPackage, getStoreEconomyComparison, updateStoreTokenBillingConfig, type TokenPackage } from "@/services/tokens.functions";
 
 export const Route = createFileRoute("/workspace/tokens")({
- head: () => ({ meta: [{ title: "Tokens & Aceleração | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Tokens | Workspace Waesy" }] }),
  loader: async () => {
  try {
  const [wallet, growth, economy] = await Promise.all([
@@ -223,7 +191,7 @@ export default function WorkspaceTokensPage() {
  </div>
 
  <div className="p-4 rounded-xl border border-border/60 bg-card">
- <span className="text-xs text-muted-foreground font-medium block">Tokens de Mídia & Radar</span>
+ <span className="text-xs text-muted-foreground font-medium block">Tokens de Mídia e Radar</span>
  <div className="text-2xl font-bold tracking-tight text-primary mt-1">
  {promoTokens.toLocaleString()}
  </div>
@@ -231,7 +199,7 @@ export default function WorkspaceTokensPage() {
  </div>
 
  <div className="p-4 rounded-xl border border-border/60 bg-card">
- <span className="text-xs text-muted-foreground font-medium block">Tokens de Infra & APIs</span>
+ <span className="text-xs text-muted-foreground font-medium block">Tokens de Infra e APIs</span>
  <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
  {purchasedTokens.toLocaleString()}
  </div>
@@ -250,9 +218,9 @@ export default function WorkspaceTokensPage() {
  {/* Tabs de Governança de Tokens */}
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  <TabsList className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar p-1 rounded-xl h-10">
- <TabsTrigger value="visao_geral" className="text-xs">Visão Geral & Pacotes</TabsTrigger>
+ <TabsTrigger value="visao_geral" className="text-xs">Visão Geral e Pacotes</TabsTrigger>
  <TabsTrigger value="calculadora" className="text-xs">Comparativo de Economia</TabsTrigger>
- <TabsTrigger value="faturamento" className="text-xs">Faturamento & Limites</TabsTrigger>
+ <TabsTrigger value="faturamento" className="text-xs">Faturamento e Limites</TabsTrigger>
  </TabsList>
 
  {/* Tab 1: Visão Geral */}
@@ -514,7 +482,7 @@ export default function WorkspaceTokensPage() {
  <TabsContent value="faturamento" className="space-y-4">
  <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
  <div>
- <h2 className="text-base font-bold text-foreground">Faturamento Inteligente & Limite de Gastos</h2>
+ <h2 className="text-base font-bold text-foreground">Faturamento Inteligente e Limite de Gastos</h2>
  <p className="text-xs text-muted-foreground">
  Configure recargas automáticas por limite para que suas ferramentas de IA e campanhas no Radar nunca parem.
  </p>

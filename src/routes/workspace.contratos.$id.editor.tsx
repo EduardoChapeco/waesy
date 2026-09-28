@@ -1,26 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Lock,
-  Save,
-  PenTool,
-  Settings2,
-  FileText,
-  UserCheck,
-  Layers,
-  Copy,
-  Folder,
-  Bell,
-  Eye,
-  Calendar,
-  ExternalLink,
-  QrCode,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, Lock, Save, PenTool, Settings2, FileText, UserCheck, Layers, Copy, Folder, Bell, Eye, Calendar, ExternalLink, QrCode, Loader2 } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -32,31 +12,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  getContractById,
-  updateContractDraft,
-  sealAndIssueContract,
-  type SignatureFieldDTO,
-  type ObserverDTO,
-  type DispatchSettingsDTO,
-} from "@/services/contracts.functions";
-import {
-  SignaturePositionerCanvas,
-  type SignerVisualInfo,
-} from "@/components/contracts/signature-positioner-canvas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getContractById, updateContractDraft, sealAndIssueContract, type SignatureFieldDTO, type ObserverDTO, type DispatchSettingsDTO } from "@/services/contracts.functions";
+import { SignaturePositionerCanvas, type SignerVisualInfo } from "@/components/contracts/signature-positioner-canvas";
 import { ContractAuditManifest } from "@/components/contracts/contract-audit-manifest";
 import { ContractVariablePicker } from "@/components/contracts/contract-variable-picker";
 import { autoPositionSignatureFieldsFromContent } from "@/lib/contracts/contract-semantic-dictionary";
 
 export const Route = createFileRoute("/workspace/contratos/$id/editor")({
-  head: () => ({ meta: [{ title: "Editor de Contrato & Assinatura | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Editor de Contrato | Workspace Waesy" }] }),
   loader: async ({ params }) => {
     try {
       return await getContractById({ data: params.id });
@@ -348,7 +312,7 @@ function ContractEditorPage() {
             <div className="flex items-center gap-3 text-emerald-600">
               <ShieldCheck className="size-7 shrink-0" />
               <div>
-                <h3 className="font-bold text-base text-foreground">Documento Autenticado & Pronto para Envio</h3>
+                <h3 className="font-bold text-base text-foreground">Documento Autenticado e Pronto para Envio</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   O contrato possui validade jurídica oficial (Lei 14.063/2020). Envie os links abaixo para os clientes assinarem no celular.
                 </p>
@@ -537,9 +501,9 @@ function ContractEditorPage() {
                       </SelectTrigger>
                       <SelectContent className="rounded-xl text-xs">
                         <SelectItem value="Sem pasta">Sem pasta</SelectItem>
-                        <SelectItem value="Turismo 2026">Turismo & Viagens 2026</SelectItem>
+                        <SelectItem value="Turismo 2026">Turismo e Viagens 2026</SelectItem>
                         <SelectItem value="Contratos Gerais">Contratos Gerais</SelectItem>
-                        <SelectItem value="Imobiliário">Locações & Imóveis</SelectItem>
+                        <SelectItem value="Imobiliário">Locações e Imóveis</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -660,7 +624,7 @@ function ContractEditorPage() {
                     ) : (
                       <>
                         <ShieldCheck className="size-4 mr-2" />
-                        Criar Documento & Selar
+                        Criar Documento e Selar
                       </>
                     )}
                   </Button>
@@ -675,7 +639,7 @@ function ContractEditorPage() {
                     Validade Jurídica Assegurada
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Ao clicar em <strong>Criar Documento & Selar</strong>, o hash SHA-256 será computado de forma irreversível sobre o conteúdo e as caixas de assinatura.
+                    Ao clicar em <strong>Criar Documento e Selar</strong>, o hash SHA-256 será computado de forma irreversível sobre o conteúdo e as caixas de assinatura.
                   </p>
                   <div className="space-y-1.5 text-[11px] text-muted-foreground border-t border-border/50 pt-2.5">
                     <p>✓ Trilha de auditoria com IP, User-Agent e Timestamp UTC</p>

@@ -1,36 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
- Wallet,
- ArrowDownLeft,
- ArrowUpRight,
- Plus,
- Trash2,
- Receipt,
- DollarSign,
- Fuel,
- Utensils,
- CreditCard,
- Coins,
-} from "lucide-react";
+import { Wallet, ArrowDownLeft, ArrowUpRight, Plus, Trash2, Receipt, DollarSign, Fuel, Utensils, CreditCard, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
-import {
- listTourCashEntries,
- createTourCashEntry,
- deleteTourCashEntry,
- getTourCashSummary,
- type TourCashEntryItem,
-} from "@/services/group-tour-cash.functions";
+import { listTourCashEntries, createTourCashEntry, deleteTourCashEntry, getTourCashSummary, type TourCashEntryItem } from "@/services/group-tour-cash.functions";
 
 interface GroupTourCashLedgerProps {
  tourId: string;

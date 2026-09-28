@@ -3,22 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Clock,
-  CalendarDots,
-  ArrowLeft,
-  Storefront,
-  ShieldCheck,
-  Sparkle,
-  Check,
-  X,
-  MapPin,
-  WhatsappLogo,
-  CaretRight,
-  CreditCard,
-  QrCode,
-  Money,
-} from "@phosphor-icons/react";
+import { Clock, CalendarDots, ArrowLeft, Storefront, ShieldCheck, Star, Check, X, MapPin, WhatsappLogo, CaretRight, CreditCard, QrCode, Money } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 
 import { NativeBackButton } from "@/components/ui/native-back-button";
@@ -91,7 +76,7 @@ export function BookingDetailDesktop({
             </div>
             <div className="absolute top-4 right-4">
               <Badge className="bg-emerald-500/90 text-white backdrop-blur-md text-[11px] font-bold px-3 py-1 rounded-xl shadow-xs flex items-center gap-1">
-                <Sparkle size={12} weight="fill" />
+                <Star size={12} weight="fill" />
                 <span>Vagas Hoje</span>
               </Badge>
             </div>
@@ -104,7 +89,7 @@ export function BookingDetailDesktop({
               Profissional Certificado
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-muted/40 border border-border/40 text-[11px] font-semibold text-muted-foreground">
-              <Sparkle size={14} weight="bold" className="text-amber-500" />
+              <Star size={14} weight="bold" className="text-amber-500" />
               Biossegurança 100%
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-muted/40 border border-border/40 text-[11px] font-semibold text-muted-foreground">

@@ -74,7 +74,7 @@ export function ProductModifiersCard({
  <div className="flex items-center justify-between gap-3">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <SlidersHorizontal className="size-4 text-primary" />
- <span>Adicionais & Modificadores</span>
+ <span>Adicionais e Modificadores</span>
  {groups.length > 0 && (
  <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0 h-4.5">
  {selectedGroupIds.length}/{groups.length} ativos
@@ -97,8 +97,7 @@ export function ProductModifiersCard({
  <Link
  to="/workspace/catalogo/atributos"
  className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
- target="_blank"
- title="Abrir gerenciador completo em nova aba"
+ title="Abrir gerenciador de atributos"
  >
  <span>Gerenciar</span>
  <ExternalLink className="size-3" />

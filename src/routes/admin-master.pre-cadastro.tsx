@@ -1,24 +1,7 @@
 import React, { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Users,
-  Sparkles,
-  Search,
-  Download,
-  Filter,
-  CheckCircle2,
-  Clock,
-  Phone,
-  Building2,
-  Ticket,
-  Save,
-  Plus,
-  Trash2,
-  ExternalLink,
-  MapPin,
-  FileSpreadsheet,
-} from "lucide-react";
+import { Users, Star, Search, Download, Filter, CheckCircle2, Clock, Phone, Building2, Ticket, Save, Plus, Trash2, ExternalLink, MapPin, FileSpreadsheet } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,19 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import {
-  listFounderLeads,
-  updateFounderLeadStatus,
-  getLaunchLandingSettings,
-  updateLaunchLandingSettings,
-  type FounderLeadDTO,
-  type LaunchLandingSettingsDTO,
-  type LaunchSlideDTO,
-} from "@/services/launch.functions";
+import { listFounderLeads, updateFounderLeadStatus, getLaunchLandingSettings, updateLaunchLandingSettings, type FounderLeadDTO, type LaunchLandingSettingsDTO, type LaunchSlideDTO } from "@/services/launch.functions";
 
 export const Route = createFileRoute("/admin-master/pre-cadastro")({
   head: () => ({
-    meta: [{ title: "Pré-Cadastro & Lançamento 2027 | Admin Master Waesy" }],
+    meta: [{ title: "Pré-Cadastro e Lançamento 2027 | Admin Master Waesy" }],
   }),
   loader: async () => {
     try {
@@ -214,7 +189,7 @@ export default function AdminPreCadastroPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-              Pré-Cadastro & Lançamento 2027
+              Pré-Cadastro e Lançamento 2027
             </h1>
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">
               Circuito Internacional
@@ -270,7 +245,7 @@ export default function AdminPreCadastroPage() {
               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
           }`}
         >
-          <Sparkles className="size-4" />
+          <Star className="size-4" />
           <span>Editor da Landing Page (CMS)</span>
         </button>
       </div>
@@ -475,7 +450,7 @@ export default function AdminPreCadastroPage() {
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
               <div>
                 <h2 className="text-sm font-bold text-foreground">
-                  Carrossel de Atrações & Novidades
+                  Carrossel de Atrações e Novidades
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   Cards horizontais com fotos de eventos, shows e feiras do Circuito 2027.

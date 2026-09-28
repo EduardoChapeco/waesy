@@ -1,38 +1,10 @@
 import React, { useState } from "react";
-import {
-  Zap,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  QrCode,
-  Copy,
-  ExternalLink,
-  ShieldCheck,
-  Check,
-  AlertCircle,
-  Eye,
-  TrendingUp,
-  Globe,
-  Instagram,
-  Radio,
-} from "lucide-react";
+import { Zap, CheckCircle2, Clock, Star, QrCode, Copy, ExternalLink, ShieldCheck, Check, AlertCircle, Eye, TrendingUp, Globe, Instagram, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -175,7 +147,7 @@ export function BoostBottomSheet({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] text-muted-foreground font-medium">Veiculação:</span>
             <Badge variant="outline" className="text-[10px] gap-1.5 py-1 px-2.5 bg-background font-medium border-primary/30 text-foreground">
-              <Sparkles className="size-3 text-primary" /> Waesy Vitrine
+              <Star className="size-3 text-primary" /> Waesy Vitrine
             </Badge>
             <Badge variant="outline" className="text-[10px] gap-1.5 py-1 px-2.5 bg-background font-medium border-pink-500/30 text-foreground">
               <Instagram className="size-3 text-pink-500" /> Instagram Feed

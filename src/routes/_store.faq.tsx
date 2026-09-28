@@ -2,12 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { NativeMobileHeader } from "@/components/navigation";
 import { EmptyState } from "@/components/state/states";
 import { getPublicFaqs } from "@/services/catalog.functions";
-import {
- Accordion,
- AccordionContent,
- AccordionItem,
- AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export const Route = createFileRoute("/_store/faq")({
  head: () => ({ meta: [{ title: "Perguntas frequentes" }] }),
@@ -33,7 +28,7 @@ function Page() {
  return (
     <div className="w-full">
       <NativeMobileHeader
-        title="Dúvidas Frequentes"
+        title="Dúvidas"
         fallbackHref="/"
       />
       <div className="mx-auto max-w-3xl px-4 py-6 md:px-6 md:py-10 space-y-6">

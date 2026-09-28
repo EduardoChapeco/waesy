@@ -1,51 +1,20 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
- Sliders,
- Plane,
- Hotel,
- Calendar,
- Users,
- MapPin,
- DollarSign,
- CheckCircle2,
- Copy,
- Plus,
- Minus,
- Coffee,
- Utensils,
- ShieldCheck,
- Luggage,
- Bus,
- Ship,
- Car,
- Compass,
- Check,
-} from "lucide-react";
+import { Sliders, Plane, Hotel, Calendar, Users, MapPin, DollarSign, CheckCircle2, Copy, Plus, Minus, Coffee, Utensils, ShieldCheck, Luggage, Bus, Ship, Car, Compass, Check } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { createAgencyTravelQuote } from "@/services/tourism.functions";
 import { listHotelsBank } from "@/services/travel-catalog.functions";
 import { cn } from "@/lib/utils";
 
-import {
- CANONICAL_DESTINATIONS,
- MAJOR_IATA_AIRPORTS,
- type CanonicalDestination,
-} from "@/lib/destinations-catalog";
+import { CANONICAL_DESTINATIONS, MAJOR_IATA_AIRPORTS, type CanonicalDestination } from "@/lib/destinations-catalog";
 
 export interface QuotationBuilderSheetProps {
  open: boolean;
@@ -483,7 +452,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
  <span>Quotation Builder • Cotação Inteligente</span>
  <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
- Turismo & CRM
+ Turismo e CRM
  </Badge>
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground">
@@ -1021,7 +990,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  checked: includeInsurance,
  toggle: () => setIncludeInsurance(!includeInsurance),
  icon: ShieldCheck,
- title: "Seguro Viagem & Assistência Médica",
+ title: "Seguro Viagem e Assistência Médica",
  desc: "Cobertura de saúde, extravio de bagagem e imprevistos",
  },
  ].map((item, idx) => {
@@ -1057,7 +1026,7 @@ _Valores sujeitos a reajuste tarifário sem aviso prévio. Garanta sua reserva!_
  {/* Passeios & Ingressos como Tags Dinâmicas */}
  <div className="space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-xs font-bold text-foreground">Passeios & Ingressos</Label>
+ <Label className="text-xs font-bold text-foreground">Passeios e Ingressos</Label>
  {excursionTags.length > 0 && (
  <Badge variant="secondary" className="text-[9px] font-mono">{excursionTags.length} item{excursionTags.length !== 1 ? "s" : ""}</Badge>
  )}

@@ -40,7 +40,7 @@ export function CreatorAnalyticsCard({
  </div>
  <div>
  <h3 className="text-sm font-black text-foreground tracking-tight flex items-center gap-1.5">
- <span>Desempenho & Métricas do Criador</span>
+ <span>Desempenho e Métricas do Criador</span>
  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-semibold">
  Privado
  </span>
@@ -82,7 +82,7 @@ export function CreatorAnalyticsCard({
  <p className="text-xl font-extrabold text-foreground tracking-tight">
  {estimatedReach.toLocaleString("pt-BR")}
  </p>
- <p className="text-[10px] text-muted-foreground">Visualizações de perfil & posts</p>
+ <p className="text-[10px] text-muted-foreground">Visualizações de perfil e posts</p>
  </div>
 
  {/* Total de Curtidas Reais */}

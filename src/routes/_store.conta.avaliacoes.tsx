@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, PenLine, Package, CheckCircle2, Clock, XCircle, ChevronRight, MessageSquare } from "lucide-react";
 import { listCustomerReviews } from "@/services/cms.functions";
 import { formatDate } from "@/lib/datetime";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
@@ -78,7 +79,7 @@ function ReviewCard({ review }: { review: any }) {
   const isLong = review.comment && review.comment.length > 160;
 
   return (
-    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
+    <div className="bg-card border-y sm:border border-border/50 rounded-none sm:rounded-2xl overflow-hidden">
       {/* Header do card */}
       <div className="px-4 py-3.5 flex items-start justify-between gap-3 border-b border-border/30">
         <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -194,28 +195,28 @@ function CustomerReviewsPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto pb-24 px-0 sm:px-0 animate-in fade-in duration-200">
-      {/* ── 1. Header Minimalista ── */}
-      <div className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 pt-1 px-4 sm:px-0">
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-xl font-black tracking-tight text-foreground">Avaliações</h1>
-          {reviews.length > 0 && (
-            <Badge
-              variant="secondary"
-              className="text-xs font-mono font-bold px-2 py-0.5 rounded-md"
-            >
+      {/* ── 1. Native Mobile Header (Apple HIG / PWA Nativo) ── */}
+      <NativeMobileHeader
+        title="Avaliações"
+        fallbackHref="/conta"
+        badge={
+          reviews.length > 0 ? (
+            <Badge variant="secondary" className="text-xs font-mono font-bold px-2 py-0.5 rounded-full">
               {reviews.length}
             </Badge>
-          )}
-        </div>
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="rounded-xl text-xs font-semibold h-9 px-3.5 cursor-pointer"
-        >
-          <Link to="/mercado">Explorar Lojas</Link>
-        </Button>
-      </div>
+          ) : null
+        }
+        rightActions={
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="rounded-xl text-xs font-semibold h-8.5 px-3.5 cursor-pointer shadow-2xs"
+          >
+            <Link to="/mercado">Explorar</Link>
+          </Button>
+        }
+      />
 
       {reviews.length === 0 ? (
         /* ── Empty State Honesto ── */

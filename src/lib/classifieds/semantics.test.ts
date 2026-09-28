@@ -27,7 +27,7 @@ describe("Waesy Classifieds — Biblioteca Semântica & Taxonomia Modular de Nic
     const classified = {
       category: "equipment",
       deal_type: "aluguel",
-      title: "Kit Iluminação Moving Head & Estrutura Box Truss",
+      title: "Kit Iluminação Moving Head e Estrutura Box Truss",
       price_cents: 35000,
       attributes: {
         niche: "equipamento",

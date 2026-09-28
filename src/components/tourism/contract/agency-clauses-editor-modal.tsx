@@ -1,42 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import {
- FileText,
- Plus,
- Trash2,
- Save,
- RotateCcw,
- ChevronDown,
- ChevronUp,
- FileUp,
- Loader2,
-} from "lucide-react";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { FileText, Plus, Trash2, Save, RotateCcw, ChevronDown, ChevronUp, FileUp, Loader2 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import {
- Tabs,
- TabsContent,
- TabsList,
- TabsTrigger,
-} from "@/components/ui/tabs";
-import {
- getAgencyTourismClauses as getAgencyContractTemplate,
- saveAgencyTourismClauses as saveAgencyContractTemplate,
- resetAgencyTourismClauses as resetAgencyContractTemplate,
- CANONICAL_TOURISM_CLAUSES,
- type ContractClauseDTO,
-} from "@/services/travel-contract.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getAgencyTourismClauses as getAgencyContractTemplate, saveAgencyTourismClauses as saveAgencyContractTemplate, resetAgencyTourismClauses as resetAgencyContractTemplate, CANONICAL_TOURISM_CLAUSES, type ContractClauseDTO } from "@/services/travel-contract.functions";
 
 interface AgencyClausesEditorModalProps {
  open: boolean;
@@ -250,7 +222,7 @@ export function AgencyClausesEditorModal({
  <div className="flex items-center gap-2">
  <FileText className="size-5 text-primary" />
  <SheetTitle className="text-lg font-bold text-foreground">
- Minuta & Cláusulas Padrão da Agência
+ Cláusulas da Agência
  </SheetTitle>
  </div>
  <Badge

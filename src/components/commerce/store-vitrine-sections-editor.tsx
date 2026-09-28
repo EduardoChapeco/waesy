@@ -4,29 +4,12 @@
  */
 
 import React, { useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/ui/image-upload";
-import {
-  Layers,
-  ArrowUp,
-  ArrowDown,
-  Plus,
-  Trash2,
-  Edit3,
-  Eye,
-  EyeOff,
-  LayoutGrid,
-} from "lucide-react";
+import { Layers, ArrowUp, ArrowDown, Plus, Trash2, Edit3, Eye, EyeOff, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 
 export interface VitrineCardItem {
@@ -48,11 +31,11 @@ export interface VitrineSectionConfig {
 
 export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [
   { id: "sec_banners", type: "banners", title: "Banners Principais da Loja", enabled: true },
-  { id: "sec_flyers", type: "promotional_flyers", title: "Encartes & Tabloides da Semana", enabled: true },
+  { id: "sec_flyers", type: "promotional_flyers", title: "Encartes e Tabloides da Semana", enabled: true },
   {
     id: "sec_cards",
     type: "custom_cards",
-    title: "Cards de Destaque & Novidades",
+    title: "Cards de Destaque e Novidades",
     enabled: true,
     cards: [
       {
@@ -74,8 +57,8 @@ export const DEFAULT_STORE_VITRINE_SECTIONS: VitrineSectionConfig[] = [
     ],
   },
   { id: "sec_product_rail", type: "product_rail", title: "Produtos Mais Pedidos", enabled: true },
-  { id: "sec_brand_story", type: "brand_story", title: "Sobre a Marca & Valores", enabled: true },
-  { id: "sec_hotpages", type: "hotpages", title: "Acesso Rápido & Botões", enabled: false },
+  { id: "sec_brand_story", type: "brand_story", title: "Sobre a Marca e Valores", enabled: true },
+  { id: "sec_hotpages", type: "hotpages", title: "Acesso Rápido e Botões", enabled: false },
   { id: "sec_infinite_feed", type: "infinite_feed", title: "Mais Produtos da Região", enabled: false },
 ];
 

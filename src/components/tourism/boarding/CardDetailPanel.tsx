@@ -1,55 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  X,
-  Clock,
-  Plane,
-  Hotel,
-  CheckCircle2,
-  Circle,
-  Plus,
-  Trash2,
-  FileText,
-  ExternalLink,
-  Send,
-  Download,
-  AlertTriangle,
-  Loader2,
-  Calendar,
-  Users,
-  MapPin,
-  Pencil,
-  Check,
-} from 'lucide-react';
+import { X, Clock, Plane, Hotel, CheckCircle2, Circle, Plus, Trash2, FileText, ExternalLink, Send, Download, AlertTriangle, Loader2, Calendar, Users, MapPin, Pencil, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { FileAttachmentUpload } from '@/components/ui/file-attachment-upload';
 import { toast } from 'sonner';
-import {
-  getDepartureWithChecklist,
-  updateDepartureDetails,
-  toggleChecklistItem,
-  addChecklistItem,
-  deleteChecklistItem,
-  uploadBoardingDocument,
-  deleteBoardingDocument,
-  deleteDepartureCard,
-  AIRLINE_CHECKIN_LINKS,
-  type DepartureWithChecklist,
-  type ChecklistItem,
-  type BoardingDocument,
-  type ChecklistCategory,
-  type DocumentType,
-} from '@/services/travel-departures.functions';
+import { getDepartureWithChecklist, updateDepartureDetails, toggleChecklistItem, addChecklistItem, deleteChecklistItem, uploadBoardingDocument, deleteBoardingDocument, deleteDepartureCard, AIRLINE_CHECKIN_LINKS, type DepartureWithChecklist, type ChecklistItem, type BoardingDocument, type ChecklistCategory, type DocumentType } from '@/services/travel-departures.functions';
 
 export interface CardDetailPanelProps {
   departureId: string | null;
@@ -626,7 +586,7 @@ export function CardDetailPanel({
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                         <Plane className="size-4 text-primary" />
-                        Detalhes do Voo & Check-in
+                        Detalhes do Voo e Check-in
                       </h4>
                       <Button
                         variant="ghost"
@@ -689,7 +649,7 @@ export function CardDetailPanel({
                   <div className="p-4 rounded-2xl border border-border/70 bg-card space-y-3">
                     <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                       <Hotel className="size-4 text-primary" />
-                      Hospedagem & Hotel
+                      Hospedagem e Hotel
                     </h4>
 
                     <div className="space-y-1">
@@ -711,7 +671,7 @@ export function CardDetailPanel({
 
                   {/* Observações Operacionais */}
                   <div className="p-4 rounded-2xl border border-border/70 bg-card space-y-2">
-                    <Label className="text-xs font-bold text-foreground">Observações Operacionais & Cuidados</Label>
+                    <Label className="text-xs font-bold text-foreground">Observações Operacionais e Cuidados</Label>
                     {isEditing ? (
                       <Textarea
                         value={notes}

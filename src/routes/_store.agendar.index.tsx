@@ -1,61 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Scissors,
-  Clock,
-  CalendarDots,
-  CheckCircle,
-  CircleNotch,
-  Sparkle,
-  ShieldCheck,
-  Phone,
-  User,
-  CaretRight,
-  Ticket,
-  Heartbeat,
-  PawPrint,
-  Barbell,
-  Storefront,
-  WarningCircle,
-} from "@phosphor-icons/react";
+import { Scissors, Clock, CalendarDots, CheckCircle, CircleNotch, Star, ShieldCheck, Phone, User, CaretRight, Ticket, Heartbeat, PawPrint, Barbell, Storefront, WarningCircle } from "@phosphor-icons/react";
 import { Tag } from "lucide-react";
-import {
-  listBookingServices,
-  createAppointment,
-  listMyPassesForService,
-  getAvailableSlots,
-} from "@/services/booking.functions";
+import { listBookingServices, createAppointment, listMyPassesForService, getAvailableSlots } from "@/services/booking.functions";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
-import {
-  DiscoveryControlBar,
-  type ViewModeType,
-  type FilterChipOption,
-} from "@/components/commerce/discovery-control-bar";
+import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_store/agendar/")({
   head: () => ({
     meta: [
-      { title: "Serviços & Agendamentos | Waesy" },
+      { title: "Serviços e Agendamentos | Waesy" },
       {
         name: "description",
         content:
@@ -99,12 +67,12 @@ function BookingIndexErrorComponent({ error, reset }: { error: any; reset: () =>
 const BOOKING_CATEGORIES: FilterChipOption[] = [
   { id: "todos", label: "Tudo", icon: Tag },
   { id: "barbearia", label: "Barbearias", icon: Scissors },
-  { id: "salao_cabelo", label: "Salão & Cabelo", icon: Scissors },
-  { id: "unhas_manicure", label: "Unhas & Manicure", icon: Sparkle },
-  { id: "estetica_massagem", label: "Estética & Massagem", icon: Sparkle },
-  { id: "saude_fisioterapia", label: "Saúde & Fisioterapia", icon: Heartbeat },
-  { id: "pet_shop", label: "Pet Shop & Banho", icon: PawPrint },
-  { id: "personal_fitness", label: "Personal & Aulas", icon: Barbell },
+  { id: "salao_cabelo", label: "Salão e Cabelo", icon: Scissors },
+  { id: "unhas_manicure", label: "Unhas e Manicure", icon: Star },
+  { id: "estetica_massagem", label: "Estética e Massagem", icon: Star },
+  { id: "saude_fisioterapia", label: "Saúde e Fisioterapia", icon: Heartbeat },
+  { id: "pet_shop", label: "Pet Shop e Banho", icon: PawPrint },
+  { id: "personal_fitness", label: "Personal e Aulas", icon: Barbell },
 ];
 
 const CATEGORY_NAMES: Record<string, string> = {
@@ -113,8 +81,8 @@ const CATEGORY_NAMES: Record<string, string> = {
   unhas_manicure: "Unhas, Manicure & Spa dos Pés",
   estetica_massagem: "Estética Avançada, Spa & Massagens",
   saude_fisioterapia: "Saúde, Fisioterapia & Bem-Estar",
-  pet_shop: "Pet Shop, Banho & Tosa",
-  personal_fitness: "Personal Trainer & Avaliação Física",
+  pet_shop: "Pets",
+  personal_fitness: "Fitness",
 };
 
 function BookingIndexPage() {
@@ -252,7 +220,17 @@ function BookingIndexPage() {
   });
 
   return (
-    <div className="w-full space-y-6 pb-20">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-5 space-y-6 pb-24">
+      <div className="-mx-4 sm:-mx-5">
+        <NativeMobileHeader
+          title="Agendar"
+          centerTitle
+          backTo="/"
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Buscar serviço, clínica ou salão..."
+        />
+      </div>
       {/* ── Banners Temáticos de Serviços (se configurados) ── */}
       {banners && banners.length > 0 && <BannerHeroCarousel banners={banners} />}
       {hotpages && hotpages.length > 0 && <HotpagesRail hotpages={hotpages} cleanMode={true} />}
@@ -375,15 +353,7 @@ function BookingIndexPage() {
 
               {/* Gôndola Geral de Agendamentos */}
               <div className="space-y-4 pt-4 border-t border-border/40">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                    <CalendarDots size={18} weight="bold" className="text-primary" />
-                    <span>Todos os Serviços Disponíveis</span>
-                  </h2>
-                  <span className="text-xs text-muted-foreground font-mono font-bold">
-                    {services.length} opções
-                  </span>
-                </div>
+                
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {services.map((service: any) => (
@@ -537,60 +507,62 @@ function BookingIndexPage() {
 
           {/* ── MODO 3: LISTA COMPACTA (Largura Máxima) ── */}
           {viewMode === "list" && (
-            <div className="w-full divide-y divide-border/40 rounded-none sm:rounded-2xl border-y sm:border border-border/60 bg-card overflow-hidden">
+            <div className="w-full space-y-3">
               {services.map((service: any) => (
                 <div
                   key={service.id}
-                  className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-muted/40 transition-colors gap-3.5 sm:gap-4 w-full group cursor-pointer"
+                  className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card min-h-[136px] pl-32 sm:pl-44 p-3.5 sm:p-4 hover:border-foreground/30 transition-all flex items-center justify-between gap-3.5 sm:gap-4 w-full"
                 >
                   <Link
                     to="/agendar/$id"
                     params={{ id: service.id }}
-                    className="flex items-center gap-4 min-w-0 flex-1 block"
+                    className="absolute inset-y-0 left-0 w-32 sm:w-44 overflow-hidden rounded-l-2xl bg-muted border-r border-border/40"
                   >
-                    <div className="size-20 sm:size-24 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-border/40">
-                      {service.image_url ? (
-                        <img
-                          src={service.image_url}
-                          alt={service.title}
-                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="size-full flex items-center justify-center text-muted-foreground/40">
-                          <Storefront size={24} />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-1.5 py-0 rounded-md">
-                          {service.category || "Geral"}
-                        </Badge>
-                        {service.duration_minutes && (
-                          <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
-                            <Clock size={12} />
-                            <span>{service.duration_minutes} min</span>
-                          </span>
-                        )}
-                        {service.stores?.name && (
-                          <span className="text-[11px] text-muted-foreground font-medium truncate">
-                            • {service.stores.name}
-                          </span>
-                        )}
+                    {service.image_url ? (
+                      <img
+                        src={service.image_url}
+                        alt={service.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+                        <Storefront size={28} />
                       </div>
+                    )}
+                  </Link>
 
-                      <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug line-clamp-1 group-hover:text-primary transition-colors">
-                        {service.title}
-                      </h3>
-
-                      {service.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 leading-relaxed hidden sm:block">
-                          {service.description}
-                        </p>
+                  <Link
+                    to="/agendar/$id"
+                    params={{ id: service.id }}
+                    className="min-w-0 flex-1 space-y-1.5 pl-1 block"
+                  >
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-[9px] font-mono font-bold uppercase px-1.5 py-0 rounded-md">
+                        {service.category || "Geral"}
+                      </Badge>
+                      {service.duration_minutes && (
+                        <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
+                          <Clock size={12} />
+                          <span>{service.duration_minutes} min</span>
+                        </span>
+                      )}
+                      {service.stores?.name && (
+                        <span className="text-[11px] text-muted-foreground font-medium truncate">
+                          • {service.stores.name}
+                        </span>
                       )}
                     </div>
+
+                    <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                      {service.title}
+                    </h3>
+
+                    {service.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-1 leading-relaxed hidden sm:block">
+                        {service.description}
+                      </p>
+                    )}
                   </Link>
 
                   <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4 shrink-0">

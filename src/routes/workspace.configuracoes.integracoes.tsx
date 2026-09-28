@@ -1,37 +1,10 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Save,
-  CheckCircle2,
-  Trash2,
-  Key,
-  BarChart,
-  Calendar,
-  MessageCircle,
-  MapPin,
-  Layers,
-  ShieldCheck ,
-  Store,
-  FileText,
-  Truck,
-  RefreshCw,
-  ExternalLink,
-  AlertCircle,
-  Check,
-  Zap,
-  CreditCard,
-  Globe2,
-  Terminal, Bot, Cpu } from "lucide-react";
+import { Save, CheckCircle2, Trash2, Key, BarChart, Calendar, MessageCircle, MapPin, Layers, ShieldCheck, Store, FileText, Truck, RefreshCw, ExternalLink, AlertCircle, Check, Zap, CreditCard, Globe2, Terminal, Bot, Cpu } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,40 +12,15 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-import {
-  listIntegrationSettings,
-  saveIntegrationCredential,
-  deleteIntegrationCredential,
-  testWhatsAppCloudConnection,
-  testMelhorEnvioConnection,
-  testErpConnection,
-  testPaymentGatewayConnection,
-} from "@/services/integrations.functions";
-import {
-  saveSecretKey,
-  deleteSecretKey,
-  listConfiguredSecrets,
-  testSecretKeyConnection,
-} from "@/services/secret-vault.functions";
-import {
-  listMarketplaceConnectors,
-  type MarketplaceConnectorDTO,
-} from "@/services/marketplace-hub.functions";
-import {
-  getGmbStatus,
-  connectGmb,
-  syncGmbStoreProfile,
-  type GmbLocationDTO,
-} from "@/services/gmb.functions";
-import {
-  getWorkspaceLinkedInStatus,
-  getLinkedInAuthRedirectUrl,
-  disconnectLinkedInCompanyPage,
-} from "@/services/linkedin-integrations.functions";
+import { listIntegrationSettings, saveIntegrationCredential, deleteIntegrationCredential, testWhatsAppCloudConnection, testMelhorEnvioConnection, testErpConnection, testPaymentGatewayConnection } from "@/services/integrations.functions";
+import { saveSecretKey, deleteSecretKey, listConfiguredSecrets, testSecretKeyConnection } from "@/services/secret-vault.functions";
+import { listMarketplaceConnectors, type MarketplaceConnectorDTO } from "@/services/marketplace-hub.functions";
+import { getGmbStatus, connectGmb, syncGmbStoreProfile, type GmbLocationDTO } from "@/services/gmb.functions";
+import { getWorkspaceLinkedInStatus, getLinkedInAuthRedirectUrl, disconnectLinkedInCompanyPage } from "@/services/linkedin-integrations.functions";
 import { Linkedin, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/workspace/configuracoes/integracoes")({
-  head: () => ({ meta: [{ title: "Central de Integrações & APIs | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Integrações | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const [integrations, secrets, marketplaceConnectors, gmbStatus, linkedInStatus] = await Promise.all([
@@ -201,13 +149,6 @@ function IntegrationCard({
         {isActive && (
           <form onSubmit={handleSave}>
             <CardContent className="space-y-4 pt-2">
-              {existingSetting?.is_active && (
-                <div className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 p-2.5 rounded-xl text-xs flex items-center gap-2 border border-emerald-500/20">
-                  <CheckCircle2 className="size-4 shrink-0 text-emerald-500" />
-                  <span>Esta integração está ativa e protegida. Preencha os campos abaixo apenas para atualizar.</span>
-                </div>
-              )}
-
               {testResult && (
                 <div
                   className={`p-2.5 rounded-xl text-xs flex items-center gap-2 border ${
@@ -756,16 +697,13 @@ function UnifiedIntegrationsHubPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <PageHeader title="Central de Integrações" />
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Gestão unificada de Marketplaces, Inteligência Artificial (BYOK), ERPs Fiscais, Logística de Envio, Mensageria e Tracking.
-          </p>
+          <PageHeader title="Integrações" />
         </div>
 
         <Link to="/workspace/integracoes/marketplaces">
           <Button variant="outline" size="sm" className="h-9 px-3.5 gap-2 rounded-xl text-xs font-semibold">
             <Store className="size-4 text-primary" />
-            Gestor de Marketplaces
+            Marketplaces
             <ExternalLink className="size-3 text-muted-foreground" />
           </Button>
         </Link>
@@ -791,7 +729,7 @@ function UnifiedIntegrationsHubPage() {
 
           <TabsTrigger value="erp_fiscal" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <FileText className="size-3.5 text-blue-500" />
-            Emissão Fiscal & ERP
+            Fiscal
           </TabsTrigger>
 
           <TabsTrigger value="logistics" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
@@ -806,7 +744,7 @@ function UnifiedIntegrationsHubPage() {
 
           <TabsTrigger value="growth_pixels" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
             <BarChart className="size-3.5 text-pink-500" />
-            Pixels & Growth
+            Pixels
           </TabsTrigger>
 
           <TabsTrigger value="maps" className="h-9 text-xs font-semibold rounded-xl gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-xs">
@@ -815,29 +753,13 @@ function UnifiedIntegrationsHubPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* 0. ABA GATEWAYS & MEIOS DE PAGAMENTO (ZERO MOCKS) */}
+        {/* 0. ABA GATEWAYS & MEIOS DE PAGAMENTO */}
         <TabsContent value="payments_gateways" className="space-y-4 outline-none">
-          <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400">
-                <CreditCard className="size-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">Gateways de Pagamento</h4>
-                <p className="text-xs text-muted-foreground">
-                  Configure suas contas em adquirentes e processadores reais. Os tokens são armazenados com criptografia no cofre de credenciais e validados via ping oficial.
-                </p>
-              </div>
-            </div>
-            <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shrink-0 self-start sm:self-auto">
-              Liquidação Direta
-            </Badge>
-          </div>
 
           <div className="grid lg:grid-cols-2 gap-6">
             <IntegrationCard
               provider="asaas"
-              title="Asaas (PIX, Boleto & Cartão)"
+              title="Asaas"
               description="Conta digital PJ e gateway para recebimento imediato de PIX dinâmico, carnês e liquidação D+0."
               icon={CreditCard}
               existingSetting={settings.find((s: any) => s.provider === "asaas")}
@@ -891,7 +813,7 @@ function UnifiedIntegrationsHubPage() {
 
             <IntegrationCard
               provider="stripe"
-              title="Stripe Brasil & Internacional"
+              title="Stripe"
               description="Processamento de pagamentos globais, cartões de crédito internacionais, Apple Pay e Google Pay."
               icon={CreditCard}
               existingSetting={settings.find((s: any) => s.provider === "stripe")}
@@ -973,30 +895,17 @@ function UnifiedIntegrationsHubPage() {
 
         {/* 1. ABA COFRE DE IA & BYOK */}
         <TabsContent value="ai_vault" className="space-y-4 outline-none">
-          <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
-                <Zap className="size-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-foreground">Cofre de Inteligência Artificial</h4>
-                <p className="text-xs text-muted-foreground">
-                  Ao salvar sua chave pessoal, a plataforma prioriza sua cota. Caso ela expire ou sofra rate-limit, o pool orquestrado da Waesy assume automaticamente.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-auto">
-              <Link to="/workspace/configuracoes/inteligencia-artificial">
-                <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-xl font-medium cursor-pointer gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
-                  <Bot className="size-3.5 text-primary" />
-                  Modelos de IA
-                  <ExternalLink className="size-3 text-muted-foreground" />
-                </Button>
-              </Link>
-              <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                Pool Ativo (Gemini / Groq / OpenAI)
-              </Badge>
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
+            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+              Pool Ativo (Gemini / Groq / OpenAI)
+            </Badge>
+            <Link to="/workspace/configuracoes/inteligencia-artificial">
+              <Button variant="outline" size="sm" className="h-8 px-3 text-xs rounded-xl font-medium cursor-pointer gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+                <Bot className="size-3.5 text-primary" />
+                Modelos de IA
+                <ExternalLink className="size-3 text-muted-foreground" />
+              </Button>
+            </Link>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-6">
@@ -1086,19 +995,14 @@ function UnifiedIntegrationsHubPage() {
           </div>
         </TabsContent>
 
-        {/* 2. ABA MARKETPLACES & CANAIS DE VENDA */}
+        {/* 2. ABA MARKETPLACES */}
         <TabsContent value="marketplaces" className="space-y-4 outline-none">
-          <div className="p-4 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h4 className="text-sm font-bold text-foreground">Marketplaces Conectados</h4>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Publique anúncios, sincronize preços/estoques e importe pedidos de canais terceiros diretamente no catálogo.
-              </p>
-            </div>
+          <div className="flex items-center justify-between gap-4 pb-1">
+            <h4 className="text-sm font-semibold text-foreground">Canais Integrados</h4>
             <Link to="/workspace/integracoes/marketplaces">
-              <Button size="sm" className="h-9 rounded-xl font-bold gap-1.5 cursor-pointer">
-                Abrir Central de Marketplaces
-                <ExternalLink className="size-3.5" />
+              <Button size="sm" variant="outline" className="h-8 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer">
+                Gerenciar Conexões
+                <ExternalLink className="size-3 text-muted-foreground" />
               </Button>
             </Link>
           </div>
@@ -1441,9 +1345,6 @@ function UnifiedIntegrationsHubPage() {
                             </Badge>
                           )}
                         </CardTitle>
-                        <CardDescription className="text-xs mt-0.5">
-                          Sindicação simultânea de vagas de emprego e postagens corporativas na página oficial da empresa.
-                        </CardDescription>
                       </div>
                     </div>
                   </div>
@@ -1515,7 +1416,7 @@ function UnifiedIntegrationsHubPage() {
 
             <IntegrationCard
               provider="meta_pixel"
-              title="Meta Pixel & Conversions API"
+              title="Meta Pixel"
               description="Rastreamento de visualizações de produto, adições ao carrinho e conversões no Facebook e Instagram Ads."
               icon={BarChart}
               existingSetting={settings.find((s: any) => s.provider === "meta_pixel")}
@@ -1568,7 +1469,7 @@ function UnifiedIntegrationsHubPage() {
 
             <IntegrationCard
               provider="tiktok_pixel"
-              title="TikTok Pixel & Events API"
+              title="TikTok Pixel"
               description="Rastreamento de conversões para campanhas de vídeo patrocinadas no TikTok Ads Manager."
               icon={BarChart}
               existingSetting={settings.find((s: any) => s.provider === "tiktok_pixel")}
@@ -1590,7 +1491,7 @@ function UnifiedIntegrationsHubPage() {
           <div className="grid lg:grid-cols-2 gap-6">
             <IntegrationCard
               provider="map_service"
-              title="Provedor de Mapas & Geolocalização"
+              title="Provedor de Mapas"
               description="Serviço de renderização de rotas de entrega MotoLink, localização de lojas e turismo local."
               icon={MapPin}
               existingSetting={settings.find((s: any) => s.provider === "map_service")}

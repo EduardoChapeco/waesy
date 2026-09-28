@@ -1,43 +1,11 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import {
- getUserSecurityAuditLogs,
- getUserRegisteredDevices,
- revokeUserDevice,
- trustUserDevice,
- getUserSession,
-} from "@/services/auth.functions";
+import { getUserSecurityAuditLogs, getUserRegisteredDevices, revokeUserDevice, trustUserDevice, getUserSession } from "@/services/auth.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
- Shield,
- ShieldAlert,
- ShieldCheck,
- Smartphone,
- Laptop,
- Globe,
- MapPin,
- Clock,
- Trash2,
- CheckCircle2,
- AlertTriangle,
- ArrowLeft,
- Lock,
- Radio,
- Activity,
- KeyRound,
- RefreshCw,
- Loader2,
-} from "lucide-react";
-import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogFooter,
- DialogHeader,
- DialogTitle,
-} from "@/components/ui/dialog";
+import { Shield, ShieldAlert, ShieldCheck, Smartphone, Laptop, Globe, MapPin, Clock, Trash2, CheckCircle2, AlertTriangle, ArrowLeft, Lock, Radio, Activity, KeyRound, RefreshCw, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function formatRelativeTime(dateInput: string | Date | null | undefined): string {
   if (!dateInput) return "Recentemente";

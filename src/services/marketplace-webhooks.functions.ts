@@ -127,6 +127,23 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
       external_order_id: input.externalOrderId,
     };
 
+    const originChannelMap: Record<string, string> = {
+      mercadolivre: "mercadolivre",
+      ml: "mercadolivre",
+      ifood: "ifood",
+      shopee: "shopee",
+      magalu: "magalu",
+      amazon: "amazon",
+      rappi: "rappi",
+      amodelivery: "amodelivery",
+      "99food": "99food",
+      pos: "pdv",
+      pdv: "pdv",
+      whatsapp: "whatsapp",
+    };
+    const resolvedOriginChannel = originChannelMap[input.platform.toLowerCase()] || "waesy_app";
+    const netPayoutCents = input.netPayoutCents || (input.totalAmountCents - (input.marketplaceFeeCents || 0));
+
     const { data: createdOrder, error: orderErr } = await supabase
       .from("orders")
       .insert({
@@ -135,10 +152,21 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
         status: orderStatus as any,
         origin_type: "marketplace",
         channel_origin: input.platform,
+        origin_channel: resolvedOriginChannel,
         subtotal_cents: subtotalCents,
         shipping_cents: input.shippingCostCents,
         discount_cents: 0,
         total_cents: input.totalAmountCents,
+        cost_breakdown: {
+          platform_fee_cents: input.marketplaceFeeCents || 0,
+          marketplace_fee_cents: input.marketplaceFeeCents || 0,
+          shipping_cost_cents: input.shippingCostCents || 0,
+          payment_fee_cents: 0,
+          discount_cents: 0,
+          net_revenue_cents: netPayoutCents,
+          net_payout_cents: netPayoutCents,
+          channel: resolvedOriginChannel,
+        },
         shipping_method: input.platform === "ifood" ? "iFood Delivery" : "Mercado Envios / Transportadora",
         shipping_address: input.shippingAddress || null,
         customer_snapshot: customerSnapshot,
@@ -157,6 +185,16 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
 
     masterOrderId = createdOrder.id;
 
+    // Busca armazém padrão para conciliação multi-galpão (Omni-Hub ERP)
+    const { data: defaultLocation } = await supabase
+      .from("inventory_locations")
+      .select("id")
+      .eq("store_id", input.storeId)
+      .eq("is_default", true)
+      .maybeSingle();
+
+    const activeLocationId = defaultLocation?.id || null;
+
     // 4. Insere os itens na tabela `public.order_items`
     for (const item of sanitizedItems) {
       await supabase.from("order_items").insert({
@@ -171,27 +209,58 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
         created_at: new Date().toISOString(),
       });
 
-      // 5. Baixa de estoque física se o SKU corresponder a uma variante da loja
+      // 5. Baixa de estoque física e multi-armazém se o SKU corresponder a uma variante da loja
       if (item.sku) {
         try {
           const { data: variant } = await supabase
             .from("product_variants")
-            .select("id, stock_on_hand")
+            .select("id, product_id, stock_on_hand")
             .eq("sku", item.sku)
             .maybeSingle();
 
           if (variant) {
-            const newStock = Math.max(0, (variant.stock_on_hand || 0) - (item.quantity || 1));
+            const soldQty = item.quantity || 1;
+            const newStock = Math.max(0, (variant.stock_on_hand || 0) - soldQty);
             await supabase
               .from("product_variants")
               .update({ stock_on_hand: newStock, updated_at: new Date().toISOString() })
               .eq("id", variant.id);
 
+            if (activeLocationId) {
+              const { data: locInv } = await supabase
+                .from("product_location_inventories")
+                .select("stock_qty")
+                .eq("location_id", activeLocationId)
+                .eq("variant_id", variant.id)
+                .maybeSingle();
+
+              if (locInv) {
+                await supabase
+                  .from("product_location_inventories")
+                  .update({
+                    stock_qty: Math.max(0, locInv.stock_qty - soldQty),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("location_id", activeLocationId)
+                  .eq("variant_id", variant.id);
+              } else {
+                await supabase
+                  .from("product_location_inventories")
+                  .insert({
+                    location_id: activeLocationId,
+                    product_id: variant.product_id,
+                    variant_id: variant.id,
+                    stock_qty: 0,
+                  });
+              }
+            }
+
             await supabase.from("stock_movements").insert({
               store_id: input.storeId,
               variant_id: variant.id,
+              location_id: activeLocationId,
               movement_type: "sale",
-              qty: -(item.quantity || 1),
+              qty: -soldQty,
               reference_type: "order",
               reference_id: masterOrderId,
               channel_origin: input.platform,
@@ -218,8 +287,39 @@ async function syncOrderToMaster(input: MasterOrderSyncInput): Promise<string | 
     .eq("platform", input.platform)
     .eq("external_order_id", String(input.externalOrderId));
 
-  // 7. Disparo automático de NF-e se configurado para a loja
+  // 7. Integrações financeiras e fiscais pós-pagamento
   if (orderStatus === "paid") {
+    // 7.1 Lançamento financeiro no caixa centralizado aberto (Centralized Cashier Hub)
+    try {
+      const { data: openRegister } = await supabase
+        .from("cash_registers")
+        .select("id")
+        .eq("store_id", input.storeId)
+        .eq("status", "open")
+        .order("opened_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (openRegister) {
+        const fee = input.marketplaceFeeCents || 0;
+        const netPayout = input.netPayoutCents || (input.totalAmountCents - fee);
+        await supabase.from("cash_register_entries").insert({
+          cash_register_id: openRegister.id,
+          amount_cents: input.totalAmountCents,
+          entry_type: "credit",
+          notes: `Venda ${input.platform.toUpperCase()} #${input.externalOrderId}`,
+          channel_source: input.platform,
+          channel_origin: input.platform,
+          marketplace_fee_cents: fee,
+          net_payout_cents: netPayout,
+          external_reference_id: String(input.externalOrderId),
+        });
+      }
+    } catch (cashErr) {
+      console.warn(`[syncOrderToMaster] Lançamento de caixa para pedido ${masterOrderId} ignorado ou falhou:`, cashErr);
+    }
+
+    // 7.2 Disparo automático de NF-e se configurado para a loja
     try {
       await emitOrderNFeAutomated({
         data: {

@@ -11,64 +11,24 @@ import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components
 import { ErrorState, EmptyState } from "@/components/state/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
- Card,
- CardContent,
- CardDescription,
- CardFooter,
- CardHeader,
- CardTitle,
-} from "@/components/ui/card";
-import {
- Sheet,
- SheetContent,
- SheetDescription,
- SheetFooter,
- SheetHeader,
- SheetTitle,
-} from "@/components/ui/sheet";
-import {
- Form,
- FormControl,
- FormField,
- FormItem,
- FormLabel,
- FormMessage,
-} from "@/components/ui/form";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
- Table,
- TableBody,
- TableCell,
- TableHead,
- TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import {
- addRegisterEntry,
- closeRegister,
- getActiveRegister,
- openRegister,
- listRegisterHistory,
-} from "@/services/cash.functions";
+import { addRegisterEntry, closeRegister, getActiveRegister, openRegister, listRegisterHistory } from "@/services/cash.functions";
 import { parseCurrencyInputToCents } from "@/lib/cash";
 import { formatDateTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/financeiro/caixa/")({
- head: () => ({ meta: [{ title: "Fluxo de Caixa & Turnos | Workspace Waesy" }] }),
- loader: async () => {
+  head: () => ({ meta: [{ title: "Fluxo de Caixa | Workspace Waesy" }] }),
+  loader: async () => {
    try {
  const [registerRes, historyRes] = await Promise.all([
  getActiveRegister().catch(() => null),
@@ -110,7 +70,7 @@ function CashRegisterError({ error }: { error: Error }) {
 
  return (
  <div className="space-y-6">
- <PageHeader eyebrow="Financeiro" title="Fluxo de Caixa" />
+ <PageHeader eyebrow="Financeiro" title="Caixa" />
  <ErrorState title="Falha ao carregar fluxo de caixa" />
  </div>
  );
@@ -125,7 +85,7 @@ const CAIXA_TOUR_SLIDES: TourSlide[] = [
     tip: "Caixas abertos há mais de 24 horas são sinalizados para fechamento e auditoria preventiva.",
   },
   {
-    title: "Sangrias & Suprimentos Rápidos",
+    title: "Movimentações Rápidas",
     description: "Lance retiradas de dinheiro (sangrias) ou reforços no caixa (suprimentos) com justificativa e impressão opcional do comprovante.",
     icon: ArrowUpRight,
     highlightBadge: "Movimentações",
@@ -147,6 +107,7 @@ function CashRegisterManagerPage() {
 
  // Channel filter state
  const [selectedChannel, setSelectedChannel] = useState<string>("all");
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
 
  const filteredEntries = useMemo(() => {
  const entries = (register?.recentEntries || []) as any[];
@@ -300,7 +261,7 @@ function CashRegisterManagerPage() {
  {/* ── PageHeader Canônico ── */}
  <PageHeader
  eyebrow="Financeiro"
- title="Fluxo de Caixa"
+ title="Caixa"
  actions={
  <div className="flex items-center gap-2">
  <Button
@@ -479,7 +440,11 @@ function CashRegisterManagerPage() {
  Lançamentos do Turno Atual ({register?.recentEntries?.length || 0})
  </TabsTrigger>
  <TabsTrigger value="history" className="text-xs shrink-0">
- Histórico de Turnos Passados ({history.length})
+ Turnos ({history.length})
+ </TabsTrigger>
+ <TabsTrigger value="ledger" className="text-xs font-semibold gap-1.5 rounded-lg">
+ <ShieldCheck className="size-3.5" />
+ Ledger ACID ({(loaderData.ledger || []).length})
  </TabsTrigger>
  </TabsList>
  </div>
@@ -542,26 +507,39 @@ function CashRegisterManagerPage() {
         </div>
       ) : (
         <>
-          {/* ── 1. Mobile List Layout para Movimentações do Turno ── */}
-          <div className="space-y-3 block md:hidden">
+          {/* ── 1. MOBILE (<640px): SILENT WHATSAPP LIST COMPACT ── */}
+          <div className="block sm:hidden rounded-2xl border border-border/60 bg-card overflow-hidden divide-y divide-border/40">
             {filteredEntries.map((entry: any) => {
               const isNegative = entry.amount_cents < 0;
 
               return (
                 <div
                   key={entry.id}
-                  className="p-4 rounded-2xl bg-card border border-border/50 shadow-2xs space-y-2.5 transition-all"
+                  className="p-3.5 flex items-center justify-between gap-3 min-h-[50px] active:bg-muted/40 transition-colors"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {formatDateTime(entry.created_at)}
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-foreground truncate">
+                        {entry.description || "Lançamento de Caixa"}
                       </span>
                       {getChannelBadge(entry.channel)}
                     </div>
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+                      <span>{formatDateTime(entry.created_at)}</span>
+                      <span>•</span>
+                      <span className="uppercase font-semibold">{entry.method}</span>
+                      {entry.order_id && (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">NF-e</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
+                  <div className="text-right shrink-0">
                     <span
-                      className={`font-mono text-base font-bold ${
+                      className={`font-mono text-sm font-bold block ${
                         isNegative
                           ? "text-rose-600 dark:text-rose-400"
                           : "text-emerald-600 dark:text-emerald-400"
@@ -570,34 +548,10 @@ function CashRegisterManagerPage() {
                       {isNegative ? "-" : "+"}
                       {formatMoney(Math.abs(entry.amount_cents))}
                     </span>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-foreground">
-                      {entry.description || "Venda balcão / Lançamento"}
-                    </p>
-                    {entry.marketplace_fee_cents && entry.marketplace_fee_cents > 0 ? (
-                      <span className="block text-xs text-muted-foreground font-mono">
-                        Taxa canal: -{formatMoney(entry.marketplace_fee_cents)}
+                    {entry.marketplace_fee_cents > 0 && (
+                      <span className="text-[10px] text-muted-foreground font-mono block">
+                        Tx: -{formatMoney(entry.marketplace_fee_cents)}
                       </span>
-                    ) : null}
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-1 border-t border-border/30">
-                    <Badge
-                      variant={isNegative ? "destructive" : "outline"}
-                      className="text-xs font-mono uppercase px-2.5 py-0.5"
-                    >
-                      {entry.method}
-                    </Badge>
-                    {entry.order_id ? (
-                      <Badge variant="outline" className="text-xs font-semibold text-emerald-600 border-emerald-500/30 bg-emerald-500/5 px-2 py-0.5">
-                        NF-e
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-xs font-mono text-muted-foreground border-border/40 px-2 py-0.5">
-                        Não Fiscal
-                      </Badge>
                     )}
                   </div>
                 </div>
@@ -605,21 +559,140 @@ function CashRegisterManagerPage() {
             })}
           </div>
 
-          {/* ── 2. Desktop High-Density Table Layout ── */}
-          <div className="hidden md:block bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+          {/* ── 2. TABLET / FOLD (640px-1024px): BIFURCAÇÃO MASTER-DETAIL EM 2 COLUNAS ── */}
+          <div className="hidden sm:grid lg:hidden sm:grid-cols-12 gap-4 items-start">
+            {/* Coluna Esquerda (5 cols): WhatsApp List Interativa */}
+            <div className="sm:col-span-5 rounded-2xl border border-border/60 bg-card overflow-hidden divide-y divide-border/40 max-h-[600px] overflow-y-auto">
+              {filteredEntries.map((entry: any) => {
+                const isNegative = entry.amount_cents < 0;
+                const isSelected = (selectedEntryId || filteredEntries[0]?.id) === entry.id;
+
+                return (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    onClick={() => setSelectedEntryId(entry.id)}
+                    className={cn(
+                      "w-full text-left p-3.5 flex items-center justify-between gap-2.5 transition-colors cursor-pointer",
+                      isSelected
+                        ? "bg-primary/10 border-l-4 border-l-primary"
+                        : "hover:bg-muted/30"
+                    )}
+                  >
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p className="text-xs font-bold text-foreground truncate">
+                        {entry.description || "Lançamento"}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono">
+                        <span>{formatDateTime(entry.created_at)}</span>
+                        <span>•</span>
+                        <span className="uppercase">{entry.method}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span
+                        className={`font-mono text-xs font-bold block ${
+                          isNegative ? "text-rose-600" : "text-emerald-600"
+                        }`}
+                      >
+                        {isNegative ? "-" : "+"}
+                        {formatMoney(Math.abs(entry.amount_cents))}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Coluna Direita (7 cols): Painel Inspetor Detalhado do Lançamento */}
+            {(() => {
+              const activeEntry = filteredEntries.find((e: any) => e.id === (selectedEntryId || filteredEntries[0]?.id)) || filteredEntries[0];
+              if (!activeEntry) return null;
+              const isNeg = activeEntry.amount_cents < 0;
+
+              return (
+                <div className="sm:col-span-7 rounded-2xl border border-border/70 bg-card p-5 space-y-4 sticky top-20 shadow-xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      Detalhamento do Lançamento
+                    </span>
+                    {getChannelBadge(activeEntry.channel)}
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold">Valor Total</span>
+                    <div
+                      className={`text-2xl font-mono font-black ${
+                        isNeg ? "text-rose-600" : "text-emerald-600"
+                      }`}
+                    >
+                      {isNeg ? "-" : "+"}
+                      {formatMoney(Math.abs(activeEntry.amount_cents))}
+                    </div>
+                    <p className="text-xs text-foreground font-medium pt-1">
+                      {activeEntry.description || "Sem descrição"}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 pt-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Método</span>
+                      <p className="font-mono font-bold uppercase text-foreground">{activeEntry.method}</p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Horário</span>
+                      <p className="font-mono text-muted-foreground text-[11px]">{formatDateTime(activeEntry.created_at)}</p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Taxa do Canal</span>
+                      <p className="font-mono font-bold text-rose-600">
+                        {activeEntry.marketplace_fee_cents ? `-${formatMoney(activeEntry.marketplace_fee_cents)}` : "R$ 0,00"}
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-muted/30 border border-border/40 space-y-0.5">
+                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Líquido Recebido</span>
+                      <p className="font-mono font-bold text-emerald-600">
+                        {formatMoney(activeEntry.net_payout_cents || (activeEntry.amount_cents - (activeEntry.marketplace_fee_cents || 0)))}
+                      </p>
+                    </div>
+                  </div>
+
+                  {activeEntry.order_id && (
+                    <div className="pt-2">
+                      <Button asChild variant="outline" size="sm" className="w-full text-xs font-semibold rounded-xl h-9">
+                        <Link to={`/workspace/pedidos/${activeEntry.order_id}` as any}>
+                          <span>Ver Pedido Completo</span>
+                          <ChevronRight className="size-3.5 ml-1" />
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* ── 3. DESKTOP (>1024px): BENTO DATA TABLE DENSA COM SOFTWARE FEEL ── */}
+          <div className="hidden lg:block bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30">
+                <TableRow className="bg-muted/30 text-xs">
                   <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Horário</TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Origem / Canal</TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Tipo / Método</TableHead>
-                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Descrição / Notas</TableHead>
-                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Valor</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Canal</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Método</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Descrição</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Taxa Canal</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Valor Líquido</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Valor Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredEntries.map((entry: any) => {
                   const isNegative = entry.amount_cents < 0;
+                  const feeCents = entry.marketplace_fee_cents || 0;
+                  const netCents = entry.net_payout_cents || (entry.amount_cents - feeCents);
+
                   return (
                     <TableRow key={entry.id} className="hover:bg-muted/20 text-xs">
                       <TableCell className="font-mono text-muted-foreground whitespace-nowrap py-3.5">
@@ -647,13 +720,14 @@ function CashRegisterManagerPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="max-w-md truncate text-foreground font-medium py-3.5">
+                      <TableCell className="max-w-xs truncate text-foreground font-medium py-3.5">
                         <span>{entry.description || "Venda balcão / Lançamento"}</span>
-                        {entry.marketplace_fee_cents && entry.marketplace_fee_cents > 0 ? (
-                          <span className="block text-[10px] text-muted-foreground font-mono">
-                            Taxa canal: -{formatMoney(entry.marketplace_fee_cents)}
-                          </span>
-                        ) : null}
+                      </TableCell>
+                      <TableCell className="text-right font-mono py-3.5 text-muted-foreground">
+                        {feeCents > 0 ? `-${formatMoney(feeCents)}` : "—"}
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-semibold py-3.5 text-foreground">
+                        {formatMoney(netCents)}
                       </TableCell>
                       <TableCell
                         className={`text-right font-mono font-bold py-3.5 ${
@@ -785,7 +859,7 @@ function CashRegisterManagerPage() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Abertura / Fechamento</TableHead>
+                <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Turno</TableHead>
                 <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Responsáveis</TableHead>
                 <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Troco Inicial</TableHead>
                 <TableHead className="text-right font-bold text-xs uppercase tracking-wider text-muted-foreground py-3.5">Esperado</TableHead>
@@ -861,6 +935,59 @@ function CashRegisterManagerPage() {
           </Table>
         </div>
       </>
+    )}
+  </TabsContent>
+
+  {/* ── Conteúdo: Livro-Razão Financeiro Imutável (V113 Financial Ledger ACID) ── */}
+  <TabsContent value="ledger" className="mt-0 space-y-4">
+    {!loaderData.ledger || loaderData.ledger.length === 0 ? (
+      <div className="py-12 text-center space-y-2 border border-dashed border-border/70 rounded-2xl bg-card/40">
+        <ShieldCheck className="size-8 text-muted-foreground mx-auto" />
+        <p className="text-sm font-bold text-foreground">Livro-Razão ACID sem lançamentos</p>
+        <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+          Todos os débitos de campanhas publicitárias (Ad-Boost), fretes MotoLink e liquidações atômicas aparecem aqui.
+        </p>
+      </div>
+    ) : (
+      <div className="bg-card border border-border/70 rounded-2xl overflow-hidden shadow-2xs">
+        <div className="divide-y divide-border/40">
+          {loaderData.ledger.map((row: any) => {
+            const isDebit = row.direction === "debit";
+            return (
+              <div
+                key={row.id}
+                className="min-h-[52px] px-4 py-3 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Badge
+                    variant={isDebit ? "destructive" : "default"}
+                    className="text-[10px] font-mono uppercase shrink-0"
+                  >
+                    {row.entry_type || row.direction}
+                  </Badge>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">
+                      {row.description || "Transação Atômica ACID"}
+                    </p>
+                    <p className="text-[10px] font-mono text-muted-foreground truncate">
+                      {formatDateTime(row.created_at)} • Ref: {row.reference_type || "core"}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={cn(
+                    "text-xs font-mono font-bold shrink-0",
+                    isDebit ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
+                  )}
+                >
+                  {isDebit ? "-" : "+"}
+                  {formatMoney(Math.abs(Number(row.amount_cents || 0)))}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     )}
   </TabsContent>
 </Tabs>

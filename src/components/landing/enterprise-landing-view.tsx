@@ -1,38 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Sparkles,
-  ArrowRight,
-  Store,
-  ShieldCheck,
-  CheckCircle2,
-  LogIn,
-  Layers,
-  ShoppingBag,
-  Boxes,
-  Users,
-  Briefcase,
-  Bot,
-  FileText,
-  Search,
-  Zap,
-  Globe,
-  Compass,
-  UtensilsCrossed,
-  Scale,
-  Newspaper,
-  Menu,
-  X,
-  ExternalLink,
-  ChevronRight,
-  Check,
-  Building2,
-  TrendingUp,
-  Sliders,
-  Share2,
-  LayoutDashboard,
-  User,
-} from "lucide-react";
+import { Star, ArrowRight, Store, ShieldCheck, CheckCircle2, LogIn, Layers, ShoppingBag, Boxes, Users, Briefcase, Bot, FileText, Search, Zap, Globe, Compass, UtensilsCrossed, Scale, Newspaper, Menu, X, ExternalLink, ChevronRight, Check, Building2, TrendingUp, Sliders, Share2, LayoutDashboard, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -139,7 +107,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               onClick={() => scrollToSection("conexoes")}
               className="px-3 py-2 rounded-lg hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
             >
-              Canais & Google
+              Canais e Google
             </button>
             <button
               type="button"
@@ -253,7 +221,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                       onClick={() => scrollToSection("workspace")}
                       className="text-left py-2.5 px-3 rounded-xl hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
                     >
-                      Workspace ERP & Operações
+                      Workspace ERP e Operações
                     </button>
                     <button
                       type="button"
@@ -274,7 +242,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                       onClick={() => scrollToSection("conexoes")}
                       className="text-left py-2.5 px-3 rounded-xl hover:bg-muted/60 text-sm font-semibold text-foreground transition-colors"
                     >
-                      Conexões & Google
+                      Conexões e Google
                     </button>
                     <button
                       type="button"
@@ -344,7 +312,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
       {/* ── 2. HERO SECTION DE ALTO IMPACTO (APPLE HIG STANDARD) ── */}
       <section className="relative pt-12 sm:pt-20 pb-12 sm:pb-20 px-4 sm:px-6 max-w-7xl mx-auto w-full text-center space-y-6 sm:space-y-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-border/80 bg-muted/40 text-foreground text-xs font-semibold shadow-2xs">
-          <Sparkles className="size-3.5 text-primary" />
+          <Star className="size-3.5 text-primary" />
           <span>O Sistema Operacional Definitivo para Negócios Regionais</span>
         </div>
 
@@ -386,7 +354,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 pt-10 sm:pt-14 max-w-4xl mx-auto">
           <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card/50 text-left space-y-1">
             <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">350+</span>
-            <p className="text-xs font-semibold text-muted-foreground">Módulos & Telas Nativas</p>
+            <p className="text-xs font-semibold text-muted-foreground">Módulos e Telas Nativas</p>
           </div>
           <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card/50 text-left space-y-1">
             <span className="text-2xl sm:text-3xl font-black font-mono text-primary">100%</span>
@@ -398,7 +366,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
           </div>
           <div className="p-4 sm:p-5 rounded-2xl border border-border/60 bg-card/50 text-left space-y-1">
             <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-600">24/7</span>
-            <p className="text-xs font-semibold text-muted-foreground">Google, Meta & Marketplaces</p>
+            <p className="text-xs font-semibold text-muted-foreground">Google, Meta e Marketplaces</p>
           </div>
         </div>
       </section>
@@ -430,7 +398,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               </div>
               <div className="space-y-1">
                 <span className="text-xs font-bold text-primary uppercase tracking-wider font-mono">
-                  Gestão Empresarial & Operação
+                  Gestão Empresarial e Operação
                 </span>
                 <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                   Workspace ERP: PDV, RH, Estoque e Recrutamento
@@ -454,7 +422,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                 <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/50 space-y-1">
                   <div className="flex items-center gap-2 font-bold text-xs text-foreground">
                     <Users className="size-4 text-primary" />
-                    <span>RH & Recrutamento (ATS)</span>
+                    <span>RH e Recrutamento (ATS)</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
                     Gestão de colaboradores, holerites, ponto e triagem autônoma de candidatos.
@@ -485,7 +453,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               </div>
               <div className="space-y-1">
                 <span className="text-xs font-bold text-amber-600 uppercase tracking-wider font-mono">
-                  Presença & CMS Visual
+                  Presença e CMS Visual
                 </span>
                 <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                   Construtor Omni
@@ -530,7 +498,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                   Automação Autônoma
                 </span>
                 <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-                  Motores de IA & OCR
+                  Motores de IA
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   IA SDR para atendimento e conversão 24h no WhatsApp, leitura multimodal OCR de contratos e notas fiscais e motor de precificação dinâmica.
@@ -569,7 +537,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               </div>
               <div className="space-y-1">
                 <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider font-mono">
-                  Alcance & Distribuição
+                  Alcance e Distribuição
                 </span>
                 <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                   Conectividade Total: Google, Marketplaces e Imprensa
@@ -583,7 +551,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                 <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/50 space-y-1">
                   <div className="flex items-center gap-2 font-bold text-xs text-foreground">
                     <Search className="size-4 text-emerald-600" />
-                    <span>Google Meu Negócio & Meta</span>
+                    <span>Google Meu Negócio e Meta</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
                     Sincronização contínua de horários, produtos e avaliações dos clientes.
@@ -592,7 +560,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
                 <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/50 space-y-1">
                   <div className="flex items-center gap-2 font-bold text-xs text-foreground">
                     <Newspaper className="size-4 text-emerald-600" />
-                    <span>Imprensa & Notícias Locais</span>
+                    <span>Imprensa e Notícias Locais</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
                     Veiculação de comunicados e artigos patrocinados na rede de notícias regional.
@@ -634,7 +602,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               </div>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-background">
                 <CheckCircle2 className="size-4 text-primary" />
-                <span>Acesso VIP a Shows & Feiras</span>
+                <span>Acesso VIP a Shows e Feiras</span>
               </div>
             </div>
           </div>
@@ -645,7 +613,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               onClick={() => setIsFounderSheetOpen(true)}
               className="w-full sm:w-auto h-12 px-8 rounded-2xl text-xs sm:text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-md cursor-pointer"
             >
-              <Sparkles className="size-4 mr-2" />
+              <Star className="size-4 mr-2" />
               <span>Garantir Meu Título de Fundador</span>
             </Button>
             <Button
@@ -655,7 +623,7 @@ export function EnterpriseLandingView({ initialSettings }: EnterpriseLandingView
               className="w-full sm:w-auto h-12 px-6 rounded-2xl text-xs sm:text-sm font-bold border-background/30 text-background hover:bg-background/10 cursor-pointer"
             >
               <Link to="/concursos">
-                <span>Ver Sorteios & Prêmios</span>
+                <span>Ver Sorteios e Prêmios</span>
               </Link>
             </Button>
           </div>

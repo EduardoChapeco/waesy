@@ -1,42 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { formatDateTime } from "@/lib/datetime";
-import {
-  History,
-  ArrowLeft,
-  ArrowDownLeft,
-  ArrowUpRight,
-  Search,
-  Download,
-  Eye,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  DollarSign,
-  TrendingUp,
-  User,
-  Banknote,
-  FileSpreadsheet,
-  Loader2,
-} from "lucide-react";
+import { History, ArrowLeft, ArrowDownLeft, ArrowUpRight, Search, Download, Eye, AlertTriangle, CheckCircle2, Clock, DollarSign, TrendingUp, User, Banknote, FileSpreadsheet, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { SheetPage } from "@/components/ui/sheet-page";
 import { EmptyState } from "@/components/state/states";
-import {
-  listRegisterHistory,
-  getRegisterShiftDetails,
-} from "@/services/cash.functions";
+import { listRegisterHistory, getRegisterShiftDetails } from "@/services/cash.functions";
 import type { CashRegisterHistoryItem, CashRegisterStatus } from "@/lib/cash";
 import { formatMoney } from "@/lib/money";
 import { toast } from "sonner";
@@ -202,7 +175,7 @@ function ShiftsPage() {
 
       <PageHeader
         eyebrow="Financeiro"
-        title="Histórico de Turnos & Fechamentos"
+        title="Histórico de Turnos"
         description="Auditoria fiscal de caixas, conciliação cega de gaveta, quebras e conferência de suprimentos e sangrias."
         actions={
           <Button
@@ -441,7 +414,7 @@ function ShiftsPage() {
       <SheetPage
         open={!!selectedShiftId}
         onOpenChange={(open) => !open && setSelectedShiftId(null)}
-        title="Auditoria & Conciliação de Turno"
+        title="Auditoria de Turno"
         size="lg"
       >
         {isLoadingDetails ? (
@@ -541,7 +514,7 @@ function ShiftsPage() {
                     <TableRow className="border-border/60 hover:bg-transparent">
                       <TableHead className="text-[11px] font-bold">Horário</TableHead>
                       <TableHead className="text-[11px] font-bold">Tipo</TableHead>
-                      <TableHead className="text-[11px] font-bold">Descrição / Canal</TableHead>
+                      <TableHead className="text-[11px] font-bold">Descrição</TableHead>
                       <TableHead className="text-right text-[11px] font-bold font-mono">Valor</TableHead>
                     </TableRow>
                   </TableHeader>

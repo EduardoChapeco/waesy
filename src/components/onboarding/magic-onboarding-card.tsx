@@ -6,17 +6,7 @@
  */
 
 import React, { useState } from "react";
-import {
-  Sparkles,
-  Globe,
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  Building2,
-  ShoppingBag,
-  Palette,
-  MessageSquare,
-} from "lucide-react";
+import { Star, Globe, ArrowRight, CheckCircle2, Loader2, Building2, ShoppingBag, Palette, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +82,7 @@ export function MagicOnboardingCard({ storeId, onSuccess }: MagicOnboardingCardP
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-xl bg-primary/10 text-primary">
-            <Sparkles className="size-4" />
+            <Star className="size-4" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Onboarding Mágico por IA</h3>

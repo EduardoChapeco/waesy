@@ -1,35 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
- FileText,
- Plus,
- ArrowUpRight,
- Calendar,
- Users,
- Search,
- CheckCircle2,
- Clock,
- Send,
- Copy,
- Trash2,
- ExternalLink,
- DollarSign,
- TrendingUp,
- MoreVertical,
- Plane,
-} from "lucide-react";
+import { FileText, Plus, ArrowUpRight, Calendar, Users, Search, CheckCircle2, Clock, Send, Copy, Trash2, ExternalLink, DollarSign, TrendingUp, MoreVertical, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import {
- listAgencyTravelProposals,
- duplicateTravelProposal,
- deleteTravelProposal,
- type TravelProposalDTO,
-} from "@/services/travel-proposal.functions";
+import { listAgencyTravelProposals, duplicateTravelProposal, deleteTravelProposal, type TravelProposalDTO } from "@/services/travel-proposal.functions";
 import { convertProposalToTrip } from "@/services/travel-lifecycle.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
@@ -144,7 +122,7 @@ function WorkspaceProposalsIndexPage() {
  return (
  <NicheOperationalGuard
  targetNiche="tourism"
- toolTitle="Lâminas & Propostas de Viagem"
+ toolTitle="Propostas de Viagem"
  toolDescription="O criador de lâminas e propostas interativas foi desenvolvido especificamente para agências de turismo e consultores de viagem apresentarem roteiros visuais aos passageiros."
  store={store}
  >
@@ -329,7 +307,7 @@ function WorkspaceProposalsIndexPage() {
  <WorkspaceDashboardSheet
    open={isDashboardOpen}
    onOpenChange={setIsDashboardOpen}
-   title="Painel de Propostas & Lâminas de Viagem"
+   title="Propostas de Viagem"
    description="Indicadores de aprovação de propostas, envio aos passageiros e volume financeiro em negociação."
    metrics={[
      {

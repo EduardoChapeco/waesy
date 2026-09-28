@@ -3,14 +3,7 @@ import { formatMoney } from "@/lib/money";
 import { PageHeader } from "@/components/commerce/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/state/states";
 import { listPayments } from "@/services/order.functions";
@@ -19,33 +12,13 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useRouter } from "@tanstack/react-router";
 import { formatDate } from "@/lib/datetime";
-import {
-  CheckCircle2,
-  Clock,
-  DollarSign,
-  Search,
-  XCircle,
-  CreditCard,
-  QrCode,
-  Banknote,
-  Building2,
-  TrendingUp,
-  FileSpreadsheet,
-  AlertCircle,
-  Percent,
-} from "lucide-react";
+import { CheckCircle2, Clock, DollarSign, Search, XCircle, CreditCard, QrCode, Banknote, Building2, TrendingUp, FileSpreadsheet, AlertCircle, Percent } from "lucide-react";
 import { SheetPage } from "@/components/ui/sheet-page";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/financeiro/pagamentos")({
-  head: () => ({ meta: [{ title: "Pagamentos & Liquidação | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Pagamentos | Workspace Waesy" }] }),
   loader: async () => {
     try {
       const res = await listPayments();
@@ -226,7 +199,7 @@ function AdminPaymentsPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Financeiro"
-        title="Pagamentos & Liquidação"
+        title="Pagamentos"
         description="Acompanhe entradas financeiras, aprove comprovantes pendentes e monitore o faturamento em tempo real."
         actions={
           <Button
@@ -368,7 +341,7 @@ function AdminPaymentsPage() {
             <TableHeader>
               <TableRow className="border-border/60 hover:bg-transparent">
                 <TableHead className="text-xs font-bold font-mono">Pedido</TableHead>
-                <TableHead className="text-xs font-bold">Data & Hora</TableHead>
+                <TableHead className="text-xs font-bold">Data e Hora</TableHead>
                 <TableHead className="text-xs font-bold">Cliente</TableHead>
                 <TableHead className="text-xs font-bold font-mono">Valor Total</TableHead>
                 <TableHead className="text-xs font-bold">Status do Pagamento</TableHead>

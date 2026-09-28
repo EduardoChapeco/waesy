@@ -1,45 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
- TrendingUp,
- TrendingDown,
- Package,
- ShoppingBag,
- Truck,
- Users,
- AlertTriangle,
- ArrowUpRight,
- Store,
- Megaphone,
- Calendar,
- Layers,
- ChevronRight,
- DollarSign,
- Ticket,
- Clock,
- CheckCircle2,
- Plane,
- FileSpreadsheet,
- FileText,
- Bus,
- Scale,
- Wrench,
- Building2,
- Briefcase,
- GraduationCap,
- Dog,
- CarFront,
- Flame,
- ChefHat,
-  BookOpenCheck,
-  Activity,
- UtensilsCrossed,
- CreditCard,
- QrCode,
- Loader2,
- BarChart3,
-} from "lucide-react";
+import { TrendingUp, TrendingDown, Package, ShoppingBag, Truck, Users, AlertTriangle, ArrowUpRight, Store, Megaphone, Calendar, Layers, ChevronRight, DollarSign, Ticket, Clock, CheckCircle2, Plane, FileSpreadsheet, FileText, Bus, Scale, Wrench, Building2, Briefcase, GraduationCap, Dog, CarFront, Flame, ChefHat, BookOpenCheck, Activity, UtensilsCrossed, CreditCard, QrCode, Loader2, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +14,7 @@ import { formatMoney } from "@/lib/money";
 import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/seasonal-marketing-calendar-widget";
 
 export const Route = createFileRoute("/workspace/")({
- head: () => ({ meta: [{ title: "Painel de Controle & Visão Geral | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Painel de Controle | Workspace Waesy" }] }),
  loader: async () => {
    try {
  let session: any = null;
@@ -150,76 +112,76 @@ export default function WorkspaceDashboardPage() {
  switch (semantics.nicheId) {
  case "tourism":
  return [
- { label: "Grupos & Excursões (ANTT)", path: "/workspace/turismo/grupos", icon: Bus },
- { label: "Frota & Editor 2D", path: "/workspace/turismo/frota", icon: Bus },
- { label: "Central de Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
- { label: "Lâminas & Propostas (Studio)", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
- { label: "Contratos & Assinatura Digital", path: "/workspace/turismo/contratos", icon: FileText },
+ { label: "Excursões", path: "/workspace/turismo/grupos", icon: Bus },
+ { label: "Frota", path: "/workspace/turismo/frota", icon: Bus },
+ { label: "Cotações", path: "/workspace/turismo/cotacoes", icon: Plane },
+ { label: "Propostas", path: "/workspace/turismo/propostas", icon: FileSpreadsheet },
+ { label: "Contratos", path: "/workspace/turismo/contratos", icon: FileText },
  ];
  case "gastronomy":
  return [
- { label: "KDS • Cozinha & Preparo", path: "/workspace/pdv/cozinha", icon: ChefHat },
- { label: "Reservas & Mapa do Salão", path: "/workspace/reservas", icon: UtensilsCrossed },
- { label: "Salão & Comandas", path: "/workspace/pdv/comandas", icon: UtensilsCrossed },
- { label: "Frente de Caixa (PDV)", path: "/workspace/pdv", icon: CreditCard },
- { label: "Relatórios Gastronomia", path: "/workspace/relatorios/gastronomia", icon: BarChart3 },
- { label: "Gestor de Delivery", path: "/workspace/pedidos/gestor", icon: Store },
+ { label: "Cozinha", path: "/workspace/pdv/cozinha", icon: ChefHat },
+ { label: "Reservas", path: "/workspace/reservas", icon: UtensilsCrossed },
+ { label: "Comandas", path: "/workspace/pdv/comandas", icon: UtensilsCrossed },
+ { label: "Caixa", path: "/workspace/pdv", icon: CreditCard },
+ { label: "Relatórios", path: "/workspace/relatorios/gastronomia", icon: BarChart3 },
+ { label: "Delivery", path: "/workspace/pedidos/gestor", icon: Store },
  ];
  case "services":
  return [
- { label: "Grade de Agendamentos", path: "/workspace/agenda", icon: Calendar },
- { label: "Catálogo de Serviços", path: "/workspace/agenda/servicos", icon: Layers },
- { label: "Pacotes & Passes", path: "/workspace/pacotes", icon: Ticket },
- { label: "Promoções & Cupons", path: "/workspace/marketing/promocoes", icon: Flame },
+ { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
+ { label: "Serviços", path: "/workspace/agenda/servicos", icon: Layers },
+ { label: "Pacotes", path: "/workspace/pacotes", icon: Ticket },
+ { label: "Promoções", path: "/workspace/marketing/promocoes", icon: Flame },
  ];
  case "legal":
  return [
- { label: "Processos & Prazos", path: "/workspace/advocacia", icon: Scale },
- { label: "Audiências & Reuniões", path: "/workspace/agenda", icon: Calendar },
- { label: "Honorários & Propostas", path: "/workspace/orcamentos", icon: FileText },
+ { label: "Processos", path: "/workspace/advocacia", icon: Scale },
+ { label: "Audiências", path: "/workspace/agenda", icon: Calendar },
+ { label: "Honorários", path: "/workspace/orcamentos", icon: FileText },
  ];
  case "real_estate":
  return [
- { label: "Catálogo de Imóveis", path: "/workspace/catalogo/produtos", icon: Building2 },
- { label: "Vistorias & Chamados", path: "/workspace/imoveis/manutencoes", icon: Wrench },
- { label: "Propostas & Contratos", path: "/workspace/orcamentos", icon: FileText },
+ { label: "Imóveis", path: "/workspace/catalogo/produtos", icon: Building2 },
+ { label: "Vistorias", path: "/workspace/imoveis/manutencoes", icon: Wrench },
+ { label: "Propostas", path: "/workspace/orcamentos", icon: FileText },
  ];
  case "jobs":
  return [
- { label: "Vagas & Candidaturas", path: "/workspace/empregos/candidatos", icon: Briefcase },
- { label: "Banco de Talentos", path: "/workspace/clientes", icon: Users },
- { label: "Página de Carreiras", path: "/workspace/marketing/vitrine", icon: Megaphone },
+ { label: "Candidaturas", path: "/workspace/empregos/candidatos", icon: Briefcase },
+ { label: "Talentos", path: "/workspace/clientes", icon: Users },
+ { label: "Carreiras", path: "/workspace/marketing/vitrine", icon: Megaphone },
  ];
  case "education":
  return [
- { label: "Grade de Aulas & Workshops", path: "/workspace/agenda", icon: Calendar },
- { label: "Catálogo de Cursos", path: "/workspace/agenda/servicos", icon: GraduationCap },
- { label: "Alunos & Matrículas", path: "/workspace/clientes", icon: Users },
+ { label: "Aulas", path: "/workspace/agenda", icon: Calendar },
+ { label: "Cursos", path: "/workspace/agenda/servicos", icon: GraduationCap },
+ { label: "Alunos", path: "/workspace/clientes", icon: Users },
  ];
  case "events":
  return [
- { label: "Meus Eventos & Lotes", path: "/workspace/eventos", icon: Ticket },
- { label: "Flyers & Divulgação", path: "/workspace/marketing/banners", icon: Megaphone },
- { label: "Balanço de Ingressos", path: "/workspace/financeiro/pagamentos", icon: DollarSign },
+ { label: "Eventos", path: "/workspace/eventos", icon: Ticket },
+ { label: "Divulgação", path: "/workspace/marketing/banners", icon: Megaphone },
+ { label: "Ingressos", path: "/workspace/financeiro/pagamentos", icon: DollarSign },
  ];
  case "vehicles":
  return [
- { label: "Estoque de Veículos", path: "/workspace/catalogo/produtos", icon: CarFront },
- { label: "Propostas & Financiamento", path: "/workspace/orcamentos", icon: FileText },
- { label: "Leads & Interessados", path: "/workspace/clientes", icon: Users },
+ { label: "Veículos", path: "/workspace/catalogo/produtos", icon: CarFront },
+ { label: "Propostas", path: "/workspace/orcamentos", icon: FileText },
+ { label: "Leads", path: "/workspace/clientes", icon: Users },
  ];
  case "pet":
  return [
- { label: "Grade de Banho, Tosa e Consultas", path: "/workspace/agenda", icon: Calendar },
- { label: "Procedimentos & Vacinas", path: "/workspace/agenda/servicos", icon: Layers },
- { label: "Rações & Farmácia", path: "/workspace/catalogo/produtos", icon: Package },
+ { label: "Agenda", path: "/workspace/agenda", icon: Calendar },
+ { label: "Procedimentos", path: "/workspace/agenda/servicos", icon: Layers },
+ { label: "Produtos", path: "/workspace/catalogo/produtos", icon: Package },
  ];
  case "retail":
  default:
  return [
- { label: "Banners da Loja", path: "/workspace/marketing/banners", icon: Megaphone },
- { label: "Promoções & Cupons", path: "/workspace/marketing/promocoes", icon: Flame },
- { label: "Catálogo & Estoque", path: "/workspace/catalogo/produtos", icon: Package },
+ { label: "Banners", path: "/workspace/marketing/banners", icon: Megaphone },
+ { label: "Promoções", path: "/workspace/marketing/promocoes", icon: Flame },
+ { label: "Catálogo", path: "/workspace/catalogo/produtos", icon: Package },
  ];
  }
  };
@@ -322,7 +284,7 @@ export default function WorkspaceDashboardPage() {
  className="rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/80"
  >
  <QrCode className="size-3.5 text-primary" />
- <span>Divulgar & QR Code</span>
+ <span>Divulgar</span>
  </Button>
 
  <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-semibold">
@@ -343,7 +305,7 @@ export default function WorkspaceDashboardPage() {
  <Button asChild size="sm" variant="ghost" className="rounded-xl text-xs font-semibold gap-1 text-primary hover:text-primary hover:bg-primary/10">
  <Link to="/workspace/marketing/vitrine">
  <Layers className="size-3.5" />
- <span>Personalizar Vitrine</span>
+ <span>Vitrine</span>
  </Link>
  </Button>
 
@@ -356,8 +318,8 @@ export default function WorkspaceDashboardPage() {
  ) : (
  <Button asChild size="sm" className="rounded-xl text-xs font-semibold bg-primary text-primary-foreground">
  <Link to="/workspace/pdv">
- Frente de Caixa
- </Link>
+          PDV
+        </Link>
  </Button>
  )}
  </div>
@@ -493,7 +455,7 @@ export default function WorkspaceDashboardPage() {
  <div className="flex items-center justify-between pb-3">
  <div className="flex items-center gap-2">
  <Clock className="size-4 text-primary" />
- <h3 className="font-bold text-sm text-foreground">Atividades Recentes</h3>
+ <h3 className="font-bold text-sm text-foreground">Atividades</h3>
  </div>
  <Link to={getOrdersDestination() as any} className="text-xs text-primary font-bold hover:underline">
  Ver todos os registros
@@ -538,7 +500,7 @@ export default function WorkspaceDashboardPage() {
  <div className="flex items-center justify-between pb-3">
  <div className="flex items-center gap-2">
  <Megaphone className="size-4 text-primary" />
- <h3 className="font-bold text-sm text-foreground">Canais & Ferramentas</h3>
+ <h3 className="font-bold text-sm text-foreground">Canais</h3>
  </div>
  <Badge variant="secondary" className="text-[10px]">Ativo</Badge>
  </div>
@@ -570,7 +532,7 @@ export default function WorkspaceDashboardPage() {
  <div className="space-y-0.5">
  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
  <Layers className="size-4 text-primary" />
- <span>Departamentos Corporativos</span>
+ <span>Departamentos</span>
  </h3>
  </div>
  </div>
@@ -586,7 +548,7 @@ export default function WorkspaceDashboardPage() {
  </div>
  <div>
  <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Marketing</p>
- <p className="text-[10px] text-muted-foreground">Banners & Vitrine</p>
+ <p className="text-[10px] text-muted-foreground">Vitrine</p>
  </div>
  </Link>
 
@@ -618,7 +580,7 @@ export default function WorkspaceDashboardPage() {
  </div>
  <div>
  <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Financeiro</p>
- <p className="text-[10px] text-muted-foreground">Caixa & Turnos</p>
+ <p className="text-[10px] text-muted-foreground">Caixa</p>
  </div>
  </Link>
 
@@ -631,8 +593,8 @@ export default function WorkspaceDashboardPage() {
  <Users className="size-4" />
  </div>
  <div>
- <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">RH & Equipe</p>
- <p className="text-[10px] text-muted-foreground">Cargos & Folha</p>
+ <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Equipe</p>
+ <p className="text-[10px] text-muted-foreground">Folha</p>
  </div>
  </Link>
 
@@ -649,7 +611,7 @@ export default function WorkspaceDashboardPage() {
  {semantics.nicheId === "tourism" ? "Operações" : "Logística"}
  </p>
  <p className="text-[10px] text-muted-foreground">
- {semantics.nicheId === "tourism" ? "Embarques & Frota" : "Estoque & Insumos"}
+ {semantics.nicheId === "tourism" ? "Embarques" : "Estoque"}
  </p>
  </div>
  </Link>
@@ -664,7 +626,7 @@ export default function WorkspaceDashboardPage() {
  </div>
  <div>
  <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">Governança</p>
- <p className="text-[10px] text-muted-foreground">Loja & Checkout</p>
+ <p className="text-[10px] text-muted-foreground">Geral</p>
  </div>
  </Link>
  </div>

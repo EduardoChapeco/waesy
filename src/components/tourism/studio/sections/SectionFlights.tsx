@@ -1,15 +1,6 @@
 import { useState, useEffect } from "react";
 import { type Proposal, type Flight } from "@/services/proposals";
-import {
-  Accordion,
-  Card,
-  AddBtn,
-  L,
-  Inp,
-  TextField,
-  NumField,
-  SMALL_INPUT,
-} from "@/components/proposals/ProposalFormFields";
+import { Accordion, Card, AddBtn, L, Inp, TextField, NumField, SMALL_INPUT } from "@/components/proposals/ProposalFormFields";
 import { replaceAt } from "@/components/proposals/ProposalFormFields";
 import { Trash2, Plus, PlaneTakeoff, PlaneLanding, BaggageClaim, Search } from "lucide-react";
 import { useAgency } from "@/lib/agency-context";
@@ -19,10 +10,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FormInput as Input } from "@/components/ui/input";
 import { NativeSelect as Select } from "@/components/ui/select";
-import {
-  SupplierAutocomplete,
-  type SupplierOption,
-} from "@/components/suppliers/SupplierAutocomplete";
+import { SupplierAutocomplete, type SupplierOption } from "@/components/suppliers/SupplierAutocomplete";
 
 interface Props {
   draft: Proposal;

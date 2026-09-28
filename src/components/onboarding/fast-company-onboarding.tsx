@@ -1,44 +1,24 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import {
-  Building2,
-  Phone,
-  MapPin,
-  Zap,
-  ArrowRight,
-  ShieldCheck,
-  Store,
-  UploadCloud,
-  CheckCircle2,
-  Globe,
-  Instagram,
-  Layers,
-  Sliders,
-} from "lucide-react";
+import { Building2, Phone, MapPin, Zap, ArrowRight, ShieldCheck, Store, UploadCloud, CheckCircle2, Globe, Instagram, Layers, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fastRegisterCompany } from "@/services/company-mvp.functions";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "sonner";
 
 const QUICK_CATEGORIES = [
-  { id: "turismo", label: "Viagens & Turismo", emoji: "✈️" },
-  { id: "gastronomia", label: "Restaurantes & Gastronomia", emoji: "🍽️" },
+  { id: "turismo", label: "Viagens e Turismo", emoji: "✈️" },
+  { id: "gastronomia", label: "Restaurantes e Gastronomia", emoji: "🍽️" },
   { id: "servicos", label: "Prestação de Serviços", emoji: "🛠️" },
-  { id: "equipamentos", label: "Aluguel de Equipamentos & Eventos", emoji: "🎪" },
-  { id: "hospedagem", label: "Pousadas & Hospedagem", emoji: "🏡" },
-  { id: "comercio", label: "Comércio & Varejo", emoji: "🛍️" },
-  { id: "saude", label: "Saúde & Beleza", emoji: "✨" },
-  { id: "automotivo", label: "Veículos & Oficinas", emoji: "🚗" },
+  { id: "equipamentos", label: "Aluguel de Equipamentos e Eventos", emoji: "🎪" },
+  { id: "hospedagem", label: "Pousadas e Hospedagem", emoji: "🏡" },
+  { id: "comercio", label: "Comércio e Varejo", emoji: "🛍️" },
+  { id: "saude", label: "Saúde e Beleza", emoji: "💄" },
+  { id: "automotivo", label: "Veículos e Oficinas", emoji: "🚗" },
   { id: "outros", label: "Outros Negócios Locais", emoji: "🏢" },
 ];
 
@@ -97,7 +77,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
       });
 
       if (res?.success) {
-        toast.success("Empresa cadastrada com sucesso! Bem-vindo ao Diretório.");
+        toast.success("Empresa cadastrada com sucesso! Diretório.");
         const resolvedStoreId = res.store?.id || (res as any).storeId;
         if (onSuccess && resolvedStoreId) {
           onSuccess(resolvedStoreId);
@@ -124,7 +104,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             <span>Cadastro Rápido de Presença Comercial</span>
           </Badge>
           <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-            Coloque sua empresa no Guia & Classificados
+            Coloque sua empresa no Guia
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Cadastre os dados essenciais em 1 minuto para começar a publicar pacotes, serviços ou produtos e receber leads diretamente no seu WhatsApp e no Mini Painel.
@@ -220,7 +200,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
 
           {/* Bio / Sobre a Empresa */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-foreground">Apresentação & Especialidades (Bio)</label>
+            <label className="text-xs font-bold text-foreground">Apresentação e Especialidades (Bio)</label>
             <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -233,7 +213,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
           {/* Links e Imagens Opcionais */}
           <div className="space-y-3 pt-2 border-t border-border/40">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
-              Identidade Visual & Links (Opcional)
+              Identidade Visual e Links (Opcional)
             </span>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -299,7 +279,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
                 "Criando Perfil Comercial..."
               ) : (
                 <>
-                  <span>Concluir Cadastro & Abrir Painel</span>
+                  <span>Concluir Cadastro e Abrir Painel</span>
                   <ArrowRight className="size-4" />
                 </>
               )}
@@ -313,7 +293,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
         <div className="p-3.5 bg-muted/40 rounded-2xl border border-border/60 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Store className="size-4 text-primary" />
-            <span className="text-xs font-bold text-foreground">Prévia no Guia & Diretório</span>
+            <span className="text-xs font-bold text-foreground">Prévia no Guia e Diretório</span>
           </div>
           <Badge variant="outline" className="text-[10px] font-mono">
             Ao Vivo

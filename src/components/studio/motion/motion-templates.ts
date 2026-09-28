@@ -575,7 +575,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
   },
   {
     id: "proof-stack",
-    label: "Proof Stack (Métricas & Avaliação)",
+    label: "Proof Stack (Métricas e Avaliação)",
     description: "Apresenta métricas sólidas, diferenciais em tópicos e validação social antes do fechamento.",
     accentColor: "#0EA5E9",
     supportedRatios: ["1:1", "16:9", "9:16"],
@@ -631,7 +631,7 @@ export const MOTION_STUDIO_TEMPLATES: MotionStudioTemplateDefinition[] = [
   },
   {
     id: "founder-note",
-    label: "Manifesto & Depoimento",
+    label: "Manifesto e Depoimento",
     description: "Citação inspiradora, história de marca e propósito para gerar conexão emocional com o cliente.",
     accentColor: "#A855F7",
     supportedRatios: ["9:16", "16:9", "1:1"],

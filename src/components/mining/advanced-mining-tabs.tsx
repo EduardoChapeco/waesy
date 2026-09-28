@@ -1,32 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  Scale,
-  MapPin,
-  Utensils,
-  Calendar,
-  Zap,
-  Search,
-  Loader2,
-  CheckCircle2,
-  AlertTriangle,
-  ExternalLink,
-  ShieldCheck,
-  Building2,
-  Clock,
-  Sparkles,
-  ArrowRight,
-  Info,
-} from "lucide-react";
+import { Scale, MapPin, Utensils, Calendar, Zap, Search, Loader2, CheckCircle2, AlertTriangle, ExternalLink, ShieldCheck, Building2, Clock, Star, ArrowRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import {
-  harvestDataJudMiningFn,
-  harvestPlacesBatchFn,
-  harvestSpecializedUrlFn,
-  getTokenEconomyMetricsFn,
-} from "@/services/mining.functions";
+import { harvestDataJudMiningFn, harvestPlacesBatchFn, harvestSpecializedUrlFn, getTokenEconomyMetricsFn } from "@/services/mining.functions";
 
 /**
  * 1. Banner de Economia de Tokens de IA (Zero-Token Architecture)
@@ -76,7 +54,7 @@ export function TokenEconomyBanner() {
           </div>
           <h2 className="text-base sm:text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary shrink-0" />
-            Operação Otimizada & Inteligente
+            Operação Otimizada e Inteligente
           </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             As extrações de Processos Judiciais (CNJ), Empresas Locais, Feeds e Catálogos operam via processamento nativo direto. A inteligência generativa é acionada exclusivamente no refinamento editorial final.
@@ -472,7 +450,7 @@ export function SpecializedUrlMiningPanel() {
           <div>
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <Utensils className="w-4 h-4 text-primary" />
-              Extrator Mecânico de Receitas, Eventos & Notícias
+              Extrator Mecânico de Receitas, Eventos e Notícias
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Insira qualquer URL de culinária, ingressos/eventos ou portais jornalísticos para extração determinística com Zero Tokens.
@@ -563,7 +541,7 @@ export function SpecializedUrlMiningPanel() {
               <div className="space-y-1.5 p-3 rounded-lg bg-muted/30 border border-border/30">
                 <div className="font-semibold text-foreground flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-primary" />
-                  Preparo & Rendimento
+                  Preparo e Rendimento
                 </div>
                 <div><strong>Tempo de Preparo:</strong> {extractionResult.extraction.recipeData.prepTimeMinutes || "15"} min</div>
                 <div><strong>Tempo de Cozimento:</strong> {extractionResult.extraction.recipeData.cookTimeMinutes || "30"} min</div>

@@ -5,14 +5,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { SlidersHorizontal, Plus, Trash2, Sliders, Check, AlertCircle, Layers, Utensils, Coffee, PlusCircle, Image as ImageIcon, ImagePlus, X, Scissors, Gift, ShieldCheck, Loader2 } from 'lucide-react';
 
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -300,7 +293,7 @@ export function QuickOptionGroupDialog({
  </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground">
- {groupToEdit ? "Editar Grupo de Modificadores" : "Criar Grupo de Adicionais & Modificadores"}
+ {groupToEdit ? "Editar Modificadores" : "Novo Grupo de Adicionais"}
  </SheetTitle>
  <SheetDescription className="text-xs text-muted-foreground mt-0.5">
  Defina as opções com fotos, regras de escolha e valores adicionais.

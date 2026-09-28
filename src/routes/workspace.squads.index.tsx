@@ -1,41 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Users,
-  Bot,
-  Briefcase,
-  Play,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  ChevronRight,
-  GraduationCap,
-  Award,
-  BookOpen,
-  FileCheck,
-  RefreshCw,
-  Sliders,
-  ExternalLink,
-  X,
-  AlertCircle,
-} from "lucide-react";
-import {
-  listStoreSquadsFn,
-  triggerSquadRunFn,
-  approveSquadRunFn,
-  SquadWithDetails,
-} from "@/services/squads-runtime.functions";
+import { Users, Bot, Briefcase, Play, CheckCircle2, Clock, ShieldCheck, ChevronRight, GraduationCap, Award, BookOpen, FileCheck, RefreshCw, Sliders, ExternalLink, X, AlertCircle } from "lucide-react";
+import { listStoreSquadsFn, triggerSquadRunFn, approveSquadRunFn, SquadWithDetails } from "@/services/squads-runtime.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { WorkspaceCanonicalToolbar } from "@/components/workspace/workspace-canonical-toolbar";
 import { WorkspaceDashboardSheet, type MetricCardItem } from "@/components/workspace/workspace-dashboard-sheet";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/workspace/squads/")({
@@ -208,7 +178,7 @@ export function SquadsWorkspacePage() {
           { id: "marketing", label: "Marketing", icon: Award },
           { id: "commercial", label: "Comercial", icon: ShieldCheck },
           { id: "operations", label: "Operações", icon: Sliders },
-          { id: "bi", label: "Estratégia & BI", icon: Bot },
+          { id: "bi", label: "Estratégia e BI", icon: Bot },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -442,7 +412,7 @@ export function SquadsWorkspacePage() {
                 {/* Resumo Profissional */}
                 <div className="space-y-2">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Resumo de Carreira & Expertise
+                    Resumo de Carreira e Expertise
                   </h4>
                   <p className="text-xs text-foreground leading-relaxed p-3.5 rounded-xl bg-muted/20 border border-border/40">
                     {selectedAgent.career_summary}

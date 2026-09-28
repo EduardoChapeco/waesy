@@ -1,88 +1,19 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import {
-  Kanban,
-  Users,
-  Plus,
-  Search,
-  DollarSign,
-  Phone,
-  Mail,
-  UserCheck,
-  CheckCircle2,
-  Clock,
-  MoreVertical,
-  Plane,
-  Edit3,
-  Calendar,
-  MapPin,
-  Tag,
-  CheckSquare,
-  Square,
-  AlertTriangle,
-  ChevronRight,
-  ChevronLeft,
-  X,
-  Trash2,
-  Layers,
-  Upload,
-  Calculator,
-  FileText,
-  ExternalLink,
-  BarChart3,
-  Settings2,
-  Brain,
-  FileSignature,
-  History,
-  Copy,
-  Check,
-  Sparkles,
-} from "lucide-react";
+import { Kanban, Users, Plus, Search, DollarSign, Phone, Mail, UserCheck, CheckCircle2, Clock, MoreVertical, Plane, Edit3, Calendar, MapPin, Tag, CheckSquare, Square, AlertTriangle, ChevronRight, ChevronLeft, X, Trash2, Layers, Upload, Calculator, FileText, ExternalLink, BarChart3, Settings2, Brain, FileSignature, History, Copy, Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModuleTourModal, ModuleTourTrigger, type TourSlide } from "@/components/ui/module-tour-modal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "@/components/ui/currency-field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import {
-  listLeads,
-  updateLeadStatus,
-  updateLeadDetails,
-  promoteLeadToCustomer,
-  createLead,
-  toggleLeadChecklist,
-  deleteLead,
-  persistLeadMove,
-  getCustomer360Profile,
-  calculateStoreLtvAndAdSpend,
-  type StoreLtvAndAdSpendDTO,
-  issueLeadContract,
-} from "@/services/crm.functions";
+import { listLeads, updateLeadStatus, updateLeadDetails, promoteLeadToCustomer, createLead, toggleLeadChecklist, deleteLead, persistLeadMove, getCustomer360Profile, calculateStoreLtvAndAdSpend, type StoreLtvAndAdSpendDTO, issueLeadContract } from "@/services/crm.functions";
 import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
@@ -97,7 +28,7 @@ import { LeadFlightGridSheet } from "@/components/commercial/lead-flight-grid-sh
 import { LeadCard } from "@/components/tourism/crm/LeadCard";
 
 export const Route = createFileRoute("/workspace/comercial")({
-  head: () => ({ meta: [{ title: "Pipeline Comercial & Funil de Oportunidades | Workspace" }] }),
+  head: () => ({ meta: [{ title: "Pipeline Comercial e Funil de Oportunidades | Workspace" }] }),
   loader: async () => {
     try {
     const [leadsRes, teamRes, store] = await Promise.all([
@@ -190,7 +121,7 @@ export const INTEREST_TYPES = [
   { value: "package_ground", label: "Excursão Rodoviária / Terrestre" },
   { value: "flights", label: "Passagens Aéreas" },
   { value: "cruise", label: "Cruzeiro Marítimo" },
-  { value: "visa", label: "Visto & Passaporte" },
+  { value: "visa", label: "Visto e Passaporte" },
   { value: "corporate", label: "Corporativo / Negócios" },
   { value: "other", label: "Outros Serviços" },
 ] as const;
@@ -280,7 +211,7 @@ const COMERCIAL_TOUR_SLIDES: TourSlide[] = [
     tip: "Clique no ícone de WhatsApp em qualquer card para abrir o chat diretamente.",
   },
   {
-    title: "Propostas Comerciais & Cotações Inteligentes",
+    title: "Propostas Comerciais e Cotações Inteligentes",
     description: "Gere links de propostas com fotos, itinerários e condições de pagamento parceladas prontas para assinatura e aprovação pelo cliente.",
     icon: FileText,
     highlightBadge: "Propostas & PNR",
@@ -928,7 +859,7 @@ function WorkspaceComercialPage() {
               <div className="space-y-3 p-3.5 rounded-2xl border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <MapPin className="size-3.5 text-primary" />
-                  <span>Viagem, Destino & Período</span>
+                  <span>Viagem, Destino e Período</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1 sm:col-span-2">
@@ -1046,7 +977,7 @@ function WorkspaceComercialPage() {
               <div className="space-y-3 p-3.5 rounded-2xl border border-border/60 bg-muted/20">
                 <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <DollarSign className="size-3.5 text-primary" />
-                  <span>Comercial, Tags & Checklist</span>
+                  <span>Comercial, Tags e Checklist</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -1257,7 +1188,7 @@ function WorkspaceComercialPage() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    Viagem & Destino
+                    Viagem e Destino
                   </button>
 
                   <button
@@ -1331,7 +1262,7 @@ function WorkspaceComercialPage() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    Comercial & Funil
+                    Comercial e Funil
                   </button>
                   <button
                     type="button"
@@ -1343,7 +1274,7 @@ function WorkspaceComercialPage() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    Notas & Histórico
+                    Notas e Histórico
                   </button>
                 </div>
 
@@ -1919,7 +1850,7 @@ function WorkspaceComercialPage() {
                 {/* Aba 4: Notas & Histórico */}
                 {activeTabDetail === "notas" && (
                   <div className="space-y-3 pt-1">
-                    <Label className="text-xs font-semibold">Histórico & Anotações de Atendimento</Label>
+                    <Label className="text-xs font-semibold">Histórico e Anotações de Atendimento</Label>
                     <Textarea
                       value={editLeadForm.notes}
                       onChange={(e) => setEditLeadForm((prev) => ({ ...prev, notes: e.target.value }))}
@@ -1973,7 +1904,7 @@ function WorkspaceComercialPage() {
       <WorkspaceDashboardSheet
         open={isDashboardOpen}
         onOpenChange={setIsDashboardOpen}
-        title="Painel Comercial & Pipeline de Vendas"
+        title="Pipeline Comercial"
         description="Indicadores de volume, taxas de conversão e negociações em andamento."
         metrics={[
           {

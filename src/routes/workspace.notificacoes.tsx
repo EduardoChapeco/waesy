@@ -2,39 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  Bell,
-  BellRing,
-  CheckCheck,
-  ShoppingBag,
-  MessageCircle,
-  AlertTriangle,
-  Info,
-  CheckCircle2,
-  ExternalLink,
-  ShieldCheck,
-  Sliders,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Bell, BellRing, CheckCheck, ShoppingBag, MessageCircle, AlertTriangle, Info, CheckCircle2, ExternalLink, ShieldCheck, Sliders, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  listUserNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-  type NotificationItemDTO,
-} from "@/services/notifications.functions";
-import {
-  playMessageChime,
-  isSoundMuted,
-  setSoundMuted,
-} from "@/lib/audio-chimes";
+import { listUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, type NotificationItemDTO } from "@/services/notifications.functions";
+import { playMessageChime, isSoundMuted, setSoundMuted } from "@/lib/audio-chimes";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/notificacoes")({
   head: () => ({
-    meta: [{ title: "Central de Notificações & Alertas | Workspace Waesy" }],
+    meta: [{ title: "Notificações | Workspace Waesy" }],
   }),
   loader: async () => {
     try {
@@ -161,7 +138,7 @@ export default function WorkspaceNotificationsPage() {
               <Bell className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Central de Notificações & Alertas
+              Notificações
             </h1>
             {unreadCount > 0 && (
               <Badge variant="default" className="text-xs">

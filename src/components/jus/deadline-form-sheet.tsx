@@ -6,24 +6,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import {
- Calendar,
- Clock,
- Scale,
- AlertTriangle,
- FileText,
- User,
- Building2,
- CheckCircle2,
-} from "lucide-react";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
- SheetFooter,
-} from "@/components/ui/sheet";
+import { Calendar, Clock, Scale, AlertTriangle, FileText, User, Building2, CheckCircle2 } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -245,7 +229,7 @@ export function DeadlineFormSheet({
  {/* Observações e Estratégia */}
  <div className="space-y-1.5">
  <label className="text-xs font-bold text-muted-foreground uppercase font-mono">
- Orientações & Tese Defensiva
+ Orientações e Tese Defensiva
  </label>
  <textarea
  rows={3}

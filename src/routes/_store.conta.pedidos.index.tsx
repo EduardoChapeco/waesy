@@ -8,22 +8,7 @@ import { Input } from "@/components/ui/input";
 import { NativeMobileHeader } from "@/components/navigation";
 import { listCustomerOrders } from "@/services/order.functions";
 import { formatDate } from "@/lib/datetime";
-import {
-  ShoppingBag,
-  ChevronRight,
-  Search,
-  Package,
-  Truck,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  AlertCircle,
-  RotateCcw,
-  MapPin,
-  QrCode,
-  CreditCard,
-  Filter,
-} from "lucide-react";
+import { ShoppingBag, ChevronRight, Search, Package, Truck, CheckCircle2, Clock, XCircle, AlertCircle, RotateCcw, MapPin, QrCode, CreditCard, Filter } from "lucide-react";
 
 // ─── Tipos e Constantes ───────────────────────────────────────────────────────
 
@@ -319,7 +304,7 @@ function CustomerOrdersPage() {
             variant="outline"
             className="rounded-xl text-xs font-semibold h-8.5 px-3 cursor-pointer"
           >
-            <Link to="/mercado">Explorar Lojas</Link>
+            <Link to="/mercado">Explorar</Link>
           </Button>
         }
       />
@@ -335,7 +320,7 @@ function CustomerOrdersPage() {
             </p>
           </div>
           <Button asChild className="rounded-xl h-10 px-6 text-xs font-bold mt-2">
-            <Link to="/mercado">Explorar Lojas</Link>
+            <Link to="/mercado">Explorar</Link>
           </Button>
         </div>
       ) : (

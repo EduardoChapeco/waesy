@@ -39,28 +39,8 @@ import { searchGlobalAirports } from "./tourism-airports.functions";
 import { searchMasterCatalogProducts, lookupNcmTributes } from "./master-catalog.functions";
 import { listContractTemplates, generateContractDocument } from "./contracts.functions";
 import { GLOBAL_HOTELS_RESORTS_CATALOG } from "@/lib/data/hotels-resorts-catalog";
-import {
-  calculateEasterSunday,
-  getHolidaysForYear,
-  getHolidayOnDate,
-  getSuggestedSurgeMultiplierForDate,
-} from "@/lib/data/holidays-calendar-catalog";
-import {
-  searchCentralVehicles,
-  searchCentralServices,
-  searchCentralCities,
-  searchCentralFinancialInstitutions,
-  searchCentralCountries,
-  searchCentralAirlines,
-  searchCentralCruises,
-  searchCentralCnae,
-  searchCentralHealthInsurance,
-  searchCentralShippingCarriers,
-  searchCentralUnitsOfMeasure,
-  searchCentralPaymentMethods,
-  searchCentralRealEstateTypes,
-  searchCentralHolidays,
-} from "./central-knowledge.functions";
+import { calculateEasterSunday, getHolidaysForYear, getHolidayOnDate, getSuggestedSurgeMultiplierForDate } from "@/lib/data/holidays-calendar-catalog";
+import { searchCentralVehicles, searchCentralServices, searchCentralCities, searchCentralFinancialInstitutions, searchCentralCountries, searchCentralAirlines, searchCentralCruises, searchCentralCnae, searchCentralHealthInsurance, searchCentralShippingCarriers, searchCentralUnitsOfMeasure, searchCentralPaymentMethods, searchCentralRealEstateTypes, searchCentralHolidays } from "./central-knowledge.functions";
 
 describe("Banco Central de Conhecimento & Dados Globais (Waesy Enterprise)", () => {
   describe("1. Malha Aérea & Aeroportos Globais", () => {

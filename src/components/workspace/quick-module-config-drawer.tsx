@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -177,7 +170,7 @@ export function QuickModuleConfigDrawer({
                   </div>
                   <div>
                     <Label htmlFor="toggle-delivery" className="text-sm font-semibold cursor-pointer">
-                      Delivery & Entrega
+                      Delivery e Entrega
                     </Label>
                     <p className="text-[11px] text-muted-foreground">
                       Receber pedidos para entrega em domicílio

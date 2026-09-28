@@ -727,7 +727,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-bebidas",
- title: "Bebidas & Adega",
+ title: "Bebidas e Adega",
  target_route: "/bebidas",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -737,7 +737,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-acougue",
- title: "Açougue & Carnes",
+ title: "Açougue e Carnes",
  target_route: "/acougue",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -747,7 +747,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-eletronicos",
- title: "Eletrônicos & Tech",
+ title: "Eletrônicos e Tech",
  target_route: "/eletronicos",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -757,7 +757,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-moda",
- title: "Roupas & Moda",
+ title: "Roupas e Moda",
  target_route: "/moda",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -767,7 +767,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-casa",
- title: "Casa & Decoração",
+ title: "Casa e Decoração",
  target_route: "/casa",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -777,7 +777,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-pet",
- title: "Pet Shop & Veterinária",
+ title: "Pet Shop e Veterinária",
  target_route: "/pet",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -787,7 +787,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-beleza",
- title: "Beleza & Estética",
+ title: "Beleza e Estética",
  target_route: "/beleza",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -797,7 +797,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-construcao",
- title: "Construção & Reforma",
+ title: "Construção e Reforma",
  target_route: "/construcao",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -807,7 +807,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-servicos",
- title: "Serviços & Profissionais",
+ title: "Serviços e Profissionais",
  target_route: "/servicos",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -817,7 +817,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-imoveis",
- title: "Imóveis & Locação",
+ title: "Imóveis e Locação",
  target_route: "/imoveis",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -827,7 +827,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "chip-doacoes",
- title: "Doações & Solidariedade",
+ title: "Doações e Solidariedade",
  target_route: "/doacoes",
  template_type: "category_hub" as const,
  module: "home" as const,
@@ -865,7 +865,7 @@ export const syncDefaultHotpages = createServerFn({ method: "POST" }).handler(
  },
  {
  slug: "almoco-executivo",
- title: "Almoço Rápido & Pratos Executivos",
+ title: "Almoço Rápido e Pratos Executivos",
  badge_label: "SABOR",
  hero_stat_badge: "DELIVERY",
  cover_image_url: null,

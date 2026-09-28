@@ -1,18 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
- CANONICAL_EDUCATION_LEVELS,
- CANONICAL_EXPERIENCE_LEVELS,
- CANONICAL_JOB_REGIMES,
- CANONICAL_WORKPLACE_MODELS,
- CANONICAL_WORK_SCHEDULES,
- CANONICAL_SALARY_RANGES,
- CANONICAL_JOB_BENEFITS,
- SUGGESTED_JOB_SKILLS,
- getEducationLabel,
- getExperienceLabel,
- getRegimeLabel,
- getWorkplaceModelLabel,
-} from "@/lib/classifieds/canonical-hiring";
+import { CANONICAL_EDUCATION_LEVELS, CANONICAL_EXPERIENCE_LEVELS, CANONICAL_JOB_REGIMES, CANONICAL_WORKPLACE_MODELS, CANONICAL_WORK_SCHEDULES, CANONICAL_SALARY_RANGES, CANONICAL_JOB_BENEFITS, SUGGESTED_JOB_SKILLS, getEducationLabel, getExperienceLabel, getRegimeLabel, getWorkplaceModelLabel } from "@/lib/classifieds/canonical-hiring";
 
 describe("Canonical Hiring Taxonomy & Measurable Market Scale (Microfase 78B)", () => {
  it("valida que os 11 níveis canônicos de escolaridade estão ordenados e ponderados", () => {

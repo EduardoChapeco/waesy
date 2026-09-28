@@ -1,12 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Award,
-  Search,
-  CheckCircle,
-  XCircle,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Award, Search, CheckCircle, XCircle, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/commerce/page-header";
@@ -19,7 +13,7 @@ import { listCreatorProfiles, type CreatorProfileDTO } from "@/services/creators
 import { toggleAmbassadorStatus } from "@/services/stories.functions";
 
 export const Route = createFileRoute("/workspace/master/influencers")({
-  head: () => ({ meta: [{ title: "Influenciadores & Embaixadores | Master" }] }),
+  head: () => ({ meta: [{ title: "Influenciadores e Embaixadores | Master" }] }),
   loader: async () => {
     try {
       const res = await listCreatorProfiles();
@@ -84,7 +78,7 @@ function MasterInfluencersPage() {
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Curadoria Master"
-        title="Influenciadores & Embaixadores"
+        title="Influenciadores"
         description={`${creators.length} criador${creators.length !== 1 ? "es" : ""} • ${ambassadorCount} embaixador${ambassadorCount !== 1 ? "es" : ""} oficial`}
       />
 

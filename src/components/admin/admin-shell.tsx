@@ -185,19 +185,19 @@ function getActiveGroup(pathname: string): string {
 const MODULES = [
  { label: "Visão Geral", path: "/admin", icon: "LayoutDashboard", group: "Meu Estúdio" },
  {
- label: "Eventos & Cultura",
+ label: "Eventos e Cultura",
  path: "/admin/events",
  icon: "Calendar",
  group: "Eventos & Cultura",
  },
  {
- label: "Mercado & Estoque",
+ label: "Mercado e Estoque",
  path: "/admin/catalogo/produtos",
  icon: "Package",
  group: "Mercado & Estoque",
  },
  {
- label: "Vendas & Caixa",
+ label: "Vendas e Caixa",
  path: "/admin/pedidos",
  icon: "ShoppingBag",
  group: "Vendas & Caixa",

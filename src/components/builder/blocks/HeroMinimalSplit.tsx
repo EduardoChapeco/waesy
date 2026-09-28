@@ -1,6 +1,6 @@
 import React from "react";
 import { HeroBlockData } from "../types";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface HeroMinimalSplitProps {
@@ -19,7 +19,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ data, classN
             {/* Pílula de Contexto Superior */}
             {data.badgeText && (
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted/60 border border-border/80 text-xs font-semibold tracking-wider uppercase text-muted-foreground mb-6">
-                <Sparkles className="size-3.5 text-primary" />
+                <Star className="size-3.5 text-primary" />
                 <span>{data.badgeText}</span>
               </div>
             )}
@@ -91,7 +91,7 @@ export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ data, classN
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-tr from-muted/50 to-muted/20 text-muted-foreground p-8 text-center">
                   <div className="size-16 rounded-2xl bg-background border border-border/80 flex items-center justify-center mb-3">
-                    <Sparkles className="size-8 text-primary" />
+                    <Star className="size-8 text-primary" />
                   </div>
                   <span className="text-sm font-semibold text-foreground">Vitrine Digital Waesy</span>
                   <span className="text-xs text-muted-foreground mt-1">Carregue sua mídia ou selecione do catálogo</span>

@@ -3,19 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  CalendarBlank,
-  Ticket,
-  ArrowLeft,
-  MapPin,
-  ArrowSquareOut,
-  Users,
-  CheckCircle,
-  Star,
-  XCircle,
-  Newspaper,
-  PencilSimple,
-} from "@phosphor-icons/react";
+import { CalendarBlank, Ticket, ArrowLeft, MapPin, ArrowSquareOut, Users, CheckCircle, Star, XCircle, Newspaper, PencilSimple } from "@phosphor-icons/react";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 
 import { NativeBackButton } from "@/components/ui/native-back-button";

@@ -1,31 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Plane,
-  Ticket,
-  ShieldAlert,
-  Hotel,
-  QrCode,
-  X,
-  CheckCircle2,
-  Maximize2,
-  Download,
-  Layers,
-  ArrowLeft,
-  WifiOff,
-  Phone,
-} from "lucide-react";
+import { Plane, Ticket, ShieldAlert, Hotel, QrCode, X, CheckCircle2, Maximize2, Download, Layers, ArrowLeft, WifiOff, Phone } from "lucide-react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { listClientWalletPasses } from "@/services/client-wallet.functions";
 import type { ClientWalletPass, PassType } from "@/types/client-wallet";
 import { exportElementAsPdf } from "@/lib/pdf-export";

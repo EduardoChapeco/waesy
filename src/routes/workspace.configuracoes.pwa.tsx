@@ -121,7 +121,7 @@ function PwaEditorPage() {
  disabled={saveMutation.isPending}
  className="w-full min-h-[48px] rounded-2xl font-bold bg-primary text-primary-foreground shadow-xs"
  >
- <Layers className="h-4 w-4 mr-2" /> Salvar & Publicar Aplicativo PWA
+ <Layers className="h-4 w-4 mr-2" /> Salvar e Publicar Aplicativo PWA
  </Button>
  </div>
 

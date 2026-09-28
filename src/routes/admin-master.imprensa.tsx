@@ -1,32 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Newspaper,
-  ShieldCheck,
-  Search,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ExternalLink,
-  Store,
-  Loader2,
-  Building2,
-  AlertTriangle,
-} from "lucide-react";
+import { Newspaper, ShieldCheck, Search, CheckCircle2, XCircle, Clock, ExternalLink, Store, Loader2, Building2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  listPressConsortiumStores,
-  reviewPressAccreditation,
-} from "@/services/news.functions";
+import { listPressConsortiumStores, reviewPressAccreditation } from "@/services/news.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin-master/imprensa")({
   head: () => ({
     meta: [
       {
-        title: "Consórcio de Imprensa & Mídias Aprovadas | Admin Master",
+        title: "Consórcio de Imprensa e Mídias Aprovadas | Admin Master",
       },
     ],
   }),
@@ -109,7 +94,7 @@ function AdminMasterImprensaPage() {
             <span className="text-xs text-muted-foreground font-mono">Consórcio de Imprensa</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
-            Credenciamento de Jornais & Mídias
+            Credenciamento de Jornais e Mídias
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Apenas veículos de comunicação e jornalistas homologados pela administração master podem publicar notícias e operar campanhas da Rede Display.

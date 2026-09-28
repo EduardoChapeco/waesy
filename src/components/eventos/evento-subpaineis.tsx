@@ -6,25 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Plus, 
-  Store, 
-  Coffee, 
-  UtensilsCrossed, 
-  ShoppingBag, 
-  Phone, 
-  User, 
-  Ticket, 
-  Crown, 
-  ShieldCheck, 
-  CreditCard, 
-  Beer, 
-  ExternalLink, 
-  Copy,
-  Check,
-  Layers,
-  Key
-} from "lucide-react";
+import { Plus, Store, Coffee, UtensilsCrossed, ShoppingBag, Phone, User, Ticket, Crown, ShieldCheck, CreditCard, Beer, ExternalLink, Copy, Check, Layers, Key } from "lucide-react";
 import { toast } from "sonner";
 import { listEventSubpanels, createEventSubpanel } from "@/services/events.functions";
 
@@ -33,12 +15,12 @@ interface EventoSubpaineisProps {
 }
 
 const TIPOS_SUBPAINEL = [
-  { value: "bar", label: "Bar & Bebidas", icon: Beer, color: "text-amber-500", desc: "Caixa rápido, fichas e sangria de chopp" },
+  { value: "bar", label: "Bar e Bebidas", icon: Beer, color: "text-amber-500", desc: "Caixa rápido, fichas e sangria de chopp" },
   { value: "foodtruck", label: "Praça de Alimentação / Foodtruck", icon: UtensilsCrossed, color: "text-rose-500", desc: "Comandas e pedidos rápidos de cozinha" },
   { value: "ticketing_box", label: "Bilheteria Física / Portaria", icon: Ticket, color: "text-sky-500", desc: "Venda no local e validação de ingressos" },
   { value: "vip_lounge", label: "Camarote / Lounge VIP", icon: Crown, color: "text-purple-500", desc: "Acesso restrito e pulseiras personalizadas" },
   { value: "merchandise", label: "Loja Oficial / Produtos", icon: ShoppingBag, color: "text-emerald-500", desc: "Venda de copos, camisetas e souvenirs" },
-  { value: "security_checkpoint", label: "Portaria de Segurança & Revista", icon: ShieldCheck, color: "text-indigo-500", desc: "Controle de fluxo de entrada e contagem" },
+  { value: "security_checkpoint", label: "Portaria de Segurança e Revista", icon: ShieldCheck, color: "text-indigo-500", desc: "Controle de fluxo de entrada e contagem" },
 ];
 
 export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
@@ -128,7 +110,7 @@ export function EventoSubpaineis({ eventId }: EventoSubpaineisProps) {
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-foreground">
-              Subpainéis & Pontos de Operação Isolados
+              Subpainéis
             </h3>
             <Badge variant="outline" className="text-xs">
               {subpanels.length} {subpanels.length === 1 ? "ponto ativo" : "pontos ativos"}

@@ -1,25 +1,9 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Lock,
-  CheckCircle2,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  Building2,
-  Users,
-  Linkedin,
-} from "lucide-react";
+import { Lock, CheckCircle2, ArrowRight, ShieldCheck, Zap, Building2, Users, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export interface ProUpgradePaywallModalProps {
   isOpen: boolean;

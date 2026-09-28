@@ -5,24 +5,11 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition } from "react";
-import { 
- Scales, 
- FileText, 
- Plus, 
- Clock, 
- CheckCircle, 
- WarningCircle, 
- MagnifyingGlass, 
- Buildings,
- ShieldCheck,
- ArrowSquareOut,
-  Spinner,
-} from "@phosphor-icons/react";
+import { Scales, FileText, Plus, Clock, CheckCircle, WarningCircle, MagnifyingGlass, Buildings, ShieldCheck, ArrowSquareOut, Spinner } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { listMyLawsuits, createJusDemand,
-  harvestDataJudProcessFn, getMyDemands } from "@/services/jus.functions";
+import { listMyLawsuits, createJusDemand, harvestDataJudProcessFn, getMyDemands } from "@/services/jus.functions";
 import { useMasterLocation } from "@/components/location/location-master-pill";
 import { LawsuitDetailsSheet } from "@/components/jus/lawsuit-details-sheet";
 import { MediaUploader } from "@/components/ui/media-uploader";
@@ -31,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_store/conta/processos")({
- head: () => ({ meta: [{ title: "Meus Processos & Demandas | Waesy" }] }),
+ head: () => ({ meta: [{ title: "Meus Processos e Demandas | Waesy" }] }),
  component: UserLawsuitsPage,
 });
 
@@ -177,7 +164,7 @@ function UserLawsuitsPage() {
           className="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary transition-all ml-auto"
         >
           <ShieldCheck className="size-3.5" />
-          <span>Procurações & Contratos Digitais</span>
+          <span>Procurações e Contratos Digitais</span>
         </Link>
       </div>
 
@@ -309,12 +296,12 @@ function UserLawsuitsPage() {
  className="mt-1.5 w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
  >
  <option value="Trabalhista">Direito Trabalhista</option>
- <option value="Cível">Direito Cível & Contratos</option>
- <option value="Família">Direito de Família & Sucessões</option>
+ <option value="Cível">Direito Cível e Contratos</option>
+ <option value="Família">Direito de Família e Sucessões</option>
  <option value="Consumidor">Direito do Consumidor</option>
  <option value="Previdenciário">Direito Previdenciário (INSS)</option>
- <option value="Tributário">Direito Tributário & Fiscal</option>
- <option value="Empresarial">Direito Empresarial & B2B</option>
+ <option value="Tributário">Direito Tributário e Fiscal</option>
+ <option value="Empresarial">Direito Empresarial e B2B</option>
  <option value="Imobiliário">Direito Imobiliário</option>
  </select>
  </div>

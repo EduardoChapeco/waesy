@@ -1,45 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Share2,
-  MapPin,
-  Check,
-  ShieldCheck,
-  Tag,
-  Clock,
-  User,
-  ChevronLeft,
-  ChevronRight,
-  Maximize2,
-  X,
-  Phone,
-  MessageCircle,
-  Package,
-  Truck,
-  CreditCard,
-  QrCode,
-  Receipt,
-  FileSpreadsheet,
-  CheckCircle2,
-  Edit3,
-  Smartphone,
-  ExternalLink,
-  ShieldAlert,
-  Coins,
-  TrendingUp,
-  Banknote,
-  FileCheck,
-  Download,
-  AlertCircle,
-  Eye,
-  Building,
-  Car,
-  Hotel,
-  Briefcase,
-  HelpCircle,
-  Lock,
-} from "lucide-react";
+import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -462,7 +423,7 @@ export function ClassifiedDetailDesktop({
                   </span>
                   <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
                     <ShieldCheck className="size-4 shrink-0" />
-                    <span>Perfil Verificado Waesy & Identidade Auditada</span>
+                    <span>Perfil Verificado Waesy e Identidade Auditada</span>
                   </div>
                 </div>
               </div>

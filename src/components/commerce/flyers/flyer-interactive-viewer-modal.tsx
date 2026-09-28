@@ -1,21 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Share2,
-  Clock,
-  ShoppingBag,
-  Sparkles,
-  ExternalLink,
-  Tag,
-  Check,
-  Flame,
-  AlertCircle,
-  Eye,
-  Store,
-} from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download, Share2, Clock, ShoppingBag, Star, ExternalLink, Tag, Check, Flame, AlertCircle, Eye, Store } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

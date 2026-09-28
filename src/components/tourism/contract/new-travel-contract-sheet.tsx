@@ -1,45 +1,17 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
- Sheet,
- SheetContent,
- SheetHeader,
- SheetTitle,
- SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
- Scale,
- ShieldCheck,
- User,
- UserPlus,
- Users,
- Compass,
- DollarSign,
- FileText,
- Check,
- Plus,
- Trash2,
- ChevronRight,
- ChevronDown,
- Loader2,
- Calendar,
- FileSpreadsheet,
- Link2,
-} from "lucide-react";
+import { Scale, ShieldCheck, User, UserPlus, Users, Compass, DollarSign, FileText, Check, Plus, Trash2, ChevronRight, ChevronDown, Loader2, Calendar, FileSpreadsheet, Link2 } from "lucide-react";
 import { listCustomers, createCustomer } from "@/services/crm.functions";
 import { listAgencyTravelProposals } from "@/services/travel-proposal.functions";
-import {
- createTravelContract,
- CANONICAL_TOURISM_CLAUSES,
- type ContractClauseDTO,
-} from "@/services/travel-contract.functions";
+import { createTravelContract, CANONICAL_TOURISM_CLAUSES, type ContractClauseDTO } from "@/services/travel-contract.functions";
 import { formatMoney } from "@/lib/money";
 
 interface NewTravelContractSheetProps {
@@ -341,7 +313,7 @@ export function NewTravelContractSheet({
  </div>
  <div>
  <SheetTitle className="text-base font-bold text-foreground flex items-center gap-2">
- <span>Emitir Contrato Turístico & Assinatura</span>
+ <span>Emitir Contrato Turístico e Assinatura</span>
  <Badge
  variant="outline"
  className="text-[10px] uppercase tracking-wider font-extrabold border-emerald-500/30 text-emerald-700 bg-emerald-500/10"
@@ -786,7 +758,7 @@ export function NewTravelContractSheet({
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <Compass className="size-4 text-primary" />
- <span>Dados da Viagem & Serviços</span>
+ <span>Dados da Viagem e Serviços</span>
  </div>
  {nightsCount !== null && (
  <Badge variant="secondary" className="text-[10px] font-bold bg-muted">
@@ -853,7 +825,7 @@ export function NewTravelContractSheet({
  <div className="p-4 rounded-2xl bg-card border border-border/70 space-y-3.5 shadow-xs">
  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
  <DollarSign className="size-4 text-primary" />
- <span>Condições Financeiras & Pagamento</span>
+ <span>Condições Financeiras e Pagamento</span>
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -968,7 +940,7 @@ export function NewTravelContractSheet({
  </>
  ) : (
  <>
- <span>Gerar Contrato & Link de Assinatura</span>
+ <span>Gerar Contrato e Link de Assinatura</span>
  <ChevronRight className="size-4" />
  </>
  )}

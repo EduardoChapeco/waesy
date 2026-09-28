@@ -97,7 +97,7 @@ function MatchTimePage() {
  <div className="w-11" /> {/* spacer 44px */}
  </div>
 
- <div className="relative w-full max-w-sm aspect-[3/4] mx-auto px-4 perspective-1000">
+ <div className="relative w-full max-w-sm aspect-[3/4] mx-auto px-0 sm:px-4 perspective-1000">
  {currentOffer && (
  <div
  className={`absolute inset-0 px-4 transition-all duration-300 ease-out transform ${direction === "left" ? "-translate-x-full rotate-[-20deg] opacity-0" : direction === "right" ? "translate-x-full rotate-[20deg] opacity-0" : "translate-x-0 opacity-100"}`}

@@ -12,7 +12,7 @@ import { builderRegistry } from "@/lib/builder-registry";
 export const BLOCK_CATEGORIES = [
  {
  id: "hero",
- label: "Banners & Hero",
+ label: "Banners e Hero",
  icon: ImageIcon,
  blocks: ["hero_carousel", "split_banner", "announcement_bar", "mosaic_banners"],
  },
@@ -24,7 +24,7 @@ export const BLOCK_CATEGORIES = [
  },
  {
  id: "content",
- label: "Conteúdo & Mídia",
+ label: "Conteúdo e Mídia",
  icon: AlignLeft,
  blocks: [
  "rich_text",
@@ -37,13 +37,13 @@ export const BLOCK_CATEGORIES = [
  },
  {
  id: "social",
- label: "Social & Comunidade",
+ label: "Social e Comunidade",
  icon: Star,
  blocks: ["testimonial_carousel", "stories_ring", "social_grid"],
  },
  {
  id: "conversion",
- label: "Conversão & Ofertas",
+ label: "Conversão e Ofertas",
  icon: Zap,
  blocks: ["countdown_timer", "trust_badges", "faq_accordion", "contact_form"],
  },

@@ -40,7 +40,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ data, 
                 <span>Alta Performance</span>
               </div>
               <h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-3">
-                Processamento Instantâneo de Pedidos & PDV
+                Processamento Instantâneo de Pedidos
               </h3>
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-lg">
                 Sincronização em milissegundos entre o terminal de caixa, catálogo online e notificações de clientes no WhatsApp sem intermediários.
@@ -77,7 +77,7 @@ export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ data, 
                 0,2s
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-                Tempo de resposta medido em borda (Cloudflare Pages Edge & Supabase Postgres).
+                Tempo de resposta medido em borda (Cloudflare Pages Edge e Supabase Postgres).
               </p>
             </div>
 
