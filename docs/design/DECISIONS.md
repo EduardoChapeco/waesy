@@ -35,11 +35,19 @@
 - **Fundamentação:** Regra B.8 (Proibido criar componente duplicado quando já existe primitivo canônico equivalente) e SPEC-003.
 - **Consequências:** Zero componentes fora do roteador nos fluxos críticos de PDV, pedidos e governança; zero mocks e conformidade com Anti-AI Design.
 
+## DEC-006: Erradicação de Glassmorphism, Blindagem RLS V140 e Deploy de Produção
+- **Data:** 2026-09-29
+- **Contexto:** Solicitação executiva (/goal) de erradicação de glassmorphism em superfícies utilitárias, atualização da navegação com rotas ativas de empregos, purificação de CTAs, blindagem RLS e deploy completo em produção.
+- **Decisão:** Refatoração de `FrostedCard`, `SearchableSelect`, `NativeBackButton` e `fluid-noise-surface` para superfícies sólidas e silenciosas (`bg-card`, `border-border/70`); inclusão de `/workspace/empregos` e `/workspace/curriculo/editor` em `GROUP_JOBS`; redução dos CTAs de Classificados Desktop para <= 3 palavras; criação da migração V140 com ativação forçada de RLS em todas as tabelas públicas e proteção das RPCs sensíveis; build de produção com esbuild e empacotador de ambiente Nitro/Supabase e deploy Cloudflare Pages via Wrangler.
+- **Fundamentação:** AGENTS.md B.4, B.8, DESIGN.md (silêncio visual, touch target >= 44px, sem cards neon ou glassmorphism), Anti-AI Design e Zero-Trust Client RLS.
+- **Consequências:** Deploy concluído em `https://72eb4b4d.usewaesy.pages.dev`, commits sincronizados no branch `main` do GitHub, zero exposição de APIs ou chaves de serviço, e integridade total de ponta a ponta.
+
 ---
 
-## Handoff Operacional Final (Onda 1 e Onda 2 Homologadas)
-- **Status da Sessão:** Ondas 1 e 2 concluídas com 100% de conformidade.
-- **Arquivos Integrados:** `workspace.pdv.index.tsx`, `manager-override-dialog.tsx`, `working-hours-editor.tsx`, `return-modal.tsx`, `_store.conta.pedidos.$id.tsx`, `motolink-tracking-widget.tsx`.
-- **Ledger Atualizado:** `melhoria/05-ledger.json` com GAP-001 a GAP-005, GAP-009, GAP-010, GAP-020 marcados como RESOLVIDO.
-- **Qualidade e Compilação:** 0 erros de compilação TypeScript nos arquivos alterados.
-- **Próxima Ação:** Executar Onda 3 (Higiene de promessas de interface) e Onda 4 (Painéis de inteligência).
+## Handoff Operacional Final (Release de Produção e Goal Homologado)
+- **Status da Sessão:** Execução completa em modo /goal homologada com sucesso.
+- **Deploy Cloudflare Pages:** Realizado com sucesso em `https://72eb4b4d.usewaesy.pages.dev`.
+- **Sincronização Git:** Branch `main` sincronizado com GitHub (`1119862`).
+- **Segurança Supabase:** Migração V140 criada com 100% de cobertura RLS em todas as tabelas públicas e RPCs protegidas.
+- **Design Hardening:** Glassmorphism erradicado nas primitivas (`FrostedCard`, `SearchableSelect`, `NativeBackButton`, `fluid-noise-surface`).
+- **Navegação & Ergonomia:** `GROUP_JOBS` atualizado no Workspace e rótulos de Classificados enxugados conforme Anti-AI Design.
