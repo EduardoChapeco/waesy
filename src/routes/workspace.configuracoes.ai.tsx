@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders, Trash2 } from 'lucide-react';
+import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders, Trash2, Sparkles, Zap, ArrowUpRight } from 'lucide-react';
 import { toast } from "sonner";
 
 import { saveSecretKey, listConfiguredSecrets, getAICapabilityBindings } from "@/services/secret-vault.functions";
+import { getStoreAIQuotaStatus } from "@/services/ai-quotas-and-byok.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,12 @@ function AIConfigurationPage() {
  queryKey: ["secret-vault-keys"],
  queryFn: () => listConfiguredSecrets(),
  });
+
+ const { data: quotaData, isLoading: loadingQuota } = useQuery({
+ queryKey: ["store-ai-quota-status"],
+ queryFn: () => getStoreAIQuotaStatus(),
+ });
+ const quota = quotaData?.status;
 
  const { data: bindings, isLoading: loadingBindings } = useQuery({
  queryKey: ["ai-capability-bindings"],
@@ -195,6 +202,75 @@ function AIConfigurationPage() {
  </div>
  </DialogContent>
  </Dialog>
+ </div>
+
+ {/* Card de Quotas de IA & Arquitetura Dual (V141) */}
+ <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-4">
+ <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+ <div>
+ <div className="flex items-center gap-2">
+ <span className="text-sm font-bold text-foreground">
+ Cotas Mensais de IA & Arquitetura Dual
+ </span>
+ {quota?.planTier === "WAESY_MAX" ? (
+ <Badge variant="default" className="text-xs font-mono gap-1">
+ <Sparkles className="size-3" />
+ Waesy Max
+ </Badge>
+ ) : (
+ <Badge variant="secondary" className="text-xs font-mono">
+ Modo Rápido MVP
+ </Badge>
+ )}
+ </div>
+ <p className="text-xs text-muted-foreground mt-0.5">
+ {quota?.planTier === "WAESY_MAX"
+ ? "Franquia expandida de 200 chamadas mensais com inteligência profunda multissetorial."
+ : "Franquia essencial de 10 chamadas mensais para operações de catálogo e anúncios."}
+ </p>
+ </div>
+
+ <div className="flex items-center gap-2">
+ {quota?.hasActiveBYOK ? (
+ <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-xs font-mono gap-1">
+ <Zap className="size-3" />
+ BYOK Ativo ({quota.byokProvider})
+ </Badge>
+ ) : (
+ <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
+ Fallback BYOK Inativo
+ </Badge>
+ )}
+ </div>
+ </div>
+
+ {loadingQuota ? (
+ <div className="py-4 text-center text-xs text-muted-foreground animate-pulse">
+ Carregando cota e consumo mensal de IA...
+ </div>
+ ) : quota ? (
+ <div className="space-y-2 pt-1">
+ <div className="flex items-center justify-between text-xs font-mono">
+ <span className="text-muted-foreground">
+ Consumo no Ciclo: <strong className="text-foreground">{quota.usedThisMonth}</strong> / {quota.monthlyLimit} requisições
+ </span>
+ <span className="text-muted-foreground">
+ Restantes: <strong className="text-foreground">{quota.remaining}</strong>
+ </span>
+ </div>
+ <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden">
+ <div
+ className="bg-primary h-full transition-all duration-300 rounded-full"
+ style={{ width: `${Math.min(100, Math.round((quota.usedThisMonth / Math.max(1, quota.monthlyLimit)) * 100))}%` }}
+ />
+ </div>
+ <p className="text-[11px] text-muted-foreground">
+ {quota.hasActiveBYOK
+ ? "Sua loja possui credencial própria vinculada no cofre seguro. Ao esgotar os créditos da franquia, a plataforma comuta silenciosamente para sua chave sem interromper o serviço."
+ : "Ao atingir o limite mensal, conecte sua própria chave de API (BYOK) acima para uso irrestrito sem taxas adicionais."}
+ </p>
+ </div>
+ ) : null}
  </div>
 
  {/* Grid de Provedores Conectados */}

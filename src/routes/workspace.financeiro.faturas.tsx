@@ -5,7 +5,8 @@
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Receipt, QrCode, UploadCloud, CheckCircle2, Clock, AlertTriangle, FileText, Copy, ExternalLink, ShieldCheck, DollarSign, Building2, HelpCircle, Eye } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Receipt, QrCode, UploadCloud, CheckCircle2, Clock, AlertTriangle, FileText, Copy, ExternalLink, ShieldCheck, DollarSign, Building2, HelpCircle, Eye, Calculator, Sparkles, Scale, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
@@ -17,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getStoreInvoicesList, submitStoreInvoicePaymentProof, getStoreInvoicePixDetails, type StoreInvoiceDTO } from "@/services/invoices.functions";
+import { getStoreBillingStatement } from "@/services/billing-ledger.functions";
 import { uploadMediaUniversal } from "@/services/storage.functions";
 
 export const Route = createFileRoute("/workspace/financeiro/faturas")({
@@ -42,6 +44,14 @@ function WorkspaceFaturasPage() {
   const [invoices, setInvoices] = useState<StoreInvoiceDTO[]>(initialInvoices);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"invoices" | "ledger">("invoices");
+
+  const { data: ledgerStatementData, isLoading: loadingLedger, refetch: refetchLedger } = useQuery({
+    queryKey: ["store-billing-statement"],
+    queryFn: () => getStoreBillingStatement(),
+  });
+
+  const statement = ledgerStatementData?.statement;
 
   // Estado dos modais
   const [pixModalInvoice, setPixModalInvoice] = useState<StoreInvoiceDTO | null>(null);
@@ -197,16 +207,38 @@ function WorkspaceFaturasPage() {
               <Receipt className="size-5" />
             </span>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-              Faturas
+              Faturas & Conciliação
             </h1>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Mensalidades, serviços contratados e comprovantes de pagamento.
+            Mensalidades, razão contábil de microtaxas e conciliação financeira auditável.
           </p>
+        </div>
+
+        <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl border border-border/60">
+          <Button
+            variant={viewMode === "invoices" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("invoices")}
+            className="h-8 text-xs font-semibold rounded-lg"
+          >
+            Faturas Mensais
+          </Button>
+          <Button
+            variant={viewMode === "ledger" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("ledger")}
+            className="h-8 text-xs font-semibold rounded-lg gap-1.5"
+          >
+            <Scale className="size-3.5" />
+            Razão & Microtaxas
+          </Button>
         </div>
       </div>
 
-      {/* ── 2. Grid de KPIs (Paradigma Clean) ── */}
+      {viewMode === "invoices" ? (
+        <>
+          {/* ── 2. Grid de KPIs (Paradigma Clean) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
           <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
@@ -429,9 +461,167 @@ function WorkspaceFaturasPage() {
             )}
           </TableBody>
         </Table>
-      </div>
+          </div>
+        </>
+      ) : (
+        /* ── MODO RAZÃO CONTÁBIL & MICROTAXAS (V141) ── */
+        <div className="space-y-6">
+          {loadingLedger ? (
+            <div className="p-12 text-center text-xs text-muted-foreground animate-pulse rounded-2xl border border-border/60 bg-card">
+              Carregando razão contábil e verificando conciliação atômica...
+            </div>
+          ) : statement ? (
+            <>
+              {/* KPIs do Razão */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                    Conciliação Contábil
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                      {statement.reconciled ? "100% Exata" : "Discrepância"}
+                    </span>
+                    <Badge variant={statement.reconciled ? "outline" : "destructive"} className="font-mono text-xs rounded-lg text-emerald-600 border-emerald-500/30">
+                      {statement.discrepancyCents === 0 ? "R$ 0,00 Dif." : formatMoney(statement.discrepancyCents)}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground pt-1">
+                    Trigger no PostgreSQL garante integridade centavo por centavo.
+                  </p>
+                </div>
 
-      {/* ── MODAL DE PAGAMENTO PIX ── */}
+                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                    Microtaxas de Pedidos
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-foreground font-mono">
+                      {formatMoney(statement.summary.orderMicrofeesTotalCents)}
+                    </span>
+                    <Badge variant="secondary" className="font-mono text-xs rounded-lg">
+                      {statement.summary.orderMicrofeesCount} pedido(s)
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground pt-1">
+                    Taxa fixa de R$ 0,99 por pedido processado com sucesso.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                    Assinatura Waesy Max
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-foreground font-mono">
+                      {formatMoney(statement.summary.subscriptionsTotalCents)}
+                    </span>
+                    <Badge variant="outline" className="font-mono text-xs rounded-lg">
+                      {statement.summary.subscriptionsTotalCents > 0 ? "Ativo" : "Gratuito"}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground pt-1">
+                    Mensalidade de manutenção e recursos avançados.
+                  </p>
+                </div>
+
+                <div className="p-5 rounded-2xl border border-border/60 bg-card shadow-2xs space-y-1">
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block font-mono">
+                    Total Consolidado
+                  </span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-2xl font-black text-foreground font-mono">
+                      {formatMoney(statement.summary.grandTotalCents)}
+                    </span>
+                    <Badge variant="outline" className="font-mono text-xs rounded-lg">
+                      Ciclo {statement.invoice.billing_cycle || "Atual"}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground pt-1">
+                    Status: {statement.invoice.status.toUpperCase()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabela de Linhas do Razão */}
+              <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-2xs space-y-0">
+                <div className="p-4 border-b border-border/60 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Extrato Detalhado de Lançamentos</h3>
+                    <p className="text-xs text-muted-foreground">Cada pedido e microtaxa registrados atomicamente com rastreabilidade auditável.</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refetchLedger()}
+                    className="h-8 text-xs font-semibold rounded-xl gap-1.5"
+                  >
+                    <RefreshCw className="size-3.5" />
+                    <span>Recarregar</span>
+                  </Button>
+                </div>
+
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent bg-muted/30">
+                      <TableHead className="text-xs font-bold font-mono">DATA</TableHead>
+                      <TableHead className="text-xs font-bold font-mono">TIPO</TableHead>
+                      <TableHead className="text-xs font-bold">DESCRIÇÃO OPERACIONAL</TableHead>
+                      <TableHead className="text-xs font-bold font-mono">REF. PEDIDO</TableHead>
+                      <TableHead className="text-xs font-bold font-mono">VALOR</TableHead>
+                      <TableHead className="text-right text-xs font-bold font-mono">CONCILIAÇÃO</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {statement.items.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-40 text-center text-xs text-muted-foreground">
+                          Nenhum lançamento contábil registrado para o ciclo vigente.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      statement.items.map((item) => (
+                        <TableRow key={item.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="font-mono text-xs text-muted-foreground">
+                            {formatDate(item.created_at)}
+                          </TableCell>
+                          <TableCell>
+                            {item.entry_type === "ORDER_MICROFEE_RANDOM" ? (
+                              <Badge variant="outline" className="text-xs font-mono">Microtaxa</Badge>
+                            ) : item.entry_type === "SUBSCRIPTION_MONTHLY" ? (
+                              <Badge variant="default" className="text-xs font-mono">Assinatura</Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs font-mono">{item.entry_type}</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs font-medium text-foreground">
+                            {item.description}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">
+                            {item.reference_id ? item.reference_id.slice(0, 10).toUpperCase() : "-"}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs font-bold text-foreground">
+                            {formatMoney(item.amount_cents)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 font-mono text-[10px]">
+                              Auditado
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          ) : (
+            <div className="p-12 text-center text-xs text-muted-foreground rounded-2xl border border-border/60 bg-card">
+              Não foi possível carregar o razão contábil. Verifique sua conexão e tente novamente.
+            </div>
+          )}
+        </div>
+      )}
       <Dialog open={Boolean(pixModalInvoice)} onOpenChange={(open) => !open && setPixModalInvoice(null)}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>

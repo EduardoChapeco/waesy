@@ -14,22 +14,28 @@ import type { PlanTier } from "@/types/marketplace-compliance";
 // ---------------------------------------------------------------------------
 // 1. CONSULTAR STATUS DA COTA DE IA E BYOK DO WORKSPACE
 // ---------------------------------------------------------------------------
-export const GetStoreAiQuotaStatusSchema = z.object({
-  storeId: z.string().uuid("ID da loja inválido"),
-});
+export const GetStoreAiQuotaStatusSchema = z
+  .object({
+    storeId: z.string().uuid("ID da loja inválido").optional(),
+  })
+  .optional();
 
 export const getStoreAiQuotaStatus = createServerFn({ method: "GET" })
-  .validator(GetStoreAiQuotaStatusSchema)
+  .validator((d: unknown) => GetStoreAiQuotaStatusSchema.parse(d))
   .handler(async ({ data }): Promise<AiQuotaStatusDTO> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "manager", "master"], data.storeId);
+    const targetStoreId = data?.storeId || identity.storeId;
+    if (!targetStoreId) {
+      throw new Error("ID da loja não fornecido e nenhuma loja ativa na sessão.");
+    }
+    assertStoreAccess(identity, ["owner", "admin", "manager", "master"], targetStoreId);
 
     // 1. Obter plano da loja
     const { data: store } = await supabase
       .from("stores")
       .select("id, plan_tier")
-      .eq("id", data.storeId)
+      .eq("id", targetStoreId)
       .maybeSingle();
 
     const planTier: PlanTier = (store?.plan_tier as PlanTier) || "FREE_MVP";
@@ -174,3 +180,5 @@ export const upgradeStoreToWaesyMax = createServerFn({ method: "POST" })
 
     return { success: true, planTier: "WAESY_MAX" };
   });
+
+export const getStoreAIQuotaStatus = getStoreAiQuotaStatus;

@@ -771,7 +771,62 @@ export function CheckoutPage() {
  </span>
  </div>
 
-          {/* ── MENU TABS DE ETAPAS (Ultra-Minimalista: Tipografia & Linha Fina) ── */}
+          
+        {/* ── Omni-Checkout Multi-Loja: Seletor de Lojas com Carrinho Aberto (V141) ── */}
+        {globalCarts && globalCarts.length > 1 && (
+          <div className="p-3.5 rounded-2xl border border-border/60 bg-muted/20 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Store className="size-3.5 text-primary" />
+                <span>Omni-Checkout: Pedidos Segregados por Loja ({globalCarts.length} lojas)</span>
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                Cada loja possui frete e pedido independentes
+              </span>
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {globalCarts.map((c: any) => {
+                const isCurrentStore = c.storeId === ((cart as any)?.storeId || storeProfile?.id);
+                return (
+                  <div
+                    key={c.storeId || c.id}
+                    className={cn(
+                      "flex items-center gap-2 p-2 rounded-xl border text-xs min-w-[200px] shrink-0 transition-colors",
+                      isCurrentStore
+                        ? "bg-card border-foreground/30 shadow-2xs"
+                        : "bg-muted/40 border-border/60 opacity-80 hover:opacity-100"
+                    )}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground truncate text-xs">
+                        {c.storeName || "Loja"}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-mono">
+                        {c.items?.length || 0} itens · {formatMoney(c.subtotalCents || 0)}
+                      </p>
+                    </div>
+                    {isCurrentStore ? (
+                      <Badge variant="default" className="text-[10px] font-mono h-6 shrink-0">
+                        Ativa
+                      </Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate({ to: "/checkout", search: { store: c.storeId } })}
+                        className="h-6 text-[10px] font-bold rounded-lg px-2"
+                      >
+                        Finalizar
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── MENU TABS DE ETAPAS (Ultra-Minimalista: Tipografia & Linha Fina) ── */}
           <div className="w-full overflow-x-auto no-scrollbar py-1">
             <div className="flex items-center gap-6 min-w-max border-b border-border/40 pb-2">
               {steps.map((step) => {

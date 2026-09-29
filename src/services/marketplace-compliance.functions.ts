@@ -67,19 +67,26 @@ export function formatCnpj(rawCnpj: string): string {
 // ---------------------------------------------------------------------------
 // 1. CONSULTAR STATUS DE CONFORMIDADE DA LOJA
 // ---------------------------------------------------------------------------
-export const GetStoreComplianceStatusSchema = z.object({
-  storeId: z.string().uuid("ID da loja inválido"),
-});
+export const GetStoreComplianceStatusSchema = z
+  .object({
+    storeId: z.string().uuid("ID da loja inválido").optional(),
+  })
+  .optional();
 
 export const getStoreComplianceStatus = createServerFn({ method: "GET" })
-  .validator(GetStoreComplianceStatusSchema)
-  .handler(async ({ data }): Promise<StoreComplianceSummaryDTO> => {
+  .validator((d: unknown) => GetStoreComplianceStatusSchema.parse(d))
+  .handler(async ({ data }) => {
     const supabase = getServerClient();
+    const identity = await getServerIdentity();
+    const targetStoreId = data?.storeId || identity.storeId;
+    if (!targetStoreId) {
+      throw new Error("ID da loja não fornecido e nenhuma loja ativa na sessão.");
+    }
 
     const { data: store, error: storeErr } = await supabase
       .from("stores")
       .select("id, name, slug, plan_tier")
-      .eq("id", data.storeId)
+      .eq("id", targetStoreId)
       .maybeSingle();
 
     if (storeErr || !store) {
@@ -89,7 +96,7 @@ export const getStoreComplianceStatus = createServerFn({ method: "GET" })
     const { data: compliance } = await supabase
       .from("marketplace_compliance")
       .select("*")
-      .eq("store_id", data.storeId)
+      .eq("store_id", targetStoreId)
       .maybeSingle();
 
     const status: MarketplaceComplianceStatus | "NOT_REQUESTED" = compliance
@@ -106,6 +113,7 @@ export const getStoreComplianceStatus = createServerFn({ method: "GET" })
       cnpj: compliance?.cnpj || null,
       verifiedBadgeLabel:
         status === "APPROVED" ? "Marketplace Verificado" : undefined,
+      compliance: compliance || null,
     };
   });
 
@@ -113,20 +121,29 @@ export const getStoreComplianceStatus = createServerFn({ method: "GET" })
 // 2. SUBMETER LOJA PARA CONFORMIDADE NO MARKETPLACE (Lojista)
 // ---------------------------------------------------------------------------
 export const SubmitStoreComplianceSchema = z.object({
-  storeId: z.string().uuid(),
+  storeId: z.string().uuid().optional(),
   cnpj: z.string().min(14, "CNPJ inválido"),
   legalName: z.string().min(3, "Razão Social é obrigatória"),
   tradeName: z.string().optional(),
-  verifiedAddress: VerifiedAddressSchema,
-  verifiedSupportChannel: VerifiedSupportChannelSchema,
+  stateRegistration: z.string().optional(),
+  sacPhone: z.string().min(8, "Telefone de SAC obrigatório"),
+  sacEmail: z.string().email("E-mail de SAC inválido"),
+  returnPolicyUrl: z.string().optional(),
+  fiscalNotes: z.string().optional(),
+  verifiedAddress: VerifiedAddressSchema.optional(),
+  verifiedSupportChannel: VerifiedSupportChannelSchema.optional(),
 });
 
 export const submitStoreCompliance = createServerFn({ method: "POST" })
   .validator(SubmitStoreComplianceSchema)
-  .handler(async ({ data }): Promise<MarketplaceComplianceDTO> => {
+  .handler(async ({ data }) => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "master"], data.storeId);
+    const targetStoreId = data.storeId || identity.storeId;
+    if (!targetStoreId) {
+      throw new Error("ID da loja não fornecido e nenhuma loja ativa na sessão.");
+    }
+    assertStoreAccess(identity, ["owner", "admin", "master"], targetStoreId);
 
     const cleanCnpj = data.cnpj.replace(/\D/g, "");
     if (!validateCnpj(cleanCnpj)) {
@@ -135,13 +152,33 @@ export const submitStoreCompliance = createServerFn({ method: "POST" })
 
     const formattedCnpj = formatCnpj(cleanCnpj);
 
+    const address = data.verifiedAddress || {
+      street: "Endereço Cadastrado na Plataforma",
+      number: "S/N",
+      neighborhood: "Centro",
+      city: "Sede",
+      state: "SC",
+      zipcode: "89900-000",
+    };
+
+    const supportChannel = data.verifiedSupportChannel || {
+      channelType: "whatsapp" as const,
+      contactValue: data.sacPhone,
+      slaHours: 24,
+    };
+
     const payload = {
-      store_id: data.storeId,
+      store_id: targetStoreId,
       cnpj: formattedCnpj,
       legal_name: data.legalName.trim(),
       trade_name: data.tradeName ? data.tradeName.trim() : null,
-      verified_address: data.verifiedAddress,
-      verified_support_channel: data.verifiedSupportChannel,
+      state_registration: data.stateRegistration || null,
+      sac_phone: data.sacPhone.trim(),
+      sac_email: data.sacEmail.trim(),
+      return_policy_url: data.returnPolicyUrl || null,
+      fiscal_notes: data.fiscalNotes || null,
+      verified_address: address,
+      verified_support_channel: supportChannel,
       status: "PENDING",
       rejection_reason: null,
       updated_at: new Date().toISOString(),
@@ -158,6 +195,8 @@ export const submitStoreCompliance = createServerFn({ method: "POST" })
     }
 
     return {
+      message: "Dados de conformidade submetidos com sucesso para homologação no Marketplace!",
+      compliance: saved,
       id: saved.id,
       storeId: saved.store_id,
       companyId: saved.company_id,
@@ -168,13 +207,14 @@ export const submitStoreCompliance = createServerFn({ method: "POST" })
       verifiedSupportChannel: saved.verified_support_channel,
       status: saved.status,
       rejectionReason: saved.rejection_reason,
-      verifiedAt: saved.verified_at,
-      expiresAt: saved.expires_at,
-      auditedBy: saved.audited_by,
+      approvedAt: saved.approved_at,
       createdAt: saved.created_at,
       updatedAt: saved.updated_at,
     };
   });
+
+export const getStoreMarketplaceCompliance = getStoreComplianceStatus;
+export const submitMarketplaceCompliance = submitStoreCompliance;
 
 // ---------------------------------------------------------------------------
 // 3. AUDITORIA & APROVAÇÃO DE CONFORMIDADE (Admin Master / Backoffice)

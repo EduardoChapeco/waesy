@@ -239,6 +239,7 @@ import { Route as WorkspaceCmsNavegacaoRouteImport } from './routes/workspace.cm
 import { Route as WorkspaceCmsStoriesRouteImport } from './routes/workspace.cms.stories'
 import { Route as WorkspaceConfiguracoesIndexRouteImport } from './routes/workspace.configuracoes.index'
 import { Route as WorkspaceConfiguracoesAiRouteImport } from './routes/workspace.configuracoes.ai'
+import { Route as WorkspaceConfiguracoesConformidadeRouteImport } from './routes/workspace.configuracoes.conformidade'
 import { Route as WorkspaceConfiguracoesEquipeRouteImport } from './routes/workspace.configuracoes.equipe'
 import { Route as WorkspaceConfiguracoesIntegracoesRouteImport } from './routes/workspace.configuracoes.integracoes'
 import { Route as WorkspaceConfiguracoesInteligenciaArtificialRouteImport } from './routes/workspace.configuracoes.inteligencia-artificial'
@@ -1551,6 +1552,12 @@ const WorkspaceConfiguracoesAiRoute =
     path: '/configuracoes/ai',
     getParentRoute: () => WorkspaceRoute,
   } as any)
+const WorkspaceConfiguracoesConformidadeRoute =
+  WorkspaceConfiguracoesConformidadeRouteImport.update({
+    id: '/configuracoes/conformidade',
+    path: '/configuracoes/conformidade',
+    getParentRoute: () => WorkspaceRoute,
+  } as any)
 const WorkspaceConfiguracoesEquipeRoute =
   WorkspaceConfiguracoesEquipeRouteImport.update({
     id: '/configuracoes/equipe',
@@ -2604,6 +2611,7 @@ export interface FileRoutesByFullPath {
   '/workspace/cms/navegacao': typeof WorkspaceCmsNavegacaoRoute
   '/workspace/cms/stories': typeof WorkspaceCmsStoriesRoute
   '/workspace/configuracoes/ai': typeof WorkspaceConfiguracoesAiRoute
+  '/workspace/configuracoes/conformidade': typeof WorkspaceConfiguracoesConformidadeRoute
   '/workspace/configuracoes/equipe': typeof WorkspaceConfiguracoesEquipeRoute
   '/workspace/configuracoes/integracoes': typeof WorkspaceConfiguracoesIntegracoesRoute
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
@@ -2974,6 +2982,7 @@ export interface FileRoutesByTo {
   '/workspace/cms/navegacao': typeof WorkspaceCmsNavegacaoRoute
   '/workspace/cms/stories': typeof WorkspaceCmsStoriesRoute
   '/workspace/configuracoes/ai': typeof WorkspaceConfiguracoesAiRoute
+  '/workspace/configuracoes/conformidade': typeof WorkspaceConfiguracoesConformidadeRoute
   '/workspace/configuracoes/equipe': typeof WorkspaceConfiguracoesEquipeRoute
   '/workspace/configuracoes/integracoes': typeof WorkspaceConfiguracoesIntegracoesRoute
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
@@ -3354,6 +3363,7 @@ export interface FileRoutesById {
   '/workspace/cms/navegacao': typeof WorkspaceCmsNavegacaoRoute
   '/workspace/cms/stories': typeof WorkspaceCmsStoriesRoute
   '/workspace/configuracoes/ai': typeof WorkspaceConfiguracoesAiRoute
+  '/workspace/configuracoes/conformidade': typeof WorkspaceConfiguracoesConformidadeRoute
   '/workspace/configuracoes/equipe': typeof WorkspaceConfiguracoesEquipeRoute
   '/workspace/configuracoes/integracoes': typeof WorkspaceConfiguracoesIntegracoesRoute
   '/workspace/configuracoes/inteligencia-artificial': typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
@@ -3734,6 +3744,7 @@ export interface FileRouteTypes {
     | '/workspace/cms/navegacao'
     | '/workspace/cms/stories'
     | '/workspace/configuracoes/ai'
+    | '/workspace/configuracoes/conformidade'
     | '/workspace/configuracoes/equipe'
     | '/workspace/configuracoes/integracoes'
     | '/workspace/configuracoes/inteligencia-artificial'
@@ -4104,6 +4115,7 @@ export interface FileRouteTypes {
     | '/workspace/cms/navegacao'
     | '/workspace/cms/stories'
     | '/workspace/configuracoes/ai'
+    | '/workspace/configuracoes/conformidade'
     | '/workspace/configuracoes/equipe'
     | '/workspace/configuracoes/integracoes'
     | '/workspace/configuracoes/inteligencia-artificial'
@@ -4483,6 +4495,7 @@ export interface FileRouteTypes {
     | '/workspace/cms/navegacao'
     | '/workspace/cms/stories'
     | '/workspace/configuracoes/ai'
+    | '/workspace/configuracoes/conformidade'
     | '/workspace/configuracoes/equipe'
     | '/workspace/configuracoes/integracoes'
     | '/workspace/configuracoes/inteligencia-artificial'
@@ -6303,6 +6316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceConfiguracoesAiRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/workspace/configuracoes/conformidade': {
+      id: '/workspace/configuracoes/conformidade'
+      path: '/configuracoes/conformidade'
+      fullPath: '/workspace/configuracoes/conformidade'
+      preLoaderRoute: typeof WorkspaceConfiguracoesConformidadeRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/workspace/configuracoes/equipe': {
       id: '/workspace/configuracoes/equipe'
       path: '/configuracoes/equipe'
@@ -7877,6 +7897,7 @@ interface WorkspaceRouteChildren {
   WorkspaceCmsNavegacaoRoute: typeof WorkspaceCmsNavegacaoRoute
   WorkspaceCmsStoriesRoute: typeof WorkspaceCmsStoriesRoute
   WorkspaceConfiguracoesAiRoute: typeof WorkspaceConfiguracoesAiRoute
+  WorkspaceConfiguracoesConformidadeRoute: typeof WorkspaceConfiguracoesConformidadeRoute
   WorkspaceConfiguracoesEquipeRoute: typeof WorkspaceConfiguracoesEquipeRoute
   WorkspaceConfiguracoesIntegracoesRoute: typeof WorkspaceConfiguracoesIntegracoesRoute
   WorkspaceConfiguracoesInteligenciaArtificialRoute: typeof WorkspaceConfiguracoesInteligenciaArtificialRoute
@@ -8039,6 +8060,8 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceCmsNavegacaoRoute: WorkspaceCmsNavegacaoRoute,
   WorkspaceCmsStoriesRoute: WorkspaceCmsStoriesRoute,
   WorkspaceConfiguracoesAiRoute: WorkspaceConfiguracoesAiRoute,
+  WorkspaceConfiguracoesConformidadeRoute:
+    WorkspaceConfiguracoesConformidadeRoute,
   WorkspaceConfiguracoesEquipeRoute: WorkspaceConfiguracoesEquipeRoute,
   WorkspaceConfiguracoesIntegracoesRoute:
     WorkspaceConfiguracoesIntegracoesRoute,
