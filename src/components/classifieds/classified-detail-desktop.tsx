@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Share2, MapPin, Check, ShieldCheck, Tag, Clock, User, ChevronLeft, ChevronRight, Maximize2, X, Phone, MessageCircle, Package, Truck, CreditCard, QrCode, Receipt, FileSpreadsheet, CheckCircle2, Edit3, Smartphone, ExternalLink, ShieldAlert, Coins, TrendingUp, Banknote, FileCheck, Download, AlertCircle, Eye, Building, Car, Hotel, Briefcase, HelpCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,10 @@ import { formatRelativeTime } from "@/lib/datetime";
 import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
-import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
+import { startCustomerChatThread } from "@/services/chat.functions";
+import { addToCart } from "@/services/cart.functions";
+import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
 import type { UniversalClassifiedShowcaseProps } from "./universal-classified-showcase";
 
@@ -42,6 +45,64 @@ export function ClassifiedDetailDesktop({
   const [activeImage, setActiveImage] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "specs" | "seller" | "map">("overview");
+  const navigate = useNavigate();
+  const { refreshCart, setIsCartOpen } = useCartContext();
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const [isAddingCart, setIsAddingCart] = useState(false);
+
+  const isConversational = useMemo(() => isClassifiedConversational(classified), [classified]);
+  const paymentMethodsList = useMemo(() => getClassifiedPaymentMethods(classified), [classified]);
+
+  const handleStartNativeChat = async () => {
+    setIsStartingChat(true);
+    try {
+      const res = await startCustomerChatThread({
+        data: {
+          storeId: classified.store_id || classified.storeId || undefined,
+          recipientProfileId: classified.author_profile_id || undefined,
+          subject: classified.title,
+          initialMessage: `Olá, tenho interesse no anúncio: ${classified.title}`,
+        },
+      });
+      if (res?.threadId) {
+        toast.success("Conversa aberta com sucesso!");
+        navigate({ to: `/conta/conversas/${res.threadId}` });
+      } else {
+        throw new Error("Falha ao abrir conversa.");
+      }
+    } catch (err: any) {
+      if (cleanPhone) {
+        handleWhatsApp();
+      } else {
+        toast.info("Identifique-se para enviar mensagem ao anunciante.");
+        navigate({
+          to: "/entrar",
+          search: { returnUrl: `/classificados/${classified.id}` },
+        });
+      }
+    } finally {
+      setIsStartingChat(false);
+    }
+  };
+
+  const handleAddClassifiedToCart = async () => {
+    setIsAddingCart(true);
+    try {
+      await addToCart({
+        data: {
+          variantId: classified.id,
+          quantity: 1,
+        },
+      });
+      await refreshCart();
+      setIsCartOpen(true);
+      toast.success("Adicionado ao carrinho!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao adicionar ao carrinho.");
+    } finally {
+      setIsAddingCart(false);
+    }
+  };
 
   const images: string[] = useMemo(() => {
     return (
@@ -141,17 +202,20 @@ export function ClassifiedDetailDesktop({
         action: () => onDownloadDigital?.(),
       };
     }
-    if (onDirectBuy && priceCents > 0) {
+    // Protocolo V140: Se for anúncio conversacional (Classificados / Serviços),
+    // o botão de Comprar DESAPARECE e o CTA primário vira Enviar Mensagem.
+    if (isConversational) {
       return {
-        label: isBuyingDirect ? "Processando..." : "Comprar Agora",
-        action: () => onDirectBuy?.(),
+        label: isStartingChat ? "Iniciando Chat..." : "Enviar Mensagem",
+        action: handleStartNativeChat,
       };
     }
+    // Se for Produto / E-commerce transacional:
     return {
-      label: "Fazer Proposta",
-      action: () => onOpenProposalModal?.(),
+      label: isAddingCart ? "Adicionando..." : "Adicionar ao Carrinho",
+      action: handleAddClassifiedToCart,
     };
-  }, [isDonation, isInvestmentOpportunity, niche, classified, onOpenBookingModal, onOpenProposalModal, onDirectBuy, onDownloadDigital, isBuyingDirect, isDownloadingDigital, priceCents, cleanPhone]);
+  }, [isDonation, isInvestmentOpportunity, niche, classified, onOpenBookingModal, onDownloadDigital, isDownloadingDigital, cleanPhone, isConversational, isStartingChat, isAddingCart]);
 
   const locationText = useMemo(() => {
     if (classified.hide_location || attrs.hide_location) {

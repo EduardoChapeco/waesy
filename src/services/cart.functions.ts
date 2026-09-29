@@ -13,7 +13,7 @@ import { z } from "zod";
 
 import { getGuestSession, getSellerRefCookie } from "@/lib/session";
 import { getCurrentIdentity, mergeGuestCartLogic, withDataPayload } from "./cart-helpers";
-import type { CartDTO } from "@/types/orders";
+import type { CartDTO, CrossSellItemDTO } from "@/types/orders";
 import { formatMoney } from "@/lib/money";
 
 // Helpers (getCurrentIdentity, mergeGuestCartLogic) live in ./cart-helpers
@@ -304,10 +304,13 @@ export async function mapCartToDTO(cart: any): Promise<CartDTO> {
 
  items.push({
  id: item.id,
+ item_id: item.variant_id,
  variantId: item.variant_id,
  qty: item.qty,
+ selected_variations: item.selected_options || {},
  selectedOptions: item.selected_options || undefined,
  selectedOptionsLabels: selectedOptionsLabels.length > 0 ? selectedOptionsLabels : undefined,
+ price_snapshot: price,
  priceCents: price,
  compareAtCents: product.compare_at_cents ?? null,
  lineTotalCents: lineTotal,
@@ -1009,3 +1012,103 @@ export const triggerAbandonedCartsEngine = createServerFn({ method: "POST" }).ha
  return { status: "error" as const, message: "Falha ao disparar motor de carrinhos abandonados" };
  }
 });
+
+
+export const getCartCrossSellItems = createServerFn({ method: "GET" })
+  .validator(
+    withDataPayload(
+      z.object({
+        storeId: z.string().uuid().optional(),
+        currentVariantIds: z.array(z.string()).default([]),
+      })
+    )
+  )
+  .handler(async ({ data: { storeId, currentVariantIds = [] } }) => {
+    try {
+      const db = getServerClient();
+      let targetStoreId = storeId;
+
+      if (!targetStoreId) {
+        const { data: firstStore } = await db
+          .from("stores")
+          .select("id")
+          .limit(1)
+          .maybeSingle();
+        targetStoreId = firstStore?.id;
+      }
+
+      if (!targetStoreId) return [] as CrossSellItemDTO[];
+
+      // 1. Consulta produtos ativos da mesma loja diferentes dos que já estão no carrinho
+      const { data: products, error } = await db
+        .from("products")
+        .select(`
+          id,
+          title,
+          slug,
+          price_cents,
+          compare_at_cents,
+          store_id,
+          product_media(url),
+          product_variants(id, stock_on_hand, price_override_cents)
+        `)
+        .eq("store_id", targetStoreId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      const results: CrossSellItemDTO[] = [];
+
+      if (!error && Array.isArray(products)) {
+        for (const p of products) {
+          const primaryVariant = p.product_variants?.[0];
+          if (!primaryVariant) continue;
+          if (currentVariantIds.includes(primaryVariant.id)) continue;
+
+          const img = p.product_media?.[0]?.url || null;
+          results.push({
+            id: p.id,
+            variantId: primaryVariant.id,
+            title: p.title,
+            priceCents: primaryVariant.price_override_cents ?? p.price_cents ?? 0,
+            compareAtCents: p.compare_at_cents ?? null,
+            coverUrl: img,
+            storeId: p.store_id,
+          });
+
+          if (results.length >= 3) break;
+        }
+      }
+
+      // 2. Se a loja for anunciante de classificados/ads, busca em ads
+      if (results.length < 3) {
+        const { data: ads } = await db
+          .from("ads")
+          .select("id, title, price_cents, images, store_id")
+          .eq("store_id", targetStoreId)
+          .eq("status", "active")
+          .limit(3);
+
+        if (ads && Array.isArray(ads)) {
+          for (const ad of ads) {
+            if (results.some((r) => r.id === ad.id)) continue;
+            results.push({
+              id: ad.id,
+              variantId: ad.id,
+              title: ad.title,
+              priceCents: ad.price_cents || 0,
+              compareAtCents: null,
+              coverUrl: Array.isArray(ad.images) ? ad.images[0] : null,
+              storeId: ad.store_id || targetStoreId,
+            });
+            if (results.length >= 3) break;
+          }
+        }
+      }
+
+      return results;
+    } catch (err) {
+      console.warn("[cart.functions] Falha inesperada ao obter cross-sell:", err);
+      return [] as CrossSellItemDTO[];
+    }
+  });

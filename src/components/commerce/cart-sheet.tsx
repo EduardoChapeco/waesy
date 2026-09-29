@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { X, Minus, Plus, ShoppingBag, ArrowRight, SlidersHorizontal, Package, Layers } from 'lucide-react';
 import { formatMoney } from "@/lib/money";
+import { addToCart, getCartCrossSellItems } from "@/services/cart.functions";
+import type { CrossSellItemDTO } from "@/types/orders";
+import { toast } from "sonner";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCartContext } from "@/lib/cart-context";
@@ -45,22 +49,17 @@ export function CartSheet() {
  <>
  <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
  <SheetContent
- side="right" size="wide" className="w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background border-l border-border/60 max-sm:!inset-0 max-sm:!h-[100dvh] max-sm:!w-full max-sm:rounded-none max-sm:border-none"
+ side="right" size="wide" className={cn("w-full sm:max-w-lg md:max-w-xl flex flex-col p-0 bg-background/95 backdrop-blur-md border-l border-border/60", totalItemCount > 0 ? "max-sm:inset-0 max-sm:h-dvh max-sm:w-full max-sm:rounded-none max-sm:border-none" : "max-sm:inset-x-0 max-sm:bottom-0 max-sm:max-h-[75dvh] max-sm:rounded-t-2xl")}
  >
  {/* ── CABEÇALHO DO CARRINHO ── */}
  <SheetHeader className="px-6 py-4 bg-card/60 backdrop-blur-md shrink-0">
  <SheetTitle className="flex items-center justify-between font-bold text-foreground text-xl">
  <div className="flex items-center gap-2.5">
- <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center ">
- <ShoppingBag className="size-5" />
- </div>
- <span>Meu Carrinho</span>
- {totalItemCount > 0 && (
- <span className="rounded-full bg-primary/15 text-primary border border-primary/30 px-2.5 py-0.5 text-xs font-mono font-bold">
- {totalItemCount}
- </span>
- )}
- </div>
+                <div className="size-9 rounded-xl bg-foreground text-background flex items-center justify-center">
+                  <ShoppingBag className="size-5" />
+                </div>
+                <span>Carrinho{totalItemCount > 0 ? ` (${totalItemCount})` : ""}</span>
+              </div>
  </SheetTitle>
  </SheetHeader>
 
@@ -234,7 +233,13 @@ export function CartSheet() {
  </div>
  ))}
  </div>
- </Surface>
+             {/* ── SEÇÃO CROSS-SELL: APROVEITE E LEVE TAMBÉM (V140) ── */}
+            <CartCrossSellSection
+              storeId={storeCart.storeId}
+              currentItems={storeCart.items}
+              onRefresh={refreshCart}
+            />
+          </Surface>
  ))}
  </div>
  )}
@@ -281,4 +286,103 @@ export function CartSheet() {
  />
  </>
  );
+}
+
+
+function CartCrossSellSection({
+  storeId,
+  currentItems,
+  onRefresh,
+}: {
+  storeId?: string;
+  currentItems: any[];
+  onRefresh: () => Promise<void>;
+}) {
+  const [crossSellItems, setCrossSellItems] = useState<CrossSellItemDTO[]>([]);
+  const [addingId, setAddingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCrossSell() {
+      if (!storeId) return;
+      try {
+        const variantIds = currentItems.map((it) => it.variantId || it.item_id).filter(Boolean);
+        const data = await getCartCrossSellItems({
+          data: { storeId, currentVariantIds: variantIds },
+        });
+        if (isMounted) setCrossSellItems(data || []);
+      } catch (err) {
+        console.warn("[cart-cross-sell] Erro ao carregar cross-sell:", err);
+      }
+    }
+    loadCrossSell();
+    return () => {
+      isMounted = false;
+    };
+  }, [storeId, currentItems.length]);
+
+  if (!storeId || crossSellItems.length === 0) return null;
+
+  const handleQuickAdd = async (item: CrossSellItemDTO) => {
+    setAddingId(item.variantId);
+    try {
+      await addToCart({
+        data: {
+          variantId: item.variantId,
+          quantity: 1,
+        },
+      });
+      toast.success("Item adicionado ao carrinho!");
+      await onRefresh();
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao adicionar item.");
+    } finally {
+      setAddingId(null);
+    }
+  };
+
+  return (
+    <div className="border-t border-border/40 p-4 bg-muted/20 space-y-3">
+      <div className="flex items-center justify-between">
+        <h5 className="text-xs font-bold text-foreground">Aproveite e leve também</h5>
+        <span className="text-[10px] text-muted-foreground font-mono">Mesma loja</span>
+      </div>
+      <div className="flex flex-col gap-2">
+        {crossSellItems.map((item) => (
+          <div
+            key={item.id}
+            className="flex items-center justify-between gap-3 p-2 rounded-xl bg-card border border-border/50"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="size-11 rounded-lg overflow-hidden bg-muted/30 shrink-0 flex items-center justify-center">
+                {item.coverUrl ? (
+                  <img src={item.coverUrl} alt={item.title} className="size-full object-cover" />
+                ) : (
+                  <Package className="size-5 text-muted-foreground/40" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-foreground truncate max-w-[170px] sm:max-w-[220px]">
+                  {item.title}
+                </p>
+                <p className="text-xs font-bold font-mono text-foreground">
+                  {formatMoney(item.priceCents)}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => handleQuickAdd(item)}
+              disabled={addingId === item.variantId}
+              className="h-8 px-2.5 rounded-lg text-xs font-bold shrink-0 hover:bg-foreground hover:text-background transition-all active:scale-95 cursor-pointer"
+            >
+              {addingId === item.variantId ? "Adicionando..." : "+ Adicionar"}
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

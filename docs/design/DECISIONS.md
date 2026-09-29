@@ -51,3 +51,10 @@
 - **Segurança Supabase:** Migração V140 criada com 100% de cobertura RLS em todas as tabelas públicas e RPCs protegidas.
 - **Design Hardening:** Glassmorphism erradicado nas primitivas (`FrostedCard`, `SearchableSelect`, `NativeBackButton`, `fluid-noise-surface`).
 - **Navegação & Ergonomia:** `GROUP_JOBS` atualizado no Workspace e rótulos de Classificados enxugados conforme Anti-AI Design.
+
+## DEC-007: Master Prompt V140 — Hybrid Checkout, Classifieds Bypass & Omni-Cart Matrix
+- **Data:** 2026-09-29
+- **Contexto:** Necessidade de bifurcação arquitetural entre fluxos transacionais B2C (Lojas com carrinho múltiplo e cross-sell) e fluxos conversacionais C2C (Classificados particulares e serviços locais com negociação direta).
+- **Decisão:** Refatoração do modelo de itens de carrinho para suportar rigorosamente `items: [{ item_id, qty, selected_variations, price_snapshot }]` com o motor Server Function `getCartCrossSellItems` (busca de até 3 itens da mesma loja `WHERE store_id = X AND id != Y`). No frontend, bifurcação estrita dos CTAs de anúncio: para Classificados/Serviços, o botão transacional de comprar é eliminado e substituído por `[Enviar Mensagem]` (abrindo chat nativo direto com pré-preenchimento contextual) e `[WhatsApp]`. Parametrização dos métodos de pagamento como informativos (`is_informative_only = true`) sem disparo de gateway para vendas diretas entre particulares. No carrinho, remoção de regras `!important` (DL-04) e enxugamento do título para `Carrinho (N)`.
+- **Fundamentação:** AGENTS.md B.4, B.5, B.8, DESIGN.md (Design Silencioso, Touch target >= 44px) e Master Prompt V140.
+- **Consequências:** 100% de aprovação na suíte de testes (Vitest 110 arquivos / 702 testes verdes), build de produção aprovado e deploy na borda Cloudflare Pages (`https://7ef2b305.usewaesy.pages.dev`).

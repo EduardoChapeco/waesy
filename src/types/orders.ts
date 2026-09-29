@@ -79,10 +79,13 @@ export type PaymentStatus = "pending" | "processing" | "paid" | "failed" | "refu
 
 export interface CartItemDTO {
  id: string;
+ item_id?: string;
  variantId: string;
  qty: number;
+ selected_variations?: Record<string, string | string[]>;
  selectedOptions?: Record<string, string | string[]>;
  selectedOptionsLabels?: string[];
+ price_snapshot?: number;
  /** Server-computed unit price at time of add. */
  priceCents: number;
  /** Server-computed line total (qty × unit price). */
@@ -92,6 +95,17 @@ export interface CartItemDTO {
  variantAttributes: Record<string, string>;
  coverUrl?: string | null;
  isOutOfStock?: boolean;
+}
+
+export interface CrossSellItemDTO {
+ id: string;
+ variantId: string;
+ title: string;
+ priceCents: number;
+ compareAtCents: number | null;
+ coverUrl: string | null;
+ storeId: string;
+ storeName?: string;
 }
 
 export interface CartDTO {

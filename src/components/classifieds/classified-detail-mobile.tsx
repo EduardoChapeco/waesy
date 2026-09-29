@@ -8,7 +8,10 @@ import { trackAndOpenWhatsApp } from "@/lib/whatsapp";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { NativeBackButton } from "@/components/navigation";
 import { MapLibreCanvas } from "@/components/mobility/maplibre-canvas";
-import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel } from "@/lib/classifieds/semantics";
+import { resolveClassifiedNiche, getClassifiedPrimaryCtaLabel, isClassifiedConversational, getClassifiedPaymentMethods } from "@/lib/classifieds/semantics";
+import { startCustomerChatThread } from "@/services/chat.functions";
+import { addToCart } from "@/services/cart.functions";
+import { useCartContext } from "@/lib/cart-context";
 import { toast } from "sonner";
 import type { UniversalClassifiedShowcaseProps } from "./universal-classified-showcase";
 
@@ -43,6 +46,63 @@ export function ClassifiedDetailMobile({
   const [activeImage, setActiveImage] = useState(0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const { refreshCart, setIsCartOpen } = useCartContext();
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const [isAddingCart, setIsAddingCart] = useState(false);
+
+  const isConversational = useMemo(() => isClassifiedConversational(classified), [classified]);
+  const paymentMethodsList = useMemo(() => getClassifiedPaymentMethods(classified), [classified]);
+
+  const handleStartNativeChat = async () => {
+    setIsStartingChat(true);
+    try {
+      const res = await startCustomerChatThread({
+        data: {
+          storeId: classified.store_id || classified.storeId || undefined,
+          recipientProfileId: classified.author_profile_id || undefined,
+          subject: classified.title,
+          initialMessage: `Olá, tenho interesse no anúncio: ${classified.title}`,
+        },
+      });
+      if (res?.threadId) {
+        toast.success("Conversa iniciada com sucesso!");
+        navigate({ to: `/conta/conversas/${res.threadId}` });
+      } else {
+        throw new Error("Falha ao abrir conversa.");
+      }
+    } catch (err: any) {
+      if (cleanPhone) {
+        handleWhatsApp();
+      } else {
+        toast.info("Identifique-se para enviar mensagem ao anunciante.");
+        navigate({
+          to: "/entrar",
+          search: { returnUrl: `/classificados/${classified.id}` },
+        });
+      }
+    } finally {
+      setIsStartingChat(false);
+    }
+  };
+
+  const handleAddClassifiedToCart = async () => {
+    setIsAddingCart(true);
+    try {
+      await addToCart({
+        data: {
+          variantId: classified.id,
+          quantity: 1,
+        },
+      });
+      await refreshCart();
+      setIsCartOpen(true);
+      toast.success("Adicionado ao carrinho!");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao adicionar ao carrinho.");
+    } finally {
+      setIsAddingCart(false);
+    }
+  };
 
   const images: string[] = useMemo(() => {
     return (
@@ -141,17 +201,20 @@ export function ClassifiedDetailMobile({
         action: () => onDownloadDigital?.(),
       };
     }
-    if (onDirectBuy && priceCents > 0) {
+    // Protocolo V140: Se for anúncio conversacional (Classificados / Serviços),
+    // o botão de Comprar DESAPARECE e o CTA primário vira Enviar Mensagem.
+    if (isConversational) {
       return {
-        label: isBuyingDirect ? "Processando..." : "Comprar Agora",
-        action: () => onDirectBuy?.(),
+        label: isStartingChat ? "Iniciando..." : "Enviar Mensagem",
+        action: handleStartNativeChat,
       };
     }
+    // Se for Produto / E-commerce transacional:
     return {
-      label: "Fazer Proposta",
-      action: () => onOpenProposalModal?.(),
+      label: isAddingCart ? "Adicionando..." : "Adicionar ao Carrinho",
+      action: handleAddClassifiedToCart,
     };
-  }, [isDonation, isInvestmentOpportunity, niche, classified, onOpenBookingModal, onOpenProposalModal, onDirectBuy, onDownloadDigital, isBuyingDirect, isDownloadingDigital, priceCents, cleanPhone]);
+  }, [isDonation, isInvestmentOpportunity, niche, classified, onOpenBookingModal, onDownloadDigital, isDownloadingDigital, cleanPhone, isConversational, isStartingChat, isAddingCart]);
 
   const locationText = useMemo(() => {
     if (classified.hide_location || attrs.hide_location) {
@@ -448,6 +511,37 @@ export function ClassifiedDetailMobile({
                   {isDescExpanded ? "Ver menos" : "Ler descrição completa"}
                 </button>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ── 5.1 FORMAS ACEITAS PELO VENDEDOR (V140 - Design Silencioso Informativo) ── */}
+        {paymentMethodsList.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Formas Aceitas pelo Vendedor
+              </h2>
+              <span className="text-[10px] text-muted-foreground font-mono">Informativo</span>
+            </div>
+            <div className="rounded-2xl border border-border/50 bg-card p-3 space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {paymentMethodsList.map((pm) => (
+                  <span
+                    key={pm.id}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/50"
+                  >
+                    <pm.icon className="size-3.5 text-primary shrink-0" />
+                    <span>{pm.label}</span>
+                    {pm.badge && (
+                      <span className="text-[10px] font-mono text-muted-foreground">({pm.badge})</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Valores e condições acertados diretamente entre você e o anunciante.
+              </p>
             </div>
           </div>
         )}

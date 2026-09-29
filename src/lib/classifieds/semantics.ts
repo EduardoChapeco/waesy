@@ -1333,10 +1333,13 @@ export interface ClassifiedPaymentMethodItem {
   label: string;
   badge?: string;
   icon: any;
+  /** Marca informativa: indica que a forma de pagamento é combinada diretamente com o vendedor */
+  is_informative_only?: boolean;
 }
 
 /**
- * Retorna os métodos de pagamento estruturados do anúncio
+ * Retorna os métodos de pagamento estruturados do anúncio.
+ * Em classificados e serviços C2C, os métodos são informativos (is_informative_only = true).
  */
 export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentMethodItem[] {
   if (!classified) return [];
@@ -1350,6 +1353,7 @@ export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentM
       label: "Pix Instantâneo",
       badge: "Aprovação Imediata",
       icon: QrCode,
+      is_informative_only: true,
     });
   }
 
@@ -1360,6 +1364,7 @@ export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentM
       label: "Cartão de Crédito",
       badge: maxInst > 1 ? `Até ${maxInst}x` : "Crédito",
       icon: CreditCard,
+      is_informative_only: true,
     });
   }
 
@@ -1369,6 +1374,7 @@ export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentM
       label: "Dinheiro / À Vista",
       badge: "Na Entrega/Check-in",
       icon: Banknote,
+      is_informative_only: true,
     });
   }
 
@@ -1378,10 +1384,40 @@ export function getClassifiedPaymentMethods(classified: any): ClassifiedPaymentM
       label: "Aceita Permuta / Troca",
       badge: "Com Avaliação",
       icon: RefreshCw,
+      is_informative_only: true,
     });
   }
 
   return items;
+}
+
+/**
+ * Determina se o anúncio deve utilizar o funil conversacional puro (Chat / WhatsApp)
+ * em vez do checkout transacional com carrinho (Fase 2 - Master Prompt V140).
+ */
+export function isClassifiedConversational(classified: any): boolean {
+  if (!classified) return true;
+  const adType = String(classified.ad_type || classified.attributes?.ad_type || "").toLowerCase();
+  if (adType === "product" || adType === "ecommerce" || adType === "loja") {
+    return false;
+  }
+  if (adType === "classified" || adType === "service" || adType === "servico") {
+    return true;
+  }
+  const niche = resolveClassifiedNiche(classified);
+  const conversationalNiches: ClassifiedNicheId[] = [
+    "service",
+    "real_estate_sale",
+    "real_estate_rent",
+    "vehicle",
+    "job",
+    "agri",
+    "equipment",
+    "donation",
+    "business",
+    "goods",
+  ];
+  return conversationalNiches.includes(niche.id);
 }
 
 /**
