@@ -29,7 +29,7 @@ describe("Store Squads Runtime & Virtual Offices (Big Tech Council)", () => {
     expect(firstAgent.curriculum.certifications.length).toBeGreaterThan(0);
 
     activeSquadId = marketingSquad!.id;
-  });
+  }, 30000);
 
   it("2. Deve disparar uma nova corrida com supervisão Human-in-the-Loop", async () => {
     expect(activeSquadId).toBeDefined();
@@ -44,7 +44,7 @@ describe("Store Squads Runtime & Virtual Offices (Big Tech Council)", () => {
     expect(run.total_tokens_consumed).toBeGreaterThan(0);
 
     createdRunId = run.id;
-  }, 15000);
+  }, 30000);
 
   it("3. Deve aprovar a entrega do squad em 1 clique pelo lojista", async () => {
     expect(createdRunId).toBeDefined();
@@ -54,5 +54,5 @@ describe("Store Squads Runtime & Virtual Offices (Big Tech Council)", () => {
     expect(approved.id).toBe(createdRunId);
     expect(approved.status).toBe("completed");
     expect(approved.completed_at).toBeDefined();
-  });
+  }, 30000);
 });

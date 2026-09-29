@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { getUserSession } from "@/services/auth.functions";
 import { logSystemError } from "@/services/telemetry.functions";
 import { WorkspaceShell } from "@/components/workspace/workspace-shell";
+import { WorkspaceAccessDenied } from "@/components/workspace/workspace-access-denied";
 import { Button } from "@/components/ui/button";
 import { Store, AlertTriangle, ArrowLeft, RefreshCw, LogIn } from "lucide-react";
 import { getSystemOnboardingSteps } from "@/services/system-onboarding.functions";
@@ -21,12 +22,6 @@ export const Route = createFileRoute("/workspace")({
  if (!session?.user) {
  throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
  }
-
- const isPlatformAdmin =
- session?.role === "platform_admin" ||
- session?.role === "master" ||
- session?.role === "superadmin" ||
- session?.user?.role === "platform_admin";
 
  const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
@@ -55,13 +50,7 @@ export const Route = createFileRoute("/workspace")({
        throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
      }
 
-     const isPlatformAdmin =
-       session?.role === "platform_admin" ||
-       session?.role === "master" ||
-       session?.role === "superadmin" ||
-       session?.user?.role === "platform_admin";
-
-     const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+  const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
      if (!hasStore) {
        throw redirect({ to: "/criar-negocio" });
@@ -154,18 +143,46 @@ function WorkspaceLayout() {
  pathname.startsWith("/workspace/turismo/propostas/") &&
  pathname !== "/workspace/turismo/propostas";
 
- // Fullscreen Immersion Mode para o Construtor Visual (Wix/Framer), Estúdio e Studio de Propostas (Canva/Figma)
- if (isBuilder || isStudio || isProposalStudio) {
- return <Outlet />;
- }
-
  const isPlatformAdmin =
- session?.role === "platform_admin" ||
- session?.role === "master" ||
- session?.role === "superadmin" ||
- session?.user?.role === "platform_admin";
+    session?.role === "platform_admin" ||
+    session?.role === "master" ||
+    session?.role === "superadmin" ||
+    session?.user?.role === "platform_admin";
 
- const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+  const activeMembership = session?.memberships?.[0];
+  const effectiveRole = (
+    isPlatformAdmin
+      ? "owner"
+      : (activeMembership?.role || session?.role || "collaborator")
+  ).toLowerCase();
+
+  // Fullscreen Immersion Mode para o Construtor Visual (Wix/Framer), Estúdio e Studio de Propostas (Canva/Figma)
+  if (isBuilder || isStudio || isProposalStudio) {
+    const IMMERSION_ALLOWED_ROLES = [
+      "owner",
+      "admin",
+      "proprietario",
+      "manager",
+      "gerente",
+      "content",
+      "specialist",
+      "profissional",
+    ];
+    if (!isPlatformAdmin && !IMMERSION_ALLOWED_ROLES.includes(effectiveRole)) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+          <WorkspaceAccessDenied
+            role={effectiveRole}
+            path={pathname}
+            storeName={activeMembership?.name}
+          />
+        </div>
+      );
+    }
+    return <Outlet />;
+  }
+
+  const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
  if (!hasStore) {
  return null;

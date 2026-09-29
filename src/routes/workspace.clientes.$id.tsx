@@ -401,7 +401,7 @@ function CustomerDetailPage() {
           </TabsTrigger>
           <TabsTrigger value="viagens" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Plane className="size-3.5 text-primary" />
-            <span>Viagens ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0)})</span>
+            <span>Viagens & Propostas ({(data.confirmedTrips?.length || 0) + (data.commercialLeads?.length || 0) + (data.proposals?.length || 0) + (data.contracts?.length || 0)})</span>
           </TabsTrigger>
           <TabsTrigger value="preferencias" className="text-xs font-semibold gap-1.5 shrink-0 px-3 py-1.5 rounded-xl min-h-[36px] whitespace-nowrap cursor-pointer">
             <Compass className="size-3.5 text-sky-500" />
@@ -460,6 +460,10 @@ function CustomerDetailPage() {
                         <CreditCard className="size-5 text-primary" />
                       ) : event.type === "trip" ? (
                         <Luggage className="size-5 text-sky-500" />
+                      ) : event.type === "proposal" ? (
+                        <FileText className="size-5 text-primary" />
+                      ) : event.type === "contract" ? (
+                        <ShieldCheck className="size-5 text-emerald-500" />
                       ) : event.type === "quote" ? (
                         <Plane className="size-5 text-amber-500" />
                       ) : event.type === "commercial_lead" ? (
@@ -488,7 +492,7 @@ function CustomerDetailPage() {
 
         {/* ── Aba 2: Viagens Confirmadas & Propostas Comerciais ── */}
         <TabsContent value="viagens" className="space-y-4">
-          {(data.confirmedTrips?.length || 0) === 0 && (data.commercialLeads || []).length === 0 ? (
+          {(data.confirmedTrips?.length || 0) === 0 && (data.commercialLeads || []).length === 0 && (data.proposals || []).length === 0 && (data.contracts || []).length === 0 ? (
             <EmptyState
               title="Nenhuma proposta ou viagem vinculada"
               description="Viagens operacionais confirmadas e oportunidades comerciais vinculadas a este cliente aparecerão aqui."
@@ -561,6 +565,138 @@ function CustomerDetailPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Propostas Comerciais Digitais */}
+              {(data.proposals || []).length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 pt-2">
+                    <FileText className="size-3.5 text-primary" />
+                    Propostas Comerciais Digitais ({data.proposals.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {data.proposals.map((prop: any) => {
+                      const totalCents = prop.pricing?.total_price_cents || prop.pricing?.total_cents || 0;
+                      return (
+                        <div
+                          key={prop.id}
+                          className="p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                <FileText className="size-5" />
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="font-bold text-sm text-foreground truncate">
+                                  {prop.title || prop.destination_city || "Proposta Comercial"}
+                                </h4>
+                                <p className="text-[11px] text-muted-foreground font-mono">
+                                  Destino: {prop.destination_city || "Personalizado"}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-[10px] uppercase font-bold shrink-0">
+                              {prop.status}
+                            </Badge>
+                          </div>
+
+                          {totalCents > 0 && (
+                            <div className="bg-muted/30 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground text-[11px]">Total da Proposta</span>
+                              <span className="font-mono font-bold text-foreground">
+                                {formatMoney(totalCents)}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-end gap-2 pt-1">
+                            {prop.public_token && (
+                              <Button asChild size="sm" variant="ghost" className="text-xs gap-1 h-8 font-semibold">
+                                <a href={`/proposta/${prop.public_token}`} target="_blank" rel="noopener noreferrer">
+                                  <span>Visualizar</span>
+                                  <ExternalLink className="size-3" />
+                                </a>
+                              </Button>
+                            )}
+                            <Button asChild size="sm" variant="outline" className="text-xs gap-1.5 h-8 font-semibold">
+                              <Link to="/workspace/turismo/propostas/$id" params={{ id: prop.id }}>
+                                <span>Gerenciar</span>
+                                <ChevronRight className="size-3.5" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Contratos Digitais */}
+              {(data.contracts || []).length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 pt-2">
+                    <ShieldCheck className="size-3.5 text-emerald-500" />
+                    Contratos Digitais Emitidos ({data.contracts.length})
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {data.contracts.map((contract: any) => {
+                      const totalCents = contract.metadata?.total_value_cents || 0;
+                      return (
+                        <div
+                          key={contract.id}
+                          className="p-4 rounded-2xl bg-card border border-border/60 hover:border-border transition-colors flex flex-col justify-between gap-3"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                                <ShieldCheck className="size-5" />
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="font-bold text-sm text-foreground truncate">
+                                  {contract.title || "Contrato de Serviços"}
+                                </h4>
+                                <p className="text-[11px] text-muted-foreground font-mono">
+                                  Cód: {contract.verification_code || contract.id.slice(0, 8)}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge variant={contract.status === "signed" ? "default" : "outline"} className="text-[10px] uppercase font-bold shrink-0">
+                              {contract.status === "signed" ? "Assinado" : contract.status}
+                            </Badge>
+                          </div>
+
+                          {totalCents > 0 && (
+                            <div className="bg-muted/30 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground text-[11px]">Valor Contratual</span>
+                              <span className="font-mono font-bold text-foreground">
+                                {formatMoney(totalCents)}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-end gap-2 pt-1">
+                            {contract.verification_code && (
+                              <Button asChild size="sm" variant="ghost" className="text-xs gap-1 h-8 font-semibold">
+                                <a href={`/contrato/${contract.verification_code}`} target="_blank" rel="noopener noreferrer">
+                                  <span>Via Digital</span>
+                                  <ExternalLink className="size-3" />
+                                </a>
+                              </Button>
+                            )}
+                            <Button asChild size="sm" variant="outline" className="text-xs gap-1.5 h-8 font-semibold">
+                              <Link to="/workspace/turismo/contratos">
+                                <span>Painel</span>
+                                <ChevronRight className="size-3.5" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

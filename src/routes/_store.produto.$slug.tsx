@@ -622,7 +622,24 @@ function ProductContent({
  return;
  }
 
- setIsAdding(true);
+ 
+    // Validação de grupos obrigatórios (Modificadores Gastronômicos & Opções Obrigatórias)
+    if (product.optionGroups && product.optionGroups.length > 0) {
+      for (const og of product.optionGroups) {
+        if (og.isRequired || (og.minSelections && og.minSelections > 0)) {
+          const selection = selectedOptions[og.id];
+          const hasSelected = Array.isArray(selection) 
+            ? selection.length >= (og.minSelections || 1) 
+            : Boolean(selection);
+          if (!hasSelected) {
+            toast.error(`Selecione uma opção obrigatória em "${og.displayName}".`);
+            return;
+          }
+        }
+      }
+    }
+
+    setIsAdding(true);
  try {
  const res = await addToCart({
  data: {

@@ -188,7 +188,7 @@ export default function WorkspaceEventosPage() {
   return (
     <NicheOperationalGuard
       targetNiche="events"
-      toolTitle="Gestão de Eventos"
+      toolTitle="Eventos"
       toolDescription="Controle de ingressos, lotes promocionais, check-in de portaria com QR Code, orçamentos e fornecedores de eventos."
       store={store}
     >
@@ -564,7 +564,7 @@ export default function WorkspaceEventosPage() {
         <WorkspaceDashboardSheet
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
-          title="Painel Executivo da Produtora"
+          title="Eventos"
           subtitle="Taxa de ocupação de público e capacidade dos eventos"
           metrics={metricsItems}
         />

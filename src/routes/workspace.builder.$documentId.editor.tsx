@@ -19,6 +19,10 @@ import { GuidedSectionPicker } from "@/components/admin/builder/guided-section-p
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import type { SectionTemplate } from "@/lib/builder-types";
 import { builderRegistry } from "@/lib/builder-registry";
+import { OmniEditor } from "@/components/builder/OmniEditor";
+import { OmniPageDocument, OmniPageDocumentSchema, createEmptyOmniPage } from "@/components/builder/types";
+import { applyTemplateToPage } from "@/components/builder/templates";
+import { saveOmniPageDocument, publishOmniPageDocument } from "@/services/omni-builder.functions";
 
 export const Route = createFileRoute("/workspace/builder/$documentId/editor")({
  head: () => ({ meta: [{ title: "Editor Visual de Páginas | Workspace Waesy" }] }),
@@ -59,6 +63,45 @@ export const Route = createFileRoute("/workspace/builder/$documentId/editor")({
 function BuilderEditorPage() {
  const initialData = (Route.useLoaderData() as any) || {};
  const navigate = useNavigate();
+ const params = Route.useParams();
+
+ const [editorEngine, setEditorEngine] = useState<"omni" | "classic">(() => {
+   if (initialData?.document?.settings?.omni_page) return "omni";
+   if (!initialData?.nodes || initialData.nodes.length === 0) return "omni";
+   return "omni";
+ });
+
+ const initialOmniDocument: OmniPageDocument = React.useMemo(() => {
+   if (initialData?.document?.settings?.omni_page) {
+     const parsed = OmniPageDocumentSchema.safeParse(initialData.document.settings.omni_page);
+     if (parsed.success) return parsed.data;
+   }
+   const empty = createEmptyOmniPage(
+     initialData?.document?.slug || "pagina",
+     initialData?.document?.title || "Nova Página",
+     (initialData?.document?.document_type as any) || "general"
+   );
+   empty.id = initialData?.document?.id || params.documentId;
+   return applyTemplateToPage(empty, "template_gastronomy");
+ }, [initialData?.document, params.documentId]);
+
+ const handleSaveOmni = async (omniDoc: OmniPageDocument) => {
+   await saveOmniPageDocument({
+     data: {
+       documentId: params.documentId,
+       document: omniDoc,
+     },
+   });
+ };
+
+ const handlePublishOmni = async (omniDoc: OmniPageDocument) => {
+   await publishOmniPageDocument({
+     data: {
+       documentId: params.documentId,
+       document: omniDoc,
+     },
+   });
+ };
 
  const [document] = useState(initialData?.document || null);
  const [version, setVersion] = useState(initialData?.version || null);
@@ -717,8 +760,41 @@ function BuilderEditorPage() {
  const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
  const selectedBlockManifest = selectedNode ? (builderRegistry as any)[selectedNode.block_type] : null;
 
+  if (editorEngine === "omni") {
+    return (
+      <div className="relative w-full h-[100dvh] overflow-hidden">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 hidden sm:flex items-center gap-2 bg-background/90 backdrop-blur-md px-3 py-1 rounded-full border border-border/80 text-[11px] shadow-xs">
+          <span className="font-bold text-foreground">Omni-Block Engine</span>
+          <span className="text-muted-foreground/60">•</span>
+          <button
+            onClick={() => setEditorEngine("classic")}
+            className="text-muted-foreground hover:text-foreground underline decoration-dotted"
+          >
+            Mudar para Modo Clássico
+          </button>
+        </div>
+        <OmniEditor
+          initialDocument={initialOmniDocument}
+          onSave={handleSaveOmni}
+          onPublish={handlePublishOmni}
+          onBack={() => navigate({ to: "/workspace/cms/paginas" })}
+        />
+      </div>
+    );
+  }
+
  return (
- <div className="flex flex-col h-[100dvh] w-screen bg-background overflow-hidden select-none font-sans">
+ <div className="flex flex-col h-[100dvh] w-screen bg-background overflow-hidden select-none font-sans relative">
+ <div className="absolute top-2 left-1/2 -translate-x-1/2 z-50 hidden sm:flex items-center gap-2 bg-background/90 backdrop-blur-md px-3 py-1 rounded-full border border-border/80 text-[11px] shadow-xs">
+   <span className="font-medium text-muted-foreground">Modo Clássico</span>
+   <span className="text-muted-foreground/60">•</span>
+   <button
+     onClick={() => setEditorEngine("omni")}
+     className="font-bold text-primary hover:underline"
+   >
+     Abrir no Omni-Block Engine
+   </button>
+ </div>
  {/* ── 1. BARRA SUPERIOR CANÔNICA (Wix Studio / Editor X Standard) ── */}
  <BuilderTopBar
  document={document}

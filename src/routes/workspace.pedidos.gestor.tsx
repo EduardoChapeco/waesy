@@ -362,7 +362,7 @@ function KDSPage() {
  )}
  <div>
  <div className="flex items-center gap-2">
- <h1 className="text-lg font-black tracking-tight leading-none">Gestor de Pedidos e Expedição</h1>
+ <h1 className="text-lg font-black tracking-tight leading-none">Gestor de Pedidos</h1>
  <Badge variant="outline" className="text-[10px] uppercase font-mono bg-muted text-muted-foreground border-border/80">
  Balcão e Atendimento
  </Badge>

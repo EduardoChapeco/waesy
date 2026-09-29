@@ -556,7 +556,7 @@ function VehicleLayoutEditorPage() {
  (cell?.category === "leito_cama"
  ? "bg-amber-500 text-white border-amber-600 shadow-xs"
  : cell?.category === "leito"
- ? "bg-indigo-600 text-white border-indigo-700 shadow-xs"
+ ? "bg-primary text-primary-foreground border-primary shadow-xs"
  : cell?.category === "semi_leito"
  ? "bg-emerald-600 text-white border-emerald-700 shadow-xs"
  : "bg-primary text-primary-foreground border-primary shadow-xs"),

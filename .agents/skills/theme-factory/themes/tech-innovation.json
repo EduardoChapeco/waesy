@@ -1,0 +1,19 @@
+{
+  "id": "tech-innovation",
+  "name": "Inovação Tecnológica",
+  "description": "Estética tecnológica arrojada, cibernética e de alta energia (Linear / Stripe style).",
+  "colors": {
+    "background": "#020617",
+    "surface": "#0f172a",
+    "primary": "#6366f1",
+    "secondary": "#06b6d4",
+    "accent": "#a855f7",
+    "text": "#f8fafc",
+    "textMuted": "#94a3b8"
+  },
+  "typography": {
+    "headingFont": "Space Grotesk",
+    "bodyFont": "JetBrains Mono",
+    "codeFont": "JetBrains Mono"
+  }
+}

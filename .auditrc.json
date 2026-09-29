@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "waesy-audit-config",
+  "version": "1.0.0",
+  "routesDir": "src/routes",
+  "componentsDir": "src/components",
+  "servicesDir": "src/services",
+  "libDir": "src/lib",
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/legacy_quarantine/**"
+  ],
+  "thresholds": {
+    "maxOrphanComponents": 0,
+    "maxBrokenChains": 0,
+    "maxEmptyHandlers": 0,
+    "maxUnusedTables": 0
+  },
+  "allowlist": [
+    {
+      "pattern": "src/routes/__root.tsx",
+      "reason": "Root shell de roteamento TanStack",
+      "date": "2026-09-29"
+    }
+  ]
+}

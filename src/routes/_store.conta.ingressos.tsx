@@ -59,36 +59,17 @@ function CustomerTicketsErrorComponent({ error, reset }: { error: any; reset: ()
 // ─── QR Display Component ─────────────────────────────────────────────────────
 
 function QrDisplay({ code }: { code: string }) {
-  // Gera uma representação visual simples do QR como grid de blocos
-  // Em produção, usar qrcode.react ou similar
-  const size = 8;
-  const hash = code.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=10&data=${encodeURIComponent(code)}`;
 
   return (
-    <div className="inline-block p-2 bg-white border border-border/40 rounded-xl">
-      <div
-        className="grid gap-[2px]"
-        style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
-        aria-label={`QR Code: ${code}`}
-      >
-        {Array.from({ length: size * size }).map((_, i) => {
-          // Padrão de QR simplificado com bordas canônicas
-          const row = Math.floor(i / size);
-          const col = i % size;
-          const isBorder =
-            (row < 2 && col < 2) ||
-            (row < 2 && col >= size - 2) ||
-            (row >= size - 2 && col < 2);
-          const isPattern = isBorder || ((hash + i * 7) % 3 === 0);
-          return (
-            <div
-              key={i}
-              className={`size-2.5 rounded-[1px] ${isPattern ? "bg-foreground" : "bg-transparent"}`}
-            />
-          );
-        })}
-      </div>
-      <p className="text-center text-[9px] font-mono font-bold text-foreground mt-1.5 tracking-widest">
+    <div className="inline-flex flex-col items-center p-2.5 bg-white border border-border/40 rounded-2xl shadow-xs">
+      <img
+        src={qrUrl}
+        alt={`QR Code para validação do ingresso ${code}`}
+        className="size-28 sm:size-32 object-contain rounded-lg"
+        loading="lazy"
+      />
+      <p className="text-center text-[10px] font-mono font-bold text-neutral-900 mt-2 tracking-widest uppercase">
         {code}
       </p>
     </div>

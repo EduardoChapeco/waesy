@@ -404,7 +404,7 @@ export default function WorkspaceVouchersPage() {
       <WorkspaceDashboardSheet
         isOpen={isMetricsOpen}
         onClose={() => setIsMetricsOpen(false)}
-        title="Painel de Emissão de Vouchers"
+        title="Vouchers"
         subtitle="Auditoria de cartões de embarque e confirmações"
         metrics={metricsItems}
       />

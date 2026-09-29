@@ -1498,7 +1498,7 @@ export function UnifiedNewProductPage() {
  variant={grp.is_required ? "default" : "secondary"}
  className={cn(
  "text-[9px] h-4 font-semibold",
- grp.is_required ? "bg-amber-600 text-white" : "",
+ grp.is_required ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
  )}
  >
  {grp.is_required ? "Obrigatório" : "Opcional"}

@@ -78,7 +78,7 @@ function CashRegisterError({ error }: { error: Error }) {
 
 const CAIXA_TOUR_SLIDES: TourSlide[] = [
   {
-    title: "Gestão de Turnos de Caixa",
+    title: "Turnos de Caixa",
     description: "Abra turnos com fundo de troco registrado. Todo lançamento em dinheiro, Pix ou cartão fica auditado por operador.",
     icon: Banknote,
     highlightBadge: "Turnos Auditados",
@@ -1279,7 +1279,7 @@ function CashRegisterManagerPage() {
       {/* ── ONBOARDING GUIADO DO CAIXA ── */}
       <ModuleTourModal
         moduleId="caixa"
-        moduleName="Controle de Caixa"
+        moduleName="Caixa"
         slides={CAIXA_TOUR_SLIDES}
         isOpen={isTourOpen}
         onOpenChange={setIsTourOpen}

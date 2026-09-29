@@ -473,7 +473,7 @@ function AdminConvitePage() {
                             type="button"
                             disabled={drawingRaffleId === raffle.id || raffle.totalTickets === 0}
                             onClick={() => setRaffleToDraw(raffle)}
-                            className="h-9 rounded-xl text-xs font-mono font-bold gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+                            className="h-9 rounded-xl text-xs font-mono font-bold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
                             {drawingRaffleId === raffle.id ? (
                               <Loader2 className="size-3.5 animate-spin" />
@@ -876,7 +876,7 @@ function AdminConvitePage() {
                 confirmDrawRaffle();
               }}
               disabled={Boolean(drawingRaffleId)}
-              className="h-10 px-4 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white"
+              className="h-10 px-4 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {drawingRaffleId ? "Apurando..." : "Confirmar e Sortear"}
             </AlertDialogAction>

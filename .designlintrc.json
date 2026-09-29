@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "waesy-design-lint-config",
+  "version": "1.0.0",
+  "include": [
+    "src/**/*.{tsx,ts,jsx,js,css}"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/legacy_quarantine/**"
+  ],
+  "thresholds": {
+    "maxP0": 0,
+    "maxP1": 0,
+    "touchTargetMinSizePx": 44,
+    "maxAnimationDurationMs": 300,
+    "minTextContrastRatio": 4.5,
+    "minControlContrastRatio": 3.0,
+    "maxHeadingWords": 6,
+    "maxButtonWords": 3
+  },
+  "rules": {
+    "DL-01": { "severity": "P1", "enabled": true },
+    "DL-02": { "severity": "P1", "enabled": true },
+    "DL-03": { "severity": "P1", "enabled": true },
+    "DL-04": { "severity": "P0", "enabled": true },
+    "DL-05": { "severity": "P1", "enabled": true },
+    "DL-06": { "severity": "P2", "enabled": true },
+    "DL-07": { "severity": "P2", "enabled": true },
+    "DL-08": { "severity": "P2", "enabled": true },
+    "DL-09": { "severity": "P2", "enabled": true },
+    "DL-10": { "severity": "P2", "enabled": true },
+    "DL-11": { "severity": "P1", "enabled": true },
+    "DL-12": { "severity": "P1", "enabled": true },
+    "DL-13": { "severity": "P1", "enabled": true },
+    "DL-14": { "severity": "P1", "enabled": true },
+    "DL-15": { "severity": "P0", "enabled": true },
+    "DL-16": { "severity": "P0", "enabled": true },
+    "DL-17": { "severity": "P0", "enabled": true },
+    "DL-18": { "severity": "P1", "enabled": true },
+    "DL-19": { "severity": "P2", "enabled": true },
+    "DL-20": { "severity": "P2", "enabled": true },
+    "DL-21": { "severity": "P3", "enabled": true },
+    "DL-22": { "severity": "P2", "enabled": true },
+    "DL-23": { "severity": "P2", "enabled": true },
+    "DL-24": { "severity": "P2", "enabled": true },
+    "DL-25": { "severity": "P2", "enabled": true },
+    "DL-26": { "severity": "P2", "enabled": true },
+    "DL-27": { "severity": "P3", "enabled": true },
+    "DL-28": { "severity": "P1", "enabled": true },
+    "DL-29": { "severity": "P2", "enabled": true },
+    "DL-30": { "severity": "P3", "enabled": true }
+  },
+  "allowlist": [
+    {
+      "id": "DL-01",
+      "file": "src/styles.css",
+      "reason": "Declaração base de paletas cromáticas e tokens de temas canônicos em styles.css",
+      "date": "2026-09-29",
+      "approvedBy": "design-system-architect"
+    },
+    {
+      "id": "DL-01",
+      "file": "src/lib/theme-factory.ts",
+      "reason": "Definição de códigos hexadecimais dos 10 temas canônicos e motor de luminância",
+      "date": "2026-09-29",
+      "approvedBy": "design-system-architect"
+    }
+  ]
+}

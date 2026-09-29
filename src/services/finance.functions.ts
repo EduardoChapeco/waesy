@@ -15,7 +15,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
-import { getServerIdentity } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
 
 // ---------------------------------------------------------------------------
 // Financial transaction types (mirrors DB enum)
@@ -71,8 +71,9 @@ export async function _listFinancialTransactions(filters: {
  offset?: number;
 }) {
  const db = getServerClient();
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("Acesso não autorizado.");
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "finance"]);
+ const store_id = identity.store_id;
 
  let query = db
  .from("financial_transactions")
@@ -107,8 +108,9 @@ export async function _getFinancialSummary(filters: {
  endDate: string;
 }): Promise<FinancialSummaryDTO> {
  const db = getServerClient();
- const { store_id } = await getServerIdentity();
- if (!store_id) throw new Error("Acesso não autorizado.");
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "finance"]);
+ const store_id = identity.store_id;
 
  const { data, error } = await db
  .from("financial_transactions")
@@ -171,8 +173,10 @@ export async function _createManualTransaction(input: {
  }
 
  const db = getServerClient();
- const { id: userId, store_id } = await getServerIdentity();
- if (!store_id) throw new Error("Acesso não autorizado.");
+ const identity = await getServerIdentity();
+ assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "finance"]);
+ const userId = identity.id;
+ const store_id = identity.store_id;
 
  // For expenses and withdrawals, ensure amount is stored as negative
  const amountCents =
@@ -296,7 +300,8 @@ export const getChannelFinancialSummary = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ChannelFinancialSummaryDTO[]> => {
     try {
       const identity = await getServerIdentity();
-      if (!identity.store_id) return [];
+ assertStoreAccess(identity, ["owner", "admin", "proprietario", "manager", "gerente", "finance"]);
+ if (!identity.store_id) return [];
 
       const supabase = getServerClient();
 

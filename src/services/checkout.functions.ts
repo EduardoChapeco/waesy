@@ -236,6 +236,9 @@ const CheckoutSchema = z
  utensilsRequested: z.boolean().optional(),
  itemNotes: z.record(z.string()).optional(),
  checkoutNicheMetadata: z.record(z.unknown()).optional(),
+  deliveryToDoor: z.boolean().optional(),
+  doorDeliveryFeeCents: z.number().int().optional(),
+  deliveryLocationType: z.enum(["reception", "apartment_door", "direct_hand", "apartment_reception"]).optional(),
  })
  .superRefine((val, ctx) => {
  if (val.shippingMethod === "manual_table" || val.shippingMethod === "provider") {
@@ -417,6 +420,18 @@ export const processCheckout = createServerFn({ method: "POST" })
         };
         if (params.utensilsRequested !== undefined) {
           nicheMeta.utensils_requested = params.utensilsRequested;
+        }
+        if (params.deliveryToDoor !== undefined) {
+          updatePayload.delivery_to_door = params.deliveryToDoor;
+          updatePayload.door_delivery_fee_cents = params.doorDeliveryFeeCents || 0;
+          updatePayload.delivery_location_type = params.deliveryLocationType || (params.deliveryToDoor ? "apartment_door" : "apartment_reception");
+          if (params.doorDeliveryFeeCents && params.doorDeliveryFeeCents > 0) {
+            const { data: curOrd } = await db.from("orders").select("total_cents, shipping_cents").eq("id", result.orderId).maybeSingle();
+            if (curOrd) {
+              updatePayload.total_cents = (curOrd.total_cents || 0) + params.doorDeliveryFeeCents;
+              updatePayload.shipping_cents = (curOrd.shipping_cents || 0) + params.doorDeliveryFeeCents;
+            }
+          }
         }
         updatePayload.checkout_niche_metadata = nicheMeta;
 

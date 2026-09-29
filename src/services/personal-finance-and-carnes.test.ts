@@ -172,5 +172,35 @@ describe("Personal Finance & Carnê Digital Bilateral Test Suite (Ciclo 89)", ()
         expect(result.data.discountCents).toBe(500);
       }
     });
+
+    it("deve validar régua de cobrança automatizada via WhatsApp e PIX Copia e Cola", () => {
+      const reminderInputSchema = z.object({
+        installmentId: z.string().uuid(),
+        template: z.enum(["friendly", "due_warning", "overdue_discount", "custom"]).default("friendly"),
+        customMessage: z.string().optional(),
+        discountOfferedPercent: z.number().min(0).max(100).optional(),
+      });
+
+      const validFriendly = reminderInputSchema.safeParse({
+        installmentId: "e0000000-0000-0000-0000-000000000001",
+        template: "friendly",
+      });
+      expect(validFriendly.success).toBe(true);
+
+      const validDiscount = reminderInputSchema.safeParse({
+        installmentId: "e0000000-0000-0000-0000-000000000001",
+        template: "overdue_discount",
+        discountOfferedPercent: 15,
+      });
+      expect(validDiscount.success).toBe(true);
+
+      // Validação da montagem de URL do WhatsApp
+      const cleanPhone = "49999998888";
+      const message = "Olá! Lembrando sobre o vencimento da sua parcela.";
+      const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
+      expect(whatsappUrl).toContain("https://wa.me/5549999998888");
+      expect(whatsappUrl).toContain("Ol%C3%A1");
+    });
   });
 });
+

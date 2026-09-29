@@ -371,7 +371,7 @@ function QuoteDetailPage() {
  <Button
  onClick={() => handleApprove.mutate()}
  disabled={handleApprove.isPending}
- className="w-full h-10 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer"
+ className="w-full h-10 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Aprovar e Fechar Venda</span>

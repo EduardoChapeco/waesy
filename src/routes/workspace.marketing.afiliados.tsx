@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/marketing/afiliados")({
   head: () => ({
-    meta: [{ title: "Gestão de Afiliados e Saques PIX | Workspace" }],
+    meta: [{ title: "Afiliados" }],
   }),
   loader: async () => {
     try {
@@ -97,7 +97,7 @@ function WorkspaceAffiliatesPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
         eyebrow="Marketing & Comunidade"
-        title="Gestão de Afiliados"
+        title="Afiliados"
         description="Acompanhe solicitações de repasse, aprove saques de comissão de criadores e audite comprovantes bancários."
       />
 
@@ -335,7 +335,7 @@ function WorkspaceAffiliatesPage() {
                       notes: adminNotes.trim() || undefined,
                     })
                   }
-                  className="h-10 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                  className="h-10 rounded-xl font-semibold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                 >
                   <Check className="h-4 w-4 mr-1" />
                   {processMutation.isPending ? "Processando..." : "Confirmar Quitação"}

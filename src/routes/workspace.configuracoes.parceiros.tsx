@@ -127,9 +127,9 @@ function ConfigParceirosPage() {
       {/* ── 1. Meu Perfil de Parceiro & Afiliado ── */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Meu Perfil de Parceiro e Divulgação</h1>
+          <h1 className="text-lg font-semibold text-foreground">Parceiros</h1>
           <p className="text-sm text-muted-foreground">
-            Gerencie seu link de divulgação e acompanhe seus ganhos diretos com a plataforma.
+            Link de divulgação e comissões da conta.
           </p>
         </div>
 
@@ -139,10 +139,9 @@ function ConfigParceirosPage() {
               <Link2 className="size-5 text-primary" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Link Mágico de Indicação</h2>
+              <h2 className="font-semibold text-foreground">Link de Indicação</h2>
               <p className="text-xs text-muted-foreground mt-1 mb-4 leading-relaxed">
-                Compartilhe este link com seus clientes. Todas as contratações realizadas através dele
-                gerarão comissões automáticas para sua conta.
+                Todas as contratações realizadas através deste link geram comissões registradas no balanço.
               </p>
               <div className="flex gap-2">
                 <Button

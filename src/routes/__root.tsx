@@ -207,6 +207,21 @@ function RootShell({ children }: { children: ReactNode }) {
         {/* Script anti-FOUC: aplica classe .dark/.light antes do primeiro paint */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 
+        {/* Speculation Rules API para navegações instantâneas (Skill web-performance) */}
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prerender: [
+                {
+                  where: { href_matches: "/*" },
+                  eagerness: "moderate",
+                },
+              ],
+            }),
+          }}
+        />
+
         {/* Inject Google Analytics if configured */}
         {gaPixel && (
           <>
@@ -277,6 +292,9 @@ function RootShell({ children }: { children: ReactNode }) {
         )}
       </head>
  <body className="w-full max-w-full overflow-x-hidden min-h-[100dvh] antialiased">
+        <a href="#main-content" className="skip-link">
+          Pular para o conteúdo principal
+        </a>
  {children}
  <CookieBanner />
  <Scripts />

@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 
 export interface FrostedCardProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * Nível de intensidade do efeito de vidro fosco:
-   * - "subtle": leve blur (backdrop-blur-sm), superfície translúcida suave.
-   * - "standard": blur clássico Apple HIG (backdrop-blur-md), equilíbrio perfeito de contraste.
-   * - "deep": blur pronunciado (backdrop-blur-xl), ideal para elementos flutuantes sobre mídia densa.
+   * Nivel de contraste da superficie:
+   * - "subtle": superficie suave (bg-muted/40).
+   * - "standard": cartao solido padrao (bg-card).
+   * - "deep": cartao solido com sombra minima de elevacao (bg-card shadow-sm).
    */
   intensity?: "subtle" | "standard" | "deep";
   /**
@@ -16,29 +16,28 @@ export interface FrostedCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * 🏛️ FrostedCard — Superfície de Vidro Fosco Canônica (Spatial UI & Apple HIG)
+ * FrostedCard — Superficie Canonica de Cartao Silencioso
  *
- * Características:
- * - Vidro Fosco Calibrado: backdrop-blur adaptativo com fundo translúcido nativo.
- * - Anti-Hardcode: Usa tokens de superfície `bg-card/80` e `border-border/40`.
- * - Sombra Fisiológica: Sombras leves e suaves que não poluem a interface.
- * - Cantos Suaves: Geometria rounded-2xl (squircle) para ergonomia visual.
+ * Caracteristicas:
+ * - Superficie Solida e Calibrada: elimina efeito de vidro/blur conforme diretriz de silencio visual.
+ * - Anti-Hardcode: Usa tokens semanticos `bg-card` e `border-border/70`.
+ * - Geometria Canonica: rounded-2xl para ergonomia visual.
  */
 const FrostedCard = React.forwardRef<HTMLDivElement, FrostedCardProps>(
   ({ className, intensity = "standard", borderless = false, ...props }, ref) => {
     const intensityMap = {
-      subtle: "backdrop-blur-sm bg-card/60 dark:bg-card/50",
-      standard: "backdrop-blur-md bg-card/80 dark:bg-card/70",
-      deep: "backdrop-blur-xl bg-card/90 dark:bg-card/85",
+      subtle: "bg-muted/40",
+      standard: "bg-card",
+      deep: "bg-card shadow-sm",
     };
 
     return (
       <div
         ref={ref}
         className={cn(
-          "rounded-2xl text-card-foreground shadow-sm transition-all",
+          "rounded-2xl text-card-foreground transition-all",
           intensityMap[intensity],
-          !borderless && "border border-border/40 dark:border-border/30",
+          !borderless && "border border-border/70",
           className
         )}
         {...props}

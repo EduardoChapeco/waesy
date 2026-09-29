@@ -1,16 +1,24 @@
 import React from "react";
-import { HeroBlockData } from "../types";
+import { HeroBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { ArrowRight, Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface HeroMinimalSplitProps {
+  id?: string;
   data: HeroBlockData;
+  styling?: OmniBlockStyling;
   className?: string;
 }
 
-export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ data, className = "" }) => {
+export const HeroMinimalSplit: React.FC<HeroMinimalSplitProps> = ({ id, data, styling, className = "" }) => {
+  const sectionStyle = getSectionStyle(styling);
   return (
-    <section className={`relative w-full bg-background text-foreground py-20 lg:py-28 overflow-hidden border-b border-border/40 ${className}`}>
+    <section
+      id={id}
+      style={sectionStyle.style}
+      className={`relative w-full bg-background text-foreground overflow-hidden border-b border-border/40 ${sectionStyle.className} ${className}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           

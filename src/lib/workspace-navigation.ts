@@ -53,6 +53,7 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
     { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
     { path: "/workspace/simlab/focus-group", label: "SimLab", icon: Users },
     { path: "/workspace/inteligencia/radar", label: "Radar", icon: Target },
+    { path: "/workspace/simulacao", label: "Simulações", icon: Sliders },
     { path: "/workspace/marketing/canvas-pecados", label: "Canvas", icon: Flame },
     { path: "/workspace/onboarding/revisao", label: "Catálogo Mestre", icon: Layers },
   ],
@@ -94,6 +95,7 @@ const GROUP_GASTRO_ORDERS: NavGroup = {
     { path: "/workspace/pedidos/gestor", label: "Gestor KDS", icon: ClipboardList },
     { path: "/workspace/pdv/comandas", label: "Mesas", icon: UtensilsCrossed },
     { path: "/workspace/pdv/cozinha", label: "Cozinha", icon: ChefHat },
+    { path: "/workspace/relatorios/gastronomia", label: "Tempo de Preparo", icon: Clock },
     { path: "/workspace/reservas", label: "Reservas", icon: Calendar },
     { path: "/workspace/pedidos", label: "Histórico", icon: ShoppingBag },
     { path: "/workspace/pdv", label: "PDV", icon: Store },
@@ -110,11 +112,13 @@ const GROUP_RETAIL_CATALOG: NavGroup = {
   section: "niche",
   items: [
     { path: "/workspace/catalogo/produtos", label: "Produtos", icon: Package },
+    { path: "/workspace/catalogo/tipos", label: "Tipos", icon: Layers },
     { path: "/workspace/catalogo/categorias", label: "Categorias", icon: Tags },
     { path: "/workspace/catalogo/colecoes", label: "Coleções", icon: Sliders },
     { path: "/workspace/catalogo/atributos", label: "Grades", icon: Boxes },
     { path: "/workspace/estoque", label: "Estoque", icon: Boxes },
     { path: "/workspace/estoque/alertas", label: "Reposição", icon: AlertTriangle },
+    { path: "/workspace/estoque/movimentos", label: "Movimentações", icon: ArrowDownUp },
   ],
 };
 
@@ -313,7 +317,9 @@ const GROUP_JOBS: NavGroup = {
   icon: Briefcase,
   section: "niche",
   items: [
-    { path: "/workspace/empregos/candidatos", label: "Candidaturas", icon: Briefcase },
+    { path: "/workspace/empregos", label: "Vagas", icon: Briefcase },
+    { path: "/workspace/empregos/candidatos", label: "Candidaturas", icon: Users },
+    { path: "/workspace/curriculo/editor", label: "Currículos", icon: FileText },
     { path: "/workspace/clientes", label: "Talentos", icon: Users },
     { path: "/workspace/marketing/vitrine", label: "Carreiras", icon: Eye },
   ],
@@ -444,6 +450,7 @@ const GROUP_COMMERCIAL_SALES: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/clientes", label: "Clientes", icon: Users },
+    { path: "/workspace/crm", label: "CRM", icon: Kanban },
     { path: "/workspace/comercial", label: "Funil", icon: Kanban },
     { path: "/workspace/atendimento", label: "Conversas", icon: MessageSquare },
     { path: "/workspace/orcamentos", label: "Orçamentos", icon: FileText },
@@ -461,18 +468,29 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
     { path: "/workspace/marketing/vitrine", label: "Vitrine", icon: LayoutGrid },
     { path: "/workspace/marketing/brand-kit", label: "Brand Kit", icon: Palette },
     { path: "/workspace/cms/paginas", label: "Páginas", icon: FileText },
+    { path: "/workspace/cms/stories", label: "Stories", icon: Flame },
+    { path: "/workspace/marketing/stories", label: "Stories de Marketing", icon: Flame },
+    { path: "/workspace/cms/avaliacoes", label: "Avaliações", icon: Star },
+    { path: "/workspace/cms/navegacao", label: "Navegação", icon: Navigation },
+    { path: "/workspace/marketing/hotpages", label: "Hotpages", icon: LayoutTemplate },
+    { path: "/workspace/marketing/studio", label: "Studio", icon: Palette },
     { path: "/workspace/cms/bio", label: "Link Bio", icon: Link2 },
     { path: "/workspace/marketing/banners", label: "Banners", icon: ImageIcon },
     { path: "/workspace/marketing/encartes", label: "Encartes", icon: Flame },
     { path: "/workspace/marketing/carrinhos", label: "Abandonos", icon: ShoppingCart },
     { path: "/workspace/marketing/promocoes", label: "Promoções", icon: Flame },
     { path: "/workspace/marketing/concursos", label: "Sorteios", icon: Ticket },
+    { path: "/workspace/marketing/afiliados", label: "Afiliados", icon: Coins },
+    { path: "/workspace/marketing/patrocinadores", label: "Patrocinadores", icon: Megaphone },
     { path: "/workspace/marketing/fidelidade", label: "Fidelidade", icon: Award },
     { path: "/workspace/marketing/gift-cards", label: "Gift Cards", icon: Gift },
     { path: "/workspace/marketing/pixels", label: "Pixels", icon: Target },
+    { path: "/workspace/marketing/telemetria", label: "Telemetria", icon: Target },
+    { path: "/workspace/marketing/formularios", label: "Formulários", icon: FileText },
+    { path: "/workspace/marketing/publicacoes", label: "Publicações", icon: Newspaper },
+    { path: "/workspace/marketing/briefing", label: "Briefing IA", icon: Bot },
     { path: "/workspace/marketing/anuncios", label: "Anúncios", icon: Megaphone },
     { path: "/workspace/marketing/social", label: "Social", icon: Share2 },
-    { path: "/workspace/avaliacoes", label: "Avaliações", icon: Star },
   ],
 };
 
@@ -499,16 +517,21 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/financeiro/caixa", label: "Caixa", icon: Banknote },
+    { path: "/workspace/financeiro/caixa/lancamentos", label: "Lançamentos", icon: Receipt },
+    { path: "/workspace/financeiro/caixa/turnos", label: "Turnos", icon: Clock },
     { path: "/workspace/relatorios/metas", label: "Metas", icon: Target },
     { path: "/workspace/financeiro/pagamentos", label: "Repasses", icon: DollarSign },
     { path: "/workspace/financeiro/contas-pagar", label: "Contas a Pagar", icon: Receipt },
     { path: "/workspace/financeiro/recebiveis", label: "Recebíveis", icon: Receipt },
     { path: "/workspace/financeiro/faturas", label: "Planos", icon: Receipt },
+    { path: "/workspace/financeiro/comprovantes", label: "Comprovantes", icon: ShieldCheck },
     { path: "/workspace/financeiro/relatorios-canal", label: "DRE", icon: FileSpreadsheet },
     { path: "/workspace/financeiro/afiliados", label: "Afiliados", icon: Coins },
+    { path: "/workspace/tokens", label: "Tokens", icon: Coins },
     { path: "/workspace/financeiro/funcionarios", label: "Folha", icon: Users },
   ],
 };
+
 
 const GROUP_FISCAL_ACCOUNTING: NavGroup = {
   id: "fiscal-accounting",
@@ -519,6 +542,7 @@ const GROUP_FISCAL_ACCOUNTING: NavGroup = {
     { path: "/workspace/fiscal/nfe", label: "Notas Fiscais", icon: Receipt },
     { path: "/workspace/contador", label: "Contabilidade", icon: FileSpreadsheet },
     { path: "/workspace/contratos", label: "Contratos", icon: FileText },
+    { path: "/workspace/licitacoes", label: "Licitações B2G", icon: Scale },
   ],
 };
 
@@ -549,6 +573,19 @@ const GROUP_DONATIONS_CAPTACAO: NavGroup = {
 
 import { getNicheSemantics } from "./niche-semantics";
 
+
+const GROUP_GOVERNANCE_AUDIT: NavGroup = {
+  id: "governance-audit",
+  label: "Conformidade",
+  icon: ShieldCheck,
+  section: "corporate",
+  items: [
+    { path: "/workspace/moderacao", label: "Moderação", icon: ShieldAlert },
+    { path: "/workspace/moderacao/kyc", label: "Auditoria KYC", icon: ShieldCheck },
+    { path: "/workspace/qualidade", label: "Qualidade", icon: Award },
+  ],
+};
+
 const GROUP_SETTINGS: NavGroup = {
   id: "settings",
   label: "Ajustes",
@@ -556,10 +593,13 @@ const GROUP_SETTINGS: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/configuracoes", label: "Dados da Loja", icon: Settings },
+    { path: "/workspace/configuracoes/pwa", label: "Aplicativo PWA", icon: Smartphone },
+    { path: "/workspace/configuracoes/privacidade-loja", label: "Privacidade", icon: Lock },
     { path: "/workspace/configuracoes/sessoes", label: "Auditoria", icon: ShieldCheck },
     { path: "/workspace/integracoes/marketplaces", label: "Canais", icon: Globe },
     { path: "/workspace/configuracoes/inteligencia-artificial", label: "Automação", icon: Bot },
     { path: "/workspace/configuracoes/integracoes", label: "Integrações", icon: Link2 },
+    { path: "/workspace/automacoes", label: "Automações", icon: Zap },
     { path: "/workspace/configuracoes/parceiros", label: "Fornecedores", icon: Building2 },
   ],
 };
@@ -1010,6 +1050,10 @@ export function resolveWorkspaceNavigation(
       "/workspace/configuracoes/parceiros",
       "/workspace/configuracoes/tokens",
       "/workspace/faturamento/tokens",
+      "/workspace/financeiro/dre",
+      "/workspace/financeiro/fechamento",
+      "/workspace/configuracoes/fiscal",
+      "/workspace/configuracoes/pagamentos",
     ];
 
     return resolvedGroups
@@ -1109,4 +1153,48 @@ export function resolveWorkspaceNavigation(
   }
 
   return resolvedGroups;
+}
+
+
+import { getNicheTranslation } from "./niche-dictionary";
+
+/**
+ * The Semantic Sidebar Engine (Waesy Omni-Niche)
+ *
+ * Transforma dinamicamente o sidebar de navegação de acordo com o Nicho Ativo.
+ * Se um módulo não pertence ao nicho da empresa, ele DESAPARECE completamente.
+ * Adapta os rótulos de menu usando o Dicionário Universal de Nichos.
+ */
+export function getSidebarConfig(
+  nicheIdOrStoreData: string | any,
+  options?: { isMasterMode?: boolean; additionalModules?: string[]; userRole?: string }
+): NavGroup[] {
+  let storeContext = typeof nicheIdOrStoreData === "string"
+    ? { segment: nicheIdOrStoreData, settings: { segment: nicheIdOrStoreData } }
+    : nicheIdOrStoreData;
+
+  const groups = resolveWorkspaceNavigation(storeContext, options);
+  const { t } = getNicheTranslation(storeContext);
+
+  // Aplica metamorfose semântica nos rótulos de navegação
+  return groups.map((group) => {
+    // Traduz o título do grupo se for catálogo, vendas ou operações
+    let groupLabel = group.label;
+    if (group.id.includes("catalog")) groupLabel = t("catalog");
+    if (group.id.includes("sales") || group.id.includes("orders")) groupLabel = t("orders");
+
+    const items = group.items.map((item) => {
+      let label = item.label;
+      if (item.path === "/workspace/catalogo/produtos") label = t("items");
+      if (item.path === "/workspace/catalogo/categorias") label = t("categories");
+      if (item.path === "/workspace/catalogo/atributos") label = t("modifiers");
+      if (item.path === "/workspace/pedidos/gestor") label = t("kds");
+      if (item.path === "/workspace/pedidos") label = t("orders");
+      if (item.path === "/workspace/clientes") label = t("clients");
+      if (item.path === "/workspace/estoque") label = t("stock");
+      return { ...item, label };
+    });
+
+    return { ...group, label: groupLabel, items };
+  });
 }

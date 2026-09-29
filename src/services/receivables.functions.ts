@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient } from "@/lib/supabase";
 import { getIdentity } from "./identity.functions";
-import { getServerIdentity, assertStoreAccess, requirePlatformAdmin } from "@/lib/server-access";
+import { getServerIdentity, assertStoreAccess, assertManagerAccess, requirePlatformAdmin } from "@/lib/server-access";
 import { recordLedgerEntryCore } from "@/services/immutable-ledger.functions";
 
 // ==============================================================================
@@ -438,7 +438,7 @@ export const approveInstallmentPayment = createServerFn({ method: "POST" })
 
     const rec = inst.receivable as any;
     if (rec.store_id) {
-      assertStoreAccess(serverIdentity, rec.store_id);
+      assertManagerAccess(serverIdentity, rec.store_id);
     } else if (rec.creditor_id !== serverIdentity.id) {
       throw new Error("Apenas o credor ou a equipe da loja pode aprovar a conciliação.");
     }
@@ -542,7 +542,7 @@ export const rejectInstallmentPayment = createServerFn({ method: "POST" })
 
     const rec = inst.receivable as any;
     if (rec.store_id) {
-      assertStoreAccess(serverIdentity, rec.store_id);
+      assertManagerAccess(serverIdentity, rec.store_id);
     } else if (rec.creditor_id !== serverIdentity.id) {
       throw new Error("Acesso negado.");
     }
@@ -612,7 +612,7 @@ export const adjustInstallmentAmount = createServerFn({ method: "POST" })
 
     const rec = inst.receivable as any;
     if (rec.store_id) {
-      assertStoreAccess(serverIdentity, rec.store_id);
+      assertManagerAccess(serverIdentity, rec.store_id);
     } else if (rec.creditor_id !== serverIdentity.id) {
       throw new Error("Acesso negado.");
     }
@@ -730,9 +730,114 @@ export const sendMassBillingReminders = createServerFn({ method: "POST" })
 
     if (notificationsToInsert.length > 0) {
       await supabase.from("notifications").insert(notificationsToInsert);
+      await supabase
+        .from("receivable_installments")
+        .update({
+          last_reminder_sent_at: new Date().toISOString(),
+        })
+        .in("id", input.installmentIds);
     }
 
     return { success: true, sentCount };
+  });
+
+export const generateInstallmentWhatsAppReminder = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      installmentId: z.string().uuid(),
+      template: z.enum(["friendly", "due_warning", "overdue_discount", "custom"]).default("friendly"),
+      customMessage: z.string().optional(),
+      discountOfferedPercent: z.number().min(0).max(100).optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const supabase = getServerClient();
+    const serverIdentity = await getServerIdentity();
+    if (!serverIdentity?.id) throw new Error("Não autenticado");
+
+    const { data: inst, error } = await supabase
+      .from("receivable_installments")
+      .select(`
+        id, installment_number, due_date, status, late_days,
+        final_amount_cents, original_amount_cents, amount_cents, pix_copy_paste,
+        reminders_sent_count,
+        receivable:receivable_id(
+          id, title, store_id, creditor_id, debtor_id,
+          store:store_id(name, phone),
+          debtor:debtor_id(id, full_name, phone)
+        )
+      `)
+      .eq("id", input.installmentId)
+      .single();
+
+    if (error || !inst) throw new Error("Parcela não encontrada.");
+
+    const rec = inst.receivable as any;
+    const debtor = rec?.debtor;
+    const store = rec?.store;
+
+    const clientName = debtor?.full_name || "Cliente";
+    const rawPhone = debtor?.phone || "";
+    const cleanPhone = rawPhone.replace(/\D/g, "");
+
+    const finalAmount = Number(inst.final_amount_cents || inst.original_amount_cents || inst.amount_cents || 0);
+    const amountFormatted = (finalAmount / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const dueDateFormatted = new Date(inst.due_date).toLocaleDateString("pt-BR");
+
+    const storeName = store?.name || "Nossa Loja";
+    const storePixKey = store?.phone || "";
+
+    let messageText = "";
+    if (input.template === "friendly") {
+      messageText = `Olá, *${clientName}*! Tudo bem?\n\nPassando para lembrar que a Parcela *${inst.installment_number}* de *"${rec.title}"* no valor de *${amountFormatted}* vence em *${dueDateFormatted}*.\n\n` +
+        (storePixKey ? `🔑 *Chave PIX da Loja:* \`${storePixKey}\`\n\n` : "") +
+        `📱 Você pode acessar e anexar seu comprovante pelo seu Carnê Digital:\nhttps://waesy.com.br/conta/carnes\n\nQualquer dúvida estamos à disposição! — *${storeName}*`;
+    } else if (input.template === "due_warning") {
+      messageText = `Olá, *${clientName}*!\n\nAviso importante: a Parcela *${inst.installment_number}* de *"${rec.title}"* no valor de *${amountFormatted}* venceu/está com vencimento em *${dueDateFormatted}*.\n\n` +
+        `Para regularizar sem juros adicionais e manter sua conta em dia, utilize a chave PIX ou envie seu comprovante pelo aplicativo:\n` +
+        (storePixKey ? `🔑 *Chave PIX:* \`${storePixKey}\`\n` : "") +
+        `https://waesy.com.br/conta/carnes\n\nObrigado! — *${storeName}*`;
+    } else if (input.template === "overdue_discount") {
+      const disc = input.discountOfferedPercent || 10;
+      messageText = `Olá, *${clientName}*! Condição especial de quitação:\n\nA *${storeName}* preparou um desconto exclusivo de *${disc}%* para a quitação da Parcela *${inst.installment_number}* de *"${rec.title}"* hoje!\n\n` +
+        (storePixKey ? `🔑 *Pague via PIX:* \`${storePixKey}\`\n` : "") +
+        `Envie o comprovante pelo link:\nhttps://waesy.com.br/conta/carnes\n\nAproveite essa oportunidade!`;
+    } else {
+      messageText = input.customMessage || `Olá, ${clientName}! Informamos sobre a Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}) com vencimento em ${dueDateFormatted}.`;
+    }
+
+    // Registra envio atualizando last_reminder_sent_at e contador
+    await supabase
+      .from("receivable_installments")
+      .update({
+        last_reminder_sent_at: new Date().toISOString(),
+        reminders_sent_count: (Number(inst.reminders_sent_count) || 0) + 1,
+      })
+      .eq("id", inst.id);
+
+    // Registra notificação in-app
+    if (debtor?.id) {
+      await supabase.from("notifications").insert({
+        user_id: debtor.id,
+        type: "billing_reminder",
+        title: "📅 Lembrete de Cobrança da Loja",
+        message: `Lembrete sobre a Parcela ${inst.installment_number} de "${rec.title}" (${amountFormatted}).`,
+        link_url: "/conta/carnes",
+      });
+    }
+
+    const whatsappUrl = cleanPhone ? `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(messageText)}` : null;
+
+    return {
+      success: true,
+      whatsappUrl,
+      messageText,
+      clientName,
+      clientPhone: rawPhone,
+      amountFormatted,
+      dueDateFormatted,
+      pixCopyPaste: inst.pix_copy_paste || storePixKey || null,
+    };
   });
 
 export const createStoreCarne = createServerFn({ method: "POST" })

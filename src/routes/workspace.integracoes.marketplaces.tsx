@@ -803,7 +803,7 @@ function MarketplaceHubPage() {
                 <Button
                   size="sm"
                   onClick={() => setIsImportMlbModalOpen(true)}
-                  className="rounded-xl text-xs font-bold gap-1.5 h-9 px-4 bg-amber-500 hover:bg-amber-600 text-amber-950 cursor-pointer shadow-xs"
+                  className="rounded-xl text-xs font-bold gap-1.5 h-9 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
                 >
                   <ShoppingBag className="size-3.5" />
                   <span>Importar do Mercado Livre</span>

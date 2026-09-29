@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Hotel, Plus, Search, Award, MapPin, Utensils, Phone, Globe, Camera, Edit2, Trash2, Check, Building, ExternalLink, ShieldCheck, Zap, Coffee, Waves, HeartHandshake, Compass, Copy, Eye, BedDouble, Users, Maximize2, Info, Clock, Dog, Ban, LayoutGrid, Table as TableIcon, Navigation, CheckCircle2, X, UploadCloud, Building2 } from "lucide-react";
+import { Hotel, Plus, Search, Award, MapPin, Utensils, Phone, Globe, Camera, Edit2, Trash2, Check, Building, ExternalLink, ShieldCheck, Zap, Coffee, Waves, HeartHandshake, Compass, Copy, Eye, BedDouble, Users, Maximize2, Info, Clock, Dog, Ban, LayoutGrid, Table as TableIcon, Navigation, CheckCircle2, X, UploadCloud, Building2, Download, FileSpreadsheet } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
@@ -523,6 +523,93 @@ function WorkspaceHotelsPage() {
  });
  }, [hotels, search, selectedRegime, selectedStars]);
 
+ const handleExportHotelsRoomsCSV = (targetHotels: HotelBankDTO[], filename?: string) => {
+   if (!targetHotels || targetHotels.length === 0) {
+     toast.error("Nenhum hotel para exportar.");
+     return;
+   }
+
+   const headers = [
+     "Hotel",
+     "Destino_Cidade",
+     "Estrelas",
+     "Telefone",
+     "Categoria_Quarto",
+     "Capacidade_Adultos",
+     "Capacidade_Criancas",
+     "Total_Hospedes",
+     "Tipo_Camas",
+     "Tamanho_m2",
+     "Diaria_Referencia_BRL",
+     "Comodidades",
+     "Numero_Quarto_Designado",
+     "Hospede_Nome",
+     "Documento_RG_CPF",
+     "Observacoes",
+   ];
+
+   const rows: string[] = [];
+
+   targetHotels.forEach((h) => {
+     const cats = h.room_categories || [];
+     if (cats.length === 0) {
+       rows.push([
+         `"${h.name}"`,
+         `"${h.city || ""}, ${h.state || ""}"`,
+         `"${h.stars || 0} Estrelas"`,
+         `"${h.phone || ""}"`,
+         `"Padrão / Standard"`,
+         `"2"`,
+         `"1"`,
+         `"3"`,
+         `"1 Cama Casal ou 2 Solteiro"`,
+         `"25"`,
+         `"R$ 0,00"`,
+         `""`,
+         `""`,
+         `""`,
+         `""`,
+         `""`,
+       ].join(";"));
+     } else {
+       cats.forEach((cat) => {
+         const rate = (Number(cat.daily_rate_reference_cents || 0) / 100).toFixed(2);
+         const amens = (cat.amenities || []).join(", ");
+         rows.push([
+           `"${h.name}"`,
+           `"${h.city || ""}, ${h.state || ""}"`,
+           `"${h.stars || 0} Estrelas"`,
+           `"${h.phone || ""}"`,
+           `"${cat.name}"`,
+           `"${cat.capacity_adults || 2}"`,
+           `"${cat.capacity_children || 0}"`,
+           `"${cat.max_guests || 2}"`,
+           `"${cat.bedding || ""}"`,
+           `"${cat.size_m2 || ""}"`,
+           `"R$ ${rate}"`,
+           `"${amens}"`,
+           `""`,
+           `""`,
+           `""`,
+           `""`,
+         ].join(";"));
+       });
+     }
+   });
+
+   const csvContent = [headers.join(";"), ...rows].join("\n");
+   const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+   const url = URL.createObjectURL(blob);
+   const link = document.createElement("a");
+   link.setAttribute("href", url);
+   link.setAttribute("download", filename || `hoteis-rooming-capacidade-${Date.now()}.csv`);
+   document.body.appendChild(link);
+   link.click();
+   document.body.removeChild(link);
+   URL.revokeObjectURL(url);
+   toast.success("Tabela de quartos exportada com sucesso (CSV / Excel)!");
+ };
+
  // Métricas do Banco de Hospedagens
  const totalHotels = hotels.length;
  const allInclusiveCount = hotels.filter((h: HotelBankDTO) =>
@@ -628,6 +715,11 @@ function WorkspaceHotelsPage() {
           ]}
           onMetricsClick={() => setIsMetricsOpen(true)}
           metricsBadge={totalHotels > 0 ? `${totalHotels} Hotéis` : undefined}
+          secondaryAction={{
+            label: "Exportar Quartos (CSV)",
+            icon: FileSpreadsheet,
+            onClick: () => handleExportHotelsRoomsCSV(filtered, "hoteis-rooming-capacidade.csv"),
+          }}
           primaryAction={{
             label: "Novo Hotel",
             icon: Plus,
@@ -830,6 +922,17 @@ function WorkspaceHotelsPage() {
  >
  <Copy className="size-4 sm:size-3.5" />
  </Button>
+
+ <Button
+ type="button"
+ size="icon"
+ variant="ghost"
+ onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
+ className="size-11 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ title="Exportar Ficha de Quartos (CSV)"
+ >
+ <Download className="size-4 sm:size-3.5" />
+ </Button>
  </div>
 
  <CrudActionsMenu
@@ -944,6 +1047,15 @@ function WorkspaceHotelsPage() {
  title="Duplicar"
  >
  <Copy className="size-4 sm:size-3.5" />
+ </Button>
+ <Button
+ size="icon"
+ variant="ghost"
+ onClick={() => handleExportHotelsRoomsCSV([hotel], `hotel-${hotel.name.toLowerCase().replace(/\s+/g, "-")}-quartos.csv`)}
+ className="size-9 sm:size-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
+ title="Exportar Ficha de Quartos (CSV)"
+ >
+ <Download className="size-4 sm:size-3.5" />
  </Button>
  <CrudActionsMenu
                     entityName="Hotel"

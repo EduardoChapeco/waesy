@@ -36,7 +36,7 @@ function AbandonedCartsPage() {
  try {
  const res = await scanAbandonedCarts();
  toast.success(
- `Varredura concluída! ${res.newAbandons} novos carrinhos abandonados encontrados.`,
+ `Varredura concluída (${res.newAbandons} novos)`,
  );
  router.invalidate();
  } catch (e: unknown) {
@@ -49,7 +49,7 @@ function AbandonedCartsPage() {
  const handleMarkAttempt = async (id: string, phone?: string) => {
  try {
  await markRecoveryAttempt({ data: { id } });
- toast.success("Tentativa de recuperação registrada.");
+ toast.success("Tentativa registrada");
 
  if (phone) {
  // Formatar para link do whatsapp
@@ -153,7 +153,7 @@ function AbandonedCartsPage() {
  onClick={() => handleMarkAttempt(c.id, c.customerPhone)}
  disabled={c.status === "recovered"}
  >
- <Send className="mr-2 size-4 text-brand-blue" />
+ <Send className="mr-1.5 size-3.5 text-primary" />
  Recuperar
  </Button>
  </TableCell>

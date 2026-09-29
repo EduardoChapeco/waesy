@@ -876,7 +876,7 @@ function WorkspaceBoardingPage() {
                     variant="default"
                     size="sm"
                     onClick={() => handleOpenCompanionForDeparture(detail)}
-                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] font-bold gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shrink-0 shadow-xs"
+                    className="h-10 sm:h-7 px-3 sm:px-2 text-xs sm:text-[11px] font-bold gap-1.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shrink-0 shadow-xs"
                     title="Cartão Digital de Embarque 9:16 (WhatsApp)"
                   >
                     <Smartphone className="size-3.5 sm:size-3" />

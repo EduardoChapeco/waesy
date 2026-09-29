@@ -373,7 +373,7 @@ function ReceiptsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setPreviewTarget(null)}
-                className="rounded-xl text-xs font-bold"
+                className="min-h-[44px] px-4 rounded-xl text-xs font-bold"
               >
                 Fechar
               </Button>
@@ -384,7 +384,7 @@ function ReceiptsPage() {
                   handleApprove(orderId, previewTarget?.orders?.public_token);
                 }}
                 disabled={approvingId === (previewTarget?.orders?.id || previewTarget?.order_id)}
-                className="rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                className="min-h-[44px] px-4 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5"
               >
                 <CheckCircle2 className="size-3.5" />
                 <span>Confirmar e Aprovar</span>

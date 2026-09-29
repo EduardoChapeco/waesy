@@ -1719,7 +1719,7 @@ export interface TravelerFormContextDTO {
   agencyName: string;
   agencyLogo: string | null;
   agencyPhone: string | null;
-  tokenType: "trip" | "proposal" | "voucher" | "passenger" | "generic";
+  tokenType: "trip" | "proposal" | "voucher" | "passenger" | "generic" | "contract";
   passengerData?: {
     fullName?: string;
     cpf?: string;

@@ -1,10 +1,10 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { getCustomerAddresses, addCustomerAddress, deleteCustomerAddress, setDefaultAddress } from "@/services/customer.functions";
+import { getUserAddresses, saveUserAddress, deleteUserAddress } from "@/services/addresses.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { MapPin, Star, Trash2, Plus, CheckCircle2, Navigation, X, Loader2 } from "lucide-react";
+import { MapPin, Star, Trash2, Plus, CheckCircle2, Navigation, X, Loader2, Building, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { CrudActionsMenu } from "@/components/ui/crud-actions-menu";
 import { EmptyState } from "@/components/state/states";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_store/conta/enderecos")({
   head: () => ({ meta: [{ title: "Endereços | Waesy" }] }),
   loader: async () => {
     try {
-      return (await getCustomerAddresses().catch(() => [])) || [];
+      return (await getUserAddresses().catch(() => [])) || [];
     } catch (err) {
       console.error("[loader:_store.conta.enderecos] Unhandled loader error:", err);
       return [];
@@ -32,6 +32,7 @@ function AddressesPage() {
   const [isCepLoading, setIsCepLoading] = useState(false);
 
   const [formData, setFormData] = useState({
+    label: "Principal",
     zipcode: "",
     street: "",
     number: "",
@@ -39,6 +40,9 @@ function AddressesPage() {
     neighborhood: "",
     city: "",
     state: "",
+    is_apartment: false,
+    block_tower: "",
+    intercom_code: "",
   });
 
   const handleCepLookup = async (cepValue: string) => {
@@ -81,10 +85,26 @@ function AddressesPage() {
 
     setIsSubmitting(true);
     try {
-      await addCustomerAddress({ data: formData });
-      toast.success("Endereço adicionado com sucesso!");
+      await saveUserAddress({
+        data: {
+          label: formData.label.trim() || "Principal",
+          zipcode: formData.zipcode,
+          street: formData.street,
+          number: formData.number,
+          complement: formData.complement || null,
+          neighborhood: formData.neighborhood,
+          city: formData.city,
+          state: formData.state.toUpperCase(),
+          is_apartment: formData.is_apartment,
+          block_tower: formData.block_tower || null,
+          intercom_code: formData.intercom_code || null,
+          is_default: addresses.length === 0,
+        },
+      });
+      toast.success("Endereço salvo com sucesso!");
       setIsAdding(false);
       setFormData({
+        label: "Principal",
         zipcode: "",
         street: "",
         number: "",
@@ -92,11 +112,14 @@ function AddressesPage() {
         neighborhood: "",
         city: "",
         state: "",
+        is_apartment: false,
+        block_tower: "",
+        intercom_code: "",
       });
       router.invalidate();
     } catch (error: unknown) {
       toast.error(
-        (error instanceof Error ? error.message : String(error)) || "Erro ao adicionar endereço."
+        (error instanceof Error ? error.message : String(error)) || "Erro ao salvar endereço."
       );
     } finally {
       setIsSubmitting(false);
@@ -105,20 +128,28 @@ function AddressesPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteCustomerAddress({ data: { id } });
+      await deleteUserAddress({ data: { id } });
       toast.success("Endereço excluído com sucesso.");
       router.invalidate();
-    } catch (e: unknown) {
+    } catch {
       toast.error("Erro ao excluir endereço.");
     }
   };
 
   const handleSetDefault = async (id: string) => {
     try {
-      await setDefaultAddress({ data: { id } });
-      toast.success("Endereço padrão atualizado.");
-      router.invalidate();
-    } catch (e: unknown) {
+      const target = addresses.find((a: any) => a.id === id);
+      if (target) {
+        await saveUserAddress({
+          data: {
+            ...target,
+            is_default: true,
+          },
+        });
+        toast.success("Endereço padrão atualizado.");
+        router.invalidate();
+      }
+    } catch {
       toast.error("Erro ao atualizar endereço padrão.");
     }
   };
@@ -127,7 +158,7 @@ function AddressesPage() {
     <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-24 px-0 sm:px-4 md:px-0 animate-in fade-in duration-200">
       {/* ── 1. Native Mobile Header (Apple HIG / PWA Nativo) ── */}
       <NativeMobileHeader
-        title="Endereços"
+        title="Meus Endereços"
         fallbackHref="/conta"
         badge={
           addresses.length > 0 ? (
@@ -170,6 +201,19 @@ function AddressesPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
+            {/* Linha 0: Rótulo / Identificação */}
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Identificação do Endereço (ex: Casa, Trabalho, Apartamento)
+              </label>
+              <Input
+                placeholder="Ex: Minha Casa"
+                value={formData.label}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                className="h-11 rounded-xl bg-background border-border/70 text-sm focus-visible:ring-primary/20"
+              />
+            </div>
+
             {/* Linha 1: CEP com busca automática */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               <div className="space-y-1 sm:col-span-1">
@@ -280,6 +324,45 @@ function AddressesPage() {
               </div>
             </div>
 
+            {/* Linha 4: Especificações de Condomínio & Apartamento (V139 Waesy Go) */}
+            <div className="p-3.5 rounded-xl bg-muted/30 border border-border/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building className="size-4 text-primary" />
+                  <span className="text-xs font-bold text-foreground">Condomínio, Edifício ou Apartamento?</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={formData.is_apartment}
+                  onChange={(e) => setFormData({ ...formData, is_apartment: e.target.checked })}
+                  className="size-4.5 rounded-md border-border text-primary focus:ring-primary cursor-pointer"
+                />
+              </div>
+
+              {formData.is_apartment && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 animate-in fade-in duration-150">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-muted-foreground">Bloco / Torre / Prédio</label>
+                    <Input
+                      placeholder="Ex: Bloco 2, Torre Norte"
+                      value={formData.block_tower}
+                      onChange={(e) => setFormData({ ...formData, block_tower: e.target.value })}
+                      className="h-10 rounded-xl bg-background text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-muted-foreground">Interfone / Ramal de Acesso</label>
+                    <Input
+                      placeholder="Ex: Interfone 402"
+                      value={formData.intercom_code}
+                      onChange={(e) => setFormData({ ...formData, intercom_code: e.target.value })}
+                      className="h-10 rounded-xl bg-background text-xs"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Ações de salvamento */}
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/40">
               <Button
@@ -303,7 +386,7 @@ function AddressesPage() {
                 ) : (
                   <>
                     <CheckCircle2 className="size-4" />
-                    <span>Salvar</span>
+                    <span>Salvar Endereço</span>
                   </>
                 )}
               </Button>
@@ -312,7 +395,7 @@ function AddressesPage() {
         </div>
       )}
 
-      {/* ── 3. Lista Bifurcada de Endereços ── */}
+      {/* ── 3. Lista de Endereços Salvos ── */}
       {!isAdding && addresses.length === 0 ? (
         <div className="p-4 sm:p-0">
           <EmptyState
@@ -331,7 +414,7 @@ function AddressesPage() {
         </div>
       ) : (
         <>
-          {/* Mobile (<640px): Padrão WhatsApp List Edge-to-Edge */}
+          {/* Mobile (<640px): WhatsApp List Edge-to-Edge */}
           <div className="sm:hidden w-full divide-y divide-border/40 bg-card border-y border-border/60">
             {addresses.map((addr: any) => (
               <div
@@ -355,16 +438,26 @@ function AddressesPage() {
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs font-bold text-foreground truncate">
-                        {addr.street}, {addr.number}
+                        {addr.label || "Endereço"} • {addr.street}, {addr.number}
                       </p>
                       {addr.is_default && (
                         <Badge variant="success" className="text-[9px] px-1.5 py-0 h-4 font-bold">
                           Padrão
                         </Badge>
                       )}
+                      {addr.is_apartment && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-bold text-primary border-primary/30">
+                          Apto/Condomínio
+                        </Badge>
+                      )}
                     </div>
                     {addr.complement && (
                       <p className="text-[11px] text-muted-foreground truncate">{addr.complement}</p>
+                    )}
+                    {addr.block_tower && (
+                      <p className="text-[10px] text-primary font-medium truncate">
+                        Bloco: {addr.block_tower} {addr.intercom_code ? `• Interfone: ${addr.intercom_code}` : ""}
+                      </p>
                     )}
                     <p className="text-[11px] text-muted-foreground">
                       {addr.neighborhood} • {addr.city}, {addr.state}
@@ -435,11 +528,26 @@ function AddressesPage() {
                         <MapPin className="size-4.5" strokeWidth={1.75} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-foreground truncate">
+                            {addr.label || "Endereço"}
+                          </p>
+                          {addr.is_apartment && (
+                            <Badge variant="outline" className="text-[10px] font-bold text-primary border-primary/30">
+                              Apto/Condomínio
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-foreground font-medium truncate mt-0.5">
                           {addr.street}, {addr.number}
                         </p>
                         {addr.complement && (
                           <p className="text-xs text-muted-foreground truncate">{addr.complement}</p>
+                        )}
+                        {addr.block_tower && (
+                          <p className="text-[11px] text-primary font-medium truncate mt-0.5">
+                            Bloco: {addr.block_tower} {addr.intercom_code ? `• Interfone: ${addr.intercom_code}` : ""}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -452,39 +560,39 @@ function AddressesPage() {
                   </div>
 
                   <div className="text-xs text-muted-foreground space-y-0.5 pl-11.5">
-                    <p>
-                      {addr.neighborhood} — {addr.city}, {addr.state}
-                    </p>
-                    <p className="font-mono text-[11px]">CEP: {addr.zipcode}</p>
+                    <p>{addr.neighborhood}</p>
+                    <p>{addr.city} - {addr.state}</p>
+                    <p className="font-mono text-[11px] text-muted-foreground/80">CEP: {addr.zipcode}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-border/40">
-                  {!addr.is_default ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSetDefault(addr.id)}
-                      className="h-9 rounded-xl px-3 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      <Star className="size-3.5 mr-1.5 text-muted-foreground" />
-                      Tornar Padrão
-                    </Button>
-                  ) : (
-                    <div />
-                  )}
+                <div className="flex items-center justify-between pt-3 border-t border-border/40 pl-11.5">
+                  <div>
+                    {!addr.is_default && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSetDefault(addr.id)}
+                        className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground gap-1.5 cursor-pointer -ml-2"
+                      >
+                        <Star className="size-3.5" />
+                        <span>Tornar Padrão</span>
+                      </Button>
+                    )}
+                  </div>
 
                   <CrudActionsMenu
                     entityName="Endereço"
                     onDelete={() => handleDelete(addr.id)}
-                    deleteConfirmTitle="Excluir este endereço de entrega?"
-                    deleteConfirmDescription={`Deseja remover ${addr.street}, ${addr.number} (${addr.city || "sua localidade"}) da sua lista de endereços?`}
+                    deleteConfirmTitle="Excluir endereço?"
+                    deleteConfirmDescription={`Remover ${addr.street}, ${addr.number} (${addr.city || "sua localidade"})?`}
                     customActions={[
                       ...(!addr.is_default
                         ? [
                             {
                               id: "set-default",
-                              label: "Tornar Endereço Padrão",
+                              label: "Tornar Padrão",
                               icon: Star,
                               onClick: () => handleSetDefault(addr.id),
                             },
@@ -497,21 +605,6 @@ function AddressesPage() {
             ))}
           </div>
         </>
-      )}
-
-      {/* ── 4. FAB Flutuante Mobile para Novo Endereço ── */}
-      {!isAdding && addresses.length > 0 && (
-        <button
-          type="button"
-          onClick={() => {
-            setIsAdding(true);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          className="sm:hidden fixed bottom-20 right-4 z-30 size-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
-          aria-label="Cadastrar novo endereço"
-        >
-          <Plus className="size-5" />
-        </button>
       )}
     </div>
   );

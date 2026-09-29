@@ -279,7 +279,7 @@ function WorkspaceProposalsIndexPage() {
                   size="sm"
                   onClick={() => convertMutation.mutate(p.id)}
                   disabled={convertMutation.isPending}
-                  className="w-full rounded-xl text-xs font-bold h-9 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+                  className="w-full rounded-xl text-xs font-bold h-9 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer"
                 >
                   <Plane className="size-3.5" />
                   {convertMutation.isPending ? "Gerando Viagem..." : "Gerar Viagem & Vouchers"}

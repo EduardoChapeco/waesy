@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getServerClient, SupabaseUnconfiguredError } from "@/lib/supabase";
 import { getServerIdentity, assertStoreAccess } from "@/lib/server-access";
+import { analyzeClaimForScam } from "@/services/trust-and-safety.functions";
 
 export const requestOrderReturn = createServerFn({ method: "POST" })
  .validator(

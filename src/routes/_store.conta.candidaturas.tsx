@@ -54,7 +54,7 @@ function MinhasCandidaturasPage() {
  return <Badge className="text-[10px] bg-amber-500 hover:bg-amber-600 text-white">Entrevista</Badge>;
  case "hired":
  case "approved":
- return <Badge className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white">Aprovado</Badge>;
+ return <Badge className="text-[10px] bg-primary hover:bg-primary/90 text-primary-foreground">Aprovado</Badge>;
  case "rejected":
  return <Badge variant="outline" className="text-[10px] text-muted-foreground">Recusado</Badge>;
  default:
@@ -164,7 +164,7 @@ function MinhasCandidaturasPage() {
  </div>
 
  {app.interview_meeting_url && (
- <Button asChild size="sm" className="h-8 gap-1.5 font-bold text-xs bg-amber-600 hover:bg-amber-700 text-white shrink-0">
+ <Button asChild size="sm" className="min-h-[44px] sm:min-h-0 sm:h-9 gap-1.5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shrink-0">
  <a
  href={app.interview_meeting_url}
  target="_blank"

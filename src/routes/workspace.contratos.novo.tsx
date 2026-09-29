@@ -221,6 +221,34 @@ O(A) PACIENTE declara haver solicitado e expressamente autorizado a realização
 ### CLÁUSULA 3ª — DAS RECOMENDAÇÕES PÓS-PROCEDIMENTO
 O(A) PACIENTE declara estar plenamente ciente das recomendações e condutas indispensáveis para a recuperação e eficácia do procedimento realizado.`,
   },
+  equipment_loan: {
+    title: "Comodato de Equipamentos — Empréstimo Gratuito de Bens (WMS)",
+    category: "equipment_loan",
+    description: "Cessão gratuita de equipamentos comerciais, cervejeiras, freezers, máquinas e bens móveis com base no Art. 579 do Código Civil.",
+    content: `# CONTRATO DE COMODATO DE EQUIPAMENTOS & BENS MÓVEIS
+
+**COMODANTE (EMPRESA PROPRIETÁRIA):** Empresa Cedente Parceira Waesy.
+**COMODATÁRIO(A):** {{cliente_nome}}, portador(a) do CPF/CNPJ {{cpf}}, telefone {{telefone}}, residente/sediado(a) em {{endereco}}.
+
+### CLÁUSULA 1ª — DO OBJETO DO COMODATO
+A COMODANTE cede gratuitamente ao COMODATÁRIO, para uso exclusivo em suas dependências comerciais, os seguintes bens de sua legítima propriedade:
+* **Equipamento / Bem:** {{equipamento_nome}}
+* **Marca e Modelo:** {{marca_modelo_equipamento}}
+* **Número de Série / Chassi:** {{numero_serie}}
+* **Código de Patrimônio (WMS):** {{patrimonio_codigo}}
+* **Local Obrigatório de Instalação:** {{local_instalacao}}
+
+### CLÁUSULA 2ª — DO VALOR DO BEM E DEVER DE INDENIZAÇÃO
+O bem ora cedido possui avaliação estipulada em **{{valor_bem_indenizacao}}**. Em caso de perda, roubo, furto qualificado, danos decorrentes de imperícia ou não restituição ao término do contrato, o COMODATÁRIO indenizará integralmente a COMODANTE pelo valor de avaliação acima registrado.
+
+### CLÁUSULA 3ª — DA VIGÊNCIA, CUSTÓDIA E RESTITUIÇÃO
+1. O prazo de vigência deste comodato é de **{{prazo_vigencia_comodato}}**.
+2. É expressamente vedado ao COMODATÁRIO emprestar, alugar, ceder a terceiros ou transferir o bem para endereço diverso do estabelecido neste instrumento sem prévia autorização escrita da COMODANTE.
+3. Ao término do prazo ou rescisão da relação comercial, o bem deverá ser restituído imediatamente nas mesmas condições de conservação em que foi entregue, ressalvado o desgaste natural pelo uso regular (Art. 582 do Código Civil).
+
+### ELEIÇÃO DE FORO
+As partes elegem o foro da sede da COMODANTE para dirimir quaisquer litígios decorrentes do presente instrumento.`,
+  },
 };
 function compileAdvancedTemplateMarkdown(t: ContractTemplateDefinition): string {
   let md = `# ${t.title.toUpperCase()}\n\n`;
@@ -540,7 +568,7 @@ function NovoContratoPage() {
         <div className="flex items-center gap-3">
           <NativeBackButton fallbackHref="/workspace/contratos" />
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Novo Contrato Digital</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Novo Contrato</h1>
             <p className="text-xs text-muted-foreground">
               Criação de minutas, importação de arquivos e despacho com validade jurídica
             </p>

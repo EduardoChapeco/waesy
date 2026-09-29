@@ -56,13 +56,55 @@ export async function requireManager(): Promise<{ id: string; role: Role; store_
   ]);
 }
 
-export async function requireAdmin() {
+/**
+ * Exige acesso financeiro ou superior (owner, admin, manager, finance, master).
+ * Bloqueia operadores operacionais de vendas, atendimento e estoque.
+ */
+export async function requireFinance(): Promise<{ id: string; role: Role; store_id: string }> {
   return requireRole([
     "owner",
     "admin",
+    "proprietario" as any,
     "manager",
+    "gerente" as any,
+    "finance",
+    "platform_admin",
+    "master",
+  ]);
+}
+
+/**
+ * Exige acesso administrativo ou gerencial estrito.
+ * Proibido para funções operacionais isoladas (vendedor, suporte, estoque).
+ */
+export async function requireAdmin(): Promise<{ id: string; role: Role; store_id: string }> {
+  return requireRole([
+    "owner",
+    "admin",
+    "proprietario" as any,
+    "manager",
+    "gerente" as any,
+    "finance",
+    "platform_admin",
+    "master",
+  ]);
+}
+
+/**
+ * Exige que o usuário seja membro ativo de staff da loja (qualquer cargo operacional autorizado).
+ */
+export async function requireStaff(): Promise<{ id: string; role: Role; store_id: string }> {
+  return requireRole([
+    "owner",
+    "admin",
+    "proprietario" as any,
+    "manager",
+    "gerente" as any,
     "finance",
     "seller",
+    "cashier" as any,
+    "waiter" as any,
+    "driver" as any,
     "content",
     "support",
     "stock",
@@ -77,3 +119,4 @@ export async function requireAdmin() {
 export async function requirePlatformAdmin() {
   return requireRole(["platform_admin", "master"]);
 }
+

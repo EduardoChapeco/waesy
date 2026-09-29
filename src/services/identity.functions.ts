@@ -16,10 +16,24 @@ export const setTenantContext = createServerFn({ method: "POST" })
 
     if (store_id === null) {
       try {
+        setCookie("waesy_active_context", "civil", {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          httpOnly: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
         setCookie("waesy_active_tenant", "", {
           path: "/",
           maxAge: 0,
-          httpOnly: true,
+          httpOnly: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
+        setCookie("waesy_active_creator", "", {
+          path: "/",
+          maxAge: 0,
+          httpOnly: false,
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
         });
@@ -56,11 +70,25 @@ export const setTenantContext = createServerFn({ method: "POST" })
       }
     }
 
-    // 3. Persiste o cookie do tenant ativo
+    // 3. Persiste o cookie do tenant ativo e contexto de loja atomicamente
     try {
+      setCookie("waesy_active_context", "store", {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30,
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
       setCookie("waesy_active_tenant", store_id, {
         path: "/",
         maxAge: 60 * 60 * 24 * 30,
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
+      setCookie("waesy_active_creator", "", {
+        path: "/",
+        maxAge: 0,
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",

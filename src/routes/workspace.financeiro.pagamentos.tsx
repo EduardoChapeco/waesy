@@ -384,7 +384,7 @@ function AdminPaymentsPage() {
                           Comprovante Enviado
                         </Badge>
                       ) : (
-                        <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold">
+                        <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold">
                           Liquidado
                         </Badge>
                       )}
@@ -404,7 +404,7 @@ function AdminPaymentsPage() {
                           <Button
                             size="sm"
                             onClick={() => setApproveModal({ isOpen: true, order: p })}
-                            className="h-8 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                            className="h-8 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                           >
                             <CheckCircle2 className="size-3.5 mr-1" />
                             Aprovar
@@ -445,7 +445,7 @@ function AdminPaymentsPage() {
             <Button
               onClick={handleConfirmApprove}
               disabled={isApproving}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              className="h-10 px-5 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
             >
               {isApproving ? "Processando..." : "Confirmar Recebimento"}
             </Button>

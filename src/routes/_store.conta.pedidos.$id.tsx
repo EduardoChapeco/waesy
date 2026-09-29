@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { getBrowserClient } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ChevronLeft, Package, MapPin, CreditCard, Copy, Upload, Info, AlertTriangle, QrCode, Smartphone } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,6 +19,7 @@ import { getCustomerOrder, getOrderPaymentInstructions } from "@/services/order.
 import { uploadPaymentReceipt } from "@/services/payment.functions";
 import { getDeliveryProofsByOrderId, type DeliveryProof } from "@/services/dispatch.functions";
 import { DealDeliveryTrackingCard } from "@/components/commercial/deal-delivery-tracking-card";
+import { MotoLinkTrackingWidget } from "@/components/commerce/motolink-tracking-widget";
 
 export const Route = createFileRoute("/_store/conta/pedidos/$id")({
   head: () => ({ meta: [{ title: "Detalhes do Pedido | Waesy" }] }),
@@ -97,7 +99,7 @@ function CustomerOrderDetailPage() {
   const handleCopyPix = () => {
     if (!paymentInstructions?.pix_key) return;
     navigator.clipboard.writeText(paymentInstructions.pix_key);
-    toast.success("Chave PIX copiada com sucesso!");
+    toast.success("Chave PIX copiada");
   };
 
   const companionData = useMemo(() => {
@@ -370,6 +372,13 @@ function CustomerOrderDetailPage() {
 
             {/* Rastreamento ao Vivo do Motoboy */}
             <DealDeliveryTrackingCard orderId={order.id} />
+            {order.shipping_method === "delivery" && ["paid", "processing", "shipped", "delivered"].includes(order.status) && (
+              <MotoLinkTrackingWidget
+                orderId={order.id}
+                storeId={order.store_id || order.store?.id || ""}
+                initialStatus={order.status}
+              />
+            )}
 
             {/* Delivery Proofs if any */}
             {proofs && proofs.length > 0 && (

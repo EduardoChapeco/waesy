@@ -17,6 +17,7 @@ import { listTeamMembers } from "@/services/admin-team.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { formatMoney } from "@/lib/money";
 import { NewClientWizard } from "@/components/crm/NewClientWizard";
+import { useNicheTranslation } from "@/hooks/use-niche-translation";
 
 export const Route = createFileRoute("/workspace/clientes/")({
  head: () => ({ meta: [{ title: "Clientes | Workspace Waesy" }] }),
@@ -128,14 +129,14 @@ function CarteiraClientesPage() {
 
   const dashboardMetrics: MetricCardItem[] = useMemo(() => [
     {
-      title: isTourism ? "Total Passageiros" : "Total na Carteira",
+      title: nicheId === "tourism" ? "Total Passageiros" : `Total na Carteira (${t("clients")})`,
       value: totalCount,
-      description: isTourism ? "Viajantes cadastrados" : "Clientes cadastrados",
+      description: `${t("clients")} cadastrados no sistema`,
       icon: Users,
       color: "blue",
     },
     {
-      title: isTourism ? "Passageiros Ativos" : "Clientes Ativos",
+      title: `${t("clients")} Ativos`,
       value: activeCount,
       description: "Base apta para emissões e viagens",
       icon: CheckCircle2,
@@ -168,9 +169,9 @@ function CarteiraClientesPage() {
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <WorkspaceCanonicalToolbar
         tabs={[
-          { id: "all", label: isTourism ? "Todos Passageiros" : "Todos os Clientes", icon: Users, count: totalCount },
+          { id: "all", label: `Todos (${t("clients")})`, icon: Users, count: totalCount },
           { id: "active", label: "Ativos", icon: CheckCircle2, count: activeCount },
-          { id: "individual", label: isTourism ? "Viajantes PF" : "Pessoa Física", icon: User },
+          { id: "individual", label: nicheId === "real_estate" ? "Inquilinos / PF" : isTourism ? "Viajantes PF" : "Pessoa Física", icon: User },
           { id: "company", label: isTourism ? "Contas B2B" : "Empresas (PJ)", icon: Building2 },
           { id: "alert", label: "Alertas Doc", icon: AlertTriangle, count: docsExpiringCount },
         ]}
@@ -203,7 +204,7 @@ function CarteiraClientesPage() {
         }}
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder={isTourism ? "Buscar passageiro por nome, CPF, e-mail, cidade..." : "Buscar cliente por nome, CPF, e-mail, cidade..."}
+        searchPlaceholder={`Buscar ${t("client").toLowerCase()} por nome, CPF, e-mail, cidade...`}
         filters={[
           {
             id: "status",
@@ -299,7 +300,7 @@ function CarteiraClientesPage() {
             className="h-11 px-6 rounded-xl font-bold text-sm gap-2 bg-primary text-primary-foreground cursor-pointer shadow-xs"
           >
             <Plus className="size-4" />
-            <span>Cadastrar Primeiro Cliente</span>
+            <span>Cadastrar ${t("client")}</span>
           </Button>
         </div>
       ) : (

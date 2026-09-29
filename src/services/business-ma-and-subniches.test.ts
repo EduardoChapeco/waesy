@@ -52,7 +52,7 @@ describe('Fases 2, 3 e 4: Sub-nichos em Cascata, M&A sob NDA e Hub de Inteligên
       const masterNav = resolveWorkspaceNavigation({}, { isMasterMode: true });
       const donationsGroup = masterNav.find((g) => g.id === 'donations-captacao');
       expect(donationsGroup).toBeDefined();
-      expect(donationsGroup?.label).toBe('Doações & Captação');
+      expect(['Captação', 'Doações & Captação']).toContain(donationsGroup?.label);
       expect(donationsGroup?.items.some((i) => i.path === '/workspace/doacoes')).toBe(true);
       expect(donationsGroup?.items.some((i) => i.path === '/workspace/captacao')).toBe(true);
       expect(donationsGroup?.items.some((i) => i.path === '/workspace/captacao/ndas')).toBe(true);

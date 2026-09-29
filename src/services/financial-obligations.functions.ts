@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import crypto from "crypto";
 import { getServerClient } from "@/lib/supabase";
-import { requireAdmin, getServerIdentity } from "@/lib/server-access";
+import { requireFinance, requireOwner, getServerIdentity } from "@/lib/server-access";
 
 export type ObligationCategory =
   | "supplier"
@@ -82,7 +82,7 @@ function computeStatus(ob: FinancialObligation): ObligationStatus {
  */
 export const listFinancialObligations = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    await requireAdmin();
+    await requireFinance();
     const identity = await getServerIdentity();
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
@@ -124,7 +124,7 @@ export const listFinancialObligations = createServerFn({ method: "GET" }).handle
 export const createFinancialObligation = createServerFn({ method: "POST" })
   .validator(CreateObligationSchema)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireFinance();
     const identity = await getServerIdentity();
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
@@ -180,7 +180,7 @@ export const createFinancialObligation = createServerFn({ method: "POST" })
 export const markObligationAsPaid = createServerFn({ method: "POST" })
   .validator(MarkPaidSchema)
   .handler(async ({ data: { obligationId, paymentMethod, paidAt, notes } }) => {
-    await requireAdmin();
+    await requireFinance();
     const identity = await getServerIdentity();
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
@@ -233,7 +233,7 @@ export const markObligationAsPaid = createServerFn({ method: "POST" })
 export const deleteFinancialObligation = createServerFn({ method: "POST" })
   .validator(DeleteObligationSchema)
   .handler(async ({ data: { obligationId } }) => {
-    await requireAdmin();
+    await requireOwner();
     const identity = await getServerIdentity();
     if (!identity.store_id) throw new Error("Contexto de loja inválido");
 
@@ -270,7 +270,7 @@ export const deleteFinancialObligation = createServerFn({ method: "POST" })
  * Exporta contas a pagar em CSV no formato contábil brasileiro
  */
 export const exportObligationsCsv = createServerFn({ method: "GET" }).handler(async () => {
-  await requireAdmin();
+  await requireFinance();
   const identity = await getServerIdentity();
   if (!identity.store_id) throw new Error("Contexto de loja inválido");
 

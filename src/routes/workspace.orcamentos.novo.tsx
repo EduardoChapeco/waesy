@@ -1250,7 +1250,7 @@ function NovoOrcamentoTravelosPage() {
  window.open(`https://wa.me/?text=${msg}`, '_blank');
  }
  }}
- className="h-10 px-5 rounded-xl text-xs font-bold flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white transition-colors cursor-pointer shadow-xs"
+ className="h-10 px-5 rounded-xl text-xs font-bold flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors cursor-pointer shadow-xs"
  >
  <span>💬</span>
  <span>Enviar Proposta via WhatsApp</span>

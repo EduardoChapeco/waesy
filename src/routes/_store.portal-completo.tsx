@@ -115,7 +115,7 @@ function PortalCompletoPage() {
     },
     {
       id: "turismo",
-      title: "Gestão de Turismo e Receptivo",
+      title: "Turismo e Receptivo",
       category: "Viagens & Experiências",
       description: "Controle de lotação de excursões, alocação de poltronas em ônibus, rooming list de hotéis parceiros e vouchers com QR Code anti-fraude.",
       icon: "Compass",

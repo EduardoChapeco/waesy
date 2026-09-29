@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/state/states";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/workspace/agenda/recursos")({
-  head: () => ({ meta: [{ title: "Gestão de Recursos | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Recursos" }] }),
   component: AdminResourcesPage,
 });
 
@@ -262,12 +262,12 @@ function AdminResourcesPage() {
               </div>
 
               {/* Botão de Edição Rápida */}
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+              <div className="absolute top-4 right-4 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-2">
                 <Button
                   size="icon"
                   variant="secondary"
                   onClick={() => openEditResourceModal(res)}
-                  className="size-8 rounded-xl cursor-pointer shadow-xs"
+                  className="min-h-[44px] min-w-[44px] sm:size-8 rounded-xl cursor-pointer shadow-xs"
                   title="Editar Recurso"
                 >
                   <Settings2 className="size-4" />

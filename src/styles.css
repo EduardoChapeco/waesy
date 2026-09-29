@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
@@ -16,6 +17,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
+  /* ── Master Niche Chameleon Tokens (MASTER PROMPT V138) ── */
+  --radius-master: var(--radius-master, 0.75rem);
+  --font-master: var(--font-master, var(--font-sans));
+
   /* ── Radius scale — Apple HIG Contained Squircle System ── */
   --radius-xs: 2px;
   --radius-sm: 4px;   /* micro-chips, tags e badges compactos */
@@ -127,7 +132,9 @@
  * ===========================================================================*/
 :root {
   color-scheme: light dark;
-  --radius: 0.625rem; /* 10px padrão Apple HIG */
+  --radius: 0.625rem;
+  --radius-master: 0.75rem;
+  --font-master: var(--font-sans); /* 10px padrão Apple HIG */
 
   /* ── Safe Area Insets (iOS Notch & Android Gestures) ─────────────────── */
   --safe-area-top: env(safe-area-inset-top, 0px);
@@ -238,6 +245,53 @@
   --input: oklch(0.25 0 0);
   --ring: oklch(0.96 0 0);
 }
+
+/* ===========================================================================
+ * NICHE CAMALEONIC THEMES (MASTER PROMPT V138)
+ * Metamorfose automática de cores, curvaturas e tipografia por Niche_ID.
+ * ===========================================================================*/
+
+.theme-health {
+  --primary: oklch(0.65 0.18 230);
+  --primary-foreground: oklch(0.99 0 0);
+  --color-primary: #0ea5e9;
+  --radius-master: 1rem;
+  --radius: 1rem;
+}
+
+.theme-luxury {
+  --primary: oklch(0.72 0.14 85);
+  --primary-foreground: oklch(0.12 0 0);
+  --color-primary: #d4af37;
+  --radius-master: 0px;
+  --radius: 0px;
+  --font-master: "Playfair Display", Georgia, serif;
+}
+
+.theme-creator {
+  --primary: oklch(0.62 0.22 290);
+  --primary-foreground: oklch(0.99 0 0);
+  --color-primary: #8b5cf6;
+  --radius-master: 1.5rem;
+  --radius: 1.5rem;
+}
+
+.theme-gastronomy {
+  --primary: oklch(0.62 0.2 45);
+  --primary-foreground: oklch(0.99 0 0);
+  --color-primary: #ea580c;
+  --radius-master: 0.75rem;
+  --radius: 0.75rem;
+}
+
+.theme-default {
+  --radius-master: 0.75rem;
+}
+
+.rounded-master {
+  border-radius: var(--radius-master, 0.75rem);
+}
+
 
 /* ===========================================================================
  * BASE STYLES
@@ -855,4 +909,103 @@
     column-gap: calc(env(viewport-segment-left 1 0, 0px) - env(viewport-segment-right 0 0, 0px));
   }
 }
+/*
+ * ============================================================================
+ * Waesy Platform — Universal Accessibility & Inclusive Design (WCAG 2.2 AA)
+ * ============================================================================
+ */
 
+/* 1. Visually Hidden / Screen-Reader Only Utilities */
+.visually-hidden,
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* 2. Skip Link acessível para salto direto ao conteúdo principal */
+.skip-link,
+.sr-only-focusable:focus,
+.sr-only-focusable:focus-visible {
+  position: fixed !important;
+  top: -100px;
+  left: 1rem;
+  z-index: 99999;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.75rem 1.25rem !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: var(--radius-xl);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+  transition: top 0.15s ease-in-out;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 1rem !important;
+  outline: 2px solid currentColor !important;
+  outline-offset: 2px !important;
+}
+
+/* 3. Focus Not Obscured (WCAG 2.4.11) — Limpa barras fixas ao receber foco */
+:focus,
+:focus-visible {
+  scroll-margin-top: 80px;
+  scroll-margin-bottom: 60px;
+}
+
+:target {
+  scroll-margin-top: 80px;
+}
+
+/* 4. Focus Visible com contraste mínimo garantido (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* 5. Respeito universal à preferência de Movimento Reduzido (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===========================================================================
+ * WEB PERFORMANCE & CORE WEB VITALS (SKILL web-performance)
+ * =========================================================================== */
+
+/* 1. View Transitions API para navegações fluidas sem layout shift */
+@view-transition {
+  navigation: auto;
+}
+
+/* 2. Virtualização nativa para listas e feeds longos */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 80px;
+}
+
+/* 3. Prevenção de Layout Shift (CLS) */
+img[loading="lazy"] {
+  aspect-ratio: auto;
+}

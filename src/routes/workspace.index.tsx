@@ -12,9 +12,10 @@ import { StoreShareQrModal } from "@/components/workspace/store-share-qr-modal";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 import { formatMoney } from "@/lib/money";
 import { SeasonalMarketingCalendarWidget } from "@/components/admin/marketing/seasonal-marketing-calendar-widget";
+import { PolymorphicDashboardRenderer } from "@/components/workspace/dashboard/PolymorphicDashboardRenderer";
 
 export const Route = createFileRoute("/workspace/")({
- head: () => ({ meta: [{ title: "Painel de Controle | Workspace Waesy" }] }),
+ head: () => ({ meta: [{ title: "Operação | Workspace Waesy" }] }),
  loader: async () => {
    try {
  let session: any = null;

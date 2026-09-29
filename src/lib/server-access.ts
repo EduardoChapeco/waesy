@@ -60,8 +60,21 @@ export async function requireAdmin(): Promise<{ id: string; role: Role; store_id
   return mod.requireAdmin();
 }
 
+/** Exige acesso financeiro ou superior. Servidor apenas. */
+export async function requireFinance(): Promise<{ id: string; role: Role; store_id: string }> {
+  const mod = await import("@/lib/auth-guards.server");
+  return mod.requireFinance();
+}
+
+/** Exige que o usuário seja membro ativo de staff da loja. Servidor apenas. */
+export async function requireStaff(): Promise<{ id: string; role: Role; store_id: string }> {
+  const mod = await import("@/lib/auth-guards.server");
+  return mod.requireStaff();
+}
+
 /** Exige acesso administrativo global (master). Servidor apenas. */
 export async function requirePlatformAdmin(): Promise<{ id: string; role: Role; store_id: string }> {
   const mod = await import("@/lib/auth-guards.server");
   return mod.requirePlatformAdmin();
 }
+

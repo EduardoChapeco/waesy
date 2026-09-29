@@ -52,7 +52,7 @@ function EventSubpanelsPage() {
  });
 
  const copyMagicLink = (token: string) => {
- const url = `${window.location.origin}/_portal/subpainel/${token}`;
+ const url = `${window.location.origin}/portal/subpainel/${token}`;
  navigator.clipboard.writeText(url);
  setCopiedToken(token);
  toast.success("Link mágico de acesso externo copiado!");

@@ -394,7 +394,7 @@ function NegociacoesPage() {
                         <Button
                           onClick={() => handleAction(deal.id, "accept")}
                           disabled={respondMutation.isPending}
-                          className="h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                          className="min-h-[44px] h-11 px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
                         >
                           <CheckCircle2 className="size-4" />
                           <span>Aceitar Proposta</span>
@@ -442,7 +442,7 @@ function NegociacoesPage() {
                         size="sm"
                         onClick={() => handleAction(deal.id, "accept")}
                         disabled={respondMutation.isPending}
-                        className="rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                        className="min-h-[44px] px-4 rounded-xl text-xs font-bold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
                       >
                         <CheckCircle2 className="size-3.5" />
                         <span>Aceitar Proposta</span>
@@ -594,7 +594,7 @@ function NegociacoesPage() {
                             size="sm"
                             onClick={() => handleAction(deal.id, "complete")}
                             disabled={respondMutation.isPending}
-                            className="rounded-xl text-xs font-bold shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+                            className="min-h-[44px] px-3.5 rounded-xl text-xs font-bold shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer"
                             title="Confirmar que o item foi recebido e liberar o pagamento para o vendedor"
                           >
                             <CheckCircle2 className="size-3.5" />

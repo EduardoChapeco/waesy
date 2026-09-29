@@ -69,9 +69,9 @@ export const NativeBackButton = React.forwardRef<HTMLButtonElement, NativeBackBu
       default:
         "text-foreground/80 hover:text-foreground hover:bg-muted/50 active:bg-muted/80",
       floating:
-        "bg-black/50 backdrop-blur-md text-white border border-white/20 shadow-md active:bg-black/70",
+        "bg-background text-foreground border border-border/80 shadow-sm active:bg-muted",
       card:
-        "bg-card/90 backdrop-blur-md text-foreground border border-border/60 shadow-sm active:bg-muted",
+        "bg-card text-foreground border border-border/70 shadow-xs active:bg-muted",
       outline:
         "border border-border/80 text-foreground hover:bg-muted active:bg-muted/80",
     };

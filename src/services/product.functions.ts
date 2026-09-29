@@ -204,7 +204,49 @@ async function _getProductBySlug(slug: string): Promise<ProductDetailDTO> {
  return rest;
  });
 
- const rawStore = (product as any).stores || null;
+ 
+  // 1.5. Unificação com Grupos de Modificadores Gastronômicos / Foodyman Benchmark
+  try {
+    const { data: modifierGroupsData } = await db
+      .from("product_modifier_groups")
+      .select("id, title, description, min_selections, max_selections, is_required, sort_order, product_modifiers(id, title, price_delta_cents, is_default, is_available, sort_order)")
+      .eq("product_id", product.id)
+      .order("sort_order", { ascending: true });
+
+    if (modifierGroupsData && modifierGroupsData.length > 0) {
+      modifierGroupsData.forEach((mg: any) => {
+        const modValues = (mg.product_modifiers || [])
+          .filter((m: any) => m.is_available)
+          .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+          .map((m: any) => ({
+            id: m.id,
+            label: m.title,
+            description: null,
+            imageUrl: null,
+            priceModifierCents: Number(m.price_delta_cents) || 0,
+            maxQuantityPerItem: 1,
+            isDefault: m.is_default || false,
+          }));
+
+        if (modValues.length > 0) {
+          optionGroups.push({
+            id: mg.id,
+            internalName: mg.title,
+            displayName: mg.title,
+            selectionType: (mg.max_selections && mg.max_selections > 1) ? "multiple" : "single",
+            minSelections: mg.min_selections || 0,
+            maxSelections: mg.max_selections || 1,
+            isRequired: mg.is_required || false,
+            values: modValues,
+          });
+        }
+      });
+    }
+  } catch (modErr) {
+    console.warn("[product.functions] Falha ao unificar modificadores gastronômicos:", modErr);
+  }
+
+  const rawStore = (product as any).stores || null;
  const storeSettings = (rawStore?.settings as Record<string, any>) || {};
  const mappedStore = rawStore
  ? {

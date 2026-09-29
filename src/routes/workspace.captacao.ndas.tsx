@@ -80,81 +80,135 @@ function WorkspaceCaptacaoNdasPage() {
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-muted/40 text-muted-foreground font-medium border-b border-border/40 uppercase tracking-wider text-[10px]">
-                <tr>
-                  <th className="py-3 px-4 sm:px-5">Investidor / Comprador</th>
-                  <th className="py-3 px-4 sm:px-5">Documento (LGPD)</th>
-                  <th className="py-3 px-4 sm:px-5">Empresa / Ponto Alvo</th>
-                  <th className="py-3 px-4 sm:px-5">Data e Hora</th>
-                  <th className="py-3 px-4 sm:px-5">Telemetria IP</th>
-                  <th className="py-3 px-4 sm:px-5 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {ndas.map((sig: any) => {
-                  const dateStr = sig.signedAt
-                    ? new Date(sig.signedAt).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "Data não registrada";
+          <>
+            {/* ── BIFURCAÇÃO MOBILE: WhatsApp List Edge-to-Edge (<640px) ── */}
+            <div className="block sm:hidden divide-y divide-border/40">
+              {ndas.map((sig: any) => {
+                const dateStr = sig.signedAt
+                  ? new Date(sig.signedAt).toLocaleString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Data não registrada";
 
-                  return (
-                    <tr key={sig.id} className="hover:bg-muted/20 transition-colors">
-                      <td className="py-3.5 px-4 sm:px-5">
-                        <div className="space-y-0.5">
-                          <div className="font-bold text-foreground flex items-center gap-1.5">
-                            <User className="size-3 text-muted-foreground" />
-                            <span>{sig.signerName}</span>
+                return (
+                  <div key={sig.id} className="p-4 space-y-3 hover:bg-muted/10 transition-colors">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                          <User className="size-3.5 text-primary shrink-0" />
+                          <span className="truncate">{sig.signerName}</span>
+                        </div>
+                        <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                          <Mail className="size-3 shrink-0" />
+                          <span className="truncate">{sig.signerEmail}</span>
+                        </div>
+                      </div>
+                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[10px] font-bold shrink-0">
+                        Assinado
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-foreground bg-muted/30 p-2.5 rounded-xl min-h-[44px]">
+                      <Building className="size-4 text-primary shrink-0" />
+                      <span className="truncate font-medium">{sig.classifiedTitle}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono pt-1">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="size-3" />
+                        {dateStr}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Globe className="size-3" />
+                        {sig.ipAddress}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── BIFURCAÇÃO DESKTOP: Tabela Corporativa Densa (>=640px) ── */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/40 text-muted-foreground font-medium border-b border-border/40 uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="py-3 px-4 sm:px-5">Investidor / Comprador</th>
+                    <th className="py-3 px-4 sm:px-5">Documento (LGPD)</th>
+                    <th className="py-3 px-4 sm:px-5">Empresa / Ponto Alvo</th>
+                    <th className="py-3 px-4 sm:px-5">Data e Hora</th>
+                    <th className="py-3 px-4 sm:px-5">Telemetria IP</th>
+                    <th className="py-3 px-4 sm:px-5 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {ndas.map((sig: any) => {
+                    const dateStr = sig.signedAt
+                      ? new Date(sig.signedAt).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Data não registrada";
+
+                    return (
+                      <tr key={sig.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="py-3.5 px-4 sm:px-5">
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-foreground flex items-center gap-1.5">
+                              <User className="size-3 text-muted-foreground" />
+                              <span>{sig.signerName}</span>
+                            </div>
+                            <div className="text-muted-foreground flex items-center gap-1 text-[11px]">
+                              <Mail className="size-2.5" />
+                              <span>{sig.signerEmail}</span>
+                            </div>
                           </div>
-                          <div className="text-muted-foreground flex items-center gap-1 text-[11px]">
-                            <Mail className="size-2.5" />
-                            <span>{sig.signerEmail}</span>
+                        </td>
+
+                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground">
+                          {sig.signerDocumentMasked}
+                        </td>
+
+                        <td className="py-3.5 px-4 sm:px-5">
+                          <div className="flex items-center gap-1.5 font-medium text-foreground">
+                            <Building className="size-3.5 text-primary shrink-0" />
+                            <span className="truncate max-w-[200px]">{sig.classifiedTitle}</span>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground">
-                        {sig.signerDocumentMasked}
-                      </td>
+                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-[11px]">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="size-3 text-muted-foreground" />
+                            <span>{dateStr}</span>
+                          </div>
+                        </td>
 
-                      <td className="py-3.5 px-4 sm:px-5">
-                        <div className="flex items-center gap-1.5 font-medium text-foreground">
-                          <Building className="size-3.5 text-primary shrink-0" />
-                          <span className="truncate max-w-[200px]">{sig.classifiedTitle}</span>
-                        </div>
-                      </td>
+                        <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-[11px]">
+                          <div className="flex items-center gap-1">
+                            <Globe className="size-3 text-muted-foreground" />
+                            <span>{sig.ipAddress}</span>
+                          </div>
+                        </td>
 
-                      <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-[11px]">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="size-3 text-muted-foreground" />
-                          <span>{dateStr}</span>
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 sm:px-5 font-mono text-muted-foreground text-[11px]">
-                        <div className="flex items-center gap-1">
-                          <Globe className="size-3 text-muted-foreground" />
-                          <span>{sig.ipAddress}</span>
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-4 sm:px-5 text-right">
-                        <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[10px] font-bold">
-                          Assinado
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <td className="py-3.5 px-4 sm:px-5 text-right">
+                          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20 text-[10px] font-bold">
+                            Assinado
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

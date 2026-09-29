@@ -218,3 +218,457 @@ Abaixo está o confronto minucioso entre o que foi solicitado em cada iteração
    - Criação da visualização ágil do cardápio digital por estabelecimento com seleção inline de modificadores e carrinho flutuante fixo.
 4. **Microfase 4 — Persistência da Planta do Salão de Mesas:**
    - Migration `store_floor_plan` para armazenar posições X/Y/formato das mesas editáveis pelo lojista.
+
+---
+
+## 10. 🛡️ MASTER PROMPT V139: THE OMNI-CHECKOUT, LOGISTICS ENGINE & TRUST/SAFETY PROTOCOL (COMPLETUDE SÉPTUPLA)
+
+> **Data de Homologação:** 29 de Setembro de 2026  
+> **Completude Séptupla Atestada:** Camada 1 (BD & RLS) ➔ Camada 2 (BFF & Zod) ➔ Camada 3 (UI de Ação) ➔ Camada 4 (Superfície de Governança no Workspace) ➔ Camada 5 (Higiene Anti-AI Smell) ➔ Camada 6 (Ergonomia dos 3 Toques) ➔ Camada 7 (Zero CLS & 0 Erros de Runtime).
+
+### 10.1. Camada 1: Banco de Dados & RLS Deny-by-Default
+- **Arquivo de Migração:** `supabase/migrations/20261203000000_v139_omni_checkout_logistics_and_trust_safety.sql`
+- **Tabelas Criadas/Reforçadas:**
+  - `user_addresses`: Gestão relacional completa de endereços com suporte explícito a condomínios (`is_apartment`, `block_tower`, `intercom_code`, `access_instructions`, `latitude`, `longitude`, `is_default`). RLS estrito onde o usuário autenticado só visualiza e manipula seus próprios registros.
+  - `user_reputation`: Tabela de Trust & Safety com `trust_score` (0 a 100), contador de advertências (`strikes_count`), flags de risco (`is_flagged_for_review`), status (`active`, `restricted`, `banned`) e histórico de ocorrências.
+  - Extensão da tabela `orders`: Adicionadas as colunas `delivery_to_door` (boolean), `door_delivery_fee_cents` (integer), `delivery_location_type` (enum), `courier_arrived_at` (timestamptz), `waiting_time_minutes` (integer) e `waiting_penalty_cents` (integer).
+  - RPCs Atômicas:
+    - `record_courier_arrival(order_uuid)`: Registra atomicamente a chegada do entregador parceiro com carimbo de tempo inviolável.
+    - `calculate_courier_waiting_penalty(order_uuid)`: Avalia o tempo decorrido, aplicando a tolerância de 15 minutos e gerando a taxa adicional de espera (R$ 0,50/min excedente) de forma transparente.
+
+### 10.2. Camada 2: Contratos de Serviço e BFF (Server Functions)
+- **`src/services/addresses.functions.ts`:**
+  - `getUserAddresses`: Consulta otimizada dos endereços salvos do usuário autenticado.
+  - `saveUserAddress`: Inserção/atualização atômica de endereço com validação Zod e marcação inteligente de padrão.
+  - `deleteUserAddress`: Exclusão segura com verificação de autoridade.
+  - `validateDeliveryLocationGPS`: Cálculo trigonométrico da distância geodésica pela Fórmula de Haversine (tolerância de até 3,5 km contra discrepâncias de CEP e fraude de rota).
+- **`src/services/waesy-go.functions.ts`:**
+  - `getCourierLogisticsConfig` & `updateCourierLogisticsConfig`: Parâmetros operacionais do motoboy (se aceita subir em apartamento, valor da taxa de subida e raio de cobertura).
+  - `recordCourierArrival` & `checkCourierWaitingPenalty`: Integração direta com as RPCs de chegada e espera.
+- **`src/services/trust-and-safety.functions.ts`:**
+  - `getUserReputation`: Recuperação do score de confiabilidade e alertas de risco do comprador.
+  - `cancelOrderByStoreSafely`: Cancelamento de segurança pela loja (motivos: `suspected_fraud`, `abusive_customer`, `high_risk_area`, `ai_manipulation_attempt`, `stock_out`, `other`) sem punição no índice de qualidade algorítmico do lojista.
+  - `analyzeClaimForScam`: Motor anti-fraude de claims de avaria/produto defeituoso.
+
+### 10.3. Camada 3: UI de Ação do Cliente e do Entregador
+- **`src/routes/_store.checkout.tsx`:**
+  - **Zero-Amnesia:** Card de identificação confirmado e silencioso para clientes autenticados, com seleção direta de endereços salvos sem digitação redundante.
+  - **Condomínio & Subida:** Switch canônico para subida na porta do apartamento (+ R$ 5,00) com campos estruturados para Bloco, Torre e Interfone.
+  - **Validação Geográfica Haversine:** Alerta defensivo `GpsMismatchModal` caso as coordenadas do GPS divirjam do endereço declarado.
+  - **Políticas Pétreas:** Micro-copy legal e modal `DeliveryLocationPolicySheet` com regras claras de convivência e tolerância.
+- **`src/routes/_store.conta.enderecos.tsx`:**
+  - Interface Apple HIG conectada 100% à tabela `user_addresses`, com modal simplificado, detecção de apartamento e badge de endereço padrão.
+- **`src/routes/_store.entrega.$token.tsx`:**
+  - Painel do motoboy Waesy Go com botão "📍 Cheguei no Endereço", contador em tempo real do tempo de tolerância de 15 minutos e cálculo dinâmico da taxa de espera excedente.
+
+### 10.4. Camada 4: Gestão e Governança no Workspace da Loja
+- **`src/routes/workspace.pedidos.$id.tsx`:**
+  - **Trust Score & Segurança:** Exibição do score do comprador (0-100) e alertas de advertências ou reincidência de cancelamentos no card do cliente.
+  - **Diretrizes Waesy Go:** Indicação explícita se o cliente solicitou entrega na porta (taxa de R$ 5,00 repassada) ou portaria, com dados de bloco, torre e interfone.
+  - **Chegada & Espera:** Exibição do horário exato de chegada do motoboy no destino e minutos de espera.
+  - **Cancelamento Seguro:** Botão e modal com justificativa técnica para cancelamento imediato sem penalização pelo algoritmo da plataforma.
+
+### 10.5. Prova de Runtime & Verificação Final (Proof Verifier)
+- **Vitest Unit & Integration Suite:** **98 arquivos de teste, 573 testes executados, 100% aprovados (0 erros)**.
+- **Cloudflare Pages Production Build:** **Exit Code 0** (`Successfully created ultra-optimized single-file dist/_worker.js` e `dist/_routes.json`).
+- **Padrão Anti-AI Smell:** Zero cards prolixos com explicações óbvias; ações diretas, tipografia com clamp, touch targets de 44px e silêncio visual absoluto.
+
+---
+
+## 11. 🍕 PROTOCOLO DE MODIFICADORES GASTRONÔMICOS & PERÍCIA VISUAL DE RMA COM IA
+
+> **Data de Homologação:** 29 de Setembro de 2026  
+> **Completude Séptupla Atestada:** Unificação do Catálogo de Alimentos (Foodyman Benchmark), Perícia Anti-Fraude com IA em Devoluções e Garantia de 3 Toques no Mobile.
+
+### 11.1. Modificadores Públicos de Gastronomia & Varejo
+- **BFF (`src/services/product.functions.ts`):** `_getProductBySlug` agora unifica os grupos de `product_modifier_groups` (adicionais, complementos, pontos de carne, adicionais de pizza e açaí) convertendo-os atomicamente para o modelo universal de `optionGroups`, garantindo que produtos gastronômicos exibam seus opcionais e obrigatórios na vitrine pública.
+- **Validação de Grupos Obrigatórios (`src/routes/_store.produto.$slug.tsx`):**
+  - Impedimento de adição à sacola sem o preenchimento de grupos com `isRequired = true` ou `minSelections > 0`.
+  - Recálculo dinâmico do preço unitário com os acréscimos (`price_delta_cents`) e atualização em tempo real da barra de compra inferior (`Thumb Zone`).
+  - Envio limpo de `options: { modifiers: selectedIds }` para `addToCart` em [`src/services/cart.functions.ts`](file:///c:/Users/Excelência Tour SMO/Documents/waesy/src/services/cart.functions.ts).
+
+### 11.2. Perícia Visual de Devoluções & Trocas (RMA / Art. 49 CDC)
+- **BFF (`src/services/rma.functions.ts`):** `requestCustomerRma` atualizado para receber `claimPhotoUrl: z.string().url().optional()`. Executa peritagem automática via `analyzeClaimForScam` com verificação de artefatos de IA sintética (Midjourney, DALL-E, Stable Diffusion, renders e ruídos suspeitos).
+- **UI do Cliente (`src/routes/_store.conta.trocas.tsx`):**
+  - Campo de Foto da Avaria / Embalagem com preview em tempo real e aviso de perícia digital.
+  - Histórico de trocas com selo de autenticidade (`Selo de Autenticidade ✓ Foto Autêntica Verificada`) ou aviso de perícia em andamento (`Em Auditoria Pericial`).
+- **Superfície do Lojista (`src/routes/workspace.pedidos.trocas.tsx`):**
+  - O `ResolutionDrawer` exibe a foto anexada pelo cliente com link para alta resolução.
+  - Diagnóstico de IA: Selo Verde para fotos reais de produtos ou Alerta Vermelho para suspeita de imagem sintética gerada por IA.
+
+### 11.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:** **99 arquivos de teste, 578 testes executados, 100% aprovados (0 erros)**.
+- **Cloudflare Pages Production Build:** **Exit Code 0** (`Successfully created ultra-optimized single-file dist/_worker.js` e `dist/_routes.json`).
+
+---
+
+## 12. 🍽️ PLANTA DO SALÃO DE MESAS 2D NO PDV & IMPLEMENTAÇÃO DO PLAYBOOK DE AUDITORIA ALL-IN-ONE
+
+> **Data de Homologação:** 29 de Setembro de 2026  
+> **Completude Séptupla Atestada:** Conexão Real da Planta do Salão (`store_floor_plans`) no PDV, Seleção de Mesas em 1 Toque, Despacho para Comandas de Cozinha (`addItemsToTableComanda`) e Criação da Árvore Canônica de Auditoria em `/auditoria`.
+
+### 12.1. Execução do Playbook de Auditoria All-in-One
+Seguindo as diretrizes metodológicas do **Playbook de Auditoria para Sistemas All-in-One**, foi consolidada a árvore de artefatos permanente na raiz do projeto:
+- `auditoria/00-inventario.json`: Mapeamento estrutural congelado com **380 rotas**, **573 componentes**, **510 tabelas relacionais**, **1580 server functions** e integrações externas auditadas.
+- `auditoria/01-grafo.json`: Grafo de nós e arestas de consumo, dependências, órfãos e desvinculações identificadas.
+- `auditoria/02-contratos.md`: Contratos de rotas canônicas (propósito <= 12 palavras, dados lidos, ações, eventos, autorização, estados e veredito).
+- `auditoria/03-fluxos.md`: Jornadas end-to-end completas (Delivery Waesy Go, Atendimento Presencial PDV com Salão 2D, Perícia RMA de IA, Advocacia JUS Prazos Fatais).
+- `auditoria/04-achados.json`: Dossiê de falhas, gaps e desvinculações no schema fixo da auditoria com status de correção.
+- `auditoria/05-design.md`: Auditoria de tokens, cores semânticas e erradicação de ruído de texto (Anti-AI Design).
+- `auditoria/06-plataformas.md`: Split nativo mobile (390px edge-to-edge, touch targets de 44px, bottom sheets) vs nativo desktop (1280px, bento grid, atalhos de teclado).
+- `auditoria/07-fila.md`: Fila de correção priorizada e selos de módulos homologados.
+- `auditoria/08-regressao.md`: Checklist de verificação com testes automatizados e prova de runtime.
+- `auditoria/_estado.md`: Handoff de 12 linhas com estado da auditoria.
+
+### 12.2. Conexão da Planta do Salão de Mesas 2D no PDV (`src/routes/workspace.pdv.index.tsx`)
+- **Loader do PDV:** Integrado `getStoreFloorPlan()` de `src/services/reservations.functions.ts` no `Promise.all` do loader, recuperando a disposição física do salão, dimensões de grade e lista de mesas cadastradas.
+- **Seletor de Mesas no Ticket & Barra de Navegação:**
+  - Botão interativo no header superior "Salão 2D" (`Armchair`) para visualização rápida.
+  - Seletor contextual no Ticket de Venda alternando entre modo "Balcão" e "Mesa X".
+  - Modal interativa `Dialog` renderizando a grade de mesas com lugares, indicação de mesa ativa e seleção com 1 toque.
+- **Despacho para Comanda de Cozinha:**
+  - Ao selecionar a mesa e adicionar itens com modificadores gastronômicos, o botão primário aciona `handleSendItemsToTable`, invocando `addItemsToTableComanda` e limpando o ticket local para a próxima operação.
+  - Fechamento de venda no caixa (`processPOSSale`) registra a identificação da mesa e imprime comprovante térmico ESC/POS com dados completos.
+
+### 12.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/pdv-floor-plan.test.ts`: **2/2 testes aprovados** (leitura de salão 2D e persistência de layout de mesas).
+  - `src/services/rma-and-gastronomy-modifiers.test.ts`: **5/5 testes aprovados**.
+  - `src/services/omni-checkout-and-trust-safety.test.ts`: **7/7 testes aprovados**.
+  - **Suíte Global Vitest:** **100 arquivos de teste, 580 testes executados, 100% aprovados (0 erros)**.
+- **Cloudflare Pages Production Build:** **Exit Code 0** (`npm run build`).
+
+---
+
+## 13. ♿ PROTOCOLO DE ACESSIBILIDADE UNIVERSAL & WCAG 2.2 NÍVEL AA (BIGTECH COUNCIL)
+
+> **Data de Homologação:** 29 de Setembro de 2026  
+> **Completude Séptupla Atestada:** Skill `accessibility` canônica, Inclusão de `docs/ACCESSIBILITY.md` na SSOT, Regra Vinculante 26 em `AGENTS.md`, Atualização do Conselho de BigTech e Prova de Runtime em CSS/DOM.
+
+### 13.1. Consolidação da Skill `accessibility` & Conselho de BigTech
+- **Skill Canônica (`.agents/skills/accessibility/SKILL.md`):**
+  - Implementação integral dos 4 Princípios POUR (Perceivable, Operable, Understandable, Robust).
+  - Critérios WCAG 2.2 AA & AAA:
+    - Text Alternatives (1.1) e Icon Buttons com `aria-label` e `aria-hidden="true"`.
+    - Contraste de cor 4.5:1 (texto normal) e 3:1 (texto grande / UI components).
+    - Teclado universal (2.1), sem keyboard traps e com focus traps em modais.
+    - Focus Visible (2.4.7) e Focus Not Obscured (2.4.11 - novo no WCAG 2.2) com `scroll-margin-top: 80px` e `scroll-margin-bottom: 60px` para desimpedir o foco de barras fixas (`TopBar` e `MobileNav`).
+    - Skip Links para navegação rápida (2.4.1).
+    - Alvos de toque ergonômicos de 44x44px no mobile (2.5.8 & Apple HIG).
+    - Movimento Reduzido (`prefers-reduced-motion: reduce`) para proteção contra vertigem (2.3.3).
+    - Entrada Redundante (3.3.7) e Autenticação Acessível (3.3.8) permitindo colar senhas/tokens sem restrições cognitivas.
+- **Evolução do Conselho Executivo (`.agents/skills/bigtech-board/SKILL.md`):**
+  - **Persona 4 (Principal Design Ops & Accessibility Director):** Incorporado o mandato inegociável de acessibilidade e design inclusivo.
+  - **Persona 5 (Staff QA & Verification Gatekeeper):** Adicionado o portão de verificação a11y com checagem de teclado, contraste e leitores de tela.
+- **Regras Vinculantes (`.agents/AGENTS.md`):**
+  - Inclusão de `docs/ACCESSIBILITY.md` na tabela SSOT.
+  - Instituída a **Regra 26 (Mandato de Acessibilidade Universal & WCAG 2.2 Nível AA)**.
+
+### 13.2. Implementação no Código-Fonte da Plataforma
+- **`src/styles.css`:**
+  - Utilitários `.visually-hidden` e `.sr-only` para leitores de tela.
+  - Estilização canônica de `.skip-link` com animação de foco ao primeiro `Tab`.
+  - Configuração global de `:focus-visible` com anel de alto contraste e `scroll-margin` defensivo contra sobreposição de barras flutuantes.
+  - Bloco de `@media (prefers-reduced-motion: reduce)` congelando durações de animação e transição.
+- **`src/routes/__root.tsx`:**
+  - Tag `<html lang="pt-BR">` garantida.
+  - Skip Link acessível (`<a href="#main-content" className="skip-link">Pular para o conteúdo principal</a>`) inserido como primeiro elemento de `<body>`.
+
+### 13.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/accessibility-wcag.test.ts`: **5/5 testes aprovados** com validação de CSS, DOM, SSOT e skill.
+  - **Suíte Global Vitest:** **101 arquivos de teste, 585 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** **Exit Code 0** (`npm run build`).
+
+---
+
+## 14. Otimização de Requisitos EARS & Conselho de BigTech (Prompt 32)
+
+### 14.1. Governança da Skill `prompt-optimizer` & 4 Camadas de Refinamento
+- **Metodologia EARS (Easy Approach to Requirements Syntax):**
+  - Implementação integral dos 5 Padrões Normativos Canônicos:
+    1. *Ubíquo:* `The system shall <action>` (comportamento contínuo/invariante de sistema).
+    2. *Orientado a Eventos:* `When <trigger>, the system shall <action>` (gatilhos temporais e de interação).
+    3. *Impulsionado por Estado:* `While <state>, the system shall <action>` (condição ativa de sessão ou modo).
+    4. *Condicional / Opcional:* `If <condition>, the system shall <action>` (ramificações e regras de negócio).
+    5. *Comportamento Indesejado (Defensivo):* `If <condition>, the system shall prevent <unwanted action> AND execute <recovery>` (resiliência, segurança, sanitização).
+- **Biblioteca Completa de Referências Técnicas (`.agents/skills/prompt-optimizer/references/`):**
+  - `ears_syntax.md`: Regras gramaticais, palavras-chave e padrões compostos.
+  - `domain_theories.md`: 40+ teorias industriais mapeadas em 10 domínios (GTD, Fogg B=MAT, Gestalt, Hick, Fitts, Zero Trust, Contabilidade Mental).
+  - `examples.md`: 4 Casos reais de transformação (Anti-procrastinação, PDP E-commerce, Recuperação de Senha, Relatórios de Vendas Multi-Tenant).
+  - `advanced_techniques.md`: Multi-stakeholders, requisitos não-funcionais (NFRs) quantificados e lógica condicional avançada.
+- **Evolução do Conselho Executivo (`.agents/skills/bigtech-board/SKILL.md`):**
+  - **Persona 1 (CPO & Presidente do Conselho):** Mandato formal de processar prompts vagos via `prompt-optimizer`, decompondo-os em matriz `[EARS-1]..[EARS-N]` e ancorando em teorias científicas.
+  - **Persona 5 (Staff QA):** Validação de completude contra a matriz EARS no Verification Gate.
+- **Regras Vinculantes (`.agents/AGENTS.md`):**
+  - Inclusão formal de `prompt-optimizer` na tabela de Single Source of Truth (SSOT).
+  - Atualização da Persona 1 do Conselho Executivo.
+  - Instituição da **Regra 27 (Mandato de Otimização EARS & Especificação Rigorosa de Requisitos)**.
+
+### 14.2. Implementação no Código-Fonte da Plataforma
+- **`src/lib/ears-validator.ts`:**
+  - Classificador sintático de requisitos (`classifyEarsPattern`).
+  - Detector de adjetivos vagos e termos proibidos (`detectVagueTerms` e `validateEarsSyntax`).
+  - Formatador canônico estruturado (`formatEarsStatement`).
+- **`src/services/prompt-optimizer.test.ts`:**
+  - 15 testes unitários e de integração cobrindo os 5 padrões, anti-patterns, integridade das 4 referências e governança em `AGENTS.md` e `bigtech-board`.
+
+### 14.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/prompt-optimizer.test.ts`: **15/15 testes aprovados** (100% de cobertura).
+  - **Suíte Global Vitest:** **102 arquivos de teste, 600 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** Compilação com **Exit Code 0** (`npm run build`).
+
+---
+
+## 15. Decomposição Hierárquica MECE & Motor DAG de PRD (Prompt 33)
+
+### 15.1. Governança da Skill `decompose-prd` & Decomposição em 3 Níveis
+- **Filosofia Central MECE & Jobs-to-be-Done:**
+  - Compreensão antes de decompor (leitura integral, intenção e stakeholders).
+  - Profundidade progressiva limitada estritamente ao 3º nível:
+    - *Nível 1:* Épicos (3 a 7 por PRD).
+    - *Nível 2:* Funcionalidades (2 a 5 por Épico) com critérios `Given/When/Then`.
+    - *Nível 3:* Tarefas Executáveis por IA (2 a 7 por Funcionalidade) calibradas entre 2000 e 4000 tokens.
+- **Biblioteca Completa de 9 Referências Técnicas (`.agents/skills/decompose-prd/references/`):**
+  - `ingestion-pipeline.md`: Extração e normalização de PDF, DOCX, Markdown, Notion e HTML.
+  - `decomposition-engine.md`: Algoritmos MECE e taxonomia de domínios.
+  - `dependency-graphs.md`: Teoria dos grafos, Kahn's topological sort e cálculo do caminho crítico.
+  - `task-specifications.md`: Contratos de interface com codePath e testPath.
+  - `clarification.md`: Resolução de 4 categorias de ambiguidades via AskUserQuestion.
+  - `notion-integration.md`: Esquemas relacionais no Notion (Épicos, Features, Tarefas).
+  - `context-management.md`: Chunking semântico para PRDs extensos (>50 páginas).
+  - `industry-patterns.md`: Padrões para E-commerce, Fintech, PDV, Turismo e JUS.
+  - `traceability.md`: Matriz bidirecional de rastreabilidade e análise de impacto.
+- **Catálogo de 7 Modelos Canônicos (`.agents/skills/decompose-prd/templates/`):**
+  - `epic-template.md`, `feature-template.md`, `task-template.md`, `dependency-graph.md`, `notion-schema.md`, `traceability-matrix.md`, `clarification-form.md`.
+- **Evolução do Conselho Executivo (`.agents/skills/bigtech-board/SKILL.md`):**
+  - **Persona 2 (Chief Software Architect):** Ativação obrigatória de `decompose-prd` para modelagem em DAG MECE, camadas de execução paralela (Layer 0..N) e caminho crítico.
+- **Regras Vinculantes (`.agents/AGENTS.md`):**
+  - Inclusão formal de `decompose-prd` na tabela SSOT.
+  - Atualização da Persona 2 do Conselho Executivo.
+  - Instituição da **Regra 28 (Mandato de Decomposição Hierárquica MECE & DAG de Tarefas)**.
+
+### 15.2. Implementação no Código-Fonte da Plataforma
+- **`src/lib/prd-decomposer.ts`:**
+  - `calculateDagLayers`: Estratificação em camadas paralelas de execução e detecção de ciclos.
+  - `calculateCriticalPath`: Identificação do caminho sequencial crítico de maior duração.
+  - `validateDecompositionMece`: Validação estrita de exclusividade mútua e completude exaustiva (100% de cobertura de requisitos).
+  - `generateMermaidDag`: Visualização gráfica com realce visual do caminho crítico.
+  - `generateTraceabilityMatrix`: Mapeamento bidirecional Requisito ➔ Épico ➔ Feature ➔ Tarefas.
+- **`src/services/decompose-prd.test.ts`:**
+  - 13 testes automatizados cobrindo Kahn's algorithm, detecção de ciclos, cálculo de caminho crítico, validação MECE, geração de Mermaid e integridade dos 9 arquivos de referência e 7 templates.
+
+### 15.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/decompose-prd.test.ts`: **13/13 testes aprovados**.
+  - **Suíte Global Vitest:** **103 arquivos de teste, 613 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** Compilação final com **Exit Code 0** (`npm run build`).
+
+---
+
+## 16. Liderança de Produto & Motor Autônomo de Gestão Executiva (Prompt 34)
+
+### 16.1. Governança da Skill `pm` & As Duas Modalidades Operacionais
+- **Identidade e Postura: Você É o Dono do Produto:**
+  - O agente não atua como consultor passivo com menu de frameworks; toma a decisão de negócio, expõe o raciocínio e avança proativamente.
+  - **Modos de Saída Contextuais:**
+    - *Modo Decisão Leve (Fundador Solo):* Conclusão em 1 frase ➔ Até 3 razões ➔ Até 2 próximos passos imediatos.
+    - *Modo Formato Completo (Equipes, B2B e Liderança):* PRDs executáveis, memorandos de decisão com impacto financeiro e critérios de aceitação.
+- **Modelo de Contexto de Decisão (3 Perguntas Inegociáveis):**
+  - Métrica / Objetivo central do momento.
+  - Última decisão relevante tomada e por quem.
+  - Maior restrição conhecida em torno da qual projetar.
+- **Biblioteca Completa de 22 Referências Técnicas (`.agents/skills/pm/references/`):**
+  - `onboarding.md`, `people-registry.md`, `proactive-agenda.md`, `market-intelligence.md`, `pm-integrity.md`, `business-strategy.md`, `change-sensing.md`, `requirements.md`, `prioritization.md`, `problem-analysis.md`, `business-analysis.md`, `data-analysis.md`, `prd-template.md`, `progress-tracking.md`, `stakeholder-comms.md`, `external-presentation.md`, `cross-team-alignment.md`, `rituals.md`, `knowledge-base.md`, `launch.md`, `playbooks.md`, `session-handoff.md`.
+- **Evolução do Conselho Executivo (`.agents/skills/bigtech-board/SKILL.md`):**
+  - **Persona 1 (CPO & Presidente do Conselho / PM Lead):** Incorporação da postura executiva da skill `pm`, bifurcação de modo e integridade de produto inegociável.
+- **Regras Vinculantes (`.agents/AGENTS.md`):**
+  - Inclusão formal de `pm` na tabela SSOT.
+  - Atualização da Persona 1 do Conselho Executivo.
+  - Instituição da **Regra 29 (Mandato do Gerente de Produto Autônomo)**.
+
+### 16.2. Implementação no Código-Fonte da Plataforma
+- **`src/lib/product-manager.ts`:**
+  - `determineOutputMode`: Seleção entre Modo Leve e Formato Completo por persona.
+  - `validateDecisionContext`: Validação dos 3 campos obrigatórios de contexto.
+  - `formatLightweightDecision`: Formatação canônica de decisão rápida.
+  - `calculateRiceScore`: Priorização RICE matemática com validação de esforço.
+  - `detectScopeDrift`: Detecção ativa de desvios entre PRD e código em produção.
+  - `formatPppReport`: Geração de relatórios semanais de Progresso, Planos e Problemas.
+- **`src/services/pm.test.ts`:**
+  - 14 testes cobrindo adaptação de modos, contexto de decisão, fórmula RICE, detecção de scope drift, relatório PPP e integridade de todas as 22 referências.
+
+### 16.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/pm.test.ts`: **14/14 testes aprovados**.
+  - **Suíte Global Vitest:** **104 arquivos de teste, 627 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** Compilação com **Exit Code 0** (`npm run build`).
+
+---
+
+## 17. Otimização de Performance Web & Core Web Vitals (Prompt 35)
+
+### 17.1. Governança da Skill `web-performance` & Orçamentos de Desempenho
+- **Orçamento de Desempenho Estrito (Performance Budget):**
+  - Peso total da página: $< 1,5	ext{ MB}$ (Gzip/Brotli).
+  - JavaScript total: $< 300	ext{ KB}$.
+  - CSS total: $< 100	ext{ KB}$.
+  - Imagem Hero / LCP: $< 500	ext{ KB}$.
+  - Fontes Web: $< 100	ext{ KB}$ (WOFF2 subset).
+  - Scripts de Terceiros: $< 200	ext{ KB}$.
+- **Caminho Crítico de Renderização & Early Hints:**
+  - TTFB $< 800	ext{ms}$ com edge caching na Cloudflare.
+  - HTTP 103 Early Hints para pré-carregar CSS crítico e Hero LCP.
+  - Preconnect para origens de fontes (`fonts.googleapis.com` e `fonts.gstatic.com`).
+  - Speculation Rules API configurada no `<head>` de `src/routes/__root.tsx` para pré-renderização instantânea no hover.
+- **Biblioteca Completa de 7 Referências Técnicas (`.agents/skills/web-performance/references/`):**
+  - `performance-budgets.md`, `critical-rendering-path.md`, `image-media-optimization.md`, `javascript-runtime-efficiency.md`, `font-loading-strategies.md`, `caching-cdn-service-workers.md`, `core-web-vitals-benchmarking.md`.
+- **Evolução do Conselho Executivo (`.agents/skills/bigtech-board/SKILL.md`):**
+  - **Persona 4 (Principal Design Ops, Accessibility & Performance Director):** Governança permanente de orçamentos de desempenho, Core Web Vitals, imagens AVIF/WebP e zero layout thrashing.
+  - **Persona 5 (Staff QA):** Portão de verificação de Core Web Vitals (LCP $< 2.5	ext{s}$, INP $< 200	ext{ms}$, CLS $< 0.1$).
+- **Regras Vinculantes (`.agents/AGENTS.md`):**
+  - Inclusão formal de `docs/PERFORMANCE.md` na tabela SSOT.
+  - Atualização da Persona 4 do Conselho Executivo.
+  - Instituição da **Regra 30 (Mandato de Alta Performance Web & Core Web Vitals)**.
+
+### 17.2. Implementação no Código-Fonte da Plataforma
+- **`src/styles.css`:**
+  - Ativação global da View Transitions API: `@view-transition { navigation: auto; }`.
+  - Classe utilitária de virtualização nativa: `.content-visibility-auto` (`contain-intrinsic-size: 0 80px;`).
+- **`src/routes/__root.tsx`:**
+  - Injeção de script canônico de Speculation Rules (`type="speculationrules"`) com pré-renderização moderada para todas as rotas internas.
+- **`src/lib/web-performance.ts`:**
+  - `auditPerformanceBudget`: Auditoria de ativos com detecção de violações orçamentárias.
+  - `evaluateCoreWebVitals`: Classificação de LCP, INP, CLS e TTFB com score 0-100.
+  - `generateSpeculationRules`: Gerador de payloads JSON de pre-rendering.
+  - `batchDomOperations`: Eliminação de layout thrashing agrupando leituras e escritas.
+  - `debounce` e `throttle`: Utilitários de controle de taxa de disparo em eventos de viewport.
+- **`src/services/web-performance.test.ts`:**
+  - 15 testes cobrindo limites de orçamento, Core Web Vitals, Speculation Rules, batching de DOM, CSS de View Transitions, DOM script e integridade das 7 referências.
+
+### 17.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/web-performance.test.ts`: **15/15 testes aprovados**.
+  - **Suíte Global Vitest:** **105 arquivos de teste, 642 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** Compilação com **Exit Code 0** (`npm run build`).
+
+---
+
+## 18. Síntese de Pesquisa de Usuários & Evidências Empíricas (Prompt 36)
+
+### 18.1. Governança da Skill `ux-research-synthesis` & Rigor Científico
+- **Separação Rígida entre Fato e Interpretação:**
+  - *Fatos Observáveis:* Proibição de julgamento prévio ou suposições. Registro numérico exato de ações de usuários (ex: "6 de 8 participantes hesitaram por mais de 5 segundos").
+  - *Interpretação:* Hipóteses analíticas explicitamente categorizadas como tais.
+- **Quantificação Mandatória de Prevalência:**
+  - Banimento terminante de qualificadores vagos ("a maioria", "muitos", "poucos"). Todo achado expressa prevalência absoluta e percentual.
+- **Voz do Cliente Inviolável (Supporting Evidence):**
+  - Citações literais obrigatórias em todos os temas de pesquisa (`"[Citação literal]" — P[X]`).
+- **Triangulação Tripla de Dados:**
+  - Qualitativo (Entrevistas/Testes de Usabilidade) + Quantitativo (NPS/CSAT) + Telemetria/Analytics de Produção.
+- **Biblioteca Completa de 6 Manuais Técnicos (`.agents/skills/ux-research-synthesis/references/`):**
+  - `qualitative-coding.md`: Codificação temática indutiva/dedutiva e diagramas de afinidade.
+  - `interview-protocols.md`: Roteiros de entrevista semiestruturada, técnica "5 Porquês" e neutralidade.
+  - `usability-testing-analysis.md`: Escala SUS, taxas de sucesso, classificação de severidade Nielsen (P0-P3).
+  - `nps-csat-quant-synthesis.md`: Metodologia canônica de NPS, agrupamento de respostas abertas e análise de sentimento.
+  - `triangulation-methods.md`: Modelo de triangulação tripla, matriz de convergência e resolução de divergências.
+  - `synthesis-templates.md`: Templates executivos para Diretoria, Product Pods e Design System.
+- **Evolução do Conselho Executivo (`.agents/skills/bigtech-board/SKILL.md`):**
+  - **Persona 1 (CPO & Visão de Produto):** Mandato de decisões fundamentadas em evidências empíricas e separação de fatos observáveis vs hipóteses interpretativas.
+- **Regras Vinculantes (`.agents/AGENTS.md`):**
+  - Inclusão formal de `docs/UX_RESEARCH.md` + `.agents/skills/ux-research-synthesis/SKILL.md` na tabela SSOT.
+  - Atualização do Conselho Executivo.
+  - Instituição da **Regra 31 (Mandato de Pesquisa Empírica & Síntese de UX)**.
+
+### 18.2. Implementação no Código-Fonte da Plataforma
+- **`src/lib/ux-research.ts`:**
+  - `validateObservationVsInterpretation`: Validador semântico com detecção e rejeição de qualificadores vagos e termos especulativos em observações.
+  - `calculateNps`: Motor matemático canônico de cálculo de Net Promoter Score com promotores (9-10), passivos (7-8) e detratores (0-6).
+  - `filterHighImpactOpportunities`: Matriz de priorização filtrando Quick Wins e apostas estratégicas (High Impact + Low/Med Effort).
+  - `formatResearchSynthesisReport`: Gerador canônico de relatórios de síntese de pesquisa em Markdown estruturado.
+- **`src/services/ux-research.test.ts`:**
+  - 15 testes cobrindo validação de observação vs interpretação, cálculo de NPS, priorização de impacto/esforço, formatação canônica de relatório, integridade das 6 referências e governança em `AGENTS.md` e `bigtech-board`.
+
+### 18.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/ux-research.test.ts`: **15/15 testes aprovados**.
+  - **Suíte Global Vitest:** **106 arquivos de teste, 657 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** Compilação com **Exit Code 0** (`npm run build`).
+
+---
+
+## 19. Gerenciador de Arquivos & Governança de Operações em Lote (Prompt 37)
+
+### 19.1. Governança da Skill `file-manager` & Guardrails de Segurança
+- **Operações Terminantemente Proibidas (Absolute Blacklist):**
+  - Bloqueio irrestrito de qualquer operação em diretórios do sistema:
+    - Unix/Linux: `/System`, `/usr`, `/bin`, `/sbin`, `/etc`, `/dev`, `/proc`, `/sys`, `/root`.
+    - Windows: `C:\Windows`, `C:\Program Files`, `C:\Program Files (x86)`, `C:\System Volume Information`, `C:\Recovery`, `C:\bootmgr`.
+- **Prevenção Estrita de Path Traversal & Proteção de Segredos:**
+  - Rejeição absoluta de sequências relativas de escape (`../`, `..\\`).
+  - Bloqueio de mutações diretas em arquivos críticos de repositório (`.git/`) e segredos de ambiente (`.env*`, chaves privadas `*.pem`, `*.key`, `id_rsa`).
+- **Mandato de Pré-Visualização (Dry-Run Preview):**
+  - Geração obrigatória de manifesto prévio detalhando os arquivos a serem movidos, renomeados ou ignorados antes de qualquer operação destrutiva.
+- **Listagem Explícita de Deleção & Confirmação:**
+  - Nenhuma deleção pode ser disparada sem exibir a lista completa de arquivos afetados.
+- **Biblioteca Completa de 4 Manuais Técnicos (`.agents/skills/file-manager/references/`):**
+  - `safety-rules-and-guardrails.md`: Lista negra de caminhos, sanitização de caminhos e protocolo de confirmação.
+  - `batch-organization.md`: Mapeamento taxonômico de extensões para subpastas padronizadas (`Documents/`, `Images/`, `Videos/`, `Audio/`, `Archives/`, `Code/`, `Others/`).
+  - `duplicate-detection.md`: Algoritmo escalonado em duas fases (tamanho em bytes + hash SHA-256) e estratégias de quarentena.
+  - `bulk-renaming.md`: Higienização de nomes, prevenção de colisões com indexação sequencial e preservação de extensões.
+- **Evolução do Conselho Executivo (`.agents/skills/bigtech-board/SKILL.md`):**
+  - **Persona 3 (Staff Security & Data Engineer / CISO):** Governança permanente de operações com arquivos, integridade de caminhos, prevenção de path traversal e proteção contra mutações em massa não autorizadas.
+- **Regras Vinculantes (`.agents/AGENTS.md`):**
+  - Inclusão formal de `docs/FILE_MANAGEMENT.md` + `.agents/skills/file-manager/SKILL.md` na tabela SSOT.
+  - Atualização da Persona 3 do Conselho Executivo.
+  - Instituição da **Regra 32 (Mandato de Governança de Arquivos, Pastas & Operações em Lote)**.
+
+### 19.2. Implementação no Código-Fonte da Plataforma
+- **`src/lib/file-manager.ts`:**
+  - `validatePathSafety`: Validador contra caminhos de sistema, path traversal e arquivos críticos.
+  - `categorizeFileByExtension`: Classificador taxonômico em 7 categorias canônicas.
+  - `planBatchOrganization`: Gerador de plano de movimentação com separação de arquivos reconhecidos e ignorados.
+  - `planBulkRename`: Planejador de renomeação em massa com detecção preventiva de colisões de nome.
+  - `formatPreOperationPreview`: Formatador de manifesto de pré-visualização (The following operations will be performed: ... Confirm?).
+  - `formatPostOperationSummary`: Formatador de sumário consolidado pós-operação (✓ Complete ...).
+- **`src/services/file-manager.test.ts`:**
+  - 17 testes cobrindo validação de segurança de caminhos (Linux e Windows), rejeição de path traversal, categorização taxonômica, planejamento de lote, renomeação com colisões, formatadores canônicos e integridade de governança.
+
+### 19.3. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite:**
+  - `src/services/file-manager.test.ts`: **17/17 testes aprovados**.
+  - **Suíte Global Vitest:** **107 arquivos de teste, 674 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** Compilação com **Exit Code 0** (`npm run build`).
+
+---
+
+## 20. Orquestração Unificada de Ciclo de Vida & Potencialização com Skills Públicas (Prompt 38)
+
+### 20.1. Integração Transversal das Skills do Conselho Executivo
+- **Pipeline Contínuo BigTech E2E:**
+  - `ux-research-synthesis` (Evidências e Oportunidades Factuais)
+  ➔ `prompt-optimizer` (Requisitos Formais EARS [EARS-1]..[EARS-N])
+  ➔ `pm` (Decisão Autônoma, RICE Scoring e Modo Leve/Full)
+  ➔ `decompose-prd` (Decomposição MECE em 3 Níveis & DAG de Tarefas)
+  ➔ `file-manager` (Guardrails de Caminhos, Anti-Traversal & Lote Seguro)
+  ➔ `accessibility` (Conformidade Universal WCAG 2.2 AA)
+  ➔ `web-performance` (Core Web Vitals & Speculation Rules)
+  ➔ `bigtech-board` (Auditoria das 7 Camadas & Zero Toasts Fictícios).
+- **Documentação Unificada SSOT:**
+  - `docs/PRODUCT_LIFECYCLE.md`: Especificação canônica do fluxo de ponta a ponta com diagrama Mermaid.
+  - `docs/POTENCIALIZACAO_ECOSSISTEMA_SKILLS.md`: Análise e catálogo das 5 habilidades públicas de ponta (`sre-resilience`, `seo-schema-engine`, `database-query-optimizer`, `ai-multimodal-extractor`, `zero-trust-rbac`).
+- **Motor TypeScript de Ciclo de Vida (`src/lib/bigtech-lifecycle.ts`):**
+  - `bridgeResearchToEars`: Conversão direta de oportunidades em requisitos EARS válidos.
+  - `bridgeEarsToPrd`: Agrupamento de requisitos normativos em PRDs prontos para decomposição.
+  - `evaluateFeatureGovernanceGate`: Portão de verificação formal auditando as 5 Personas do Conselho com cálculo de score 0-100.
+  - `generateMermaidLifecycleDiagram`: Gerador do grafo Mermaid do ciclo de vida.
+- **Suíte de Testes Automatizados (`src/services/bigtech-lifecycle.test.ts`):**
+  - 11 testes aprovados validando conversão de pesquisa, geração de PRD, aprovação 100% de propostas válidas, bloqueio de persistência fictícia, bloqueio de path traversal, bloqueio de falha de acessibilidade e diagrama Mermaid.
+
+### 20.2. Prova de Runtime & Métricas Oficiais
+- **Vitest Test Suite Integrada:**
+  - `src/services/bigtech-lifecycle.test.ts`: **11/11 testes aprovados**.
+  - **Suíte Combinada das 8 Novas Skills:** **105 testes aprovados (100% sucesso)**.
+  - **Suíte Global Vitest:** **108 arquivos de teste, 685 testes executados, 100% aprovados (0 falhas)**.
+- **Cloudflare Pages Production Build:** Compilação com **Exit Code 0** (`npm run build`).

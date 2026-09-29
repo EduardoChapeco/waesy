@@ -13,7 +13,19 @@ export interface DashboardActivity {
  totalCents?: number;
 }
 
+export interface NicheAggregatedMetrics {
+  occupancyRatePercentage?: number;
+  todayAppointmentsCount?: number;
+  noShowsTodayCount?: number;
+  vgvActiveCents?: number;
+  stagnantPropertiesCount?: number;
+  activeProposalsCount?: number;
+  averageTicketTodayCents?: number;
+  openTablesCount?: number;
+}
+
 export interface DashboardMetrics {
+  nicheMetrics?: NicheAggregatedMetrics;
  salesTodayCents: number;
  salesMonthCents: number;
  salesLastMonthCents: number;

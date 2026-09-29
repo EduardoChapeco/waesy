@@ -216,6 +216,7 @@ import { Route as ClaimReivindicarEntityIdRouteImport } from './routes/claim.rei
 import { Route as ClaimReputacaoEntityIdRouteImport } from './routes/claim.reputacao.$entityId'
 import { Route as MExcursaoTokenRouteImport } from './routes/m.excursao.$token'
 import { Route as MLeadLeadIdRouteImport } from './routes/m.lead.$leadId'
+import { Route as PortalSubpainelTokenRouteImport } from './routes/portal.subpainel.$token'
 import { Route as VerifyDocumentCodeRouteImport } from './routes/verify.document.$code'
 import { Route as ViajanteViagemIdRouteImport } from './routes/viajante.viagem.$id'
 import { Route as WorkspaceAdvocaciaIndexRouteImport } from './routes/workspace.advocacia.index'
@@ -1429,6 +1430,11 @@ const MLeadLeadIdRoute = MLeadLeadIdRouteImport.update({
   path: '/m/lead/$leadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalSubpainelTokenRoute = PortalSubpainelTokenRouteImport.update({
+  id: '/portal/subpainel/$token',
+  path: '/portal/subpainel/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyDocumentCodeRoute = VerifyDocumentCodeRouteImport.update({
   id: '/verify/document/$code',
   path: '/verify/document/$code',
@@ -2582,6 +2588,7 @@ export interface FileRoutesByFullPath {
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
+  '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
@@ -2952,6 +2959,7 @@ export interface FileRoutesByTo {
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
+  '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
@@ -3330,6 +3338,7 @@ export interface FileRoutesById {
   '/claim/reputacao/$entityId': typeof ClaimReputacaoEntityIdRoute
   '/m/excursao/$token': typeof MExcursaoTokenRoute
   '/m/lead/$leadId': typeof MLeadLeadIdRoute
+  '/portal/subpainel/$token': typeof PortalSubpainelTokenRoute
   '/verify/document/$code': typeof VerifyDocumentCodeRoute
   '/viajante/viagem/$id': typeof ViajanteViagemIdRoute
   '/workspace/agenda/recursos': typeof WorkspaceAgendaRecursosRoute
@@ -3709,6 +3718,7 @@ export interface FileRouteTypes {
     | '/claim/reputacao/$entityId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
+    | '/portal/subpainel/$token'
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
     | '/workspace/agenda/recursos'
@@ -4079,6 +4089,7 @@ export interface FileRouteTypes {
     | '/claim/reputacao/$entityId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
+    | '/portal/subpainel/$token'
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
     | '/workspace/agenda/recursos'
@@ -4456,6 +4467,7 @@ export interface FileRouteTypes {
     | '/claim/reputacao/$entityId'
     | '/m/excursao/$token'
     | '/m/lead/$leadId'
+    | '/portal/subpainel/$token'
     | '/verify/document/$code'
     | '/viajante/viagem/$id'
     | '/workspace/agenda/recursos'
@@ -4669,6 +4681,7 @@ export interface RootRouteChildren {
   ClaimReputacaoEntityIdRoute: typeof ClaimReputacaoEntityIdRoute
   MExcursaoTokenRoute: typeof MExcursaoTokenRoute
   MLeadLeadIdRoute: typeof MLeadLeadIdRoute
+  PortalSubpainelTokenRoute: typeof PortalSubpainelTokenRoute
   VerifyDocumentCodeRoute: typeof VerifyDocumentCodeRoute
   ViajanteViagemIdRoute: typeof ViajanteViagemIdRoute
   ApiAuthGovbrCallbackRoute: typeof ApiAuthGovbrCallbackRoute
@@ -6127,6 +6140,13 @@ declare module '@tanstack/react-router' {
       path: '/m/lead/$leadId'
       fullPath: '/m/lead/$leadId'
       preLoaderRoute: typeof MLeadLeadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/subpainel/$token': {
+      id: '/portal/subpainel/$token'
+      path: '/portal/subpainel/$token'
+      fullPath: '/portal/subpainel/$token'
+      preLoaderRoute: typeof PortalSubpainelTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify/document/$code': {
@@ -8196,6 +8216,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClaimReputacaoEntityIdRoute: ClaimReputacaoEntityIdRoute,
   MExcursaoTokenRoute: MExcursaoTokenRoute,
   MLeadLeadIdRoute: MLeadLeadIdRoute,
+  PortalSubpainelTokenRoute: PortalSubpainelTokenRoute,
   VerifyDocumentCodeRoute: VerifyDocumentCodeRoute,
   ViajanteViagemIdRoute: ViajanteViagemIdRoute,
   ApiAuthGovbrCallbackRoute: ApiAuthGovbrCallbackRoute,

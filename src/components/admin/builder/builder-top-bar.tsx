@@ -65,7 +65,7 @@ export function BuilderTopBar({
  className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer shrink-0"
  >
  <ArrowLeft className="size-4" />
- <span className="hidden sm:inline">Voltar ao Painel</span>
+ <span className="hidden sm:inline">Voltar</span>
  </Button>
 
  <div className="h-5 w-px bg-border/80 hidden sm:block shrink-0" />
@@ -171,7 +171,7 @@ export function BuilderTopBar({
  >
  <a href={publicLink} target="_blank" rel="noopener noreferrer">
  <Eye className="size-3.5 text-muted-foreground" />
- <span>Ver Online</span>
+ <span>Ver</span>
  </a>
  </Button>
 

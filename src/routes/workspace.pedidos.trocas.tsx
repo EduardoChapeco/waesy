@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { listExchanges, updateExchangeStatus } from "@/services/exchanges.functions";
 import { formatMoney } from "@/lib/money";
 import { EmptyState } from "@/components/state/states";
-import { Search, KanbanSquare, Table as TableIcon, CheckCircle2, Gift, RefreshCw, Banknote, XCircle, FileSpreadsheet, RotateCcw, Clock, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Search, KanbanSquare, Table as TableIcon, CheckCircle2, Gift, RefreshCw, Banknote, XCircle, FileSpreadsheet, RotateCcw, Clock, ShieldCheck, ShieldAlert, AlertTriangle, Camera, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { formatDate } from "@/lib/datetime";

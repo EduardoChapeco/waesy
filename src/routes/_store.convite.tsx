@@ -211,7 +211,7 @@ function ConvitePage() {
                 <Button
                   type="button"
                   onClick={handleShareWhatsApp}
-                  className="h-11 rounded-xl text-xs font-mono gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white flex-1 sm:flex-initial"
+                  className="h-11 rounded-xl text-xs font-mono gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-initial"
                 >
                   <Share2 className="size-4" />
                   <span>WhatsApp</span>

@@ -588,7 +588,7 @@ function ContasPagarPage() {
                         type="button"
                         size="sm"
                         onClick={() => setPayModal({ isOpen: true, obligation: ob })}
-                        className="h-11 flex-1 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-2 cursor-pointer shadow-2xs"
+                        className="h-11 flex-1 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 cursor-pointer shadow-2xs"
                       >
                         <CheckCircle2 className="size-4" />
                         <span>Dar Baixa / Pagar</span>
@@ -734,7 +734,7 @@ function ContasPagarPage() {
                             <Button
                               size="sm"
                               onClick={() => setPayModal({ isOpen: true, obligation: ob })}
-                              className="h-8 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1 cursor-pointer"
+                              className="h-8 rounded-xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1 cursor-pointer"
                             >
                               <CheckCircle2 className="size-3.5" />
                               <span>Pagar</span>
@@ -921,7 +921,7 @@ function ContasPagarPage() {
             <Button
               onClick={handleConfirmPay}
               disabled={isPaying}
-              className="h-10 px-5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+              className="h-10 px-5 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer"
             >
               {isPaying ? "Liquidando..." : "Confirmar Pagamento"}
             </Button>

@@ -277,13 +277,13 @@ function AdminAppointmentsPage() {
  title="Agenda"
  actions={
  <div className="flex items-center gap-2">
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5">
+ <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px]">
  <Link to="/workspace/pacotes">
  <Ticket className="size-3.5 text-primary" />
  <span>Pacotes e Passes</span>
  </Link>
  </Button>
- <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5">
+ <Button asChild size="sm" variant="outline" className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px]">
  <Link to="/workspace/agenda/recursos">
  <Users className="size-3.5" />
  <span>Profissionais e Salas</span>
@@ -298,7 +298,7 @@ function AdminAppointmentsPage() {
  variant="ghost"
  size="icon"
  onClick={() => setSelectedDate((prev) => subDays(prev, 1))}
- className="size-9 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="min-h-[44px] min-w-[44px] rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  aria-label="Dia anterior"
  >
  <ChevronLeft className="size-4" />
@@ -314,7 +314,7 @@ function AdminAppointmentsPage() {
  type="button"
  onClick={() => setSelectedDate(d)}
  className={cn(
- "flex flex-col items-center justify-center min-w-14 sm:min-w-16 py-2 px-1 rounded-xl transition-all cursor-pointer",
+ "flex flex-col items-center justify-center min-w-14 sm:min-w-16 min-h-[50px] py-1.5 px-1 rounded-xl transition-all cursor-pointer",
  isSelected
  ? "bg-primary text-primary-foreground font-bold "
  : "hover:bg-muted/60 text-muted-foreground hover:text-foreground"
@@ -338,7 +338,7 @@ function AdminAppointmentsPage() {
  variant="ghost"
  size="icon"
  onClick={() => setSelectedDate((prev) => addDays(prev, 1))}
- className="size-9 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+ className="min-h-[44px] min-w-[44px] rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
  aria-label="Próximo dia"
  >
  <ChevronRight className="size-4" />
@@ -463,7 +463,7 @@ function AdminAppointmentsPage() {
  )}`}
  target="_blank"
  rel="noopener noreferrer"
- className="size-7 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors"
+ className="min-h-[38px] min-w-[38px] rounded-xl text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer transition-colors"
  title="Enviar Lembrete / Confirmação no WhatsApp"
  >
  <MessageCircle className="size-3.5" />
@@ -472,7 +472,7 @@ function AdminAppointmentsPage() {
  <Button
  variant="ghost"
  size="icon"
- className="size-7 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+ className="min-h-[38px] min-w-[38px] rounded-xl text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 flex items-center justify-center cursor-pointer"
  title="Abrir Cartão Digital 9:16 (WhatsApp)"
  onClick={() => handleOpenCompanion(appt, resourceName)}
  >
@@ -481,7 +481,7 @@ function AdminAppointmentsPage() {
  <Button
  variant="ghost"
  size="icon"
- className="size-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+ className="min-h-[38px] min-w-[38px] rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer"
  title="Ver Prontuário / Evolução"
  onClick={() =>
  setSelectedAppt({ id: appt.id, name: appt.guest_name || "Cliente" })
@@ -498,7 +498,7 @@ function AdminAppointmentsPage() {
  <Button
  size="sm"
  variant="outline"
- className="h-8 rounded-lg text-[11px] font-bold cursor-pointer"
+ className="min-h-[44px] rounded-xl text-xs font-bold cursor-pointer"
  onClick={() =>
  statusMutation.mutate({ id: appt.id, status: "in_service" })
  }
@@ -508,7 +508,7 @@ function AdminAppointmentsPage() {
  </Button>
  <Button
  size="sm"
- className="h-8 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+ className="min-h-[44px] rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
  onClick={() =>
  statusMutation.mutate({ id: appt.id, status: "completed" })
  }
@@ -521,7 +521,7 @@ function AdminAppointmentsPage() {
  <Button
  size="sm"
  variant="ghost"
- className="h-7 text-[10px] text-muted-foreground hover:text-rose-600 cursor-pointer px-2"
+ className="min-h-[44px] text-xs text-muted-foreground hover:text-destructive cursor-pointer px-2"
  onClick={() => statusMutation.mutate({ id: appt.id, status: "cancelled" })}
  >
  Cancelar
@@ -529,7 +529,7 @@ function AdminAppointmentsPage() {
  <Button
  size="sm"
  variant="ghost"
- className="h-7 text-[10px] text-muted-foreground hover:text-destructive cursor-pointer px-2"
+ className="min-h-[44px] text-xs text-muted-foreground hover:text-destructive cursor-pointer px-2"
  onClick={() => statusMutation.mutate({ id: appt.id, status: "no_show" })}
  >
  Falta (No-Show)

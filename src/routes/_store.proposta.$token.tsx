@@ -287,7 +287,7 @@ function PublicTravelProposalPage() {
             type="button"
             size="sm"
             onClick={() => setIsCheckoutModalOpen(true)}
-            className="rounded-xl text-xs font-bold gap-1.5 h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+            className="rounded-xl text-xs font-bold gap-1.5 min-h-[44px] h-11 px-4 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
           >
             <ShieldCheck className="size-4" />
             <span>{isApproved ? "Concluir Reserva" : "Escolher & Reservar"}</span>
@@ -332,7 +332,7 @@ function PublicTravelProposalPage() {
         <Button
           type="button"
           onClick={() => setIsCheckoutModalOpen(true)}
-          className="flex-1 h-11 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+          className="flex-1 min-h-[44px] h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
         >
           <ShieldCheck className="size-4 mr-1.5" />
           <span>{isApproved ? "Concluir Reserva" : "Escolher Opção"}</span>
@@ -443,7 +443,7 @@ function PublicTravelProposalPage() {
               type="submit"
               size="icon"
               disabled={!advisorInput.trim() || advisorMutation.isPending}
-              className="h-10 w-10 rounded-xl bg-amber-600 hover:bg-amber-700 text-white shrink-0 cursor-pointer"
+              className="h-10 w-10 rounded-xl bg-primary hover:opacity-90 text-primary-foreground shrink-0 cursor-pointer"
             >
               <Send className="size-4" />
             </Button>

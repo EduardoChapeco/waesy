@@ -184,7 +184,7 @@ export default function ReaccommodationPage() {
 
         <Button
           onClick={() => setIsSheetOpen(true)}
-          className="h-11 px-5 gap-2 text-sm font-semibold rounded-xl shadow-xs bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+          className="h-11 px-5 gap-2 text-sm font-medium rounded-xl cursor-pointer"
         >
           <Plus className="size-4" />
           Registrar Novo Caso
@@ -194,8 +194,8 @@ export default function ReaccommodationPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl border border-border bg-card flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
-            <AlertTriangle className="size-4" />
+          <div className="p-2.5 rounded-xl bg-muted text-foreground">
+            <AlertTriangle className="size-4 text-muted-foreground" />
           </div>
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground uppercase">Em Análise</p>
@@ -263,7 +263,7 @@ export default function ReaccommodationPage() {
           </p>
           <Button
             onClick={() => setIsSheetOpen(true)}
-            className="h-11 px-5 gap-2 text-xs font-semibold rounded-xl bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+            className="h-11 px-5 gap-2 text-xs font-medium rounded-xl cursor-pointer"
           >
             <Plus className="size-4" />
             Registrar Primeiro Caso
@@ -278,8 +278,8 @@ export default function ReaccommodationPage() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/50 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600">
-                    <ShieldAlert className="size-5" />
+                  <div className="p-2.5 rounded-xl bg-muted text-foreground">
+                    <ShieldAlert className="size-5 text-muted-foreground" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -334,8 +334,8 @@ export default function ReaccommodationPage() {
 
               {/* Direitos Calculados */}
               {c.anac_rights_summary && (
-                <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 flex flex-wrap items-center gap-4 text-xs">
-                  <span className="font-semibold text-amber-700 dark:text-amber-400">
+                <div className="p-3 rounded-xl bg-muted/40 border border-border/50 flex flex-wrap items-center gap-4 text-xs">
+                  <span className="font-semibold text-foreground">
                     Direitos ANAC:
                   </span>
                   {c.anac_rights_summary.material_assistance?.food_voucher && (
@@ -388,8 +388,8 @@ export default function ReaccommodationPage() {
         <SheetContent size="wide" className="w-full max-sm:!max-w-full max-sm:!w-screen sm:max-w-3xl lg:max-w-[70vw] p-0 flex flex-col h-full bg-card overflow-hidden">
           <SheetHeader className="px-6 py-4 border-b border-border/60 bg-muted/20 shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
-                <ShieldAlert className="size-5" />
+              <div className="p-2 rounded-xl bg-muted text-foreground">
+                <ShieldAlert className="size-5 text-muted-foreground" />
               </div>
               <div>
                 <SheetTitle className="text-base font-bold">Registrar Caso ANAC 400 (Contingência e Reacomodação)</SheetTitle>
@@ -495,9 +495,9 @@ export default function ReaccommodationPage() {
             </div>
 
             {/* ANAC Rights Preview */}
-            <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 flex flex-col gap-2.5">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-semibold text-xs uppercase tracking-wider">
-                <ShieldAlert className="size-4" />
+            <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 flex flex-col gap-2.5">
+              <div className="flex items-center gap-2 text-foreground font-semibold text-xs uppercase tracking-wider">
+                <ShieldAlert className="size-4 text-muted-foreground" />
                 Direitos ANAC 400/2016 Calculados para {delayHours}h de atraso
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
@@ -571,7 +571,7 @@ export default function ReaccommodationPage() {
             <Button
               onClick={() => createMutation.mutate()}
               disabled={createMutation.isPending}
-              className="h-11 px-6 font-bold rounded-xl bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+              className="h-11 px-6 font-medium rounded-xl cursor-pointer"
             >
               {createMutation.isPending ? (
                 <><Loader2 className="size-4 animate-spin mr-2" />Registrando...</>

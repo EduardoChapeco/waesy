@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Clock, CalendarDots, ArrowLeft, Storefront, CheckCircle, WarningCircle, Star, ShieldCheck, Phone, User, CaretRight, CircleNotch, Ticket, CreditCard, QrCode, Money, MapPin, WhatsappLogo, Check, ArrowRight, ChatCircleDots, ArrowSquareOut, SlidersHorizontal } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import { getBookingServiceById, getAvailableSlots, createAppointment, listMyPassesForService } from "@/services/booking.functions";
+import { getBookingServiceById, getAvailableSlots, createAppointment, listMyPassesForService, listPublicStoreResources } from "@/services/booking.functions";
 import { ContentActionsMenu } from "@/components/common/content-actions-menu";
 import { cn } from "@/lib/utils";
 
@@ -89,12 +89,20 @@ function ServiceDetailPage() {
   const [guestPhone, setGuestPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [selectedPassId, setSelectedPassId] = useState<string | null>(null);
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // 0. Recursos / Profissionais da loja
+  const { data: storeResources } = useQuery({
+    queryKey: ["store-resources", service?.store_id],
+    queryFn: () => listPublicStoreResources({ data: { store_id: service?.store_id || "" } }),
+    enabled: Boolean(service?.store_id),
+  });
 
   // 1. Horários disponíveis para a data selecionada
   const { data: slotsResult, isLoading: isLoadingSlots } = useQuery({
-    queryKey: ["service-slots", service?.id, selectedDate],
-    queryFn: () => getAvailableSlots({ data: { service_id: service?.id || "", date: selectedDate } }),
+    queryKey: ["service-slots", service?.id, selectedDate, selectedResourceId],
+    queryFn: () => getAvailableSlots({ data: { service_id: service?.id || "", date: selectedDate, resource_id: selectedResourceId || undefined } }),
     enabled: Boolean(isBookingOpen && service?.id && selectedDate),
   });
 
@@ -121,6 +129,7 @@ function ServiceDetailPage() {
           scheduled_at: scheduledIso,
           notes: notes || undefined,
           pass_id: selectedPassId || undefined,
+          resource_id: selectedResourceId || undefined,
         },
       });
     },
@@ -240,6 +249,9 @@ function ServiceDetailPage() {
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         nextDays={nextDays}
+        resources={storeResources || []}
+        selectedResourceId={selectedResourceId}
+        setSelectedResourceId={setSelectedResourceId}
         slots={slots}
         isLoadingSlots={isLoadingSlots}
         selectedSlot={selectedSlot}

@@ -14,8 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
-import { resolveWorkspaceNavigation, type NavGroup, type NavItem } from "@/lib/workspace-navigation";
+import { resolveWorkspaceNavigation, getSidebarConfig, type NavGroup, type NavItem } from "@/lib/workspace-navigation";
 import { getNicheSemantics } from "@/lib/niche-semantics";
+import { getNicheTranslation } from "@/lib/niche-dictionary";
 import { WorkspaceAccountSwitcher } from "./workspace-account-switcher";
 import { WorkspaceAllToolsDialog } from "./workspace-all-tools-dialog";
 import { WorkspaceSidebarFlyout } from "./workspace-sidebar-flyout";
@@ -151,11 +152,12 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     ? "owner"
     : (activeStore?.role || session?.role || "collaborator").toLowerCase();
 
-  const activeModules = resolveWorkspaceNavigation(activeStore, {
+  const activeModules = getSidebarConfig(activeStore, {
     isMasterMode: isPlatformAdmin && isMasterAllVerticals,
     userRole: effectiveUserRole,
   });
   const currentSemantics = getNicheSemantics(activeStore);
+  const { themeClass } = getNicheTranslation(activeStore);
 
   // Governança Granular de RBAC: Verificação de Permissão de Acesso à Rota Ativa
   const isAuthorized = (() => {
@@ -188,7 +190,15 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       "/workspace/configuracoes/privacidade-loja",
       "/workspace/configuracoes/parceiros",
       "/workspace/configuracoes/tokens",
+      "/workspace/configuracoes/pwa",
       "/workspace/faturamento/tokens",
+      "/workspace/tokens",
+      "/workspace/configuracoes/dominios",
+      "/workspace/financeiro/dre",
+      "/workspace/financeiro/fechamento",
+      "/workspace/configuracoes/fiscal",
+      "/workspace/configuracoes/pagamentos",
+      "/workspace/admin",
     ];
 
     if (OWNER_ONLY_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
@@ -198,6 +208,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
     // 3. Rotas restritas de Gestão de Equipe, Cargos e Folha (bloqueadas para vendedores, caixas, expedição)
     const TEAM_MANAGEMENT_ROUTES = [
       "/workspace/configuracoes/equipe",
+      "/workspace/rh/ponto",
+      "/workspace/empregos/candidatos",
+      "/workspace/financeiro/funcionarios",
     ];
     if (TEAM_MANAGEMENT_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
       const allowedRoles = ["owner", "admin", "proprietario", "manager", "gerente", "rh", "recruiter"];
@@ -208,6 +221,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
 
     // 4. Rotas restritas Financeiras e de Repasse (bloqueadas para vendedores, atendentes e operadores gerais)
     const FINANCE_RESTRICTED_ROUTES = [
+      "/workspace/financeiro/caixa/turnos",
       "/workspace/financeiro/contas-pagar",
       "/workspace/financeiro/comissoes",
       "/workspace/financeiro/afiliados",
@@ -215,6 +229,12 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
       "/workspace/financeiro/relatorios-canal",
       "/workspace/financeiro/faturas",
       "/workspace/financeiro/funcionarios",
+      "/workspace/financeiro/comprovantes",
+      "/workspace/financeiro/caixa/lancamentos",
+      "/workspace/financeiro/pagamentos",
+      "/workspace/relatorios",
+      "/workspace/relatorios/metas",
+      "/workspace/relatorios/gastronomia",
     ];
     if (FINANCE_RESTRICTED_ROUTES.some((r) => currentPath === r || currentPath.startsWith(r + "/"))) {
       const allowedFinanceRoles = ["owner", "admin", "proprietario", "manager", "gerente", "finance"];
@@ -296,7 +316,9 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  setIsSwitching(true);
  try {
  if (typeof window !== "undefined") {
+ window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
  window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
+ window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
  }
  const res = await setTenantContext({ data: { store_id: storeId } }).catch(() => null);
  const storeName = res?.storeName || "Espaço";
@@ -396,7 +418,7 @@ export function WorkspaceShell({ children, session }: { children: ReactNode; ses
  );
 
   return (
-    <div className="flex h-[100dvh] w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative">
+    <div className={cn("flex h-[100dvh] w-full overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans relative", themeClass)}>
       {/* ── 1. BARRA LATERAL CANÔNICA DO WORKSPACE (PADRÃO META STUDIO - FIXA) ── */}
       <aside className="hidden lg:flex flex-col w-[268px] shrink-0 sticky top-0 h-[100dvh] bg-background border-r border-border/60 justify-between select-none z-30 overflow-hidden">
         {/* Topo da Sidebar com altura exata h-14 (56px) alinhada continuamente à linha do Header */}

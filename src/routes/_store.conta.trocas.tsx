@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyState } from "@/components/state/states";
 import { listCustomerRmas, requestCustomerRma } from "@/services/rma.functions";
 import { listCustomerOrders } from "@/services/order.functions";
-import { RefreshCw, Package, Truck, FileText, Plus, ArrowRight, CheckCircle2, Clock, AlertCircle, X, Loader2, HelpCircle } from "lucide-react";
+import { RefreshCw, Package, Truck, FileText, Plus, ArrowRight, CheckCircle2, Clock, AlertCircle, X, Loader2, HelpCircle, ShieldCheck, ShieldAlert, Camera, ExternalLink } from "lucide-react";
 import { formatDate } from "@/lib/datetime";
 import { toast } from "sonner";
 

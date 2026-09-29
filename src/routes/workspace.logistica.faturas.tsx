@@ -343,7 +343,7 @@ function WorkspaceLogisticsInvoicesPage() {
                         onClick={() => handleMarkAsPaid(inv.id)}
                         disabled={settleMutation.isPending}
                         size="sm"
-                        className="h-10 px-4 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer shadow-2xs"
+                        className="h-10 px-4 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer shadow-2xs"
                       >
                         {settleMutation.isPending ? (
                           <Loader2 className="size-3.5 animate-spin" />
@@ -438,7 +438,7 @@ function WorkspaceLogisticsInvoicesPage() {
                 onClick={() => selectedInvoice && handleMarkAsPaid(selectedInvoice.id)}
                 disabled={settleMutation.isPending}
                 size="sm"
-                className="rounded-xl h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-2xs"
+                className="rounded-xl h-10 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-2xs"
               >
                 {settleMutation.isPending ? (
                   <Loader2 className="size-3.5 animate-spin" />

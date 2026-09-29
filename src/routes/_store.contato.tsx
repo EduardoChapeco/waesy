@@ -116,7 +116,7 @@ function ContatoPage() {
  </p>
  </div>
  {cleanWhatsapp ? (
- <Button asChild size="sm" className="w-full min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer">
+ <Button asChild size="sm" className="w-full min-h-[44px] sm:min-h-[36px] h-11 sm:h-9 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer">
  <a
  href={`https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent(
  `Olá! Gostaria de falar com o suporte da plataforma ${brand?.platform_name || "Waesy"}.`

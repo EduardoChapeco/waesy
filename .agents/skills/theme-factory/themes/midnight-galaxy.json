@@ -1,0 +1,19 @@
+{
+  "id": "midnight-galaxy",
+  "name": "Galáxia da Meia-Noite",
+  "description": "Tons cósmicos profundos, dramáticos, espaciais e estelares.",
+  "colors": {
+    "background": "#030712",
+    "surface": "#111827",
+    "primary": "#7c3aed",
+    "secondary": "#ec4899",
+    "accent": "#c084fc",
+    "text": "#fdf4ff",
+    "textMuted": "#d8b4fe"
+  },
+  "typography": {
+    "headingFont": "Clash Display",
+    "bodyFont": "Inter",
+    "codeFont": "JetBrains Mono"
+  }
+}

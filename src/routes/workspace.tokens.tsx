@@ -55,7 +55,7 @@ const ACTION_LABELS: Record<string, string> = {
   burn_ai_summarize: "Resumo Executivo com IA",
   burn_scrape_url: "Extração Avançada de Conteúdo",
   burn_tender_unlock: "Desbloqueio de Licitação Pública",
-  burn_magic_onboarding: "Onboarding Mágico por IA",
+  burn_magic_onboarding: "Onboarding Assistido por IA",
   burn_lead_unlock: "Desbloqueio de Lead Qualificado",
   burn_feed_view: "Visualização no Radar",
   system_burn_service: "Serviço de Aceleração",
@@ -165,7 +165,7 @@ export default function WorkspaceTokensPage() {
  {/* Header Silencioso */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
  <div>
- <h1 className="text-xl font-bold tracking-tight">Tokens de Aceleração</h1>
+ <h1 className="text-xl font-bold tracking-tight">Tokens</h1>
  <p className="text-xs text-muted-foreground mt-0.5">
  0% de comissões sobre vendas. Pague apenas por utilidade e impulsos em micro-tokens.
  </p>

@@ -352,7 +352,75 @@ export default function WorkspaceCrmPage() {
         />
       ) : (
         <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Visualização Mobile: WhatsApp List Edge-to-Edge (< 640px) */}
+          <div className="sm:hidden divide-y divide-border/40">
+            {filteredCustomers.map((customer: any) => {
+              const phoneDigits = customer.phone ? customer.phone.replace(/\D/g, "") : "";
+              return (
+                <div key={customer.id} className="p-3.5 flex items-center justify-between gap-3 hover:bg-muted/10 transition-colors">
+                  <Link
+                    to="/workspace/clientes/$id"
+                    params={{ id: customer.id }}
+                    className="flex items-center gap-3 min-w-0 flex-1"
+                  >
+                    <div className="size-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                      {(customer.full_name || "C").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-sm text-foreground truncate">
+                          {customer.full_name || "Cliente sem nome"}
+                        </p>
+                        {customer.status === "active" && (
+                          <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        <span className="font-mono text-foreground font-semibold">
+                          {formatMoney(customer.total_spent_cents || 0)}
+                        </span>
+                        <span>•</span>
+                        <span className="capitalize truncate">{customer.channel || "Direto"}</span>
+                      </div>
+                    </div>
+                  </Link>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {phoneDigits && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          trackAndOpenWhatsApp(
+                            phoneDigits,
+                            `Olá, ${customer.full_name || ""}! Como posso ajudar você hoje?`
+                          )
+                        }
+                        className="size-11 p-0 rounded-xl text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 cursor-pointer"
+                        title="WhatsApp"
+                      >
+                        <MessageCircle className="size-5" />
+                      </Button>
+                    )}
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="size-11 p-0 rounded-xl cursor-pointer"
+                    >
+                      <Link to="/workspace/clientes/$id" params={{ id: customer.id }}>
+                        <ChevronRight className="size-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Visualização Desktop: Tabela de Alta Densidade (>= 640px) */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted/30 border-b border-border/40 text-[11px] uppercase tracking-wider text-muted-foreground font-mono">
                 <tr>

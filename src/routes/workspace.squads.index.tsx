@@ -308,9 +308,9 @@ export function SquadsWorkspacePage() {
                   <div className="pt-5 border-t border-border/30 space-y-4">
                     {/* Alerta de Aprovação Pendente */}
                     {hasPendingApproval && squad.latest_run && (
-                      <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="p-3.5 rounded-xl bg-muted/40 border border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <AlertCircle className="w-4 h-4 text-foreground/70 shrink-0 mt-0.5" />
                           <div>
                             <span className="text-xs font-bold text-foreground block">
                               Entrega Aguardando Sua Aprovação
@@ -325,9 +325,9 @@ export function SquadsWorkspacePage() {
                           <button
                             type="button"
                             onClick={() => setSelectedRunArtifacts({ squadName: squad.custom_name, run: squad.latest_run })}
-                            className="h-11 px-3 inline-flex items-center gap-1.5 rounded-xl text-xs font-medium border border-amber-500/30 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-[44px]"
+                            className="h-11 px-3 inline-flex items-center gap-1.5 rounded-xl text-xs font-medium border border-border/60 bg-background hover:bg-muted/40 transition-colors shrink-0 min-h-[44px]"
                           >
-                            <FileCheck className="w-3.5 h-3.5 text-amber-600" />
+                            <FileCheck className="w-3.5 h-3.5 text-foreground/80" />
                             Inspecionar Parecer
                           </button>
 
@@ -511,7 +511,7 @@ export function SquadsWorkspacePage() {
                   </span>
                   <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase ${
                     selectedRunArtifacts.run.status === "needs_approval"
-                      ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                      ? "bg-muted text-foreground border border-border/60"
                       : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                   }`}>
                     {selectedRunArtifacts.run.status === "needs_approval" ? "Aguardando Revisão" : "Aprovado"}

@@ -15,7 +15,7 @@ import { formatDate } from "@/lib/datetime";
 import { playCashRegisterSound } from "@/lib/audio-chimes";
 
 export const Route = createFileRoute("/workspace/financeiro/comissoes")({
-  head: () => ({ meta: [{ title: "Gestão de Comissões | Workspace Waesy" }] }),
+  head: () => ({ meta: [{ title: "Comissões" }] }),
   loader: async () => {
     try {
       const [commissions, sellers] = await Promise.all([listCommissions(), listSellers()]);
@@ -399,7 +399,7 @@ function CommissionsPage() {
                       </TableCell>
                       <TableCell>
                         {c.status === "paid" ? (
-                          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold">
+                          <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold">
                             Paga
                           </Badge>
                         ) : c.status === "cancelled" ? (
@@ -536,7 +536,7 @@ function CommissionsPage() {
                                     setEditingRate((seller.commission_rate ?? 5).toString());
                                     setEditingSellerId(seller.id);
                                   }}
-                                  className="h-8 rounded-xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
+                                  className="min-h-[44px] px-3 rounded-xl text-xs font-bold gap-1 text-muted-foreground hover:text-foreground"
                                 >
                                   <Edit2 className="size-3.5" />
                                   <span>Regra</span>
@@ -547,7 +547,7 @@ function CommissionsPage() {
                                     size="sm"
                                     disabled={payingSellerId === seller.id}
                                     onClick={() => handlePayAllForSeller(seller.id, seller.full_name)}
-                                    className="h-8 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer shadow-2xs"
+                                    className="min-h-[44px] px-3 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 cursor-pointer shadow-2xs"
                                   >
                                     <CheckCircle2 className="size-3.5" />
                                     <span>

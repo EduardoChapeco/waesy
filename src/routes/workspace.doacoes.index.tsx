@@ -159,7 +159,7 @@ function WorkspaceDoacoesHubPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                    <Button asChild variant="outline" size="sm" className="h-8 px-2.5 rounded-lg text-xs font-medium">
+                    <Button asChild variant="outline" size="sm" className="min-h-[44px] px-3.5 rounded-xl text-xs font-semibold">
                       <Link to="/classificados/$id" params={{ id: item.id }}>
                         <Eye className="size-3.5 mr-1.5" />
                         <span>Vitrine</span>
@@ -167,7 +167,7 @@ function WorkspaceDoacoesHubPage() {
                       </Link>
                     </Button>
 
-                    <Button asChild size="sm" className="h-8 px-2.5 rounded-lg text-xs font-medium">
+                    <Button asChild size="sm" className="min-h-[44px] px-3.5 rounded-xl text-xs font-semibold">
                       <Link to="/conta/classificados/novo" search={{ tipo: "doacao", editId: item.id }}>
                         <span>Editar</span>
                       </Link>

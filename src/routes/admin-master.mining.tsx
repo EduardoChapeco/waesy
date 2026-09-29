@@ -8,6 +8,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useTransition, useRef } from "react";
 import { Globe, Rss, Queue, Plus, Clock, CheckCircle, XCircle, ArrowClockwise, Play, SpinnerGap, Warning, Eye, ThumbsUp, ThumbsDown, MagnifyingGlass, Robot, Database, Broadcast, Shield, Lightning, Star, ArrowRight, ToggleLeft, ToggleRight, Funnel, PencilSimple, TrashSimple, Ticket, Buildings, ArrowsClockwise, Calendar, MapPin, CurrencyDollar, ArrowSquareOut, FileText, Check, Users, Briefcase, Article, LinkSimple } from "@phosphor-icons/react";
 import { getMiningStats, listCrawlQueue, listRssFeeds, listMinedArticles, listScraperConfigs, addUrlToCrawlQueue, processUrlWithAI, curateMineArticle, triggerRssFeedFetch, upsertRssFeed, toggleRssFeed, reprocessFailedQueueItems, syncPncpMunicipalBids, listPncpContractsAction, convertPncpBidToNewsArticle, type MinedArticleDTO, type ScraperConfigDTO } from "@/services/mining.functions";
+import { listCrawlerSources, toggleCrawlerSourceActive, triggerCrawlerSourceFetch, upsertCrawlerSource, type CrawlerSourceDTO } from "@/services/crawler-sources.functions";
 import { isHealthyImageUrl, getFallbackThematicImage } from "@/services/mining/integrity-gate";
 import { mineAndPublishExternalJob, listExternalJobs, type JobItemDTO } from "@/services/jobs.functions";
 import { mineAndPublishExternalEvent, listExternalEvents } from "@/services/events/external-events.functions";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/admin-master/mining")({
   head: () => ({ meta: [{ title: "Mining Hub e Content Factory | Admin Master" }] }),
   loader: async () => {
     try {
-      const [stats, queue, feeds, mined, scrapers, events, jobs] = await Promise.all([
+      const [stats, queue, feeds, mined, scrapers, events, jobs, sources] = await Promise.all([
         getMiningStats().catch(() => ({
           queue: { pending: 0, processing: 0, completed: 0, failed: 0 },
           mined: { pending_review: 0, approved: 0, rejected: 0, published: 0, processing: 0, failed: 0, avg_quality: 0 },
@@ -35,8 +36,9 @@ export const Route = createFileRoute("/admin-master/mining")({
         listScraperConfigs().catch(() => []),
         listExternalEvents({ data: { city: "Chapecó", limit: 30 } }).catch(() => []),
         listExternalJobs({ data: { limit: 30 } }).catch(() => []),
+        listCrawlerSources({ data: { limit: 100 } }).catch(() => ({ sources: [], total: 0 })),
       ]);
-      return { stats, queue, feeds, mined, scrapers, events, jobs };
+      return { stats, queue, feeds, mined, scrapers, events, jobs, sources };
     } catch {
       return {
         stats: {
@@ -51,20 +53,33 @@ export const Route = createFileRoute("/admin-master/mining")({
         scrapers: [],
         events: [],
         jobs: [],
+        sources: { sources: [], total: 0 },
       };
     }
   },
   component: AdminMiningHubPage,
 });
 
-type Tab = "mined" | "queue" | "events" | "pncp" | "jobs" | "feeds" | "scrapers" | "import";
+type Tab = "sources" | "mined" | "queue" | "events" | "pncp" | "jobs" | "feeds" | "scrapers" | "import";
 
 function AdminMiningHubPage() {
-  const { stats, queue: initialQueue, feeds: initialFeeds, mined: initialMined, scrapers: initialScrapers, events: initialEvents, jobs: initialJobs } = ((Route.useLoaderData?.() as any) || {});
-  const [activeTab, setActiveTab] = useState<Tab>("mined");
+  const { stats, queue: initialQueue, feeds: initialFeeds, mined: initialMined, scrapers: initialScrapers, events: initialEvents, jobs: initialJobs, sources: initialSources } = ((Route.useLoaderData?.() as any) || {});
+  const [activeTab, setActiveTab] = useState<Tab>("sources");
   const [isPending, startTransition] = useTransition();
 
   // State local para mutações otimistas
+  const [sourcesList, setSourcesList] = useState<CrawlerSourceDTO[]>(initialSources?.sources || []);
+  const [sourcesFilterType, setSourcesFilterType] = useState<string>("all");
+  const [sourcesSearch, setSourcesSearch] = useState<string>("");
+  const [triggeringSourceId, setTriggeringSourceId] = useState<string | null>(null);
+  const [isCreatingSource, setIsCreatingSource] = useState(false);
+  const [newSourceName, setNewSourceName] = useState("");
+  const [newSourceUrl, setNewSourceUrl] = useState("");
+  const [newSourceType, setNewSourceType] = useState<any>("rss");
+  const [newSourceRegion, setNewSourceRegion] = useState("SC");
+  const [newSourceCategory, setNewSourceCategory] = useState("general");
+  const [newSourcePriority, setNewSourcePriority] = useState(8);
+
   const [minedItems, setMinedItems] = useState<MinedArticleDTO[]>(initialMined.items as MinedArticleDTO[]);
   const [queueItems, setQueueItems] = useState(initialQueue.items || []);
   const [feeds, setFeeds] = useState<any[]>(initialFeeds as any[]);
@@ -452,7 +467,78 @@ function AdminMiningHubPage() {
     }
   };
 
+  // ─── Handlers de Fontes Canônicas (Omni-Crawler V127) ─────────────────────
+  const handleToggleSource = async (sourceId: string, currentActive: boolean) => {
+    try {
+      await toggleCrawlerSourceActive({ data: { id: sourceId, is_active: !currentActive } });
+      setSourcesList((prev) =>
+        prev.map((s) => (s.id === sourceId ? { ...s, is_active: !currentActive, status: !currentActive ? "idle" : "paused" } : s)),
+      );
+      toast.success(!currentActive ? "Fonte ativada no agendador." : "Fonte pausada.");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao alternar fonte.");
+    }
+  };
+
+  const handleTriggerSourceFetch = async (source: CrawlerSourceDTO) => {
+    setTriggeringSourceId(source.id);
+    try {
+      toast.loading(`Iniciando mineração em ${source.name}...`, { id: `src-${source.id}` });
+      const res = await triggerCrawlerSourceFetch({ data: { id: source.id } });
+      toast.success(`Coleta concluída! ${res.itemsIndexed} itens indexados na fila.`, { id: `src-${source.id}` });
+      
+      setSourcesList((prev) =>
+        prev.map((s) => (s.id === source.id ? { ...s, status: "success", items_indexed_count: s.items_indexed_count + res.itemsIndexed } : s)),
+      );
+      const q = await listCrawlQueue({ data: { limit: 50 } });
+      setQueueItems(q.items || []);
+    } catch (err: any) {
+      toast.error(`Falha no disparo: ${err.message}`, { id: `src-${source.id}` });
+      setSourcesList((prev) =>
+        prev.map((s) => (s.id === source.id ? { ...s, status: "error", last_error: err.message } : s)),
+      );
+    } finally {
+      setTriggeringSourceId(null);
+    }
+  };
+
+  const handleCreateSource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSourceName || !newSourceUrl) return;
+    try {
+      const created = await upsertCrawlerSource({
+        data: {
+          name: newSourceName,
+          url: newSourceUrl,
+          type: newSourceType,
+          region: newSourceRegion,
+          category: newSourceCategory,
+          priority: Number(newSourcePriority),
+          fetch_interval_minutes: 60,
+        },
+      });
+      setSourcesList((prev) => [created, ...prev]);
+      toast.success("Fonte canônica cadastrada com sucesso!");
+      setNewSourceName("");
+      setNewSourceUrl("");
+      setIsCreatingSource(false);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao cadastrar fonte.");
+    }
+  };
+
+  const filteredSources = sourcesList.filter((s) => {
+    const matchesType = sourcesFilterType === "all" || s.type === sourcesFilterType;
+    const matchesSearch =
+      !sourcesSearch ||
+      s.name.toLowerCase().includes(sourcesSearch.toLowerCase()) ||
+      s.url.toLowerCase().includes(sourcesSearch.toLowerCase()) ||
+      s.region.toLowerCase().includes(sourcesSearch.toLowerCase());
+    return matchesType && matchesSearch;
+  });
+
   const TABS: { id: Tab; icon: React.ReactNode; label: string; badge?: number }[] = [
+    { id: "sources", icon: <Database className="h-4 w-4" />, label: "Fontes Canônicas (V127)", badge: sourcesList.length },
     { id: "mined", icon: <Robot className="h-4 w-4" />, label: "Artigos Minerados", badge: stats.mined.pending_review },
     { id: "queue", icon: <Queue className="h-4 w-4" />, label: "Fila de Extração", badge: stats.queue.pending },
     { id: "events", icon: <Ticket className="h-4 w-4" />, label: "Eventos e RSVP", badge: eventsList.length },
@@ -516,14 +602,255 @@ function AdminMiningHubPage() {
  {tab.badge}
  </span>
  )}
- </button>
- ))}
- </div>
+        </button>
+      ))}
+      </div>
 
- {/* ══════════════════════════════════════════════════════════════════
- ABA 1: Artigos Minerados (Curadoria)
- ══════════════════════════════════════════════════════════════════ */}
- {activeTab === "mined" && (
+      {/* ══════════════════════════════════════════════════════════════════
+          ABA 0: Fontes Canônicas (Omni-Crawler V127)
+      ══════════════════════════════════════════════════════════════════ */}
+      {activeTab === "sources" && (
+        <div className="space-y-4">
+          {/* Barra de Ações & Filtros */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-border/60">
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                placeholder="Filtrar por nome, URL ou região..."
+                value={sourcesSearch}
+                onChange={(e) => setSourcesSearch(e.target.value)}
+                className="w-full sm:w-72 h-10 text-xs rounded-xl bg-background border-border"
+              />
+              <select
+                value={sourcesFilterType}
+                onChange={(e) => setSourcesFilterType(e.target.value)}
+                className="h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none"
+              >
+                <option value="all">Todos os Tipos ({sourcesList.length})</option>
+                <option value="rss">Feeds RSS</option>
+                <option value="jobs_portal">Vagas & Empregos</option>
+                <option value="tenders">Editais & Licitações (PNCP)</option>
+                <option value="auctions">Leilões Judiciais</option>
+                <option value="real_estate">Imóveis</option>
+                <option value="news">Portais Noticiosos</option>
+              </select>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={() => setIsCreatingSource(!isCreatingSource)}
+              className="h-10 rounded-xl font-bold text-xs gap-1.5 shrink-0"
+            >
+              <Plus size={16} weight="bold" />
+              <span>{isCreatingSource ? "Cancelar" : "Nova Fonte Canônica"}</span>
+            </Button>
+          </div>
+
+          {/* Form de Criação Rápida */}
+          {isCreatingSource && (
+            <form onSubmit={handleCreateSource} className="bg-card p-5 rounded-2xl border border-primary/30 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground">Cadastrar Fonte do Omni-Crawler V127</h3>
+                <Badge variant="outline">Injeção Canônica</Badge>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Nome da Fonte</label>
+                  <Input
+                    placeholder="Ex: G1 Santa Catarina"
+                    value={newSourceName}
+                    onChange={(e) => setNewSourceName(e.target.value)}
+                    required
+                    className="h-10 rounded-xl text-xs bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">URL Alvo</label>
+                  <Input
+                    placeholder="https://..."
+                    value={newSourceUrl}
+                    onChange={(e) => setNewSourceUrl(e.target.value)}
+                    required
+                    type="url"
+                    className="h-10 rounded-xl text-xs bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Tipo de Conteúdo</label>
+                  <select
+                    value={newSourceType}
+                    onChange={(e) => setNewSourceType(e.target.value as any)}
+                    className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none"
+                  >
+                    <option value="rss">Feed RSS/Atom</option>
+                    <option value="jobs_portal">Portal de Empregos</option>
+                    <option value="tenders">Editais e Licitações</option>
+                    <option value="auctions">Leilões Judiciais</option>
+                    <option value="real_estate">Portal Imobiliário</option>
+                    <option value="news">Notícias / Portal</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Região de Abrangência</label>
+                  <Input
+                    placeholder="Ex: Chapecó/SC ou SC"
+                    value={newSourceRegion}
+                    onChange={(e) => setNewSourceRegion(e.target.value)}
+                    className="h-10 rounded-xl text-xs bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Categoria de Negócio</label>
+                  <Input
+                    placeholder="Ex: news_regional, jobs, technology"
+                    value={newSourceCategory}
+                    onChange={(e) => setNewSourceCategory(e.target.value)}
+                    className="h-10 rounded-xl text-xs bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Prioridade (1 a 10)</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={newSourcePriority}
+                    onChange={(e) => setNewSourcePriority(Number(e.target.value))}
+                    className="h-10 rounded-xl text-xs bg-background"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setIsCreatingSource(false)} className="rounded-xl text-xs">
+                  Cancelar
+                </Button>
+                <Button type="submit" size="sm" className="rounded-xl text-xs font-bold">
+                  Salvar Fonte
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* Tabela de Fontes */}
+          <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-border/40 bg-muted/40 text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 font-bold">Nome & URL</th>
+                    <th className="px-4 py-3 font-bold">Tipo</th>
+                    <th className="px-4 py-3 font-bold">Região / Categoria</th>
+                    <th className="px-4 py-3 font-bold text-center">Prioridade</th>
+                    <th className="px-4 py-3 font-bold">Status</th>
+                    <th className="px-4 py-3 font-bold">Indexados</th>
+                    <th className="px-4 py-3 font-bold text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  {filteredSources.map((source) => {
+                    const isTriggering = triggeringSourceId === source.id;
+                    const typeBadgeColors: Record<string, string> = {
+                      rss: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                      jobs_portal: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                      tenders: "bg-violet-500/10 text-violet-500 border-violet-500/20",
+                      auctions: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                      real_estate: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+                      news: "bg-primary/10 text-primary border-primary/20",
+                    };
+
+                    return (
+                      <tr key={source.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-foreground line-clamp-1">{source.name}</div>
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1 mt-0.5 max-w-xs truncate font-mono"
+                          >
+                            <span>{source.url}</span>
+                            <ArrowSquareOut size={12} className="shrink-0" />
+                          </a>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={cn("px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase", typeBadgeColors[source.type] || "bg-muted text-muted-foreground")}>
+                            {source.type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-foreground/90">{source.region || "SC"}</div>
+                          <div className="text-[10px] text-muted-foreground font-mono">{source.category}</div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge variant={source.priority >= 8 ? "default" : "outline"} className="text-[10px] font-mono">
+                            P{source.priority}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          {source.status === "fetching" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-500">
+                              <SpinnerGap className="size-3.5 animate-spin" />
+                              Minerando
+                            </span>
+                          ) : source.status === "success" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-500">
+                              <CheckCircle size={14} weight="fill" />
+                              Ativo
+                            </span>
+                          ) : source.status === "error" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-destructive" title={source.last_error || "Erro"}>
+                              <Warning size={14} weight="fill" />
+                              Erro
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground">Ocioso</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 font-mono font-bold text-foreground">
+                          {source.items_indexed_count || 0}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="inline-flex items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={isTriggering}
+                              onClick={() => handleTriggerSourceFetch(source)}
+                              className="h-8 px-2.5 rounded-lg text-[11px] font-bold gap-1 cursor-pointer"
+                            >
+                              {isTriggering ? (
+                                <SpinnerGap className="size-3.5 animate-spin" />
+                              ) : (
+                                <Play size={12} weight="fill" className="text-primary" />
+                              )}
+                              <span>Coletar</span>
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSource(source.id, source.is_active)}
+                              className={cn(
+                                "p-1.5 rounded-lg transition-colors cursor-pointer",
+                                source.is_active ? "text-emerald-500 hover:bg-emerald-500/10" : "text-muted-foreground hover:bg-muted"
+                              )}
+                              title={source.is_active ? "Pausar fonte" : "Ativar fonte"}
+                            >
+                              {source.is_active ? <ToggleRight size={20} weight="fill" /> : <ToggleLeft size={20} />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+      ABA 1: Artigos Minerados (Curadoria)
+      ══════════════════════════════════════════════════════════════════ */}
+      {activeTab === "mined" && (
  <div className="space-y-4">
         {/* Panel de curadoria: TRUTHFUL PREVIEW */}
         {focusedArticle && (

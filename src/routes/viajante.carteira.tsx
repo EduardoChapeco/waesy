@@ -235,9 +235,15 @@ export default function ViajanteCarteiraPage() {
                           e.stopPropagation();
                           setFullscreenQrPass(pass);
                         }}
-                        className="p-2 rounded-xl hover:bg-muted/40 transition-colors cursor-pointer"
+                        className="p-2.5 rounded-2xl bg-white border border-border/40 hover:shadow-sm transition-all cursor-pointer"
+                        title="Toque para tela cheia de embarque"
                       >
-                        <QrCode className="size-32 text-foreground" strokeWidth={1.5} />
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=8&data=${encodeURIComponent(pass.barcode_value)}`}
+                          alt={`QR Code ${pass.barcode_value}`}
+                          className="size-32 object-contain"
+                          loading="lazy"
+                        />
                       </button>
 
                       <div className="mt-2 text-center">
@@ -339,9 +345,13 @@ export default function ViajanteCarteiraPage() {
           </DialogHeader>
 
           {fullscreenQrPass && (
-            <div className="my-4 p-4 bg-background rounded-xl border border-border/60 flex flex-col items-center">
-              <QrCode className="size-48 text-foreground" strokeWidth={1.5} />
-              <p className="mt-2 font-mono text-sm font-bold text-foreground">
+            <div className="my-4 p-5 bg-white rounded-2xl border border-border/60 flex flex-col items-center shadow-xs">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=${encodeURIComponent(fullscreenQrPass.barcode_value)}`}
+                alt={`QR Code ${fullscreenQrPass.barcode_value}`}
+                className="size-52 sm:size-60 object-contain"
+              />
+              <p className="mt-3 font-mono text-sm font-bold text-neutral-900 tracking-wider">
                 {fullscreenQrPass.barcode_value}
               </p>
             </div>

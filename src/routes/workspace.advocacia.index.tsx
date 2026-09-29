@@ -666,7 +666,7 @@ function WorkspaceAdvocaciaPage() {
  <Button
  size="sm"
  onClick={() => setCompletingDeadline(dl)}
- className="h-8 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] gap-1.5 shadow-2xs"
+ className="min-h-[44px] px-3.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs gap-1.5 shadow-2xs"
  >
  <CheckCircle2 className="size-3.5" />
  <span>Protocolar</span>

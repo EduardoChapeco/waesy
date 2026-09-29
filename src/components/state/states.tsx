@@ -194,3 +194,6 @@ export function SectionFrame({
  </section>
  );
 }
+
+export { NicheEmptyState } from "./niche-empty-state";
+

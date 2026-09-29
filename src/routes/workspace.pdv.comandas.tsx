@@ -508,7 +508,7 @@ function PdvComandasPage() {
  {/* Ações Rápidas */}
  <div className="space-y-2 pt-2">
  <Button
- className="w-full font-bold text-xs h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-2 shadow-xs cursor-pointer"
+ className="w-full font-bold text-xs h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-xs cursor-pointer"
  onClick={() => setQuickWaiterModalOpen(true)}
  >
  <UtensilsCrossed className="size-4" />
@@ -686,7 +686,7 @@ function PdvComandasPage() {
  size="sm"
  onClick={handleConfirmPayment}
  disabled={payMutation.isPending}
- className="h-11 px-5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+ className="h-11 px-5 rounded-xl font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
  >
  {payMutation.isPending ? "Processando..." : "Confirmar Recebimento"}
  </Button>

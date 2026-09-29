@@ -5,6 +5,8 @@ import { ShoppingBag, Calendar, Tag, Store, ChevronRight, Layers, Clock, Star, T
 import { Button } from "@/components/ui/button";
 
 import { federatedSearch, getSearchDiscoveryData, type FederatedSearchResponse, type SearchResultProduct, type SearchResultEvent, type SearchResultClassified, type SearchResultStore, type SearchResultRecipe } from "@/services/search.functions";
+import { searchFacetedCatalog, type FacetedSearchFacets } from "@/services/faceted-search.functions";
+import { FacetedSearchSheet } from "@/components/search/faceted-search-sheet";
 import { getUserTopAffinities } from "@/services/telemetry-affinity.functions";
 import { ProductGrid } from "@/components/commerce/product-grid";
 import { Badge } from "@/components/ui/badge";
@@ -471,6 +473,74 @@ function SearchPage() {
   const [activeType, setActiveType] = useState<string>("todos");
   const [viewMode, setViewMode] = useState<ViewModeType>("grid");
 
+  // Estados do Motor de Busca Facetada (V135 Deep Engine)
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
+  const [selectedMinPrice, setSelectedMinPrice] = useState<number | undefined>();
+  const [selectedMaxPrice, setSelectedMaxPrice] = useState<number | undefined>();
+  const [selectedSort, setSelectedSort] = useState<string>("relevance_telemetry");
+  const [facetedFacets, setFacetedFacets] = useState<FacetedSearchFacets | null>(null);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategories.length > 0) count += selectedCategories.length;
+    if (selectedNiches.length > 0) count += selectedNiches.length;
+    if (selectedMinPrice !== undefined) count += 1;
+    if (selectedMaxPrice !== undefined) count += 1;
+    if (selectedSort !== "relevance_telemetry") count += 1;
+    return count;
+  }, [selectedCategories, selectedNiches, selectedMinPrice, selectedMaxPrice, selectedSort]);
+
+  const handleApplyFilters = async (filters: {
+    categories: string[];
+    niches: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    sort: string;
+  }) => {
+    setSelectedCategories(filters.categories);
+    setSelectedNiches(filters.niches);
+    setSelectedMinPrice(filters.minPrice);
+    setSelectedMaxPrice(filters.maxPrice);
+    setSelectedSort(filters.sort);
+
+    try {
+      const facetedRes = await searchFacetedCatalog({
+        data: {
+          query: input.trim(),
+          category_slugs: filters.categories,
+          niches: filters.niches,
+          min_price_cents: filters.minPrice,
+          max_price_cents: filters.maxPrice,
+          sort_by: filters.sort as any,
+        },
+      });
+
+      if (facetedRes) {
+        setFacetedFacets(facetedRes.facets);
+        setResult((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            products: facetedRes.items.map((it) => ({
+              type: "product" as const,
+              id: it.id,
+              title: it.title,
+              slug: it.slug,
+              price_cents: it.price_cents,
+              cover_url: it.cover_url,
+              store_id: it.store.id,
+              status: "published",
+            })),
+          };
+        });
+      }
+    } catch (err) {
+      console.error("[faceted-search] Erro ao aplicar filtros facetados:", err);
+    }
+  };
+
   const handleSearch = async (q: string) => {
     const trimmed = q.trim();
     if (!trimmed || trimmed.length < 2) return;
@@ -479,7 +549,36 @@ function SearchPage() {
     navigate({ to: Route.fullPath, search: { q: trimmed } });
 
     try {
-      const res = await federatedSearch({ data: { query: trimmed } });
+      const [res, facetedRes] = await Promise.all([
+        federatedSearch({ data: { query: trimmed } }),
+        searchFacetedCatalog({
+          data: {
+            query: trimmed,
+            category_slugs: selectedCategories,
+            niches: selectedNiches,
+            min_price_cents: selectedMinPrice,
+            max_price_cents: selectedMaxPrice,
+            sort_by: selectedSort as any,
+          },
+        }).catch(() => null),
+      ]);
+
+      if (facetedRes) {
+        setFacetedFacets(facetedRes.facets);
+        if (facetedRes.items.length > 0 && res) {
+          res.products = facetedRes.items.map((it) => ({
+            type: "product" as const,
+            id: it.id,
+            title: it.title,
+            slug: it.slug,
+            price_cents: it.price_cents,
+            cover_url: it.cover_url,
+            store_id: it.store.id,
+            status: "published",
+          }));
+        }
+      }
+
       setResult(res);
     } catch (e: unknown) {
       toast.error(
@@ -544,6 +643,8 @@ function SearchPage() {
         onViewModeChange={setViewMode}
         allowedViewModes={["grid", "list", "feed"]}
         resultsCount={total}
+        onFilterClick={() => setIsFilterSheetOpen(true)}
+        activeFiltersCount={activeFiltersCount}
       />
 
       {/* ── 2. Estado Inicial de Descoberta Visual (Instagram / Mercado Livre Style) ── */}

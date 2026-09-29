@@ -215,7 +215,7 @@ export function ClassifiedDetailDesktop({
               className="h-10 px-3.5 rounded-xl text-xs font-semibold border-border/70 bg-card hover:bg-muted/50 text-foreground flex items-center gap-1.5 cursor-pointer active:scale-98"
             >
               <Smartphone className="size-4 text-primary" />
-              <span>Guia Digital 9:16</span>
+              <span>Guia Digital</span>
             </Button>
           )}
 
@@ -423,7 +423,7 @@ export function ClassifiedDetailDesktop({
                   </span>
                   <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
                     <ShieldCheck className="size-4 shrink-0" />
-                    <span>Perfil Verificado Waesy e Identidade Auditada</span>
+                    <span>Perfil Verificado</span>
                   </div>
                 </div>
               </div>
@@ -436,7 +436,7 @@ export function ClassifiedDetailDesktop({
                   className="h-10 px-4 rounded-xl border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 text-xs font-bold flex items-center gap-2 cursor-pointer"
                 >
                   <MessageCircle className="size-4 text-emerald-500" />
-                  <span>Conversar no WhatsApp</span>
+                  <span>WhatsApp</span>
                 </Button>
               )}
             </div>
@@ -561,7 +561,7 @@ export function ClassifiedDetailDesktop({
                   onClick={onOpenProposalModal}
                   className="h-11 w-full rounded-xl text-xs font-semibold border-border/70 text-foreground hover:bg-muted/40"
                 >
-                  Enviar Proposta / Negociar
+                  Enviar Proposta
                 </Button>
               )}
 
@@ -573,7 +573,7 @@ export function ClassifiedDetailDesktop({
                   className="h-11 w-full rounded-xl text-xs font-bold border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-2"
                 >
                   <MessageCircle className="size-4 text-emerald-600" />
-                  <span>Chamar Vendedor no WhatsApp</span>
+                  <span>WhatsApp</span>
                 </Button>
               )}
             </div>
@@ -582,11 +582,11 @@ export function ClassifiedDetailDesktop({
             <div className="space-y-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="size-4 text-primary shrink-0" />
-                <span>Negociação protegida pela plataforma Waesy</span>
+                <span>Negociação Segura</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
-                <span>Identidade do anunciante validada</span>
+                <span>Identidade Validada</span>
               </div>
             </div>
           </div>

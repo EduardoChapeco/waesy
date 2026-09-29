@@ -54,6 +54,9 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
       "legal-documents",
       "receipts",
       "identity-vault",
+      "store-assets",
+      "destination-media",
+      "social",
     ]),
  contentType: z.string(),
  }),
@@ -85,7 +88,7 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
  ) {
  console.log(`[storage] Bucket ${bucket} missing. Auto-healing...`);
  const { error: createError } = await supabase.storage.createBucket(bucket, {
- public: bucket !== "payment-proofs" && bucket !== "rma-proofs",
+ public: !["payment-proofs", "rma-proofs", "legal-documents", "receipts", "identity-vault"].includes(bucket),
  fileSizeLimit: 10485760, // 10MB
  });
 
@@ -108,7 +111,7 @@ export const getSignedUploadUrl = createServerFn({ method: "POST" })
  token: result.data.token,
  path: result.data.path,
  publicUrl:
- bucket !== "payment-proofs" && bucket !== "rma-proofs" ? urlData.publicUrl : null,
+ !["payment-proofs", "rma-proofs", "legal-documents", "receipts", "identity-vault"].includes(bucket) ? urlData.publicUrl : null,
  };
  } catch (e: unknown) {
  console.error("[storage.functions] getSignedUploadUrl error:", e);
@@ -200,7 +203,8 @@ export const uploadStoreMedia = createServerFn({ method: "POST" })
 
  const supabase = getServerClient();
  const ext = fileName.split(".").pop() || "png";
- const uniqueName = `stores/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
+ const folder = identity.store_id || identity.id || "general";
+    const uniqueName = `stores/${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
 
  // Extrai os bytes a partir da string base64
  const base64Content = base64Data.includes(",") ? base64Data.split(",")[1] : base64Data;

@@ -13,6 +13,7 @@ import { listOrders } from "@/services/order.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { listMarketplaceExternalOrders, type ExternalOrderDTO } from "@/services/marketplace-hub.functions";
 import { formatMoney } from "@/lib/money";
+import { playCashRegisterSound, playWarningAlert } from "@/lib/audio-chimes";
 import { ShippingLabelModal } from "@/components/commerce/shipping-label-modal";
 
 export const Route = createFileRoute("/workspace/pedidos/expedicao")({
@@ -70,11 +71,13 @@ function WmsExpedicaoPage() {
       return scanBarcodePickItem({ data: { sessionId: activeSessionId, barcode } });
     },
     onSuccess: (data) => {
+      playCashRegisterSound();
       toast.success(`Item "${data.matchedItemTitle}" conferido (${data.qtyPicked}/${data.qtyExpected})`);
       setBarcodeInput("");
       queryClient.invalidateQueries({ queryKey: ["wms-batches"] });
     },
     onError: (err: Error) => {
+      playWarningAlert();
       toast.error(err.message || "Código de barras não confere com os itens pendentes deste lote.");
     },
   });

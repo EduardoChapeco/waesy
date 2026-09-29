@@ -160,7 +160,7 @@ function MasterInfluencersPage() {
                     </div>
                     <Badge
                       variant={isAmbassador ? "default" : "outline"}
-                      className={`text-[10px] font-bold shrink-0 ${isAmbassador ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}`}
+                      className={`text-[10px] font-bold shrink-0 ${isAmbassador ? "bg-primary hover:bg-primary/90 text-primary-foreground" : ""}`}
                     >
                       {creator.niche || "Geral"}
                     </Badge>

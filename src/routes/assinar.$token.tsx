@@ -5,7 +5,7 @@ import { FileSignature, ShieldCheck, CheckCircle2, Lock, Hash, AlertCircle, Load
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
-import { getEnvelopeByToken, signContractEnvelope, getPublicGovBrSigningConfig } from "@/services/contracts.functions";
+import { getEnvelopeByToken, signContractEnvelope, getPublicGovBrSigningConfig, getUserSavedSignature, saveUserSignature } from "@/services/contracts.functions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -24,20 +24,21 @@ export const Route = createFileRoute("/assinar/$token")({
   head: () => ({ meta: [{ title: "Assinatura Eletrônica de Documento | Waesy" }] }),
   loader: async ({ params }) => {
     try {
-      const [envelope, govBrConfig] = await Promise.all([
+      const [envelope, govBrConfig, savedSig] = await Promise.all([
         getEnvelopeByToken({ data: params.token }),
         getPublicGovBrSigningConfig({ data: { signingToken: params.token } }).catch(() => ({
           isGovBrEnabled: false,
           authUrl: null,
           environment: null,
         })),
+        getUserSavedSignature().catch(() => ({ savedSignature: null })),
       ]);
       if (!envelope) {
-        return { envelope: null, govBrConfig: null, error: "Link de assinatura inválido ou expirado." };
+        return { envelope: null, govBrConfig: null, savedSig: null, error: "Link de assinatura inválido ou expirado." };
       }
-      return { envelope, govBrConfig, error: null };
+      return { envelope, govBrConfig, savedSig, error: null };
     } catch {
-      return { envelope: null, govBrConfig: null, error: "Link de assinatura inválido ou expirado." };
+      return { envelope: null, govBrConfig: null, savedSig: null, error: "Link de assinatura inválido ou expirado." };
     }
   },
   component: SignContractPage,
@@ -46,9 +47,10 @@ export const Route = createFileRoute("/assinar/$token")({
 function SignContractPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
-  const { envelope, govBrConfig, error } = ((Route.useLoaderData?.() as any) || {});
+  const { envelope, govBrConfig, savedSig, error } = ((Route.useLoaderData?.() as any) || {});
   const [consent, setConsent] = useState(false);
   const [signatureImage, setSignatureImage] = useState("");
+  const [saveSignatureToProfile, setSaveSignatureToProfile] = useState(false);
   const [isSignedLocal, setIsSignedLocal] = useState(
     envelope?.status === "signed" || search?.signed === "true",
   );
@@ -181,6 +183,10 @@ function SignContractPage() {
 
     const screenRes = typeof window !== "undefined" ? `${window.innerWidth}x${window.innerHeight}` : undefined;
     const tz = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined;
+
+    if (saveSignatureToProfile && signatureImage) {
+      saveUserSignature({ data: { signatureImageBase64: signatureImage } }).catch(() => {});
+    }
 
     signMutation.mutate({
       data: {
@@ -402,7 +408,7 @@ function SignContractPage() {
                         window.location.href = govBrConfig.authUrl;
                       }}
                       disabled={!consent}
-                      className="w-full sm:w-auto rounded-xl text-xs font-bold h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white shrink-0 min-h-[44px] cursor-pointer shadow-xs gap-2"
+                      className="w-full sm:w-auto rounded-xl text-xs font-bold h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 min-h-[44px] cursor-pointer shadow-xs gap-2"
                     >
                       <ExternalLink className="size-4" />
                       <span>Assinar com GOV.BR</span>
@@ -418,8 +424,54 @@ function SignContractPage() {
                 </>
               )}
 
+              {/* 1-Click Signature Card: Assinatura Salva do Perfil */}
+              {savedSig?.savedSignature && (
+                <div className="p-4 rounded-2xl border border-primary/30 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 font-semibold text-xs text-foreground">
+                      <FileSignature className="size-3.5 text-primary" />
+                      Assinatura Salva no seu Perfil
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Você possui uma assinatura digital registrada. Utilize-a com 1 toque sem desenhar novamente.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={savedSig.savedSignature}
+                      alt="Assinatura Salva"
+                      className="h-9 max-w-[120px] object-contain bg-background rounded-lg border border-border p-1"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl text-xs font-semibold h-9 px-3 cursor-pointer"
+                      onClick={() => {
+                        setSignatureImage(savedSig.savedSignature);
+                        toast.success("Assinatura do seu perfil carregada com sucesso!");
+                      }}
+                    >
+                      Usar Esta
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Canvas Interativo */}
               <SignatureCanvasPad onSave={setSignatureImage} />
+
+              <div className="flex items-center space-x-2 pt-1">
+                <Checkbox
+                  id="save-profile-sig"
+                  checked={saveSignatureToProfile}
+                  onCheckedChange={(c) => setSaveSignatureToProfile(Boolean(c))}
+                  className="size-4 rounded-md"
+                />
+                <label htmlFor="save-profile-sig" className="text-xs text-muted-foreground cursor-pointer">
+                  Salvar esta assinatura no meu perfil para usar com 1 toque em futuras compras e contratos
+                </label>
+              </div>
 
               <div className="flex items-start space-x-3 pt-2">
                 <Checkbox

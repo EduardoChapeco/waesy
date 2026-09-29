@@ -145,7 +145,7 @@ export default function WorkspaceTripsListPage() {
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 transition-colors border border-primary/20"
           >
             <Clock className="size-3.5" />
-            <span>Central de Cotações e Leads</span>
+            <span>Cotações</span>
           </Link>
           <Link
             to="/workspace/turismo/aereos"
@@ -341,7 +341,7 @@ export default function WorkspaceTripsListPage() {
       <WorkspaceDashboardSheet
         isOpen={isDashboardOpen}
         onClose={() => setIsDashboardOpen(false)}
-        title="Painel Executivo de Viagens"
+        title="Viagens"
         subtitle="Indicadores de faturamento, reservas ativas e passageiros"
         metrics={metricsItems}
       />

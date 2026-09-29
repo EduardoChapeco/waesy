@@ -1,16 +1,24 @@
 import React from "react";
-import { BentoBlockData } from "../types";
+import { BentoBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { ShieldCheck, Zap, Globe, Layers, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export interface BentoAsymmetricGridProps {
+  id?: string;
   data: BentoBlockData;
+  styling?: OmniBlockStyling;
   className?: string;
 }
 
-export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ data, className = "" }) => {
+export const BentoAsymmetricGrid: React.FC<BentoAsymmetricGridProps> = ({ id, data, styling, className = "" }) => {
+  const sectionStyle = getSectionStyle(styling);
   return (
-    <section className={`w-full bg-muted/20 py-20 lg:py-28 border-b border-border/40 ${className}`}>
+    <section
+      id={id}
+      style={sectionStyle.style}
+      className={`w-full bg-muted/20 border-b border-border/40 ${sectionStyle.className} ${className}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Cabeçalho da Seção */}

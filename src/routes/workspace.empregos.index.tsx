@@ -17,7 +17,7 @@ import { getWorkspaceLinkedInStatus, syndicateJobToLinkedIn } from "@/services/l
 import { ProUpgradePaywallModal } from "@/components/monetization/pro-upgrade-paywall-modal";
 
 export const Route = createFileRoute("/workspace/empregos/")({
-  head: () => ({ meta: [{ title: "Gestão de Vagas | Workspace" }] }),
+  head: () => ({ meta: [{ title: "Vagas" }] }),
   loader: async () => {
     try {
       const [jobs, linkedInStatus] = await Promise.all([
@@ -202,7 +202,7 @@ function WorkspaceJobsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageHeader
           eyebrow="Recrutamento & Seleção"
-          title="Gestão de Vagas"
+          title="Vagas"
         />
 
         <div className="flex items-center gap-2">

@@ -274,10 +274,7 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  }
  } catch {}
 
- // Se o contexto for civil ou creator, activeStoreId DEVE ser estritamente nulo (Zero-Trust Civil Root)
- if (activeContext === "civil" || activeContext === "creator") {
- activeStoreId = null;
- } else {
+ // ── Resolução de store_id via cookie / subdomínio
  try {
  const { resolveTenantStoreId } = await import("@/lib/tenant.server");
  activeStoreId = (await resolveTenantStoreId()) ?? null;
@@ -289,15 +286,18 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
  ? memberships.find((m) => m.store_id === activeStoreId)
  : null;
 
- if (matchedMembership) {
+ if (activeContext === "creator") {
+ activeStoreId = null;
+ } else if (matchedMembership) {
  activeStoreId = matchedMembership.store_id;
+ activeContext = "store";
  } else if (isPlatformAdmin && activeStoreId) {
- // Platform admin pode operar qualquer loja via cookie — manter
+ activeContext = "store";
  } else if (activeContext === "store") {
  activeStoreId = memberships[0]?.store_id || null;
  } else {
  activeStoreId = null;
- }
+ activeContext = activeContext || "civil";
  }
 
  const currentMembership = activeStoreId

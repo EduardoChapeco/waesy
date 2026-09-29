@@ -1,15 +1,19 @@
 import React, { useState } from "react";
-import { PricingBlockData } from "../types";
+import { PricingBlockData, OmniBlockStyling } from "../types";
+import { getSectionStyle } from "../utils";
 import { Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface PricingTablesCleanProps {
+  id?: string;
   data: PricingBlockData;
+  styling?: OmniBlockStyling;
   className?: string;
 }
 
-export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ data, className = "" }) => {
+export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ id, data, styling, className = "" }) => {
   const [isAnnual, setIsAnnual] = useState(false);
+  const sectionStyle = getSectionStyle(styling);
 
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -20,7 +24,11 @@ export const PricingTablesClean: React.FC<PricingTablesCleanProps> = ({ data, cl
   };
 
   return (
-    <section className={`w-full bg-background py-20 lg:py-28 border-b border-border/40 ${className}`}>
+    <section
+      id={id}
+      style={sectionStyle.style}
+      className={`w-full bg-background border-b border-border/40 ${sectionStyle.className} ${className}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Cabeçalho */}

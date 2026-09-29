@@ -138,7 +138,7 @@ export const createQuickOrder = createServerFn({ method: "POST" })
       const customerSnapshot = {
         name: input.customerName.trim(),
         phone: input.customerPhone.trim(),
-        user_id: identity?.id || null,
+        user_id: identity?.customer_id || null,
       };
 
       const shippingAddressSnapshot = input.deliveryMode === "pickup"
@@ -174,7 +174,7 @@ export const createQuickOrder = createServerFn({ method: "POST" })
         .from("orders")
         .insert({
           store_id: resolvedStoreId,
-          customer_id: identity?.id || null,
+          customer_id: identity?.customer_id || null,
           public_token: publicToken,
           status: "awaiting_payment",
           items_snapshot: itemsSnapshot,

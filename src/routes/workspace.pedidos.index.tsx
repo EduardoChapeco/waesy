@@ -46,6 +46,8 @@ function getStatusLabel(status: string, semantics?: any) {
  const isGastro = semantics?.nicheId === "gastronomy";
  const isTourism = semantics?.nicheId === "tourism";
  const isServices = semantics?.nicheId === "services";
+ const isRealEstate = semantics?.nicheId === "real_estate";
+ const isLegal = semantics?.nicheId === "legal";
 
  const map: Record<
  string,
@@ -55,9 +57,9 @@ function getStatusLabel(status: string, semantics?: any) {
  }
  > = {
  draft: { label: "Rascunho", variant: "secondary" },
- awaiting_payment: { label: isTourism ? "Aguardando Pagamento" : "Aguardando Pagto", variant: "warning" },
+ awaiting_payment: { label: isRealEstate ? "Proposta em Análise" : isLegal ? "Honorários Pendentes" : isTourism ? "Aguardando Pagamento" : "Aguardando Pagto", variant: "warning" },
  payment_processing: { label: "Processando Pagto", variant: "info" },
- paid: { label: isTourism ? "Confirmado / Pago" : "Pago", variant: "success" },
+ paid: { label: isRealEstate ? "Sinal / Reserva Paga" : isLegal ? "Honorários Pagos" : isTourism ? "Confirmado / Pago" : "Pago", variant: "success" },
  processing: {
  label: isGastro ? "Em Preparo" : isTourism ? "Em Emissão de Vouchers" : isServices ? "Em Execução" : "Em Separação",
  variant: "secondary",

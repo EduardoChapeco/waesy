@@ -36,7 +36,7 @@ const PDV_TOUR_SLIDES: TourSlide[] = [
   },
 ];
 import { generateContractFromOrder } from "@/services/contracts.functions";
-import { printThermalReceipt, type ThermalReceiptData } from "@/lib/thermal-printer";
+import { printThermalReceipt, buildEscPosReceipt, sendBytesToSerialPrinter, type ThermalReceiptData } from "@/lib/thermal-printer";
 import { getActiveRegister, openRegister, processPOSSale, addRegisterEntry } from "@/services/cash.functions";
 import { listAdminProducts } from "@/services/admin-catalog.functions";
 import { formatMoney } from "@/lib/money";
@@ -51,8 +51,10 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { ManagerOverrideDialog } from "@/components/admin/pos/manager-override-dialog";
 import { ProductModifiersModal, type SelectedModifier } from "@/components/pos/product-modifiers-modal";
 import { listPriceTables, type PriceTableDTO } from "@/services/price-tables.functions";
+import { getStoreFloorPlan } from "@/services/reservations.functions";
 import { getStoreSettings } from "@/services/store.functions";
 import { getNicheSemantics } from "@/lib/niche-semantics";
 
@@ -272,13 +274,17 @@ function PdvTerminal() {
   const [contractSigningInfo, setContractSigningInfo] = useState<{ contractId: string; title: string; signingUrl: string; whatsappLink: string | null } | null>(null);
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
   const [companionCardOpen, setCompanionCardOpen] = useState(false);
+  const [isFloorPlanModalOpen, setIsFloorPlanModalOpen] = useState(false);
+  const [managerOverrideOpen, setManagerOverrideOpen] = useState(false);
+  const [pendingDiscountCents, setPendingDiscountCents] = useState(0);
+  const floorPlan = (store as any)?.floor_plan || null;
 
   const handleGenerateContractFromPOS = async (orderId: string) => {
     setIsGeneratingContract(true);
     try {
-      toast.loading("Gerando contrato & posicionando assinaturas...", { id: "pos-contract" });
+      toast.loading("Gerando contrato...", { id: "pos-contract" });
       const res = await generateContractFromOrder({ data: { orderId } });
-      toast.success("Contrato gerado com sucesso!", { id: "pos-contract" });
+      toast.success("Contrato gerado", { id: "pos-contract" });
       setContractSigningInfo({
         contractId: res.contract.id,
         title: res.contract.title,
@@ -300,6 +306,7 @@ function PdvTerminal() {
  const [isFullscreen, setIsFullscreen] = useState(false);
  const [paperWidth, setPaperWidth] = useState<"80mm" | "58mm">("80mm");
  const [lastSaleReceipt, setLastSaleReceipt] = useState<any | null>(null);
+ const [isPrintingDirectEscPos, setIsPrintingDirectEscPos] = useState(false);
 
  const [selectedItemForModifiers, setSelectedItemForModifiers] = useState<{
  product: any;
@@ -618,6 +625,55 @@ function PdvTerminal() {
    printThermalReceipt(receiptData, paperWidth);
  };
 
+ const handlePrintEscPosDirect = async () => {
+   if (!lastSaleReceipt) return;
+   setIsPrintingDirectEscPos(true);
+   try {
+     const receiptData = {
+       storeName: store?.name || "Waesy Comércio Local",
+       storeCnpj: store?.cnpj || undefined,
+       storeAddress: store?.address || undefined,
+       orderNumber: lastSaleReceipt.saleId,
+       orderDate: formatDateTime(lastSaleReceipt.date),
+       customerName: lastSaleReceipt.customerName || (lastSaleReceipt.customerDoc ? `CPF: ${lastSaleReceipt.customerDoc}` : "Consumidor Final"),
+       customerPhone: store?.phone,
+       items: (lastSaleReceipt.items || []).map((i: any) => ({
+         name: i.product?.title || i.title || "Item",
+         qty: i.qty || 1,
+         priceCents: i.unitPriceCents || 0,
+       })),
+       subtotalCents: lastSaleReceipt.subtotal || 0,
+       discountCents: lastSaleReceipt.discount || 0,
+       totalCents: lastSaleReceipt.total || 0,
+       paymentMethod: (lastSaleReceipt.effectivePayments || []).map((p: any) => p.method?.toUpperCase()).join(" + ") || "DINHEIRO",
+       channelSource: `PDV ${lastSaleReceipt.serviceMode?.toUpperCase() || "BALCÃO"}`,
+       width: "80mm" as const,
+     };
+
+     const bytes = buildEscPosReceipt(receiptData);
+
+     if (typeof navigator !== "undefined" && "serial" in navigator) {
+       try {
+         await sendBytesToSerialPrinter(bytes);
+         toast.success("Cupom impresso diretamente na impressora térmica!");
+         return;
+       } catch (serialErr: any) {
+         if (serialErr.message?.includes("Nenhuma porta")) {
+           toast.info("Nenhuma impressora serial selecionada. Abrindo impressão do sistema.");
+         } else {
+           console.warn("[PDV] Porta serial:", serialErr);
+         }
+       }
+     }
+
+     handlePrintThermal("80mm");
+   } catch (err: any) {
+     toast.error(err?.message || "Erro ao comunicar com a impressora térmica.");
+   } finally {
+     setIsPrintingDirectEscPos(false);
+   }
+ };
+
  // Finalizar Venda
  const handleFinalizeSale = async () => {
  if (cart.length === 0) {
@@ -667,7 +723,7 @@ function PdvTerminal() {
  },
  });
 
- toast.success("Venda finalizada com sucesso!");
+ toast.success("Venda finalizada");
  playCashRegisterSound();
 
  setLastSaleReceipt({
@@ -734,7 +790,7 @@ function PdvTerminal() {
  },
  });
 
- toast.success(`Itens enviados para a cozinha na Mesa ${tableOrComandaNumber}!`);
+ toast.success("Itens enviados à cozinha");
  setCart([]);
  setMobileTicketOpen(false);
  } catch (err: any) {
@@ -754,6 +810,7 @@ function PdvTerminal() {
 
  const handleQuickMovementSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
+ if (isProcessing) return;
  const cents = parseCurrencyInputToCents(quickMovementAmount);
  if (cents <= 0) {
  toast.error("Informe um valor válido.");
@@ -764,6 +821,7 @@ function PdvTerminal() {
  return;
  }
 
+ setIsProcessing(true);
  try {
  const finalCents = quickMovementType === "sangria" ? -Math.abs(cents) : Math.abs(cents);
  await addRegisterEntry({
@@ -775,14 +833,12 @@ function PdvTerminal() {
  },
  });
 
- toast.success(
- quickMovementType === "sangria"
- ? "Sangria realizada com sucesso!"
- : "Suprimento inserido com sucesso!",
- );
+ toast.success(quickMovementType === "sangria" ? "Sangria registrada" : "Suprimento registrado");
  setQuickMovementModalOpen(false);
  } catch (err: any) {
  toast.error(err.message || "Erro na movimentação.");
+ } finally {
+ setIsProcessing(false);
  }
  };
 
@@ -1289,7 +1345,106 @@ function PdvTerminal() {
  </div>
  </div>
 
- {/* ── MODAL TÁTIL DE PAGAMENTO & MÚLTIPLOS MEIOS ── */}
+ 
+      {/* ── DIALOG DE AUTORIZAÇÃO GERENCIAL PARA DESCONTOS ── */}
+      <ManagerOverrideDialog
+        isOpen={managerOverrideOpen}
+        onClose={() => setManagerOverrideOpen(false)}
+        actionType="discount"
+        onSuccess={() => {
+          setDiscountInput((pendingDiscountCents / 100).toFixed(2));
+          toast.success("Desconto autorizado e aplicado");
+        }}
+      />
+
+      {/* ── MODAL INTERATIVA DA PLANTA DO SALÃO DE MESAS 2D ── */}
+      <Dialog open={isFloorPlanModalOpen} onOpenChange={setIsFloorPlanModalOpen}>
+        <DialogContent className="sm:max-w-2xl w-full p-0 gap-0 overflow-hidden rounded-2xl bg-card border border-border">
+          <DialogHeader className="p-5 pb-3 border-b border-border/80 bg-muted/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <Armchair className="size-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-base font-bold text-foreground">
+                    Planta do Salão de Mesas
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground">
+                    Selecione a mesa para vincular o atendimento e comandas em tempo real
+                  </DialogDescription>
+                </div>
+              </div>
+              {tableOrComandaNumber && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setTableOrComandaNumber("");
+                    setServiceMode("counter");
+                    setIsFloorPlanModalOpen(false);
+                    toast.info("Atendimento alterado para Balcão");
+                  }}
+                  className="text-xs h-8 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  Desvincular Mesa
+                </Button>
+              )}
+            </div>
+          </DialogHeader>
+
+          <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {((floorPlan?.tables as any[]) || [
+                { id: "m1", label: "Mesa 01", seats: 4 },
+                { id: "m2", label: "Mesa 02", seats: 2 },
+                { id: "m3", label: "Mesa 03", seats: 4 },
+                { id: "m4", label: "Mesa 04", seats: 6 },
+                { id: "m5", label: "Mesa 05", seats: 4 },
+                { id: "m6", label: "Mesa 06", seats: 4 },
+                { id: "m7", label: "Mesa 07", seats: 8 },
+                { id: "m8", label: "Mesa 08", seats: 2 },
+                { id: "m9", label: "Mesa 09", seats: 4 },
+                { id: "m10", label: "Mesa 10", seats: 4 },
+                { id: "m11", label: "Mesa 11", seats: 4 },
+                { id: "m12", label: "Mesa 12", seats: 6 },
+              ]).map((table: any) => {
+                const isSelected = tableOrComandaNumber === table.label;
+                return (
+                  <button
+                    key={table.id || table.label}
+                    type="button"
+                    onClick={() => {
+                      setServiceMode("table");
+                      setTableOrComandaNumber(table.label);
+                      setIsFloorPlanModalOpen(false);
+                      toast.success(`${table.label} selecionada para atendimento`);
+                    }}
+                    className={`flex flex-col items-center justify-center p-3.5 rounded-xl border text-center transition-all cursor-pointer min-h-[96px] ${
+                      isSelected
+                        ? "bg-primary/10 border-primary text-primary shadow-xs ring-2 ring-primary/20"
+                        : "bg-card border-border/70 hover:border-primary/50 hover:bg-muted/30 text-foreground"
+                    }`}
+                  >
+                    <Armchair className={`size-6 mb-1.5 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="font-bold text-xs">{table.label}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                      {table.seats ? `${table.seats} lugares` : "4 lugares"}
+                    </span>
+                    {isSelected && (
+                      <Badge variant="outline" className="mt-1 text-[9px] font-bold border-primary text-primary px-1.5 py-0">
+                        Ativa
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── MODAL TÁTIL DE PAGAMENTO & MÚLTIPLOS MEIOS ── */}
  <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
  <DialogContent className="sm:max-w-xl w-full p-0 gap-0 overflow-hidden rounded-2xl bg-card border border-border">
  <DialogHeader className="p-6 pb-4 border-b border-border/80 bg-muted/20">
@@ -1557,6 +1712,21 @@ function PdvTerminal() {
             >
               <Smartphone className="size-4" />
               <span>Enviar Comprovante / Carnê 9:16 (WhatsApp)</span>
+            </Button>
+
+            <Button
+              type="button"
+              onClick={handlePrintEscPosDirect}
+              disabled={isPrintingDirectEscPos}
+              variant="outline"
+              className="w-full h-11 rounded-xl text-xs font-bold gap-2 border-primary/40 text-foreground hover:bg-primary/5 cursor-pointer shadow-2xs"
+            >
+              {isPrintingDirectEscPos ? (
+                <Loader2 className="size-4 animate-spin text-primary" />
+              ) : (
+                <Printer className="size-4 text-primary" />
+              )}
+              <span>Imprimir ESC/POS Direto (USB / Serial / Bluetooth)</span>
             </Button>
 					
  <div className="grid grid-cols-2 gap-2">

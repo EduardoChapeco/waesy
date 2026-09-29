@@ -176,7 +176,7 @@ export default function WorkspaceTendersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Licitações Públicas</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Licitações</h1>
             <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
               PNCP Gov Harvester
             </Badge>

@@ -97,7 +97,16 @@ export function TicketPreview({
         {/* Lower Section: QR Code Pass */}
         <div className="p-5 bg-card flex flex-col items-center justify-center gap-2">
           <div className="p-3 bg-white rounded-xl shadow-sm border border-border/20 flex flex-col items-center">
-            <QrCode className="size-20 text-neutral-950" />
+            {qrCodeValue ? (
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(qrCodeValue)}`}
+                alt={`QR Code ${qrCodeValue}`}
+                className="size-20 object-contain"
+                loading="lazy"
+              />
+            ) : (
+              <QrCode className="size-20 text-neutral-950" />
+            )}
             <span className="text-[9px] font-mono text-neutral-600 mt-1 uppercase tracking-wider">
               {qrCodeValue ? qrCodeValue.slice(0, 16) : "TKT-VALID-PASS"}
             </span>

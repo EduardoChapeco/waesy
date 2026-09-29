@@ -75,7 +75,7 @@ export default function WorkspaceLojasPage() {
  <div className="w-full max-w-7xl mx-auto space-y-6 animate-in fade-in duration-200">
  {/* ── 1. Top Header com Ações Globais ── */}
  <PageHeader
- eyebrow="Gestão de Negócios"
+ eyebrow="Negócios"
  title="Minhas Lojas"
  actions={
  <Button asChild className="gap-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground">

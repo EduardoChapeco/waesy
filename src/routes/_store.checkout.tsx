@@ -13,8 +13,10 @@ import { initiatePaymentTransaction, getPublicPaymentMethods, getGatewayStatus }
 import { calculateShipping } from "@/services/shipping.functions";
 import { getPublicStoreProfile } from "@/services/catalog.functions";
 import { getProfile } from "@/services/auth.functions";
-import { getCustomerAddresses } from "@/services/customer.functions";
-import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus } from 'lucide-react';
+import { getUserAddresses, validateDeliveryLocationGPS } from "@/services/addresses.functions";
+import { DeliveryLocationPolicySheet } from "@/components/commerce/delivery-location-policy-sheet";
+import { GpsMismatchModal } from "@/components/commerce/gps-mismatch-modal";
+import { Check, CheckCircle2, Ticket, User, Truck, CreditCard, ShoppingBag, AlertCircle, MapPin, Loader2, Gift, QrCode, Clock, Store, ChevronRight, ArrowLeft, Navigation, Layers, Plus, ShieldCheck, Building2, ShieldAlert } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -54,7 +56,7 @@ export const Route = createFileRoute("/_store/checkout")({
         getPublicPaymentMethods(store ? { data: { storeId: store } } : undefined).catch(() => []),
         getGatewayStatus(store ? { data: { storeId: store } } : undefined).catch(() => false),
         getProfile().catch(() => null),
-        getCustomerAddresses().catch(() => []),
+        getUserAddresses().catch(() => []),
         getStoreCheckoutConfig({ data: { storeId: store || undefined } }).catch(() => null),
       ]);
 
@@ -170,6 +172,16 @@ export function CheckoutPage() {
   const [selectedRateId, setSelectedRateId] = useState<string | null>(null);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+
+  // ── V139: Omni-Checkout, Waesy Go & Trust/Safety States ──
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [deliveryToDoor, setDeliveryToDoor] = useState(false);
+  const [doorDeliveryFeeCents, setDoorDeliveryFeeCents] = useState(500); // R$ 5,00 padrão para taxa de porta
+  const [apartmentDetails, setApartmentDetails] = useState({ blockTower: "", intercomCode: "" });
+  const [isPolicySheetOpen, setIsPolicySheetOpen] = useState(false);
+  const [isGpsMismatchModalOpen, setIsGpsMismatchModalOpen] = useState(false);
+  const [gpsMismatchDistanceKm, setGpsMismatchDistanceKm] = useState(0);
+  const [hasValidatedGpsMismatch, setHasValidatedGpsMismatch] = useState(false);
 
   // Promo & Gift Card code states
   const [promoCode, setPromoCode] = useState("");
@@ -487,12 +499,14 @@ export function CheckoutPage() {
  return options;
  };
 
- const preGiftTotalCents =
- cart.subtotalCents +
- (formData.shippingMethod === "pickup" ? 0 : cart.shippingCents) -
- cart.discountCents -
- paymentDiscountCents +
- paymentSurchargeCents;
+   const doorFeeCents = (formData.shippingMethod !== "pickup" && deliveryToDoor) ? doorDeliveryFeeCents : 0;
+  const preGiftTotalCents =
+    cart.subtotalCents +
+    (formData.shippingMethod === "pickup" ? 0 : cart.shippingCents) +
+    doorFeeCents -
+    cart.discountCents -
+    paymentDiscountCents +
+    paymentSurchargeCents;
 
  const giftCardDeductionCents = appliedGiftCard
  ? Math.min(appliedGiftCard.balanceCents, preGiftTotalCents)
@@ -539,8 +553,41 @@ export function CheckoutPage() {
  }
  };
 
- const handleSubmitOrder = async () => {
- if (isSubmitting) return;
+   const handleSubmitOrder = async () => {
+    if (isSubmitting) return;
+
+    // V139: GPS Mismatch Verification (Anti-Fraud & Distance Warning)
+    if (formData.shippingMethod !== "pickup" && !hasValidatedGpsMismatch) {
+      if (typeof navigator !== "undefined" && navigator.geolocation) {
+        try {
+          const pos = await new Promise<GeolocationPosition | null>((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              (p) => resolve(p),
+              () => resolve(null),
+              { timeout: 3500 }
+            );
+          });
+          if (pos) {
+            const gpsValidation = await validateDeliveryLocationGPS({
+              data: {
+                deviceLat: pos.coords.latitude,
+                deviceLng: pos.coords.longitude,
+                deliveryCity: formData.shippingAddress.city,
+                deliveryState: formData.shippingAddress.state,
+                maxAllowedThresholdKm: 35,
+              },
+            });
+            if (gpsValidation.isMismatch) {
+              setGpsMismatchDistanceKm(gpsValidation.distanceKm);
+              setIsGpsMismatchModalOpen(true);
+              return;
+            }
+          }
+        } catch (gpsErr) {
+          console.warn("[checkout] GPS mismatch check skipped:", gpsErr);
+        }
+      }
+    }
 
  if (formData.shippingMethod !== "pickup") {
  const { zipcode, street, number, neighborhood, city, state } = formData.shippingAddress;
@@ -598,8 +645,11 @@ export function CheckoutPage() {
  formData.paymentMethod === "manual" ? formData.paymentMethodId : undefined,
  giftCardCode: appliedGiftCard?.code || undefined,
  customFields: Object.keys(customFieldValues).length > 0 ? customFieldValues : undefined,
- notes: orderNotes.trim() || undefined,
- cpfOnReceipt: cpfRequested ? { requested: true, document: cpfDocument.trim() } : { requested: false },
+         notes: orderNotes.trim() || undefined,
+        deliveryToDoor: deliveryToDoor,
+        doorDeliveryFeeCents: deliveryToDoor ? doorDeliveryFeeCents : 0,
+        deliveryLocationType: deliveryToDoor ? "apartment_door" : "apartment_reception",
+        cpfOnReceipt: cpfRequested ? { requested: true, document: cpfDocument.trim() } : { requested: false },
  substitutionPolicy: substitutionPolicy,
  receiverInfo: receiverMode === "other"
  ? { isOtherPerson: true, name: receiverName.trim(), phone: receiverPhone.trim() }
@@ -629,16 +679,17 @@ export function CheckoutPage() {
  });
  } catch (payErr: unknown) {
  console.warn("Transação de gateway:", payErr);
+ toast.error("Instabilidade temporária no gateway. Consulte o status no seu pedido.");
  }
  }
 
  const humanOrderDisplay = (res as any)?.shortId ? `#${(res as any).shortId} ` : "";
-	toast.success(`Pedido ${humanOrderDisplay}realizado com sucesso!`);
+	toast.success(`Pedido ${humanOrderDisplay}confirmado`);
  await refreshCart().catch(() => {});
 
  const remainingCarts = globalCarts.filter((c: any) => c.id !== cart.id);
  if (remainingCarts.length > 0) {
- toast.info(`Você tem mais ${remainingCarts.length} pacote(s) pendente(s).`);
+ toast.info(`Mais ${remainingCarts.length} pedido(s) pendente(s)`);
  navigate({ to: "/checkout" });
  } else {
  navigate({
@@ -760,58 +811,85 @@ export function CheckoutPage() {
  {/* ── ETAPA 1: IDENTIFICAÇÃO DO CLIENTE ── */}
  {activeStep === 1 && (
  <Surface variant="default" className="p-5 sm:p-6 rounded-2xl space-y-5">
- {userProfile ? (
- <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/30">
- <div className="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
- {(userProfile.fullName || userProfile.email || "U").charAt(0).toUpperCase()}
- </div>
- <div className="min-w-0 flex-1">
- <p className="text-xs font-bold text-foreground truncate">
- {userProfile.fullName || "Membro Waesy"}
- </p>
- <p className="text-[11px] text-muted-foreground truncate">{userProfile.email}</p>
- {(!userProfile.phone || !userProfile.cpf) && (
- <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-1">
- Complete seus dados de contato abaixo para agilizar a entrega.
- </p>
- )}
- </div>
- </div>
- ) : null}
+ {/* Zero-Amnesia: Card de Identificação Confirmada */}
+          {userProfile && userProfile.fullName && userProfile.email && !isEditingContact ? (
+            <div className="p-4 rounded-2xl bg-muted/20 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3.5">
+                <div className="size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                  {(userProfile.fullName || userProfile.email || "U").charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-bold text-foreground truncate">{formData.customerName || userProfile.fullName}</p>
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-bold text-emerald-600 bg-emerald-500/10 border-emerald-500/20">
+                      Confirmado ✓
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {formData.customerEmail || userProfile.email} {formData.customerPhone ? `• ${formData.customerPhone}` : ""}
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingContact(true)}
+                className="text-xs font-semibold h-8 rounded-xl cursor-pointer self-start sm:self-auto"
+              >
+                Alterar dados
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {userProfile && isEditingContact && (
+                <div className="flex items-center justify-between pb-1">
+                  <span className="text-xs font-bold text-foreground">Editar Dados de Contato</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingContact(false)}
+                    className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label className="text-xs font-bold text-foreground">Nome Completo *</Label>
+                  <Input
+                    required
+                    placeholder="Seu nome completo"
+                    value={formData.customerName}
+                    onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                    className="h-11 rounded-xl text-base sm:text-sm"
+                  />
+                </div>
 
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5 sm:col-span-2">
- <Label className="text-xs font-bold text-foreground">Nome Completo *</Label>
- <Input
- required
- placeholder="Seu nome completo"
- value={formData.customerName}
- onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
- className="h-11 rounded-xl text-base sm:text-sm"
- />
- </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground">E-mail *</Label>
+                  <Input
+                    type="email"
+                    required
+                    placeholder="seuemail@exemplo.com"
+                    value={formData.customerEmail}
+                    onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+                    className="h-11 rounded-xl text-base sm:text-sm"
+                  />
+                </div>
 
- <div className="space-y-1.5">
- <Label className="text-xs font-bold text-foreground">E-mail *</Label>
- <Input
- type="email"
- required
- placeholder="seuemail@exemplo.com"
- value={formData.customerEmail}
- onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
- className="h-11 rounded-xl text-base sm:text-sm"
- />
- </div>
-
- <div className="space-y-1.5">
- <Label className="text-xs font-bold text-foreground">WhatsApp / Telefone *</Label>
- <PhoneField
- required
- value={formData.customerPhone}
- onChange={(val) => setFormData({ ...formData, customerPhone: val || "" })}
- className="h-11 rounded-xl text-base sm:text-sm"
- />
- </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-foreground">WhatsApp / Telefone *</Label>
+                  <PhoneField
+                    required
+                    value={formData.customerPhone}
+                    onChange={(val) => setFormData({ ...formData, customerPhone: val || "" })}
+                    className="h-11 rounded-xl text-base sm:text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
                 {/* ── Fiscal & Notas: CPF na Nota ── */}
                 {checkoutConfig?.cpfOnReceipt?.enabled !== false && (
@@ -949,11 +1027,10 @@ export function CheckoutPage() {
  value={orderNotes}
  onChange={(e) => setOrderNotes(e.target.value)}
  className="h-11 rounded-xl text-base sm:text-sm"
- />
- </div>
- </div>
+  />
+  </div>
 
- <div className="pt-3 flex justify-end">
+  <div className="pt-3 flex justify-end">
  <Button
  onClick={handleAdvanceToDelivery}
  disabled={!formData.customerName || !formData.customerEmail || !formData.customerPhone}
@@ -1321,7 +1398,65 @@ export function CheckoutPage() {
  </div>
  )}
 
- {/* ── Logística e Recebimento: Quem recebe as compras ── */}
+ {/* ── Motor Waesy Go & Logística de Precisão (Entrega na Porta / Apartamento) ── */}
+            <div className="pt-3 border-t border-border/40 space-y-3">
+              <div className="flex items-start justify-between gap-3 p-3.5 rounded-2xl bg-card border border-border/80">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-foreground">Entregar na porta de casa / apartamento</span>
+                    <Badge variant="outline" className="text-[10px] font-mono font-bold text-primary border-primary/30">
+                      +{formatMoney(doorDeliveryFeeCents)}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    O entregador sobe até o apartamento ou entra no condomínio para entregar diretamente na sua porta.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsPolicySheetOpen(true)}
+                    className="text-[10px] text-primary font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <ShieldCheck className="size-3" /> Ver Políticas Pétreas de Entrega
+                  </button>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={deliveryToDoor}
+                  onChange={(e) => setDeliveryToDoor(e.target.checked)}
+                  className="size-5 rounded-md border-border text-primary focus:ring-primary mt-1 cursor-pointer"
+                />
+              </div>
+
+              {deliveryToDoor && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-3 animate-in fade-in duration-150">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-bold text-foreground">Bloco / Torre / Edifício</Label>
+                      <Input
+                        placeholder="Ex: Bloco B, Torre 2"
+                        value={apartmentDetails.blockTower}
+                        onChange={(e) => setApartmentDetails((prev) => ({ ...prev, blockTower: e.target.value }))}
+                        className="h-10 rounded-xl text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-bold text-foreground">Código de Acesso / Interfone</Label>
+                      <Input
+                        placeholder="Ex: Interfone 402, Ramal 12"
+                        value={apartmentDetails.intercomCode}
+                        onChange={(e) => setApartmentDetails((prev) => ({ ...prev, intercomCode: e.target.value }))}
+                        className="h-10 rounded-xl text-xs"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
+                    Aviso Pétreo: Caso as normas do condomínio impeçam a subida de entregadores, a entrega será finalizada na portaria e o valor da taxa não é reembolsado.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* ── Logística e Recebimento: Quem recebe as compras ── */}
  {checkoutConfig?.receiverInfo?.enabled !== false && (
  <div className="pt-3 border-t border-border/40 space-y-2.5">
  <div className="space-y-0.5">
@@ -1802,10 +1937,22 @@ export function CheckoutPage() {
               </>
             ) : (
               <span>Finalizar • {formatMoney(checkoutTotalCents)}</span>
-            )}
+                        )}
           </Button>
         </div>
- </Surface>
+
+        <div className="text-[11px] text-muted-foreground text-center sm:text-right pt-2 leading-relaxed">
+          Ao pedir, concorda com as nossas{" "}
+          <button
+            type="button"
+            onClick={() => setIsPolicySheetOpen(true)}
+            className="text-primary font-bold hover:underline cursor-pointer inline"
+          >
+            Políticas Pétreas
+          </button>
+          . Tolerância ZERO para fraudes ou abusos a entregadores. Cooperamos integralmente com as autoridades locais.
+        </div>
+      </Surface>
  )}
  </div>
 
@@ -1908,7 +2055,13 @@ export function CheckoutPage() {
  </div>
  )}
 
- <div className="flex justify-between text-muted-foreground">
+ {formData.shippingMethod !== "pickup" && deliveryToDoor && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span className="flex items-center gap-1">Entrega na Porta / Apto</span>
+                  <span className="font-mono">{formatMoney(doorDeliveryFeeCents)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-muted-foreground">
                 <span>Frete / Entrega</span>
                 <span className="font-mono">
                   {formData.shippingMethod === "pickup"
@@ -1959,6 +2112,24 @@ export function CheckoutPage() {
    </div>
  </div>
  )}
- </div>
- );
+       {/* ── Modais de Segurança & Políticas (V139) ── */}
+      <DeliveryLocationPolicySheet
+        isOpen={isPolicySheetOpen}
+        onOpenChange={setIsPolicySheetOpen}
+      />
+      <GpsMismatchModal
+        isOpen={isGpsMismatchModalOpen}
+        onOpenChange={setIsGpsMismatchModalOpen}
+        distanceKm={gpsMismatchDistanceKm}
+        deliveryAddressSummary={`${formData.shippingAddress.street || "Endereço"}, ${formData.shippingAddress.number || "S/N"} - ${formData.shippingAddress.neighborhood || ""}, ${formData.shippingAddress.city || ""}/${formData.shippingAddress.state || ""}`}
+        onConfirmOrder={() => {
+          setHasValidatedGpsMismatch(true);
+          setTimeout(() => handleSubmitOrder(), 50);
+        }}
+        onChangeAddress={() => {
+          setActiveStep(2);
+        }}
+      />
+    </div>
+  );
 }

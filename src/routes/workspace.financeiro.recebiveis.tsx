@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
-import { listStoreCarnes, getCarnesReportSummary, approveInstallmentPayment, rejectInstallmentPayment, adjustInstallmentAmount, sendMassBillingReminders, createStoreCarne, searchCustomersForCarne } from "@/services/receivables.functions";
+import { listStoreCarnes, getCarnesReportSummary, approveInstallmentPayment, rejectInstallmentPayment, adjustInstallmentAmount, sendMassBillingReminders, generateInstallmentWhatsAppReminder, createStoreCarne, searchCustomersForCarne } from "@/services/receivables.functions";
 import { listStoreCondicionais, createStoreCondicional, resolveCondicionalItems, type StoreCondicionalDTO, type CondicionalItemDTO } from "@/services/condicionais.functions";
 import { createContract } from "@/services/contracts.functions";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -372,27 +372,24 @@ Assinatura da Loja (Consignante)`;
     });
   };
 
-  const handleSendWhatsAppReminder = (carne: any, inst: any) => {
-    const phone = (carne.debtor?.phone || "").replace(/\D/g, "");
-    if (!phone) {
-      toast.error("Cliente sem telefone cadastrado.");
-      return;
+  const handleSendWhatsAppReminder = async (carne: any, inst: any) => {
+    try {
+      const res = await generateInstallmentWhatsAppReminder({
+        data: {
+          installmentId: inst.id,
+          template: inst.status === "late" || (inst.late_days && inst.late_days > 0) ? "due_warning" : "friendly",
+        },
+      });
+      if (res.whatsappUrl) {
+        window.open(res.whatsappUrl, "_blank");
+        toast.success("Lembrete WhatsApp gerado e notificação enviada com sucesso!");
+        queryClient.invalidateQueries({ queryKey: ["store-carnes"] });
+      } else {
+        toast.error("Cliente sem telefone válido para envio de WhatsApp.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao gerar lembrete WhatsApp.");
     }
-    const isLate = inst.status === "late" || (inst.late_days && inst.late_days > 0);
-    const amountStr = formatMoney(inst.final_amount_cents || inst.amount_cents || 0);
-    const dueDateStr = formatDate(inst.due_date);
-    const clientName = carne.debtor?.full_name || carne.debtor?.name || "Cliente";
-
-    let message = "";
-    if (isLate) {
-      message = `Olá, ${clientName}! Passando para lembrar que a parcela ${inst.installment_number}/${carne.installments_count} de ${amountStr} venceu em ${dueDateStr}. Caso precise do código PIX para regularização, é só nos responder por aqui!`;
-    } else {
-      message = `Olá, ${clientName}! Lembrando sobre o vencimento da parcela ${inst.installment_number}/${carne.installments_count} de ${amountStr} no dia ${dueDateStr}. Ficamos à disposição!`;
-    }
-
-    const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/55${phone}?text=${encoded}`, "_blank");
-    toast.success("Abrindo WhatsApp para envio do lembrete...");
   };
 
   const handleCreateCarneSubmit = (e: React.FormEvent) => {
@@ -869,9 +866,7 @@ Assinatura da Loja (Consignante)`;
                                 variant={isPending ? "default" : "outline"}
                                 className={cn(
                                   "h-11 sm:h-8 px-3.5 text-xs rounded-xl font-medium cursor-pointer shadow-2xs",
-                                  isPending
-                                    ? "bg-amber-600 hover:bg-amber-700 text-white"
-                                    : "text-foreground",
+                                  isPending ? "bg-primary text-primary-foreground" : "text-foreground",
                                 )}
                                 onClick={() => handleOpenConciliation(carne, inst)}
                               >
@@ -1327,7 +1322,7 @@ Assinatura da Loja (Consignante)`;
                 <Button
                   type="button"
                   disabled={isApproving}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-10 px-4 font-medium"
+                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-10 px-4 font-medium"
                   onClick={handleConfirmApproval}
                 >
                   {isApproving ? "Conciliando..." : "Confirmar Baixa & Espelhar"}
@@ -1959,7 +1954,7 @@ Assinatura da Loja (Consignante)`;
                 </Button>
                 <Button
                   type="button"
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-9 px-4"
+                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs h-9 px-4"
                   onClick={handleConfirmReturnCondicional}
                 >
                   Confirmar Baixa e Reintegrar Peças

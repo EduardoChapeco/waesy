@@ -437,14 +437,8 @@ export const updateClassifiedStatus = createServerFn({ method: "POST" })
           .eq("profile_id", identity.id)
           .maybeSingle();
 
-        const { data: storeOwner } = await supabase
-          .from("stores")
-          .select("id")
-          .eq("id", existing.store_id)
-          .eq("owner_profile_id", identity.id)
-          .maybeSingle();
-
-        hasAuthority = !!storeMember || !!storeOwner;
+        const hasMembership = (identity.memberships || []).some((m: any) => m.store_id === existing.store_id);
+        hasAuthority = !!storeMember || hasMembership || !!identity.isPlatformAdmin;
       }
     }
 
@@ -836,21 +830,18 @@ export const upsertClassified = createServerFn({ method: "POST" })
     let isStoreManager = false;
 
     if (!isAuthor && existingAd.store_id) {
-      const { data: storeMember } = await supabase
-        .from("store_members")
-        .select("id")
-        .eq("store_id", existingAd.store_id)
-        .eq("profile_id", identity.id)
-        .maybeSingle();
-
-      const { data: storeOwner } = await supabase
-        .from("stores")
-        .select("id")
-        .eq("id", existingAd.store_id)
-        .eq("owner_profile_id", identity.id)
-        .maybeSingle();
-
-      isStoreManager = !!storeMember || !!storeOwner;
+      const hasMembership = (identity.memberships || []).some((m: any) => m.store_id === existingAd.store_id);
+      if (hasMembership || identity.isPlatformAdmin) {
+        isStoreManager = true;
+      } else {
+        const { data: storeMember } = await supabase
+          .from("workspace_members")
+          .select("id")
+          .eq("store_id", existingAd.store_id)
+          .eq("profile_id", identity.id)
+          .maybeSingle();
+        isStoreManager = !!storeMember;
+      }
     }
 
     if (!isAuthor && !isStoreManager) {
@@ -1031,14 +1022,8 @@ export const deleteClassified = createServerFn({ method: "POST" })
           .eq("profile_id", identity.id)
           .maybeSingle();
 
-        const { data: storeOwner } = await supabase
-          .from("stores")
-          .select("id")
-          .eq("id", existing.store_id)
-          .eq("owner_profile_id", identity.id)
-          .maybeSingle();
-
-        hasAuthority = !!storeMember || !!storeOwner;
+        const hasMembership = (identity.memberships || []).some((m: any) => m.store_id === existing.store_id);
+        hasAuthority = !!storeMember || hasMembership || !!identity.isPlatformAdmin;
       }
     }
 

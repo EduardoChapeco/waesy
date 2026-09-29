@@ -14,6 +14,10 @@ import { getOrderById, updateOrderStatus, updateOrderShipment, updateOrderShippi
 import { approvePayment, rejectPayment } from "@/services/payment.functions";
 import { getDeliveryProofsByOrderId, createDispatch, type DeliveryProof } from "@/services/dispatch.functions";
 import { emitNFeInvoice, getOrderInvoice, type StoreNFeInvoiceDTO } from "@/services/fiscal-nfe.functions";
+import { getUserReputation, cancelOrderByStoreSafely } from "@/services/trust-and-safety.functions";
+import { ShieldCheck, ShieldAlert, Building2, Clock, Ban } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { buildZplShippingLabel, buildEscPosReceipt, sendZplToSerialPrinter, sendBytesToSerialPrinter } from "@/lib/thermal-printer";
 import { ChannelBadge, getChannelInfo } from "@/components/commerce/channel-badge";
 import { PickingWizard } from "@/components/admin/orders/picking-wizard";

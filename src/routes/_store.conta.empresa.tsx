@@ -504,7 +504,7 @@ function PainelEmpresaPage() {
                             size="sm"
                             onClick={() => updateStatusMutation.mutate({ leadId: lead.id, status: "completed" })}
                             disabled={updateStatusMutation.isPending}
-                            className="h-9 rounded-xl text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                            className="h-9 rounded-xl text-xs font-bold gap-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                           >
                             <Check className="size-3.5" />
                             <span>Concluir</span>
@@ -758,7 +758,7 @@ function PainelEmpresaPage() {
                             <Button
                               asChild
                               size="sm"
-                              className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs"
+                              className="h-8 rounded-xl text-xs font-bold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xs"
                             >
                               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                                 <MessageCircle className="size-3.5" />
@@ -935,7 +935,7 @@ function PainelEmpresaPage() {
               variant="default"
               size="sm"
               onClick={() => handleShareWhatsApp(selectedReceipt)}
-              className="rounded-xl text-xs font-bold gap-1.5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="rounded-xl text-xs font-bold gap-1.5 h-10 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Share2 className="size-3.5" />
               <span>Enviar via WhatsApp</span>

@@ -355,43 +355,175 @@ export const updateJobApplication = createServerFn({ method: "POST" })
  });
 
 export const hireJobCandidate = createServerFn({ method: "POST" })
- .validator(
- z.object({
- applicationId: z.string().uuid(),
- role: z.string().min(2, "Cargo é obrigatório"),
- salaryCents: z.number().int().min(0, "Salário inválido"),
- }),
- )
- .handler(async ({ data }) => {
- const supabase = getServerClient();
- const identity = await getCurrentIdentity();
+  .validator(
+    z.object({
+      applicationId: z.string().uuid(),
+      role: z.string().min(2, "Cargo é obrigatório"),
+      systemRole: z
+        .enum(["seller", "support", "stock", "content", "manager", "admin"])
+        .default("seller"),
+      employmentType: z
+        .enum(["clt", "pj", "internship", "apprentice", "temporary", "freelancer"])
+        .default("clt"),
+      salaryCents: z.number().int().min(0, "Salário inválido"),
+      hireDate: z.string().optional(),
+      departmentId: z.string().uuid().optional().nullable(),
+      pin: z.string().regex(/^\d{4,6}$/, "O PIN deve conter de 4 a 6 dígitos numéricos").optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const supabase = getServerClient();
+    const { getServerIdentity, assertStoreAccess } = await import("@/lib/server-access");
+    const identity = await getServerIdentity();
+    await assertStoreAccess(identity, ["owner", "admin", "manager"]);
 
- if (!identity.customer_id) {
- throw new Error("Não autorizado.");
- }
+    // 1. Buscar detalhes completos da candidatura e da vaga
+    const { data: app, error: appErr } = await supabase
+      .from("job_applications")
+      .select("*, jobs(id, store_id, title)")
+      .eq("id", data.applicationId)
+      .single();
 
- const { data: app, error } = await supabase
- .from("job_applications")
- .update({
- status: "hired",
- hired_role: data.role,
- hired_salary_cents: data.salaryCents,
- updated_at: new Date().toISOString(),
- })
- .eq("id", data.applicationId)
- .select("id, candidate_name, candidate_email")
- .single();
+    if (appErr || !app) {
+      console.error("[jobs:hireJobCandidate] Candidatura não encontrada:", appErr);
+      throw new Error("Candidatura não encontrada para processar a admissão.");
+    }
 
- if (error) {
- console.error("Erro ao contratar candidato:", error);
- throw new Error("Não foi possível concluir a contratação.");
- }
+    const targetStoreId = app.jobs?.store_id || identity.store_id;
+    if (!targetStoreId) {
+      throw new Error("Loja do processo seletivo não identificada.");
+    }
 
- return {
- success: true,
- message: `Candidato ${app.candidate_name} contratado com sucesso como ${data.role}!`,
- };
- });
+    // 2. Resolver perfil do usuário (se houver conta existente)
+    let targetProfileId = app.candidate_profile_id || null;
+    if (!targetProfileId && app.candidate_email) {
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .ilike("email", app.candidate_email.trim())
+        .maybeSingle();
+      if (existingProfile?.id) {
+        targetProfileId = existingProfile.id;
+      }
+    }
+
+    // 3. Cadastrar ou atualizar em public.employees (Hub do Colaborador)
+    const { data: employee, error: empErr } = await supabase
+      .from("employees")
+      .insert({
+        store_id: targetStoreId,
+        profile_id: targetProfileId,
+        full_name: app.candidate_name,
+        email: app.candidate_email || null,
+        phone: app.candidate_phone || null,
+        job_title: data.role,
+        employment_type: data.employmentType,
+        status: "active",
+        base_salary_cents: data.salaryCents,
+        hire_date: data.hireDate || new Date().toISOString().slice(0, 10),
+        department_id: data.departmentId || null,
+        metadata: {
+          hired_from_job_id: app.job_id,
+          application_id: app.id,
+          hired_by_profile_id: identity.id,
+          initial_system_role: data.systemRole,
+        },
+      })
+      .select()
+      .single();
+
+    if (empErr || !employee) {
+      console.error("[jobs:hireJobCandidate] Erro ao cadastrar colaborador em employees:", empErr);
+      throw new Error(`Falha ao registrar colaborador: ${empErr?.message || "Erro desconhecido"}`);
+    }
+
+    // 4. Gerar PIN criptográfico (com salt) para o terminal de ponto eletrônico
+    const pinValue =
+      data.pin && /^\d{4,6}$/.test(data.pin)
+        ? data.pin
+        : String(Math.floor(1000 + Math.random() * 9000));
+    const crypto = await import("crypto");
+    const salt = crypto.randomBytes(16).toString("hex");
+    const pinHash = crypto.createHash("sha256").update(pinValue + salt).digest("hex");
+
+    const { error: pinErr } = await supabase.from("employee_pins").upsert(
+      {
+        store_id: targetStoreId,
+        employee_id: employee.id,
+        pin_hash: pinHash,
+        salt,
+        is_active: true,
+        failed_attempts: 0,
+      },
+      { onConflict: "employee_id" },
+    );
+
+    if (pinErr) {
+      console.warn("[jobs:hireJobCandidate] Aviso ao cadastrar PIN do colaborador:", pinErr.message);
+    }
+
+    // 5. Vincular permissão de equipe em workspace_members caso exista perfil associado
+    if (targetProfileId) {
+      try {
+        await supabase.from("workspace_members").upsert(
+          {
+            profile_id: targetProfileId,
+            store_id: targetStoreId,
+            role: data.systemRole,
+          },
+          { onConflict: "profile_id,store_id" },
+        );
+      } catch (err) {
+        console.warn("[jobs:hireJobCandidate] Aviso ao vincular workspace_members:", err);
+      }
+    }
+
+    // 6. Registrar evento financeiro inicial (salário contratual)
+    try {
+      await supabase.from("employee_financial_records").insert({
+        store_id: targetStoreId,
+        employee_id: targetProfileId || employee.id,
+        amount_cents: data.salaryCents,
+        type: "salary",
+        description: `Admissão oficial - Cargo: ${data.role} (${data.employmentType.toUpperCase()})`,
+        metadata: {
+          application_id: app.id,
+          employee_id: employee.id,
+          registered_by: identity.id,
+        },
+      });
+    } catch (err) {
+      console.warn("[jobs:hireJobCandidate] Aviso ao registrar lançamento financeiro:", err);
+    }
+
+    // 7. Atualizar status da candidatura em job_applications
+    const { error: updErr } = await supabase
+      .from("job_applications")
+      .update({
+        status: "hired",
+        hired_role: data.role,
+        hired_salary_cents: data.salaryCents,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.applicationId);
+
+    if (updErr) {
+      console.error("[jobs:hireJobCandidate] Erro ao atualizar status da candidatura:", updErr);
+    }
+
+    return {
+      success: true,
+      employeeId: employee.id,
+      profileId: targetProfileId,
+      candidateName: app.candidate_name,
+      role: data.role,
+      systemRole: data.systemRole,
+      employmentType: data.employmentType,
+      salaryCents: data.salaryCents,
+      generatedPin: pinValue,
+      message: `Candidato ${app.candidate_name} contratado com sucesso como ${data.role}! Cadastrado no RH com PIN de ponto: ${pinValue}.`,
+    };
+  });
 
 export const listMyJobApplications = createServerFn({ method: "GET" }).handler(async () => {
  const supabase = getServerClient();

@@ -581,15 +581,15 @@ function ClientCarnesPage() {
             </div>
           </div>
 
-          {/* Chave PIX da Loja & Notificação Rápida */}
-          {selectedCarne?.store?.phone && (
+          {/* Chave PIX da Loja / Código Copia e Cola & Notificação Rápida */}
+          {(selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone) && (
             <div className="p-3.5 rounded-2xl border border-dashed border-border bg-card space-y-2.5">
               <span className="text-[11px] font-medium text-muted-foreground uppercase">
-                Chave PIX da Loja (Telefone)
+                {selectedInstallment?.pix_copy_paste ? "PIX Copia e Cola da Parcela" : "Chave PIX da Loja (Telefone)"}
               </span>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                <span className="font-mono text-sm font-semibold text-foreground bg-muted/40 p-2 rounded-xl border border-border/60">
-                  {selectedCarne.store.phone}
+                <span className="font-mono text-xs sm:text-sm font-semibold text-foreground bg-muted/40 p-2 rounded-xl border border-border/60 truncate max-w-full">
+                  {selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone}
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -597,11 +597,11 @@ function ClientCarnesPage() {
                     size="sm"
                     variant="outline"
                     className="h-10 sm:h-9 px-3 text-xs rounded-xl font-medium cursor-pointer flex-1 sm:flex-initial"
-                    onClick={() => handleCopyPix(selectedCarne.store.phone)}
+                    onClick={() => handleCopyPix(selectedInstallment?.pix_copy_paste || selectedCarne?.store?.phone)}
                   >
                     {copiedPix ? (
                       <>
-                        <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-500" /> Chave Copiada
+                        <Check className="h-3.5 w-3.5 mr-1.5 text-emerald-500" /> Copiado
                       </>
                     ) : (
                       <>

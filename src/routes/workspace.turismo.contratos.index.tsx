@@ -284,7 +284,7 @@ export default function WorkspaceContractsIndexPage() {
         <WorkspaceDashboardSheet
           isOpen={isDashboardOpen}
           onClose={() => setIsDashboardOpen(false)}
-          title="Painel Jurídico de Contratos"
+          title="Contratos"
           subtitle="Status de assinatura eletrônica e conformidade legal"
           metrics={metricsItems}
         />

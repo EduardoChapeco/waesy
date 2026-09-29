@@ -1,0 +1,19 @@
+{
+  "id": "botanical-garden",
+  "name": "Jardim Botânico",
+  "description": "Cores frescas, orgânicas, vivas e revigorantes de estufa botânica.",
+  "colors": {
+    "background": "#022c22",
+    "surface": "#064e3b",
+    "primary": "#10b981",
+    "secondary": "#34d399",
+    "accent": "#a7f3d0",
+    "text": "#f0fdf4",
+    "textMuted": "#bbf7d0"
+  },
+  "typography": {
+    "headingFont": "Newsreader",
+    "bodyFont": "Manrope",
+    "codeFont": "JetBrains Mono"
+  }
+}

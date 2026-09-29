@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Truck, MapPin, Phone, CheckCircle2, Navigation, KeyRound, Loader2, Camera } from "lucide-react";
+import { Truck, MapPin, Phone, CheckCircle2, Navigation, KeyRound, Loader2, Camera, Clock, Building2, AlertTriangle, ShieldCheck } from "lucide-react";
+import { recordCourierArrival, checkCourierWaitingPenalty } from "@/services/waesy-go.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,80 @@ function DeliveryCourierPage() {
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
   const [isStartingPickup, setIsStartingPickup] = useState(false);
   const [pickupStarted, setPickupStarted] = useState(delivery?.status === "in_transit" || delivery?.status === "delivered");
+
+  // V139 Waesy Go: Chegada do Entregador e Tolerância de 15 Minutos
+  const [arrivedAt, setArrivedAt] = useState<string | null>((delivery as any)?.courier_arrived_at || null);
+  const [isRecordingArrival, setIsRecordingArrival] = useState(false);
+  const [elapsedMinutes, setElapsedMinutes] = useState(0);
+  const [waitingPenaltyCents, setWaitingPenaltyCents] = useState((delivery as any)?.waiting_penalty_cents || 0);
+
+  // Timer de espera após chegada
+  useEffect(() => {
+    if (!arrivedAt || isDelivered) return;
+    const arrivalTime = new Date(arrivedAt).getTime();
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const diffMinutes = Math.floor((now - arrivalTime) / (1000 * 60));
+      setElapsedMinutes(diffMinutes);
+
+      if (diffMinutes > 15 && delivery?.order_id) {
+        // Checa penalidade se passou de 15 min
+        checkCourierWaitingPenalty({ data: { orderId: delivery.order_id } })
+          .then((res: any) => {
+            if (res?.waiting_penalty_cents) {
+              setWaitingPenaltyCents(res.waiting_penalty_cents);
+            }
+          })
+          .catch(() => null);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 30000);
+    return () => clearInterval(interval);
+  }, [arrivedAt, isDelivered, delivery?.order_id]);
+
+  const handleRecordArrival = async () => {
+    if (!delivery?.order_id) {
+      toast.info("Chegada registrada localmente.");
+      setArrivedAt(new Date().toISOString());
+      return;
+    }
+
+    setIsRecordingArrival(true);
+    try {
+      let lat: number | undefined;
+      let lng: number | undefined;
+
+      if ("geolocation" in navigator) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 4000 });
+          });
+          lat = pos.coords.latitude;
+          lng = pos.coords.longitude;
+        } catch {}
+      }
+
+      await recordCourierArrival({
+        data: {
+          orderId: delivery.order_id,
+          courierId: delivery.courier_id || "courier-active",
+          latitude: lat,
+          longitude: lng,
+        },
+      });
+
+      const nowIso = new Date().toISOString();
+      setArrivedAt(nowIso);
+      toast.success("Chegada registrada! Cliente notificado e tolerância de 15 minutos iniciada.");
+    } catch {
+      toast.error("Erro ao registrar chegada.");
+    } finally {
+      setIsRecordingArrival(false);
+    }
+  };
 
   // Telemetria GPS em tempo real (Waesy Go / Motolink)
   useEffect(() => {
@@ -208,6 +283,95 @@ function DeliveryCourierPage() {
  {formatMoney(delivery.delivery_fee_cents || 0)}
  </p>
  </div>
+
+      {/* ── V139 Waesy Go: Tipo de Entrega (Portaria vs Apartamento) ── */}
+      <div className="bg-card rounded-2xl p-4 space-y-2 border border-border/60 shadow-2xs">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            {delivery.delivery_to_door ? (
+              <Building2 className="size-4 text-amber-600 dark:text-amber-400" />
+            ) : (
+              <ShieldCheck className="size-4 text-primary" />
+            )}
+            {delivery.delivery_to_door ? "Subir no Apartamento" : "Entrega na Portaria / Portão"}
+          </span>
+          {delivery.delivery_to_door && (
+            <Badge variant="outline" className="text-[10px] font-bold text-amber-600 dark:text-amber-400 border-amber-500/30">
+              Taxa de Subida Paga
+            </Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {delivery.delivery_to_door
+            ? "O cliente pagou taxa adicional para receber na porta do apartamento. Por favor, suba caso as regras do condomínio permitam."
+            : "Entrega padrão na portaria ou portão principal do endereço."}
+        </p>
+      </div>
+
+      {/* ── V139 Waesy Go: Registro de Chegada & Tolerância de 15 Minutos ── */}
+      {pickupStarted && !isDelivered && (
+        <div className="bg-card rounded-2xl p-4 space-y-3 border border-border/60 shadow-2xs">
+          {!arrivedAt ? (
+            <div className="space-y-2 text-center">
+              <Button
+                type="button"
+                onClick={handleRecordArrival}
+                disabled={isRecordingArrival}
+                className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground gap-2 cursor-pointer shadow-xs active:scale-98 transition-all"
+              >
+                {isRecordingArrival ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Registrando chegada...</span>
+                  </>
+                ) : (
+                  <>
+                    <MapPin className="size-4" />
+                    <span>📍 Cheguei no Endereço (Notificar)</span>
+                  </>
+                )}
+              </Button>
+              <p className="text-[10px] text-muted-foreground">
+                Inicia a contagem de tolerância de 15 minutos e envia aviso push para o cliente descer.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Clock className="size-4 text-primary" />
+                  Tempo de Espera no Local
+                </span>
+                <Badge
+                  variant={elapsedMinutes > 15 ? "destructive" : "secondary"}
+                  className="text-xs font-mono font-bold"
+                >
+                  {elapsedMinutes} min {elapsedMinutes <= 15 ? "/ 15 min" : "excedido"}
+                </Badge>
+              </div>
+
+              {elapsedMinutes <= 15 ? (
+                <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs text-muted-foreground">
+                  Aguardando cliente. Faltam <span className="font-bold text-foreground">{15 - elapsedMinutes} minutos</span> de tolerância contratual.
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-destructive">
+                    <AlertTriangle className="size-4 shrink-0" />
+                    <span>Tolerância de 15 minutos excedida</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Taxa de espera aplicada automaticamente:{" "}
+                    <span className="font-bold font-mono text-foreground">
+                      {formatMoney(waitingPenaltyCents || (elapsedMinutes - 15) * 50)}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
  <span className="text-xs bg-muted px-2.5 py-1 rounded-lg font-medium text-foreground">
  {delivery.courier_name}
  </span>

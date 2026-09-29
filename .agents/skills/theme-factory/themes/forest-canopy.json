@@ -1,0 +1,19 @@
+{
+  "id": "forest-canopy",
+  "name": "Copa da Floresta",
+  "description": "Tons terrosos naturais, ecológicos e equilibrados.",
+  "colors": {
+    "background": "#052e16",
+    "surface": "#14532d",
+    "primary": "#16a34a",
+    "secondary": "#84cc16",
+    "accent": "#eab308",
+    "text": "#fefce8",
+    "textMuted": "#bef264"
+  },
+  "typography": {
+    "headingFont": "Fraunces",
+    "bodyFont": "Outfit",
+    "codeFont": "JetBrains Mono"
+  }
+}

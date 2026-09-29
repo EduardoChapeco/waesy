@@ -15,7 +15,7 @@ import { uploadAdminMedia } from "@/services/storage.functions";
 import type { HotpageDTO, HotpageModule } from "@/services/hotpage.functions";
 
 export const Route = createFileRoute("/admin-master/hubs")({
- head: () => ({ meta: [{ title: "Gestão de Hubs e Categorias Globais | Admin Master" }] }),
+ head: () => ({ meta: [{ title: "Hubs Globais | Admin Master" }] }),
   loader: async () => {
     try {
       const hubs = await listAllAdminHubs().catch(() => []);

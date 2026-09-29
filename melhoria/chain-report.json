@@ -1,0 +1,510 @@
+{
+  "total_gaps_cadeia": 300,
+  "por_severidade": {
+    "ALTA": 178,
+    "MEDIA": 60,
+    "BAIXA": 62
+  },
+  "amostra_principais": [
+    {
+      "modulo": "admin-catalog",
+      "feature": "_listProductTypes",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_createProductType",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_updateProductType",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_deleteProductType",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_listAdminProducts",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_createProduct",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_listCategories",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_createCategory",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_getCategoryById",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_updateCategory",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_listCollections",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_createCollection",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_getCollectionById",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_updateCollection",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_deleteCollection",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_getProductById",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_updateProduct",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_upsertProductVariant",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_batchUpsertVariantMatrix",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_getOnboardingProgress",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_deleteProductMedia",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_addProductMediaLink",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_toggleProductCollection",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_duplicateProduct",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_toggleProductStatus",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-catalog",
+      "feature": "_bulkUpdateProductStatus",
+      "elo_presente": [
+        "Service BFF (src/services/admin-catalog.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-team",
+      "feature": "_listTeamMembers",
+      "elo_presente": [
+        "Service BFF (src/services/admin-team.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-team",
+      "feature": "_updateTeamMemberRole",
+      "elo_presente": [
+        "Service BFF (src/services/admin-team.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-team",
+      "feature": "_inviteTeamMember",
+      "elo_presente": [
+        "Service BFF (src/services/admin-team.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "admin-team",
+      "feature": "_removeTeamMember",
+      "elo_presente": [
+        "Service BFF (src/services/admin-team.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "api-orchestrator",
+      "feature": "internalTestPoolKeyConnection",
+      "elo_presente": [
+        "Service BFF (src/services/api-orchestrator.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "audit",
+      "feature": "_getAuditLog",
+      "elo_presente": [
+        "Service BFF (src/services/audit.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "auth",
+      "feature": "_updateProfile",
+      "elo_presente": [
+        "Service BFF (src/services/auth.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cart",
+      "feature": "fetchCartDTO",
+      "elo_presente": [
+        "Service BFF (src/services/cart.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cart",
+      "feature": "mapCartToDTO",
+      "elo_presente": [
+        "Service BFF (src/services/cart.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cart",
+      "feature": "fetchAllGlobalCarts",
+      "elo_presente": [
+        "Service BFF (src/services/cart.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cash",
+      "feature": "_getActiveRegister",
+      "elo_presente": [
+        "Service BFF (src/services/cash.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cash",
+      "feature": "_openRegister",
+      "elo_presente": [
+        "Service BFF (src/services/cash.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cash",
+      "feature": "_closeRegister",
+      "elo_presente": [
+        "Service BFF (src/services/cash.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cash",
+      "feature": "_addRegisterEntry",
+      "elo_presente": [
+        "Service BFF (src/services/cash.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cash",
+      "feature": "_listRegisterHistory",
+      "elo_presente": [
+        "Service BFF (src/services/cash.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "cash",
+      "feature": "_processPOSSale",
+      "elo_presente": [
+        "Service BFF (src/services/cash.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "customer",
+      "feature": "_setDefaultAddress",
+      "elo_presente": [
+        "Service BFF (src/services/customer.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "finance",
+      "feature": "_getFinancialSummary",
+      "elo_presente": [
+        "Service BFF (src/services/finance.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "fulfillment",
+      "feature": "_listShipments",
+      "elo_presente": [
+        "Service BFF (src/services/fulfillment.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "fulfillment",
+      "feature": "_getShipmentById",
+      "elo_presente": [
+        "Service BFF (src/services/fulfillment.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "fulfillment",
+      "feature": "_createShipment",
+      "elo_presente": [
+        "Service BFF (src/services/fulfillment.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "fulfillment",
+      "feature": "_updateShipmentTracking",
+      "elo_presente": [
+        "Service BFF (src/services/fulfillment.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "fulfillment",
+      "feature": "_listPendingFulfillment",
+      "elo_presente": [
+        "Service BFF (src/services/fulfillment.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    },
+    {
+      "modulo": "hotpage",
+      "feature": "mapHotpageDTO",
+      "elo_presente": [
+        "Service BFF (src/services/hotpage.functions.ts)"
+      ],
+      "elo_faltante": "Hook de Consumo ou Rota de UI (Elo 5 / 7)",
+      "impacto": "Lógica transacional de backend implementada mas inacessível ao usuário final",
+      "severidade": "ALTA"
+    }
+  ]
+}

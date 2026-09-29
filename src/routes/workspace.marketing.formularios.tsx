@@ -1056,7 +1056,7 @@ function WorkspaceLeadFormsPage() {
                         <Button
                           asChild
                           size="sm"
-                          className="h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-xs text-xs px-3"
+                          className="h-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs text-xs px-3"
                         >
                           <a href={waUrl} target="_blank" rel="noreferrer">
                             <MessageSquare className="w-3.5 h-3.5" />

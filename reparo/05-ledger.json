@@ -1,0 +1,112 @@
+{
+  "rodada": 1,
+  "commit": "HEAD",
+  "superficie": {
+    "rotas": 380,
+    "fluxos": 5,
+    "buckets": 16,
+    "nichos": 12
+  },
+  "achados": [
+    {
+      "id": "Q-0001",
+      "fluxo": "upload_ativo",
+      "classe": "B8",
+      "checkpoint": "D1-1",
+      "evidencia": "src/services/storage.functions.ts:43",
+      "timeline": "16:05:12 - Zod validation error invalid_enum_value para buckets store-assets, destination-media e social",
+      "causa_raiz": "Enum Zod em getSignedUploadUrl incompleto, omitindo buckets ativos referenciados na UI",
+      "correcao": "Expandir o enum Zod para incluir store-assets, destination-media e social, e garantir auto-healing de criação do bucket",
+      "impacto": 3,
+      "alcance": 3,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 20,
+      "bloqueia": [
+        "D1-5",
+        "D2-5"
+      ],
+      "estado": "corrigido"
+    },
+    {
+      "id": "Q-0002",
+      "fluxo": "criar_negocio",
+      "classe": "B6",
+      "checkpoint": "D2-8",
+      "evidencia": "src/routes/_store.criar-negocio.tsx:314",
+      "timeline": "16:14:22 - Criação conclui e redireciona para /workspace com activeStoreId nulo",
+      "causa_raiz": "Criação de negócio gravava apenas waesy_active_tenant sem setar waesy_active_context=store, fazendo identity.server.ts anular o store_id",
+      "correcao": "Sincronizar atomicamente waesy_active_context=store, waesy_active_tenant e limpar waesy_active_creator na conclusão da criação",
+      "impacto": 5,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 2,
+      "score": 15,
+      "bloqueia": [
+        "D3-2",
+        "D3-3"
+      ],
+      "estado": "corrigido"
+    },
+    {
+      "id": "Q-0003",
+      "fluxo": "acessar_workspace",
+      "classe": "B3",
+      "checkpoint": "D3-2",
+      "evidencia": "src/routes/workspace.tsx:36",
+      "timeline": "16:15:00 - Guarda do workspace redireciona para /criar-negocio mesmo após cadastro",
+      "causa_raiz": "Falta de sincronia do contexto ativo e memberships no momento do redirecionamento",
+      "correcao": "Garantir que setTenantContext no backend e a guarda no frontend reconheçam a loja recém-criada imediatamente",
+      "impacto": 3,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 24,
+      "bloqueia": [],
+      "estado": "corrigido"
+    },
+    {
+      "id": "Q-0004",
+      "fluxo": "alternar_perfil",
+      "classe": "B7",
+      "checkpoint": "D4-2",
+      "evidencia": "src/services/identity.functions.ts:18",
+      "timeline": "16:18:05 - Alternar loja deixa resíduo de contexto ou não sincroniza waesy_active_context",
+      "causa_raiz": "setTenantContext apenas gravava waesy_active_tenant, mantendo cookies divergentes no cliente e servidor",
+      "correcao": "Fazer setTenantContext sincronizar atomicamente waesy_active_context, waesy_active_tenant e waesy_active_creator",
+      "impacto": 3,
+      "alcance": 3,
+      "confianca": 5,
+      "esforco": 1,
+      "score": 20,
+      "bloqueia": [],
+      "estado": "corrigido"
+    },
+    {
+      "id": "Q-0005",
+      "fluxo": "criar_anuncio",
+      "classe": "B2",
+      "checkpoint": "D5-8",
+      "evidencia": "src/services/classifieds.functions.ts:850",
+      "timeline": "16:09:44 - Erro 400 PostgREST column stores.owner_profile_id does not exist",
+      "causa_raiz": "classifieds.functions.ts consulta coluna inexistente owner_profile_id na tabela stores em vez de consultar store_members / workspace_members",
+      "correcao": "Substituir a consulta de stores.owner_profile_id pela verificação canônica em workspace_members / store_members",
+      "impacto": 5,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 2,
+      "score": 15,
+      "bloqueia": [],
+      "estado": "corrigido"
+    }
+  ],
+  "selos": [
+    {
+      "data": "2026-09-28T19:35:20.276Z",
+      "modulo": "core_flows_d1_d5",
+      "status": "aprovado",
+      "descricao": "Correção profunda dos 5 fluxos nomeados: Upload (D1), Criar Negócio (D2), Acessar Workspace (D3), Alternar Perfil (D4) e Criar Anúncio (D5)"
+    }
+  ],
+  "historico": []
+}

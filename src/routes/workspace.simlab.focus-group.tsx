@@ -213,7 +213,7 @@ function FocusGroupPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-semibold tracking-tight text-foreground">Console de Amostragem Sintética</h1>
+              <h1 className="text-sm font-semibold tracking-tight text-foreground">Focus Group</h1>
               <Badge variant="outline" className="text-[10px] font-medium py-0 px-2 border-border/60">
                 Censo IBGE 2022
               </Badge>

@@ -1483,7 +1483,7 @@ function ClassifiedsMasterPage() {
                             params={{ id: item.id }}
                             className="flex-1 flex flex-col cursor-pointer min-h-0"
                           >
-                            <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0">
+                            <div className="relative aspect-video w-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0">
                               {img ? (
                                 <img
                                   src={img}
@@ -1598,7 +1598,7 @@ function ClassifiedsMasterPage() {
                     params={{ id: item.id }}
                     className="flex-1 flex flex-col cursor-pointer min-h-0"
                   >
-                    <div className="relative aspect-16/10 w-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0">
+                    <div className="relative aspect-video w-full overflow-hidden bg-muted/40 flex items-center justify-center shrink-0">
                       {img ? (
                         <img
                           src={img}

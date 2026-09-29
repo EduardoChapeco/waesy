@@ -20,7 +20,7 @@ import { formatMoney } from "@/lib/money";
 import { EmptyState } from "@/components/state/states";
 
 export const Route = createFileRoute("/workspace/pacotes/")({
- head: () => ({ meta: [{ title: "Gestão de Pacotes e Passes de Aulas | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Pacotes" }] }),
  component: WorkspacePackagesPage,
 });
 

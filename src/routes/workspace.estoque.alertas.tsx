@@ -191,7 +191,7 @@ function StockAlertsPage() {
   return (
     <div className="w-full max-w-7xl mx-auto px-0 sm:px-0 space-y-6 pb-20 animate-in fade-in duration-200">
       <PageHeader
-        eyebrow="Gestão de Estoque & Ruptura"
+        eyebrow="Alertas de Estoque"
         title="Alertas Críticos de Reposição"
         description="Identifique produtos esgotados, níveis críticos de suprimento e demanda reprimida para reposição imediata."
         actions={

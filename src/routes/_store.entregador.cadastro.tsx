@@ -157,7 +157,7 @@ function CourierOnboardingPage() {
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                <Button asChild className="rounded-xl h-10 px-5 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white flex-1">
+                <Button asChild className="rounded-xl h-10 px-5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground flex-1">
                   <Link to="/mobilidade">Acessar Painel de Corridas</Link>
                 </Button>
                 <Button asChild variant="outline" className="rounded-xl h-10 px-4 font-semibold text-xs border-border flex-1">

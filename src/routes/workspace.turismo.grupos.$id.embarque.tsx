@@ -16,7 +16,7 @@ import { getGroupTourById } from "@/services/group-tours.functions";
 import { getTourBoardingOverview, togglePassengerCheckin, createTourBoardingPoint, deleteTourBoardingPoint } from "@/services/group-tour-boarding.functions";
 
 export const Route = createFileRoute("/workspace/turismo/grupos/$id/embarque")({
- head: () => ({ meta: [{ title: "Central de Embarque e Check-in | Workspace" }] }),
+ head: () => ({ meta: [{ title: "Embarque" }] }),
  loader: async ({ params }: { params: { id: string } }) => {
    try {
  const store = await getStoreSettings().catch(() => null);
@@ -275,28 +275,28 @@ function GroupTourBoardingPage() {
           <p className="text-[10px] text-muted-foreground">Confirmados na lista</p>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-0.5">
-          <span className="text-[11px] font-semibold text-emerald-700">Embarcados</span>
-          <p className="text-xl font-extrabold text-emerald-700 font-mono">
+        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
+          <span className="text-[11px] font-medium text-muted-foreground">Embarcados</span>
+          <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
             {overview?.checkedInCount ?? 0}
           </p>
-          <p className="text-[10px] text-emerald-600 font-semibold">Dentro do veículo</p>
+          <p className="text-[10px] text-muted-foreground">Dentro do veículo</p>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-0.5">
-          <span className="text-[11px] font-semibold text-amber-700">Aguardando</span>
-          <p className="text-xl font-extrabold text-amber-700 font-mono">
+        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5">
+          <span className="text-[11px] font-medium text-muted-foreground">Aguardando</span>
+          <p className="text-xl font-bold text-foreground font-mono">
             {overview?.pendingCount ?? 0}
           </p>
-          <p className="text-[10px] text-amber-600">Ainda não chegaram</p>
+          <p className="text-[10px] text-muted-foreground">Ainda não chegaram</p>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-0.5 col-span-3 sm:col-span-1">
-          <span className="text-[11px] font-semibold text-rose-700">Ausentes (No-show)</span>
-          <p className="text-xl font-extrabold text-rose-700 font-mono">
+        <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-0.5 col-span-3 sm:col-span-1">
+          <span className="text-[11px] font-medium text-muted-foreground">Ausentes (No-show)</span>
+          <p className="text-xl font-bold text-destructive font-mono">
             {overview?.noShowCount ?? 0}
           </p>
-          <p className="text-[10px] text-rose-600">Não compareceram</p>
+          <p className="text-[10px] text-muted-foreground">Não compareceram</p>
         </div>
       </div>
 
@@ -427,7 +427,7 @@ function GroupTourBoardingPage() {
  className={cn(
  "h-11 sm:h-10 px-4 sm:px-3.5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer",
  isCheckedIn
- ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600"
+ ? "bg-primary hover:bg-primary/90 text-primary-foreground border-emerald-600"
  : "border-border/80 hover:border-emerald-500 hover:text-emerald-600"
  )}
  >

@@ -1,0 +1,19 @@
+{
+  "id": "modern-minimal",
+  "name": "Minimalismo Moderno",
+  "description": "Tons de cinza limpos, contemporâneos e hiper-refinados (Apple / Vercel style).",
+  "colors": {
+    "background": "#09090b",
+    "surface": "#18181b",
+    "primary": "#fafafa",
+    "secondary": "#71717a",
+    "accent": "#e4e4e7",
+    "text": "#ffffff",
+    "textMuted": "#a1a1aa"
+  },
+  "typography": {
+    "headingFont": "Geist",
+    "bodyFont": "Inter",
+    "codeFont": "Geist Mono"
+  }
+}

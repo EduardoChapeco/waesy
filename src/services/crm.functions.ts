@@ -340,7 +340,56 @@ export const getCustomer360 = createServerFn({ method: "GET" })
     console.warn("[crm] notice fetching traveler_preferences:", err);
   }
 
- // 7. Monta Timeline 360 Unificada
+  // 6e. Busca Propostas Comerciais Digitais (travel_proposals)
+  let customerProposals: any[] = [];
+  try {
+    const cleanPhone = customer.phone ? customer.phone.replace(/\D/g, "").slice(-8) : "";
+    let propQuery = supabase
+      .from("travel_proposals")
+      .select("id, public_token, title, destination_city, client_name, client_whatsapp, client_email, status, pricing, created_at")
+      .eq("store_id", identity.store_id);
+
+    const propOr: string[] = [];
+    if (customer.email) propOr.push(`client_email.eq.${customer.email}`);
+    if (cleanPhone) propOr.push(`client_whatsapp.ilike.%${cleanPhone}%`);
+    if (customer.full_name && customer.full_name.length > 2) propOr.push(`client_name.ilike.%${customer.full_name}%`);
+
+    if (propOr.length > 0) {
+      propQuery = propQuery.or(propOr.join(","));
+      const { data: propData } = await propQuery.order("created_at", { ascending: false });
+      customerProposals = propData || [];
+    }
+  } catch (err) {
+    console.warn("[crm] falha ao buscar travel_proposals:", err);
+  }
+
+  // 6f. Busca Contratos Digitais (contracts)
+  let customerContracts: any[] = [];
+  try {
+    const cleanPhone = customer.phone ? customer.phone.replace(/\D/g, "").slice(-8) : "";
+    const cleanDoc = customer.document ? customer.document.replace(/\D/g, "") : "";
+
+    const { data: contractRows } = await supabase
+      .from("contracts")
+      .select("id, title, category, status, current_version, verification_code, metadata, created_at")
+      .order("created_at", { ascending: false });
+
+    if (contractRows) {
+      customerContracts = contractRows.filter((c: any) => {
+        const m = c.metadata || {};
+        if (m.store_id && m.store_id !== identity.store_id) return false;
+        if (cleanDoc && m.client_document && m.client_document.replace(/\D/g, "").includes(cleanDoc)) return true;
+        if (customer.email && m.client_email && m.client_email.toLowerCase() === customer.email.toLowerCase()) return true;
+        if (cleanPhone && m.client_phone && m.client_phone.replace(/\D/g, "").includes(cleanPhone)) return true;
+        if (customer.full_name && m.client_name && m.client_name.toLowerCase().includes(customer.full_name.toLowerCase())) return true;
+        return false;
+      });
+    }
+  } catch (err) {
+    console.warn("[crm] falha ao buscar contracts:", err);
+  }
+
+  // 7. Monta Timeline 360 Unificada
  const timeline: any[] = [];
  (orders || []).forEach((o: any) => {
  timeline.push({
@@ -402,7 +451,33 @@ export const getCustomer360 = createServerFn({ method: "GET" })
  });
  });
 
- timeline.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  (customerProposals || []).forEach((p: any) => {
+    const priceCents = p.pricing?.total_price_cents || p.pricing?.total_cents || 0;
+    timeline.push({
+      id: `proposal_${p.id}`,
+      type: "proposal",
+      title: `Proposta: ${p.title || p.destination_city || "Proposta Comercial"}`,
+      description: `Destino: ${p.destination_city || "N/D"} • Status: ${p.status} ${priceCents > 0 ? `• R$ ${(priceCents / 100).toFixed(2)}` : ""}`,
+      status: p.status,
+      timestamp: p.created_at,
+      metadata: { proposal_id: p.id, public_token: p.public_token, price_cents: priceCents },
+    });
+  });
+
+  (customerContracts || []).forEach((c: any) => {
+    const totalCents = c.metadata?.total_value_cents || 0;
+    timeline.push({
+      id: `contract_${c.id}`,
+      type: "contract",
+      title: `Contrato: ${c.title || "Contrato de Prestação de Serviços"}`,
+      description: `Status: ${c.status} • Cód: ${c.verification_code || c.id.slice(0, 8)} ${totalCents > 0 ? `• R$ ${(totalCents / 100).toFixed(2)}` : ""}`,
+      status: c.status,
+      timestamp: c.created_at,
+      metadata: { contract_id: c.id, verification_code: c.verification_code, total_value_cents: totalCents },
+    });
+  });
+
+  timeline.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
  // Cálculos de LTV e ticket médio
  const completedOrders = (orders || []).filter((o: any) =>
@@ -491,6 +566,8 @@ export const getCustomer360 = createServerFn({ method: "GET" })
   confirmedTrips,
   walletPasses,
   travelerPreferences,
+    proposals: customerProposals,
+    contracts: customerContracts,
   timeline,
   // métricas — nomes com aliases completos para compatibilidade
   ltvCents,

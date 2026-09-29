@@ -556,7 +556,7 @@ function ConfirmationPage() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {contractInfo.whatsappLink && (
-            <Button asChild size="sm" className="rounded-xl text-xs h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+            <Button asChild size="sm" className="rounded-xl text-xs h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
               <a href={contractInfo.whatsappLink} target="_blank" rel="noreferrer">
                 <MessageCircle className="size-3.5 mr-1.5" />
                 Assinar no WhatsApp

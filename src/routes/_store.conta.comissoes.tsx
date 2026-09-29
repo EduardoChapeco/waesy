@@ -279,7 +279,7 @@ function AffiliateCommissionsPage() {
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Comissões</h1>
         <p className="text-sm text-muted-foreground">
-          Acompanhe suas métricas de indicação, conversões registradas e gerencie seus recebimentos via PIX.
+          Métricas de indicação, conversões e recebimentos via Pix.
         </p>
       </div>
 

@@ -18,6 +18,7 @@ export const ContractCategoryEnum = z.enum([
   "medical_aesthetic_consent",
   "fashion_retail",
   "pos_retail",
+  "equipment_loan",
 ]);
 
 // ─── Tipagens Canônicas de Posicionamento Visual & Despacho Multi-Canal ───────

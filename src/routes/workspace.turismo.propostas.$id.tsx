@@ -353,7 +353,7 @@ function WorkspaceProposalStudioPage() {
  type="button"
  size="sm"
  onClick={() => setWhatsappModalOpen(true)}
- className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+ className="rounded-xl text-xs font-bold gap-1.5 h-8 px-2.5 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
  title="Enviar lâmina e proposta para o WhatsApp"
  >
  <Send className="size-3.5" />

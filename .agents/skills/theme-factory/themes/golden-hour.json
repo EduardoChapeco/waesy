@@ -1,0 +1,19 @@
+{
+  "id": "golden-hour",
+  "name": "Hora Dourada",
+  "description": "Paleta outonal rica, quente, nobre e luxuosa.",
+  "colors": {
+    "background": "#451a03",
+    "surface": "#78350f",
+    "primary": "#d97706",
+    "secondary": "#fbbf24",
+    "accent": "#f59e0b",
+    "text": "#fffbeb",
+    "textMuted": "#fde68a"
+  },
+  "typography": {
+    "headingFont": "Playfair Display",
+    "bodyFont": "Lora",
+    "codeFont": "JetBrains Mono"
+  }
+}

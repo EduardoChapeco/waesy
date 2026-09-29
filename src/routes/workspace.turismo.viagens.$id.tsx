@@ -407,7 +407,7 @@ function WorkspaceTripDetailPage() {
             <Button asChild variant="outline" className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 cursor-pointer">
               <Link to="/workspace/turismo/vouchers">
                 <Ticket className="size-4 sm:size-3.5 text-primary" />
-                <span>Central de Vouchers</span>
+                <span>Vouchers</span>
               </Link>
             </Button>
 
@@ -431,7 +431,7 @@ function WorkspaceTripDetailPage() {
                 window.open(`https://wa.me/55${rawPhone}?text=${msg}`, "_blank");
                 toast.success("Abrindo WhatsApp com Kit de Viagem...");
               }}
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
+              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs"
             >
               <WhatsappLogo size={16} weight="fill" />
               <span>Disparar Kit WhatsApp</span>
@@ -527,7 +527,7 @@ function WorkspaceTripDetailPage() {
           }`}
         >
           <Plane className="size-3.5" />
-          <span>Central de Vouchers A4</span>
+          <span>Vouchers A4</span>
         </button>
 
         <button

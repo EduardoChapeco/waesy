@@ -378,6 +378,19 @@ function CustomerTripsPage() {
   </div>
   </div>
 
+  {/* QR Code de Validação de Embarque */}
+  <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-border/40 shadow-xs">
+    <img
+      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(selectedBooking.voucher_code)}`}
+      alt={`QR Code ${selectedBooking.voucher_code}`}
+      className="size-36 object-contain"
+      loading="lazy"
+    />
+    <span className="text-[10px] font-mono font-bold text-neutral-800 mt-2 uppercase tracking-wider">
+      Apresente ao Guia / Embarque
+    </span>
+  </div>
+
   {/* Detalhes do Roteiro */}
   <div className="grid grid-cols-2 gap-3 text-xs">
   <div className="p-3 rounded-2xl bg-muted/40 space-y-1">

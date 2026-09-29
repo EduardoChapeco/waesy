@@ -1,0 +1,46 @@
+{
+  "achados": [
+    {
+      "id": "A-001",
+      "tipo": "gap",
+      "prio": "P1",
+      "modulo": "pdv",
+      "elo": "leitura",
+      "evidencia": "src/routes/workspace.pdv.index.tsx:168",
+      "causa_raiz": "O loader do PDV nao carrega getStoreFloorPlan, impedindo a selecao visual da mesa no salao 2D.",
+      "correcao_sugerida": "Carregar floorPlan no loader e adicionar modal interativo de selecao de mesas da planta do salao.",
+      "esforco": "M",
+      "risco": "B",
+      "bloqueia": [],
+      "estado": "corrigido"
+    },
+    {
+      "id": "A-002",
+      "tipo": "desvinculacao",
+      "prio": "P1",
+      "modulo": "pdv",
+      "elo": "escrita",
+      "evidencia": "src/routes/workspace.pdv.index.tsx:46",
+      "causa_raiz": "Funcao addItemsToTableComanda e icone Armchair importados sem consumo no fluxo de atendimento.",
+      "correcao_sugerida": "Vincular lancamento de pedidos por comanda/mesa diretamente pelo seletor de salao do PDV.",
+      "esforco": "P",
+      "risco": "B",
+      "bloqueia": [],
+      "estado": "corrigido"
+    },
+    {
+      "id": "A-003",
+      "tipo": "ruido",
+      "prio": "P2",
+      "modulo": "design",
+      "elo": "feedback",
+      "evidencia": "src/routes/workspace.pdv.index.tsx:97",
+      "causa_raiz": "Textos de abertura de caixa e dialogos com explicacoes redundantes sobre o que a tela faz.",
+      "correcao_sugerida": "Aplicar anti-ai-design reduzindo instrucoes obvias e mantendo foco no valor numerico e acao direta.",
+      "esforco": "P",
+      "risco": "B",
+      "bloqueia": [],
+      "estado": "corrigido"
+    }
+  ]
+}

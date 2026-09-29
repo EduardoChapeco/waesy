@@ -18,6 +18,8 @@ import { EmptyState } from "@/components/state/states";
 import { getStockLevels, adjustStock, transferStock } from "@/services/stock.functions";
 import { listInventoryLocations, type InventoryLocationDTO } from "@/services/marketplace-hub.functions";
 import { StockAuditDialog } from "@/components/admin/stock-audit-dialog";
+import { useNicheTranslation } from "@/hooks/use-niche-translation";
+import { getStoreSettings } from "@/services/store.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/estoque/")({
@@ -160,7 +162,7 @@ function AdminStockPage() {
         });
 
         if (res) {
-          toast.success("Transferência entre armazéns concluída com sucesso!");
+          toast.success("Transferência concluída");
           setSelectedVariant(null);
           const updated = await getStockLevels({ data: { locationId: selectedLocationId === "all" ? undefined : selectedLocationId, search } });
           if (Array.isArray(updated)) setStock(updated);
@@ -179,19 +181,24 @@ function AdminStockPage() {
         });
 
         if (res) {
-          toast.success("Movimentação registrada com sucesso no banco de dados.");
+          toast.success("Estoque atualizado");
           setSelectedVariant(null);
-          setStock((prev) =>
-            prev.map((v) => {
-              if (v.id === selectedVariant.id) {
-                return {
-                  ...v,
-                  stock_on_hand: Math.max(0, (v.stock_on_hand ?? 0) + finalQty),
-                };
-              }
-              return v;
-            }),
-          );
+          const updated = await getStockLevels({ data: { locationId: selectedLocationId === "all" ? undefined : selectedLocationId, search } });
+          if (Array.isArray(updated)) {
+            setStock(updated);
+          } else {
+            setStock((prev) =>
+              prev.map((v) => {
+                if (v.id === selectedVariant.id) {
+                  return {
+                    ...v,
+                    stock_on_hand: Math.max(0, (v.stock_on_hand ?? 0) + finalQty),
+                  };
+                }
+                return v;
+              }),
+            );
+          }
           router.invalidate();
         } else {
           toast.error((res as any)?.message || "Erro ao atualizar estoque.");
@@ -210,7 +217,7 @@ function AdminStockPage() {
     <div className="space-y-6 max-w-7xl mx-auto px-0 sm:px-4 md:px-0">
       <PageHeader
         eyebrow="Estoque"
-        title="Controle de Estoque"
+        title="Estoque"
       />
 
       {/* Grid de KPIs de Estoque */}

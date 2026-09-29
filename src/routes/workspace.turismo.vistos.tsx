@@ -266,16 +266,6 @@ function WorkspaceVisasPage() {
           </div>
         </div>
 
-        {/* ── ALERTA DE VALIDADE DE PASSAPORTE (REGRA DOS 6 MESES) ── */}
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center gap-3 text-xs text-amber-800 dark:text-amber-300 shadow-2xs">
-          <AlertCircle className="size-5 shrink-0 text-amber-600" />
-          <p className="leading-relaxed">
-            <strong>Regra Internacional dos 6 Meses:</strong> A maioria dos destinos internacionais
-            exige que o passaporte possua validade mínima de 180 dias a partir da data de retorno.
-            Monitore a validade de todos os titulares antes do agendamento consular!
-          </p>
-        </div>
-
         {/* ── BARRA DE BUSCA E TABS ── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border/70 shadow-2xs">
           <div className="relative flex-1 max-w-md">

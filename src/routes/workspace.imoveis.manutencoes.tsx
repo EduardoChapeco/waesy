@@ -341,7 +341,7 @@ function PropertyMaintenanceDashboard() {
  <Button
  onClick={() => handleUpdateStatus("resolved")}
  disabled={isProcessing}
- className="rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+ className="rounded-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
  >
  Concluir e Baixar Chamado
  </Button>

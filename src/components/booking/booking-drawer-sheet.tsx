@@ -16,6 +16,9 @@ export interface BookingDrawerSheetProps {
   selectedDate: string;
   setSelectedDate: (d: string) => void;
   nextDays: Array<{ iso: string; weekday: string; dayNum: number }>;
+  resources?: Array<{ id: string; name: string; resource_type: string }>;
+  selectedResourceId?: string | null;
+  setSelectedResourceId?: (id: string | null) => void;
   slots: string[];
   isLoadingSlots: boolean;
   selectedSlot: string | null;
@@ -41,6 +44,9 @@ export function BookingDrawerSheet({
   selectedDate,
   setSelectedDate,
   nextDays,
+  resources = [],
+  selectedResourceId = null,
+  setSelectedResourceId,
   slots,
   isLoadingSlots,
   selectedSlot,
@@ -135,6 +141,55 @@ export function BookingDrawerSheet({
                   })}
                 </div>
               </div>
+
+              
+              {/* Seção de Seleção de Profissional / Recurso (se houver cadastrado) */}
+              {resources && resources.length > 0 && setSelectedResourceId && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-foreground">Profissional / Atendente</Label>
+                    <span className="text-[10px] text-muted-foreground font-mono">Opcional</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedResourceId(null);
+                        setSelectedSlot(null);
+                      }}
+                      className={cn(
+                        "h-8 px-3 rounded-xl text-xs font-medium border shrink-0 transition-all cursor-pointer",
+                        !selectedResourceId
+                          ? "bg-foreground text-background border-foreground font-bold"
+                          : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted"
+                      )}
+                    >
+                      Qualquer Profissional
+                    </button>
+                    {resources.map((res) => {
+                      const isSelected = selectedResourceId === res.id;
+                      return (
+                        <button
+                          key={res.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedResourceId(res.id);
+                            setSelectedSlot(null);
+                          }}
+                          className={cn(
+                            "h-8 px-3 rounded-xl text-xs font-medium border shrink-0 transition-all cursor-pointer",
+                            isSelected
+                              ? "bg-primary text-primary-foreground border-primary font-bold shadow-xs"
+                              : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted"
+                          )}
+                        >
+                          {res.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* 2. Horários Disponíveis */}
               <div className="space-y-2">

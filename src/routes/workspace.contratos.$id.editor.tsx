@@ -349,7 +349,7 @@ function ContractEditorPage() {
                           <Button
                             asChild
                             size="sm"
-                            className="h-9 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
+                            className="min-h-[44px] px-3.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold"
                           >
                             <a href={waLink} target="_blank" rel="noreferrer">
                               <WhatsappLogo className="size-4 mr-1.5" />
@@ -361,7 +361,7 @@ function ContractEditorPage() {
                           asChild
                           variant="outline"
                           size="sm"
-                          className="h-9 px-3 rounded-xl text-xs font-semibold"
+                          className="min-h-[44px] px-3.5 rounded-xl text-xs font-semibold"
                         >
                           <Link to={signingUrl}>
                             <ExternalLink className="size-3.5 mr-1.5" />

@@ -163,7 +163,7 @@ export function SearchableSelect({
 
       <PopoverContent
         align="start"
-        className="w-[var(--radix-popover-trigger-width)] p-0 rounded-[var(--radius-card)] border-border glass text-white bg-black/40 backdrop-blur-2xl"
+        className="w-[var(--radix-popover-trigger-width)] p-0 rounded-xl border border-border bg-popover text-popover-foreground shadow-md"
       >
         {/* Search input */}
         <div className="flex items-center gap-2 border-b border-border px-3 py-2">
@@ -208,8 +208,8 @@ export function SearchableSelect({
                 variant="ghost"
                 onClick={() => handleSelect(opt)}
                 className={cn(
-                  "flex w-full items-center gap-2 px-3 py-2 h-auto text-left text-sm transition-colors rounded-none hover:glass-dark font-normal",
-                  opt.value === value && "bg-primary/20 font-semibold text-primary",
+                  "flex w-full items-center gap-2 px-3 py-2 h-auto text-left text-sm transition-colors rounded-none hover:bg-accent hover:text-accent-foreground font-normal",
+                  opt.value === value && "bg-primary/10 font-semibold text-primary",
                 )}
               >
                 <span className="flex-1 truncate text-left">{opt.label}</span>

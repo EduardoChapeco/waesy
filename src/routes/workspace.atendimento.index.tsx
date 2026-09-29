@@ -24,7 +24,7 @@ import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.f
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/workspace/atendimento/")({
-  head: () => ({ meta: [{ title: "Central de Atendimento Omnichannel | Waesy" }] }),
+  head: () => ({ meta: [{ title: "Atendimento" }] }),
   loader: async () => {
     try {
       const [res, store, sdrData] = await Promise.all([

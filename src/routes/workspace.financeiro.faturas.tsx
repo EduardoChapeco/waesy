@@ -196,20 +196,13 @@ function WorkspaceFaturasPage() {
             <span className="p-2 rounded-xl bg-muted text-foreground">
               <Receipt className="size-5" />
             </span>
-            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              Faturas da Plataforma e Planos
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+              Faturas
             </h1>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Acompanhe suas mensalidades, faturas de serviços e envie comprovantes de pagamento bancário.
+            Mensalidades, serviços contratados e comprovantes de pagamento.
           </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="px-3 py-1 font-mono text-xs gap-1.5 rounded-xl border-border/60">
-            <ShieldCheck className="size-3.5 text-emerald-500" />
-            <span>Ambiente Seguro Waesy</span>
-          </Badge>
         </div>
       </div>
 

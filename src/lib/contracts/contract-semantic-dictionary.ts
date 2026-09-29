@@ -173,6 +173,21 @@ export const CONTRACT_SEMANTIC_GROUPS: ContractNicheGroup[] = [
       { key: "data_admissao", token: "{{data_admissao}}", label: "Data de Início / Admissão", category: "rh", example: "01/10/2026", description: "Primeiro dia de prestação de serviços" },
     ],
   },
+  {
+    id: "comodato",
+    name: "Comodato & Equipamentos",
+    icon: "Package",
+    description: "Termos de empréstimo gratuito de equipamentos, máquinas, cervejeiras e bens móveis (Art. 579 CC)",
+    variables: [
+      { key: "equipamento_nome", token: "{{equipamento_nome}}", label: "Nome do Equipamento / Bem", category: "comodato", example: "Chopeira Elétrica 2 Vias Completa", description: "Identificação do bem cedido em comodato" },
+      { key: "marca_modelo_equipamento", token: "{{marca_modelo_equipamento}}", label: "Marca e Modelo", category: "comodato", example: "Memo Chopeiras Beer Master 50L/h", description: "Marca e modelo do fabricante" },
+      { key: "numero_serie", token: "{{numero_serie}}", label: "Número de Série / Chassi", category: "comodato", example: "SN-2026-CH-99482", description: "Identificação serial exclusiva do bem" },
+      { key: "patrimonio_codigo", token: "{{patrimonio_codigo}}", label: "Código de Patrimônio (WMS)", category: "comodato", example: "PAT-004829", description: "Código de rastreamento no inventário/estoque" },
+      { key: "valor_bem_indenizacao", token: "{{valor_bem_indenizacao}}", label: "Valor de Avaliação / Indenização", category: "comodato", example: "R$ 6.500,00", description: "Valor a ser indenizado em caso de perda, furto ou extravio" },
+      { key: "prazo_vigencia_comodato", token: "{{prazo_vigencia_comodato}}", label: "Prazo de Vigência", category: "comodato", example: "12 (doze) meses ou rescisão do fornecimento", description: "Tempo que o comodatário permanecerá com o bem" },
+      { key: "local_instalacao", token: "{{local_instalacao}}", label: "Local de Instalação", category: "comodato", example: "Av. Brasil, 1200 - Centro", description: "Endereço onde o equipamento deve permanecer obrigatoriamente" },
+    ],
+  },
 ];
 
 /**

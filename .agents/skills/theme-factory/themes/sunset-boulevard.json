@@ -1,0 +1,19 @@
+{
+  "id": "sunset-boulevard",
+  "name": "Sunset Boulevard",
+  "description": "Cores quentes, vibrantes e cinematográficas do pôr do sol.",
+  "colors": {
+    "background": "#2e1065",
+    "surface": "#3b0764",
+    "primary": "#db2777",
+    "secondary": "#f97316",
+    "accent": "#fbbf24",
+    "text": "#fff7ed",
+    "textMuted": "#fdba74"
+  },
+  "typography": {
+    "headingFont": "Syne",
+    "bodyFont": "DM Sans",
+    "codeFont": "Fira Code"
+  }
+}

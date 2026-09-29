@@ -1,0 +1,19 @@
+{
+  "id": "arctic-frost",
+  "name": "Geada Ártica",
+  "description": "Tema inspirado no inverno glacial, fresco, translúcido e revigorante.",
+  "colors": {
+    "background": "#082f49",
+    "surface": "#0c4a6e",
+    "primary": "#38bdf8",
+    "secondary": "#bae6fd",
+    "accent": "#7dd3fc",
+    "text": "#f0f9ff",
+    "textMuted": "#e0f2fe"
+  },
+  "typography": {
+    "headingFont": "Cabinet Grotesk",
+    "bodyFont": "Satoshi",
+    "codeFont": "JetBrains Mono"
+  }
+}

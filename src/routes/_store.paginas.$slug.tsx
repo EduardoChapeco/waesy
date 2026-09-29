@@ -1,6 +1,7 @@
 import { createFileRoute, notFound, Link, isRedirect, isNotFound } from "@tanstack/react-router";
 import { getPublicExperienceDocumentBySlug } from "@/services/builder.functions";
 import { ExperienceRenderer } from "@/components/commerce/experience-renderer";
+import { OmniPageRenderer } from "@/components/builder/OmniPageRenderer";
 import { Surface } from "@/components/ui/surface";
 import { AlertCircle, Loader2, FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,14 @@ function PublicPage() {
           </Button>
         </Surface>
       </div>
+    );
+  }
+
+  if (document?.settings?.omni_page?.blocks && Array.isArray(document.settings.omni_page.blocks) && document.settings.omni_page.blocks.length > 0) {
+    return (
+      <main className="w-full flex flex-col gap-0 min-h-[100dvh] bg-background">
+        <OmniPageRenderer document={document.settings.omni_page} />
+      </main>
     );
   }
 

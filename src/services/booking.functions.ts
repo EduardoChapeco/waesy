@@ -25,6 +25,7 @@ export const createAppointmentSchema = z.object({
  scheduled_at: z.string().datetime(),
  notes: z.string().optional(),
  pass_id: z.string().uuid().optional(),
+  resource_id: z.string().uuid().optional(),
 });
 
 // --- FUNCTIONS ---
@@ -313,11 +314,18 @@ export const getBookingServiceById = createServerFn({ method: "GET" })
 
 /**
  * Busca horários disponíveis para um serviço em uma data específica.
- * Horários baseados nos Working Hours configurados pela loja (sem fallback hardcoded).
+ * Suporta filtragem por profissional/recurso (resource_id), calculando janelas de atendimento,
+ * capacidade concorrente e horários configurados da loja e do recurso.
  */
 export const getAvailableSlots = createServerFn({ method: "GET" })
-  .validator(z.object({ service_id: z.string().uuid(), date: z.string() }))
-  .handler(async ({ data: { service_id, date } }) => {
+  .validator(
+    z.object({
+      service_id: z.string().uuid(),
+      date: z.string(),
+      resource_id: z.string().uuid().optional(),
+    }),
+  )
+  .handler(async ({ data: { service_id, date, resource_id } }) => {
     try {
       const db = getServerClient();
 
@@ -340,7 +348,7 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
 
       const { data: existing, error: apptErr } = await db
         .from("booking_appointments")
-        .select("scheduled_at, booking_services(duration_minutes)")
+        .select("id, scheduled_at, resource_id, booking_services(duration_minutes)")
         .eq("store_id", storeId)
         .neq("status", "cancelled")
         .gte("scheduled_at", startOfDay.toISOString())
@@ -349,18 +357,53 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
       if (apptErr) throw apptErr;
 
       // 3. Buscar intervalos de trabalho reais da loja
-      const intervals = await getWorkingIntervalsForDate(storeId, date);
+      const storeIntervals = await getWorkingIntervalsForDate(storeId, date);
 
-      if (intervals.length === 0) {
+      if (storeIntervals.length === 0) {
         // Loja fechada nesse dia
         return { status: "success" as const, data: [] };
+      }
+
+      // Se houver resource_id específico, carregar dados e disponibilidades do recurso
+      let resourceCapacity = 1;
+      let effectiveIntervals = storeIntervals;
+
+      if (resource_id) {
+        const { data: resData, error: resErr } = await db
+          .from("booking_resources")
+          .select("id, capacity, status, booking_resource_availabilities(day_of_week, start_time, end_time)")
+          .eq("id", resource_id)
+          .eq("store_id", storeId)
+          .maybeSingle();
+
+        if (!resErr && resData) {
+          if (resData.status === "inactive") {
+            return { status: "success" as const, data: [] };
+          }
+          if (resData.capacity && resData.capacity > 0) {
+            resourceCapacity = resData.capacity;
+          }
+
+          const targetDayOfWeek = new Date(`${date}T12:00:00.000Z`).getUTCDay();
+          const avails = (resData.booking_resource_availabilities || []).filter(
+            (a: any) => a.day_of_week === targetDayOfWeek,
+          );
+
+          // Se o profissional tem escalas cadastradas, validar presença no dia
+          if (avails.length > 0) {
+            effectiveIntervals = avails.map((a: any) => ({
+              from: a.start_time.slice(0, 5),
+              to: a.end_time.slice(0, 5),
+            }));
+          }
+        }
       }
 
       const duration = service.duration_minutes || 60;
       const slots: string[] = [];
 
       // 4. Para cada intervalo configurado, calcular slots válidos
-      for (const interval of intervals) {
+      for (const interval of effectiveIntervals) {
         const [fromH, fromM] = interval.from.split(":").map(Number);
         const [toH, toM] = interval.to.split(":").map(Number);
         const intervalEndMinutes = toH * 60 + toM;
@@ -374,7 +417,11 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
             `${date}T${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:00.000Z`,
           );
 
-          const isOccupied = existing?.some((appt: any) => {
+          // Contar agendamentos sobrepostos
+          const overlapping = (existing || []).filter((appt: any) => {
+            if (resource_id && appt.resource_id && appt.resource_id !== resource_id) {
+              return false;
+            }
             const apptStart = new Date(appt.scheduled_at);
             const apptDuration = appt.booking_services?.duration_minutes || 60;
             const apptEnd = new Date(apptStart.getTime() + apptDuration * 60000);
@@ -382,7 +429,7 @@ export const getAvailableSlots = createServerFn({ method: "GET" })
             return slotTime < apptEnd && proposedEnd > apptStart;
           });
 
-          if (!isOccupied) {
+          if (overlapping.length < resourceCapacity) {
             slots.push(slotTime.toISOString());
           }
 
@@ -462,8 +509,8 @@ export const createAppointment = createServerFn({ method: "POST" })
  const apptStart = new Date(input.scheduled_at);
  const apptEnd = new Date(apptStart.getTime() + (service.duration_minutes || 60) * 60000);
  const { data: holdRes, error: holdErr } = await db.rpc("hold_resource_slot", {
- p_resource_id: service.id,
- p_resource_type: "booking_service",
+ p_resource_id: input.resource_id || service.id,
+    p_resource_type: input.resource_id ? "booking_resource" : "booking_service",
  p_start_at: apptStart.toISOString(),
  p_end_at: apptEnd.toISOString(),
  });
@@ -486,6 +533,7 @@ export const createAppointment = createServerFn({ method: "POST" })
  scheduled_at: input.scheduled_at,
  notes: input.notes,
  pass_id: input.pass_id || null,
+ resource_id: input.resource_id || null,
  status: apptStatus,
  })
  .select()
@@ -531,12 +579,36 @@ export const createAppointment = createServerFn({ method: "POST" })
  }
  });
 
-// --- ADMIN FUNCTIONS ---
+// --- PUBLIC RESOURCE DISCOVERY ---
+
+export const listPublicStoreResources = createServerFn({ method: "GET" })
+  .validator(z.object({ store_id: z.string().uuid() }))
+  .handler(async ({ data: { store_id } }) => {
+    try {
+      const db = getServerClient();
+      const { data, error } = await db
+        .from("booking_resources")
+        .select("id, name, resource_type, capacity, status")
+        .eq("store_id", store_id)
+        .eq("status", "active")
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error("[booking.functions] listPublicStoreResources error:", error);
+        return [];
+      }
+      return data || [];
+    } catch {
+      return [];
+    }
+  });
+
+// --- ADMIN / MANAGER FUNCTIONS ---
 
 export const listResources = createServerFn({ method: "GET" }).handler(async () => {
- try {
- const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin"]);
+    try {
+      const identity = await getServerIdentity();
+      assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
  const storeId = await resolveTenantStoreId();
  if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
@@ -584,7 +656,7 @@ export const saveResource = createServerFn({ method: "POST" })
  .handler(async ({ data: input }) => {
  try {
  const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin"]);
+ assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
  const storeId = await resolveTenantStoreId();
  if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
@@ -647,7 +719,7 @@ export const deleteResource = createServerFn({ method: "POST" })
   .handler(async ({ data: input }) => {
     try {
       const identity = await getServerIdentity();
-      assertStoreAccess(identity, ["owner", "admin"]);
+      assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
       const storeId = await resolveTenantStoreId();
       if (!storeId) throw new Error("Loja não encontrada no contexto.");
 
@@ -675,7 +747,7 @@ export const listAppointments = createServerFn({ method: "GET" })
  .handler(async ({ data: input }) => {
  try {
  const identity = await getServerIdentity();
- assertStoreAccess(identity, ["owner", "admin"]);
+ assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
  const storeId = await resolveTenantStoreId();
  if (!storeId) throw new Error("Loja não encontrada no contexto.");
 

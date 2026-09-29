@@ -1,0 +1,19 @@
+{
+  "id": "desert-rose",
+  "name": "Rosa do Deserto",
+  "description": "Tons suaves, sofisticados, terrosos e acolhedores em pó.",
+  "colors": {
+    "background": "#4c0519",
+    "surface": "#881337",
+    "primary": "#f43f5e",
+    "secondary": "#fb7185",
+    "accent": "#fecdd3",
+    "text": "#fff1f2",
+    "textMuted": "#ffe4e6"
+  },
+  "typography": {
+    "headingFont": "Cormorant Garamond",
+    "bodyFont": "Plus Jakarta Sans",
+    "codeFont": "Fira Code"
+  }
+}

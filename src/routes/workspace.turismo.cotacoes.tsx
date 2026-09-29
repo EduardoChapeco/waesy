@@ -57,11 +57,11 @@ export const Route = createFileRoute("/workspace/turismo/cotacoes")({
 });
 
 const STATUS_FILTERS = [
- { id: "all", label: "Todas Cotações" },
+ { id: "all", label: "Todas" },
  { id: "new", label: "Novas" },
  { id: "analyzing", label: "Em Análise" },
  { id: "quoted", label: "Orçamento Enviado" },
- { id: "won", label: "Fechadas / Ganhas" },
+ { id: "won", label: "Ganhas" },
  { id: "lost", label: "Perdidas" },
 ];
 
@@ -657,8 +657,8 @@ export default function AgencyQuotesPage() {
  )}
 
  {q.agency_notes && (
- <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300">
- <span className="font-bold block text-[10px] uppercase">Nota Interna do Consultor:</span>
+ <div className="p-2.5 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground">
+ <span className="font-semibold block text-[10px] uppercase text-foreground">Nota Interna:</span>
  <span>{q.agency_notes}</span>
  </div>
  )}
@@ -705,7 +705,7 @@ export default function AgencyQuotesPage() {
                     <Button
                       asChild
                       size="sm"
-                      className="w-full sm:w-auto rounded-xl font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
+                      className="w-full sm:w-auto rounded-xl font-bold text-xs h-11 sm:h-8 px-4 sm:px-3 bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer"
                     >
                       <a
                         href={`https://wa.me/55${cleanWhatsapp}?text=${waMessage}`}
@@ -875,7 +875,7 @@ export default function AgencyQuotesPage() {
            if (!managingQuote) return;
            confirmAction({
              title: "Excluir Cotação",
-             description: `Tem certeza que deseja remover esta cotação de ${managingQuote.client_name}? Esta ação não poderá ser desfeita.`,
+             description: `Excluir cotação de ${((managingQuote as any)?.client_name || (managingQuote as any)?.clientName || "Cliente")}?`,
              variant: "destructive",
              onConfirm: () => {
                deleteQuoteMutation.mutate(managingQuote.id);

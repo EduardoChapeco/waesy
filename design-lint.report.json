@@ -1,0 +1,614 @@
+{
+  "timestamp": "2026-09-29T20:05:33.215Z",
+  "inspectedFiles": 1460,
+  "counts": {
+    "P0": 6530,
+    "P1": 23341,
+    "P2": 1115,
+    "P3": 1355
+  },
+  "totalViolations": 32341,
+  "passed": false,
+  "violationsSample": [
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "min-h-[100dvh]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "w-[68px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "max-w-[120px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "text-[9px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "min-h-[100dvh]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "pl-[84px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "pl-[280px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-[calc(100dvh-4rem)]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "min-h-[56px]"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "!collapsed"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-7"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-15",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P0",
+      "match": "onClick sem focus-visible"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\admin-shell.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P0",
+      "match": "!anim"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-700"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-500"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-600"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-500"
+    },
+    {
+      "id": "DL-26",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P2",
+      "match": "duration-700"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\animation-inspector-phase7.test.ts",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "min-h-[80px]"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P1",
+      "match": "h-4"
+    },
+    {
+      "id": "DL-15",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P0",
+      "match": "onClick sem focus-visible"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\ArrayBuilder.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "#6366f1"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "#25D366"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "#ffffff"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "hsl(263, 70%, 50%)"
+    },
+    {
+      "id": "DL-01",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "hsl(0, 84%, 60%)"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "w-[380px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[9px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[10px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P0",
+      "match": "! Como"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P0",
+      "match": "! Entraremos"
+    },
+    {
+      "id": "DL-04",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P0",
+      "match": "!isOpen"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "h-8"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-7"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-10"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-5"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-4"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-6"
+    },
+    {
+      "id": "DL-14",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P1",
+      "match": "size-3"
+    },
+    {
+      "id": "DL-15",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P0",
+      "match": "onClick sem focus-visible"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-27",
+      "file": "src\\components\\admin\\builder\\builder-add-panel-3col.tsx",
+      "severity": "P3",
+      "match": "transition-all"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
+      "severity": "P1",
+      "match": "max-w-[1440px]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
+      "severity": "P1",
+      "match": "min-h-[calc(100dvh-100px)]"
+    },
+    {
+      "id": "DL-02",
+      "file": "src\\components\\admin\\builder\\builder-canvas.tsx",
+      "severity": "P1",
+      "match": "text-[11px]"
+    }
+  ]
+}

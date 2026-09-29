@@ -28,6 +28,7 @@ export const LedgerTransactionTypeSchema = z.enum([
   "escrow_release",
   "order_payment",
   "booking_payment",
+  "order_payout_settled",
 ]);
 
 export type LedgerTransactionType = z.infer<typeof LedgerTransactionTypeSchema>;

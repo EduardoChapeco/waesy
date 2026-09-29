@@ -311,7 +311,9 @@ function CriarNegocioPage() {
 
  if (result?.storeId) {
  if (typeof window !== "undefined") {
+ window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
  window.document.cookie = `waesy_active_tenant=${result.storeId}; path=/; max-age=31536000; SameSite=Lax`;
+ window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
  }
  await setTenantContext({ data: { store_id: result.storeId } }).catch(() => null);
  }
@@ -377,7 +379,9 @@ function CriarNegocioPage() {
   userId={session?.user?.id}
   onSuccess={(storeId) => {
   if (typeof window !== "undefined") {
-  window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
+  window.document.cookie = "waesy_active_context=store; path=/; max-age=31536000; SameSite=Lax";
+ window.document.cookie = `waesy_active_tenant=${storeId}; path=/; max-age=31536000; SameSite=Lax`;
+ window.document.cookie = "waesy_active_creator=; path=/; max-age=0; SameSite=Lax";
   }
   window.location.href = "/conta/empresa";
   }}

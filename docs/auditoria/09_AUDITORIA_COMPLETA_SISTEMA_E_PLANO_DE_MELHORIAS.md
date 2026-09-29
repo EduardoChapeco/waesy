@@ -90,11 +90,36 @@ graph TD
     G --> H[Quitação Automática ao Liquidar Última Parcela]
 ```
 
-### Prioridade 1: Régua Automatizada de WhatsApp para Cobranças & Lembretes
-- Disparo de aviso amigável 3 dias antes do vencimento da parcela com o código Pix Copia-e-Cola e link de visualização do carnê.
+### Prioridade 1: Régua Automatizada de WhatsApp para Cobranças & Lembretes [100% CONCLUÍDO]
+- Disparo de lembrete profissional com templates amigável, aviso de vencimento e oferta de desconto de quitação via `generateInstallmentWhatsAppReminder`.
+- Código PIX Copia-e-Cola específico da parcela integrado, telemetria de `last_reminder_sent_at` e `reminders_sent_count` na migration v128.
+- 1-Click copy no Super App do Cliente (`_store.conta.carnes.tsx`) e disparo no painel do lojista (`workspace.financeiro.recebiveis.tsx`).
 
-### Prioridade 2: 1-Click Checkout para Clientes Recorrentes
-- Uso da assinatura salva em `profiles.saved_signature_url` para compras a prazo sem necessidade de redigitar dados.
+### Prioridade 2: 1-Click Signature & Checkout para Clientes Recorrentes [100% CONCLUÍDO]
+- Integração das funções `getUserSavedSignature` e `saveUserSignature` na esteira de assinatura (`assinar.$token.tsx`).
+- Botão "Usar Esta" para preenchimento imediato da assinatura sem redesenho manual no canvas tátil e opção de salvar no perfil com 1 toque.
 
-### Prioridade 3: App do Motorista de Ônibus (Check-in Offline de Turismo)
-- Scanner de QR Code para conferência de passageiros e validação de vouchers turísticos diretamente na porta do ônibus.
+### Prioridade 3: Rooming List & Tabela de Acomodações de Hotéis em 1 Clique [100% CONCLUÍDO]
+- Adicionada função `handleExportHotelsRoomsCSV` em `workspace.turismo.hoteis.tsx` para exportação direta de planilha CSV estruturada de quartos, camas, capacidades e hóspedes para hotéis parceiros e recepções.
+
+### Prioridade 4: Termo de Comodato de Equipamentos & Bens Móveis (WMS & Contratos) [100% CONCLUÍDO]
+- Inserido grupo semântico `comodato` no dicionário de contratos (`contract-semantic-dictionary.ts`) cobrindo `{{equipamento_nome}}`, `{{numero_serie}}`, `{{patrimonio_codigo}}`, `{{valor_bem_indenizacao}}` e vigência.
+- Template canônico com base no Art. 579 do Código Civil integrado a `NICHE_TEMPLATES` e suportado no backend com `ContractCategoryEnum.equipment_loan`.
+
+### Prioridade 5: Impressão Térmica ESC/POS Direta no PDV & QR Codes Reais de Embarque [100% CONCLUÍDO]
+- Conexão direta com Web Serial / USB (`buildEscPosReceipt` & `sendBytesToSerialPrinter`) no PDV (`workspace.pdv.index.tsx`).
+- Erradicação de grids simulados e ícones estáticos de QR Code no Super App (`_store.conta.ingressos.tsx`, `viajante.carteira.tsx`, `_store.conta.viagens.tsx`, `ticket-preview.tsx`), garantindo leitura ótica instantânea para check-in e embarque.
+
+### Prioridade 6: Reconciliação Canônica de Rotas & Hub de Ferramentas Globais [100% CONCLUÍDO]
+- Mapeamento e unificação de 100% das 368 rotas ativas do TanStack Router em `src/lib/routes.ts` e `docs/ROUTES.md`.
+- Expansão do diálogo `WorkspaceAllToolsDialog` cobrindo todas as verticais: Inteligência & IA, Advocacia JUS, Contratos Digitais, Caixa, Frota e PWA.
+
+### Prioridade 7: Omni-Block Engine, State Tree Audit & Niche Template Matrix (V129) [100% CONCLUÍDO]
+- Schemas Zod estritos (`OmniPageDocumentSchema`, `OmniBlockInstanceSchema`, `OmniBlockStylingSchema`) com gestão imutável de estado;
+- Omni-Block Library com 7 blocos canônicos (Hero, Bento, Galeria Mosaico com Lightbox, Preços, Depoimentos com Verificação, Contato via WhatsApp e FAQ);
+- Matriz de templates nativos por nicho (Advocacia, Gastronomia, Turismo, Criadores) com injeção automática de blocos;
+- Bifurcação visual ergonômica: Software UI 3-pane no Desktop vs. WhatsApp List com toque único (^ / v) e Bottom Sheet expansível de 100dvh no Mobile;
+- Renderizador público ultraleve (`OmniPageRenderer`) SSR-ready sem peso do editor.
+
+
+

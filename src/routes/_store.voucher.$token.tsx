@@ -320,7 +320,7 @@ function PublicTravelVoucherPage() {
             <Button
               asChild
               size="sm"
-              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <a
                 href={`https://wa.me/55${cleanPhone}?text=Ol%C3%A1%2C%20estou%20com%20meu%20voucher%20${voucher.voucher_code}%20e%20gostaria%20de%20tirar%20uma%20d%C3%BAvida.`}

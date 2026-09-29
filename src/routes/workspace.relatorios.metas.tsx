@@ -181,7 +181,7 @@ function RevenueGoalsPage() {
         );
       case "ahead":
         return (
-          <Badge className="bg-blue-600 text-white font-bold text-xs gap-1.5 px-3 py-1">
+          <Badge className="bg-primary text-primary-foreground font-bold text-xs gap-1.5 px-3 py-1">
             <Star className="size-3.5" />
             Ritmo Acelerado (+{data.projected_percent - 100}% acima da meta)
           </Badge>

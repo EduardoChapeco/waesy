@@ -683,9 +683,23 @@ export const provisionBusiness = createServerFn({ method: "POST" })
 
  // 4.2 Setar cookie do tenant ativo no servidor
  try {
+ setCookie("waesy_active_context", "store", {
+ path: "/",
+ maxAge: 60 * 60 * 24 * 365,
+ httpOnly: false,
+ secure: process.env.NODE_ENV === "production",
+ sameSite: "lax",
+ });
  setCookie("waesy_active_tenant", store.id, {
  path: "/",
  maxAge: 60 * 60 * 24 * 365,
+ httpOnly: false,
+ secure: process.env.NODE_ENV === "production",
+ sameSite: "lax",
+ });
+ setCookie("waesy_active_creator", "", {
+ path: "/",
+ maxAge: 0,
  httpOnly: false,
  secure: process.env.NODE_ENV === "production",
  sameSite: "lax",

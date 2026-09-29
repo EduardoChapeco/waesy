@@ -169,7 +169,7 @@ function WorkspaceTelemetriaPage() {
  </span>
  <span className="text-xs text-muted-foreground font-mono">Dados Auditados em Tempo Real</span>
  </div>
- <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">Central de Conversões</h1>
+ <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">Telemetria</h1>
  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
  Mensuração real de leads de WhatsApp, alcance de patrocinadores e taxa de conversão.
  </p>
@@ -286,11 +286,11 @@ function WorkspaceTelemetriaPage() {
  </div>
  )}
 
- {/* Tabela de Gestão de Leads */}
+ {/* Tabela de Leads */}
  <div className="p-5 sm:p-6 rounded-2xl bg-card space-y-4 ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
  <div>
- <h3 className="text-base font-bold text-foreground">Gestão de Leads</h3>
+ <h3 className="text-base font-bold text-foreground">Leads</h3>
  <p className="text-xs text-muted-foreground">Acompanhe e atualize o status de cada contacto recebido via WhatsApp.</p>
  </div>
  <div className="flex items-center gap-2">

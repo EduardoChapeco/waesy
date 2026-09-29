@@ -34,6 +34,55 @@ export const ORDER_STATUS_VALUES = [
 // Handlers (decoupled for unit testing)
 // ---------------------------------------------------------------------------
 
+export interface OrderCostBreakdown {
+  subtotal_cents: number;
+  shipping_cents: number;
+  total_cents: number;
+  platform_fee_percent: number;
+  platform_fee_cents: number;
+  gateway_fee_cents: number;
+  seller_net_cents: number;
+  settlement_status: "pending" | "settled" | "released";
+  calculated_at: string;
+  settled_at?: string | null;
+}
+
+export function calculateOrderFinancialSplit(
+  order: {
+    subtotal_cents?: number | null;
+    shipping_cents?: number | null;
+    total_cents?: number | null;
+    discount_cents?: number | null;
+  },
+  commissionPercent: number = 5,
+): OrderCostBreakdown {
+  const subtotal = Math.max(0, order.subtotal_cents ?? 0);
+  const shipping = Math.max(0, order.shipping_cents ?? 0);
+  const total = Math.max(0, order.total_cents ?? subtotal + shipping);
+
+  // Taxa de intermediação da plataforma sobre o subtotal de produtos (sem onerar o frete do entregador)
+  const platformFeeCents = Math.round((subtotal * commissionPercent) / 100);
+
+  // Taxa de processamento de meios de pagamento (Pix/Cartão estimada em 2%)
+  const gatewayFeeCents = Math.round((total * 2) / 100);
+
+  // Repasse líquido do seller
+  const sellerNetCents = Math.max(0, total - platformFeeCents - gatewayFeeCents);
+
+  return {
+    subtotal_cents: subtotal,
+    shipping_cents: shipping,
+    total_cents: total,
+    platform_fee_percent: commissionPercent,
+    platform_fee_cents: platformFeeCents,
+    gateway_fee_cents: gatewayFeeCents,
+    seller_net_cents: sellerNetCents,
+    settlement_status: "pending",
+    calculated_at: new Date().toISOString(),
+  };
+}
+
+
 export async function _listOrders(store_id: string) {
  const db = getServerClient();
 
@@ -1561,7 +1610,7 @@ export const generateDeliveryPin = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: { orderId, storeId } }) => {
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, storeId);
+    assertStoreAccess(identity, undefined, storeId);
 
     const db = getServerClient();
     const { data, error } = await db.rpc("generate_delivery_pin", {
@@ -1612,4 +1661,104 @@ export const validateDeliveryPin = createServerFn({ method: "POST" })
     }
 
     return data as { success: boolean; order_id: string; delivered_at: string; certificate_id?: string };
+  });
+
+// ---------------------------------------------------------------------------
+// Split & Liquidação de Repasses Multi-Seller
+// ---------------------------------------------------------------------------
+
+export const settleOrderPayout = createServerFn({ method: "POST" })
+  .validator(
+    withDataPayload(
+      z.object({
+        orderId: z.string().uuid(),
+      }),
+    ),
+  )
+  .handler(async ({ data: { orderId } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
+
+    const db = getServerClient();
+    const { data: order, error } = await db
+      .from("orders")
+      .select("id, order_number, public_token, total_cents, subtotal_cents, shipping_cents, store_id, status, cost_breakdown")
+      .eq("id", orderId)
+      .single();
+
+    if (error || !order) {
+      throw new Error("Pedido não encontrado para liquidação de repasse.");
+    }
+
+    const currentCost = (order.cost_breakdown as OrderCostBreakdown | null) || calculateOrderFinancialSplit(order);
+    const updatedCostBreakdown: OrderCostBreakdown = {
+      ...currentCost,
+      settlement_status: "settled",
+      settled_at: new Date().toISOString(),
+    };
+
+    const { error: updateErr } = await db
+      .from("orders")
+      .update({ cost_breakdown: updatedCostBreakdown })
+      .eq("id", orderId);
+
+    if (updateErr) {
+      console.error("[order.functions] Erro ao liquidar repasse:", updateErr);
+      throw new Error("Falha ao salvar liquidação de repasse do pedido.");
+    }
+
+    // Registra entrada no ledger imutável de transações financeiras
+    try {
+      await recordLedgerEntryCore({
+        transactionType: "order_payout_settled",
+        amountCents: updatedCostBreakdown.seller_net_cents,
+        storeId: order.store_id,
+        referenceEntityType: "order",
+        referenceEntityId: order.id,
+        metadata: {
+          order_id: order.id,
+          order_number: order.order_number,
+          platform_fee_cents: updatedCostBreakdown.platform_fee_cents,
+          gateway_fee_cents: updatedCostBreakdown.gateway_fee_cents,
+          seller_net_cents: updatedCostBreakdown.seller_net_cents,
+        },
+      });
+    } catch (ledgerErr) {
+      console.warn("[order.functions] Falha ao selar repasse no ledger:", ledgerErr);
+    }
+
+    return {
+      status: "success" as const,
+      payout: updatedCostBreakdown,
+    };
+  });
+
+export const getOrderFinancialSplit = createServerFn({ method: "GET" })
+  .validator(
+    withDataPayload(
+      z.object({
+        orderId: z.string().uuid(),
+      }),
+    ),
+  )
+  .handler(async ({ data: { orderId } }) => {
+    const identity = await getServerIdentity();
+    assertStoreAccess(identity, ["owner", "admin", "manager", "gerente"]);
+
+    const db = getServerClient();
+    const { data: order, error } = await db
+      .from("orders")
+      .select("id, order_number, total_cents, subtotal_cents, shipping_cents, store_id, status, cost_breakdown")
+      .eq("id", orderId)
+      .single();
+
+    if (error || !order) {
+      throw new Error("Pedido não encontrado.");
+    }
+
+    const split = (order.cost_breakdown as OrderCostBreakdown | null) || calculateOrderFinancialSplit(order);
+    return {
+      status: "success" as const,
+      split,
+    };
   });
