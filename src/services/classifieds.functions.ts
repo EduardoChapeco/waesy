@@ -799,11 +799,11 @@ export const upsertClassified = createServerFn({ method: "POST" })
  author_profile_id: identity.id,
  store_id: rest.store_id || null,
  // FASE 1: Lifecycle & Validade Obrigatória (30, 60 ou 90 dias)
- expires_at: rest.expires_at || new Date(
- Date.now() + ([30, 60, 90].includes(Number(rest.validity_days || rest.attributes?.validity_days))
- ? Number(rest.validity_days || rest.attributes?.validity_days)
- : 30) * 24 * 60 * 60 * 1000
- ).toISOString(),
+ expires_at: (rest as any).expires_at || new Date(
+    Date.now() + ([30, 60, 90].includes(Number((rest as any).validity_days || rest.attributes?.validity_days))
+      ? Number((rest as any).validity_days || rest.attributes?.validity_days)
+      : 30) * 24 * 60 * 60 * 1000
+  ).toISOString(),
  stock_limit: rest.stock_limit !== undefined && rest.stock_limit !== null
  ? Number(rest.stock_limit)
  : (rest.attributes?.stock_limit ? Number(rest.attributes.stock_limit) : null),
@@ -1475,14 +1475,15 @@ export const trackClassifiedView = createServerFn({ method: "POST" })
           .eq("id", adId);
 
         // Telemetria imutável em ad_telemetry_events
-        supabase
-          .from("ad_telemetry_events")
-          .insert({
-            article_id: adId,
-            event_type: "view",
-            store_id: current.store_id || null,
-          })
-          .catch(() => null);
+        Promise.resolve(
+          supabase
+            .from("ad_telemetry_events")
+            .insert({
+              article_id: adId,
+              event_type: "view",
+              store_id: current.store_id || null,
+            })
+        ).catch(() => null);
       }
       return { success: true };
     } catch (err) {

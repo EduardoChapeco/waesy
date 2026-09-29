@@ -210,11 +210,12 @@ export const respondToDealProposal = createServerFn({ method: "POST" })
     }
 
     if (adNextStatus) {
-      await supabase
-        .from("classifieds")
-        .update({ status: adNextStatus, updated_at: new Date().toISOString() })
-        .eq("id", deal.classified_id)
-        .catch((e: any) => console.warn("[deals] Falha ao sincronizar status do classificado:", e?.message));
+      await Promise.resolve(
+        supabase
+          .from("classifieds")
+          .update({ status: adNextStatus, updated_at: new Date().toISOString() })
+          .eq("id", deal.classified_id)
+      ).catch((e: any) => console.warn("[deals] Falha ao sincronizar status do classificado:", e?.message));
     }
   }
 

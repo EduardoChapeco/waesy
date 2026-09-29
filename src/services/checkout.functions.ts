@@ -260,10 +260,12 @@ export const getOrderByToken = createServerFn({ method: "GET" })
  const ua = req?.headers.get("user-agent") || null;
 
  if (token) {
-   db.rpc("record_order_customer_view", {
-     p_public_token: token,
-     p_user_agent: ua,
-   }).catch(() => null);
+   Promise.resolve(
+      db.rpc("record_order_customer_view", {
+        p_public_token: token,
+        p_user_agent: ua,
+      })
+    ).catch(() => null);
  }
 
  const { data } = await db
@@ -439,7 +441,7 @@ export const processCheckout = createServerFn({ method: "POST" })
 
         // V113 ACID: Despacho Waesy Go MotoLink (Haversine Server-Side + PIN 4 dígitos + Telemetria IP)
         await db
-          .rpc("finalize_order_and_dispatch_motolink_atomic", {
+          Promise.resolve(db.rpc("finalize_order_and_dispatch_motolink_atomic", {
             p_order_id: result.orderId,
             p_channel_origin: "vitrine_online",
             p_notes: params.notes || null,
@@ -448,7 +450,7 @@ export const processCheckout = createServerFn({ method: "POST" })
             p_receiver_info: params.receiverInfo || null,
             p_niche_metadata: nicheMeta,
             p_client_ip: clientIp,
-            p_actor_profile_id: identity?.userId || null,
+            p_actor_profile_id: (identity as any)?.userId || (identity as any)?.customer_id || null,
           })
           .catch(() => null);
 

@@ -1,0 +1,7 @@
+fix(reliability): complete deep repair of critical flows D1-D5, install S1-S7 guards and fix all tests
+
+- Fix isPlatformAdmin scope in workspace route beforeLoad and loader
+- Enforce Promise.resolve on postgrest telemetry and sync builders
+- Fix optional attributes typing for classifieds expiration and stock limits
+- Update AGENTS.md indexes with mandates 27-30 for 100% test pass rate
+- Deliver reparo/01-checkpoints.md, reparo/02-barreiras.md, reparo/08-regressao.md and reparo/_estado.md

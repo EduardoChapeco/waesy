@@ -168,7 +168,7 @@ export const createDispatch = createServerFn({ method: "POST" })
 
  // Sincroniza tabela soberana delivery_runs do Waesy Go / Motolink
  if (input.orderId && input.orderId.length === 36) {
- await supabase.from("delivery_runs").insert({
+ await Promise.resolve(supabase.from("delivery_runs").insert({
  order_id: input.orderId,
  store_id: identity.store_id,
  magic_token: deliveryToken,
@@ -177,7 +177,7 @@ export const createDispatch = createServerFn({ method: "POST" })
  courier_name: input.courierName,
  courier_phone: input.courierPhone,
  delivery_fee_cents: input.deliveryFeeCents || 0,
- }).catch((e: any) => console.warn("[dispatch] delivery_runs sync notice:", e?.message));
+ })).catch((e: any) => console.warn("[dispatch] delivery_runs sync notice:", e?.message));
  }
 
  // Se o pedido informado existir no banco, atualiza status para 'shipped'

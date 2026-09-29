@@ -14,6 +14,7 @@ Qualquer alteração deve reforçar a integridade transacional, a governança mu
 - `docs/UX_RESEARCH.md`: SSOT de pesquisa com usuários e síntese de evidências empíricas.
 - `docs/FILE_MANAGEMENT.md`: SSOT de governança de operações com arquivos e lote seguro.
 - `docs/THEME_FACTORY.md`: SSOT da Fábrica de Temas e estilização canônica de artefatos.
+- `docs/PERFORMANCE.md`: SSOT de performance web, Core Web Vitals e orçamentos de carregamento.
 - `.agents/`: Skills, agentes especializados, fluxos operacionais e regras canônicas do IDE Antigravity.
 - Áreas proibidas: `node_modules/`, `dist/`, `.git/`, e arquivos de outros módulos fora do escopo da tarefa.
 
@@ -101,6 +102,10 @@ O agente deve interromper imediatamente o trabalho e devolver a decisão ao huma
 - `content-density`: Revisão de concisão textual, rótulos de ação e eliminação de prolixidade.
 - `accessibility-floor`: Auditoria e garantia de conformidade com o piso WCAG 2.2 AA.
 - `design-lint`: Verificação determinística automatizada de regras visuais DL-01 a DL-30.
+- `prompt-optimizer`: 27. **Mandato de Otimização EARS** (Sintaxe EARS e requisitos estruturados).
+- `decompose-prd`: 28. **Mandato de Decomposição Hierárquica MECE** (DAG MECE de épicos e tarefas).
+- `pm`: 29. **Mandato do Gerente de Produto Autônomo** (.agents/skills/pm/SKILL.md, "Você É o PM").
+- `web-performance`: 30. **Mandato de Alta Performance Web** (docs/PERFORMANCE.md e Core Web Vitals).
 - `ux-research-synthesis`: Pesquisa empírica (Regra 31: Mandato de Pesquisa Empírica & Síntese de UX).
 - `file-manager`: Operações seguras (Regra 32: Mandato de Governança de Arquivos, Pastas & Operações em Lote).
 - `theme-factory`: 10 temas canônicos (Regra 33: Mandato da Fábrica de Temas & Estilização de Artefatos).
