@@ -29,18 +29,14 @@ function MinhasCandidaturasPage() {
  const [applications, setApplications] = useState<any[]>(Array.isArray(initialApps) ? initialApps : []);
 
  const handleWithdraw = async (appId: string, jobTitle: string) => {
- if (!confirm(`Deseja cancelar sua candidatura para a vaga "${jobTitle}"?`)) {
- return;
- }
-
- try {
- await withdrawJobApplication({ data: { applicationId: appId } });
- toast.success("Candidatura cancelada com sucesso.");
- setApplications((prev) => prev.filter((a) => a.id !== appId));
- router.invalidate();
- } catch (err: any) {
- toast.error(err?.message || "Erro ao cancelar candidatura.");
- }
+  try {
+    await withdrawJobApplication({ data: { applicationId: appId } });
+    toast.success(`Candidatura cancelada com sucesso.`);
+    setApplications((prev) => prev.filter((a) => a.id !== appId));
+    router.invalidate();
+  } catch (err: any) {
+    toast.error(err?.message || "Erro ao cancelar candidatura.");
+  }
  };
 
  const getStatusBadge = (status: string) => {

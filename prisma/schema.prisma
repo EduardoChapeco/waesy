@@ -1,0 +1,218 @@
+// -----------------------------------------------------------------------------
+// WAESY DUAL-ENGINE ARCHITECTURE & MARKETPLACE GOVERNANCE SCHEMA
+// Fonte Única da Verdade para Modelagem Relacional & Segregação de Confiança
+// -----------------------------------------------------------------------------
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// Níveis de Assinatura do Ecossistema Dual-Engine
+enum PlanTier {
+  /// Modo Rápido: Onboarding simplificado, catálogo enxuto e perfil público editável integrado ao Google Meu Negócio
+  FREE_MVP
+  /// Modo Avançado: Workspace Pro nichado, relatórios analíticos, quotas de IA com fallback BYOK e automações
+  WAESY_MAX
+}
+
+/// Status de Verificação do Marketplace Oficial Curado
+enum ComplianceStatus {
+  /// Submissão em fila de auditoria fiscal e documental
+  PENDING
+  /// Empresa auditada com CNPJ ativo na Receita Federal, endereço confirmado e SAC homologado
+  APPROVED
+  /// Suspensão preventiva por pendência cadastral, denúncias ou encerramento fiscal
+  SUSPENDED
+}
+
+/// Tipo de Faturamento no Razão Financeiro
+enum BillingFeeType {
+  /// Assinatura Mensal recorrente do Modo Waesy Max
+  SUBSCRIPTION_MONTHLY
+  /// Microtaxa transacional aleatória por pedido concluído (R$ 0,99)
+  ORDER_MICROFEE_RANDOM
+  /// Consumo adicional de chamadas de IA e infraestrutura após esgotamento de quota
+  EXTRA_USAGE
+}
+
+/// ---------------------------------------------------------------------------
+/// LOJAS & EMPRESAS (Stores / Companies)
+/// ---------------------------------------------------------------------------
+model Store {
+  id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String?                 @map("organization_id") @db.Uuid
+  name            String                  @db.VarChar(255)
+  slug            String                  @unique @db.VarChar(255)
+  cnpj            String?                 @db.VarChar(18)
+  city            String                  @db.VarChar(100)
+  state           String                  @default("SC") @db.VarChar(2)
+  address         String?                 @db.Text
+  phone           String?                 @db.VarChar(30)
+  logoUrl         String?                 @map("logo_url") @db.Text
+  bannerUrl       String?                 @map("banner_url") @db.Text
+  settings        Json?                   @default("{}") @db.JsonB
+  
+  /// Dual-Engine Flag: FREE_MVP vs WAESY_MAX
+  planTier        PlanTier                @default(FREE_MVP) @map("plan_tier")
+
+  /// Relação 1:1 com a Conformidade Curada do Marketplace Oficial
+  compliance      MarketplaceCompliance?
+  
+  /// Catálogo de Produtos Oficiais da Loja
+  products        Product[]
+  
+  /// Linhas de faturamento e auditoria da loja
+  invoiceItems    BillingLineItem[]
+
+  createdAt       DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([planTier], name: "idx_stores_plan_tier")
+  @@index([city], name: "idx_stores_city")
+  @@map("stores")
+}
+
+/// ---------------------------------------------------------------------------
+/// CONFORMIDADE DE MARKETPLACE (Acesso Curado com CNPJ, Fiscal e SAC)
+/// ---------------------------------------------------------------------------
+model MarketplaceCompliance {
+  id                     String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storeId                String           @unique @map("store_id") @db.Uuid
+  companyId              String?          @map("company_id") @db.Uuid
+  
+  /// CNPJ verificado e normalizado (14 dígitos sem pontuação ou formatado)
+  cnpj                   String           @unique @db.VarChar(18)
+  
+  /// Razão Social registrada na Receita Federal
+  legalName              String           @map("legal_name") @db.VarChar(255)
+  
+  /// Nome Fantasia verificado
+  tradeName              String?          @map("trade_name") @db.VarChar(255)
+  
+  /// Endereço fiscal e físico validado (Logradouro, Bairro, CEP, Cidade, UF)
+  verifiedAddress        Json             @map("verified_address") @db.JsonB
+  
+  /// Canais homologados de suporte e atendimento ao cliente (Email, Telefone, SAC)
+  verifiedSupportChannel Json             @map("verified_support_channel") @db.JsonB
+  
+  /// Status da auditoria
+  status                 ComplianceStatus @default(PENDING)
+  
+  /// Motivo caso rejeitado ou suspenso
+  rejectionReason        String?          @map("rejection_reason") @db.Text
+  
+  /// Auditoria e prazos de validade
+  verifiedAt             DateTime?        @map("verified_at") @db.Timestamptz(6)
+  expiresAt              DateTime?        @map("expires_at") @db.Timestamptz(6)
+  auditedBy              String?          @map("audited_by") @db.Uuid
+  
+  store                  Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  createdAt              DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status], name: "idx_marketplace_compliance_status")
+  @@index([cnpj], name: "idx_marketplace_compliance_cnpj")
+  @@map("marketplace_compliance")
+}
+
+/// ---------------------------------------------------------------------------
+/// PRODUTOS DO MARKETPLACE OFICIAL
+/// Apenas vinculados a Lojas com CNPJ e Conformidade
+/// ---------------------------------------------------------------------------
+model Product {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storeId         String      @map("store_id") @db.Uuid
+  title           String      @db.VarChar(255)
+  slug            String      @db.VarChar(255)
+  description     String?     @db.Text
+  priceCents      Int         @map("price_cents")
+  compareAtCents  Int?        @map("compare_at_cents")
+  inStock         Boolean     @default(true) @map("in_stock")
+  coverImageUrl   String?     @map("cover_image_url") @db.Text
+  
+  store           Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([storeId], name: "idx_products_store_id")
+  @@map("products")
+}
+
+/// ---------------------------------------------------------------------------
+/// CLASSIFICADOS LOCAIS (Acesso Aberto / C2C / Desapegos)
+/// Não exige CNPJ. Não gera transação forçada. CTA nativo de conversa (WhatsApp/Chat).
+/// ---------------------------------------------------------------------------
+model ClassifiedAd {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String      @map("user_id") @db.Uuid
+  title           String      @db.VarChar(255)
+  description     String?     @db.Text
+  category        String      @db.VarChar(80)
+  priceCents      Int?        @map("price_cents")
+  contactPhone    String      @map("contact_phone") @db.VarChar(30)
+  city            String      @db.VarChar(100)
+  state           String      @default("SC") @db.VarChar(2)
+  photos          String[]    @default([])
+  
+  /// Classificados NÃO possuem selo de empresa oficial
+  isVerifiedStore Boolean     @default(false) @map("is_verified_store")
+  
+  isActive        Boolean     @default(true) @map("is_active")
+
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([category], name: "idx_classified_ads_category")
+  @@index([city], name: "idx_classified_ads_city")
+  @@map("classified_ads")
+}
+
+/// ---------------------------------------------------------------------------
+/// RAZÃO FINANCEIRO & MICROTAXAS AUDITÁVEIS (Invoice Ledger E2E)
+/// ---------------------------------------------------------------------------
+model BillingInvoice {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  storeId        String            @map("store_id") @db.Uuid
+  invoiceNumber  String            @unique @map("invoice_number") @db.VarChar(50)
+  periodStart    DateTime          @map("period_start") @db.Date
+  periodEnd      DateTime          @map("period_end") @db.Date
+  totalCents     Int               @map("total_cents")
+  status         String            @default("OPEN") @db.VarChar(30) // OPEN, PAID, VOID
+  
+  lineItems      BillingLineItem[]
+
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([storeId], name: "idx_billing_invoices_store_id")
+  @@map("billing_invoices")
+}
+
+model BillingLineItem {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId      String?         @map("invoice_id") @db.Uuid
+  storeId        String          @map("store_id") @db.Uuid
+  
+  /// Identificador do evento gerador (ex: ID do Pedido ou ID da fatura de ciclo)
+  originEventId  String          @map("origin_event_id") @db.VarChar(120)
+  
+  description    String          @db.VarChar(255)
+  amountCents    Int             @map("amount_cents")
+  feeType        BillingFeeType  @map("fee_type")
+  
+  invoice        BillingInvoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  store          Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([originEventId], name: "idx_billing_line_items_origin_event_id")
+  @@index([storeId, feeType], name: "idx_billing_line_items_store_fee_type")
+  @@map("billing_line_items")
+}

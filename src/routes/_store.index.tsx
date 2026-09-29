@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots } from "@phosphor-icons/react";
+import { Tag, Newspaper, Briefcase, CalendarDots, MapPin, Clock, WhatsappLogo, Buildings, Star, CheckCircle, Storefront, ArrowRight, Ticket, UserCircle, Target, Rss, ChatCircleDots, Globe, CookingPot, Airplane, Trophy, ShieldCheck } from "@phosphor-icons/react";
 import { BannerHeroCarousel } from "@/components/commerce/banner-hero-carousel";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { PlacesHighlightBadge } from "@/components/shell/places-highlight-badge";
 import { NewsCard } from "@/components/news/news-card";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { VitrineEngineSelector } from "@/components/commerce/vitrine-engine-selector";
+import type { VitrineEngineMode } from "@/types/marketplace-compliance";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/money";
@@ -84,18 +86,18 @@ const CANONICAL_PILLARS = [
 ];
 
 const DISCOVERY_CATEGORIES: FilterChipOption[] = [
-  { id: "todos", label: "Todos os Anúncios", emoji: "🌐" },
-  { id: "places", label: "Lugares e Negócios", emoji: "📍" },
-  { id: "classificados", label: "Classificados", emoji: "🏷️" },
-  { id: "receitas", label: "Receitas", emoji: "🍲" },
-  { id: "turismo", label: "Turismo e Roteiros", emoji: "✈️" },
-  { id: "feed", label: "Feed", emoji: "📡" },
-  { id: "noticias", label: "Notícias", emoji: "📰" },
-  { id: "empregos", label: "Empregos", emoji: "💼" },
-  { id: "eventos", label: "Eventos", emoji: "🎟️" },
-  { id: "agenda", label: "Agenda", emoji: "📅" },
-  { id: "afiliados", label: "Afiliados", emoji: "🎯" },
-  { id: "concursos", label: "Concursos de Sorte", emoji: "🏆" },
+  { id: "todos", label: "Todos os Anúncios", icon: Globe },
+  { id: "places", label: "Lugares e Negócios", icon: MapPin },
+  { id: "classificados", label: "Classificados", icon: Tag },
+  { id: "receitas", label: "Receitas", icon: CookingPot },
+  { id: "turismo", label: "Turismo e Roteiros", icon: Airplane },
+  { id: "feed", label: "Feed", icon: Rss },
+  { id: "noticias", label: "Notícias", icon: Newspaper },
+  { id: "empregos", label: "Empregos", icon: Briefcase },
+  { id: "eventos", label: "Eventos", icon: Ticket },
+  { id: "agenda", label: "Agenda", icon: CalendarDots },
+  { id: "afiliados", label: "Afiliados", icon: Target },
+  { id: "concursos", label: "Concursos de Sorte", icon: Trophy },
 ];
 
 export const Route = createFileRoute("/_store/")({
@@ -207,6 +209,7 @@ function CommunityMarketplaceView({ data }: { data: any }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("todos");
   const [viewMode, setViewMode] = useState<ViewModeType>("feed");
+  const [engineMode, setEngineMode] = useState<VitrineEngineMode>("marketplace");
 
   // Resolução dinâmica dos cards do topo onde o gestor/admin faz upload de imagens
   const displayHeroCards = useMemo(() => {
@@ -575,6 +578,21 @@ function CommunityMarketplaceView({ data }: { data: any }) {
           <BannerHeroCarousel banners={banners} />
         </section>
       )}
+
+      {/* ── 2.8. SELETOR DUAL-ENGINE: MARKETPLACE VERIFICADO VS CLASSIFICADOS LOCAIS ── */}
+      <VitrineEngineSelector
+        activeMode={engineMode}
+        onModeChange={(mode) => {
+          setEngineMode(mode);
+          if (mode === "marketplace") {
+            setActiveCategory("places");
+          } else {
+            setActiveCategory("classificados");
+          }
+        }}
+        verifiedCount={filteredPlaces.length}
+        classifiedCount={filteredClassifieds.length}
+      />
 
       {/* ── 3. BARRA DE CONTROLE CANÔNICA (DiscoveryControlBar: Busca + Categorias + Feed/Grid/List) ── */}
       <DiscoveryControlBar

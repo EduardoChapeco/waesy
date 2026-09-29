@@ -11,6 +11,7 @@ import { HotpagesRail } from "@/components/commerce/hotpages-rail";
 import { ContextualStoriesRail } from "@/components/stories/contextual-stories-rail";
 import { HorizontalRail } from "@/components/commerce/horizontal-rail";
 import { DiscoveryControlBar, type ViewModeType, type FilterChipOption } from "@/components/commerce/discovery-control-bar";
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { listActiveBanners } from "@/services/banner.functions";
 import { listHotpages } from "@/services/hotpage.functions";
 import { listPublicJobs, type JobItemDTO } from "@/services/jobs.functions";
@@ -21,12 +22,12 @@ import { formatMoney } from "@/lib/money";
 import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
 
 const JOB_CATEGORY_CHIPS: FilterChipOption[] = [
- { id: "todos", label: "Todas", emoji: "💼", icon: Tag },
- { id: "clt", label: "Comércio", emoji: "🏪", icon: Storefront },
- { id: "estagio", label: "Estágio", emoji: "🎓", icon: GraduationCap },
- { id: "tech", label: "Tecnologia", emoji: "💻", icon: Laptop },
- { id: "saude", label: "Saúde", emoji: "🩺", icon: Heartbeat },
- { id: "operacional", label: "Logística", emoji: "🚚", icon: Truck },
+ { id: "todos", label: "Todas", icon: Tag },
+ { id: "clt", label: "Comércio", icon: Storefront },
+ { id: "estagio", label: "Estágio", icon: GraduationCap },
+ { id: "tech", label: "Tecnologia", icon: Laptop },
+ { id: "saude", label: "Saúde", icon: Heartbeat },
+ { id: "operacional", label: "Logística", icon: Truck },
 ];
 
 export const Route = createFileRoute("/_store/empregos/")({
@@ -114,7 +115,7 @@ function JobsMasterPage() {
         <NativeMobileHeader
           title="Vagas"
           centerTitle
-          backTo="/"
+          fallbackHref="/"
           searchValue={search}
           onSearchChange={setSearch}
           searchPlaceholder="Buscar cargo, empresa ou vaga..."
