@@ -28,12 +28,7 @@ export const Route = createFileRoute("/workspace")({
       session?.role === "superadmin" ||
       session?.role === "platform_admin";
 
-        const isPlatformAdmin =
-        session?.role === "admin" ||
-        session?.role === "superadmin" ||
-        session?.role === "platform_admin";
-
-      const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+    const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
  // 🚨 REGRA INVIOLÁVEL: O Workspace exige um negócio cadastrado.
  // Quem não possui loja/empresa não pode ver o workspace nem ferramentas operacionais.

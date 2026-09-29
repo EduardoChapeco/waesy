@@ -1,0 +1,12 @@
+# Estado do Módulo Marca — Handoff Operacional
+- Data: 2026-09-29 | Spec: SPEC-003 Marca / Workspace (Ativos, Buckets e Nichos).
+- Superfície: 7 rotas mapeadas, 2 modos de onboarding (expresso e 6 etapas), 7 tabelas.
+- Baseline: Perfil civil íntegro, validação CPF Módulo 11, avatar 1:1 e capa 21:9.
+- Rompimentos Eliminados: Cookies waesy_active_tenant unificados, busca por slug corrigida.
+- Ativos: Matriz canônica em docs/marca/ATIVOS.md (21:9 capa, 16:9 cartão, 1:1 logo, 4:1 lockup).
+- Storage: 12 buckets mapeados com auto-healing, rate limit e políticas de visibilidade.
+- Nichos: SSOT em docs/marca/NICHOS.md com 17 verticais de negócio e campos dirigidos.
+- Quebras: Classes MB1 a MB12 triadas, corrigidas e prevenidas no ledger de marca.
+- Testes: 698/698 testes aprovados em 109 arquivos de teste via Vitest (Exit Code 0).
+- Build: 9.432 módulos cliente + 8.820 SSR compilados para Cloudflare Pages (Exit Code 0).
+- Próximo Passo: Deploy Cloudflare Pages e sincronização git commit do módulo fechado.

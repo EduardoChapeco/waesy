@@ -63,7 +63,7 @@ export function WorkspaceAccountSwitcher({
  return memberships.filter(
  (m) =>
  m.name?.toLowerCase().includes(q) ||
- m.store_slug?.toLowerCase().includes(q) ||
+ (m.slug || m.store_slug)?.toLowerCase().includes(q) ||
  m.city?.toLowerCase().includes(q) ||
  m.segment?.toLowerCase().includes(q)
  );

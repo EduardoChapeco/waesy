@@ -440,8 +440,8 @@ export const processCheckout = createServerFn({ method: "POST" })
         await db.from("orders").update(updatePayload).eq("id", result.orderId);
 
         // V113 ACID: Despacho Waesy Go MotoLink (Haversine Server-Side + PIN 4 dígitos + Telemetria IP)
-        await db
-          Promise.resolve(db.rpc("finalize_order_and_dispatch_motolink_atomic", {
+        await Promise.resolve(
+          db.rpc("finalize_order_and_dispatch_motolink_atomic", {
             p_order_id: result.orderId,
             p_channel_origin: "vitrine_online",
             p_notes: params.notes || null,
@@ -452,7 +452,7 @@ export const processCheckout = createServerFn({ method: "POST" })
             p_client_ip: clientIp,
             p_actor_profile_id: (identity as any)?.userId || (identity as any)?.customer_id || null,
           })
-          .catch(() => null);
+        ).catch(() => null);
 
         // Se houver observações por item, persiste em order_items
         if (params.itemNotes && Object.keys(params.itemNotes).length > 0) {

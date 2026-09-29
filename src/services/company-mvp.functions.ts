@@ -186,16 +186,19 @@ export const fastRegisterCompany = createServerFn({ method: "POST" })
       console.warn("[fastRegisterCompany] Aviso profile update store_id:", e?.message);
     }
 
-    // 7. Definir Cookies de Tenant
+    // 7. Definir Cookies de Tenant e Contexto Canônico (Zero Desconexão)
     try {
       const isProd = process.env.NODE_ENV === "production";
       const cookieOpts = {
         path: "/",
-        maxAge: 60 * 60 * 24 * 30, // 30 dias
+        maxAge: 60 * 60 * 24 * 365, // 1 ano
         sameSite: "lax" as const,
         secure: isProd,
       };
+      setCookie("waesy_active_context", "store", cookieOpts);
+      setCookie("waesy_active_tenant", store.id, cookieOpts);
       setCookie("waesy_store_id", store.id, cookieOpts);
+      setCookie("waesy_active_creator", "", { path: "/", maxAge: 0, sameSite: "lax", secure: isProd });
     } catch (e: any) {
       console.warn("[fastRegisterCompany] Aviso ao setar cookie:", e?.message);
     }
