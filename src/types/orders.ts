@@ -124,6 +124,32 @@ export interface CartDTO {
  shippingMethod?: string | null;
 }
 
+export interface MultiStoreCartGroupDTO {
+ storeId: string;
+ storeName: string;
+ storeSlug: string;
+ storeLogoUrl?: string | null;
+ items: CartItemDTO[];
+ subtotalCents: number;
+ shippingCents: number;
+ totalCents: number;
+ itemCount: number;
+}
+
+export interface MultiStoreCheckoutResultDTO {
+ isConsolidated: boolean;
+ orders: Array<{
+  storeId: string;
+  storeName: string;
+  orderId: string;
+  orderNumber: string;
+  totalCents: number;
+  microFeeCents: number;
+  publicToken: string;
+ }>;
+ grandTotalCents: number;
+}
+
 // ---------------------------------------------------------------------------
 // Order DTOs
 // ---------------------------------------------------------------------------
