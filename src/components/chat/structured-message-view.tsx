@@ -219,7 +219,7 @@ function ProductCardBlock({
             size="sm"
             className="h-11 px-3 rounded-xl text-xs font-semibold cursor-pointer"
           >
-            <Link to="/_store/produtos/$slug" params={{ slug: data.slug }} target="_blank">
+            <Link to="/_store/produto/$slug" params={{ slug: data.slug }} target="_blank">
               <ExternalLink className="size-3.5" />
             </Link>
           </Button>

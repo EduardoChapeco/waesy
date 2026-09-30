@@ -360,17 +360,20 @@ Gere a análise SWOT estratégica completa em JSON estruturado.`;
     };
 
     // Auto-persiste no brand_dna_profiles
-    await supabase
-      .from("brand_dna_profiles")
-      .upsert(
-        {
-          store_id: targetStoreId,
-          swot_analysis: result,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "store_id" }
-      )
-      .catch((err) => console.warn("[swot] Falha no auto-save:", err));
+    try {
+      await supabase
+        .from("brand_dna_profiles")
+        .upsert(
+          {
+            store_id: targetStoreId,
+            swot_analysis: result,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "store_id" }
+        );
+    } catch (err) {
+      console.warn("[swot] Falha no auto-save:", err);
+    }
 
     return result;
   });

@@ -239,22 +239,26 @@ function WorkspaceProposalStudioPage() {
   { id: "landscape-presentation", label: "Paisagem", icon: Monitor },
   { id: "vertical-premium", label: "Vertical", icon: FileText },
   { id: "group-catalog", label: "Catálogo", icon: Tag },
-  ].map((tpl) => (
- <button
- key={tpl.id}
- type="button"
- onClick={() => handleChange({ template: tpl.id } as any)}
- className={cn(
- "px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
- currentTemplate === tpl.id
- ? "bg-background text-foreground shadow-2xs"
- : "text-muted-foreground hover:text-foreground"
- )}
- title={`Template ${tpl.label}`}
- >
- <span>{tpl.icon}</span> <span className="hidden md:inline ml-1">{tpl.label}</span>
- </button>
- ))}
+  ].map((tpl) => {
+    const TplIcon = tpl.icon;
+    return (
+      <button
+        key={tpl.id}
+        type="button"
+        onClick={() => handleChange({ template: tpl.id } as any)}
+        className={cn(
+          "px-2 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1",
+          currentTemplate === tpl.id
+            ? "bg-background text-foreground shadow-2xs"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+        title={`Template ${tpl.label}`}
+      >
+        <TplIcon className="size-3.5" />
+        <span className="hidden md:inline">{tpl.label}</span>
+      </button>
+    );
+  })}
  </div>
 
  {/* Controles de Zoom */}

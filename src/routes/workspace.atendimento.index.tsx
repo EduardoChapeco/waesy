@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, ArrowLeft, Search, Filter, Send, UserCheck, Building2, Clock, CheckCircle2, AlertTriangle, Package, DollarSign, Info, Loader2, RefreshCw, Layers, ShieldCheck, Bot, Star, Flame, Target, HelpCircle, Copy, ExternalLink, MessageCircle } from 'lucide-react';
+import { MessageSquare, ArrowLeft, Search, Filter, Send, UserCheck, Building2, Clock, CheckCircle2, AlertTriangle, Package, DollarSign, Info, Loader2, RefreshCw, Layers, ShieldCheck, Bot, Star, Flame, Target, HelpCircle, Copy, ExternalLink, MessageCircle, Plus, FileText } from 'lucide-react';
 import { toast } from "sonner";
 import { formatDate, formatRelativeTime } from "@/lib/datetime";
 import { formatMoney } from "@/lib/money";

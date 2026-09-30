@@ -14,7 +14,13 @@ import {
   moveBlockInPage,
   duplicateBlockInPage,
 } from "./types";
-import { SITE_BUILDER_BLOCKS, getSiteBlockById } from "./registry";
+import {
+  SITE_BUILDER_BLOCKS,
+  getSiteBlockById,
+  WixBlockCategory,
+  WIX_CATEGORY_CONFIG,
+  BLOCK_TO_WIX_CATEGORY,
+} from "./registry";
 import { NICHE_TEMPLATE_MATRIX, applyTemplateToPage, NicheTemplateDefinition } from "./templates";
 import { LiveTemplatePreviewModal } from "./LiveTemplatePreviewModal";
 
