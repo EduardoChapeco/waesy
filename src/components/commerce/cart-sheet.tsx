@@ -151,7 +151,7 @@ export function CartSheet() {
                     <button
                       type="button"
                       onClick={() => removeItem(item.id)}
-                      className="size-11 -mr-2 -mt-2 rounded-xl text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 cursor-pointer flex items-center justify-center active:scale-95"
+                      className="size-11 -mr-2 -mt-2 rounded-xl text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 cursor-pointer flex items-center justify-center active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       title="Remover item"
                       aria-label="Remover item"
                     >
@@ -187,7 +187,7 @@ export function CartSheet() {
                     <button
                       type="button"
                       onClick={() => setEditingItem(item)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground/80 hover:text-foreground bg-muted/60 hover:bg-muted px-2.5 py-1 rounded-lg transition-colors cursor-pointer min-h-[32px] active:scale-98"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground/80 hover:text-foreground bg-muted/60 hover:bg-muted px-2.5 py-1 rounded-lg transition-colors cursor-pointer min-h-8 active:scale-98 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <SlidersHorizontal className="size-3.5" />
                       <span>Editar opções</span>
@@ -200,8 +200,8 @@ export function CartSheet() {
                   <div className="flex items-center rounded-xl bg-card border border-border/50 p-0.5">
                     <button
                       type="button"
-                      className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-all cursor-pointer"
-                      onClick={() => updateQty(item.variantId, -1)}
+                      className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                      onClick={() => updateQty(item.variantId, -1, item.id)}
                       disabled={item.qty <= 1}
                       aria-label="Diminuir quantidade"
                     >
@@ -212,8 +212,8 @@ export function CartSheet() {
                     </span>
                     <button
                       type="button"
-                      className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-all cursor-pointer"
-                      onClick={() => updateQty(item.variantId, 1)}
+                      className="size-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 disabled:opacity-30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                      onClick={() => updateQty(item.variantId, 1, item.id)}
                       disabled={item.isOutOfStock}
                       aria-label="Aumentar quantidade"
                     >

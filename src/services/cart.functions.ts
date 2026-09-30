@@ -557,35 +557,63 @@ export const addToCart = createServerFn({ method: "POST" })
  return { status: "error" as const, message: "Loja do produto indisponível." };
  }
 
- // 1. Tenta inserção atômica via RPC
- let insertedSuccessfully = false;
- try {
- const { data: cartId, error: rpcError } = await supabase.rpc("add_to_cart_atomic_v6", {
- p_store_id: storeId,
- p_customer_id: identity.customer_id,
- p_session_token: identity.session_token,
- p_seller_id: activeSellerId,
- p_variant_id: variantId,
- p_qty: quantity,
- p_options: options || {},
- });
- if (!rpcError && cartId) {
- insertedSuccessfully = true;
- }
- } catch (err) {
- console.warn("[cart.functions] RPC add_to_cart_atomic_v6 falhou, aplicando fallback:", err);
- }
+  // 1. Tenta inserção atômica via RPC
+  let insertedSuccessfully = false;
+  try {
+    const { data: cartId, error: rpcError } = await supabase.rpc("add_to_cart_atomic_v6", {
+      p_store_id: storeId,
+      p_customer_id: identity.customer_id,
+      p_session_token: identity.session_token,
+      p_seller_id: activeSellerId,
+      p_variant_id: variantId,
+      p_qty: quantity,
+      p_options: options || {},
+    });
+    if (!rpcError && cartId) {
+      insertedSuccessfully = true;
+    } else if (rpcError && rpcError.message && (rpcError.message.includes("Estoque insuficiente") || rpcError.message.includes("insuficiente"))) {
+      return { status: "error" as const, message: "Estoque insuficiente para esta variação." };
+    } else if (rpcError && rpcError.message && rpcError.message.includes("Variante não encontrada")) {
+      return { status: "error" as const, message: "Opção de produto não encontrada ou indisponível." };
+    }
+  } catch (err: any) {
+    if (err?.message && (err.message.includes("Estoque insuficiente") || err.message.includes("insuficiente"))) {
+      return { status: "error" as const, message: "Estoque insuficiente para esta variação." };
+    }
+    console.warn("[cart.functions] RPC add_to_cart_atomic_v6 falhou, aplicando fallback:", err);
+  }
 
- // 2. Fallback relacional direto
- if (!insertedSuccessfully) {
- const cartId = await getOrCreateCartId(identity, storeId);
+  // 2. Fallback relacional direto
+  if (!insertedSuccessfully) {
+    const cartId = await getOrCreateCartId(identity, storeId);
 
- // Preço snapshot base da variante/produto
- const { data: variantRecord } = await supabase
- .from("product_variants")
- .select("price_override_cents, products(price_cents)")
- .eq("id", variantId)
- .single();
+    // Preço snapshot base da variante/produto e validação estrita de estoque
+    const { data: variantRecord } = await supabase
+      .from("product_variants")
+      .select("price_override_cents, stock_on_hand, allow_backorder, status, products(price_cents)")
+      .eq("id", variantId)
+      .maybeSingle();
+
+    if (!variantRecord || variantRecord.status !== "active") {
+      return { status: "error" as const, message: "Esta opção de produto está indisponível ou esgotada." };
+    }
+
+    const availableStock = variantRecord.stock_on_hand ?? 0;
+    const allowBackorder = Boolean(variantRecord.allow_backorder);
+
+    const { data: existingVariantItems } = await supabase
+      .from("cart_items")
+      .select("id, qty")
+      .eq("cart_id", cartId)
+      .eq("variant_id", variantId);
+
+    const existingTotalQty = (existingVariantItems || []).reduce((acc: number, row: any) => acc + (row.qty || 0), 0);
+    if ((existingTotalQty + quantity) > availableStock && !allowBackorder) {
+      return {
+        status: "error" as const,
+        message: `Estoque insuficiente. Apenas ${availableStock} unidade${availableStock === 1 ? "" : "s"} disponível${availableStock === 1 ? "" : "is"}.`,
+      };
+    }
 
  let optionsTotalCents = 0;
  const selectedOptionIds: string[] = [];
@@ -710,110 +738,217 @@ export const mergeGuestCart = createServerFn({ method: "POST" })
  });
 
 export const updateCartItemQty = createServerFn({ method: "POST" })
-  .validator(withDataPayload(z.object({ variantId: z.string().uuid(), delta: z.number().int() })))
- .handler(async ({ data: { variantId, delta } }) => {
- const supabase = getServerClient();
- const identity = await getCurrentIdentity();
+  .validator(
+    withDataPayload(
+      z.object({
+        variantId: z.string().uuid().optional(),
+        itemId: z.string().uuid().optional(),
+        delta: z.number().int(),
+      }),
+    ),
+  )
+  .handler(async ({ data: { variantId, itemId, delta } }) => {
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity();
 
- let cartQuery = supabase.from("carts").select("id").eq("status", "active");
- if (identity.customer_id) cartQuery = cartQuery.eq("customer_id", identity.customer_id);
- else cartQuery = cartQuery.eq("session_token", identity.session_token);
+    if (!variantId && !itemId) {
+      return { status: "error" as const, message: "Identificador de item ou variante inválido." };
+    }
 
- const { data: cart } = await cartQuery
- .order("created_at", { ascending: false })
- .limit(1)
- .maybeSingle();
- if (!cart) return { status: "error" as const, message: "Carrinho não encontrado" };
+    let cartQuery = supabase.from("carts").select("id").eq("status", "active");
+    if (identity.customer_id) cartQuery = cartQuery.eq("customer_id", identity.customer_id);
+    else cartQuery = cartQuery.eq("session_token", identity.session_token);
 
- const { data: existingItem } = await supabase
- .from("cart_items")
- .select("id, qty")
- .eq("cart_id", cart.id)
- .eq("variant_id", variantId)
- .maybeSingle();
+    const { data: cart } = await cartQuery
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!cart) return { status: "error" as const, message: "Carrinho não encontrado" };
 
- if (!existingItem) return { status: "error" as const, message: "Item não está no carrinho" };
+    let existingItem: { id: string; cart_id: string; variant_id: string; qty: number } | null = null;
+    if (itemId) {
+      const { data: it } = await supabase
+        .from("cart_items")
+        .select("id, cart_id, variant_id, qty")
+        .eq("id", itemId)
+        .eq("cart_id", cart.id)
+        .maybeSingle();
+      existingItem = it;
+    }
 
- const newTotalQty = existingItem.qty + delta;
- if (newTotalQty <= 0) {
- // Just remove
- await supabase.from("cart_items").delete().eq("id", existingItem.id);
- return { status: "success" };
- }
+    if (!existingItem && variantId) {
+      const { data: it } = await supabase
+        .from("cart_items")
+        .select("id, cart_id, variant_id, qty")
+        .eq("cart_id", cart.id)
+        .eq("variant_id", variantId)
+        .maybeSingle();
+      existingItem = it;
+    }
 
- // We no longer reserve stock during cart operations.
- // Atomic validation happens at checkout.
- await supabase.from("cart_items").update({ qty: newTotalQty }).eq("id", existingItem.id);
+    if (!existingItem) return { status: "error" as const, message: "Item não está no carrinho" };
 
- return { status: "success" };
- });
+    const newTotalQty = existingItem.qty + delta;
+    if (newTotalQty <= 0) {
+      // Just remove
+      await supabase.from("cart_items").delete().eq("id", existingItem.id);
+      return { status: "success" };
+    }
+
+    // Strict Stock Validation on increment
+    if (delta > 0) {
+      const { data: variantRecord } = await supabase
+        .from("product_variants")
+        .select("stock_on_hand, allow_backorder, status")
+        .eq("id", existingItem.variant_id)
+        .maybeSingle();
+
+      if (!variantRecord || variantRecord.status !== "active") {
+        return { status: "error" as const, message: "Esta opção está esgotada ou indisponível." };
+      }
+
+      const availableStock = variantRecord.stock_on_hand ?? 0;
+      const allowBackorder = Boolean(variantRecord.allow_backorder);
+
+      const { data: siblingItems } = await supabase
+        .from("cart_items")
+        .select("id, qty")
+        .eq("cart_id", cart.id)
+        .eq("variant_id", existingItem.variant_id);
+
+      const currentTotalVariantQty = (siblingItems || []).reduce((sum: number, it: any) => sum + (it.qty || 0), 0);
+      const newTotalVariantQty = currentTotalVariantQty + delta;
+
+      if (newTotalVariantQty > availableStock && !allowBackorder) {
+        return {
+          status: "error" as const,
+          message: `Estoque insuficiente. Apenas ${availableStock} unidade${availableStock === 1 ? "" : "s"} disponível${availableStock === 1 ? "" : "is"}.`,
+        };
+      }
+    }
+
+    await supabase.from("cart_items").update({ qty: newTotalQty }).eq("id", existingItem.id);
+
+    return { status: "success" };
+  });
 
 const UpdateCartItemOptionsSchema = z.object({
- itemId: z.string().uuid(),
- variantId: z.string().uuid().optional(),
- options: z.record(z.union([z.string(), z.array(z.string())])).optional(),
- quantity: z.number().int().min(1).optional(),
+  itemId: z.string().uuid(),
+  variantId: z.string().uuid().optional(),
+  options: z.record(z.union([z.string(), z.array(z.string())])).optional(),
+  quantity: z.number().int().min(1).optional(),
 });
 
 export const updateCartItemOptions = createServerFn({ method: "POST" })
   .validator(withDataPayload(UpdateCartItemOptionsSchema))
- .handler(async (params) => {
- const { itemId, variantId, options, quantity } = params.data;
- const supabase = getServerClient();
- const identity = await getCurrentIdentity();
+  .handler(async (params) => {
+    const { itemId, variantId, options, quantity } = params.data;
+    const supabase = getServerClient();
+    const identity = await getCurrentIdentity();
 
- // 1. Get cart item
- const { data: item } = await supabase
- .from("cart_items")
- .select("id, cart_id, variant_id, qty")
- .eq("id", itemId)
- .single();
+    // 1. Get cart item
+    const { data: item } = await supabase
+      .from("cart_items")
+      .select("id, cart_id, variant_id, qty, selected_options")
+      .eq("id", itemId)
+      .single();
 
- if (!item) return { status: "error" as const, message: "Item do carrinho não encontrado." };
+    if (!item) return { status: "error" as const, message: "Item do carrinho não encontrado." };
 
- const updatePayload: Record<string, any> = {};
- if (variantId) updatePayload.variant_id = variantId;
- if (options !== undefined) updatePayload.selected_options = options;
- if (quantity !== undefined) updatePayload.qty = quantity;
+    const targetVariantId = variantId || item.variant_id;
+    const targetQty = quantity !== undefined ? quantity : item.qty;
+    const targetOptions = options !== undefined ? options : (item.selected_options || {});
 
- if (variantId && variantId !== item.variant_id) {
- const { data: variantRecord } = await supabase
- .from("product_variants")
- .select("price_override_cents, products(price_cents)")
- .eq("id", variantId)
- .single();
- const priceSnapshot =
- variantRecord?.price_override_cents ??
- (variantRecord?.products as any)?.price_cents ??
- 0;
- updatePayload.price_snapshot_cents = priceSnapshot;
- }
+    // 2. Validate Variant & Stock
+    const { data: variantRecord } = await supabase
+      .from("product_variants")
+      .select("id, price_override_cents, stock_on_hand, allow_backorder, status, products(price_cents)")
+      .eq("id", targetVariantId)
+      .maybeSingle();
 
- try {
- const { error: updateError } = await supabase
- .from("cart_items")
- .update(updatePayload)
- .eq("id", itemId);
+    if (!variantRecord || variantRecord.status !== "active") {
+      return { status: "error" as const, message: "Opção do produto indisponível ou esgotada." };
+    }
 
- if (updateError) throw updateError;
- } catch (e: unknown) {
- if (e instanceof SupabaseUnconfiguredError) throw e;
- logSystemError({ route: "cart.functions.updateCartItemOptions", error: e, payload: params.data });
- console.error("[cart.functions] Erro ao atualizar opções do item:", e);
- return { status: "error" as const, message: "Falha ao atualizar opções do item." };
- }
+    const availableStock = variantRecord.stock_on_hand ?? 0;
+    const allowBackorder = Boolean(variantRecord.allow_backorder);
 
- const [updatedCart, updatedGlobalCarts] = await Promise.all([
- fetchCartDTO(identity),
- fetchAllGlobalCarts(identity),
- ]);
+    if (targetQty > availableStock && !allowBackorder) {
+      return {
+        status: "error" as const,
+        message: `Estoque insuficiente. Apenas ${availableStock} unidade${availableStock === 1 ? "" : "s"} disponível${availableStock === 1 ? "" : "is"}.`,
+      };
+    }
 
- return {
- status: "success",
- cart: updatedCart,
- globalCarts: updatedGlobalCarts,
- };
- });
+    // 3. Recalculate price snapshot
+    const basePrice =
+      variantRecord.price_override_cents ??
+      (variantRecord.products as any)?.price_cents ??
+      0;
+
+    let optionsTotalCents = 0;
+    const selectedOptionIds: string[] = [];
+    if (targetOptions) {
+      Object.values(targetOptions).forEach((val) => {
+        if (Array.isArray(val)) val.forEach((v) => selectedOptionIds.push(v));
+        else if (typeof val === "string" && val) selectedOptionIds.push(val);
+      });
+
+      if (selectedOptionIds.length > 0) {
+        const [optRes, modRes] = await Promise.all([
+          supabase
+            .from("option_values")
+            .select("price_modifier_cents")
+            .in("id", selectedOptionIds),
+          supabase
+            .from("product_modifiers")
+            .select("price_delta_cents")
+            .in("id", selectedOptionIds),
+        ]);
+
+        if (optRes.data) {
+          optionsTotalCents += optRes.data.reduce((acc: number, row: any) => acc + (row.price_modifier_cents || 0), 0);
+        }
+        if (modRes.data) {
+          optionsTotalCents += modRes.data.reduce((acc: number, row: any) => acc + (row.price_delta_cents || 0), 0);
+        }
+      }
+    }
+
+    const priceSnapshot = basePrice + optionsTotalCents;
+
+    const updatePayload: Record<string, any> = {
+      variant_id: targetVariantId,
+      selected_options: targetOptions,
+      qty: targetQty,
+      price_snapshot_cents: priceSnapshot,
+    };
+
+    try {
+      const { error: updateError } = await supabase
+        .from("cart_items")
+        .update(updatePayload)
+        .eq("id", itemId);
+
+      if (updateError) throw updateError;
+    } catch (e: unknown) {
+      if (e instanceof SupabaseUnconfiguredError) throw e;
+      logSystemError({ route: "cart.functions.updateCartItemOptions", error: e, payload: params.data });
+      console.error("[cart.functions] Erro ao atualizar opções do item:", e);
+      return { status: "error" as const, message: "Falha ao atualizar opções do item." };
+    }
+
+    const [updatedCart, updatedGlobalCarts] = await Promise.all([
+      fetchCartDTO(identity),
+      fetchAllGlobalCarts(identity),
+    ]);
+
+    return {
+      status: "success",
+      cart: updatedCart,
+      globalCarts: updatedGlobalCarts,
+    };
+  });
 
 export const applyCouponToCart = createServerFn({ method: "POST" })
   .validator(withDataPayload(z.object({ code: z.string().toUpperCase() })))

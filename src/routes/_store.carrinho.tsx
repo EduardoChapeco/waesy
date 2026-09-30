@@ -43,17 +43,21 @@ function StoreCartPage() {
  }
  };
 
- const handleUpdateQty = async (variantId: string, delta: number) => {
- try {
- await updateCartItemQty({ data: { variantId, delta } });
- router.invalidate();
- } catch (e: unknown) {
- toast.error(
- (e instanceof Error ? e.message : String(e)) ||
- "Estoque insuficiente ou erro de validação.",
- );
- }
- };
+  const handleUpdateQty = async (variantId: string, delta: number, itemId?: string) => {
+    try {
+      const res = await updateCartItemQty({ data: { variantId, delta, itemId } });
+      if (res && (res as any).status === "error") {
+        toast.error((res as any).message || "Estoque insuficiente ou erro de validação.");
+      } else {
+        router.invalidate();
+      }
+    } catch (e: unknown) {
+      toast.error(
+        (e instanceof Error ? e.message : String(e)) ||
+          "Estoque insuficiente ou erro de validação.",
+      );
+    }
+  };
 
  const selectedCart = carts?.find((c: any) => c.storeId === selectedStoreId);
 
@@ -194,9 +198,9 @@ function StoreCartPage() {
                           <div className="inline-flex items-center rounded-xl border border-border/80 bg-background overflow-hidden">
                             <button
                               type="button"
-                              className="size-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
+                              className="size-11 min-w-11 min-h-11 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 cursor-pointer"
                               aria-label="Diminuir quantidade"
-                              onClick={() => handleUpdateQty(item.variantId, -1)}
+                              onClick={() => handleUpdateQty(item.variantId, -1, item.id)}
                             >
                               <Minus className="size-4" />
                             </button>
@@ -205,9 +209,9 @@ function StoreCartPage() {
                             </span>
                             <button
                               type="button"
-                              className="size-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer"
+                              className="size-11 min-w-11 min-h-11 flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                               aria-label="Aumentar quantidade"
-                              onClick={() => handleUpdateQty(item.variantId, 1)}
+                              onClick={() => handleUpdateQty(item.variantId, 1, item.id)}
                             >
                               <Plus className="size-4" />
                             </button>
@@ -215,7 +219,7 @@ function StoreCartPage() {
 
                           <button
                             type="button"
-                            className="h-11 px-2 text-xs text-destructive/80 hover:text-destructive transition-colors cursor-pointer font-medium select-none"
+                            className="h-11 px-2 text-xs text-destructive/80 hover:text-destructive transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer font-medium select-none"
                             onClick={() => handleRemove(item.id)}
                           >
                             Remover

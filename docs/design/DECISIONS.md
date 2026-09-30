@@ -94,4 +94,9 @@
 - **Fundamentação:** AGENTS.md B.4, B.8, B.9, B.11 e diretrizes do Silent Design / Apple HIG.
 - **Consequências:** 115/115 suítes de testes passando (730/730 testes verdes), compilação do Vite com código de saída 0 (27.5s), zero rotas de workspace não registradas e conformidade total com o piso de design e acessibilidade.
 
-
+## DEC-013: Canonical Cart Architecture, Options Preservation, Multi-Store Merging & Stock Enforcement
+- **Data:** 2026-09-30
+- **Contexto:** Auditoria e consolidação do fluxo canônico de Carrinho (CARRINHO / Fase 2 do Roadmap). Detecção de componente órfão duplicado (slide-out-cart.tsx), ausência de validação de estoque em incrementos de quantidade (updateCartItemQty e updateCartItemOptions), perda de selected_options e colisão de chave única em merge de convidados (merge_guest_cart RPC anterior), e recálculo dinâmico de cupons e adicionais de preço.
+- **Decisão:** Excluído o componente órfão slide-out-cart.tsx, unificando a experiência no canônico CartSheet (cart-sheet.tsx). Implementada validação estrita de estoque no backend (stock_on_hand, allow_backorder, pv.status = 'active') em updateCartItemQty e updateCartItemOptions com erros de domínio descritivos e deleção limpa quando qty <= 0. Criada a migração 20261211000000_cart_merge_options_aware.sql para suportar mesclagem multi-loja e preservação de selected_options no conflito (cart_id, variant_id, COALESCE(selected_options, '{}'::jsonb)), com fallback relacional resiliente em cart-helpers.ts. Adicionado campo compareAtCents em CartItemDTO.
+- **Fundamentação:** AGENTS.md B.1, B.4, B.8, B.9, B.11 e Protocolo de Autoridade Única Canônica por Responsabilidade.
+- **Consequências:** Eliminação de furos de estoque em tempo real pelo carrinho, integridade total de adicionais e opções selecionadas durante o login, 116/116 suítes de testes passando (734/734 testes verdes) e build de produção aprovado com código 0.

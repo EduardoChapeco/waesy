@@ -95,6 +95,7 @@ export interface CartItemDTO {
  variantAttributes: Record<string, string>;
  coverUrl?: string | null;
  isOutOfStock?: boolean;
+  compareAtCents?: number | null;
 }
 
 export interface CrossSellItemDTO {
