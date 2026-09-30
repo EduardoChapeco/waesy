@@ -102,7 +102,8 @@ const CAIXA_TOUR_SLIDES: TourSlide[] = [
 
 function CashRegisterManagerPage() {
   const [isTourOpen, setIsTourOpen] = useState(false);
- const { register, history } = ((Route.useLoaderData?.() as any) || {});
+  const loaderData = ((Route.useLoaderData?.() as any) || {});
+  const { register, history } = loaderData;
  const router = useRouter();
 
  // Channel filter state

@@ -913,7 +913,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
 		{ name: "badge", label: "Selo / Badge de Destaque", type: "text", placeholder: "Ex: LANÇAMENTO 2027" },
 		{ name: "title", label: "Título Principal", type: "text", placeholder: "Ex: Nova Coleção de Inverno" },
 		{ name: "subtitle", label: "Subtítulo de Apoio", type: "text", placeholder: "Ex: Elegância, design contemporâneo e matérias-primas nobres." },
-		{ name: "description", label: "Texto Narrativo (Suporta Markdown)", type: "richtext" },
+		{ name: "description", label: "Texto Narrativo (Suporta Markdown)", type: "textarea" },
 		{ name: "media_url", label: "Mídia (Upload Local de Imagem, GIF ou Vídeo MP4/WebM)", type: "image" },
 		{
 		  name: "media_position",
@@ -987,7 +987,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
 			{ label: "Clássico 4:3", value: "4:3" },
 		  ],
 		},
-		{ name: "description", label: "Texto Descritivo (Abaixo do Vídeo)", type: "richtext" },
+		{ name: "description", label: "Texto Descritivo (Abaixo do Vídeo)", type: "textarea" },
 		{ name: "auto_play", label: "Autoplay Silencioso", type: "boolean" },
 		{ name: "loop", label: "Repetição Contínua (Loop)", type: "boolean" },
 		{ name: "button_text", label: "Botão de Ação (Opcional)", type: "text", placeholder: "Ex: Saiba Mais" },
@@ -1033,7 +1033,7 @@ export const builderRegistry: Record<string, BlockManifest> = {
 		{ name: "badge", label: "Selo / Eyebrow", type: "text", placeholder: "Ex: MANIFESTO" },
 		{ name: "title", label: "Título do Artigo", type: "text", placeholder: "Ex: Construindo o Futuro do Comércio" },
 		{ name: "subtitle", label: "Subtítulo Editorial", type: "text", placeholder: "Ex: Por que acreditamos no poder das marcas locais." },
-		{ name: "content", label: "Texto Narrativo com Markdown", type: "richtext" },
+		{ name: "content", label: "Texto Narrativo com Markdown", type: "textarea" },
 		{
 		  name: "align",
 		  label: "Alinhamento do Texto",

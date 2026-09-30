@@ -189,7 +189,7 @@ function CustomerInstallmentsPage() {
                           variant="ghost"
                           className="h-8 text-xs font-semibold px-2 text-primary"
                         >
-                          <Link to="/_store/conta/pedidos" search={{ orderId: order.id } as any}>
+                          <Link to="/conta/pedidos" search={{ orderId: order.id } as any}>
                             Ver Detalhes
                             <ArrowRight className="size-3.5 ml-1" />
                           </Link>

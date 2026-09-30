@@ -49,7 +49,7 @@ export const getStoreAiQuotaStatus = createServerFn({ method: "GET" })
     const { count, error } = await supabase
       .from("user_ai_usage_limits")
       .select("*", { count: "exact", head: true })
-      .eq("store_id", data.storeId)
+      .eq("store_id", targetStoreId)
       .gte("created_at", startOfMonth);
 
     const monthlyUsed = count || 0;
@@ -72,7 +72,7 @@ export const getStoreAiQuotaStatus = createServerFn({ method: "GET" })
     }
 
     return {
-      storeId: data.storeId,
+      storeId: targetStoreId,
       planTier,
       monthlyLimit,
       monthlyUsed,

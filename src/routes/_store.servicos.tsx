@@ -1,3 +1,4 @@
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { resolveActiveCity } from "@/lib/city-helper";
 import { Tag } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";

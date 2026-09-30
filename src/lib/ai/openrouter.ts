@@ -70,7 +70,7 @@ export async function callOpenRouter(
   }
 
   const apiKey = poolKey?.rawKey
-    || (typeof process !== "undefined" ? process.env?.OPENROUTER_API_KEY || process.env?.VITE_OPENROUTER_API_KEY : undefined);
+    || (typeof process !== "undefined" ? process.env?.OPENROUTER_API_KEY : undefined);
 
   if (poolKey) {
     keyId = poolKey.id;

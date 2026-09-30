@@ -281,9 +281,7 @@ function ConfigParceirosPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        if (confirm(`Deseja revogar o acesso contábil de ${acc.accountant_email}?`)) {
-                          revokeMutation.mutate(acc.id);
-                        }
+                        revokeMutation.mutate(acc.id);
                       }}
                       className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-xl text-xs gap-1.5 h-8 px-2.5"
                     >

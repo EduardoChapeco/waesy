@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Briefcase, Star, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck, Linkedin, ArrowRight, Loader2, FileJson, Check } from 'lucide-react';
+import { Briefcase, Star, Search, GraduationCap, Award, Layers, HeartHandshake, Languages as LanguagesIcon, Plus, Trash2, Edit3, ExternalLink, Building2, CheckCircle2, Upload, Calendar, DollarSign, MapPin, FileCheck, Globe, Tag, X, Target, ShieldCheck, UserCheck, Linkedin, ArrowRight, Loader2, FileJson, Check } from 'lucide-react';
 import { ProfessionSearchDialog } from "@/components/admin/professions/profession-search-dialog";
 import { ExperienceMediaCarousel } from "@/components/profile/experience-media-carousel";
 import { MediaUploader } from "@/components/ui/media-uploader";

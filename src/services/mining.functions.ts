@@ -3544,7 +3544,7 @@ export const harvestDataJudMiningFn = createServerFn({ method: "POST" })
     const result = await harvestAndPersistDataJudProcess({
       processNumber: data.process_number,
       storeId: data.store_id,
-      profileId: identity?.id,
+      profileId: identity?.id || undefined,
     });
     if (!result.success) {
       throw new Error(result.error || "Falha ao minerar processo no DataJud");
@@ -3571,7 +3571,7 @@ export const harvestPlacesBatchFn = createServerFn({ method: "POST" })
       city: data.city,
       state: data.state,
       storeId: data.store_id,
-      authorProfileId: identity?.id,
+      authorProfileId: identity?.id || undefined,
     });
     if (!result.success) {
       throw new Error(result.error || "Falha ao minerar estabelecimentos locais");

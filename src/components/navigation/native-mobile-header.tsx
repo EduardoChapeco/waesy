@@ -10,8 +10,10 @@ export interface NativeMobileHeaderProps {
   showBack?: boolean;
   onBack?: () => void;
   fallbackHref?: string;
+  backTo?: string;
   leftSlot?: React.ReactNode;
   rightActions?: React.ReactNode;
+  rightAction?: React.ReactNode;
   badge?: React.ReactNode;
   bottomSlot?: React.ReactNode;
   transparent?: boolean;
@@ -19,11 +21,9 @@ export interface NativeMobileHeaderProps {
   centerTitle?: boolean;
   mobileOnly?: boolean;
   className?: string;
-  /** Busca contextual embutida no cabeçalho (Padrão Mercado Livre / Apple HIG) */
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
-  /** Gatilho do ML-Filter Modal (Ícone de Funil com contador de filtros ativos) */
   onFilterClick?: () => void;
   activeFiltersCount?: number;
 }

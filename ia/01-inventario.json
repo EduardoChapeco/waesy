@@ -1,0 +1,122 @@
+[
+  {
+    "modulo": "AI Router ServerFn",
+    "arquivo_linha": "src/services/ai.functions.ts:10",
+    "finalidade": "Geração de texto geral para módulos internos e UI",
+    "provedor": "gemini | openrouter | openai | anthropic | groq",
+    "modelo": "Dinâmico pelo pool/preferência",
+    "chave": "secret_vault ou api_key_pools",
+    "lado": "servidor",
+    "custo_estimado": "$0.0005 - $0.005",
+    "tratamento_erro": "try/catch com re-throw e registro em console",
+    "observabilidade": "Token wallet decrementado na tabela stores, sem telemetria granular por chamada de latência/fallback"
+  },
+  {
+    "modulo": "OpenRouter Client Engine",
+    "arquivo_linha": "src/lib/ai/openrouter.ts:52",
+    "finalidade": "Chamada a modelos OpenRouter com cascata",
+    "provedor": "openrouter",
+    "modelo": "meta-llama/llama-3.1-70b-instruct:free, google/gemma-2-9b-it:free",
+    "chave": "OPENROUTER_API_KEY ou VITE_OPENROUTER_API_KEY (alerta de vazamento de chave de cliente)",
+    "lado": "servidor / híbrido",
+    "custo_estimado": "$0.0000 - $0.002",
+    "tratamento_erro": "markKeyError no pool",
+    "observabilidade": "Console log; sem telemetria centralizada em banco"
+  },
+  {
+    "modulo": "API Orchestrator Unified Call",
+    "arquivo_linha": "src/services/api-orchestrator.functions.ts:561",
+    "finalidade": "Execução unificada de chamadas LLM e Visão Multimodal com cascata e BYOK",
+    "provedor": "groq | gemini | openrouter | openai | anthropic",
+    "modelo": "llama-3.3-70b-versatile, gemini-1.5-flash, gpt-4o-mini",
+    "chave": "api_key_pools, secret_vault, tenant_ai_providers",
+    "lado": "servidor",
+    "custo_estimado": "$0.0002 - $0.004",
+    "tratamento_erro": "Iteração pela cascata de provedores capturando erros em array",
+    "observabilidade": "Atualiza last_error_message e last_used_at na tabela api_key_pools"
+  },
+  {
+    "modulo": "AI SDR Agent",
+    "arquivo_linha": "src/services/ai-sdr.functions.ts:45",
+    "finalidade": "Atendimento conversacional inteligente, qualificação de leads e automação de vendas",
+    "provedor": "openrouter / gemini",
+    "modelo": "gemini-1.5-flash / llama-3.1-70b",
+    "chave": "api_key_pools",
+    "lado": "servidor",
+    "custo_estimado": "$0.001 - $0.003",
+    "tratamento_erro": "Fallback para mensagem humana padrão",
+    "observabilidade": "Histórico salvo na tabela leads/conversations"
+  },
+  {
+    "modulo": "Travel AI Extractor & Operator OCR",
+    "arquivo_linha": "src/services/travel-ai-extractor.functions.ts:32",
+    "finalidade": "Extração de vouchers, cotações e faturas de viagens",
+    "provedor": "gemini (visão multimodal)",
+    "modelo": "gemini-1.5-flash",
+    "chave": "api_key_pools (gemini)",
+    "lado": "servidor",
+    "custo_estimado": "$0.0015",
+    "tratamento_erro": "Retorna erro formatado",
+    "observabilidade": "Log básico"
+  },
+  {
+    "modulo": "Multimodal OCR & Document Extraction",
+    "arquivo_linha": "src/services/multimodal-ocr.functions.ts:25",
+    "finalidade": "OCR de notas fiscais, recibos, contratos e documentos empresariais",
+    "provedor": "gemini / openai",
+    "modelo": "gemini-1.5-pro / gpt-4o-mini",
+    "chave": "api_key_pools",
+    "lado": "servidor",
+    "custo_estimado": "$0.002",
+    "tratamento_erro": "Captura de erro retornando extração parcial",
+    "observabilidade": "Sem registro de telemetria de latência por percentil"
+  },
+  {
+    "modulo": "AI Builder Generator",
+    "arquivo_linha": "src/services/ai-builder-generator.ts:40",
+    "finalidade": "Geração e customização de blocos para o Site Builder",
+    "provedor": "openrouter / gemini",
+    "modelo": "llama-3.3-70b / gemini-1.5-pro",
+    "chave": "api_key_pools",
+    "lado": "servidor",
+    "custo_estimado": "$0.003",
+    "tratamento_erro": "Fallback para templates estáticos pré-renderizados",
+    "observabilidade": "Sem rastreamento de custos por loja"
+  },
+  {
+    "modulo": "SimLab & 7 Sins Persona Focus Group",
+    "arquivo_linha": "src/services/seven-sins-simlab.functions.ts:60",
+    "finalidade": "Simulação de personas e validação de ofertas/copy com múltiplos perfis de agentes",
+    "provedor": "groq / openrouter",
+    "modelo": "llama-3.1-8b-instant / llama-3.3-70b",
+    "chave": "api_key_pools",
+    "lado": "servidor",
+    "custo_estimado": "$0.001 por persona",
+    "tratamento_erro": "Continua simulação com personas restantes",
+    "observabilidade": "Resultados gravados em tabela simlab_runs"
+  },
+  {
+    "modulo": "Editorial Mining Squad",
+    "arquivo_linha": "src/services/mining/editorial-squad.ts:35",
+    "finalidade": "Curadoria automática de conteúdo e artigos a partir de fontes RSS/Web",
+    "provedor": "gemini / groq",
+    "modelo": "gemini-1.5-flash",
+    "chave": "api_key_pools",
+    "lado": "servidor",
+    "custo_estimado": "$0.0008",
+    "tratamento_erro": "Status de post marcado como 'falha_ia'",
+    "observabilidade": "Salvo no banco com status"
+  },
+  {
+    "modulo": "Studio Carousel Editor & Copywriter",
+    "arquivo_linha": "src/services/studio.functions.ts:80",
+    "finalidade": "Geração de copies para carrosséis de marketing, posts e roteiros",
+    "provedor": "openrouter / gemini",
+    "modelo": "llama-3.3-70b",
+    "chave": "api_key_pools",
+    "lado": "servidor",
+    "custo_estimado": "$0.001",
+    "tratamento_erro": "Alerta ao usuário na interface",
+    "observabilidade": "Sem telemetria de custo gravada"
+  }
+]

@@ -327,7 +327,7 @@ function WorkspacePatrocinadoresPage() {
                       entityName="Patrocinador"
                       onEdit={() => handleOpenEdit(sp)}
                       onDelete={() => handleDelete(sp.id)}
-                      deleteConfirmTitle={`Excluir patrocinador "${sp.sponsor_name}"?`}
+                      deleteConfirmTitle={`Excluir patrocinador "${sp.name}"?`}
                       deleteConfirmDescription="Esta ação removerá permanentemente o patrocinador, os cliques e os relatórios de conversão vinculados."
                       customActions={[
                         ...(sp.magic_token

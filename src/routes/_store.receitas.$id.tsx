@@ -354,7 +354,7 @@ function RecipeDetailPage() {
             </div>
 
             <div className="rounded-xl border border-border/50 bg-card divide-y divide-border/30 overflow-hidden">
-              {recipe.ingredients.map((ing, idx) => {
+              {recipe.ingredients.map((ing: any, idx: number) => {
                 const isChecked = !!checkedIngredients[idx];
                 return (
                   <button
@@ -416,7 +416,7 @@ function RecipeDetailPage() {
             </div>
 
             <div className="space-y-3">
-              {recipe.instructions.map((step, idx) => {
+              {recipe.instructions.map((step: any, idx: number) => {
                 const isStepCompleted = !!completedSteps[idx];
                 return (
                   <div

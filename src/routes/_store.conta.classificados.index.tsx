@@ -1125,4 +1125,4 @@ function ClassificadosIndex() {
   );
 }
 // Default export removed for TanStack Router code-splitting optimization
-export default Route.component;
+export default ClassificadosIndex;

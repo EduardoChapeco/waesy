@@ -804,12 +804,12 @@ export const upsertClassified = createServerFn({ method: "POST" })
       ? Number((rest as any).validity_days || rest.attributes?.validity_days)
       : 30) * 24 * 60 * 60 * 1000
   ).toISOString(),
- stock_limit: rest.stock_limit !== undefined && rest.stock_limit !== null
- ? Number(rest.stock_limit)
- : (rest.attributes?.stock_limit ? Number(rest.attributes.stock_limit) : null),
- offer_limit: rest.offer_limit !== undefined && rest.offer_limit !== null
- ? Number(rest.offer_limit)
- : (rest.attributes?.offer_limit ? Number(rest.attributes.offer_limit) : null),
+ stock_limit: (rest as any).stock_limit !== undefined && (rest as any).stock_limit !== null
+    ? Number((rest as any).stock_limit)
+    : (rest.attributes?.stock_limit ? Number(rest.attributes.stock_limit) : null),
+  offer_limit: (rest as any).offer_limit !== undefined && (rest as any).offer_limit !== null
+    ? Number((rest as any).offer_limit)
+    : (rest.attributes?.offer_limit ? Number(rest.attributes.offer_limit) : null),
  };
 
   let savedRecord: any = null;

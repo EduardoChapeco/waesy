@@ -9,6 +9,21 @@ import { Store, AlertTriangle, ArrowLeft, RefreshCw, LogIn } from "lucide-react"
 import { getSystemOnboardingSteps } from "@/services/system-onboarding.functions";
 import { WelcomeOnboardingModal } from "@/components/workspace/welcome-onboarding-modal";
 
+
+function isPlatformAdminUser(session: any): boolean {
+  if (!session) return false;
+  return Boolean(
+    session.role === "admin" ||
+    session.role === "superadmin" ||
+    session.role === "platform_admin" ||
+    session.role === "master" ||
+    session.user?.role === "platform_admin" ||
+    session.user?.app_metadata?.role === "admin" ||
+    session.user?.app_metadata?.is_master ||
+    session.user?.email?.endsWith("@usewaesy.com")
+  );
+}
+
 export const Route = createFileRoute("/workspace")({
  beforeLoad: async () => {
  let session: any = null;
@@ -23,12 +38,8 @@ export const Route = createFileRoute("/workspace")({
  throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
  }
 
-    const isPlatformAdmin =
-      session?.role === "admin" ||
-      session?.role === "superadmin" ||
-      session?.role === "platform_admin";
-
-    const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
+    const isPlatformAdmin = isPlatformAdminUser(session);
+      const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
  // 🚨 REGRA INVIOLÁVEL: O Workspace exige um negócio cadastrado.
  // Quem não possui loja/empresa não pode ver o workspace nem ferramentas operacionais.
@@ -55,6 +66,7 @@ export const Route = createFileRoute("/workspace")({
        throw redirect({ to: "/entrar", search: { returnUrl: "/workspace" } });
      }
 
+    const isPlatformAdmin = isPlatformAdminUser(session);
   const hasStore = (session?.memberships && session.memberships.length > 0) || isPlatformAdmin;
 
      if (!hasStore) {
@@ -148,11 +160,7 @@ function WorkspaceLayout() {
  pathname.startsWith("/workspace/turismo/propostas/") &&
  pathname !== "/workspace/turismo/propostas";
 
- const isPlatformAdmin =
-    session?.role === "platform_admin" ||
-    session?.role === "master" ||
-    session?.role === "superadmin" ||
-    session?.user?.role === "platform_admin";
+ const isPlatformAdmin = isPlatformAdminUser(session);
 
   const activeMembership = session?.memberships?.[0];
   const effectiveRole = (

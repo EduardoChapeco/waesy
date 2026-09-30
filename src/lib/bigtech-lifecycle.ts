@@ -34,8 +34,8 @@ import {
   type PathSafetyResult,
 } from './file-manager';
 import {
-  evaluateCoreWebVitals,
-  type CoreWebVitals,
+  evaluateany,
+  type any,
 } from './web-performance';
 
 export interface IntegratedFeatureProposal {
@@ -47,7 +47,7 @@ export interface IntegratedFeatureProposal {
   riceParameters: RiceScoreInput;
   earsSpecifications: EarsSpecInput[];
   targetPaths: string[];
-  performanceMetrics?: CoreWebVitals;
+  performanceMetrics?: any;
   hasAccessibleMarkup: boolean;
   hasDatabasePersistence: boolean;
 }
@@ -274,7 +274,7 @@ export function evaluateFeatureGovernanceGate(
   }
 
   if (proposal.performanceMetrics) {
-    const perfEval = evaluateCoreWebVitals(proposal.performanceMetrics);
+    const perfEval = evaluateany(proposal.performanceMetrics);
     p4Notes.push(`Core Web Vitals Rating: ${perfEval.overallRating} (Score: ${perfEval.score}/100).`);
     if (perfEval.overallRating === 'poor') {
       recommendations.push('[Persona 4 - Performance]: Otimizar LCP e INP antes de tráfego massivo.');

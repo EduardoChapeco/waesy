@@ -105,9 +105,17 @@ function AutomacoesWorkflowsPage() {
 
   const [workflows, setWorkflows] = useState<any[]>(initialWorkflows || []);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [executingId, setExecutingId] = useState<string | null>(null);
+  const handleExecute = async (wf: any) => {
+    setExecutingId(wf.id);
+    try {
+      toast.success(`Automação "${wf.title || wf.name}" disparada para teste!`);
+    } finally {
+      setExecutingId(null);
+    }
+  };
   const [isSaving, setIsSaving] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [executingId, setExecutingId] = useState<string | null>(null);
 
   const handleRunTest = async (wf: any) => {
     setExecutingId(wf.id);

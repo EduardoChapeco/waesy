@@ -49,6 +49,7 @@ const GROUP_AGENTIC_INTELLIGENCE: NavGroup = {
   section: "master",
   items: [
     { path: "/workspace/squads", label: "Squads", icon: Bot },
+    { path: "/workspace/skills", label: "Skills", icon: Sparkles },
     { path: "/workspace/mining", label: "Importações", icon: Database },
     { path: "/workspace/conteudo/receitas", label: "Receitas", icon: ChefHat },
     { path: "/workspace/simlab/focus-group", label: "SimLab", icon: Users },
@@ -523,7 +524,7 @@ const GROUP_FINANCE_CLEAN: NavGroup = {
     { path: "/workspace/financeiro/pagamentos", label: "Repasses", icon: DollarSign },
     { path: "/workspace/financeiro/contas-pagar", label: "Contas a Pagar", icon: Receipt },
     { path: "/workspace/financeiro/recebiveis", label: "Recebíveis", icon: Receipt },
-    { path: "/workspace/financeiro/faturas", label: "Planos", icon: Receipt },
+    { path: "/workspace/financeiro/faturas", label: "Faturas & Razão", icon: Receipt },
     { path: "/workspace/financeiro/comprovantes", label: "Comprovantes", icon: ShieldCheck },
     { path: "/workspace/financeiro/relatorios-canal", label: "DRE", icon: FileSpreadsheet },
     { path: "/workspace/financeiro/afiliados", label: "Afiliados", icon: Coins },
@@ -580,6 +581,7 @@ const GROUP_GOVERNANCE_AUDIT: NavGroup = {
   icon: ShieldCheck,
   section: "corporate",
   items: [
+    { path: "/workspace/configuracoes/conformidade", label: "Marketplace Oficial", icon: ShieldCheck },
     { path: "/workspace/moderacao", label: "Moderação", icon: ShieldAlert },
     { path: "/workspace/moderacao/kyc", label: "Auditoria KYC", icon: ShieldCheck },
     { path: "/workspace/qualidade", label: "Qualidade", icon: Award },
@@ -593,6 +595,8 @@ const GROUP_SETTINGS: NavGroup = {
   section: "corporate",
   items: [
     { path: "/workspace/configuracoes", label: "Dados da Loja", icon: Settings },
+    { path: "/workspace/configuracoes/conformidade", label: "Marketplace Oficial", icon: ShieldCheck },
+    { path: "/workspace/configuracoes/ai", label: "Cotas IA & BYOK", icon: Zap },
     { path: "/workspace/configuracoes/pwa", label: "Aplicativo PWA", icon: Smartphone },
     { path: "/workspace/configuracoes/privacidade-loja", label: "Privacidade", icon: Lock },
     { path: "/workspace/configuracoes/sessoes", label: "Auditoria", icon: ShieldCheck },

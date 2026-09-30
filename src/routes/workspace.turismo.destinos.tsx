@@ -157,10 +157,35 @@ export default function WorkspaceDestinationsPage() {
  setActiveTab("identificacao");
  };
 
- const handleOpenCreate = () => {
- resetForm();
- setIsSheetOpen(true);
- };
+   const handleOpenCreate = () => {
+    resetForm();
+    setIsSheetOpen(true);
+  };
+
+  const handleOpenEditor = (dest: any) => {
+    setEditingDestination(dest);
+    setName(dest.name || "");
+    setCity(dest.city || "");
+    setState(dest.state || "SC");
+    setCountry(dest.country || "Brasil");
+    setIataGateway(dest.iata_gateway || "");
+    setTimezone(dest.timezone || "America/Sao_Paulo (UTC-3)");
+    setClimateType(dest.climate_type || "Subtropical / Tropical");
+    setBestSeason(dest.best_season || "");
+    setCoverImageUrl(dest.cover_image_url || "");
+    setGalleryUrls(dest.gallery_urls || []);
+    setDescription(dest.description || "");
+    setHighlightsInput(dest.highlights ? (Array.isArray(dest.highlights) ? dest.highlights.join(", ") : dest.highlights) : "");
+    setGastronomyTip(dest.gastronomy_tip || "");
+    setTravelTip(dest.travel_tip || "");
+    setSelectedTags(dest.tags || []);
+    setSections(dest.sections || []);
+    setReviews(dest.reviews || []);
+    setSeoTitle(dest.seo_title || "");
+    setSeoDescription(dest.seo_description || "");
+    setActiveTab("identificacao");
+    setIsSheetOpen(true);
+  };
 
  // Carrega Preset Canônico Oficial de 1 Toque
  const handleApplyPreset = (canonical: CanonicalDestination) => {

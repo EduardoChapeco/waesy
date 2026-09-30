@@ -160,7 +160,7 @@ export function passiveCleanup() {
 
 export function extractClientIp(req?: Request | null): string {
  if (!req) return "unknown_ip";
- return getRealClientIP(req, "127.0.0.1");
+ return getRealClientIP(req);
 }
 
 // ---------------------------------------------------------------------------

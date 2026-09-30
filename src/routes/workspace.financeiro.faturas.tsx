@@ -51,7 +51,7 @@ function WorkspaceFaturasPage() {
     queryFn: () => getStoreBillingStatement(),
   });
 
-  const statement = ledgerStatementData?.statement;
+  const statement = ledgerStatementData;
 
   // Estado dos modais
   const [pixModalInvoice, setPixModalInvoice] = useState<StoreInvoiceDTO | null>(null);
@@ -534,11 +534,11 @@ function WorkspaceFaturasPage() {
                       {formatMoney(statement.summary.grandTotalCents)}
                     </span>
                     <Badge variant="outline" className="font-mono text-xs rounded-lg">
-                      Ciclo {statement.invoice.billing_cycle || "Atual"}
+                      Ciclo {statement.invoice?.billing_cycle || "Atual"}
                     </Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground pt-1">
-                    Status: {statement.invoice.status.toUpperCase()}
+                    Status: {statement.invoice?.status ? statement.invoice.status.toUpperCase() : "VIGENTE"}
                   </p>
                 </div>
               </div>
@@ -580,7 +580,7 @@ function WorkspaceFaturasPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      statement.items.map((item) => (
+                      statement.items.map((item: any) => (
                         <TableRow key={item.id} className="hover:bg-muted/30 transition-colors">
                           <TableCell className="font-mono text-xs text-muted-foreground">
                             {formatDate(item.created_at)}

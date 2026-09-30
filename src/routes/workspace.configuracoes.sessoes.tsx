@@ -96,8 +96,6 @@ function WorkspaceSessionsAndAuditPage() {
    * Revoga e desconecta um dispositivo registrado
    */
   const handleRevokeDevice = async (deviceId: string) => {
-    if (!confirm("Deseja realmente desconectar esta sessão / dispositivo?")) return;
-
     setActionLoadingId(deviceId);
     try {
       await revokeUserDevice({ data: { deviceId } });

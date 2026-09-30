@@ -7,6 +7,7 @@ import { getSalonTablesOverview, closePdvComanda, openTableComanda, requestTable
 import { getStoreSettings } from "@/services/store.functions";
 import { NicheOperationalGuard } from "@/components/workspace/niche-operational-guard";
 import { QuickWaiterOrderModal } from "@/components/pos/quick-waiter-order-modal";
+import { FloorPlanEditorSheet } from "@/components/reservations/floor-plan-editor-sheet";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime } from "@/lib/datetime";
 import { Button } from "@/components/ui/button";
@@ -183,7 +184,7 @@ function PdvComandasPage() {
  <NicheOperationalGuard
  targetNiche="gastronomy"
  toolTitle="Comandas de Salão"
- toolDescription="O controle de mesas físicas, consumo aberto e chamadas de garçom foi projetado especificamente para operações de bares, restaurantes e estabelecimentos gastronômicos."
+ toolDescription="Gestão de mesas, comandas abertas e fechamento de conta."
  store={store}
  >
       <div className="flex flex-col min-h-[calc(100dvh-4rem)] bg-background text-foreground pb-20 w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-0">

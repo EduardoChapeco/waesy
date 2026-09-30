@@ -44,11 +44,22 @@ export interface BillingInvoiceDTO {
 export interface BillingStatementDTO {
   storeId: string;
   storeName: string;
-  invoice?: BillingInvoiceDTO | null;
+  invoice?: (BillingInvoiceDTO & { billing_cycle?: string }) | null;
   lineItems: BillingLineItemDTO[];
+  items: (BillingLineItemDTO & { entry_type?: string; reference_id?: string; amount_cents?: number; created_at?: string })[];
+  summary: {
+    grandTotalCents: number;
+    orderMicrofeesTotalCents: number;
+    orderMicrofeesCount: number;
+    subscriptionsTotalCents: number;
+    extraUsageTotalCents: number;
+    isAuditBalanced: boolean;
+  };
   totalCents: number;
   totalMicrofeesCents: number;
   totalSubscriptionCents: number;
   totalExtraUsageCents: number;
   isAuditSumValid: boolean; // Confirmação matemática se a soma bate centavo por centavo
+  reconciled: boolean;
+  discrepancyCents: number;
 }

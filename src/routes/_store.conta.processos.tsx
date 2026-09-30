@@ -47,7 +47,7 @@ function UserLawsuitsPage() {
         },
       });
 
-      toast.success(res.message || "Processo sincronizado com sucesso!");
+      toast.success((res as any).message || (res as any).error || "Processo sincronizado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["jus_lawsuits_user"] });
       setIsTrackModalOpen(false);
       setCnjInput("");

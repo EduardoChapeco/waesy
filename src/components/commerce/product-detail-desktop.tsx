@@ -204,9 +204,8 @@ export function ProductDetailDesktop({
               </h1>
 
               <div className="pt-2">
-                <PriceDisplay
-                  priceCents={currentPriceCents || product.priceCents || 0}
-                  compareAtCents={selectedVariant?.compareAtPriceCents ?? product.compareAtCents}
+                <PriceDisplay amountCents={currentPriceCents || product.priceCents || 0}
+                  compareAtCents={selectedVariant?.compareAtCents ?? product.compareAtCents}
                   className="text-3xl font-extrabold text-foreground font-mono"
                 />
               </div>

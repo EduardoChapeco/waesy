@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Cpu, Key, ShieldCheck, Plus, Lock, Loader2, CheckCircle2, AlertTriangle, Layers, Bot, Globe, Eye, Sliders, Trash2, Sparkles, Zap, ArrowUpRight } from 'lucide-react';
 import { toast } from "sonner";
 
-import { saveSecretKey, listConfiguredSecrets, getAICapabilityBindings } from "@/services/secret-vault.functions";
+import { getAiTelemetryMetrics } from "@/services/ai-core-gateway.functions";
+import { saveSecretKey, listConfiguredSecrets, getAICapabilityBindings, deleteSecretKey } from "@/services/secret-vault.functions";
 import { getStoreAIQuotaStatus } from "@/services/ai-quotas-and-byok.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,14 +58,31 @@ function AIConfigurationPage() {
  queryKey: ["store-ai-quota-status"],
  queryFn: () => getStoreAIQuotaStatus(),
  });
- const quota = quotaData?.status;
+ const quota = quotaData;
+
+  const { data: telemetry } = useQuery({
+    queryKey: ["ai-telemetry-metrics"],
+    queryFn: () => getAiTelemetryMetrics(),
+  });
 
  const { data: bindings, isLoading: loadingBindings } = useQuery({
  queryKey: ["ai-capability-bindings"],
  queryFn: () => getAICapabilityBindings(),
  });
 
- const saveMutation = useMutation({
+ const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteSecretKey({ data: { id } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["secret-vault-keys"] });
+      queryClient.invalidateQueries({ queryKey: ["store-ai-quota-status"] });
+      toast.success("Chave removida do cofre.");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao remover chave.");
+    },
+  });
+
+  const saveMutation = useMutation({
  mutationFn: saveSecretKey,
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ["secret-vault-keys"] });
@@ -231,7 +249,7 @@ function AIConfigurationPage() {
  </div>
 
  <div className="flex items-center gap-2">
- {quota?.hasActiveBYOK ? (
+ {quota?.hasByokConfigured ? (
  <Badge variant="outline" className="text-emerald-600 border-emerald-500/30 text-xs font-mono gap-1">
  <Zap className="size-3" />
  BYOK Ativo ({quota.byokProvider})
@@ -252,16 +270,16 @@ function AIConfigurationPage() {
  <div className="space-y-2 pt-1">
  <div className="flex items-center justify-between text-xs font-mono">
  <span className="text-muted-foreground">
- Consumo no Ciclo: <strong className="text-foreground">{quota.usedThisMonth}</strong> / {quota.monthlyLimit} requisições
+ Consumo no Ciclo: <strong className="text-foreground">{quota.monthlyUsed}</strong> / {quota.monthlyLimit} requisições
  </span>
  <span className="text-muted-foreground">
- Restantes: <strong className="text-foreground">{quota.remaining}</strong>
+ Restantes: <strong className="text-foreground">{quota.remainingQuota}</strong>
  </span>
  </div>
  <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden">
  <div
  className="bg-primary h-full transition-all duration-300 rounded-full"
- style={{ width: `${Math.min(100, Math.round((quota.usedThisMonth / Math.max(1, quota.monthlyLimit)) * 100))}%` }}
+ style={{ width: `${Math.min(100, Math.round((quota.monthlyUsed / Math.max(1, quota.monthlyLimit)) * 100))}%` }}
  />
  </div>
  <p className="text-[11px] text-muted-foreground">
@@ -317,9 +335,7 @@ function AIConfigurationPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => {
-                        if (confirm("Deseja realmente remover esta chave do cofre?")) {
-                          deleteMutation.mutate(sec.id);
-                        }
+                        deleteMutation.mutate(sec.id);
                       }}
                       disabled={deleteMutation.isPending}
                       className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"

@@ -23,18 +23,20 @@ export interface MapMarkerItem {
 }
 
 export interface MapLibreCanvasProps {
- origin?: MapPoint | null;
- destination?: MapPoint | null;
- markers?: MapMarkerItem[];
- selectedMarkerId?: string | null;
- onMarkerClick?: (marker: MapMarkerItem) => void;
- center?: { lat: number; lng: number };
- zoom?: number;
- pinMode?: "origin" | "destination" | null;
- onMapClick?: (lat: number, lng: number) => void;
- provider?: "carto_voyager" | "carto_dark" | "osm_standard" | "google_maps" | "mapbox" | string | null;
- className?: string;
-}
+  origin?: MapLocationPoint | null;
+  destination?: MapLocationPoint | null;
+  markers?: MapMarkerItem[];
+  selectedMarkerId?: string | null;
+  onMarkerClick?: (marker: MapMarkerItem) => void;
+  center?: { lat: number; lng: number } | [number, number];
+  initialCenter?: { lat: number; lng: number } | [number, number];
+  zoom?: number;
+  initialZoom?: number;
+  pinMode?: "origin" | "destination" | null;
+  onMapClick?: (lat: number, lng: number) => void;
+  provider?: "carto_voyager" | "carto_dark" | "osm_standard" | "google_maps" | "mapbox" | string | null;
+  className?: string;
+};
 
 const DEFAULT_CENTER = { lat: -27.1004, lng: -52.6152 }; // Chapecó - SC
 
@@ -67,6 +69,11 @@ export function MapLibreCanvas({
  });
 
  const effectiveProvider = provider || mapConfig?.provider || "osm_standard";
+  const rawCenter = center || initialCenter || DEFAULT_CENTER;
+  const effectiveCenter: { lat: number; lng: number } = Array.isArray(rawCenter)
+    ? { lng: rawCenter[0], lat: rawCenter[1] }
+    : (rawCenter as { lat: number; lng: number });
+  const effectiveZoom = zoom ?? initialZoom ?? 13.5;
 
  // Initialize MapLibre dynamically only in the browser
  useEffect(() => {

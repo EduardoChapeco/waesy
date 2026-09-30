@@ -435,9 +435,7 @@ function AdminResourcesPage() {
                 variant="destructive"
                 size="sm"
                 onClick={() => {
-                  if (confirm("Deseja realmente remover este recurso da agenda?")) {
-                    deleteMutation.mutate(selectedId);
-                  }
+                  deleteMutation.mutate(selectedId);
                 }}
                 disabled={deleteMutation.isPending}
                 className="rounded-xl text-xs gap-1.5"

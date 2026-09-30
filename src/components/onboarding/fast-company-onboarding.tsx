@@ -11,15 +11,15 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { toast } from "sonner";
 
 const QUICK_CATEGORIES = [
-  { id: "turismo", label: "Viagens e Turismo" },
-  { id: "gastronomia", label: "Restaurantes e Gastronomia" },
-  { id: "servicos", label: "Prestação de Serviços" },
-  { id: "equipamentos", label: "Aluguel de Equipamentos e Eventos" },
-  { id: "hospedagem", label: "Pousadas e Hospedagem" },
-  { id: "comercio", label: "Comércio e Varejo" },
-  { id: "saude", label: "Saúde e Beleza" },
-  { id: "automotivo", label: "Veículos e Oficinas" },
-  { id: "outros", label: "Outros Negócios Locais" },
+  { id: "turismo", label: "Viagens e Turismo", emoji: "✈️" },
+  { id: "gastronomia", label: "Restaurantes e Gastronomia", emoji: "🍽️" },
+  { id: "servicos", label: "Prestação de Serviços", emoji: "🛠️" },
+  { id: "equipamentos", label: "Aluguel de Equipamentos e Eventos", emoji: "🎪" },
+  { id: "hospedagem", label: "Pousadas e Hospedagem", emoji: "🏨" },
+  { id: "comercio", label: "Comércio e Varejo", emoji: "🛍️" },
+  { id: "saude", label: "Saúde e Beleza", emoji: "💆" },
+  { id: "automotivo", label: "Veículos e Oficinas", emoji: "🚗" },
+  { id: "outros", label: "Outros Negócios Locais", emoji: "🏢" },
 ];
 
 export interface FastCompanyOnboardingProps {
@@ -313,7 +313,7 @@ export function FastCompanyOnboarding({ userId, onSuccess }: FastCompanyOnboardi
             )}
             <div className="absolute top-3 left-3">
               <Badge className="bg-black/70 backdrop-blur-md text-white border-white/20 text-[10px] font-bold gap-1">
-                <span>{selectedCat.emoji}</span>
+                <span>{(selectedCat as any)?.emoji || '🏢'}</span>
                 <span>{selectedCat.label}</span>
               </Badge>
             </div>

@@ -22,7 +22,7 @@ export const Route = createFileRoute("/admin-master/integracoes")({
  head: () => ({ meta: [{ title: "APIs, Pools e Orquestrador Global | Waesy Master" }] }),
  loader: async () => {
  try {
- const [integrations, pools, prompts] = await Promise.all([
+ const [integrations, pools, prompts, linkedInCreds] = await Promise.all([
  getPlatformApiIntegrations().catch(() => ({
  mapbox_token: "",
  stripe_public_key: "",

@@ -253,8 +253,19 @@ function WorkspaceHotelsPage() {
  resetForm();
  setIsSheetOpen(true);
  };
+  const [previewModalHotel, setPreviewModalHotel] = useState<HotelBankDTO | null>(null);
 
- const handleOpenEdit = (hotel: HotelBankDTO) => {
+  const handleDuplicate = (hotel: HotelBankDTO) => {
+    handleOpenEdit({
+      ...hotel,
+      id: "",
+      name: `${hotel.name} (Cópia)`,
+    });
+    setEditingHotel(null);
+    toast.info("Ajuste as informações e clique em Salvar para duplicar.");
+  };
+
+  const handleOpenEdit = (hotel: HotelBankDTO) => {
  setEditingHotel(hotel);
  setSheetTab("dados");
  setFormData({
@@ -618,7 +629,7 @@ function WorkspaceHotelsPage() {
  const fiveStarsCount = hotels.filter((h: HotelBankDTO) => (h.stars || 0) >= 5).length;
  const averageRating =
     totalHotels > 0
-      ? (hotels.reduce((acc: number, h: HotelBankDTO) => acc + (h.internal_rating || 0), 0) / (hotels.filter(h => (h.internal_rating || 0) > 0).length || 1)).toFixed(1)
+      ? (hotels.reduce((acc: number, h: HotelBankDTO) => acc + (h.internal_rating || 0), 0) / (hotels.filter((h: HotelBankDTO) => (h.internal_rating || 0) > 0).length || 1)).toFixed(1)
       : "5.0";
   const dashboardMetrics: MetricCardItem[] = useMemo(() => [
     {
@@ -937,7 +948,7 @@ function WorkspaceHotelsPage() {
 
  <CrudActionsMenu
                     entityName="Hotel"
-                    onEdit={() => handleOpenEditor(hotel)}
+                    onEdit={() => handleOpenEdit(hotel)}
                     onDuplicate={() => handleDuplicate(hotel)}
                     onView={() => setPreviewModalHotel(hotel)}
                     onDelete={async () => {
@@ -1059,7 +1070,7 @@ function WorkspaceHotelsPage() {
  </Button>
  <CrudActionsMenu
                     entityName="Hotel"
-                    onEdit={() => handleOpenEditor(hotel)}
+                    onEdit={() => handleOpenEdit(hotel)}
                     onDuplicate={() => handleDuplicate(hotel)}
                     onView={() => setPreviewModalHotel(hotel)}
                     onDelete={async () => {

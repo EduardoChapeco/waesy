@@ -109,7 +109,7 @@ export function getBrowserClient(): SupabaseClient {
       },
       cookieOptions: {
         maxAge: 60 * 60 * 24 * 365, // 1 ano — sessão PWA nunca expira por tempo
-        sameSite: "Lax",
+        sameSite: "lax",
         secure:
           typeof window !== "undefined" &&
           window.location.protocol === "https:",

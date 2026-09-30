@@ -1,3 +1,4 @@
+import { NativeMobileHeader } from "@/components/navigation/native-mobile-header";
 import { resolveActiveCity } from "@/lib/city-helper";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";

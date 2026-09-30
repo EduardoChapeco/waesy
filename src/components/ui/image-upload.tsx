@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { ImageCropperDialog } from "@/components/ui/image-cropper-dialog";
 import { extractMediaFromClipboard } from "@/lib/clipboard-media";
 
-export type AspectRatioPreset = "square" | "classified" | "widescreen" | "banner" | "cover" | "header" | "free";
+export type AspectRatioPreset = "square" | "classified" | "widescreen" | "banner" | "cover" | "header" | "free" | "portrait";
 
 const PRESET_ASPECT_RATIOS: Record<AspectRatioPreset, number | undefined> = {
  square: 1, // 1:1 (Produtos, Logos, Avatars)

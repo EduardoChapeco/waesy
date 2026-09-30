@@ -1642,7 +1642,7 @@ function WorkspaceComercialPage() {
                       <span className="text-xs font-bold text-foreground">Nichos de Maior Afinidade</span>
                       {customer360Data?.customer?.behavioral_profile?.top_niches?.length > 0 ? (
                         <div className="grid grid-cols-2 gap-2">
-                          {customer360Data.customer.behavioral_profile.top_niches.map((n: any, idx: number) => (
+                          {(customer360Data?.customer?.behavioral_profile?.top_niches || []).map((n: any, idx: number) => (
                             <div key={idx} className="p-2.5 rounded-xl border border-border/60 bg-card flex items-center justify-between text-xs">
                               <span className="capitalize font-medium">{n.niche || "Geral"}</span>
                               <span className="font-mono text-[11px] font-bold text-primary">{Number(n.total_score || 0).toFixed(0)} pts</span>

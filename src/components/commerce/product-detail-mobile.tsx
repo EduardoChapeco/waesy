@@ -215,9 +215,8 @@ export function ProductDetailMobile({
 
           {/* Preço em Destaque */}
           <div className="pt-1">
-            <PriceDisplay
-              priceCents={currentPriceCents || product.priceCents || 0}
-              compareAtCents={selectedVariant?.compareAtPriceCents ?? product.compareAtCents}
+            <PriceDisplay amountCents={currentPriceCents || product.priceCents || 0}
+              compareAtCents={selectedVariant?.compareAtCents ?? product.compareAtCents}
               className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono"
             />
           </div>

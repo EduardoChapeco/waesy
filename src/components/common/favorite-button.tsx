@@ -8,8 +8,10 @@ import { toggleFavorite, getFavoriteStatus } from "@/services/favorites.function
 import { cn } from "@/lib/utils";
 
 export interface FavoriteButtonProps {
-  entityType: "classified" | "post" | "event" | "product" | "service";
-  entityId: string;
+  entityType?: "classified" | "post" | "event" | "product" | "service";
+  itemType?: string;
+  resolvedId?: string;
+  itemId?: string;
   variant?: "icon" | "button" | "pill";
   className?: string;
   size?: "sm" | "default" | "lg" | "icon";
@@ -17,27 +19,29 @@ export interface FavoriteButtonProps {
   title?: string;
 }
 
-export function FavoriteButton({
-  entityType,
-  entityId,
-  variant = "icon",
-  className,
-  size,
-  showLabel = true,
-}: FavoriteButtonProps) {
+export function FavoriteButton(props: FavoriteButtonProps) {
+  const {
+    entityType,
+    resolvedId: incomingResolvedId,
+    variant = "icon",
+    className,
+    size,
+    showLabel = true,
+  } = props;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // Entidade canônica no backend: service é mapeado como product
-  const backendEntityType = entityType === "service" ? "product" : entityType;
+  const resolvedId = (incomingResolvedId || props.itemId || "") as string;
+  const resolvedType = (entityType || props.itemType || "product") as string;
+  const backendEntityType = resolvedType === "service" ? "product" : resolvedType;
 
   const { data: statusData, isLoading } = useQuery({
-    queryKey: ["is-favorited", backendEntityType, entityId],
+    queryKey: ["is-favorited", backendEntityType, resolvedId],
     queryFn: () =>
       getFavoriteStatus({
         data: {
-          entityType: backendEntityType as any,
-          entityId,
+          entityType: backendEntityType as any, entityId: resolvedId,
         },
       }),
     staleTime: 60000,
@@ -49,19 +53,18 @@ export function FavoriteButton({
     mutationFn: () =>
       toggleFavorite({
         data: {
-          entityType: backendEntityType as any,
-          entityId,
+          entityType: backendEntityType as any, entityId: resolvedId,
         },
       }),
     onMutate: async () => {
       // Cancel queries
-      await queryClient.cancelQueries({ queryKey: ["is-favorited", backendEntityType, entityId] });
+      await queryClient.cancelQueries({ queryKey: ["is-favorited", backendEntityType, resolvedId] });
 
       // Snapshot previous value
-      const previousValue = queryClient.getQueryData(["is-favorited", backendEntityType, entityId]);
+      const previousValue = queryClient.getQueryData(["is-favorited", backendEntityType, resolvedId]);
 
       // Optimistically update
-      queryClient.setQueryData(["is-favorited", backendEntityType, entityId], {
+      queryClient.setQueryData(["is-favorited", backendEntityType, resolvedId], {
         favorited: !isFavorited,
       });
 
@@ -71,7 +74,7 @@ export function FavoriteButton({
       // Revert optimistic update
       if (context?.previousValue) {
         queryClient.setQueryData(
-          ["is-favorited", backendEntityType, entityId],
+          ["is-favorited", backendEntityType, resolvedId],
           context.previousValue,
         );
       }
@@ -89,7 +92,7 @@ export function FavoriteButton({
       }
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["is-favorited", backendEntityType, entityId] });
+      queryClient.invalidateQueries({ queryKey: ["is-favorited", backendEntityType, resolvedId] });
       queryClient.invalidateQueries({ queryKey: ["user-favorites"] });
 
       if (result.favorited) {

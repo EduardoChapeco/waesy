@@ -28,16 +28,12 @@ export default function VerifySerialPage() {
  async function load() {
  try {
  setIsLoading(true);
- const rpcPromise = supabase.rpc('verify_travel_certificate', { _serial: serial });
- const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500));
- 
- let rows = null;
- try {
- const res = await Promise.race([rpcPromise, timeoutPromise]) as any;
- rows = res?.data;
- } catch {
- // Timeout or network fallback
- }
+ const res = await verifyTravelCertificate({ data: { serial } });
+      if (res?.success && res.data) {
+        setData(res.data);
+      } else {
+        setError(res?.error || "Certidão de autenticidade não localizada.");
+      }
 
     if (rows && rows.length > 0) {
       setData(rows[0]);

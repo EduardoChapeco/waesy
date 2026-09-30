@@ -25,6 +25,7 @@ export interface CrudActionsMenuProps {
   editUrl?: string;
   /** Ação de Visualização pública */
   onView?: () => void;
+  viewLabel?: string;
   viewUrl?: string;
   /** Ação de Duplicação */
   onDuplicate?: () => void;

@@ -32,7 +32,7 @@ function getFilesToScan() {
       const output = execSync('git status --porcelain', { encoding: 'utf8' });
       const changedFiles = output
         .split('\n')
-        .map(line => line.trim().slice(3).trim())
+        .map(line => line.slice(3).trim())
         .filter(f => f && (f.endsWith('.tsx') || f.endsWith('.ts') || f.endsWith('.jsx') || f.endsWith('.js') || f.endsWith('.css')))
         .filter(f => f.startsWith('src/'))
         .map(f => path.resolve(f))

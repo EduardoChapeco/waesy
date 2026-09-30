@@ -148,7 +148,7 @@ export default function WorkspaceGroupToursIndexPage() {
   return (
     <NicheOperationalGuard
       targetNiche="tourism"
-      toolTitle="Grupos e Excursões"
+      toolTitle="Excursões"
       toolDescription="Gestão de excursões rodoviárias, controle de lotação de assentos em mapa 2D, check-in de embarque e rooming list de passageiros."
       store={store}
     >

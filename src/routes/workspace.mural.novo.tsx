@@ -67,11 +67,11 @@ function WorkspaceNewMuralPostPage() {
 
       await createPost({
         data: {
-          content: content.trim(),
+          content_text: content.trim(),
           media_urls: mediaUrls,
-          post_type: postType,
+          post_type: postType as any,
           template_data: Object.keys(templateData).length > 0 ? templateData : undefined,
-        },
+        } as any,
       });
 
       toast.success("Publicação enviada para o Mural Comunitário!");

@@ -281,12 +281,12 @@ function ContractsDashboard() {
  {
  label: isCopied ? "Link Copiado!" : "Copiar Link de Assinatura",
  icon: isCopied ? Check : Copy,
- onClick: (e) => handleCopyLink(e, contract.id),
+ onClick: () => handleCopyLink(undefined as any, contract.id),
  },
  {
  label: "Enviar via WhatsApp",
  icon: WhatsappLogo as any,
- onClick: (e) => handleShareWhatsApp(e, contract),
+ onClick: () => handleShareWhatsApp(undefined as any, contract),
  },
  ...(contract.verification_code
  ? [

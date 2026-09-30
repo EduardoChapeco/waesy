@@ -267,7 +267,10 @@ function GiftCardsDashboardPage() {
                             id: "copy-link",
                             label: "Copiar Link de Resgate",
                             icon: Copy,
-                            onClick: () => handleCopyLink(card.code),
+                            onClick: () => {
+                              navigator.clipboard.writeText(card.code);
+                              toast.success(`Código ${card.code} copiado!`);
+                            },
                           },
                         ]}
                       />

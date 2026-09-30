@@ -67,7 +67,7 @@ export function AiCurationUpgradeModal({
 
           {/* Opção 2: Plano Premium */}
           <Link
-            to="/workspace/configuracoes/planos"
+            to="/workspace/configuracoes"
             onClick={onClose}
             className="flex items-start gap-3 p-3.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group"
           >

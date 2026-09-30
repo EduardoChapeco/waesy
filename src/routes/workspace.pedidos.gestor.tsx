@@ -1036,9 +1036,7 @@ function KDSPage() {
  className="flex-1 h-11 sm:h-9 rounded-xl text-xs font-bold text-rose-500 border-rose-500/20 hover:bg-rose-500/10 cursor-pointer"
  onClick={(e) => {
  e.stopPropagation();
- if (confirm("Deseja realmente recusar e cancelar este pedido?")) {
  handleStatusChange(e, order.id, "cancelled");
- }
  }}
  >
  Recusar

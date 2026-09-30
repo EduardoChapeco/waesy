@@ -510,7 +510,7 @@ export default function WorkspaceMarketingEncartesPage() {
                       <div className="flex items-center gap-1">
                         <CrudActionsMenu
                           entityName="Encarte"
-                          onEdit={() => handleOpenEditor(flyer)}
+                          onEdit={() => handleOpenEdit(flyer)}
                           viewUrl={`/encarte/${flyer.id}`}
                           onDelete={() => handleDeleteFlyer(flyer.id, flyer.title)}
                           deleteConfirmTitle={`Excluir encarte "${flyer.title}"?`}

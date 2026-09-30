@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 /**
  * admin-master.mining.tsx — Mining Hub & Content Factory
  * Pipeline completo: Fila → Artigos Minerados (Curadoria) → Publicação

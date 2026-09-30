@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { listMyStoreJobs, createStoreJob } from "@/services/jobs.functions";
 import { OccupationAutocomplete } from "@/components/profile/occupation-autocomplete";
 import { Linkedin, Lock, ExternalLink, RefreshCw, AlertCircle } from "lucide-react";

@@ -123,6 +123,8 @@ import { Route as WorkspaceQualidadeRouteImport } from './routes/workspace.quali
 import { Route as WorkspaceRelatoriosRouteImport } from './routes/workspace.relatorios'
 import { Route as WorkspaceReservasRouteImport } from './routes/workspace.reservas'
 import { Route as WorkspaceSimulacaoRouteImport } from './routes/workspace.simulacao'
+import { Route as WorkspaceSkillsRouteImport } from './routes/workspace.skills'
+import { Route as WorkspaceSquadsRouteImport } from './routes/workspace.squads'
 import { Route as WorkspaceSuporteRouteImport } from './routes/workspace.suporte'
 import { Route as WorkspaceTarefasRouteImport } from './routes/workspace.tarefas'
 import { Route as WorkspaceTokensRouteImport } from './routes/workspace.tokens'
@@ -958,6 +960,16 @@ const WorkspaceReservasRoute = WorkspaceReservasRouteImport.update({
 const WorkspaceSimulacaoRoute = WorkspaceSimulacaoRouteImport.update({
   id: '/simulacao',
   path: '/simulacao',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceSkillsRoute = WorkspaceSkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceSquadsRoute = WorkspaceSquadsRouteImport.update({
+  id: '/squads',
+  path: '/squads',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceSuporteRoute = WorkspaceSuporteRouteImport.update({
@@ -2050,9 +2062,9 @@ const WorkspaceSimlabFocusGroupRoute =
     getParentRoute: () => WorkspaceRoute,
   } as any)
 const WorkspaceSquadsIndexRoute = WorkspaceSquadsIndexRouteImport.update({
-  id: '/squads/',
-  path: '/squads/',
-  getParentRoute: () => WorkspaceRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkspaceSquadsRoute,
 } as any)
 const WorkspaceTurismoAereosRoute = WorkspaceTurismoAereosRouteImport.update({
   id: '/turismo/aereos',
@@ -2509,6 +2521,8 @@ export interface FileRoutesByFullPath {
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
   '/workspace/reservas': typeof WorkspaceReservasRoute
   '/workspace/simulacao': typeof WorkspaceSimulacaoRoute
+  '/workspace/skills': typeof WorkspaceSkillsRoute
+  '/workspace/squads': typeof WorkspaceSquadsRouteWithChildren
   '/workspace/suporte': typeof WorkspaceSuporteRoute
   '/workspace/tarefas': typeof WorkspaceTarefasRoute
   '/workspace/tokens': typeof WorkspaceTokensRoute
@@ -2880,6 +2894,7 @@ export interface FileRoutesByTo {
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
   '/workspace/reservas': typeof WorkspaceReservasRoute
   '/workspace/simulacao': typeof WorkspaceSimulacaoRoute
+  '/workspace/skills': typeof WorkspaceSkillsRoute
   '/workspace/suporte': typeof WorkspaceSuporteRoute
   '/workspace/tarefas': typeof WorkspaceTarefasRoute
   '/workspace/tokens': typeof WorkspaceTokensRoute
@@ -3260,6 +3275,8 @@ export interface FileRoutesById {
   '/workspace/relatorios': typeof WorkspaceRelatoriosRouteWithChildren
   '/workspace/reservas': typeof WorkspaceReservasRoute
   '/workspace/simulacao': typeof WorkspaceSimulacaoRoute
+  '/workspace/skills': typeof WorkspaceSkillsRoute
+  '/workspace/squads': typeof WorkspaceSquadsRouteWithChildren
   '/workspace/suporte': typeof WorkspaceSuporteRoute
   '/workspace/tarefas': typeof WorkspaceTarefasRoute
   '/workspace/tokens': typeof WorkspaceTokensRoute
@@ -3642,6 +3659,8 @@ export interface FileRouteTypes {
     | '/workspace/relatorios'
     | '/workspace/reservas'
     | '/workspace/simulacao'
+    | '/workspace/skills'
+    | '/workspace/squads'
     | '/workspace/suporte'
     | '/workspace/tarefas'
     | '/workspace/tokens'
@@ -4013,6 +4032,7 @@ export interface FileRouteTypes {
     | '/workspace/relatorios'
     | '/workspace/reservas'
     | '/workspace/simulacao'
+    | '/workspace/skills'
     | '/workspace/suporte'
     | '/workspace/tarefas'
     | '/workspace/tokens'
@@ -4392,6 +4412,8 @@ export interface FileRouteTypes {
     | '/workspace/relatorios'
     | '/workspace/reservas'
     | '/workspace/simulacao'
+    | '/workspace/skills'
+    | '/workspace/squads'
     | '/workspace/suporte'
     | '/workspace/tarefas'
     | '/workspace/tokens'
@@ -5502,6 +5524,20 @@ declare module '@tanstack/react-router' {
       path: '/simulacao'
       fullPath: '/workspace/simulacao'
       preLoaderRoute: typeof WorkspaceSimulacaoRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/skills': {
+      id: '/workspace/skills'
+      path: '/skills'
+      fullPath: '/workspace/skills'
+      preLoaderRoute: typeof WorkspaceSkillsRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/workspace/squads': {
+      id: '/workspace/squads'
+      path: '/squads'
+      fullPath: '/workspace/squads'
+      preLoaderRoute: typeof WorkspaceSquadsRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/workspace/suporte': {
@@ -6934,10 +6970,10 @@ declare module '@tanstack/react-router' {
     }
     '/workspace/squads/': {
       id: '/workspace/squads/'
-      path: '/squads'
+      path: '/'
       fullPath: '/workspace/squads/'
       preLoaderRoute: typeof WorkspaceSquadsIndexRouteImport
-      parentRoute: typeof WorkspaceRoute
+      parentRoute: typeof WorkspaceSquadsRoute
     }
     '/workspace/turismo/aereos': {
       id: '/workspace/turismo/aereos'
@@ -7808,6 +7844,18 @@ const WorkspaceRelatoriosRouteChildren: WorkspaceRelatoriosRouteChildren = {
 const WorkspaceRelatoriosRouteWithChildren =
   WorkspaceRelatoriosRoute._addFileChildren(WorkspaceRelatoriosRouteChildren)
 
+interface WorkspaceSquadsRouteChildren {
+  WorkspaceSquadsIndexRoute: typeof WorkspaceSquadsIndexRoute
+}
+
+const WorkspaceSquadsRouteChildren: WorkspaceSquadsRouteChildren = {
+  WorkspaceSquadsIndexRoute: WorkspaceSquadsIndexRoute,
+}
+
+const WorkspaceSquadsRouteWithChildren = WorkspaceSquadsRoute._addFileChildren(
+  WorkspaceSquadsRouteChildren,
+)
+
 interface WorkspaceCatalogoColecoesRouteChildren {
   WorkspaceCatalogoColecoesIdRoute: typeof WorkspaceCatalogoColecoesIdRoute
   WorkspaceCatalogoColecoesNovoRoute: typeof WorkspaceCatalogoColecoesNovoRoute
@@ -7880,6 +7928,8 @@ interface WorkspaceRouteChildren {
   WorkspaceRelatoriosRoute: typeof WorkspaceRelatoriosRouteWithChildren
   WorkspaceReservasRoute: typeof WorkspaceReservasRoute
   WorkspaceSimulacaoRoute: typeof WorkspaceSimulacaoRoute
+  WorkspaceSkillsRoute: typeof WorkspaceSkillsRoute
+  WorkspaceSquadsRoute: typeof WorkspaceSquadsRouteWithChildren
   WorkspaceSuporteRoute: typeof WorkspaceSuporteRoute
   WorkspaceTarefasRoute: typeof WorkspaceTarefasRoute
   WorkspaceTokensRoute: typeof WorkspaceTokensRoute
@@ -8000,7 +8050,6 @@ interface WorkspaceRouteChildren {
   WorkspacePacotesIndexRoute: typeof WorkspacePacotesIndexRoute
   WorkspacePdvIndexRoute: typeof WorkspacePdvIndexRoute
   WorkspacePedidosIndexRoute: typeof WorkspacePedidosIndexRoute
-  WorkspaceSquadsIndexRoute: typeof WorkspaceSquadsIndexRoute
   WorkspaceBuilderDocumentIdEditorRoute: typeof WorkspaceBuilderDocumentIdEditorRoute
   WorkspaceCatalogoCategoriasIdRoute: typeof WorkspaceCatalogoCategoriasIdRoute
   WorkspaceCatalogoCategoriasNovoRoute: typeof WorkspaceCatalogoCategoriasNovoRoute
@@ -8043,6 +8092,8 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceRelatoriosRoute: WorkspaceRelatoriosRouteWithChildren,
   WorkspaceReservasRoute: WorkspaceReservasRoute,
   WorkspaceSimulacaoRoute: WorkspaceSimulacaoRoute,
+  WorkspaceSkillsRoute: WorkspaceSkillsRoute,
+  WorkspaceSquadsRoute: WorkspaceSquadsRouteWithChildren,
   WorkspaceSuporteRoute: WorkspaceSuporteRoute,
   WorkspaceTarefasRoute: WorkspaceTarefasRoute,
   WorkspaceTokensRoute: WorkspaceTokensRoute,
@@ -8168,7 +8219,6 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspacePacotesIndexRoute: WorkspacePacotesIndexRoute,
   WorkspacePdvIndexRoute: WorkspacePdvIndexRoute,
   WorkspacePedidosIndexRoute: WorkspacePedidosIndexRoute,
-  WorkspaceSquadsIndexRoute: WorkspaceSquadsIndexRoute,
   WorkspaceBuilderDocumentIdEditorRoute: WorkspaceBuilderDocumentIdEditorRoute,
   WorkspaceCatalogoCategoriasIdRoute: WorkspaceCatalogoCategoriasIdRoute,
   WorkspaceCatalogoCategoriasNovoRoute: WorkspaceCatalogoCategoriasNovoRoute,

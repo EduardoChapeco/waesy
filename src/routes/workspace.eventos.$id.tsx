@@ -24,7 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CurrencyField } from "@/components/ui/currency-field";
 import { EmptyState } from "@/components/state/states";
-import { getAdminEventById, listEventLots, listEventTickets, upsertEventLot, deleteEventLot, issueComplimentaryTicket, validateTicketCheckin } from "@/services/events.functions";
+import { getAdminEventById, listEventLots, listEventTickets, listEventBudgets, upsertEventLot, deleteEventLot, issueComplimentaryTicket, validateTicketCheckin } from "@/services/events.functions";
 import { formatMoney } from "@/lib/money";
 
 export const Route = createFileRoute("/workspace/eventos/$id")({

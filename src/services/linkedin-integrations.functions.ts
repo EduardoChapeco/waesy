@@ -421,10 +421,19 @@ export function translateLinkedInToWaesyResume(raw: LinkedInRawProfile): ResumeD
   });
 
   // Idiomas
+  const normalizeProficiency = (val?: string): "basic" | "intermediate" | "advanced" | "fluent" | "native" => {
+    const lower = (val || "").toLowerCase();
+    if (lower.includes("basic") || lower.includes("básico") || lower.includes("basico")) return "basic";
+    if (lower.includes("advanced") || lower.includes("avançado") || lower.includes("avancado")) return "advanced";
+    if (lower.includes("fluent") || lower.includes("fluente")) return "fluent";
+    if (lower.includes("native") || lower.includes("nativo")) return "native";
+    return "intermediate";
+  };
+
   const languages = (raw.languages || []).map((lang, idx) => ({
     id: `lang_li_${Date.now()}_${idx}`,
     name: lang.name.trim(),
-    proficiency: lang.proficiency?.trim() || "Intermediário",
+    proficiency: normalizeProficiency(lang.proficiency),
   }));
 
   // Extrai localização geral

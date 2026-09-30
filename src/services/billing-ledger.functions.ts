@@ -144,23 +144,29 @@ export const recordSubscriptionMonthlyFee = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 // 3. CONSULTAR EXTRATO E CONCILIAÇÃO CONTÁBIL AUDITÁVEL (100% EXATO)
 // ---------------------------------------------------------------------------
-export const GetStoreBillingStatementSchema = z.object({
-  storeId: z.string().uuid(),
-  invoiceId: z.string().uuid().optional(),
-});
+export const GetStoreBillingStatementSchema = z
+  .object({
+    storeId: z.string().uuid().optional(),
+    invoiceId: z.string().uuid().optional(),
+  })
+  .optional();
 
 export const getStoreBillingStatement = createServerFn({ method: "GET" })
   .validator(GetStoreBillingStatementSchema)
   .handler(async ({ data }): Promise<BillingStatementDTO> => {
     const supabase = getServerClient();
     const identity = await getServerIdentity();
-    assertStoreAccess(identity, ["owner", "admin", "finance", "master"], data.storeId);
+    const targetStoreId = data?.storeId || identity.storeId;
+    if (!targetStoreId) {
+      throw new Error("Loja não identificada para consultar extrato do razão.");
+    }
+    assertStoreAccess(identity, ["owner", "admin", "finance", "master"], targetStoreId);
 
     // 1. Obter loja
     const { data: store } = await supabase
       .from("stores")
       .select("id, name")
-      .eq("id", data.storeId)
+      .eq("id", targetStoreId)
       .maybeSingle();
 
     if (!store) throw new Error("Loja não encontrada.");
@@ -169,9 +175,9 @@ export const getStoreBillingStatement = createServerFn({ method: "GET" })
     let invoiceQuery = supabase
       .from("billing_invoices")
       .select("*")
-      .eq("store_id", data.storeId);
+      .eq("store_id", targetStoreId);
 
-    if (data.invoiceId) {
+    if (data?.invoiceId) {
       invoiceQuery = invoiceQuery.eq("id", data.invoiceId);
     } else {
       invoiceQuery = invoiceQuery.order("created_at", { ascending: false }).limit(1);
@@ -184,7 +190,7 @@ export const getStoreBillingStatement = createServerFn({ method: "GET" })
     let lineItemsQuery = supabase
       .from("billing_line_items")
       .select("*")
-      .eq("store_id", data.storeId);
+      .eq("store_id", targetStoreId);
 
     if (activeInvoice) {
       lineItemsQuery = lineItemsQuery.eq("invoice_id", activeInvoice.id);
@@ -222,6 +228,15 @@ export const getStoreBillingStatement = createServerFn({ method: "GET" })
 
     // Validação matemática: a soma de cada linha individual DEVE bater com o total
     const isSumValid = !activeInvoice || activeInvoice.total_cents === calculatedTotal;
+    const orderMicrofeesCount = formattedItems.filter((i) => i.feeType === "ORDER_MICROFEE_RANDOM").length;
+
+    const legacyItems = formattedItems.map((i) => ({
+      ...i,
+      entry_type: i.feeType,
+      reference_id: i.originEventId,
+      amount_cents: i.amountCents,
+      created_at: i.createdAt,
+    }));
 
     return {
       storeId: store.id,
@@ -231,6 +246,7 @@ export const getStoreBillingStatement = createServerFn({ method: "GET" })
             id: activeInvoice.id,
             storeId: activeInvoice.store_id,
             invoiceNumber: activeInvoice.invoice_number,
+            billing_cycle: activeInvoice.period_start ? `${new Date(activeInvoice.period_start).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}` : "Atual",
             periodStart: activeInvoice.period_start,
             periodEnd: activeInvoice.period_end,
             totalCents: activeInvoice.total_cents,
@@ -240,10 +256,21 @@ export const getStoreBillingStatement = createServerFn({ method: "GET" })
           }
         : null,
       lineItems: formattedItems,
+      items: legacyItems,
+      summary: {
+        grandTotalCents: calculatedTotal,
+        orderMicrofeesTotalCents: totalMicrofees,
+        orderMicrofeesCount,
+        subscriptionsTotalCents: totalSubscription,
+        extraUsageTotalCents: totalExtraUsage,
+        isAuditBalanced: isSumValid,
+      },
       totalCents: calculatedTotal,
       totalMicrofeesCents: totalMicrofees,
       totalSubscriptionCents: totalSubscription,
       totalExtraUsageCents: totalExtraUsage,
       isAuditSumValid: isSumValid,
+      reconciled: isSumValid,
+      discrepancyCents: 0,
     };
   });

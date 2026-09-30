@@ -802,11 +802,15 @@ function MarketplaceHubPage() {
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  onClick={() => setIsImportMlbModalOpen(true)}
+                  onClick={() => {
+                    setSelectedProductForMapping(null);
+                    setMappingPlatform("mercadolivre");
+                    setMappingModalOpen(true);
+                  }}
                   className="rounded-xl text-xs font-bold gap-1.5 h-9 px-4 bg-primary hover:opacity-90 text-primary-foreground cursor-pointer shadow-xs"
                 >
                   <ShoppingBag className="size-3.5" />
-                  <span>Importar do Mercado Livre</span>
+                  <span>Vincular ao Mercado Livre</span>
                 </Button>
               </div>
             </div>
