@@ -37,7 +37,7 @@ const STATUS_CONFIG: Record<
   pending: {
     label: "Aguardando",
     icon: <Clock className="size-3.5" />,
-    className: "text-amber-600 bg-amber-500/10 border-amber-500/25",
+    className: "text-warning bg-warning/10 border-warning/25",
   },
   paid: {
     label: "Pago · Ativo",
@@ -126,7 +126,7 @@ function BoostPaymentsAdmin() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Flame className="size-5 text-amber-500 fill-amber-500" />
+            <Flame className="size-5 text-primary" />
             <h1 className="text-2xl font-black tracking-tight text-foreground">
               Boost Payments
             </h1>
@@ -151,7 +151,7 @@ function BoostPaymentsAdmin() {
         {[
           { label: "Total Transações", value: (boostPayments || []).length, className: "text-foreground" },
           { label: "Pagos · Receita", value: formatMoney(totalRevenuePaid), className: "text-emerald-600" },
-          { label: "Pendentes", value: `${statusCounts.pending || 0} (${formatMoney(totalPending)})`, className: "text-amber-600" },
+          { label: "Pendentes", value: `${statusCounts.pending || 0} (${formatMoney(totalPending)})`, className: "text-warning" },
           { label: "Falhas", value: statusCounts.failed || 0, className: "text-destructive" },
         ].map((card) => (
           <div
@@ -348,8 +348,9 @@ function BoostPaymentsAdmin() {
             </div>
           )}
 
-          <div className="text-[10px] text-amber-600 bg-amber-500/8 border border-amber-500/20 rounded-lg px-3 py-2">
-            ⚠️ Esta ação é irreversível. O boost será ativado imediatamente após a confirmação.
+          <div className="text-[10px] text-muted-foreground bg-muted/40 border border-border/60 rounded-lg px-3 py-2 flex items-center gap-2">
+            <AlertCircle className="size-3.5 text-warning shrink-0" />
+            <span>Esta ação é irreversível. O boost será ativado imediatamente após a confirmação.</span>
           </div>
 
           <div className="flex gap-2">

@@ -12,7 +12,7 @@ import { formatDate } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/workspace/cms/calendario")({
- head: () => ({ meta: [{ title: "Calendário Editorial e Agendamento | Waesy" }] }),
+ head: () => ({ meta: [{ title: "Calendário Editorial | Waesy" }] }),
  loader: async () => {
    try {
  return await listScheduledPosts();
@@ -141,7 +141,7 @@ function CalendarioEditorialPage() {
  <div>
  <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
  <CalendarIcon className="size-5 text-primary" />
- Calendário Editorial e Agendamento
+ Calendário Editorial
  </h1>
  <p className="text-xs text-muted-foreground">
  Planeje flyers, drops de produtos, stories e lançamentos culturais com antecedência.
@@ -189,7 +189,7 @@ function CalendarioEditorialPage() {
  type="button"
  onClick={() => setType(key)}
  className={cn(
- "p-2.5 rounded-xl border text-left flex items-center gap-2 text-xs font-semibold transition-all",
+ "min-h-11 p-2.5 rounded-xl border text-left flex items-center gap-2 text-xs font-semibold transition-all",
  type === key
  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
  : "border-border bg-background hover:bg-muted/40",
@@ -308,7 +308,7 @@ function CalendarioEditorialPage() {
  variant="outline"
  size="sm"
  onClick={() => handleMoveDay(post.id, -1)}
- className="size-9 p-0 rounded-lg"
+ className="size-11 sm:size-9 p-0 rounded-lg"
  title="Voltar 1 dia"
  >
  <ChevronLeft className="size-3.5" />
@@ -318,7 +318,7 @@ function CalendarioEditorialPage() {
  variant="outline"
  size="sm"
  onClick={() => handleMoveDay(post.id, 1)}
- className="size-9 p-0 rounded-lg"
+ className="size-11 sm:size-9 p-0 rounded-lg"
  title="Avançar 1 dia"
  >
  <ChevronRight className="size-3.5" />

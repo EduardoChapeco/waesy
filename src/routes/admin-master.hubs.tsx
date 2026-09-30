@@ -28,35 +28,35 @@ export const Route = createFileRoute("/admin-master/hubs")({
  component: AdminMasterHubsPage,
 });
 
-const MODULES: { id: HotpageModule; label: string; emoji: string }[] = [
- { id: "all", label: "Todos os Módulos", emoji: "🌐" },
- { id: "home", label: "Início (Home)", emoji: "🏠" },
- { id: "gastronomia", label: "Gastronomia e Delivery", emoji: "🍽️" },
- { id: "mercado", label: "Supermercado e Hortifrúti", emoji: "🛒" },
- { id: "farmacia", label: "Farmácia e Saúde", emoji: "💊" },
- { id: "bebidas", label: "Bebidas e Adega", emoji: "🍻" },
- { id: "acougue", label: "Açougue e Carnes", emoji: "🥩" },
- { id: "moda", label: "Moda e Vestuário", emoji: "👗" },
- { id: "eletronicos", label: "Eletrônicos e Tech", emoji: "📱" },
- { id: "pet", label: "Pet Shop", emoji: "🐾" },
- { id: "servicos", label: "Serviços e Profissionais", emoji: "💼" },
- { id: "imoveis", label: "Imóveis e Locação", emoji: "🏢" },
- { id: "construcao", label: "Construção e Reforma", emoji: "🔨" },
- { id: "casa", label: "Casa e Decoração", emoji: "🛋️" },
- { id: "beleza", label: "Beleza e Estética", emoji: "✂️" },
- { id: "limpeza", label: "Limpeza e Utilidades", emoji: "🧹" },
- { id: "livros", label: "Livros e Papelaria", emoji: "📚" },
- { id: "feed", label: "Feed", emoji: "📡" },
- { id: "noticias", label: "Notícias", emoji: "📰" },
- { id: "eventos", label: "Eventos", emoji: "🎟️" },
- { id: "agenda", label: "Agenda", emoji: "📅" },
- { id: "afiliados", label: "Afiliados", emoji: "🎯" },
- { id: "turismo", label: "Turismo e Hospedagem", emoji: "✈️" },
- { id: "empregos", label: "Empregos", emoji: "💼" },
- { id: "classificados", label: "Classificados", emoji: "🏷️" },
- { id: "diretorio", label: "Places (Lista Telefônica)", emoji: "🧭" },
- { id: "mobilidade", label: "Mobilidade Urbana", emoji: "🚗" },
- { id: "ofertas", label: "Ofertas e Promoções", emoji: "⚡" },
+const MODULES: { id: HotpageModule; label: string }[] = [
+ { id: "all", label: "Todos" },
+ { id: "home", label: "Início" },
+ { id: "gastronomia", label: "Gastronomia" },
+ { id: "mercado", label: "Supermercado" },
+ { id: "farmacia", label: "Farmácia" },
+ { id: "bebidas", label: "Bebidas" },
+ { id: "acougue", label: "Açougue" },
+ { id: "moda", label: "Moda" },
+ { id: "eletronicos", label: "Eletrônicos" },
+ { id: "pet", label: "Pet Shop" },
+ { id: "servicos", label: "Serviços" },
+ { id: "imoveis", label: "Imóveis" },
+ { id: "construcao", label: "Construção" },
+ { id: "casa", label: "Casa" },
+ { id: "beleza", label: "Beleza" },
+ { id: "limpeza", label: "Limpeza" },
+ { id: "livros", label: "Livros" },
+ { id: "feed", label: "Feed" },
+ { id: "noticias", label: "Notícias" },
+ { id: "eventos", label: "Eventos" },
+ { id: "agenda", label: "Agenda" },
+ { id: "afiliados", label: "Afiliados" },
+ { id: "turismo", label: "Turismo" },
+ { id: "empregos", label: "Empregos" },
+ { id: "classificados", label: "Classificados" },
+ { id: "diretorio", label: "Lugares" },
+ { id: "mobilidade", label: "Mobilidade" },
+ { id: "ofertas", label: "Ofertas" },
 ];
 
 function AdminMasterHubsPage() {
@@ -246,7 +246,7 @@ function AdminMasterHubsPage() {
  </span>
  </div>
  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
- Hubs Verticais e Categorias Globais
+ Categorias Globais
  </h1>
  <p className="text-xs text-muted-foreground mt-1">
  Taxonomia de categorias e botões de atalho da rede
@@ -269,13 +269,12 @@ function AdminMasterHubsPage() {
  <button
  key={m.id}
  onClick={() => setSelectedModule(m.id)}
- className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer flex items-center gap-1.5 ${
+ className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border shrink-0 cursor-pointer min-h-[36px] flex items-center justify-center ${
  selectedModule === m.id
  ? "bg-foreground text-background border-foreground font-bold "
  : "bg-card text-muted-foreground border-border hover:bg-muted/70 hover:text-foreground"
  }`}
  >
- <span>{m.emoji}</span>
  <span>{m.label}</span>
  </button>
  ))}

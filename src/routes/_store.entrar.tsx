@@ -202,7 +202,7 @@ function StepByStepAuthPage() {
     });
 
  if (res.status === "success") {
- toast.success(`Bem-vindo(a) ao Portal @${portalSlug}!`);
+ toast.success("Acesso autorizado.");
  // Portal sempre vai para /workspace
  window.location.replace("/workspace");
  return;
@@ -266,7 +266,7 @@ function StepByStepAuthPage() {
       });
 
  if (res.status === "success") {
- toast.success("Bem-vindo(a) de volta!");
+ toast.success("Sessão iniciada.");
  // Redireciona para home (/) por padrão, ou returnUrl se especificado
  const destination = returnUrl && returnUrl !== "/entrar" ? returnUrl : "/";
  window.location.replace(destination);
@@ -334,7 +334,7 @@ function StepByStepAuthPage() {
  return;
  }
 
- toast.success("Conta criada com sucesso! Bem-vindo(a) ao Waesy!");
+ toast.success("Conta criada com sucesso.");
  await getUserSession().catch(() => null);
  window.location.href = returnUrl || "/";
  } catch (err: any) {

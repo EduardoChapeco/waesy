@@ -164,7 +164,7 @@ export default function WorkspaceLojasPage() {
  variant={selectedType === "all" ? "default" : "outline"}
  size="sm"
  onClick={() => setSelectedType("all")}
- className="rounded-xl text-xs font-semibold h-8"
+ className="rounded-xl text-xs font-semibold h-11 sm:h-8 px-3"
  >
  Todas
  </Button>
@@ -172,15 +172,15 @@ export default function WorkspaceLojasPage() {
  variant={selectedType === "ecommerce" ? "default" : "outline"}
  size="sm"
  onClick={() => setSelectedType("ecommerce")}
- className="rounded-xl text-xs font-semibold h-8"
+ className="rounded-xl text-xs font-semibold h-11 sm:h-8 px-3"
  >
- Lojas e E-commerce
+ Lojas
  </Button>
  <Button
  variant={selectedType === "food_service" ? "default" : "outline"}
  size="sm"
  onClick={() => setSelectedType("food_service")}
- className="rounded-xl text-xs font-semibold h-8"
+ className="rounded-xl text-xs font-semibold h-11 sm:h-8 px-3"
  >
  Alimentação
  </Button>
@@ -270,7 +270,7 @@ export default function WorkspaceLojasPage() {
  variant="outline"
  size="sm"
  onClick={() => handleOpenEditor(st)}
- className="rounded-xl text-xs font-bold h-8 gap-1.5 bg-card/80 backdrop-blur-md hover:border-primary/40 hover:text-primary transition-colors"
+ className="rounded-xl text-xs font-bold h-11 sm:h-8 px-3 gap-1.5 bg-card/80 backdrop-blur-md hover:border-primary/40 hover:text-primary transition-colors"
  >
  <Settings2 className="size-3.5" />
  <span>Configurar</span>

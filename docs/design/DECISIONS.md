@@ -87,3 +87,11 @@
 - **Fundamentação:** AGENTS.md B.1, B.4, B.8, B.9, B.11 e Master Prompt V144 (`SPEC-V144-OMNI-INTEGRATION-ENDPOINT-COMPLIANCE.md`).
 - **Consequências:** 100% de paridade entre a documentação oficial dos grandes canais e o código do ecossistema Waesy, zero pedidos fantasmas ou furos de estoque por concorrência de canais, respostas centralizadas em 1 único inbox para múltiplos marketplaces e teste automatizado cobrindo todos os cenários com 100% de aprovação.
 
+## DEC-012: Conclusão da Auditoria Recursiva V144 — Silent Design Hardening & 100% Test Pass Rate
+- **Data:** 2026-09-30
+- **Contexto:** Fechamento e consolidação das melhorias solicitadas: 100% das rotas do workspace registradas na navegação (172/172), eliminação de títulos compostos em menus/cabeçalhos, remoção de emojis e badges âmbar residuais, ampliação de touch targets para no mínimo 44px (`h-11`) no mobile e garantia de aprovação total na suíte de testes e compilação de produção.
+- **Decisão:** Registradas as 5 rotas restantes em `workspace-navigation.ts` (`/workspace/cms/calendario`, `/workspace/master/influencers`, `/workspace/configuracoes/fretes/cotacoes`, `/workspace/configuracoes/loja`, `/workspace/lojas`); simplificados os títulos em `workspace.cms.calendario.tsx` ("Calendário Editorial"), `workspace.lojas.index.tsx` ("Lojas"), `workspace.master.influencers.tsx` ("Influenciadores") e `admin-master.hubs.tsx` ("Categorias Globais"); removidos emojis e badges âmbar/pulsantes em `admin-master.boost-payments.tsx`, `admin-master.entregadores.auditoria.tsx` e `admin-master.hubs.tsx`; padronizados botões e controles para `h-11 sm:h-9` em mobile; corrigidas referências tipadas em `bigtech-lifecycle.ts` (`evaluateCoreWebVitals`) e import de `Sparkles` em `workspace-navigation.ts`.
+- **Fundamentação:** AGENTS.md B.4, B.8, B.9, B.11 e diretrizes do Silent Design / Apple HIG.
+- **Consequências:** 115/115 suítes de testes passando (730/730 testes verdes), compilação do Vite com código de saída 0 (27.5s), zero rotas de workspace não registradas e conformidade total com o piso de design e acessibilidade.
+
+

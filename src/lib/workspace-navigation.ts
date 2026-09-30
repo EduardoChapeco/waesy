@@ -1,4 +1,4 @@
-import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database } from "lucide-react";
+import { Package, Tags, Tag, Store, LayoutDashboard, Settings, Calendar, Users, ShoppingBag, Truck, Boxes, Banknote, FileText, LayoutTemplate, Link2, Image as ImageIcon, ClipboardList, ShieldAlert, Megaphone, Share2, Star, Bell, Flame, Kanban, Newspaper, Plus, Sliders, DollarSign, Ticket, ArrowRightLeft, Building2, ShieldCheck, UtensilsCrossed, ChefHat, Coins, Zap, MessageSquare, Scale, Wrench, MapPin, Palette, Target, LayoutGrid, Navigation, Briefcase, Plane, ShoppingCart, Eye, Receipt, AlertTriangle, ArrowDownUp, Clock, Car, Smartphone, Layers, HeartPulse, GraduationCap, Dog, CarFront, PenTool, Layers2, FileSpreadsheet, Gift, Globe, Bus, Award, Bot, LifeBuoy, Compass, UserCheck, Lock, HandHeart, Database, Calculator, Sparkles } from "lucide-react";
 
 export type NavItem = {
   path: string;
@@ -493,6 +493,8 @@ const GROUP_MARKETING_VITRINE: NavGroup = {
     { path: "/workspace/marketing/anuncios", label: "Anúncios", icon: Megaphone },
     { path: "/workspace/integracoes/marketplaces", label: "Marketplaces", icon: Globe },
     { path: "/workspace/marketing/social", label: "Social", icon: Share2 },
+    { path: "/workspace/cms/calendario", label: "Calendário", icon: Calendar },
+    { path: "/workspace/master/influencers", label: "Influenciadores", icon: Users },
   ],
 };
 
@@ -509,6 +511,7 @@ const GROUP_LOGISTICS_EXPEDITION: NavGroup = {
     { path: "/workspace/logistica/pudo", label: "Pontos PUDO", icon: MapPin },
     { path: "/workspace/logistica/tabelas", label: "Tabelas", icon: Navigation },
     { path: "/workspace/logistica/faturas", label: "CT-e", icon: Receipt },
+    { path: "/workspace/configuracoes/fretes/cotacoes", label: "Cotações", icon: Calculator },
   ],
 };
 
@@ -595,7 +598,9 @@ const GROUP_SETTINGS: NavGroup = {
   icon: Settings,
   section: "corporate",
   items: [
-    { path: "/workspace/configuracoes", label: "Dados da Loja", icon: Settings },
+    { path: "/workspace/configuracoes", label: "Geral", icon: Settings },
+    { path: "/workspace/configuracoes/loja", label: "Perfil da Loja", icon: Store },
+    { path: "/workspace/lojas", label: "Minhas Lojas", icon: Building2 },
     { path: "/workspace/configuracoes/conformidade", label: "Marketplace Oficial", icon: ShieldCheck },
     { path: "/workspace/configuracoes/ai", label: "Chaves IA", icon: Zap },
     { path: "/workspace/configuracoes/pwa", label: "Aplicativo PWA", icon: Smartphone },

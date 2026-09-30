@@ -70,7 +70,7 @@ function RegisterPage() {
  return;
  }
 
- toast.success("Conta criada com sucesso! Bem-vindo(a) à Waesy!");
+ toast.success("Conta criada com sucesso.");
  if (typeof window !== "undefined") {
  sessionStorage.setItem("waesy_just_registered", "true");
  }

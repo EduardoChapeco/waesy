@@ -190,7 +190,7 @@ function FretesCotacoesPage() {
  })
  }
  disabled={savingOrderId === order.id}
- className="h-9"
+ className="h-11 sm:h-9 text-xs"
  />
  </TableCell>
  <TableCell className="text-right">
@@ -198,6 +198,7 @@ function FretesCotacoesPage() {
  size="sm"
  onClick={() => handleApplyQuote(order.id)}
  disabled={savingOrderId === order.id || !quoteValues[order.id]}
+ className="h-11 px-4 sm:h-9 sm:px-3 text-xs"
  >
  {savingOrderId === order.id ? (
  <Loader2 className="animate-spin size-4" />
@@ -227,8 +228,9 @@ function FretesCotacoesPage() {
  value={zipcode}
  onChange={(e) => setZipcode(e.target.value)}
  maxLength={9}
+ className="h-11 text-xs"
  />
- <Button type="submit" disabled={loading}>
+ <Button type="submit" disabled={loading} className="h-11 px-5 text-xs font-semibold">
  {loading ? "Calculando..." : "Simular"}
  </Button>
  </form>
@@ -251,7 +253,7 @@ function FretesCotacoesPage() {
  className="flex items-center justify-between border px-4 py-3 bg-muted/10"
  >
  <div className="flex items-center gap-3">
- <Package className="h-5 w-5 text-muted-foreground animate-pulse" />
+ <Package className="size-5 text-muted-foreground" />
  <div>
  <p className="font-medium text-sm">{r.name}</p>
  {r.estimated_days && (

@@ -13,7 +13,7 @@ import { listCreatorProfiles, type CreatorProfileDTO } from "@/services/creators
 import { toggleAmbassadorStatus } from "@/services/stories.functions";
 
 export const Route = createFileRoute("/workspace/master/influencers")({
-  head: () => ({ meta: [{ title: "Influenciadores e Embaixadores | Master" }] }),
+  head: () => ({ meta: [{ title: "Influenciadores | Master" }] }),
   loader: async () => {
     try {
       const res = await listCreatorProfiles();
@@ -99,7 +99,7 @@ function MasterInfluencersPage() {
             variant={filterAmbassador === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilterAmbassador("all")}
-            className="rounded-xl text-xs font-bold h-9"
+            className="rounded-xl text-xs font-bold h-11 sm:h-9"
           >
             <SlidersHorizontal className="size-3.5 mr-1.5" />
             Todos ({creators.length})
@@ -108,7 +108,7 @@ function MasterInfluencersPage() {
             variant={filterAmbassador === "ambassadors" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilterAmbassador("ambassadors")}
-            className="rounded-xl text-xs font-bold gap-1.5 h-9"
+            className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-9"
           >
             <Award className="size-3.5 text-purple-500" />
             Embaixadores ({ambassadorCount})
@@ -127,11 +127,11 @@ function MasterInfluencersPage() {
           {filteredCreators.map((creator: CreatorProfileDTO) => {
             const isAmbassador = creator.is_official_ambassador;
             return (
-              <Card
+                <Card
                 key={creator.id}
                 className={`overflow-hidden rounded-2xl border transition-all ${
                   isAmbassador
-                    ? "border-purple-500/40 bg-gradient-to-b from-purple-500/5 to-transparent"
+                    ? "border-purple-500/40 bg-purple-500/5"
                     : "border-border/60 bg-card"
                 }`}
               >
@@ -200,7 +200,7 @@ function MasterInfluencersPage() {
                       variant={isAmbassador ? "destructive" : "default"}
                       disabled={isUpdating === creator.id}
                       onClick={() => handleToggleAmbassador(creator)}
-                      className="rounded-xl text-xs font-bold gap-1.5 h-8"
+                      className="rounded-xl text-xs font-bold gap-1.5 h-11 sm:h-8 px-3"
                     >
                       {isAmbassador ? (
                         <><XCircle className="size-3.5" /><span>Remover</span></>

@@ -119,10 +119,10 @@ function AdminCourierAuditPage() {
       <div className="flex flex-wrap gap-2 border-b border-border/40 pb-3">
         {[
           { id: "all", label: "Todos os Cadastros" },
-          { id: "divergence_flagged", label: "⚠️ Divergência Detectada", alert: true },
-          { id: "manual_review", label: "⏳ Análise Manual" },
-          { id: "match_approved", label: "🟢 Aprovados" },
-          { id: "fraud_rejected", label: "🚨 Fraude Rejeitada" },
+          { id: "divergence_flagged", label: "Divergência Detectada", alert: true },
+          { id: "manual_review", label: "Análise Manual" },
+          { id: "match_approved", label: "Aprovados" },
+          { id: "fraud_rejected", label: "Fraude Rejeitada" },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -185,7 +185,7 @@ function AdminCourierAuditPage() {
                           className={
                             (details.face_match_score || 0) >= 0.8
                               ? "text-emerald-600 font-bold"
-                              : "text-amber-600 font-bold"
+                              : "text-warning font-bold"
                           }
                         >
                           {Math.round((details.face_match_score || 0) * 100)}%
@@ -199,7 +199,7 @@ function AdminCourierAuditPage() {
                     </td>
                     <td className="px-4 py-3">
                       {isDivergent && (
-                        <Badge className="bg-amber-500/20 text-amber-600 text-[10px] font-bold">
+                        <Badge className="bg-warning/15 text-warning text-[10px] font-bold">
                           Divergência
                         </Badge>
                       )}
