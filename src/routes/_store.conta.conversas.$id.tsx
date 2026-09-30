@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/datetime";
 import { OrderMessageCard } from "@/components/chat/order-message-card";
 import { RmaTicketModal } from "@/components/chat/rma-ticket-modal";
 import { RmaMessageCard } from "@/components/chat/rma-message-card";
+import { StructuredMessageView } from "@/components/chat/structured-message-view";
 
 export const Route = createFileRoute("/_store/conta/conversas/$id")({
   head: () => ({ meta: [{ title: "Mensagens | Waesy" }] }),
@@ -245,11 +246,11 @@ function CustomerChatPage() {
                 {storeData?.name || thread?.subject || "Atendimento"}
               </h2>
               {isPeerTyping ? (
-                <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 animate-pulse truncate">
+                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 animate-pulse truncate">
                   Digitando...
                 </p>
               ) : (
-                <p className="text-[11px] text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   {orderData ? `Pedido #${orderData.id.slice(0, 8)} • ` : ""}
                   {STATUS_LABELS[thread?.status] ?? "Online"}
                 </p>
@@ -273,7 +274,7 @@ function CustomerChatPage() {
 
           <Badge
             variant={isClosed ? "secondary" : "default"}
-            className="text-[10px] font-medium"
+            className="text-xs font-medium"
           >
             {STATUS_LABELS[thread?.status] ?? thread?.status}
           </Badge>
@@ -297,7 +298,7 @@ function CustomerChatPage() {
         className="flex-1 space-y-2.5 overflow-y-auto no-scrollbar py-3 px-3 sm:px-4"
       >
         <div className="flex justify-center my-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/40 text-[11px] text-muted-foreground select-none max-w-sm text-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/40 text-xs text-muted-foreground select-none max-w-sm text-center">
             <Lock className="size-3 text-muted-foreground shrink-0" strokeWidth={1.75} />
             <span>Mensagens protegidas de ponta a ponta</span>
           </div>
@@ -340,6 +341,36 @@ function CustomerChatPage() {
             );
           }
 
+          if (msg.message_type === "structured_blocks" || (msg.payload?.blocks && msg.payload.blocks.length > 0)) {
+            return (
+              <div
+                key={msg.id}
+                className={`flex flex-col ${isStaff ? "items-start" : "items-end"} w-full`}
+              >
+                <div
+                  className={`max-w-[95%] sm:max-w-md p-3.5 text-xs rounded-2xl ${
+                    isStaff
+                      ? "bg-card border border-border/80 text-foreground rounded-tl-xs shadow-2xs"
+                      : "bg-muted/50 border border-border/70 text-foreground rounded-tr-xs"
+                  }`}
+                >
+                  <StructuredMessageView
+                    payload={msg.payload || { text: msg.message }}
+                    isStaff={isStaff}
+                  />
+                </div>
+                <div className="flex items-center gap-1 mt-1 px-1">
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {formatDate(msg.createdAt)}
+                  </span>
+                  {!isStaff && (
+                    <CheckCheck className="size-3.5 text-primary" />
+                  )}
+                </div>
+              </div>
+            );
+          }
+
           return (
             <div
               key={msg.id}
@@ -376,7 +407,7 @@ function CustomerChatPage() {
 
                 {/* Rodapé Inline da Bolha estilo WhatsApp: Horário + Ticks de Leitura */}
                 <div className="flex items-center justify-end gap-1 mt-1">
-                  <span className="text-[10px] text-gray-400 font-mono leading-none">
+                  <span className="text-xs text-gray-400 font-mono leading-none">
                     {formatDate(msg.createdAt)}
                   </span>
                   {!isStaff && (

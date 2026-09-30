@@ -19,6 +19,13 @@ import { formatMoney } from "@/lib/money";
 import { OrderMessageCard } from "@/components/chat/order-message-card";
 import { RmaMessageCard } from "@/components/chat/rma-message-card";
 import { Customer360Sidebar } from "@/components/chat/customer-360-sidebar";
+import { StructuredMessageView } from "@/components/chat/structured-message-view";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { playMessageChime } from "@/lib/audio-chimes";
 import { listSdrChatSessions, type SdrChatSessionDTO } from "@/services/ai-sdr.functions";
 import { Link } from "@tanstack/react-router";
@@ -244,6 +251,47 @@ function WorkspaceAtendimentoPage() {
  }
  };
 
+ // Enviar Card / Bloco Estruturado (ia/09-chat.md)
+ const handleSendStructuredBlock = async (block: any, action?: any, summaryText?: string) => {
+   if (!activeThreadId || isSending) return;
+   setIsSending(true);
+
+   const payload = {
+     text: summaryText || "",
+     blocks: [block],
+     actions: action ? [action] : [],
+   };
+
+   const optimistic = {
+     id: crypto.randomUUID(),
+     message: summaryText || block.type,
+     message_type: "structured_blocks",
+     is_staff_reply: true,
+     created_at: new Date().toISOString(),
+     attachments: [],
+     payload,
+   };
+   setMessages((prev) => [...prev, optimistic]);
+
+   try {
+     await sendChatMessage({
+       data: {
+         threadId: activeThreadId,
+         message: summaryText || block.type,
+         message_type: "structured_blocks",
+         attachments: [],
+         payload,
+       },
+     });
+     toast.success("Card enviado");
+   } catch (err: any) {
+     toast.error(err.message || "Erro ao enviar card.");
+     setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+   } finally {
+     setIsSending(false);
+   }
+ };
+
  // Alterar Departamento da conversa
  const handleDepartmentChange = async (dept: string) => {
  if (!activeThreadId) return;
@@ -329,7 +377,7 @@ function WorkspaceAtendimentoPage() {
               <MessageSquare className="size-3.5" />
               <span>Atendimento Direto</span>
               {(metrics?.open || 0) > 0 && (
-                <Badge variant="default" className="text-[10px] h-4 px-1.5 font-mono">
+                <Badge variant="default" className="text-xs h-4 px-1.5 font-mono">
                   {metrics?.open}
                 </Badge>
               )}
@@ -348,7 +396,7 @@ function WorkspaceAtendimentoPage() {
               <Bot className="size-3.5 text-primary" />
               <span>Conversas SDR (IA)</span>
               {sdrMetrics?.total > 0 && (
-                <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-mono bg-primary/10 text-primary border border-primary/20">
+                <Badge variant="secondary" className="text-xs h-4 px-1.5 font-mono bg-primary/10 text-primary border border-primary/20">
                   {sdrMetrics.total}
                 </Badge>
               )}
@@ -360,7 +408,7 @@ function WorkspaceAtendimentoPage() {
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="text-muted-foreground">Em Aberto:</span>
-              <Badge variant="default" className="font-bold text-[10px] h-5">
+              <Badge variant="default" className="font-bold text-xs h-5">
                 {metrics?.open || 0}
               </Badge>
             </div>
@@ -370,7 +418,10 @@ function WorkspaceAtendimentoPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-muted-foreground">CSAT:</span>
-              <span className="font-extrabold text-emerald-600">⭐ {metrics?.avg_rating && metrics.avg_rating > 0 ? `${metrics.avg_rating} / 5.0` : "—"}</span>
+              <span className="font-bold text-foreground flex items-center gap-1">
+                <Star className="size-3 fill-amber-500 text-amber-500" />
+                {metrics?.avg_rating && metrics.avg_rating > 0 ? `${metrics.avg_rating} / 5.0` : "—"}
+              </span>
             </div>
           </div>
         )}
@@ -380,7 +431,7 @@ function WorkspaceAtendimentoPage() {
             <div className="flex items-center gap-1.5">
               <Target className="size-3.5 text-emerald-600" />
               <span className="text-muted-foreground">Prontos p/ Comprar:</span>
-              <Badge variant="default" className="font-bold text-[10px] h-5 bg-emerald-600 hover:bg-emerald-600 text-white font-mono">
+              <Badge variant="default" className="font-bold text-xs h-5 bg-emerald-600 hover:bg-emerald-600 text-white font-mono">
                 {sdrMetrics?.readyToBuy || 0}
               </Badge>
             </div>
@@ -411,9 +462,9 @@ function WorkspaceAtendimentoPage() {
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
               {[
                 { id: "all", label: "Todas", count: sdrMetrics.total },
-                { id: "ready_to_buy", label: "🎯 Pronto p/ Compra", count: sdrMetrics.readyToBuy },
-                { id: "warm", label: "🔥 Interessado", count: sdrMetrics.warm },
-                { id: "curious", label: "💡 Curioso", count: sdrMetrics.curious },
+                { id: "ready_to_buy", label: "Pronto p/ Compra", count: sdrMetrics.readyToBuy },
+                { id: "warm", label: "Interessado", count: sdrMetrics.warm },
+                { id: "curious", label: "Curioso", count: sdrMetrics.curious },
               ].map((pill) => (
                 <button
                   key={pill.id}
@@ -427,7 +478,7 @@ function WorkspaceAtendimentoPage() {
                   )}
                 >
                   <span>{pill.label}</span>
-                  <span className="text-[10px] opacity-75 font-mono">({pill.count})</span>
+                  <span className="text-xs opacity-75 font-mono">({pill.count})</span>
                 </button>
               ))}
             </div>
@@ -443,7 +494,7 @@ function WorkspaceAtendimentoPage() {
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-foreground">Nenhuma conversa com SDR encontrada</p>
                   <p className="text-xs text-muted-foreground max-w-sm">
-                    Quando clientes conversarem com a IA nos seus classificados, as mensagens e intenções de compra aparecerão aqui em tempo real.
+                    As mensagens e intenções de compra de clientes com a IA aparecerão aqui.
                   </p>
                 </div>
               </div>
@@ -516,8 +567,9 @@ function WorkspaceAtendimentoPage() {
 
                       {/* Rodapé do Card: Contador de Mensagens e Botão de Ação */}
                       <div className="flex items-center justify-between pt-2 border-t border-border/40 text-xs">
-                        <span className="text-muted-foreground text-[11px]">
-                          💬 {session.message_count} mensagens
+                        <span className="text-muted-foreground text-xs flex items-center gap-1">
+                          <MessageSquare className="size-3 text-muted-foreground" />
+                          <span>{session.message_count} mensagens</span>
                         </span>
 
                         <Button
@@ -562,7 +614,7 @@ function WorkspaceAtendimentoPage() {
 
               <div className="grid grid-cols-2 gap-1.5">
                 <Select value={deptFilter} onValueChange={setDeptFilter}>
-                  <SelectTrigger className="h-8 rounded-xl text-[11px]">
+                  <SelectTrigger className="h-8 rounded-xl text-xs">
                     <SelectValue placeholder="Departamento" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
@@ -576,7 +628,7 @@ function WorkspaceAtendimentoPage() {
                 </Select>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-8 rounded-xl text-[11px]">
+                  <SelectTrigger className="h-8 rounded-xl text-xs">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
@@ -614,22 +666,22 @@ function WorkspaceAtendimentoPage() {
                           <span className="font-bold text-xs text-foreground truncate">
                             {t.customer?.full_name || "Cliente"}
                           </span>
-                          <span className="text-[10px] text-muted-foreground shrink-0">
+                          <span className="text-xs text-muted-foreground shrink-0">
                             {formatDate(t.updated_at)}
                           </span>
                         </div>
 
-                        <p className="text-[11px] text-muted-foreground line-clamp-1">
+                        <p className="text-xs text-muted-foreground line-clamp-1">
                           {t.is_last_reply_staff ? "Você: " : ""}
                           {t.last_message || "Sem mensagens"}
                         </p>
 
                         <div className="flex items-center gap-1.5 pt-0.5">
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 uppercase">
+                          <Badge variant="outline" className="text-xs px-1 py-0 h-4 uppercase">
                             {departmentLabels[t.department] || t.department}
                           </Badge>
                           {t.order_id && (
-                            <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                            <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
                               Pedido #{t.order_id.slice(0, 6)}
                             </Badge>
                           )}
@@ -668,7 +720,7 @@ function WorkspaceAtendimentoPage() {
                     <h3 className="font-bold text-sm text-foreground truncate">
                       {activeThread.customer?.full_name || "Cliente"}
                     </h3>
-                    <p className="text-[11px] text-muted-foreground truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {activeThread.customer?.email || activeThread.customer?.phone || "Atendimento Direto"}
                     </p>
                   </div>
@@ -751,6 +803,36 @@ function WorkspaceAtendimentoPage() {
                       );
                     }
 
+                    // Card Estruturado com Widgets e Ações (ia/09-chat.md)
+                    if (
+                      msg.message_type === "structured_blocks" ||
+                      (msg.payload?.blocks && msg.payload.blocks.length > 0)
+                    ) {
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col ${isStaff ? "items-end" : "items-start"} w-full`}
+                        >
+                          <div
+                            className={`max-w-[95%] sm:max-w-lg rounded-2xl p-3.5 text-xs shadow-xs ${
+                              isStaff
+                                ? "bg-card border border-border/80 text-foreground rounded-tr-xs"
+                                : "bg-card border border-border/80 text-foreground rounded-tl-xs"
+                            }`}
+                          >
+                            <StructuredMessageView
+                              payload={msg.payload || { text: msg.message }}
+                              isStaff={isStaff}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground mt-1 px-1">
+                            {isStaff ? "Equipe / Você" : (activeThread.customer?.full_name || "Cliente")} •{" "}
+                            {formatDate(msg.created_at)}
+                          </span>
+                        </div>
+                      );
+                    }
+
                     // Balão Normal
                     return (
                       <div
@@ -766,7 +848,7 @@ function WorkspaceAtendimentoPage() {
                         >
                           <p className="whitespace-pre-wrap break-words">{msg.message}</p>
                         </div>
-                        <span className="text-[10px] text-muted-foreground mt-1 px-1">
+                        <span className="text-xs text-muted-foreground mt-1 px-1">
                           {isStaff ? "Equipe / Você" : (activeThread.customer?.full_name || "Cliente")} •{" "}
                           {formatDate(msg.created_at)}
                         </span>
@@ -781,6 +863,121 @@ function WorkspaceAtendimentoPage() {
                 onSubmit={handleSend}
                 className="p-3 bg-card border-t border-border/80 flex items-center gap-2"
               >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="size-10 rounded-xl border border-border/80 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                      title="Inserir Widget ou Ação"
+                    >
+                      <Plus className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56 rounded-xl">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleSendStructuredBlock(
+                          {
+                            type: "order_tracker",
+                            data: {
+                              order_id: activeThread.order_id || activeThread.id,
+                              current_stage: "dispatched",
+                              total_cents: 14900,
+                              delivery_address: "Entrega em andamento",
+                            },
+                          },
+                          undefined,
+                          "Status do pedido atualizado:",
+                        )
+                      }
+                      className="cursor-pointer text-xs flex items-center gap-2"
+                    >
+                      <Package className="size-4 text-primary" />
+                      <span>Rastreio de Pedido</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleSendStructuredBlock(
+                          {
+                            type: "proposal_card",
+                            data: {
+                              proposal_id: activeThread.id,
+                              title: "Proposta Comercial",
+                              total_cents: 29900,
+                              installments: "Em até 3x sem juros",
+                              valid_until: "Válida por 48 horas",
+                              status: "Ativa",
+                            },
+                          },
+                          {
+                            id: `accept-${activeThread.id}`,
+                            label: "Aceitar Proposta",
+                            action_type: "confirm_proposal",
+                            payload: { thread_id: activeThread.id },
+                          },
+                          "Segue a proposta para sua aprovação:",
+                        )
+                      }
+                      className="cursor-pointer text-xs flex items-center gap-2"
+                    >
+                      <FileText className="size-4 text-primary" />
+                      <span>Proposta Comercial</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleSendStructuredBlock(
+                          {
+                            type: "metric_widget",
+                            data: {
+                              title: "Taxa de Resolução",
+                              value: "98.5%",
+                              change: 2.4,
+                              trend: "up",
+                              timeframe: "Últimos 30 dias",
+                              variant: "compact",
+                              status: "success",
+                            },
+                          },
+                          undefined,
+                          "Métricas de atendimento:",
+                        )
+                      }
+                      className="cursor-pointer text-xs flex items-center gap-2"
+                    >
+                      <Target className="size-4 text-primary" />
+                      <span>Métrica de Desempenho</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleSendStructuredBlock(
+                          {
+                            type: "task_card",
+                            data: {
+                              id: `task-${Date.now()}`,
+                              title: "Acompanhamento de Atendimento",
+                              category: "Suporte",
+                              priority: "high",
+                              status: "in_progress",
+                              dueDate: "Hoje",
+                            },
+                          },
+                          undefined,
+                          "Tarefa vinculada:",
+                        )
+                      }
+                      className="cursor-pointer text-xs flex items-center gap-2"
+                    >
+                      <CheckCircle2 className="size-4 text-primary" />
+                      <span>Tarefa de Atendimento</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 <Input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -806,7 +1003,7 @@ function WorkspaceAtendimentoPage() {
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground gap-2">
               <MessageSquare className="size-12 text-primary/30" />
               <p className="text-sm font-bold text-foreground">Nenhuma conversa selecionada</p>
-              <p className="text-xs">Selecione uma conversa ao lado para responder o cliente.</p>
+              <p className="text-xs">Selecione uma conversa para ver as mensagens.</p>
             </div>
           )}
 
@@ -815,7 +1012,7 @@ function WorkspaceAtendimentoPage() {
             <div className="w-80 border-l border-border/80 bg-background overflow-y-auto no-scrollbar hidden lg:block shrink-0">
               <div className="p-3 border-b border-border/80 flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">Customer 360º</span>
-                <Badge variant="outline" className="text-[10px]">
+                <Badge variant="outline" className="text-xs">
                   Auditoria e Histórico
                 </Badge>
               </div>
@@ -831,7 +1028,7 @@ function WorkspaceAtendimentoPage() {
       {/* Sheet de Gestão de Ticket SAC / RMA */}
       {selectedTicket && (
         <Sheet open={ticketModalOpen} onOpenChange={setTicketModalOpen}>
-          <SheetContent side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl lg:max-w-[70vw] xl:max-w-[70vw] w-full max-sm:!h-[100dvh] max-sm:!inset-0 max-sm:!rounded-none border-l p-6 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between">
+          <SheetContent side="right" size="wide" className="sm:max-w-3xl md:max-w-4xl w-full max-sm:h-full max-sm:inset-0 max-sm:rounded-none border-l p-6 overflow-y-auto no-scrollbar bg-card flex flex-col justify-between">
             <div className="space-y-6">
               <SheetHeader>
                 <SheetTitle className="text-base font-bold">
@@ -914,9 +1111,9 @@ function WorkspaceAtendimentoPage() {
                   </div>
                   <div>
                     <SheetTitle className="text-sm font-bold">
-                      Diálogo SDR e Inteligência de Vendas
+                      Diálogo SDR
                     </SheetTitle>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {formatDate(selectedSdrSession.created_at)}
                     </p>
                   </div>
@@ -924,7 +1121,7 @@ function WorkspaceAtendimentoPage() {
 
                 <Badge
                   className={cn(
-                    "text-[10px] font-bold uppercase",
+                    "text-xs font-bold uppercase",
                     selectedSdrSession.intent_classification === "ready_to_buy"
                       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
                       : selectedSdrSession.intent_classification === "warm"
@@ -933,10 +1130,10 @@ function WorkspaceAtendimentoPage() {
                   )}
                 >
                   {selectedSdrSession.intent_classification === "ready_to_buy"
-                    ? "🎯 Pronto p/ Comprar"
+                    ? "Pronto p/ Comprar"
                     : selectedSdrSession.intent_classification === "warm"
-                    ? "🔥 Quente"
-                    : "💡 Curioso"}
+                    ? "Quente"
+                    : "Curioso"}
                 </Badge>
               </div>
 
@@ -947,7 +1144,7 @@ function WorkspaceAtendimentoPage() {
                       {selectedSdrSession.classified.title}
                     </p>
                     {selectedSdrSession.classified.price_cents !== null && selectedSdrSession.classified.price_cents !== undefined && (
-                      <p className="text-[11px] font-semibold text-primary font-mono">
+                      <p className="text-xs font-semibold text-primary font-mono">
                         {formatMoney(selectedSdrSession.classified.price_cents)}
                       </p>
                     )}

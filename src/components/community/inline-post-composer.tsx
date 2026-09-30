@@ -793,8 +793,8 @@ export function InlinePostComposer({ session, profile, onSuccess }: InlinePostCo
             type="button"
             variant="outline"
             onClick={handleInsertHighlight}
-            className="h-11 px-3.5 rounded-xl text-xs font-bold gap-1.5 border-border/60 hover:bg-amber-300/20 hover:text-amber-800 dark:hover:text-amber-200 transition-colors cursor-pointer"
-            title="Destacar texto com marca-texto estilo Threads (==texto==)"
+            className="h-11 px-3.5 rounded-xl text-xs font-bold gap-1.5 border-border/60 hover:bg-muted text-foreground transition-colors cursor-pointer"
+            title="Destacar Texto"
           >
             <Highlighter className="size-4 text-amber-500" />
             <span className="hidden sm:inline">Destaque</span>

@@ -318,8 +318,8 @@ export function DigitalCompanionCard({
                         : emergencyPagesRef;
                   exportImages(ref, activeTab);
                 }}
-                className="rounded-xl text-xs font-semibold h-10 px-3 min-h-[44px] sm:min-h-[36px]"
-                title="Baixar Imagens em Alta Resolução (Stories 9:16)"
+                className="rounded-xl text-xs font-semibold h-11 sm:h-9 px-3"
+                title="Salvar Imagens 9:16"
               >
                 <ImageIcon className="size-4 mr-1.5" />
                 <span>Salvar Imagens</span>

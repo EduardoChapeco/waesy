@@ -208,6 +208,21 @@
       "score": 25,
       "depende_de": [],
       "estado": "fechado"
+    },
+    {
+      "id": "I-0014",
+      "prompt": 16,
+      "tipo": "chat-as-an-application",
+      "evidencia": "src/components/chat/structured-message-view.tsx,src/services/chat.functions.ts:16",
+      "causa_raiz": "Mensagens de chat limitadas a texto/imagem/documento sem suporte a componentes nativos ricos de comércio e acompanhamento transacional",
+      "correcao": "Implementado motor de blocos estruturados (order_tracker, product_card, proposal_card, metric_widget, task_card, table, actions) com zero pulsos/jank, sanitizacao e preservacao de schema",
+      "impacto": 5,
+      "alcance": 5,
+      "confianca": 5,
+      "esforco": 2,
+      "score": 35,
+      "depende_de": [],
+      "estado": "fechado"
     }
   ],
   "entregues": [
@@ -237,7 +252,10 @@
     "src/hooks/use-mobile.test.ts",
     "ia/16-relatorio.md",
     "ia/16-ledger.json",
-    "src/hooks/anti-jank.test.ts"
+    "src/hooks/anti-jank.test.ts",
+    "src/components/chat/structured-message-view.tsx",
+    "src/components/chat/index.ts",
+    "src/components/chat/structured-chat.test.ts"
   ],
   "selos": [
     "ZERO_MOCKS_VERIFIED",
@@ -257,7 +275,9 @@
     "MAPLIBRE_CSS_DECOUPLED_FROM_CRITICAL_PATH",
     "ZERO_IMPORTANT_IN_TSX_CERTIFIED",
     "NATIVE_VIRTUALIZATION_CONTENT_AUTO_ACTIVE",
-    "PROMPT_16_ALL_TESTS_GREEN"
+    "PROMPT_16_ALL_TESTS_GREEN",
+    "CHAT_AS_AN_APPLICATION_CERTIFIED",
+    "STRUCTURED_BLOCKS_VALIDATED"
   ],
   "decisoes": [
     "DEC-001",
@@ -281,6 +301,7 @@
     "DEC-019",
     "DEC-020",
     "DEC-021",
-    "DEC-022"
+    "DEC-022",
+    "DEC-023"
   ]
 }

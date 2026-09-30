@@ -696,7 +696,7 @@ export function EditorialShowcaseView({
                 size="sm"
                 onClick={onOpenCompanionCard}
                 className="h-8 gap-1.5 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold text-xs cursor-pointer"
-                title="Guia Digital 9:16 e mensagem para WhatsApp"
+                title="Guia Digital WhatsApp"
               >
                 <Smartphone className="size-3.5" />
                 <span>Guia 9:16</span>
@@ -709,7 +709,7 @@ export function EditorialShowcaseView({
                 size="sm"
                 onClick={() => setIsPromoFlyerOpen(true)}
                 className="h-8 gap-1.5 rounded-xl border-primary/30 text-primary hover:bg-primary/5 font-semibold text-xs cursor-pointer"
-                title="Gerar Flyer / Story Promocional 9:16 com IA"
+                title="Gerar Flyer 9:16"
               >
                 <Star className="size-3.5" />
                 <span>Gerar Story 9:16</span>

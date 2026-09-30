@@ -22,7 +22,7 @@ export const sendStaffMessageSchema = z.object({
  threadId: z.string().uuid(),
  message: z.string().min(1),
  message_type: z
- .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "pix_payment"])
+ .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "pix_payment", "structured_blocks"])
  .default("text"),
  attachments: z.array(z.string().url()).default([]),
  payload: z.record(z.any()).default({}),
@@ -32,7 +32,7 @@ export const sendCustomerMessageSchema = z.object({
  threadId: z.string().uuid(),
  message: z.string().min(1),
  message_type: z
- .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment"])
+ .enum(["text", "order_card", "rma_ticket", "system_event", "image_attachment", "structured_blocks"])
  .default("text"),
  attachments: z.array(z.string().url()).default([]),
  payload: z.record(z.any()).default({}),

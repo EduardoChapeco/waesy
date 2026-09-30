@@ -333,8 +333,8 @@ export function LocationMasterPill({ className = "" }: { className?: string }) {
  onPointerDown={handlePointerDown}
  onPointerUp={handlePointerUp}
  onPointerCancel={handlePointerCancel}
- title="Clique para escolher cidade/CEP/mapa ou segure para ativar GPS"
- className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 h-8 sm:h-9 rounded-2xl text-[11px] sm:text-xs font-bold transition-all border select-none cursor-pointer shrink-0 ${
+ title="Alterar Localização"
+ className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 h-8 sm:h-9 rounded-2xl text-xs font-bold transition-all border select-none cursor-pointer shrink-0 ${
  isHolding
  ? "scale-95 bg-primary/20 border-primary text-primary"
  : "bg-muted/60 hover:bg-muted text-foreground border-border/80 hover:border-primary/40"

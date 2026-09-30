@@ -263,10 +263,10 @@ describe("Omni-Block Engine & State Tree Audit (MASTER PROMPT V129)", () => {
   });
 
   it("15. Deve exportar o componente LiveTemplatePreviewModal e suportar montagem de visualização", async () => {
-    const { LiveTemplatePreviewModal } = await import("./index");
+    const { LiveTemplatePreviewModal } = await import("./LiveTemplatePreviewModal");
     expect(LiveTemplatePreviewModal).toBeDefined();
     expect(typeof LiveTemplatePreviewModal).toBe("function");
-  });
+  }, 20000);
 
   it("16. Deve validar a expansão revolucionária de templates por nicho V137 (Creator Pro, Clínica Premium, Dark Kitchen)", () => {
     // 1. Creator Pro

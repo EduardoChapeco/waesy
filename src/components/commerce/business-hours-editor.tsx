@@ -394,8 +394,8 @@ export function BusinessHoursEditor({
  variant="ghost"
  size="sm"
  onClick={() => handleCopyDayToWeekdays(key)}
- className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground font-medium rounded-lg"
- title="Copiar horário deste dia para Segunda a Sexta"
+ className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground font-medium rounded-lg"
+ title="Copiar Seg-Sex"
  >
  <Copy className="size-3 mr-1" />
  <span className="hidden sm:inline">Copiar Seg-Sex</span>
@@ -405,8 +405,8 @@ export function BusinessHoursEditor({
  variant="ghost"
  size="sm"
  onClick={() => handleCopyDayToAll(key)}
- className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground font-medium rounded-lg"
- title="Copiar horário deste dia para toda a semana"
+ className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground font-medium rounded-lg"
+ title="Copiar Todos"
  >
  <Copy className="size-3 mr-1" />
  <span className="hidden sm:inline">Copiar Todos</span>

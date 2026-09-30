@@ -373,7 +373,7 @@ export function VariantMatrixGrid({ variants, onChange, basePriceCents }: Varian
  size="icon"
  className="h-8 w-8 text-muted-foreground hover:text-foreground"
  onClick={() => setAdvancedEditIndex(globalIdx)}
- title="Edição Avançada (Código de Barras, Peso, Custos)"
+ title="Edição Avançada"
  >
  <Settings className="size-4" />
  </Button>
