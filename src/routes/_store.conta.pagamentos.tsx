@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Receipt, FileText, CreditCard, ArrowRight, CheckCircle2, Clock, AlertCircle, Handshake, UploadCloud, Loader2 } from "lucide-react";
+import { Receipt, QrCode, Save, Check, FileText, CreditCard, ArrowRight, CheckCircle2, Clock, AlertCircle, Handshake, UploadCloud, Loader2 } from "lucide-react";
 
 import { NativeBackButton } from "@/components/ui/native-back-button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { EmptyState } from "@/components/state/states";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { getCustomerInstallments } from "@/services/installments.functions";
-import { getCustomerOrderPayments } from "@/services/payment.functions";
+import { getCustomerOrderPayments, getProfilePixSettings, saveProfilePixSettings } from "@/services/payment.functions";
 import { listUserReceivables, registerInstallmentPayment } from "@/services/receivables.functions";
 import { formatMoney } from "@/lib/money";
 import { Surface } from "@/components/ui/surface";
@@ -87,6 +87,43 @@ function CustomerInstallmentsPage() {
   const [selectedInstallment, setSelectedInstallment] = useState<any>(null);
   const [paymentProofUrl, setPaymentProofUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [activeMainTab, setActiveMainTab] = useState<"history" | "pix_settings">("history");
+  const [pixKey, setPixKey] = useState("");
+  const [pixKeyType, setPixKeyType] = useState("cpf_cnpj");
+  const [pixReceiverName, setPixReceiverName] = useState("");
+  const [paymentInstructions, setPaymentInstructions] = useState("");
+
+  const { data: profilePix, isLoading: isPixLoading } = useQuery({
+    queryKey: ["profile-pix-settings"],
+    queryFn: () => getProfilePixSettings(),
+  });
+
+  useEffect(() => {
+    if (profilePix) {
+      if (profilePix.pix_key) setPixKey(profilePix.pix_key);
+      if (profilePix.pix_key_type) setPixKeyType(profilePix.pix_key_type);
+      if (profilePix.pix_receiver_name) setPixReceiverName(profilePix.pix_receiver_name);
+      if (profilePix.payment_instructions) setPaymentInstructions(profilePix.payment_instructions);
+    }
+  }, [profilePix]);
+
+  const savePixMutation = useMutation({
+    mutationFn: () => saveProfilePixSettings({
+      data: {
+        pix_key: pixKey.trim(),
+        pix_key_type: pixKeyType as any,
+        pix_receiver_name: pixReceiverName.trim(),
+        payment_instructions: paymentInstructions.trim(),
+      },
+    }),
+    onSuccess: () => {
+      toast.success("Dados de recebimento PIX salvos com sucesso!");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Erro ao salvar dados PIX.");
+    },
+  });
+
 
   const payInstallmentMutation = useMutation({
     mutationFn: registerInstallmentPayment,
@@ -135,7 +172,119 @@ function CustomerInstallmentsPage() {
         </div>
       </div>
 
-      {!hasAnyData ? (
+      
+      {/* ── Tabs de Navegação Apple HIG ── */}
+      <div className="flex items-center gap-2 px-4 sm:px-0">
+        <button
+          type="button"
+          onClick={() => setActiveMainTab("history")}
+          className={cn(
+            "h-10 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+            activeMainTab === "history"
+              ? "bg-foreground text-background shadow-xs"
+              : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+          )}
+        >
+          <CreditCard className="size-4" />
+          <span>Faturas & Histórico</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveMainTab("pix_settings")}
+          className={cn(
+            "h-10 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+            activeMainTab === "pix_settings"
+              ? "bg-emerald-600 text-white shadow-xs"
+              : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+          )}
+        >
+          <QrCode className="size-4" />
+          <span>Meus Dados PIX (Recebimento)</span>
+        </button>
+      </div>
+
+      {activeMainTab === "pix_settings" ? (
+        <div className="px-4 sm:px-0 max-w-xl space-y-5 animate-in fade-in duration-200">
+          <div className="p-5 rounded-3xl bg-card border border-border/60 space-y-5">
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <QrCode className="size-5 text-emerald-600" />
+                <span>Dados de Recebimento do Anunciante</span>
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Configure sua Chave PIX e dados bancários padrão. Esses dados serão sugeridos automaticamente nos seus anúncios de classificados e negociações com clientes.
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-1">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">Tipo de Chave PIX</Label>
+                <select
+                  value={pixKeyType}
+                  onChange={(e) => setPixKeyType(e.target.value)}
+                  className="w-full h-11 rounded-xl border border-border/60 bg-background text-xs px-3 font-medium"
+                >
+                  <option value="cpf_cnpj">CPF / CNPJ</option>
+                  <option value="email">E-mail</option>
+                  <option value="phone">Telefone Celular (com DDD)</option>
+                  <option value="random">Chave Aleatória (EVP)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">Chave PIX *</Label>
+                <Input
+                  placeholder="Ex: 000.000.000-00, seuemail@dominio.com ou (49) 99999-9999"
+                  value={pixKey}
+                  onChange={(e) => setPixKey(e.target.value)}
+                  className="h-11 rounded-xl text-xs bg-background font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">Nome do Titular / Favorecido *</Label>
+                <Input
+                  placeholder="Nome completo de quem vai receber o valor"
+                  value={pixReceiverName}
+                  onChange={(e) => setPixReceiverName(e.target.value)}
+                  className="h-11 rounded-xl text-xs bg-background"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">Instruções para o Comprador (Opcional)</Label>
+                <Textarea
+                  placeholder="Ex: Após a transferência, envie o comprovante diretamente pelo chat ou WhatsApp para liberação imediata."
+                  value={paymentInstructions}
+                  onChange={(e) => setPaymentInstructions(e.target.value)}
+                  rows={3}
+                  className="text-xs bg-background resize-none rounded-xl"
+                />
+              </div>
+
+              <Button
+                type="button"
+                onClick={() => savePixMutation.mutate()}
+                disabled={savePixMutation.isPending || !pixKey.trim()}
+                className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2 cursor-pointer transition-all active:scale-[0.99]"
+              >
+                {savePixMutation.isPending ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="size-4" />
+                    <span>Salvar Dados de Recebimento PIX</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : !hasAnyData ? (
         <div className="px-4 sm:px-0 py-8">
           <EmptyState title="Nenhum histórico de pagamento ou cobrança" />
         </div>

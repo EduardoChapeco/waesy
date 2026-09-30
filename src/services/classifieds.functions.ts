@@ -191,6 +191,16 @@ export const getPublicClassifiedById = createServerFn({ method: "GET" })
       }
 
       let classifiedData: any = data;
+
+      // Normalize feed_media and payment_settings for public view
+      classifiedData.feed_media = Array.isArray(classifiedData.feed_media) && classifiedData.feed_media.length > 0
+        ? classifiedData.feed_media
+        : (Array.isArray(classifiedData.attributes?.feed_media) && classifiedData.attributes.feed_media.length > 0
+          ? classifiedData.attributes.feed_media
+          : (Array.isArray(classifiedData.attributes?.feed_images) ? classifiedData.attributes.feed_images : []));
+      
+      classifiedData.payment_settings = classifiedData.payment_settings || classifiedData.attributes?.payment_settings || {};
+
       if (classifiedData && classifiedData.id) {
         const [telRes, dealRes] = await Promise.all([
           supabase
@@ -668,6 +678,8 @@ const upsertClassifiedInput = z.object({
  price_cents: z.coerce.number().int().min(0).nullable().optional(),
  images: z.array(z.string()).optional().default([]),
  feed_images: z.array(z.string()).optional().default([]),
+  feed_media: z.array(z.any()).optional().default([]),
+  payment_settings: z.record(z.any()).optional().default({}),
  whatsapp: z.string().nullable().optional(),
  contact_whatsapp: z.string().nullable().optional(),
  location_name: z.string().nullable().optional(),
@@ -769,6 +781,10 @@ export const upsertClassified = createServerFn({ method: "POST" })
  location_lat: rest.location_lat ?? null,
  location_lng: rest.location_lng ?? null,
  images: Array.isArray(rest.images) ? rest.images : [],
+    feed_media: Array.isArray(rest.feed_media) && rest.feed_media.length > 0
+      ? rest.feed_media
+      : (Array.isArray(rest.feed_images) && rest.feed_images.length > 0 ? rest.feed_images : []),
+    payment_settings: rest.payment_settings || rest.attributes?.payment_settings || {},
  condition: rest.condition || null,
  negotiable: rest.negotiable ?? true,
   attributes: {

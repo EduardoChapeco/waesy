@@ -660,7 +660,7 @@ export const getGatewayStatus = createServerFn({ method: "GET" })
  .select("id")
  .eq("store_id", storeId)
  .eq("is_active", true)
- .in("provider", ["mercado_pago", "stripe"])
+ .in("provider", ["mercado_pago", "mercadopago", "stripe", "asaas", "pagar_me", "pagarme"])
  .limit(1)
  .maybeSingle();
 
@@ -669,6 +669,53 @@ export const getGatewayStatus = createServerFn({ method: "GET" })
  return false;
  }
  });
+
+
+export const getProfilePixSettings = createServerFn({ method: "GET" }).handler(async () => {
+  const ssrClient = await getSSRClient();
+  const {
+    data: { user },
+  } = await ssrClient.auth.getUser();
+  if (!user?.id) return null;
+
+  const db = getServerClient();
+  const { data } = await db
+    .from("profiles")
+    .select("pix_settings")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  return (data?.pix_settings as Record<string, any>) || null;
+});
+
+export const saveProfilePixSettings = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      pix_key: z.string().optional(),
+      pix_key_type: z.enum(["cpf_cnpj", "email", "phone", "random"]).optional(),
+      pix_receiver_name: z.string().optional(),
+      payment_instructions: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data: input }) => {
+    const ssrClient = await getSSRClient();
+    const {
+      data: { user },
+    } = await ssrClient.auth.getUser();
+    if (!user?.id) throw new Error("Não autenticado.");
+
+    const db = getServerClient();
+    const { error } = await db
+      .from("profiles")
+      .update({
+        pix_settings: input,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id);
+
+    if (error) throw new Error("Erro ao salvar dados de recebimento PIX: " + error.message);
+    return { status: "ok" };
+  });
 
 export const getCustomerOrderPayments = createServerFn({ method: "GET" }).handler(async () => {
  const supabase = getServerClient();

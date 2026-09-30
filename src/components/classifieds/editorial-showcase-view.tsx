@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Grid, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed } from "lucide-react";
+import { Grid, Sparkles, Building2, Calendar, Compass, ArrowLeft, Share2, CheckCircle2, Plane, MapPin, MessageCircle, Maximize2, Edit3, Settings, CreditCard, QrCode, Truck, ShieldCheck, Star, Award, HeartHandshake, ImagePlus, Clock, Utensils, Car, Home as HomeIcon, Briefcase, Wrench, FileArchive, Tag, BadgePercent, Check, Info, ExternalLink, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Handshake, Landmark, Coins, Receipt, FileSpreadsheet, BookOpenCheck, ShieldAlert, Bus, Ship, Train, Navigation, Route as RouteIcon, X, Users, Phone, Mail, MessageSquare, Send, Store as StoreIcon, User, Download, Loader2, FileText, Smartphone, Laptop, Tv, Gamepad2, Armchair, Shirt, GraduationCap, Crown, Bed } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,11 +75,15 @@ export function EditorialShowcaseView({
     (Array.isArray(classified?.media) && classified.media.length > 0 ? classified.media : null) ||
     [];
 
-  const feedImages: string[] =
+  const feedMedia: any[] =
+    (Array.isArray(classified?.feed_media) && classified.feed_media.length > 0 ? classified.feed_media : null) ||
+    (Array.isArray(classified?.attributes?.feed_media) && classified.attributes.feed_media.length > 0 ? classified.attributes.feed_media : null) ||
     (Array.isArray(classified?.attributes?.feed_images) && classified.attributes.feed_images.length > 0 ? classified.attributes.feed_images : null) ||
     (Array.isArray(classified?.attributes?.travel?.feed_images) && classified.attributes.travel.feed_images.length > 0 ? classified.attributes.travel.feed_images : null) ||
     (Array.isArray(classified?.feed_images) && classified.feed_images.length > 0 ? classified.feed_images : null) ||
-    images;
+    [];
+
+  const feedImages = feedMedia;
 
   // ── Atalhos de Teclado Desktop para Galeria & Modal Ampliado ─────────────
   React.useEffect(() => {
@@ -982,32 +986,77 @@ export function EditorialShowcaseView({
             </button>
           </div>
 
-          {/* ── Aba 1: Grid de Fotos (Até 12 Fotos Exclusivas do Feed) ── */}
+          {/* ── Aba 1: Grid de Mídias do Feed (Até 12 Mídias: Fotos, GIFs e Vídeos MP4) ── */}
           {activeTab === "grid" && (
             <div className="pt-3">
               {feedImages.length > 0 ? (
-                <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">
-                  {feedImages.slice(0, 12).map((img, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setFullscreenImage(img)}
-                      className="relative aspect-square bg-muted overflow-hidden group cursor-pointer"
-                    >
-                      <img
-                        src={img}
-                        alt={`Foto do Feed ${i + 1}`}
-                        className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Maximize2 className="size-4 text-white drop-" />
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 rounded-2xl overflow-hidden">
+                  {feedImages.slice(0, 12).map((item, i) => {
+                    const rawUrl = typeof item === "string" ? item : (item?.url || item?.src || "");
+                    const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?.*)?$/i.test(rawUrl) || item?.type === "video";
+                    const isGif = /\.gif(\?.*)?$/i.test(rawUrl) || item?.type === "gif";
+
+                    return (
+                      <div
+                        key={i}
+                        className="relative aspect-square bg-muted/60 rounded-xl overflow-hidden group cursor-pointer border border-border/30"
+                        onClick={() => {
+                          if (isVideo) {
+                            setSelectedVideoUrl(rawUrl);
+                          } else {
+                            setFullscreenImage(rawUrl);
+                          }
+                        }}
+                      >
+                        {isVideo ? (
+                          <div className="size-full relative flex items-center justify-center bg-black/90">
+                            <video
+                              src={rawUrl}
+                              className="size-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300 pointer-events-none"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 flex items-center justify-center">
+                              <div className="size-9 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <Play className="size-4 fill-white text-white ml-0.5" />
+                              </div>
+                            </div>
+                            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/70 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs font-mono">
+                              Vídeo
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="size-full relative">
+                            <img
+                              src={rawUrl}
+                              alt={`Mídia do Feed ${i + 1}`}
+                              className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                            {isGif && (
+                              <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-foreground/80 text-background text-[9px] font-bold uppercase tracking-wider backdrop-blur-xs font-mono">
+                                GIF
+                              </span>
+                            )}
+                            <div className="absolute inset-0 bg-black/15 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Maximize2 className="size-4 text-white drop-shadow-md" />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
-                <div className="py-12 text-center text-xs text-muted-foreground">
-                  Nenhuma foto cadastrada para este anúncio.
+                <div className="py-10 px-4 rounded-2xl bg-muted/20 border border-border/40 text-center space-y-2">
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                    <Sparkles className="size-5" />
+                  </div>
+                  <h4 className="text-xs font-bold text-foreground">Carrossel de Destaques</h4>
+                  <p className="text-[11px] text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                    Todas as fotos e detalhes visuais principais deste anúncio estão disponíveis no carrossel de topo.
+                  </p>
                 </div>
               )}
             </div>
@@ -2817,6 +2866,52 @@ export function EditorialShowcaseView({
                 </div>
               )}
 
+              
+              {/* Botão PIX Direto */}
+              {effectivePixKey && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsContactModalOpen(false);
+                    setIsPixPaymentModalOpen(true);
+                  }}
+                  className="w-full min-h-[48px] p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                      <QrCode className="size-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">Pagar com PIX Instantâneo</p>
+                      <p className="text-[11px] text-muted-foreground">Copiar chave PIX e transferir com confirmação</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="size-4 text-emerald-600" />
+                </button>
+              )}
+
+              {/* Botão Link de Pagamento Direto */}
+              {effectivePaymentLink && (
+                <a
+                  href={effectivePaymentLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsContactModalOpen(false)}
+                  className="w-full min-h-[48px] p-3 rounded-2xl bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 flex items-center justify-between text-left transition-all active:scale-[0.99] cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                      <CreditCard className="size-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-blue-800 dark:text-blue-300">Pagar com Cartão Online</p>
+                      <p className="text-[11px] text-muted-foreground">Checkout seguro externo do anunciante</p>
+                    </div>
+                  </div>
+                  <ExternalLink className="size-4 text-blue-600" />
+                </a>
+              )}
+
               {/* Botão 3: Enviar Proposta / Reserva Formal */}
               {(isTravel || isHospitality) ? (
                 <button
@@ -2863,6 +2958,95 @@ export function EditorialShowcaseView({
           </div>
         </DialogContent>
       </Dialog>
+
+      
+      {/* ── Modal Player de Vídeo do Feed ── */}
+      <Dialog open={!!selectedVideoUrl} onOpenChange={(open) => !open && setSelectedVideoUrl(null)}>
+        <DialogContent className="max-w-2xl p-2 sm:p-4 rounded-3xl bg-black/95 border border-white/10 text-white">
+          <div className="relative aspect-video rounded-2xl overflow-hidden bg-black flex items-center justify-center">
+            {selectedVideoUrl && (
+              <video
+                src={selectedVideoUrl}
+                controls
+                autoPlay
+                playsInline
+                className="size-full object-contain"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal de Pagamento Rápido via PIX ── */}
+      <Dialog open={isPixPaymentModalOpen} onOpenChange={setIsPixPaymentModalOpen}>
+        <DialogContent className="max-w-sm p-5 rounded-3xl bg-background/98 backdrop-blur-xl border border-border/60">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <QrCode className="size-5 text-emerald-600" />
+              <span>Pagar com PIX</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            {priceCents > 0 && (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                <span className="text-[11px] text-muted-foreground font-medium">Valor Total</span>
+                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-display">
+                  {formatMoney(priceCents)}
+                </p>
+                {effectivePixReceiver && (
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Beneficiário: <strong className="text-foreground">{effectivePixReceiver}</strong>
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-foreground">Chave PIX do Anunciante</Label>
+              <div className="p-3 rounded-xl bg-muted/40 border border-border/60 font-mono text-xs text-foreground break-all select-all flex items-center justify-between gap-2">
+                <span>{effectivePixKey || "Chave PIX sob consulta"}</span>
+              </div>
+              <Button
+                type="button"
+                onClick={() => {
+                  if (effectivePixKey) {
+                    navigator.clipboard.writeText(effectivePixKey);
+                    toast.success("Chave PIX copiada para a área de transferência!");
+                  }
+                }}
+                className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-2"
+              >
+                <Check className="size-4" />
+                <span>Copiar Chave PIX</span>
+              </Button>
+            </div>
+
+            <div className="p-3 rounded-xl bg-muted/20 border border-border/40 text-[11px] text-muted-foreground space-y-1">
+              <p className="font-semibold text-foreground">Instruções:</p>
+              <p>1. Abra o app do seu banco e selecione a opção PIX Copia e Cola / Chave.</p>
+              <p>2. Confirme o valor e o nome do beneficiário.</p>
+              <p>3. Após pagar, envie o comprovante diretamente pelo chat ou WhatsApp do anúncio.</p>
+            </div>
+
+            {advertiserPhone && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsPixPaymentModalOpen(false);
+                  handleWhatsAppDirect();
+                }}
+                className="w-full h-10 rounded-xl border-emerald-500/30 text-emerald-600 font-semibold text-xs gap-1.5"
+              >
+                <MessageCircle className="size-4" />
+                <span>Enviar Comprovante pelo WhatsApp</span>
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       {/* ── Modal de Detalhamento de Parcelas ── */}
       <Dialog open={isInstallmentsModalOpen} onOpenChange={setIsInstallmentsModalOpen}>

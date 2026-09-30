@@ -1051,6 +1051,12 @@ function SpecializedClassifiedEditor({
   const [structuredLoc, setStructuredLoc] = useState<StructuredLocationValue | null>(null);
   const [whatsapp, setWhatsapp] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [feedMedia, setFeedMedia] = useState<string[]>([]);
+  const [pixKeyType, setPixKeyType] = useState<string>("cpf_cnpj");
+  const [pixKey, setPixKey] = useState<string>("");
+  const [pixReceiverName, setPixReceiverName] = useState<string>("");
+  const [paymentLink, setPaymentLink] = useState<string>("");
+  const [paymentInstructions, setPaymentInstructions] = useState<string>("");
   const [activePreviewImage, setActivePreviewImage] = useState(0);
 
   // Vínculo com Formulário de Captura de Leads / Landing Page
@@ -1853,6 +1859,23 @@ function SpecializedClassifiedEditor({
     if (initialData.attributes?.hide_location !== undefined) setHideLocation(!!initialData.attributes.hide_location);
     if (initialData.contact_whatsapp || initialData.whatsapp) setWhatsapp(initialData.contact_whatsapp || initialData.whatsapp);
     if (Array.isArray(initialData.images)) setImages(initialData.images);
+    if (Array.isArray(initialData.feed_media) && initialData.feed_media.length > 0) {
+      setFeedMedia(initialData.feed_media);
+    } else if (Array.isArray(initialData.attributes?.feed_media) && initialData.attributes.feed_media.length > 0) {
+      setFeedMedia(initialData.attributes.feed_media);
+    } else if (Array.isArray(initialData.attributes?.feed_images) && initialData.attributes.feed_images.length > 0) {
+      setFeedMedia(initialData.attributes.feed_images);
+    }
+
+    const loadedPs = initialData.payment_settings || initialData.attributes?.payment_settings;
+    if (loadedPs) {
+      if (loadedPs.pix_key) setPixKey(loadedPs.pix_key);
+      if (loadedPs.pix_key_type) setPixKeyType(loadedPs.pix_key_type);
+      if (loadedPs.pix_receiver_name) setPixReceiverName(loadedPs.pix_receiver_name);
+      if (loadedPs.payment_link) setPaymentLink(loadedPs.payment_link);
+      if (loadedPs.payment_instructions) setPaymentInstructions(loadedPs.payment_instructions);
+    }
+
 
     if (initialData.attributes) {
       if (initialData.attributes.template_style) setTemplateStyle(initialData.attributes.template_style === "editorial" || initialData.attributes.template_style === "instagram" ? "editorial" : initialData.attributes.template_style === "conveniencia" ? "conveniencia" : "standard");
@@ -2508,6 +2531,15 @@ function SpecializedClassifiedEditor({
           ai_instructions: aiInstructions.trim() || undefined,
           ai_agent_enabled: aiAgentEnabled,
           max_discount_pct: maxDiscountPct,
+          feed_media: feedMedia,
+          feed_images: feedMedia,
+          payment_settings: {
+            pix_key: pixKey.trim(),
+            pix_key_type: pixKeyType,
+            pix_receiver_name: pixReceiverName.trim(),
+            payment_link: paymentLink.trim(),
+            payment_instructions: paymentInstructions.trim(),
+          },
           price_cents:
             pricingType === "free" || niche.id === "doacao"
               ? 0
@@ -2854,6 +2886,15 @@ function SpecializedClassifiedEditor({
       description: description || "",
       price_cents: computedPriceCents,
       images: images || [],
+      feed_media: feedMedia || [],
+      feed_images: feedMedia || [],
+      payment_settings: {
+        pix_key: pixKey.trim(),
+        pix_key_type: pixKeyType,
+        pix_receiver_name: pixReceiverName.trim(),
+        payment_link: paymentLink.trim(),
+        payment_instructions: paymentInstructions.trim(),
+      },
       photos: images || [],
       media: images || [],
       city: hideLocation ? "" : (structuredLoc?.city || (locationName ? locationName.split(",")[0].trim() : "Chapecó")),
@@ -3539,29 +3580,68 @@ function SpecializedClassifiedEditor({
  className={`md:col-span-5 space-y-6 ${mobileTab === "edit" ? "block" : "hidden md:block"} `}
  >
           <div className="space-y-6">
-            {/* Section 1: Fotos & Mídia (Inversão do Funil - Media-First Flow V121) */}
-            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-4 border border-border/60">
+            {/* Section 1: Fotos do Topo & Galeria Exclusiva do Feed */}
+            <div className="bg-card rounded-2xl p-4 sm:p-5 space-y-5 border border-border/60">
               <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                 <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-foreground">
                   <ImagePlus className="size-4 text-primary shrink-0" />
-                  <span>1. Mídia</span>
+                  <span>1. Mídias do Anúncio</span>
                 </div>
-                <span className="text-[11px] font-mono text-muted-foreground">
-                  {images.length} adicionada(s)
-                </span>
               </div>
 
-              <MediaUploader
-                value={images}
-                onChange={setImages}
-                onUploadingStateChange={setIsUploadingMedia}
-                bucket="post-media"
-                folder="classifieds"
-                aspect={4 / 3}
-                enableCrop={true}
-                lockAspect={true}
-                maxFiles={8}
-              />
+              {/* 1.1 Fotos de Destaque / Carrossel Superior */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <span>Fotos do Topo (Carrossel Hero)</span>
+                    <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-mono">Até 10 fotos</Badge>
+                  </Label>
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    {images.length}/10 adicionada(s)
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Imagens principais exibidas no carrossel de topo do anúncio (formato 4:3 com recorte).
+                </p>
+                <MediaUploader
+                  value={images}
+                  onChange={setImages}
+                  onUploadingStateChange={setIsUploadingMedia}
+                  bucket="post-media"
+                  folder="classifieds"
+                  aspect={4 / 3}
+                  enableCrop={true}
+                  lockAspect={true}
+                  maxFiles={10}
+                />
+              </div>
+
+              {/* 1.2 Galeria Exclusiva do Feed */}
+              <div className="pt-3 border-t border-border/40 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <span>Galeria Exclusiva do Feed</span>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] py-0 px-1.5 font-bold">Até 12 mídias</Badge>
+                  </Label>
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    {feedMedia.length}/12 adicionada(s)
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Mídias que aparecem exclusivamente no feed e grid do anúncio. Aceita Fotos, GIFs animados e Vídeos curtos (MP4/WebM). <strong>Não duplica as fotos do topo.</strong>
+                </p>
+                <MediaUploader
+                  value={feedMedia}
+                  onChange={setFeedMedia}
+                  onUploadingStateChange={setIsUploadingMedia}
+                  bucket="post-media"
+                  folder="classifieds-feed"
+                  aspect={1}
+                  enableCrop={false}
+                  maxFiles={12}
+                  accept="all"
+                />
+              </div>
             </div>
 
             {/* Section 2: Informações Básicas (Design Silencioso V121) */}
@@ -8006,6 +8086,24 @@ function SpecializedClassifiedEditor({
                       </div>
                     )}
                   </div>
+
+                  
+                    {/* Link de Pagamento Seguro / Checkout Externo */}
+                    <div className="pt-2 border-t border-border/40 space-y-1.5">
+                      <Label className="text-[11px] font-semibold text-foreground flex items-center justify-between">
+                        <span>Link de Pagamento Online (Opcional)</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">Mercado Pago, Asaas, InfinitePay, etc.</span>
+                      </Label>
+                      <Input
+                        placeholder="https://mpago.la/... ou link da sua maquininha"
+                        value={paymentLink}
+                        onChange={(e) => setPaymentLink(e.target.value)}
+                        className="h-9 rounded-xl text-xs bg-background font-mono"
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        Se preenchido, os clientes poderão clicar e pagar com cartão diretamente no seu anúncio.
+                      </p>
+                    </div>
 
                   {/* 3. Dinheiro em Espécie (Presencial) */}
                   <div className={cn(
